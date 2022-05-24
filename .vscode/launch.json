@@ -1,0 +1,21 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "ec eval",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/main.go",
+            "args": [
+                "eval",
+                "--image",
+                "quay.io/lucarval/single-nodejs-app:demo",
+                "--public-key",
+                "cosign.pub",
+                "--policy",
+                "demo/enterprisecontractpolicy-sample"
+            ]
+        }
+    ]
+}
