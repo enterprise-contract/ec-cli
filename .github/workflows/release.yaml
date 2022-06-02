@@ -35,7 +35,7 @@ jobs:
           echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
           RELEASE_ID=$(gh api \
             -H 'Accept: application/vnd.github.v3+json' \
-            /repos/zregvart/ec-cli/releases \
+            /repos/${{ github.repository }}/releases \
             -q '.[] | select(.tag_name == "snapshot") | .id')
           [[ -n "${RELEASE_ID}" ]] && gh api --method DELETE \
             -H 'Accept: application/vnd.github.v3+json' \
