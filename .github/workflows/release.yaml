@@ -1,0 +1,55 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  Build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Go environment
+        uses: actions/setup-go@v3.0.0
+        with:
+          go-version: 1.17
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: ${{ runner.os }}-go-
+
+      - name: Build
+        run: make build
+
+      - name: Delete snapshot release and tag
+        run: |
+          echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
+          RELEASE_ID=$(gh api \
+            -H 'Accept: application/vnd.github.v3+json' \
+            /repos/zregvart/ec-cli/releases \
+            -q '.[] | select(.tag_name == "snapshot") | .id')
+          [[ -n "${RELEASE_ID}" ]] && gh api --method DELETE \
+            -H 'Accept: application/vnd.github.v3+json' \
+            "/repos/${{ github.repository }}/releases/${RELEASE_ID}"
+
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git tag -a -f -m 'Development snapshot' snapshot
+          git push -f --tags
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          prerelease: true
+          name: Development snapshot
+          body: Unstable development snapshot release.
+          tag_name: snapshot
+          generate_release_notes: true
+          files: dist/*
