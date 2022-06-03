@@ -6,7 +6,9 @@ set -o pipefail
 set -o posix
 
 HACK_DIR="$(dirname "${BASH_SOURCE[0]}")"
-EC="${HACK_DIR}/../dist/ec"
+EC="${HACK_DIR}/../dist/ec_$(go env GOOS)_$(go env GOARCH)"
+
+echo "Using ec version $("${EC}" version)"
 
 if [[ ! -x "${EC}" ]]; then
   (cd "${HACK_DIR}/.."; make)
