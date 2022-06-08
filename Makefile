@@ -26,7 +26,7 @@ help: ## Display this help.
 
 ##@ Development targets
 
-build-%: ## Build binaries for specific platform/architecture, e.g. make build-linux-amd64
+build-%:: ## Build binaries for specific platform/architecture, e.g. make build-linux-amd64
 	@GOOS=$$(echo $* |cut -d'-' -f1); \
 	GOARCH=$$(echo $* |cut -d'-' -f2); \
 	GOOS=$${GOOS} GOARCH=$${GOARCH} go build -ldflags="-s -w -X github.com/hacbs-contract/ec-cli/cmd.Version=$(VERSION)" -o dist/ec_$${GOOS}_$${GOARCH}; \
@@ -37,4 +37,4 @@ build: build-linux-amd64 build-darwin-amd64 build-darwin-arm64 build-windows-amd
 clean: ## Delete build output
 	@rm dist/*
 
-.PHONY: all build clean help
+.PHONY: build clean help
