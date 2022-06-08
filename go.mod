@@ -4,12 +4,14 @@ go 1.17
 
 require (
 	github.com/google/go-containerregistry v0.8.1-0.20220216220642-00c59d91847c
+	github.com/google/go-github/v42 v42.0.0
 	github.com/hacbs-contract/enterprise-contract-controller v0.0.0-20220525095719-1a34e1604a54
 	github.com/hashicorp/go-getter v1.6.1
 	github.com/in-toto/in-toto-golang v0.3.4-0.20211211042327-af1f9fb822bf
 	github.com/open-policy-agent/conftest v0.32.0
 	github.com/sigstore/cosign v1.8.0
 	github.com/spf13/cobra v1.4.0
+	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5
 	k8s.io/apimachinery v0.24.1
 	sigs.k8s.io/controller-runtime v0.12.1
 )
@@ -125,7 +127,6 @@ require (
 	github.com/google/certificate-transparency-go v1.1.2 // indirect
 	github.com/google/gnostic v0.5.7-v3refs // indirect
 	github.com/google/go-cmp v0.5.7 // indirect
-	github.com/google/go-github/v42 v42.0.0 // indirect
 	github.com/google/go-jsonnet v0.18.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
@@ -244,7 +245,6 @@ require (
 	golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4 // indirect
 	golang.org/x/mod v0.6.0-dev.0.20220106191415-9b9b3d81d5e3 // indirect
 	golang.org/x/net v0.0.0-20220412020605-290c469a71a5 // indirect
-	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5 // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/sys v0.0.0-20220517195934-5e4e11fc645e // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
