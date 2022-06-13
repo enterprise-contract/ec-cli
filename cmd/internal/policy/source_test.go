@@ -30,6 +30,10 @@ import (
 )
 
 func sourceFetchStub(dst string, src string, opts ...getter.ClientOption) error {
+	err := os.MkdirAll(dst, 0755)
+	if err != nil {
+		return err
+	}
 	f, err := os.Create(path.Join(dst, "input.json"))
 	if err != nil {
 		return err

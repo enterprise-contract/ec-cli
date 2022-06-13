@@ -19,6 +19,7 @@ package policy
 import (
 	"context"
 	"os"
+	"path"
 
 	ecp "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/hashicorp/go-getter"
@@ -65,6 +66,8 @@ func (s *policySource) fetchPolicySourceFromGit(ctx context.Context, repository 
 	if err != nil {
 		return nil, err
 	}
+
+	dest = path.Join(dest, "source")
 
 	if err := s.fetch(dest, source, getter.WithContext(ctx)); err != nil {
 		return nil, err
