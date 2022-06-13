@@ -56,18 +56,25 @@ var evalCmd = &cobra.Command{
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
+
+		out := &policy.Output{}
+
 		i, err := image.NewImageValidator(cmd.Context(), arguments.imageRef, arguments.publicKey, arguments.rekorURL)
 		if err != nil {
 			return err
 		}
 
 		if err := i.ValidateImageSignature(cmd.Context()); err != nil {
+			out.SetImageSignatureCheck(false, err.Error())
 			return err
 		}
+		out.SetImageSignatureCheck(true, "success")
 
 		if err := i.ValidateAttestationSignature(cmd.Context()); err != nil {
+			out.SetAttestationSignatureCheck(false, err.Error())
 			return err
 		}
+		out.SetAttestationSignatureCheck(true, "success")
 
 		p, err := policy.NewPolicyEvaluator(arguments.policyConfiguration)
 		if err != nil {
@@ -78,8 +85,9 @@ var evalCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
+		out.SetPolicyCheck(results)
 
-		if err := p.Output(results); err != nil {
+		if out.Print(); err != nil {
 			return err
 		}
 
