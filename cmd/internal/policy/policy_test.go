@@ -51,6 +51,14 @@ var testECP ecp.EnterpriseContractPolicy = ecp.EnterpriseContractPolicy{
 	},
 }
 
+func init() {
+	kubernetesCreator = func() (*kubernetes, error) {
+		return &kubernetes{
+			client: fakeClient,
+		}, nil
+	}
+}
+
 func Test_NewPolicyEvaluator(t *testing.T) {
 	cases := []struct {
 		name         string
