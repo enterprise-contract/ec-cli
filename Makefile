@@ -3,6 +3,7 @@ VERSION:=$$(git log -1 --format='%H')
 
 ##@ Information targets
 
+.PHONY: help
 help: ## Display this help.
 	@awk 'function ww(s) {\
 		if (length(s) < 59) {\
@@ -34,7 +35,10 @@ build-%:: ## Build binaries for specific platform/architecture, e.g. make build-
 
 build: build-linux-amd64 build-darwin-amd64 build-darwin-arm64 build-windows-amd64 ## Build binaries for all supported operating systems and architectures
 
+.PHONY: test
+test: ## Run unit tests
+	@go test -cover -short -timeout 500ms ./...
+
+.PHONY: clean
 clean: ## Delete build output
 	@rm dist/*
-
-.PHONY: build clean help
