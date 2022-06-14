@@ -1,0 +1,20 @@
+{
+  "id" : "7653416f-506e-33df-b0b9-1bc594cdf0c8",
+  "request" : {
+    "url" : "/apis/node.k8s.io/v1beta1?timeout=32s",
+    "method" : "GET"
+  },
+  "response" : {
+    "status" : 200,
+    "bodyFileName" : "body-apis-node.k8s.io-v1beta1-V6CjK.json",
+    "headers" : {
+      "Audit-Id" : "6e78e49a-c6ca-4740-b4be-7672371242dd",
+      "Cache-Control" : "no-cache, private",
+      "Content-Type" : "application/json",
+      "X-Kubernetes-Pf-Flowschema-Uid" : "c743b7b5-6c97-4db7-8bf0-7db15241f8f8",
+      "X-Kubernetes-Pf-Prioritylevel-Uid" : "15cdd856-ada7-4f29-b7cd-8d8308518359",
+      "Date" : "Mon, 13 Jun 2022 10:06:13 GMT"
+    }
+  },
+  "uuid" : "7653416f-506e-33df-b0b9-1bc594cdf0c8"
+}

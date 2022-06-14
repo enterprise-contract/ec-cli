@@ -1,0 +1,20 @@
+{
+  "id" : "751b8b99-ef0f-3f87-baa8-a81dfc564628",
+  "request" : {
+    "url" : "/apis/controlplane.operator.openshift.io/v1alpha1?timeout=32s",
+    "method" : "GET"
+  },
+  "response" : {
+    "status" : 200,
+    "bodyFileName" : "body-apis-controlplane.operator.openshift.io-v1alpha1-zzvcW.json",
+    "headers" : {
+      "Audit-Id" : "a9fc57e6-db1d-476f-863e-b1faccc95481",
+      "Cache-Control" : "no-cache, private",
+      "Content-Type" : "application/json",
+      "X-Kubernetes-Pf-Flowschema-Uid" : "c743b7b5-6c97-4db7-8bf0-7db15241f8f8",
+      "X-Kubernetes-Pf-Prioritylevel-Uid" : "15cdd856-ada7-4f29-b7cd-8d8308518359",
+      "Date" : "Mon, 13 Jun 2022 10:06:14 GMT"
+    }
+  },
+  "uuid" : "751b8b99-ef0f-3f87-baa8-a81dfc564628"
+}

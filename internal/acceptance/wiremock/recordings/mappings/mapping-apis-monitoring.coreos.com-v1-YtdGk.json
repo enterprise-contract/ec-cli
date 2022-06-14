@@ -1,0 +1,20 @@
+{
+  "id" : "c21a7ec9-c650-3d14-9cd5-146651fc8b21",
+  "request" : {
+    "url" : "/apis/monitoring.coreos.com/v1?timeout=32s",
+    "method" : "GET"
+  },
+  "response" : {
+    "status" : 200,
+    "bodyFileName" : "body-apis-monitoring.coreos.com-v1-YtdGk.json",
+    "headers" : {
+      "Audit-Id" : "c41a182d-543c-43f4-9ce0-3a6522bcc16b",
+      "Cache-Control" : "no-cache, private",
+      "Content-Type" : "application/json",
+      "X-Kubernetes-Pf-Flowschema-Uid" : "c743b7b5-6c97-4db7-8bf0-7db15241f8f8",
+      "X-Kubernetes-Pf-Prioritylevel-Uid" : "15cdd856-ada7-4f29-b7cd-8d8308518359",
+      "Date" : "Mon, 13 Jun 2022 10:06:14 GMT"
+    }
+  },
+  "uuid" : "c21a7ec9-c650-3d14-9cd5-146651fc8b21"
+}

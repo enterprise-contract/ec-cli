@@ -1,0 +1,1 @@
+{"kind":"APIResourceList","apiVersion":"v1","groupVersion":"console.openshift.io/v1alpha1","resources":[{"name":"consoleplugins","singularName":"consoleplugin","namespaced":false,"kind":"ConsolePlugin","verbs":["delete","deletecollection","get","list","patch","create","update","watch"],"storageVersionHash":"ACCeQvz0mH0="}]}

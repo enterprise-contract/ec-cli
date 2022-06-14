@@ -1,0 +1,20 @@
+{
+  "id" : "094a8fd0-a797-3c40-b336-a30a6e8018dc",
+  "request" : {
+    "url" : "/apis/events.k8s.io/v1?timeout=32s",
+    "method" : "GET"
+  },
+  "response" : {
+    "status" : 200,
+    "bodyFileName" : "body-apis-events.k8s.io-v1-DA1DK.json",
+    "headers" : {
+      "Audit-Id" : "00bc61f7-9d95-4ed8-9643-73860158a4bf",
+      "Cache-Control" : "no-cache, private",
+      "Content-Type" : "application/json",
+      "X-Kubernetes-Pf-Flowschema-Uid" : "c743b7b5-6c97-4db7-8bf0-7db15241f8f8",
+      "X-Kubernetes-Pf-Prioritylevel-Uid" : "15cdd856-ada7-4f29-b7cd-8d8308518359",
+      "Date" : "Mon, 13 Jun 2022 10:06:13 GMT"
+    }
+  },
+  "uuid" : "094a8fd0-a797-3c40-b336-a30a6e8018dc"
+}

@@ -1,0 +1,20 @@
+{
+  "id" : "1bd76030-2309-3663-ae3b-f455af418a64",
+  "request" : {
+    "url" : "/apis/authentication.k8s.io/v1?timeout=32s",
+    "method" : "GET"
+  },
+  "response" : {
+    "status" : 200,
+    "bodyFileName" : "body-apis-authentication.k8s.io-v1-3wdgL.json",
+    "headers" : {
+      "Audit-Id" : "411e7439-06fa-4b29-9d47-200b9e6c0c5e",
+      "Cache-Control" : "no-cache, private",
+      "Content-Type" : "application/json",
+      "X-Kubernetes-Pf-Flowschema-Uid" : "c743b7b5-6c97-4db7-8bf0-7db15241f8f8",
+      "X-Kubernetes-Pf-Prioritylevel-Uid" : "15cdd856-ada7-4f29-b7cd-8d8308518359",
+      "Date" : "Mon, 13 Jun 2022 10:06:13 GMT"
+    }
+  },
+  "uuid" : "1bd76030-2309-3663-ae3b-f455af418a64"
+}

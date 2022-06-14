@@ -1,0 +1,20 @@
+{
+  "id" : "88f1b0ab-b979-391c-b61b-8b79d46ef390",
+  "request" : {
+    "url" : "/apis/flowcontrol.apiserver.k8s.io/v1beta2?timeout=32s",
+    "method" : "GET"
+  },
+  "response" : {
+    "status" : 200,
+    "bodyFileName" : "body-apis-flowcontrol.apiserver.k8s.io-v1beta2-OZFR7.json",
+    "headers" : {
+      "Audit-Id" : "366c88c2-6b4b-44f1-a635-e8fbc33c4980",
+      "Cache-Control" : "no-cache, private",
+      "Content-Type" : "application/json",
+      "X-Kubernetes-Pf-Flowschema-Uid" : "c743b7b5-6c97-4db7-8bf0-7db15241f8f8",
+      "X-Kubernetes-Pf-Prioritylevel-Uid" : "15cdd856-ada7-4f29-b7cd-8d8308518359",
+      "Date" : "Mon, 13 Jun 2022 10:06:13 GMT"
+    }
+  },
+  "uuid" : "88f1b0ab-b979-391c-b61b-8b79d46ef390"
+}

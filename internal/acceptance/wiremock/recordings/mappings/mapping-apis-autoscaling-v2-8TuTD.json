@@ -1,0 +1,20 @@
+{
+  "id" : "70b05eb3-a281-3bb3-bad5-80ccb4c86c48",
+  "request" : {
+    "url" : "/apis/autoscaling/v2?timeout=32s",
+    "method" : "GET"
+  },
+  "response" : {
+    "status" : 200,
+    "bodyFileName" : "body-apis-autoscaling-v2-8TuTD.json",
+    "headers" : {
+      "Audit-Id" : "d26ce2fe-da8d-4a76-a973-0a0e1ff8334f",
+      "Cache-Control" : "no-cache, private",
+      "Content-Type" : "application/json",
+      "X-Kubernetes-Pf-Flowschema-Uid" : "c743b7b5-6c97-4db7-8bf0-7db15241f8f8",
+      "X-Kubernetes-Pf-Prioritylevel-Uid" : "15cdd856-ada7-4f29-b7cd-8d8308518359",
+      "Date" : "Mon, 13 Jun 2022 10:06:13 GMT"
+    }
+  },
+  "uuid" : "70b05eb3-a281-3bb3-bad5-80ccb4c86c48"
+}
