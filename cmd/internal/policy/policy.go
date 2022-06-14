@@ -35,6 +35,8 @@ type policyEvaluator struct {
 	out        output.Outputter
 }
 
+var kubernetesCreator = NewKubernetes
+
 // NewPolicyEvaluator constructs a policyEvaluator that evaluates according to the pointed at policyConfiguration
 func NewPolicyEvaluator(policyConfiguration string) (*policyEvaluator, error) {
 	if policyConfiguration == "" {
@@ -52,7 +54,7 @@ func NewPolicyEvaluator(policyConfiguration string) (*policyEvaluator, error) {
 		}
 	}
 
-	k, err := NewKubernetes()
+	k, err := kubernetesCreator()
 	if err != nil {
 		return nil, err
 	}
