@@ -35,44 +35,45 @@ var githubCmd = &cobra.Command{
 		flagCommit, _ := cmd.Flags().GetString("commit")
 		flagJira, _ := cmd.Flags().GetBool("jira")
 		flagJiraMatch, _ := cmd.Flags().GetString("jiraMatch")
+		flagToken, _ := cmd.Flags().GetString("token")
+		flagRepo, _ := cmd.Flags().GetString("repository")
 
-		if flagCommit != "" {
-			commit, err := getCommit()
+		commit, err := getCommit(flagToken, flagRepo, flagCommit)
+		if err != nil {
+			fmt.Println(err.Error())
+			os.Exit(1)
+		}
+		if flagJira {
+			jiraId, err := commit.MatchJira(flagJiraMatch)
 			if err != nil {
 				fmt.Println(err.Error())
-				os.Exit(-1)
+				os.Exit(1)
 			}
-			if flagJira {
-				jiraId, err := commit.MatchJira(flagJiraMatch)
-				if err != nil {
-					fmt.Println(err.Error())
-					os.Exit(-1)
-				}
-				jiraJson, _ := json.Marshal(jiraId)
-				fmt.Printf("%s\n", jiraJson)
-			} else {
-				commitJson, _ := json.Marshal(commit)
-				fmt.Printf("%s\n", commitJson)
-			}
+			jiraJson, _ := json.Marshal(jiraId)
+			fmt.Printf("%s\n", jiraJson)
+		} else {
+			commitJson, _ := json.Marshal(commit)
+			fmt.Printf("%s\n", commitJson)
 		}
 	},
 }
 
-var commit, token, repository, jiraMatch string
-var jira bool
-
 func init() {
 	rootCmd.AddCommand(githubCmd)
-	githubCmd.Flags().StringVar(&commit, "commit", "", "Return the commit information")
-	githubCmd.Flags().BoolVar(&jira, "jira", false, "Parse Jira id from the commit message")
-	githubCmd.Flags().StringVar(&jiraMatch, "jiraMatch", "(?i)RedHat JIRA Issue: ([a-zA-Z]+-\\d+)", "Regex to match Jira id with")
-	githubCmd.Flags().StringVar(&token, "token", "", "The github api token to use")
-	githubCmd.Flags().StringVar(&repository, "repository", "", "The github repository. Format: organization/repository")
+	githubCmd.Flags().String("commit", "", "Return the commit information")
+	githubCmd.Flags().Bool("jira", false, "Parse Jira id from the commit message")
+	githubCmd.Flags().String("jiraMatch", "(?i)RedHat JIRA Issue: ([a-zA-Z]+-\\d+)", "Regex to match Jira id with")
+	githubCmd.Flags().String("token", "", "The github api token to use")
+	githubCmd.Flags().String("repository", "", "The github repository. Format: organization/repository")
+
+	// without commit or repository, we can't run the command so make them required
+	githubCmd.MarkFlagRequired("commit")
+	githubCmd.MarkFlagRequired("repository")
 }
 
 // getCommit connects to github and fetches a commit.
 // It returns a commit
-func getCommit() (git.Commit, error) {
+func getCommit(token, repository, commit string) (git.Commit, error) {
 	ctx := context.Background()
 	auth := git.GithubAuth{
 		Token: token,
