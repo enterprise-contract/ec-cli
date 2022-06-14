@@ -27,5 +27,8 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: ${{ runner.os }}-go-
 
-      - name: Build
-        run: make build-linux-amd64
+      - name: Test
+        run: make test
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v3

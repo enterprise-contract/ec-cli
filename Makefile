@@ -37,7 +37,7 @@ build: build-linux-amd64 build-darwin-amd64 build-darwin-arm64 build-windows-amd
 
 .PHONY: test
 test: ## Run unit tests
-	@go test -cover -short -timeout 500ms ./...
+	@go test -race -covermode=atomic -coverprofile=coverage.txt -short -timeout 500ms ./...
 
 .PHONY: clean
 clean: ## Delete build output
