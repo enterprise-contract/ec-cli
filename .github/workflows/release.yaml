@@ -6,8 +6,9 @@ on:
       - main
 
 jobs:
-  Build:
+  build:
 
+    name: Release
     runs-on: ubuntu-latest
 
     steps:
@@ -27,8 +28,8 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: ${{ runner.os }}-go-
 
-      - name: Build
-        run: make build
+      - name: Build distribution
+        run: make dist
 
       - name: Delete snapshot release and tag
         run: |
