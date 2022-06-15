@@ -103,6 +103,10 @@ func Test_NewPolicyEvaluator(t *testing.T) {
 }
 
 func policyFetchStub(dst string, src string, opts ...getter.ClientOption) error {
+	err := os.MkdirAll(dst, 0755)
+	if err != nil {
+		return err
+	}
 	f, err := os.Create(path.Join(dst, "main.rego"))
 	if err != nil {
 		return err
