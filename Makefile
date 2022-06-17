@@ -39,6 +39,10 @@ build: build-linux-amd64 build-darwin-amd64 build-darwin-arm64 build-windows-amd
 test: ## Run unit tests
 	@go test -race -covermode=atomic -coverprofile=coverage.txt -short -timeout 500ms ./...
 
+.PHONY: lint
+lint: ## Run linter
+	@go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.46.2 run --sort-results
+
 .PHONY: clean
 clean: ## Delete build output
 	@rm dist/*
