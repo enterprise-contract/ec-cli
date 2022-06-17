@@ -56,7 +56,7 @@ func startStubGitServer(ctx context.Context) (context.Context, error) {
 	}
 
 	req := testenv.TestContainersRequest(ctx, testcontainers.ContainerRequest{
-		Image:        "ynohat/git-http-backend",
+		Image:        "docker.io/ynohat/git-http-backend",
 		ExposedPorts: []string{"80/tcp"},
 		WaitingFor:   wait.ForListeningPort(nat.Port("80/tcp")),
 		Binds: []string{

@@ -40,9 +40,9 @@ import (
 type key int
 
 const (
-	wireMockKey    key                          = iota // Key under which the WireMock client is held in the Context
-	wireMockURLKey                                     // URL of the WireMock instance, usually http://localhost:port where the port is NAT-ed by exposing the port 8080 of the container
-	wireMockImage  = "wiremock/wiremock:2.33.2"        // container image used to run WireMock
+	wireMockKey    key                                    = iota // Key under which the WireMock client is held in the Context
+	wireMockURLKey                                               // URL of the WireMock instance, usually http://localhost:port where the port is NAT-ed by exposing the port 8080 of the container
+	wireMockImage  = "docker.io/wiremock/wiremock:2.33.2"        // container image used to run WireMock
 )
 
 // to make it simpler on imports in the clients of this package,

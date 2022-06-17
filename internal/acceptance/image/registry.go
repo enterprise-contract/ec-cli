@@ -31,7 +31,7 @@ import (
 )
 
 // the image we're using to launch the stub image registyr
-const registryImage = "registry:2.8.1"
+const registryImage = "docker.io/registry:2.8.1"
 
 type key int
 
