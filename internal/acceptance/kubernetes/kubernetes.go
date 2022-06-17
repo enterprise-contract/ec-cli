@@ -39,9 +39,9 @@ func stubApiserverRunning(ctx context.Context) (context.Context, error) {
 // the specification part can be templated using ${...} notation and supports `GITHOST`
 // variable substitution
 // TODO: namespace support
-func stubPolicy(ctx context.Context, name string, specification *godog.DocString) {
+func stubPolicy(ctx context.Context, name string, specification *godog.DocString) error {
 	ns := "acceptance"
-	wiremock.StubFor(ctx, wiremock.Get(wiremock.URLPathEqualTo(fmt.Sprintf("/apis/appstudio.redhat.com/v1alpha1/namespaces/%s/enterprisecontractpolicies/%s", ns, name))).
+	return wiremock.StubFor(ctx, wiremock.Get(wiremock.URLPathEqualTo(fmt.Sprintf("/apis/appstudio.redhat.com/v1alpha1/namespaces/%s/enterprisecontractpolicies/%s", ns, name))).
 		WillReturn(fmt.Sprintf(`{
 				"apiVersion": "appstudio.redhat.com/v1alpha1",
 				"kind": "EnterpriseContractPolicy",

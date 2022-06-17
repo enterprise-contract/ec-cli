@@ -20,6 +20,7 @@ package wiremock
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"mime"
@@ -211,23 +212,24 @@ func StartWiremock(ctx context.Context) (context.Context, error) {
 }
 
 // wiremockFrom returns the client used to interact with the WireMock admin API
-func wiremockFrom(ctx context.Context) *client {
+func wiremockFrom(ctx context.Context) (*client, error) {
 	w, ok := ctx.Value(wireMockKey).(*client)
 	if !ok {
-		panic("expecting WireMock client in context, found none or of wrong type")
+		return nil, errors.New("expecting WireMock client in context, found none or of wrong type")
 	}
 
-	return w
+	return w, nil
 }
 
 // StubFor delegates to the wiremock.StubFor of the WireMock instance assigned
 // to the provided Context
-func StubFor(ctx context.Context, stubRule *wiremock.StubRule) {
-	w := wiremockFrom(ctx)
-
-	if err := w.StubFor(stubRule); err != nil {
-		panic(err)
+func StubFor(ctx context.Context, stubRule *wiremock.StubRule) error {
+	w, err := wiremockFrom(ctx)
+	if err != nil {
+		return err
 	}
+
+	return w.StubFor(stubRule)
 }
 
 // Endpoint returns the URL of the WireMock instance
@@ -240,7 +242,11 @@ func Endpoint(ctx context.Context) string {
 // TODO: reset stub state after the scenario (given not persisted flag is set)
 func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.After(func(ctx context.Context, finished *godog.Scenario, scenarioErr error) (context.Context, error) {
-		w := wiremockFrom(ctx)
+		w, err := wiremockFrom(ctx)
+		if err != nil {
+			// wiremock wasn't launched, we don't need to proceed
+			return ctx, nil
+		}
 
 		unmatched, err := w.UnmatchedRequests()
 		if err != nil {

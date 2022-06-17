@@ -117,13 +117,11 @@ func rekorEntryForAttestation(ctx context.Context, imageName string) error {
 	}
 
 	// return this entry for any lookup in Rekor
-	wiremock.StubFor(ctx, wiremock.Post(wiremock.URLPathEqualTo("/api/v1/log/entries/retrieve")).
+	return wiremock.StubFor(ctx, wiremock.Post(wiremock.URLPathEqualTo("/api/v1/log/entries/retrieve")).
 		WillReturn(string(body),
 			map[string]string{"Content-Type": "application/json"},
 			200,
 		))
-
-	return nil
 }
 
 // StubRekor returns the `http://host:port` of the stubbed Rekord
