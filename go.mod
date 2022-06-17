@@ -17,6 +17,7 @@ require (
 	github.com/hashicorp/go-getter v1.6.1
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/in-toto/in-toto-golang v0.3.4-0.20211211042327-af1f9fb822bf
+	github.com/mendersoftware/gobinarycoverage v0.0.0-20220328122436-2231dfd754e3
 	github.com/open-policy-agent/conftest v0.32.0
 	github.com/pkg/errors v0.9.1
 	github.com/redhat-appstudio/managed-gitops/appstudio-shared v0.0.0-20220615221006-a71c1aa4b97f
