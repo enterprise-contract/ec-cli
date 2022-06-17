@@ -32,6 +32,12 @@ supported:
     scenarios tagged with `@bugs`, or `@bugs,~@wip` to run all scenarios that
     are tagged with `@bugs` but not with `@wip`
 
+Depending on your setup Testcontainer's ryuk container migh need to be run as
+privileged container. For that, $HOME/.testcontainers.properties needs to be
+created with:
+
+    ryuk.container.privileged=true
+
 ## Creating acceptance tests
 
 You can use the existing step implementations and add scenarios to existing or
