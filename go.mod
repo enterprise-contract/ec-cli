@@ -8,6 +8,7 @@ require (
 	github.com/hashicorp/go-getter v1.6.1
 	github.com/in-toto/in-toto-golang v0.3.4-0.20211211042327-af1f9fb822bf
 	github.com/open-policy-agent/conftest v0.32.0
+	github.com/redhat-appstudio/managed-gitops/appstudio-shared v0.0.0-20220615221006-a71c1aa4b97f
 	github.com/sigstore/cosign v1.8.0
 	github.com/spf13/cobra v1.4.0
 	k8s.io/apimachinery v0.24.1
@@ -264,7 +265,7 @@ require (
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+	gopkg.in/yaml.v3 v3.0.0 // indirect
 	gotest.tools/v3 v3.1.0 // indirect
 	k8s.io/api v0.24.0 // indirect
 	k8s.io/apiextensions-apiserver v0.24.0 // indirect
