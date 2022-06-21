@@ -1,0 +1,20 @@
+{
+  "id" : "75ce1b41-30b9-31a3-b3c3-aea75db6c640",
+  "request" : {
+    "url" : "/apis/ingress.operator.openshift.io/v1?timeout=32s",
+    "method" : "GET"
+  },
+  "response" : {
+    "status" : 200,
+    "bodyFileName" : "body-apis-ingress.operator.openshift.io-v1-JyYp8.json",
+    "headers" : {
+      "Audit-Id" : "26f6cf5d-c41e-4186-9b6f-bd7c9e4924fa",
+      "Cache-Control" : "no-cache, private",
+      "Content-Type" : "application/json",
+      "X-Kubernetes-Pf-Flowschema-Uid" : "c743b7b5-6c97-4db7-8bf0-7db15241f8f8",
+      "X-Kubernetes-Pf-Prioritylevel-Uid" : "15cdd856-ada7-4f29-b7cd-8d8308518359",
+      "Date" : "Mon, 13 Jun 2022 10:06:15 GMT"
+    }
+  },
+  "uuid" : "75ce1b41-30b9-31a3-b3c3-aea75db6c640"
+}

@@ -1,0 +1,20 @@
+{
+  "id" : "58059eef-4c1e-396c-ad0c-c330d5bf0d75",
+  "request" : {
+    "url" : "/apis/quota.openshift.io/v1?timeout=32s",
+    "method" : "GET"
+  },
+  "response" : {
+    "status" : 200,
+    "bodyFileName" : "body-apis-quota.openshift.io-v1-Qcbit.json",
+    "headers" : {
+      "Audit-Id" : [ "412d34a9-5ddf-40de-a8fd-16ce711ec204", "412d34a9-5ddf-40de-a8fd-16ce711ec204" ],
+      "Cache-Control" : [ "no-cache, private", "no-store" ],
+      "Content-Type" : "application/json",
+      "Date" : "Mon, 13 Jun 2022 10:06:13 GMT",
+      "X-Kubernetes-Pf-Flowschema-Uid" : "c743b7b5-6c97-4db7-8bf0-7db15241f8f8",
+      "X-Kubernetes-Pf-Prioritylevel-Uid" : "15cdd856-ada7-4f29-b7cd-8d8308518359"
+    }
+  },
+  "uuid" : "58059eef-4c1e-396c-ad0c-c330d5bf0d75"
+}

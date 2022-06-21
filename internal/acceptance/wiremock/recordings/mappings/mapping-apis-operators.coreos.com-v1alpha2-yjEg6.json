@@ -1,0 +1,20 @@
+{
+  "id" : "03856bbc-6040-39fa-8cf3-9efafcdcd4ea",
+  "request" : {
+    "url" : "/apis/operators.coreos.com/v1alpha2?timeout=32s",
+    "method" : "GET"
+  },
+  "response" : {
+    "status" : 200,
+    "bodyFileName" : "body-apis-operators.coreos.com-v1alpha2-yjEg6.json",
+    "headers" : {
+      "Audit-Id" : "3098bd7f-4fb0-4717-93d6-bd22b472cd79",
+      "Cache-Control" : "no-cache, private",
+      "Content-Type" : "application/json",
+      "X-Kubernetes-Pf-Flowschema-Uid" : "c743b7b5-6c97-4db7-8bf0-7db15241f8f8",
+      "X-Kubernetes-Pf-Prioritylevel-Uid" : "15cdd856-ada7-4f29-b7cd-8d8308518359",
+      "Date" : "Mon, 13 Jun 2022 10:06:14 GMT"
+    }
+  },
+  "uuid" : "03856bbc-6040-39fa-8cf3-9efafcdcd4ea"
+}

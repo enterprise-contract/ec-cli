@@ -1,0 +1,20 @@
+{
+  "id" : "e7460817-a777-3f8d-a30c-6be40df9b4fe",
+  "request" : {
+    "url" : "/apis/apps/v1?timeout=32s",
+    "method" : "GET"
+  },
+  "response" : {
+    "status" : 200,
+    "bodyFileName" : "body-apis-apps-v1-RKRJM.json",
+    "headers" : {
+      "Audit-Id" : "1e6a90d6-1c39-4250-846b-fb42bc2d42ce",
+      "Cache-Control" : "no-cache, private",
+      "Content-Type" : "application/json",
+      "X-Kubernetes-Pf-Flowschema-Uid" : "c743b7b5-6c97-4db7-8bf0-7db15241f8f8",
+      "X-Kubernetes-Pf-Prioritylevel-Uid" : "15cdd856-ada7-4f29-b7cd-8d8308518359",
+      "Date" : "Mon, 13 Jun 2022 10:06:13 GMT"
+    }
+  },
+  "uuid" : "e7460817-a777-3f8d-a30c-6be40df9b4fe"
+}

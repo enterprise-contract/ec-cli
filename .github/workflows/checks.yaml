@@ -5,7 +5,7 @@ on:
     branches:
       - main
   push:
-    branches:    
+    branches:
       - main
 
 jobs:
@@ -35,3 +35,9 @@ jobs:
 
       - name: Upload coverage report
         uses: codecov/codecov-action@v3
+
+      - name: Build
+        run: make build-linux-amd64
+
+      - name: Acceptance test
+        run: make acceptance

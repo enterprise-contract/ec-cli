@@ -1,0 +1,20 @@
+{
+  "id" : "20bbb6b0-c82a-35a9-a659-230f7b652ca4",
+  "request" : {
+    "url" : "/apis/rbac.authorization.k8s.io/v1?timeout=32s",
+    "method" : "GET"
+  },
+  "response" : {
+    "status" : 200,
+    "bodyFileName" : "body-apis-rbac.authorization.k8s.io-v1-Frs4p.json",
+    "headers" : {
+      "Audit-Id" : "33386245-3edf-448b-86f7-e5cd99c68e09",
+      "Cache-Control" : "no-cache, private",
+      "Content-Type" : "application/json",
+      "X-Kubernetes-Pf-Flowschema-Uid" : "c743b7b5-6c97-4db7-8bf0-7db15241f8f8",
+      "X-Kubernetes-Pf-Prioritylevel-Uid" : "15cdd856-ada7-4f29-b7cd-8d8308518359",
+      "Date" : "Mon, 13 Jun 2022 10:06:14 GMT"
+    }
+  },
+  "uuid" : "20bbb6b0-c82a-35a9-a659-230f7b652ca4"
+}

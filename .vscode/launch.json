@@ -8,13 +8,7 @@
             "mode": "auto",
             "program": "${workspaceFolder}/main.go",
             "args": [
-                "eval",
-                "--image",
-                "quay.io/lucarval/single-nodejs-app:demo",
-                "--public-key",
-                "cosign.pub",
-                "--policy",
-                "demo/enterprisecontractpolicy-sample"
+                "eval", "--image", "localhost:49177/acceptance/ec-happy-day", "--policy", "acceptance/ec-policy", "--public-key", "/tmp/1965121747.pub", "--rekor-url", "http://localhost:49176", "--strict"
             ]
         }
     ]

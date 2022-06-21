@@ -1,0 +1,20 @@
+{
+  "id" : "d83f7315-9bfd-344d-aeb9-a0439ecce9ba",
+  "request" : {
+    "url" : "/apis/imageregistry.operator.openshift.io/v1?timeout=32s",
+    "method" : "GET"
+  },
+  "response" : {
+    "status" : 200,
+    "bodyFileName" : "body-apis-imageregistry.operator.openshift.io-v1-v7uFt.json",
+    "headers" : {
+      "Audit-Id" : "34608bb9-b899-4451-991e-873f465f76b9",
+      "Cache-Control" : "no-cache, private",
+      "Content-Type" : "application/json",
+      "X-Kubernetes-Pf-Flowschema-Uid" : "c743b7b5-6c97-4db7-8bf0-7db15241f8f8",
+      "X-Kubernetes-Pf-Prioritylevel-Uid" : "15cdd856-ada7-4f29-b7cd-8d8308518359",
+      "Date" : "Mon, 13 Jun 2022 10:06:14 GMT"
+    }
+  },
+  "uuid" : "d83f7315-9bfd-344d-aeb9-a0439ecce9ba"
+}

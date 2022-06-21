@@ -1,0 +1,20 @@
+{
+  "id" : "0b8aee93-633e-35e9-819d-5549c91af27e",
+  "request" : {
+    "url" : "/apis/metal3.io/v1alpha1?timeout=32s",
+    "method" : "GET"
+  },
+  "response" : {
+    "status" : 200,
+    "bodyFileName" : "body-apis-metal3.io-v1alpha1-YwK4n.json",
+    "headers" : {
+      "Audit-Id" : "3bd36ecb-848e-4d49-9902-32ab51c6744c",
+      "Cache-Control" : "no-cache, private",
+      "Content-Type" : "application/json",
+      "X-Kubernetes-Pf-Flowschema-Uid" : "c743b7b5-6c97-4db7-8bf0-7db15241f8f8",
+      "X-Kubernetes-Pf-Prioritylevel-Uid" : "15cdd856-ada7-4f29-b7cd-8d8308518359",
+      "Date" : "Mon, 13 Jun 2022 10:06:14 GMT"
+    }
+  },
+  "uuid" : "0b8aee93-633e-35e9-819d-5549c91af27e"
+}

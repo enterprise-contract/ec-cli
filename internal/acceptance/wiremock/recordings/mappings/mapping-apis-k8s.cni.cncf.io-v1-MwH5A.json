@@ -1,0 +1,20 @@
+{
+  "id" : "f80ffc71-985b-3d74-a3d2-9a05a071ea04",
+  "request" : {
+    "url" : "/apis/k8s.cni.cncf.io/v1?timeout=32s",
+    "method" : "GET"
+  },
+  "response" : {
+    "status" : 200,
+    "bodyFileName" : "body-apis-k8s.cni.cncf.io-v1-MwH5A.json",
+    "headers" : {
+      "Audit-Id" : "792fed40-b7fa-4186-8fd5-1e1babd75aa6",
+      "Cache-Control" : "no-cache, private",
+      "Content-Type" : "application/json",
+      "X-Kubernetes-Pf-Flowschema-Uid" : "c743b7b5-6c97-4db7-8bf0-7db15241f8f8",
+      "X-Kubernetes-Pf-Prioritylevel-Uid" : "15cdd856-ada7-4f29-b7cd-8d8308518359",
+      "Date" : "Mon, 13 Jun 2022 10:06:15 GMT"
+    }
+  },
+  "uuid" : "f80ffc71-985b-3d74-a3d2-9a05a071ea04"
+}

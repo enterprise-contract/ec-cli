@@ -1,0 +1,20 @@
+{
+  "id" : "b109043b-4023-31ae-b430-4215143bfa60",
+  "request" : {
+    "url" : "/apis/storage.k8s.io/v1beta1?timeout=32s",
+    "method" : "GET"
+  },
+  "response" : {
+    "status" : 200,
+    "bodyFileName" : "body-apis-storage.k8s.io-v1beta1-gyhQ1.json",
+    "headers" : {
+      "Audit-Id" : "52d85c1f-d4d9-40e4-8920-1225ce704442",
+      "Cache-Control" : "no-cache, private",
+      "Content-Type" : "application/json",
+      "X-Kubernetes-Pf-Flowschema-Uid" : "c743b7b5-6c97-4db7-8bf0-7db15241f8f8",
+      "X-Kubernetes-Pf-Prioritylevel-Uid" : "15cdd856-ada7-4f29-b7cd-8d8308518359",
+      "Date" : "Mon, 13 Jun 2022 10:06:13 GMT"
+    }
+  },
+  "uuid" : "b109043b-4023-31ae-b430-4215143bfa60"
+}
