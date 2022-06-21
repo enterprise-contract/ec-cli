@@ -83,7 +83,7 @@ func rekorEntryForAttestation(ctx context.Context, imageName string) error {
 	publicKey := strfmt.Base64(keyPair.PublicBytes)
 
 	// the only way to set fields of the intoto Entry
-	logBody.Unmarshal(&models.Intoto{
+	err = logBody.Unmarshal(&models.Intoto{
 		Spec: models.IntotoV001Schema{
 			Content: &models.IntotoV001SchemaContent{
 				Hash: &models.IntotoV001SchemaContentHash{
@@ -94,6 +94,10 @@ func rekorEntryForAttestation(ctx context.Context, imageName string) error {
 			PublicKey: &publicKey,
 		},
 	})
+	if err != nil {
+		return err
+	}
+
 	logBodyBytes, err := logBody.Canonicalize(ctx)
 	if err != nil {
 		return err

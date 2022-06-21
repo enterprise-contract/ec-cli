@@ -74,12 +74,10 @@ func ecCommandIsRunWith(ctx context.Context, parameters string) (context.Context
 	if err != nil {
 		return ctx, err
 	}
-	defer func() error {
+	defer func() {
 		if !testenv.Persisted(ctx) {
-			return os.Remove(kubeconfig.Name())
+			os.Remove(kubeconfig.Name())
 		}
-
-		return nil
 	}()
 	_, err = kubeconfig.WriteString(kubernetes.KubeConfig(ctx))
 	if err != nil {
@@ -107,12 +105,10 @@ func ecCommandIsRunWith(ctx context.Context, parameters string) (context.Context
 		if err != nil {
 			return ctx, err
 		}
-		defer func() error {
+		defer func() {
 			if !testenv.Persisted(ctx) {
-				return os.Remove(key.Name())
+				os.Remove(key.Name())
 			}
-
-			return nil
 		}()
 
 		_, err = key.WriteString(publicKey)
