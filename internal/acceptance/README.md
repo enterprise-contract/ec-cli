@@ -38,6 +38,11 @@ created with:
 
     ryuk.container.privileged=true
 
+Also you will need to be able to run Docker without elevating the privileges,
+that is as a non-root user. See the
+[documentation](https://docs.docker.com/engine/install/linux-postinstall/) on
+Docker website how to accomplish that.
+
 ## Creating acceptance tests
 
 You can use the existing step implementations and add scenarios to existing or
