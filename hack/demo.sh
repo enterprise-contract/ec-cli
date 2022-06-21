@@ -34,7 +34,7 @@ spec:
       revision: pr-att-test-results
 EOF
 
-for IMG in 'quay.io/zregvart_redhat/single-nodejs-app:2e92018' 'quay.io/zregvart_redhat/spring-petclinic:dc80a7f' 'quay.io/zregvart_redhat/single-container-app:37daed8'; do
+for IMG in 'quay.io/hacbs-contract-demo/single-nodejs-app:877418e' 'quay.io/hacbs-contract-demo/spring-petclinic:dc80a7f' 'quay.io/hacbs-contract-demo/single-container-app:62c06bf'; do
   printf "\n🩺 Evaluating policy for %s\n\n" "${IMG}"
   echo "💲 ${EC}" eval --image "${IMG}" --public-key "${HACK_DIR}/cosign.pub" --policy demo/ec-demo
   "${EC}" eval --image "${IMG}" --public-key "${HACK_DIR}/cosign.pub" --policy demo/ec-demo
