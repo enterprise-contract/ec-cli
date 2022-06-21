@@ -44,7 +44,10 @@ func NewKubernetes() (*kubernetes, error) {
 
 func createControllerRuntimeClient() (client.Client, error) {
 	scheme := runtime.NewScheme()
-	ecp.AddToScheme(scheme)
+	err := ecp.AddToScheme(scheme)
+	if err != nil {
+		return nil, err
+	}
 
 	kubeconfig, err := controllerruntime.GetConfig()
 	if err != nil {

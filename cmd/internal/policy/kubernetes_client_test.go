@@ -33,7 +33,10 @@ var fakeClient client.Client
 
 func init() {
 	scheme := runtime.NewScheme()
-	ecp.AddToScheme(scheme)
+	err := ecp.AddToScheme(scheme)
+	if err != nil {
+		panic(err)
+	}
 
 	fakeClient = fake.NewClientBuilder().WithScheme(scheme).WithObjects(&testECP).Build()
 }
@@ -65,4 +68,20 @@ func Test_FetchEnterpriseContractPolicyNotFound(t *testing.T) {
 	expected := errors.New("can't fetch EnterpriseContractPolicy `missing` in namespace `test")
 	assert.ErrorAs(t, err, &expected)
 	assert.Nil(t, got)
+}
+
+func Test_FailureToAddScheme(t *testing.T) {
+	expected := errors.New("expected")
+
+	def := ecp.AddToScheme
+	ecp.AddToScheme = func(s *runtime.Scheme) error {
+		return expected
+	}
+	defer func() {
+		ecp.AddToScheme = def
+	}()
+
+	_, err := createControllerRuntimeClient()
+
+	assert.EqualError(t, err, "expected")
 }

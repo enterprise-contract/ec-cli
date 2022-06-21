@@ -142,11 +142,19 @@ func evalCmd() *cobra.Command {
 
 	evalCmd.Flags().StringVar(&arguments.imageRef, "image", "", "Image reference")
 	if arguments.input != "" || arguments.filepath != "" {
-		evalCmd.MarkFlagRequired("image")
+		err := evalCmd.MarkFlagRequired("image")
+		if err != nil {
+			// error can occur if the flag doesn't exist, let's fail and fix this
+			panic(err)
+		}
 	}
 
 	evalCmd.Flags().StringVar(&arguments.publicKey, "public-key", "", "Public key")
-	evalCmd.MarkFlagRequired("public-key")
+	err := evalCmd.MarkFlagRequired("public-key")
+	if err != nil {
+		// error can occur if the flag doesn't exist, let's fail and fix this
+		panic(err)
+	}
 
 	evalCmd.Flags().StringVar(&arguments.rekorURL, "rekor-url", "", "Rekor URL")
 
