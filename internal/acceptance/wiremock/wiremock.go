@@ -33,6 +33,7 @@ import (
 	"github.com/docker/go-connections/nat"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/log"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/testenv"
+	"github.com/hashicorp/go-multierror"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 	wiremock "github.com/walkerus/go-wiremock"
@@ -137,19 +138,20 @@ wiremock.StubFor(ctx, wiremock.%s(wiremock.URLPathEqualTo("%s")).
 // i.e. those that have been received but no stubbing was defined and returns
 // them
 func (c *client) UnmatchedRequests() ([]unmatchedRequest, error) {
-	res, err := http.Get(fmt.Sprintf("%s/__admin/requests/unmatched", c.url))
+	unmatchedUrl := fmt.Sprintf("%s/__admin/requests/unmatched", c.url)
+	res, err := http.Get(unmatchedUrl)
 	if err != nil {
-		return nil, fmt.Errorf("unmatched requests: %s", err.Error())
+		return nil, fmt.Errorf("failed to fetch unmatched requests via `%s`: %s", unmatchedUrl, err.Error())
 	}
 	defer res.Body.Close()
 
 	bodyBytes, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return nil, fmt.Errorf("unmatched requests: read response error: %s", err.Error())
+		return nil, fmt.Errorf("failed to fetch unmatched requests via `%s`: failed to read the response, error: %s", unmatchedUrl, err.Error())
 	}
 
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unmatched requests: bad response status: %d, response: %s", res.StatusCode, string(bodyBytes))
+		return nil, fmt.Errorf("failed to fetch unmatched requests via `%s`: bad response status: %d, response: %s", unmatchedUrl, res.StatusCode, string(bodyBytes))
 	}
 
 	var unmatchedRequestsResponse struct {
@@ -158,7 +160,7 @@ func (c *client) UnmatchedRequests() ([]unmatchedRequest, error) {
 
 	err = json.Unmarshal(bodyBytes, &unmatchedRequestsResponse)
 	if err != nil {
-		return nil, fmt.Errorf("unmatched requests: read json error: %s", err.Error())
+		return nil, fmt.Errorf("failed to fetch unmatched requests via `%s`: unable to unmarshal JSON error: %s, given JSON: `%s`", unmatchedUrl, err.Error(), string(bodyBytes))
 	}
 
 	return unmatchedRequestsResponse.Requests, nil
@@ -245,16 +247,16 @@ func AddStepsTo(sc *godog.ScenarioContext) {
 		w, err := wiremockFrom(ctx)
 		if err != nil {
 			// wiremock wasn't launched, we don't need to proceed
-			return ctx, nil
+			return ctx, scenarioErr
 		}
 
 		unmatched, err := w.UnmatchedRequests()
 		if err != nil {
-			return ctx, err
+			return ctx, multierror.Append(scenarioErr, err)
 		}
 
 		if len(unmatched) == 0 {
-			return ctx, nil
+			return ctx, scenarioErr
 		}
 
 		logger := log.LoggerFor(ctx)
@@ -263,6 +265,6 @@ func AddStepsTo(sc *godog.ScenarioContext) {
 			logger.Logf("[%d]: %s", i, u)
 		}
 
-		return ctx, err
+		return ctx, scenarioErr
 	})
 }
