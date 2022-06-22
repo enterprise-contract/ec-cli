@@ -1,7 +1,8 @@
 MAKEFLAGS+=-j
 VERSION:=$$(git log -1 --format='%H')
 ALL_SUPPORTED_OS_ARCH:=$(shell go tool dist list -json|jq -r '.[] | select(.FirstClass == true and .GOARCH != "386") | "dist/ec_\(.GOOS)_\(.GOARCH)"')
-COPY:="Red Hat, Inc."
+SHELL=bash
+ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 
 ##@ Information targets
 
@@ -45,11 +46,24 @@ build: dist/ec_$(shell go env GOOS)_$(shell go env GOARCH) ## Build the ec binar
 
 .PHONY: test
 test: ## Run unit tests
-	@go test -race -covermode=atomic -coverprofile=coverage.txt -short -timeout 500ms ./...
+	@go test -race -covermode=atomic -coverprofile=coverage-unit.out -short -timeout 500ms ./...
 
+.ONESHELL:
 .PHONY: acceptance
 acceptance: ## Run acceptance tests
+	@$(eval ACCEPTANCE_WORKDIR=$(shell mktemp -d))
+	@function cleanup() {
+	  rm -rf "$(ACCEPTANCE_WORKDIR)"
+	}
+	@trap cleanup EXIT
+	@cp -R . "$(ACCEPTANCE_WORKDIR)"
+	@cd "$(ACCEPTANCE_WORKDIR)"
+	@go run github.com/mendersoftware/gobinarycoverage .
+	@git apply patches/acceptance_cover.diff
+	@$(MAKE) build
+	@export ROOT_DIR=$(ROOT_DIR)
 	@go test ./internal/acceptance
+	@mv $(ROOT_DIR)/coverage-acceptance*.out $(ROOT_DIR)/coverage-acceptance.out
 
 .PHONY: lint
 lint: ## Run linter

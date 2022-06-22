@@ -135,6 +135,8 @@ func ecCommandIsRunWith(ctx context.Context, parameters string) (context.Context
 	environment := []string{
 		"PATH=" + os.Getenv("PATH"),
 		"KUBECONFIG=" + kubeconfig.Name(),
+		"COVERAGE_FILEPATH=" + os.Getenv("ROOT_DIR"), // where to put the coverage file, $ROOT_DIR is provided by the Makefile, if empty it'll be $TMPDIR
+		"COVERAGE_FILENAME=-acceptance",              // suffix for the coverage file
 	}
 
 	logger := log.LoggerFor(ctx)
