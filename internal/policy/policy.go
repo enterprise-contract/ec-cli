@@ -28,6 +28,8 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
+const releaseNamespace = "release.main"
+
 type policyEvaluator struct {
 	policyName types.NamespacedName
 	k8s        kubernetes
@@ -103,7 +105,7 @@ func (p *policyEvaluator) Evaluate(ctx context.Context, attestations []oci.Signa
 		return nil, err
 	}
 
-	results, err := engine.Check(ctx, configurations, "main")
+	results, err := engine.Check(ctx, configurations, releaseNamespace)
 	if err != nil {
 		return nil, err
 	}

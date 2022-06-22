@@ -46,11 +46,11 @@ spec:
     - test:conftest-clair
   sources:
   - git:
-      repository: github.com/simonbaird/ec-policies//policies
-      revision: pr-att-test-results
+      repository: github.com/simonbaird/ec-policies//policy
+      revision: main
 EOF
 
-for IMG in 'quay.io/hacbs-contract-demo/single-nodejs-app:877418e' 'quay.io/hacbs-contract-demo/spring-petclinic:dc80a7f' 'quay.io/hacbs-contract-demo/single-container-app:62c06bf'; do
+for IMG in 'quay.io/hacbs-contract-demo/single-nodejs-app:120e9a3' 'quay.io/hacbs-contract-demo/spring-petclinic:dc80a7f' 'quay.io/hacbs-contract-demo/single-container-app:62c06bf'; do
   printf "\n🩺 Evaluating policy for %s\n\n" "${IMG}"
   echo "💲 ${EC}" eval --image "${IMG}" --public-key "${HACK_DIR}/cosign.pub" --policy demo/ec-demo
   "${EC}" eval --image "${IMG}" --public-key "${HACK_DIR}/cosign.pub" --policy demo/ec-demo
