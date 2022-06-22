@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"sync"
 
 	"github.com/hacbs-contract/ec-cli/internal/applicationsnapshot"
 	"github.com/hacbs-contract/ec-cli/internal/image"
@@ -83,9 +84,81 @@ func evalCmd() *cobra.Command {
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			//TODO: refactor once we handle application snapshots
-			if arguments.input != "" || arguments.filepath != "" {
-				report, err := applicationsnapshot.Report(snapshotSpec)
+			validateImage := func(imageRef string) (*policy.Output, error) {
+				out := &policy.Output{}
+
+				i, err := image.NewImageValidator(cmd.Context(), imageRef, arguments.publicKey, arguments.rekorURL)
+				if err != nil {
+					return nil, err
+				}
+
+				if err := i.ValidateImageSignature(cmd.Context()); err != nil {
+					out.SetImageSignatureCheck(false, err.Error())
+					return nil, err
+				}
+				out.SetImageSignatureCheck(true, "success")
+
+				if err := i.ValidateAttestationSignature(cmd.Context()); err != nil {
+					out.SetAttestationSignatureCheck(false, err.Error())
+					return nil, err
+				}
+				out.SetAttestationSignatureCheck(true, "success")
+
+				p, err := policy.NewPolicyEvaluator(arguments.policyConfiguration)
+				if err != nil {
+					return nil, err
+				}
+
+				results, err := p.Evaluate(cmd.Context(), i.Attestations())
+				if err != nil {
+					return nil, err
+				}
+				out.SetPolicyCheck(results)
+
+				return out, nil
+			}
+
+			if snapshotSpec != nil {
+
+				var wg sync.WaitGroup
+				component := make(chan applicationsnapshot.Component, len(snapshotSpec.Components))
+				cherr := make(chan error, len(snapshotSpec.Components))
+				var errs []error
+				var components []applicationsnapshot.Component
+
+				for _, c := range snapshotSpec.Components {
+					wg.Add(1)
+
+					go func(comp appstudioshared.ApplicationSnapshotComponent) {
+						defer wg.Done()
+
+						out, err := validateImage(comp.ContainerImage)
+						cherr <- err
+
+						// Skip on err to not panic. Error is return on routine completion.
+						if err == nil {
+							image := applicationsnapshot.Component{
+								Violations: out.PolicyCheck,
+								Success:    out.ExitCode == 0,
+							}
+							image.Name, image.ContainerImage = comp.Name, comp.ContainerImage
+							component <- image
+						}
+					}(c)
+					components = append(components, <-component)
+					errs = append(errs, <-cherr)
+				}
+
+				wg.Wait()
+
+				// TODO: open to suggestions for error handling.
+				for _, e := range errs {
+					if e != nil {
+						return e
+					}
+				}
+
+				report, err, success := applicationsnapshot.Report(components)
 				if err != nil {
 					return err
 				}
@@ -98,38 +171,19 @@ func evalCmd() *cobra.Command {
 				} else {
 					fmt.Println(report)
 				}
+
+				if arguments.strict && !success {
+					// TODO: replace this with proper message and exit code 1.
+					return errors.New("Success criteria not met.")
+				}
+
 				return nil
 			}
 
-			out := &policy.Output{}
-
-			i, err := image.NewImageValidator(cmd.Context(), arguments.imageRef, arguments.publicKey, arguments.rekorURL)
+			out, err := validateImage(arguments.imageRef)
 			if err != nil {
 				return err
 			}
-
-			if err := i.ValidateImageSignature(cmd.Context()); err != nil {
-				out.SetImageSignatureCheck(false, err.Error())
-				return err
-			}
-			out.SetImageSignatureCheck(true, "success")
-
-			if err := i.ValidateAttestationSignature(cmd.Context()); err != nil {
-				out.SetAttestationSignatureCheck(false, err.Error())
-				return err
-			}
-			out.SetAttestationSignatureCheck(true, "success")
-
-			p, err := policy.NewPolicyEvaluator(arguments.policyConfiguration)
-			if err != nil {
-				return err
-			}
-
-			results, err := p.Evaluate(cmd.Context(), i.Attestations())
-			if err != nil {
-				return err
-			}
-			out.SetPolicyCheck(results)
 
 			if out.Print(); err != nil {
 				return err

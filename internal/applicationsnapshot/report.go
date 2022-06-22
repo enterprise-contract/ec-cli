@@ -19,13 +19,14 @@ package applicationsnapshot
 import (
 	"encoding/json"
 
+	"github.com/open-policy-agent/conftest/output"
 	appstudioshared "github.com/redhat-appstudio/managed-gitops/appstudio-shared/apis/appstudio.redhat.com/v1alpha1"
 )
 
 type Component struct {
 	appstudioshared.ApplicationSnapshotComponent
-	Violations []string `json:"violations"`
-	Success    bool     `json:"success"`
+	Violations []output.CheckResult `json:"violations"`
+	Success    bool                 `json:"success"`
 }
 
 type report struct {
@@ -34,23 +35,26 @@ type report struct {
 }
 
 // Report the states of components from the snapshot
-func Report(snapshot *appstudioshared.ApplicationSnapshotSpec) (string, error) {
-	//TODO: set success based on violations
-	output := report{Success: true}
+func Report(components []Component) (string, error, bool) {
+	success := true
 
-	for _, image := range snapshot.Components {
-		item := Component{
-			Violations: []string{},
-			Success:    true,
+	// Set the report success, remains true if all components are successful
+	for _, component := range components {
+		if !component.Success {
+			success = false
+			break
 		}
-		item.ContainerImage, item.Name = image.ContainerImage, image.Name
-		output.Components = append(output.Components, item)
+	}
+
+	output := report{
+		Success:    success,
+		Components: components,
 	}
 
 	j, err := json.Marshal(output)
 	if err != nil {
-		return "", err
+		return "", err, false
 	}
 
-	return string(j), nil
+	return string(j), nil, success
 }

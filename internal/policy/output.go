@@ -34,6 +34,7 @@ type Output struct {
 	ImageSignatureCheck       VerificationStatus   `json:"imageSignatureCheck"`
 	AttestationSignatureCheck VerificationStatus   `json:"attestationSignatureCheck"`
 	PolicyCheck               []output.CheckResult `json:"policyCheck"`
+	ExitCode                  int                  `json:"-"`
 }
 
 func (o *Output) SetImageSignatureCheck(passed bool, message string) {
@@ -55,6 +56,7 @@ func (o *Output) SetPolicyCheck(results []output.CheckResult) {
 		results[r].Queries = nil
 	}
 	o.PolicyCheck = results
+	o.ExitCode = output.ExitCode(results)
 }
 
 func (o *Output) Print() error {

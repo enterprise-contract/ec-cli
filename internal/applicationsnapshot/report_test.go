@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/open-policy-agent/conftest/output"
 	appstudioshared "github.com/redhat-appstudio/managed-gitops/appstudio-shared/apis/appstudio.redhat.com/v1alpha1"
 	"github.com/stretchr/testify/assert"
 )
@@ -61,7 +62,53 @@ func Test_Report(t *testing.T) {
       ]
     }
   `
+	var components []Component
+	for _, component := range snapshot.Components {
+		c := Component{
+			Violations: []output.CheckResult{},
+			Success:    true,
+		}
+		c.Name, c.ContainerImage = component.Name, component.ContainerImage
+		components = append(components, c)
+	}
 
-	report, _ := Report(snapshot)
+	report, _, success := Report(components)
 	assert.JSONEq(t, expected, report)
+	assert.True(t, success)
+
+	expected = `
+    {
+      "success": false,
+      "components": [
+        {
+          "name": "spam",
+          "containerImage": "quay.io/caf/spam@sha256:123…",
+          "violations": [],
+          "success": true
+        },
+        {
+          "name": "bacon",
+          "containerImage": "quay.io/caf/bacon@sha256:234…",
+          "violations": [],
+          "success": true
+        },
+        {
+          "name": "eggs",
+          "containerImage": "quay.io/caf/eggs@sha256:345…",
+          "violations": [],
+          "success": true
+        },
+        {
+          "name": "",
+          "containerImage": "",
+          "violations": null,
+          "success": false
+        }
+      ]
+    }
+  `
+	components = append(components, Component{Success: false})
+	report, _, success = Report(components)
+	assert.JSONEq(t, expected, report)
+	assert.False(t, success)
 }
