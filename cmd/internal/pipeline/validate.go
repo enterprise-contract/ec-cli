@@ -2,6 +2,7 @@ package pipeline
 
 import (
 	"context"
+
 	"github.com/hacbs-contract/ec-cli/cmd/internal/policy"
 	"github.com/open-policy-agent/conftest/runner"
 )

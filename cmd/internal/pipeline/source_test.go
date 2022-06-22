@@ -62,7 +62,7 @@ func TestPolicyRepo_getPolicyDir(t *testing.T) {
 			want: "policies",
 		},
 	}
-		for _, tt := range tests {
+	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			p := &PolicyRepo{
 				PolicyDir: tt.fields.PolicyDir,

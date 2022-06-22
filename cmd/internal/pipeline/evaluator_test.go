@@ -2,12 +2,13 @@ package pipeline
 
 import (
 	"context"
+	"reflect"
+	"testing"
+
 	"github.com/go-git/go-git/v5"
 	"github.com/hacbs-contract/ec-cli/cmd/internal/utils"
 	"github.com/open-policy-agent/conftest/runner"
 	"github.com/spf13/afero"
-	"reflect"
-	"testing"
 )
 
 func checkoutRepoStub(_ string, _ bool, _ *git.CloneOptions) (*git.Repository, error) {
@@ -37,7 +38,7 @@ func TestEvaluator_addDataPath(t *testing.T) {
 			fields: fields{
 				workDir: "/tmp/ec-work-1234",
 			},
-			want: []string{"/tmp/ec-work-1234/data"},
+			want:    []string{"/tmp/ec-work-1234/data"},
 			wantErr: false,
 		},
 	}

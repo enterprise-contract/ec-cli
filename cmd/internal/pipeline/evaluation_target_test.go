@@ -1,11 +1,12 @@
 package pipeline
 
 import (
-	"github.com/hacbs-contract/ec-cli/cmd/internal/utils"
-	"github.com/spf13/afero"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/hacbs-contract/ec-cli/cmd/internal/utils"
+	"github.com/spf13/afero"
 )
 
 var pipelineDefinitionDir = "./test_data/pipeline_definitions"
@@ -15,7 +16,7 @@ func deployPipelineFile() error {
 	if err != nil {
 		return err
 	}
-    pipelineFiles := make([]string, 0, len(dirListing))
+	pipelineFiles := make([]string, 0, len(dirListing))
 
 	for i := range dirListing {
 		pipelineFiles = append(pipelineFiles, dirListing[i].Name())
