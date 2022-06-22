@@ -18,6 +18,7 @@ package pipeline
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -27,8 +28,21 @@ import (
 	"github.com/spf13/afero"
 )
 
-func checkoutRepoStub(_ string, _ bool, _ *git.CloneOptions) (*git.Repository, error) {
+func checkoutRepoMock(_ string, _ bool, _ *git.CloneOptions) (*git.Repository, error) {
 	return &git.Repository{}, nil
+}
+
+func checkoutRepoFailureMock(_ string, _ bool, _ *git.CloneOptions) (*git.Repository, error) {
+	return nil, fmt.Errorf("unable to checkout repo")
+}
+
+func createWorkDirMock(_ afero.Fs, _ string, _ string) (string, error) {
+	_ = utils.AppFS.MkdirAll("/tmp/ec-work-1234", 0755)
+	return "/tmp/ec-work-1234", nil
+}
+
+func createWorkDirFailMock(_ afero.Fs, _ string, _ string) (string, error) {
+	return "", fmt.Errorf("unable to create work dir")
 }
 
 func TestEvaluator_addDataPath(t *testing.T) {
@@ -118,7 +132,7 @@ func TestEvaluator_addPolicyPaths(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			CheckoutRepo = checkoutRepoStub
+			CheckoutRepo = checkoutRepoMock
 			e := &Evaluator{
 				Context:       tt.fields.Context,
 				Target:        tt.fields.Target,
@@ -189,6 +203,145 @@ func TestEvaluator_createWorkDir(t *testing.T) {
 			}
 			if got != tt.want {
 				t.Errorf("createWorkDir() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestNewPipelineEvaluator(t *testing.T) {
+	type args struct {
+		ctx        context.Context
+		fpath      string
+		policyRepo PolicyRepo
+		namespace  string
+	}
+	tests := []struct {
+		name         string
+		args         args
+		want         *Evaluator
+		wantErr      bool
+		errMsg       error
+		failurePoint string
+	}{
+		{
+			name: "Returns evaluator with appropriate inputs",
+			args: args{
+				ctx:   context.Background(),
+				fpath: "/tmp/pipeline.json",
+				policyRepo: PolicyRepo{
+					PolicyDir: "policy",
+					RepoURL:   "https://example.com/user/foo.git",
+					RepoRef:   "main",
+				},
+				namespace: "pipeline.main",
+			},
+			want: &Evaluator{
+				Context: context.Background(),
+				Target: &DefinitionFile{
+					fpath: "/tmp/pipeline.json",
+					name:  "",
+				},
+				PolicySources: []PolicySource{&PolicyRepo{
+					PolicyDir: "policy",
+					RepoURL:   "https://example.com/user/foo.git",
+					RepoRef:   "main",
+				}},
+				Paths: ConfigurationPaths{
+					PolicyPaths: []string{"/tmp/ec-work-1234/policy"},
+					DataPaths:   []string{"/tmp/ec-work-1234/data"},
+				},
+				TestRunner: runner.TestRunner{
+					Policy:    []string{"/tmp/ec-work-1234/policy"},
+					Data:      []string{"/tmp/ec-work-1234/data"},
+					Namespace: []string{"pipeline.main"},
+					NoFail:    true,
+					Output:    "json",
+				},
+				Namespace:    []string{"pipeline.main"},
+				OutputFormat: "json",
+				workDir:      "/tmp/ec-work-1234",
+			},
+		},
+		{
+			name: "Returns error when fpath doesn't exist",
+			args: args{
+				ctx:   context.Background(),
+				fpath: "/tmp/non-existent-pipeline.json",
+				policyRepo: PolicyRepo{
+					PolicyDir: "policy",
+					RepoURL:   "https://example.com/user/foo.git",
+					RepoRef:   "main",
+				},
+				namespace: "pipeline.main",
+			},
+			wantErr:      true,
+			failurePoint: "fpath",
+			errMsg:       fmt.Errorf("definition file `/tmp/non-existent-pipeline.json` does not exist"),
+		},
+		{
+			name: "Returns error when createWorkDir fails",
+			args: args{
+				ctx:   context.Background(),
+				fpath: "/tmp/pipeline.json",
+				policyRepo: PolicyRepo{
+					PolicyDir: "policy",
+					RepoURL:   "https://example.com/user/foo.git",
+					RepoRef:   "main",
+				},
+				namespace: "pipeline.main",
+			},
+			wantErr:      true,
+			failurePoint: "createWorkDir",
+			errMsg:       fmt.Errorf("unable to create work dir"),
+		},
+		{
+			name: "Returns error when addPolicyPaths fails",
+			args: args{
+				ctx:   context.Background(),
+				fpath: "/tmp/pipeline.json",
+				policyRepo: PolicyRepo{
+					PolicyDir: "policy",
+					RepoURL:   "https://example.com/user/foo.git",
+					RepoRef:   "main",
+				},
+				namespace: "pipeline.main",
+			},
+			wantErr:      true,
+			failurePoint: "addPolicyPaths",
+			errMsg:       fmt.Errorf("unable to checkout repo"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			utils.AppFS = afero.NewMemMapFs()
+			switch tt.failurePoint {
+			case "fpath":
+				tt.args.fpath = "/tmp/non-existent-pipeline.json"
+				createWorkDir = createWorkDirMock
+			case "createWorkDir":
+				createWorkDir = createWorkDirFailMock
+				_ = deployPipelineFile()
+
+			case "addPolicyPaths":
+				createWorkDir = createWorkDirMock
+				_ = deployPipelineFile()
+				CheckoutRepo = checkoutRepoFailureMock
+			default:
+				createWorkDir = createWorkDirMock
+				_ = deployPipelineFile()
+				CheckoutRepo = checkoutRepoMock
+
+			}
+			got, err := NewPipelineEvaluator(tt.args.ctx, tt.args.fpath, tt.args.policyRepo, tt.args.namespace)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("NewPipelineEvaluator() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(err, tt.errMsg) {
+				t.Errorf("NewPipelineEvaluator() got = %v, want %v", err, tt.errMsg)
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewPipelineEvaluator() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

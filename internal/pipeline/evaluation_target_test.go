@@ -99,3 +99,35 @@ func TestDefinitionFile_exists(t *testing.T) {
 		})
 	}
 }
+
+func TestDefinitionFile_location(t *testing.T) {
+	type fields struct {
+		fpath string
+		name  string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name: "Returns fpath when called",
+			fields: fields{
+				fpath: "/tmp/pipeline.json",
+				name:  "",
+			},
+			want: "/tmp/pipeline.json",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &DefinitionFile{
+				fpath: tt.fields.fpath,
+				name:  tt.fields.name,
+			}
+			if got := d.location(); got != tt.want {
+				t.Errorf("location() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

@@ -44,7 +44,7 @@ func TestPolicyRepo_getPolicies(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			CheckoutRepo = checkoutRepoStub
+			CheckoutRepo = checkoutRepoMock
 			p := &PolicyRepo{
 				PolicyDir: tt.fields.PolicyDir,
 				RepoURL:   tt.fields.RepoURL,

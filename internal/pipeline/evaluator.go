@@ -18,6 +18,7 @@ package pipeline
 
 import (
 	"context"
+	"fmt"
 	"path/filepath"
 
 	"github.com/hacbs-contract/ec-cli/internal/utils"
@@ -76,4 +77,44 @@ func (e *Evaluator) addPolicyPaths() error {
 }
 func (e *Evaluator) createWorkDir() (string, error) {
 	return createWorkDir(utils.AppFS, afero.GetTempDir(utils.AppFS, ""), "ec-work-")
+}
+
+//NewPipelineEvaluator returns an *Evaluator specific to Pipeline validation
+func NewPipelineEvaluator(ctx context.Context, fpath string, policyRepo PolicyRepo, namespace string) (*Evaluator, error) {
+	e := &Evaluator{
+		Context:       ctx,
+		Target:        &DefinitionFile{fpath: fpath},
+		Paths:         ConfigurationPaths{},
+		PolicySources: []PolicySource{&policyRepo},
+		Namespace:     []string{namespace},
+		OutputFormat:  "json",
+	}
+	exists, err := e.Target.exists()
+	if err != nil {
+		return nil, err
+	}
+	if !exists {
+		return nil, fmt.Errorf("definition file `%s` does not exist", fpath)
+	}
+	workDir, err := e.createWorkDir()
+	if err != nil {
+		return nil, err
+	}
+	e.workDir = workDir
+	err = e.addPolicyPaths()
+	if err != nil {
+		return nil, err
+	}
+	err = e.addDataPath()
+	if err != nil {
+		return nil, err
+	}
+	e.TestRunner = runner.TestRunner{
+		Policy:    e.Paths.PolicyPaths,
+		Data:      e.Paths.DataPaths,
+		Namespace: e.Namespace,
+		NoFail:    true,
+		Output:    e.OutputFormat,
+	}
+	return e, nil
 }
