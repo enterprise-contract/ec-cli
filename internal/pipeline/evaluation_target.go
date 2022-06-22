@@ -25,6 +25,7 @@ import (
 //Must implement the exists() method
 type EvaluationTarget interface {
 	exists() (bool, error)
+	location() string
 }
 
 // DefinitionFile represents a file on a filesystem that defines something
@@ -36,4 +37,8 @@ type DefinitionFile struct {
 // exists returns true if the specified Definition File's fpath parameter exists on the filesystem.
 func (d *DefinitionFile) exists() (bool, error) {
 	return afero.Exists(utils.AppFS, d.fpath)
+}
+
+func (d *DefinitionFile) location() string {
+	return d.fpath
 }

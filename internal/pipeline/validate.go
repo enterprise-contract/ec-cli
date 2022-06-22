@@ -20,50 +20,15 @@ import (
 	"context"
 
 	"github.com/hacbs-contract/ec-cli/internal/policy"
-	"github.com/open-policy-agent/conftest/runner"
 )
 
-//ValidatePipeline takes the required inputs to create an evaluator object,
-//validates the required aspects, creates necessary paths, gets the necessary
-//policies, creates a Conftest Test Runner, executes the test against the
-//provided policies, and displays the output.
+//ValidatePipeline calls NewPipelineEvaluator to obtain an Evaluator. It then executes the associated TestRunner
+//which tests the associated pipeline file(s) against the associated policies, and displays the output.
 func ValidatePipeline(ctx context.Context, fpath string, policyRepo PolicyRepo, namespace string) error {
-	e := &Evaluator{
-		Context:       ctx,
-		Target:        &DefinitionFile{fpath: fpath},
-		Paths:         ConfigurationPaths{},
-		PolicySources: []PolicySource{&policyRepo},
-		Namespace:     []string{namespace},
-	}
-	_, err := e.Target.exists()
+	e, err := NewPipelineEvaluator(ctx, fpath, policyRepo, namespace)
 	if err != nil {
 		return err
 	}
-
-	workDir, err := e.createWorkDir()
-	if err != nil {
-		return err
-	}
-	e.workDir = workDir
-
-	err = e.addPolicyPaths()
-	if err != nil {
-		return err
-	}
-
-	err = e.addDataPath()
-	if err != nil {
-		return err
-	}
-
-	e.TestRunner = runner.TestRunner{
-		Policy:    e.Paths.PolicyPaths,
-		Data:      e.Paths.DataPaths,
-		Namespace: e.Namespace,
-		NoFail:    true,
-		Output:    e.OutputFormat,
-	}
-
 	results, err := e.TestRunner.Run(ctx, []string{fpath})
 	if err != nil {
 		return err
