@@ -4,7 +4,7 @@ import (
 	"context"
 	"path/filepath"
 
-	"github.com/hacbs-contract/ec-cli/cmd/internal/utils"
+	"github.com/hacbs-contract/ec-cli/internal/utils"
 	"github.com/open-policy-agent/conftest/runner"
 	"github.com/spf13/afero"
 )

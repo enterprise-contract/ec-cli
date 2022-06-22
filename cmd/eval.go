@@ -22,9 +22,9 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/hacbs-contract/ec-cli/cmd/internal/applicationsnapshot"
-	"github.com/hacbs-contract/ec-cli/cmd/internal/image"
-	"github.com/hacbs-contract/ec-cli/cmd/internal/policy"
+	"github.com/hacbs-contract/ec-cli/internal/applicationsnapshot"
+	"github.com/hacbs-contract/ec-cli/internal/image"
+	"github.com/hacbs-contract/ec-cli/internal/policy"
 	appstudioshared "github.com/redhat-appstudio/managed-gitops/appstudio-shared/apis/appstudio.redhat.com/v1alpha1"
 	"github.com/spf13/cobra"
 )
