@@ -14,26 +14,13 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package pipeline
+//go:build tools
+// +build tools
+
+// Tracks tooling dependencies, i.e. those that are not used by the code directly
+package tools
 
 import (
-	"github.com/hacbs-contract/ec-cli/internal/utils"
-	"github.com/spf13/afero"
+	_ "github.com/golangci/golangci-lint/cmd/golangci-lint"
+	_ "github.com/google/addlicense"
 )
-
-//EvaluationTarget is an interface that represents a target to be evaluated.
-//Must implement the exists() method
-type EvaluationTarget interface {
-	exists() (bool, error)
-}
-
-// DefinitionFile represents a file on a filesystem that defines something
-type DefinitionFile struct {
-	fpath string
-	name  string
-}
-
-// exists returns true if the specified Definition File's fpath parameter exists on the filesystem.
-func (d *DefinitionFile) exists() (bool, error) {
-	return afero.Exists(utils.AppFS, d.fpath)
-}
