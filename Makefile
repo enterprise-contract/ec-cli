@@ -1,6 +1,7 @@
 MAKEFLAGS+=-j
 VERSION:=$$(git log -1 --format='%H')
 ALL_SUPPORTED_OS_ARCH:=$(shell go tool dist list -json|jq -r '.[] | select(.FirstClass == true and .GOARCH != "386") | "dist/ec_\(.GOOS)_\(.GOARCH)"')
+COPY:="Red Hat, Inc."
 
 ##@ Information targets
 
@@ -52,7 +53,16 @@ acceptance: ## Run acceptance tests
 
 .PHONY: lint
 lint: ## Run linter
-	@go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.46.2 run --sort-results
+# addlicense doesn't give us a nice explanation so we prefix it with one
+	@go run github.com/google/addlicense -c $(COPY) -s -check . | sed 's/^/Missing license header in: /g'
+# piping to sed above looses the exit code, luckily addlicense is fast so we invoke it for the second time to exit 1 in case of issues
+	@go run github.com/google/addlicense -c $(COPY) -s -check . >/dev/null 2>&1
+	@go run github.com/golangci/golangci-lint/cmd/golangci-lint run --sort-results
+
+.PHONY: lint-fix
+lint-fix: ## Fix linting issues automagically
+	@go run github.com/google/addlicense -c $(COPY) -s .
+	@go run github.com/golangci/golangci-lint/cmd/golangci-lint run --fix
 
 .PHONY: clean
 clean: ## Delete build output
