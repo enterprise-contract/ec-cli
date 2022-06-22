@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/hacbs-contract/ec-cli/cmd/internal/utils"
+	"github.com/hacbs-contract/ec-cli/internal/utils"
 	"github.com/spf13/afero"
 )
 

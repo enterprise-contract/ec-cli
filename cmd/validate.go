@@ -17,7 +17,7 @@ limitations under the License.
 package cmd
 
 import (
-	"github.com/hacbs-contract/ec-cli/cmd/internal/pipeline"
+	"github.com/hacbs-contract/ec-cli/internal/pipeline"
 	"github.com/spf13/cobra"
 )
 
