@@ -33,6 +33,7 @@ var testJSONMissingPrefix = `"apiVersion": "tekton.dev/v1beta1",
 var testHasPrefixData = `[
   this is a test 
 ]`
+
 func TestToJSON(t *testing.T) {
 	type args struct {
 		data []byte
@@ -44,15 +45,15 @@ func TestToJSON(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Returns JSON unchanged",
-			args: args{data: []byte(testJSONPipelineData)},
-			want: []byte(testJSONPipelineData),
+			name:    "Returns JSON unchanged",
+			args:    args{data: []byte(testJSONPipelineData)},
+			want:    []byte(testJSONPipelineData),
 			wantErr: false,
 		},
 		{
-			name: "Converts YAML to JSON",
-			args: args{data: []byte(testYAMLPipelineData)},
-			want: []byte(testYamlConvertedToJSON),
+			name:    "Converts YAML to JSON",
+			args:    args{data: []byte(testYAMLPipelineData)},
+			want:    []byte(testYamlConvertedToJSON),
 			wantErr: false,
 		},
 	}

@@ -2,10 +2,11 @@ package pipeline
 
 import (
 	"context"
+	"path/filepath"
+
 	"github.com/hacbs-contract/ec-cli/cmd/internal/utils"
 	"github.com/open-policy-agent/conftest/runner"
 	"github.com/spf13/afero"
-	"path/filepath"
 )
 
 var createWorkDir = afero.TempDir
@@ -37,7 +38,7 @@ func (e *Evaluator) addDataPath() error {
 	}
 	if !exists {
 		_ = utils.AppFS.MkdirAll(dataDir, 0755)
-		err = afero.WriteFile(utils.AppFS, filepath.Join( e.workDir, "data/data.json"), []byte("{\"config\":{}}\n"), 0777)
+		err = afero.WriteFile(utils.AppFS, filepath.Join(e.workDir, "data/data.json"), []byte("{\"config\":{}}\n"), 0777)
 		if err != nil {
 			return err
 		}

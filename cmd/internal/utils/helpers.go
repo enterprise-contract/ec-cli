@@ -2,13 +2,14 @@ package utils
 
 import (
 	"bytes"
+	"unicode"
+
 	"github.com/ghodss/yaml"
 	"github.com/spf13/afero"
-	"unicode"
 )
 
 var (
-	AppFS  = afero.NewOsFs()
+	AppFS = afero.NewOsFs()
 )
 
 // ToJSON converts a single YAML document into a JSON document
@@ -34,5 +35,3 @@ func hasPrefix(buf []byte, prefix []byte) bool {
 	trim := bytes.TrimLeftFunc(buf, unicode.IsSpace)
 	return bytes.HasPrefix(trim, prefix)
 }
-
-
