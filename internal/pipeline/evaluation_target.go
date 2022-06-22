@@ -22,7 +22,7 @@ import (
 )
 
 //EvaluationTarget is an interface that represents a target to be evaluated.
-//Must implement the exists() method
+//Must implement the exists() and location() methods
 type EvaluationTarget interface {
 	exists() (bool, error)
 	location() string
