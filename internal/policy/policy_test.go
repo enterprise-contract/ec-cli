@@ -139,7 +139,7 @@ func Test_Evaluate(t *testing.T) {
 	assert.Len(t, results, 1, "expected one result")
 
 	result := results[0]
-	assert.Equal(t, "main", result.Namespace)
+	assert.Equal(t, releaseNamespace, result.Namespace)
 	assert.Zero(t, result.Successes)
 	assert.Empty(t, result.Skipped)
 	assert.Empty(t, result.Warnings)
