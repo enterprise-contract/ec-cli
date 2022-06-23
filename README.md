@@ -11,6 +11,7 @@ Available Commands:
   completion  Generate the autocompletion script for the specified shell
   eval        Evaluate enterprise contract
   help        Help about any command
+  validate    Provides validation of various object
   version     Print version information
 
 Flags:
