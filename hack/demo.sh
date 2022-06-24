@@ -23,6 +23,7 @@ set -o posix
 
 HACK_DIR="$(dirname "${BASH_SOURCE[0]}")"
 EC="${HACK_DIR}/../dist/ec_$(go env GOOS)_$(go env GOARCH)"
+SNAPSHOT="$(cat ${HACK_DIR}/application_snapshot.json)"
 
 echo "Using ec version $("${EC}" version)"
 
@@ -55,3 +56,7 @@ for IMG in 'quay.io/hacbs-contract-demo/single-nodejs-app:120e9a3' 'quay.io/hacb
   echo "💲 ${EC}" eval --image "${IMG}" --public-key "${HACK_DIR}/cosign.pub" --policy demo/ec-demo
   "${EC}" eval --image "${IMG}" --public-key "${HACK_DIR}/cosign.pub" --policy demo/ec-demo
 done
+
+printf "\n🩺 Evaluating application snapshot \n\n%s\n\n" "${SNAPSHOT}"
+echo "💲 ${EC}" eval --filepath "${HACK_DIR}/application_snapshot.json" --public-key "${HACK_DIR}/cosign.pub" --policy demo/ec-demo
+"${EC}" eval --filepath "${HACK_DIR}/application_snapshot.json" --public-key "${HACK_DIR}/cosign.pub" --policy demo/ec-demo | jq
