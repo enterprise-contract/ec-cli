@@ -121,11 +121,8 @@ func evalCmd() *cobra.Command {
 			if snapshotSpec != nil {
 
 				var wg sync.WaitGroup
-				component := make(chan applicationsnapshot.Component, len(snapshotSpec.Components))
-				cherr := make(chan error, len(snapshotSpec.Components))
-				var errs []error
-				var components []applicationsnapshot.Component
-
+				chComponent := make(chan applicationsnapshot.Component, len(snapshotSpec.Components))
+				chErr := make(chan error, len(snapshotSpec.Components))
 				for _, c := range snapshotSpec.Components {
 					wg.Add(1)
 
@@ -133,31 +130,37 @@ func evalCmd() *cobra.Command {
 						defer wg.Done()
 
 						out, err := validateImage(comp.ContainerImage)
-						cherr <- err
+						chErr <- err
 
+						image := applicationsnapshot.Component{}
 						// Skip on err to not panic. Error is return on routine completion.
 						if err == nil {
-							image := applicationsnapshot.Component{
-								Violations: out.PolicyCheck,
-								Success:    out.ExitCode == 0,
-							}
-							image.Name, image.ContainerImage = comp.Name, comp.ContainerImage
-							component <- image
+							image.Violations = out.PolicyCheck
+							image.Success = out.ExitCode == 0
+						} else {
+							// TODO Add error to report
+							image.Success = false
 						}
+						image.Name, image.ContainerImage = comp.Name, comp.ContainerImage
+						chComponent <- image
 					}(c)
-					components = append(components, <-component)
-					errs = append(errs, <-cherr)
 				}
 
 				wg.Wait()
+				close(chErr)
+				close(chComponent)
 
 				// TODO: open to suggestions for error handling.
-				for _, e := range errs {
+				for e := range chErr {
 					if e != nil {
 						return e
 					}
 				}
 
+				components := []applicationsnapshot.Component{}
+				for c := range chComponent {
+					components = append(components, c)
+				}
 				report, err, success := applicationsnapshot.Report(components)
 				if err != nil {
 					return err
