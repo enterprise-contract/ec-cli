@@ -94,10 +94,11 @@ func evalCmd() *cobra.Command {
 					if err := ioutil.WriteFile(arguments.output, []byte(report), 0644); err != nil {
 						return err
 					}
+					fmt.Printf("Report written to %s\n", arguments.output)
 				} else {
 					fmt.Println(report)
-					return nil
 				}
+				return nil
 			}
 
 			out := &policy.Output{}
