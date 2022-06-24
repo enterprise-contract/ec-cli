@@ -35,6 +35,7 @@ type testEnv int
 const (
 	PersistStubEnvironment testEnv = iota
 	RestoreStubEnvironment
+	NoColors
 	persistedEnv
 
 	persistedFile = ".persisted"
@@ -173,6 +174,14 @@ func FetchState[S WithState](ctx context.Context) *S {
 	}
 
 	return state.(*S)
+}
+
+// NoColorOutput returns true if the output produced should not contain colors, which is
+// useful when a terminal or medium can't interpret ANSI colors
+func NoColorOutput(ctx context.Context) bool {
+	noColors, ok := ctx.Value(NoColors).(bool)
+
+	return ok && noColors
 }
 
 // TestContainersRequest modifies the req to keep the container running after the test if PersistStubEnvironment is set to true in the ctx

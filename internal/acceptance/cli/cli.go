@@ -20,21 +20,28 @@ package cli
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
 	"os/exec"
 	"path"
+	"regexp"
 	"runtime"
 	"strings"
+	"unicode"
 
 	"github.com/cucumber/godog"
+
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/crypto"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/kubernetes"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/log"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/registry"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/rekor"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/testenv"
+	"github.com/pkg/diff"
+	"github.com/yudai/gojsondiff"
+	"github.com/yudai/gojsondiff/formatter"
 )
 
 type status struct {
@@ -186,22 +193,163 @@ func ecCommandIsRunWith(ctx context.Context, parameters string) (context.Context
 // theExitStatusIs checks that the exit status of ec command line is 0
 // (success), and logs profusely in case of it being != 0
 func theExitStatusIs(ctx context.Context, expected int) error {
-	state, ok := ctx.Value(processStatusKey).(*status)
-	if !ok {
-		return errors.New("can't find ec process state, did you invoke ec beforehand?")
+	status, err := ecStatusFrom(ctx)
+	if err != nil {
+		return err
 	}
 
-	if state.err != nil {
-		logOutput(ctx, state)
-		return fmt.Errorf("failed to invoke the ec command: %#v", state.err)
+	if status.err != nil {
+		logOutput(ctx, status)
+		return fmt.Errorf("failed to invoke the ec command: %#v", status.err)
 	}
 
-	if state.Cmd.ProcessState.ExitCode() != expected {
-		logOutput(ctx, state)
-		return fmt.Errorf("ec exited with %d", state.ProcessState.ExitCode())
+	if status.Cmd.ProcessState.ExitCode() != expected {
+		logOutput(ctx, status)
+		return fmt.Errorf("ec exited with %d", status.ProcessState.ExitCode())
 	}
 
 	return nil
+}
+
+// theStandardOutputShouldContain looks at the standard output (stdout) of the last invoked ec
+// command and compares the expected output with the resulted output. Special handling is done
+// for JSON output, it is compared disregaring key order in objects, and values can contain
+// regular expressions to match the expected to resulted output even when dealing with dynamic
+// values such as port numbers or temporary paths
+func theStandardOutputShouldContain(ctx context.Context, expected *godog.DocString) error {
+	status, err := ecStatusFrom(ctx)
+	if err != nil {
+		return err
+	}
+
+	if expected == nil {
+		return errors.New("must provide expected output")
+	}
+
+	// shortcut, if the output is exactly as expected
+	if status.stdout == expected.Content {
+		return nil
+	}
+
+	// see if the expected value is JSON, i.e. if it starts with either { or [
+	trimmed := strings.TrimLeftFunc(expected.Content, unicode.IsSpace)
+	isJSON := trimmed[0] == '{' || trimmed[0] == '['
+	if isJSON {
+		expectedBytes := []byte(expected.Content)
+
+		// compute the diff between expected and resulting JSON
+		differ := gojsondiff.New()
+		diff, err := differ.Compare(expectedBytes, []byte(status.stdout))
+		if err != nil {
+			return err
+		}
+
+		if !diff.Modified() {
+			// expected and resulting JSON is the same
+			return nil
+		}
+
+		// we need to unmarshal the expected (left) JSON for output formatting
+		// and to check for any regular expressions in the expected JSON's
+		// values
+		var left any
+		err = json.Unmarshal(expectedBytes, &left)
+		if err != nil {
+			return err
+		}
+
+		if matchesJSONRegex(left, diff) {
+			// there was a difference, but the values matched regular expression
+			// given in the expected JSON
+			return nil
+		}
+
+		f := formatter.NewAsciiFormatter(left, formatter.AsciiFormatterConfig{
+			ShowArrayIndex: true,
+			Coloring:       !testenv.NoColorOutput(ctx),
+		})
+		formattedDiff, err := f.Format(diff)
+		if err != nil {
+			return err
+		}
+
+		return fmt.Errorf("expected and actual output differ:\n%s", formattedDiff)
+	}
+
+	var b bytes.Buffer
+	err = diff.Text("stdout", "expected", status.stdout, expected.Content, &b)
+	if err != nil {
+		return err
+	}
+
+	return fmt.Errorf("expected and actual output differ:\n%s", b.String())
+}
+
+func matchesJSONRegex(obj any, diff gojsondiff.Diff) bool {
+	deltas := diff.Deltas()
+	if v, ok := obj.(map[string]interface{}); ok {
+		return matchesJSONObjectRegex(v, deltas)
+	} else if v, ok := obj.([]interface{}); ok {
+		return matchesJSONArrayRegex(v, deltas)
+	}
+
+	return false
+}
+
+func matchesJSONArrayRegex(ary []interface{}, deltas []gojsondiff.Delta) bool {
+	for i, v := range ary {
+		pos := gojsondiff.Index(i)
+		if ok := matchesJSONDeltaRegex(v, pos, deltas); !ok {
+			return false
+		}
+	}
+
+	return true
+}
+
+func matchesJSONObjectRegex(obj map[string]interface{}, deltas []gojsondiff.Delta) bool {
+	for k, v := range obj {
+		pos := gojsondiff.Name(k)
+		if ok := matchesJSONDeltaRegex(v, pos, deltas); !ok {
+			return false
+		}
+	}
+
+	return true
+}
+
+func matchesJSONDeltaRegex(value any, pos gojsondiff.Position, deltas []gojsondiff.Delta) bool {
+	for _, delta := range deltas {
+		switch delta := delta.(type) {
+		case *gojsondiff.TextDiff:
+			r, err := regexp.Compile(delta.OldValue.(string))
+			if err == nil {
+				if !r.MatchString(delta.NewValue.(string)) {
+					return false
+				}
+			}
+		case gojsondiff.PostDelta:
+			if delta.PostPosition() == pos {
+				switch delta := delta.(type) {
+				case *gojsondiff.Object:
+					return matchesJSONObjectRegex(value.(map[string]interface{}), delta.Deltas)
+				case *gojsondiff.Array:
+					return matchesJSONArrayRegex(value.([]interface{}), delta.Deltas)
+				}
+			}
+		}
+	}
+
+	return true
+}
+
+func ecStatusFrom(ctx context.Context) (*status, error) {
+	status, ok := ctx.Value(processStatusKey).(*status)
+	if !ok {
+		return nil, errors.New("can't find ec process state, did you invoke ec beforehand?")
+	}
+
+	return status, nil
 }
 
 // logOutput logs the exit code, PID, stderr, stdout, and offers hits as to
@@ -241,4 +389,5 @@ func logOutput(ctx context.Context, s *status) {
 func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^ec command is run with "(.+)"$`, ecCommandIsRunWith)
 	sc.Step(`^the exit status should be (\d+)$`, theExitStatusIs)
+	sc.Step(`^the standard output should contain$`, theStandardOutputShouldContain)
 }
