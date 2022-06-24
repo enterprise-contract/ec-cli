@@ -135,15 +135,17 @@ func evalCmd() *cobra.Command {
 						out, err := validateImage(comp.ContainerImage)
 						cherr <- err
 
+						image := applicationsnapshot.Component{}
 						// Skip on err to not panic. Error is return on routine completion.
 						if err == nil {
-							image := applicationsnapshot.Component{
-								Violations: out.PolicyCheck,
-								Success:    out.ExitCode == 0,
-							}
-							image.Name, image.ContainerImage = comp.Name, comp.ContainerImage
-							component <- image
+							image.Violations = out.PolicyCheck
+							image.Success = out.ExitCode == 0
+						} else {
+							// TODO Add error to report
+							image.Success = false
 						}
+						image.Name, image.ContainerImage = comp.Name, comp.ContainerImage
+						component <- image
 					}(c)
 					components = append(components, <-component)
 					errs = append(errs, <-cherr)
