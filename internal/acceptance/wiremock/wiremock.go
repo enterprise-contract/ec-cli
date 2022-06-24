@@ -33,7 +33,6 @@ import (
 	"github.com/docker/go-connections/nat"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/log"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/testenv"
-	"github.com/hashicorp/go-multierror"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 	wiremock "github.com/walkerus/go-wiremock"
@@ -247,16 +246,16 @@ func AddStepsTo(sc *godog.ScenarioContext) {
 		w, err := wiremockFrom(ctx)
 		if err != nil {
 			// wiremock wasn't launched, we don't need to proceed
-			return ctx, scenarioErr
+			return ctx, err
 		}
 
 		unmatched, err := w.UnmatchedRequests()
 		if err != nil {
-			return ctx, multierror.Append(scenarioErr, err)
+			return ctx, err
 		}
 
 		if len(unmatched) == 0 {
-			return ctx, scenarioErr
+			return ctx, nil
 		}
 
 		logger := log.LoggerFor(ctx)
@@ -265,6 +264,6 @@ func AddStepsTo(sc *godog.ScenarioContext) {
 			logger.Logf("[%d]: %s", i, u)
 		}
 
-		return ctx, scenarioErr
+		return ctx, nil
 	})
 }
