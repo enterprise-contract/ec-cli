@@ -19,6 +19,8 @@ package policy
 import (
 	"context"
 	"errors"
+	"os"
+	"path"
 	"testing"
 
 	ecp "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
@@ -41,33 +43,86 @@ func init() {
 	fakeClient = fake.NewClientBuilder().WithScheme(scheme).WithObjects(&testECP).Build()
 }
 
+const testKubeconfig = `
+apiVersion: v1
+kind: Config
+contexts:
+- context:
+    namespace: test
+  name: test/my-cluster-com:6443/kube:admin
+current-context: test/my-cluster-com:6443/kube:admin
+`
+
 func Test_FetchEnterpriseContractPolicy(t *testing.T) {
-	k := kubernetes{
-		client: fakeClient,
+	testCases := []struct {
+		name           string
+		namespacedName types.NamespacedName
+		ecp            *ecp.EnterpriseContractPolicy
+		kubeconfig     string
+		err            string
+	}{
+		{
+			name:           "fetch-with-name-and-namespace",
+			namespacedName: types.NamespacedName{Name: "ec-policy", Namespace: "test"},
+			ecp:            &testECP,
+			kubeconfig:     "",
+			err:            "",
+		},
+		{
+			name:           "fetch-with-name-only",
+			namespacedName: types.NamespacedName{Name: "ec-policy"},
+			ecp:            &testECP,
+			kubeconfig:     testKubeconfig,
+			err:            "",
+		},
+		{
+			name:           "fetch-with-undetectable-namespace",
+			namespacedName: types.NamespacedName{Name: "ec-policy"},
+			ecp:            nil,
+			kubeconfig:     "",
+			err:            "Unable to determine current namespace: missing current context",
+		},
+		{
+			name:           "fetch-policy-not-found",
+			namespacedName: types.NamespacedName{Name: "ec-policy", Namespace: "missing"},
+			ecp:            nil,
+			kubeconfig:     "",
+			err:            `enterprisecontractpolicies.appstudio.redhat.com "ec-policy" not found`,
+		},
 	}
 
-	got, err := k.fetchEnterpriseContractPolicy(context.TODO(), types.NamespacedName{
-		Name:      "ec-policy",
-		Namespace: "test",
-	})
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if tc.kubeconfig != "" {
+				kubeconfig := path.Join(t.TempDir(), "KUBECONFIG")
+				kubeconfigFile, err := os.Create(kubeconfig)
+				assert.NoError(t, err)
+				defer kubeconfigFile.Close()
+				_, err = kubeconfigFile.WriteString(tc.kubeconfig)
+				if err != nil {
+					t.Fatal(err)
+				}
+				t.Setenv("KUBECONFIG", kubeconfig)
+			}
+			k := kubernetes{
+				client: fakeClient,
+			}
 
-	assert.NoError(t, err)
-	assert.Equal(t, testECP, *got, "should return the stubbed EnterpriseContractPolicy")
-}
+			got, err := k.fetchEnterpriseContractPolicy(context.TODO(), tc.namespacedName)
 
-func Test_FetchEnterpriseContractPolicyNotFound(t *testing.T) {
-	k := kubernetes{
-		client: fakeClient,
+			if tc.err == "" {
+				assert.NoError(t, err)
+			} else {
+				assert.ErrorContains(t, err, tc.err)
+			}
+
+			if tc.ecp == nil {
+				assert.Nil(t, got)
+			} else {
+				assert.Equal(t, *tc.ecp, *got, "should return the stubbed EnterpriseContractPolicy")
+			}
+		})
 	}
-
-	got, err := k.fetchEnterpriseContractPolicy(context.TODO(), types.NamespacedName{
-		Name:      "missing",
-		Namespace: "test",
-	})
-
-	expected := errors.New("can't fetch EnterpriseContractPolicy `missing` in namespace `test")
-	assert.ErrorAs(t, err, &expected)
-	assert.Nil(t, got)
 }
 
 func Test_FailureToAddScheme(t *testing.T) {
