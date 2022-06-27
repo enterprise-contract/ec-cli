@@ -1,0 +1,17 @@
+{
+  "application": "app1",
+  "components": [
+    {
+      "name": "nodejs",
+      "containerImage": "quay.io/hacbs-contract-demo/single-nodejs-app:877418e"
+    },
+    {
+      "name": "petclinic",
+      "containerImage": "quay.io/hacbs-contract-demo/spring-petclinic:dc80a7f"
+    },
+    {
+      "name": "single-container-app",
+      "containerImage": "quay.io/hacbs-contract-demo/single-container-app:62c06bf"
+    }
+  ]
+}
