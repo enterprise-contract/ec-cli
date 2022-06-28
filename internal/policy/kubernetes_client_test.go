@@ -93,6 +93,7 @@ func Test_FetchEnterpriseContractPolicy(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Setenv("KUBECONFIG", "/non/existent/path")
 			if tc.kubeconfig != "" {
 				kubeconfig := path.Join(t.TempDir(), "KUBECONFIG")
 				kubeconfigFile, err := os.Create(kubeconfig)
