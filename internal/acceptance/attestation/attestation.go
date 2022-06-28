@@ -35,7 +35,7 @@ import (
 
 const (
 	PredicateBuilderID   = "https://tekton.dev/chains/v2"
-	PredicateBuilderType = "https://tekton.dev/attestations/chains@v2"
+	PredicateBuilderType = "https://tekton.dev/attestations/chains/pipelinerun@v2"
 	PredicateType        = "slsaprovenance"
 )
 
