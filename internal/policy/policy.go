@@ -22,8 +22,7 @@ import (
 	"strings"
 
 	"github.com/open-policy-agent/conftest/output"
-	"github.com/open-policy-agent/conftest/parser"
-	"github.com/open-policy-agent/conftest/policy"
+	"github.com/open-policy-agent/conftest/runner"
 	"github.com/sigstore/cosign/pkg/oci"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -95,17 +94,13 @@ func (p *policyEvaluator) Evaluate(ctx context.Context, attestations []oci.Signa
 		return nil, err
 	}
 
-	configurations, err := parser.ParseConfigurations(inputs)
-	if err != nil {
-		return nil, err
+	t := runner.TestRunner{
+		Policy:    policies,
+		Data:      []string{data},
+		Namespace: []string{releaseNamespace},
+		NoFail:    true,
 	}
-
-	engine, err := policy.LoadWithData(ctx, policies, []string{data}, "")
-	if err != nil {
-		return nil, err
-	}
-
-	results, err := engine.Check(ctx, configurations, releaseNamespace)
+	results, err := t.Run(ctx, inputs)
 	if err != nil {
 		return nil, err
 	}
