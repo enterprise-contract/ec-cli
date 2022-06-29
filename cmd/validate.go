@@ -30,69 +30,8 @@ func validateCmd() *cobra.Command {
 	return cmd
 }
 
-func validatePipelineCmd() *cobra.Command {
-	var data = struct {
-		FilePaths         []string
-		PolicyRepo        string
-		PolicyDir         string
-		Ref               string
-		ConftestNamespace string
-	}{
-		FilePaths:         []string{},
-		PolicyRepo:        "https://github.com/hacbs-contract/ec-policies.git",
-		PolicyDir:         "policy",
-		ConftestNamespace: "pipeline.main",
-		Ref:               "main",
-	}
-	cmd := &cobra.Command{
-		Use:   "pipeline",
-		Short: "Validates a pipeline file",
-		Long: "This command validates one or more Tekton Pipeline definition files.Definition\n" +
-			"files can be either YAML or JSON format. Multiple definition files can be\n" +
-			"specified by providing a comma seperated list, ensuring no spaces, or by\n" +
-			"repeating the '--pipeline-file' flag.\n\n" +
-			"The git repository, from which the policies should be checked out, can be\n" +
-			"specified as can a specific branch. If policies are not contained in the\n" +
-			"standard 'policy' subdirectory, the appropriate subdirectory within the\n" +
-			"repository can be specified.\n\n" +
-			"The namespace of policies can be specified as well, by use of the\n" +
-			"'--namespace' flag.",
-		Example: "ec validate pipeline --pipeline-file /path/to/pipeline.file\n" +
-			"ec validate pipeline --pipeline-file /path/to/pipeline.file,/path/to/other-pipeline.file\n" +
-			"ec validate pipeline --pipeline-file /path/to/pipeline.file --pipeline-file /path/to/other-pipeline.file\n" +
-			"ec validate pipeline --pipeline-file /path/to/pipeline.file --policy-repo https://example.com/user/repo.git\n" +
-			"ec validate pipeline --pipeline-file /path/to/pipeline.file --branch foo\n" +
-			"ec validate pipeline --pipeline-file /path/to/pipeline.file --policy-dir policies\n" +
-			"ec validate pipeline --pipeline-file /path/to/pipeline.file --namespace pipeline.basic\n" +
-			"",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			var err error
-			for i := range data.FilePaths {
-				fpath := data.FilePaths[i]
-				policySource := pipeline.PolicyRepo{
-					PolicyDir: data.PolicyDir,
-					RepoURL:   data.PolicyRepo,
-					RepoRef:   data.Ref,
-				}
-				err = pipeline.ValidatePipeline(cmd.Context(), fpath, policySource, data.ConftestNamespace)
-			}
-			if err != nil {
-				return err
-			}
-			return nil
-		},
-	}
-	cmd.Flags().StringSliceVarP(&data.FilePaths, "pipeline-file", "p", data.FilePaths, "REQUIRED - The path to the pipeline file to validate. Can be JSON or YAML")
-	cmd.Flags().StringVar(&data.PolicyDir, "policy-dir", data.PolicyDir, "Subdirectory containing policies, if not in default 'policy' subdirectory.")
-	cmd.Flags().StringVar(&data.PolicyRepo, "policy-repo", data.PolicyRepo, "Git repo containing policies.")
-	cmd.Flags().StringVar(&data.Ref, "branch", data.Ref, "Branch to use.")
-	cmd.Flags().StringVar(&data.ConftestNamespace, "namespace", data.ConftestNamespace, "Namespace of policy to validate against")
-	_ = cmd.MarkFlagRequired("pipeline-file")
-	return cmd
-}
-
 func init() {
 	validate := validateCmd()
-	validate.AddCommand(validatePipelineCmd())
+	validate.AddCommand(validatePipelineCmd(pipeline.ValidatePipeline))
 	rootCmd.AddCommand(validate)
 }
