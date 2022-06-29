@@ -30,9 +30,9 @@ import (
 
 	"github.com/cucumber/godog"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/crypto"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/image"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/kubernetes"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/log"
+	"github.com/hacbs-contract/ec-cli/internal/acceptance/registry"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/rekor"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/testenv"
 )
@@ -79,7 +79,13 @@ func ecCommandIsRunWith(ctx context.Context, parameters string) (context.Context
 			os.Remove(kubeconfig.Name())
 		}
 	}()
-	_, err = kubeconfig.WriteString(kubernetes.KubeConfig(ctx))
+
+	cfg, err := kubernetes.KubeConfig(ctx)
+	if err != nil {
+		return ctx, err
+	}
+
+	_, err = kubeconfig.WriteString(cfg)
 	if err != nil {
 		return ctx, err
 	}
@@ -88,11 +94,21 @@ func ecCommandIsRunWith(ctx context.Context, parameters string) (context.Context
 		return ctx, err
 	}
 
+	registry, err := registry.StubRegistry(ctx)
+	if err != nil {
+		return ctx, err
+	}
+
+	rekor, err := rekor.StubRekor(ctx)
+	if err != nil {
+		return ctx, err
+	}
+
 	// variables that can be substituted on the command line
 	// provided by the `parameters`` parameter
 	vars := map[string]string{
-		"REGISTRY": image.StubRegistry(ctx),
-		"REKOR":    rekor.StubRekor(ctx),
+		"REGISTRY": registry,
+		"REKOR":    rekor,
 	}
 
 	// there could be several key pairs created, for testing
@@ -100,6 +116,7 @@ func ecCommandIsRunWith(ctx context.Context, parameters string) (context.Context
 	// to avail all public keys that have been generated for
 	// substitution
 	publicKeys := crypto.PublicKeysFrom(ctx)
+
 	for name, publicKey := range publicKeys {
 		key, err := os.CreateTemp("", "*.pub")
 		if err != nil {

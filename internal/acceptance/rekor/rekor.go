@@ -129,7 +129,7 @@ func rekorEntryForAttestation(ctx context.Context, imageName string) error {
 }
 
 // StubRekor returns the `http://host:port` of the stubbed Rekord
-func StubRekor(ctx context.Context) string {
+func StubRekor(ctx context.Context) (string, error) {
 	return wiremock.Endpoint(ctx)
 }
 

@@ -42,13 +42,33 @@ import (
 
 type key int
 
-const (
-	gitHostKey         key = iota // we store the host:port under this in the Context
-	gitRepositoriesKey            // key to the path to the TEMP directory mounted in the git server container in the Context
-)
+const gitStateKey = key(0) // we store the gitState struct under this key in Context and when persisted
+
+type gitState struct {
+	HostAndPort     string
+	RepositoriesDir string
+}
+
+func (g gitState) Key() any {
+	return gitStateKey
+}
+
+func (g gitState) Up() bool {
+	return g.HostAndPort != "" && g.RepositoriesDir != ""
+}
 
 // startStubGitServer launches a stub git server and exposes the port via NAT from the container
 func startStubGitServer(ctx context.Context) (context.Context, error) {
+	var state *gitState
+	ctx, err := testenv.SetupState(ctx, &state)
+	if err != nil {
+		return ctx, err
+	}
+
+	if state.Up() {
+		return ctx, nil
+	}
+
 	// the directory on the host where we'll store the git repositories
 	repositories, err := os.MkdirTemp("", "git.*")
 	if err != nil {
@@ -78,8 +98,8 @@ func startStubGitServer(ctx context.Context) (context.Context, error) {
 		return ctx, err
 	}
 
-	ctx = context.WithValue(ctx, gitHostKey, fmt.Sprintf("localhost:%d", port.Int()))
-	ctx = context.WithValue(ctx, gitRepositoriesKey, repositories)
+	state.HostAndPort = fmt.Sprintf("localhost:%d", port.Int())
+	state.RepositoriesDir = repositories
 
 	return ctx, nil
 }
@@ -87,13 +107,20 @@ func startStubGitServer(ctx context.Context) (context.Context, error) {
 // GitHost returns the `host:port` of the git server. The repository can be accessed
 // via http://host:port/git/`name`git
 func GitHost(ctx context.Context) string {
-	return ctx.Value(gitHostKey).(string)
+	return testenv.FetchState[gitState](ctx).HostAndPort
 }
 
 // createGitRepository uses go-git to initialize a git repository on the bound
 // repositories directory, copies given files and commits them
 func createGitRepository(ctx context.Context, repositoryName string, files *godog.Table) error {
-	repositoryDir := path.Join(ctx.Value(gitRepositoriesKey).(string), repositoryName+".git")
+	state := testenv.FetchState[gitState](ctx)
+
+	repositoryDir := path.Join(state.RepositoriesDir, repositoryName+".git")
+
+	if s, _ := os.Stat(repositoryDir); s != nil && s.IsDir() {
+		// repository already exists
+		return nil
+	}
 
 	// create a storage for the .git directory within repositoryDir
 	dotGit := filesystem.NewStorage(osfs.New(path.Join(repositoryDir, ".git")), cache.NewObjectLRUDefault())
@@ -160,13 +187,16 @@ func AddStepsTo(sc *godog.ScenarioContext) {
 			return ctx, nil
 		}
 
-		repositories := ctx.Value(gitRepositoriesKey)
+		var state *gitState
+		if ctx, err := testenv.SetupState(ctx, &state); err != nil {
+			return ctx, err
+		}
 
-		if repositories == nil {
+		if !state.Up() {
 			return ctx, nil
 		}
 
-		os.RemoveAll(repositories.(string))
+		os.RemoveAll(state.RepositoriesDir)
 
 		return ctx, nil
 	})

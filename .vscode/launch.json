@@ -1,0 +1,48 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "ec eval (single-nodejs-app)",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/main.go",
+            "args": [
+                "eval",
+                "--image",
+                "quay.io/hacbs-contract-demo/single-nodejs-app:120e9a3",
+                "--public-key",
+                "${workspaceFolder}/hack/cosign.pub",
+                "--policy",
+                "demo/ec-demo"
+            ]
+        },
+        {
+            "name": "Acceptance tests (fresh)",
+            "type": "go",
+            "request": "launch",
+            "mode": "test",
+            "program": "${workspaceFolder}/internal/acceptance"
+        },
+        {
+            "name": "Acceptance tests (persist environment)",
+            "type": "go",
+            "request": "launch",
+            "mode": "test",
+            "program": "${workspaceFolder}/internal/acceptance",
+            "args": [
+                "-persist"
+            ]
+        },
+        {
+            "name": "Acceptance tests (restore persisted environment)",
+            "type": "go",
+            "request": "launch",
+            "mode": "test",
+            "program": "${workspaceFolder}/internal/acceptance",
+            "args": [
+                "-restore"
+            ]
+        }
+    ]
+}
