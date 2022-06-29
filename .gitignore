@@ -171,3 +171,5 @@ tags
 # Persistent undo
 [._]*.un~
 
+# Last persisted acceptance test run information
+internal/acceptance/.persisted

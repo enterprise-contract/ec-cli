@@ -31,6 +31,7 @@ import (
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/image"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/kubernetes"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/log"
+	"github.com/hacbs-contract/ec-cli/internal/acceptance/registry"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/rekor"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/testenv"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/wiremock"
@@ -40,18 +41,28 @@ import (
 // a flag that can be set by running the test with "-args -persist" command line options
 var persist = flag.Bool("persist", false, "persist the stubbed environment to facilitate debugging")
 
+// run acceptance tests with the persisted environment
+var restore = flag.Bool("restore", false, "restore last persisted environment")
+
+// specify a subset of scenarios to run filtering by given tags
 var tags = flag.String("tags", "", "select scenarios to run based on tags")
 
 // initializeScenario adds all steps and registers all hooks to the
 // provided godog.ScenarioContext
 func initializeScenario(sc *godog.ScenarioContext) {
-	crypto.AddStepsTo(sc)
-	image.AddStepsTo(sc)
-	git.AddStepsTo(sc)
-	kubernetes.AddStepsTo(sc)
 	cli.AddStepsTo(sc)
+	crypto.AddStepsTo(sc)
+	git.AddStepsTo(sc)
+	image.AddStepsTo(sc)
+	kubernetes.AddStepsTo(sc)
+	registry.AddStepsTo(sc)
 	rekor.AddStepsTo(sc)
 	wiremock.AddStepsTo(sc)
+
+	sc.After(func(ctx context.Context, scenario *godog.Scenario, scenarioErr error) (context.Context, error) {
+		_, err := testenv.Persist(ctx)
+		return ctx, err
+	})
 }
 
 // setupContext creates a Context prepopulated with the *testing.T and *persist
@@ -59,6 +70,7 @@ func initializeScenario(sc *godog.ScenarioContext) {
 func setupContext(t *testing.T) context.Context {
 	ctx := context.WithValue(context.Background(), log.TestingKey, t)
 	ctx = context.WithValue(ctx, testenv.PersistStubEnvironment, *persist)
+	ctx = context.WithValue(ctx, testenv.RestoreStubEnvironment, *restore)
 
 	return ctx
 }

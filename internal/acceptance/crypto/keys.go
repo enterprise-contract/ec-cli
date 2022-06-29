@@ -22,6 +22,7 @@ import (
 	"fmt"
 
 	"github.com/cucumber/godog"
+	"github.com/hacbs-contract/ec-cli/internal/acceptance/testenv"
 	"github.com/sigstore/cosign/pkg/cosign"
 	"github.com/sigstore/sigstore/pkg/signature"
 )
@@ -29,7 +30,15 @@ import (
 type keys int
 
 // we store all generated keys in the Context under this key
-const allKeys = keys(0)
+const keyStateKey = keys(0)
+
+type keyState struct {
+	Keys map[string]*cosign.KeysBytes
+}
+
+func (g keyState) Key() any {
+	return keyStateKey
+}
 
 // GenerateKeyPair generates a key pair with no password protection
 func GenerateKeyPair() (*cosign.KeysBytes, error) {
@@ -38,29 +47,34 @@ func GenerateKeyPair() (*cosign.KeysBytes, error) {
 
 // generateKeyPair generates a key pair and stores it in the Context
 func generateKeyPair(ctx context.Context, name string) (context.Context, error) {
+	var state *keyState
+	ctx, err := testenv.SetupState(ctx, &state)
+	if err != nil {
+		return ctx, err
+	}
+
+	if state.Keys[name] != nil {
+		// key with this name was already generated
+		return ctx, nil
+	}
+
 	keyPair, err := GenerateKeyPair()
 	if err != nil {
 		return ctx, err
 	}
 
-	keys := allKeysFrom(ctx)
-	keys[name] = keyPair
+	if state.Keys == nil {
+		state.Keys = make(map[string]*cosign.KeysBytes)
+	}
 
-	return context.WithValue(ctx, allKeys, keys), nil
+	state.Keys[name] = keyPair
+
+	return ctx, nil
 }
 
 // allKeysFrom returns all key pairs from the Context
 func allKeysFrom(ctx context.Context) map[string]*cosign.KeysBytes {
-	keys := ctx.Value(allKeys)
-	if keys == nil {
-		return make(map[string]*cosign.KeysBytes)
-	}
-
-	if keys, ok := keys.(map[string]*cosign.KeysBytes); ok {
-		return keys
-	}
-
-	panic(fmt.Sprintf("unexpected value found in context for all keys: %#v", keys))
+	return testenv.FetchState[keyState](ctx).Keys
 }
 
 // keyWithNameFrom returns a specific key by name from the Context

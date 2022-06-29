@@ -15,12 +15,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // TODO: perhaps move this to registry?
-package image
+package registry
 
 import (
 	"context"
 	"fmt"
 
+	"github.com/cucumber/godog"
 	"github.com/docker/go-connections/nat"
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/log"
@@ -35,11 +36,33 @@ const registryImage = "docker.io/registry:2.8.1"
 
 type key int
 
-// key to store the host:port of the stubbed registry in Context
-const registryKey = key(0)
+// key to store the host:port of the stubbed registry in Context and persisted environment
+const registryStateKey = key(0)
+
+type registryState struct {
+	HostAndPort string
+}
+
+func (g registryState) Key() any {
+	return registryStateKey
+}
+
+func (g registryState) Up() bool {
+	return g.HostAndPort != ""
+}
 
 // startStubRegistry creates and starts the stub image registry
 func startStubRegistry(ctx context.Context) (context.Context, error) {
+	var state *registryState
+	ctx, err := testenv.SetupState(ctx, &state)
+	if err != nil {
+		return ctx, err
+	}
+
+	if state.Up() {
+		return ctx, nil
+	}
+
 	req := testenv.TestContainersRequest(ctx, testcontainers.ContainerRequest{
 		Image:        registryImage,
 		ExposedPorts: []string{"5000/tcp"},
@@ -60,23 +83,41 @@ func startStubRegistry(ctx context.Context) (context.Context, error) {
 		return ctx, err
 	}
 
-	return context.WithValue(ctx, registryKey, fmt.Sprintf("localhost:%d", port.Int())), nil
+	state.HostAndPort = fmt.Sprintf("localhost:%d", port.Int())
+
+	return ctx, nil
 }
 
 // ImageReferenceInStubRegistry returns a reference for a image constructed by concatenating
 // the host:port/`name` where the name is formatted by the given format and arguments
-func ImageReferenceInStubRegistry(ctx context.Context, format string, args ...interface{}) name.Reference {
-	imageRef := StubRegistry(ctx) + "/" + fmt.Sprintf(format, args...)
+func ImageReferenceInStubRegistry(ctx context.Context, format string, args ...interface{}) (name.Reference, error) {
+	registry, err := StubRegistry(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	imageRef := registry + "/" + fmt.Sprintf(format, args...)
 
 	ref, err := name.ParseReference(imageRef)
 	if err != nil {
 		panic(errors.Wrapf(err, "unable to parse image reference: %s", imageRef))
 	}
 
-	return ref
+	return ref, nil
 }
 
 // StubRegistry returns the host:port of the stubbed registry from the Context
-func StubRegistry(ctx context.Context) string {
-	return ctx.Value(registryKey).(string)
+func StubRegistry(ctx context.Context) (string, error) {
+	state := testenv.FetchState[registryState](ctx)
+
+	if !state.Up() {
+		return "", errors.New("no state setup, did you start the registry stub server?")
+	}
+
+	return state.HostAndPort, nil
+}
+
+// AddStepsTo adds Gherkin steps to the godog ScenarioContext
+func AddStepsTo(sc *godog.ScenarioContext) {
+	sc.Step(`^stub registry running$`, startStubRegistry)
 }

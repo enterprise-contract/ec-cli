@@ -41,9 +41,8 @@ import (
 type key int
 
 const (
-	wireMockKey    key                                    = iota // Key under which the WireMock client is held in the Context
-	wireMockURLKey                                               // URL of the WireMock instance, usually http://localhost:port where the port is NAT-ed by exposing the port 8080 of the container
-	wireMockImage  = "docker.io/wiremock/wiremock:2.33.2"        // container image used to run WireMock
+	wireMockStateKey key = iota                                 // The state of the wiremock persisted between runs and in Context
+	wireMockImage        = "docker.io/wiremock/wiremock:2.33.2" // container image used to run WireMock
 )
 
 // to make it simpler on imports in the clients of this package,
@@ -78,6 +77,18 @@ type unmatchedRequest struct {
 	BrowserProxyRequest bool
 	LoggedDate          int64
 	LoggedDateString    string
+}
+
+type wiremockState struct {
+	URL string
+}
+
+func (g wiremockState) Key() any {
+	return wireMockStateKey
+}
+
+func (g wiremockState) Up() bool {
+	return g.URL != ""
 }
 
 // contentTypeFromString returns the content-type part of a MIME media type
@@ -167,7 +178,13 @@ func (c *client) UnmatchedRequests() ([]unmatchedRequest, error) {
 
 // StartWiremock starts the WireMock instance if one is not already running
 func StartWiremock(ctx context.Context) (context.Context, error) {
-	if ctx.Value(wireMockKey) != nil {
+	var state *wiremockState
+	ctx, err := testenv.SetupState(ctx, &state)
+	if err != nil {
+		return ctx, err
+	}
+
+	if state.Up() {
 		// we already stored the key in this Context, a WireMock instance
 		// must be running already
 		return ctx, nil
@@ -204,22 +221,20 @@ func StartWiremock(ctx context.Context) (context.Context, error) {
 	}
 
 	url := fmt.Sprintf("http://localhost:%d", port.Int())
-	client := newClient(url)
-
-	ctx = context.WithValue(ctx, wireMockKey, client)
-	ctx = context.WithValue(ctx, wireMockURLKey, url)
+	state.URL = url
 
 	return ctx, nil
 }
 
 // wiremockFrom returns the client used to interact with the WireMock admin API
 func wiremockFrom(ctx context.Context) (*client, error) {
-	w, ok := ctx.Value(wireMockKey).(*client)
-	if !ok {
-		return nil, errors.New("expecting WireMock client in context, found none or of wrong type")
+	state := testenv.FetchState[wiremockState](ctx)
+
+	if !state.Up() {
+		return nil, errors.New("WireMock is not up, did you start it first?")
 	}
 
-	return w, nil
+	return newClient(state.URL), nil
 }
 
 // StubFor delegates to the wiremock.StubFor of the WireMock instance assigned
@@ -234,8 +249,14 @@ func StubFor(ctx context.Context, stubRule *wiremock.StubRule) error {
 }
 
 // Endpoint returns the URL of the WireMock instance
-func Endpoint(ctx context.Context) string {
-	return ctx.Value(wireMockURLKey).(string)
+func Endpoint(ctx context.Context) (string, error) {
+	state := testenv.FetchState[wiremockState](ctx)
+
+	if !state.Up() {
+		return "", errors.New("WireMock is not up, did you start it first?")
+	}
+
+	return state.URL, nil
 }
 
 // AddStepsTo makes sure that nay unmatched requests, i.e. requests that are not

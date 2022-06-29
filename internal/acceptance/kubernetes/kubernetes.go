@@ -64,8 +64,11 @@ func stubPolicy(ctx context.Context, name string, specification *godog.DocString
 
 // KubeConfig returns a valid kubeconfig configuration file in YAML format that
 // points to the stubbed apiserver and uses no authentication
-func KubeConfig(ctx context.Context) string {
-	server := wiremock.Endpoint(ctx)
+func KubeConfig(ctx context.Context) (string, error) {
+	server, err := wiremock.Endpoint(ctx)
+	if err != nil {
+		return "", err
+	}
 
 	cluster := "my-cluster"
 
@@ -87,10 +90,10 @@ func KubeConfig(ctx context.Context) string {
 
 	b, err := clientcmd.Write(kubeconfig)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 
-	return string(b)
+	return string(b), nil
 }
 
 // AddStepsTo adds Gherkin steps to the godog ScenarioContext
