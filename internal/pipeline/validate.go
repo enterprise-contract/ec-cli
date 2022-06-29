@@ -24,19 +24,15 @@ import (
 
 //ValidatePipeline calls NewPipelineEvaluator to obtain an Evaluator. It then executes the associated TestRunner
 //which tests the associated pipeline file(s) against the associated policies, and displays the output.
-func ValidatePipeline(ctx context.Context, fpath string, policyRepo PolicyRepo, namespace string) error {
+func ValidatePipeline(ctx context.Context, fpath string, policyRepo PolicyRepo, namespace string) (*policy.Output, error) {
 	e, err := NewPipelineEvaluator(ctx, fpath, policyRepo, namespace)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	results, err := e.TestRunner.Run(ctx, []string{fpath})
 	if err != nil {
-		return err
+		return nil, err
 	}
-	out := &policy.Output{PolicyCheck: results}
-	err = out.Print()
-	if err != nil {
-		return err
-	}
-	return nil
+
+	return &policy.Output{PolicyCheck: results}, nil
 }

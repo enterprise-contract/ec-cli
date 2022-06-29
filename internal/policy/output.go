@@ -17,10 +17,9 @@
 package policy
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"os"
+	"io"
 
 	"github.com/open-policy-agent/conftest/output"
 )
@@ -59,17 +58,39 @@ func (o *Output) SetPolicyCheck(results []output.CheckResult) {
 	o.ExitCode = output.ExitCode(results)
 }
 
-func (o *Output) Print() error {
-	b, err := json.Marshal(o)
+func (o *Output) Print(out io.Writer) error {
+	return o.print(out, "")
+}
+
+func (o *Output) print(out io.Writer, indent string) error {
+	e := json.NewEncoder(out)
+	e.SetIndent(indent, "\t")
+	err := e.Encode(o)
 	if err != nil {
 		return fmt.Errorf("marshal json: %w", err)
 	}
 
-	var out bytes.Buffer
-	if err := json.Indent(&out, b, "", "\t"); err != nil {
-		return fmt.Errorf("indent: %w", err)
-	}
+	return nil
+}
 
-	fmt.Fprintln(os.Stdout, out.String())
+type Outputs []*Output
+
+func (o Outputs) Print(out io.Writer) error {
+	fmt.Fprint(out, "[")
+	first := true
+	for _, output := range o {
+		if first {
+			fmt.Fprint(out, "\n\t")
+		} else {
+			fmt.Fprint(out, "\t,")
+		}
+		first = false
+		err := output.print(out, "\t")
+		if err != nil {
+			return err
+		}
+
+	}
+	fmt.Fprint(out, "]\n")
 	return nil
 }
