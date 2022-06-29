@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/testcontainers/testcontainers-go"
 )
 
 type key int
@@ -192,4 +193,60 @@ func Test_PersistOff(t *testing.T) {
 	assert.NoError(t, err)
 	assert.False(t, persisting)
 	assert.False(t, persisted)
+}
+
+func Test_TestContainersRequest(t *testing.T) {
+	cases := []struct {
+		name       string
+		persisted  bool
+		req        testcontainers.ContainerRequest
+		autoRemove bool
+		skipReaper bool
+	}{
+		{
+			name:       "not persisted",
+			persisted:  false,
+			req:        testcontainers.ContainerRequest{},
+			autoRemove: true,
+			skipReaper: false,
+		},
+		{
+			name:      "not persisted - changed defaults",
+			persisted: false,
+			req: testcontainers.ContainerRequest{
+				AutoRemove: false,
+				SkipReaper: true,
+			},
+			autoRemove: true,
+			skipReaper: false,
+		},
+		{
+			name:       "persisted",
+			persisted:  true,
+			req:        testcontainers.ContainerRequest{},
+			autoRemove: false,
+			skipReaper: true,
+		},
+		{
+			name:      "persisted - change defaults",
+			persisted: true,
+			req: testcontainers.ContainerRequest{
+				AutoRemove: true,
+				SkipReaper: false,
+			},
+			autoRemove: false,
+			skipReaper: true,
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			ctx := context.WithValue(context.TODO(), PersistStubEnvironment, c.persisted)
+
+			out := TestContainersRequest(ctx, c.req)
+
+			assert.Equal(t, c.autoRemove, out.AutoRemove, "AutoRemove")
+			assert.Equal(t, c.skipReaper, out.SkipReaper, "SkipReaper")
+		})
+	}
 }

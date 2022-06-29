@@ -177,10 +177,10 @@ func FetchState[S WithState](ctx context.Context) *S {
 
 // TestContainersRequest modifies the req to keep the container running after the test if PersistStubEnvironment is set to true in the ctx
 func TestContainersRequest(ctx context.Context, req testcontainers.ContainerRequest) testcontainers.ContainerRequest {
-	if Persisted(ctx) {
-		req.AutoRemove = false
-		req.SkipReaper = true
-	}
+	persisted := Persisted(ctx)
+
+	req.AutoRemove = !persisted
+	req.SkipReaper = persisted
 
 	return req
 }
