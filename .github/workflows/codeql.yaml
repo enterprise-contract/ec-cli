@@ -48,16 +48,8 @@ jobs:
       - name: Setup Go environment
         uses: actions/setup-go@v3.0.0
         with:
-          go-version: 1.18
-
-      - name: Cache dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/go/pkg/mod
-            ~/.cache/go-build
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: ${{ runner.os }}-go-
+          cache: true
+          go-version-file: go.mod
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v2
