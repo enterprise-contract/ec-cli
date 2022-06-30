@@ -14,7 +14,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// Runs the ec command line and asserts the expected outcome.
+// Package cli runs the ec command line and asserts the expected outcome.
 package cli
 
 import (
@@ -32,6 +32,9 @@ import (
 	"unicode"
 
 	"github.com/cucumber/godog"
+	"github.com/pkg/diff"
+	"github.com/yudai/gojsondiff"
+	"github.com/yudai/gojsondiff/formatter"
 
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/crypto"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/kubernetes"
@@ -39,9 +42,6 @@ import (
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/registry"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/rekor"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/testenv"
-	"github.com/pkg/diff"
-	"github.com/yudai/gojsondiff"
-	"github.com/yudai/gojsondiff/formatter"
 )
 
 type status struct {
@@ -198,7 +198,7 @@ func theExitStatusIs(ctx context.Context, expected int) error {
 		return err
 	}
 
-	// if the error is a exec.ExitError we need to assert the status to
+	// if the error is an exec.ExitError we need to assert the status to
 	// be expected below and not fail here
 	var exitErr *exec.ExitError
 	if status.err != nil && !errors.As(status.err, &exitErr) {
@@ -375,7 +375,7 @@ func matchesRegex(regex any, value any) bool {
 func ecStatusFrom(ctx context.Context) (*status, error) {
 	status, ok := ctx.Value(processStatusKey).(*status)
 	if !ok {
-		return nil, errors.New("can't find ec process state, did you invoke ec beforehand?")
+		return nil, errors.New("can't find ec process state, did you invoke ec beforehand")
 	}
 
 	return status, nil

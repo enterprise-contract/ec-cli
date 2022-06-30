@@ -19,13 +19,14 @@ package cmd
 import (
 	"context"
 
-	"github.com/hacbs-contract/ec-cli/internal/pipeline"
-	"github.com/hacbs-contract/ec-cli/internal/policy"
 	"github.com/hashicorp/go-multierror"
 	"github.com/spf13/cobra"
+
+	"github.com/hacbs-contract/ec-cli/internal/output"
+	"github.com/hacbs-contract/ec-cli/internal/policy_source"
 )
 
-type pipelineValidationFn func(context.Context, string, pipeline.PolicyRepo, string) (*policy.Output, error)
+type pipelineValidationFn func(context.Context, string, policy_source.PolicyRepo, string) (*output.Output, error)
 
 func validatePipelineCmd(validate pipelineValidationFn) *cobra.Command {
 	var data = struct {
@@ -64,18 +65,18 @@ func validatePipelineCmd(validate pipelineValidationFn) *cobra.Command {
 			"",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
-			var outputs policy.Outputs
+			var outputs output.Outputs
 			for i := range data.FilePaths {
 				fpath := data.FilePaths[i]
-				policySource := pipeline.PolicyRepo{
+				policySource := policy_source.PolicyRepo{
 					PolicyDir: data.PolicyDir,
 					RepoURL:   data.PolicyRepo,
 					RepoRef:   data.Ref,
 				}
-				if output, e := validate(cmd.Context(), fpath, policySource, data.ConftestNamespace); e != nil {
+				if o, e := validate(cmd.Context(), fpath, policySource, data.ConftestNamespace); e != nil {
 					err = multierror.Append(err, e)
 				} else {
-					outputs = append(outputs, output)
+					outputs = append(outputs, o)
 				}
 			}
 			outputs.Print(cmd.OutOrStdout())

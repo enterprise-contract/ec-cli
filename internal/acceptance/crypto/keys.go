@@ -14,7 +14,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// Handles key and signer creation
+// Package crypto handles key and signer creation
 package crypto
 
 import (
@@ -22,9 +22,10 @@ import (
 	"fmt"
 
 	"github.com/cucumber/godog"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/testenv"
 	"github.com/sigstore/cosign/pkg/cosign"
 	"github.com/sigstore/sigstore/pkg/signature"
+
+	"github.com/hacbs-contract/ec-cli/internal/acceptance/testenv"
 )
 
 type keys int
@@ -86,7 +87,7 @@ func keyWithNameFrom(ctx context.Context, name string) (*cosign.KeysBytes, error
 		return key, nil
 	}
 
-	return nil, fmt.Errorf("can't find key named %s, did you create the key pair beforehand?", name)
+	return nil, fmt.Errorf("can't find key named %s, did you create the key pair beforehand", name)
 }
 
 // SignerWithKey configures a SignerVerifier with the provided key by name

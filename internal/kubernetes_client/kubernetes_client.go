@@ -14,7 +14,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package policy
+package kubernetes_client
 
 import (
 	"context"
@@ -28,19 +28,19 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-type kubernetes struct {
-	client client.Client
+type Kubernetes struct {
+	Client client.Client
 }
 
 // NewKubernetes constructs a new kubernetes with the default "live" client
-func NewKubernetes() (*kubernetes, error) {
-	client, err := createControllerRuntimeClient()
+func NewKubernetes() (*Kubernetes, error) {
+	kClient, err := createControllerRuntimeClient()
 	if err != nil {
 		return nil, err
 	}
 
-	return &kubernetes{
-		client: client,
+	return &Kubernetes{
+		Client: kClient,
 	}, nil
 }
 
@@ -64,7 +64,8 @@ func createControllerRuntimeClient() (client.Client, error) {
 	return clnt, err
 }
 
-func (k *kubernetes) fetchEnterpriseContractPolicy(ctx context.Context, name types.NamespacedName) (*ecp.EnterpriseContractPolicy, error) {
+// FetchEnterpriseContractPolicy gets the Enterprise Contract Policy from the given namespace in a Kubernetes cluster
+func (k *Kubernetes) FetchEnterpriseContractPolicy(ctx context.Context, name types.NamespacedName) (*ecp.EnterpriseContractPolicy, error) {
 	policy := &ecp.EnterpriseContractPolicy{}
 	if name.Namespace == "" {
 		namespace, err := getCurrentNamespace()
@@ -73,11 +74,11 @@ func (k *kubernetes) fetchEnterpriseContractPolicy(ctx context.Context, name typ
 		}
 		name.Namespace = namespace
 	}
-	err := k.client.Get(ctx, name, policy)
+
+	err := k.Client.Get(ctx, name, policy)
 	if err != nil {
 		return nil, err
 	}
-
 	return policy, nil
 }
 
@@ -98,12 +99,12 @@ func getCurrentNamespace() (namespace string, err error) {
 		err = fmt.Errorf("%s: missing contexts", baseErr)
 		return
 	}
-	context := contexts[clientCfg.CurrentContext]
-	if context == nil {
+	c := contexts[clientCfg.CurrentContext]
+	if c == nil {
 		err = fmt.Errorf("%s: missing current context", baseErr)
 		return
 	}
-	namespace = context.Namespace
+	namespace = c.Namespace
 	if namespace == "" {
 		err = fmt.Errorf("%s: namespace is blank", baseErr)
 		return

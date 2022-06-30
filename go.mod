@@ -5,7 +5,6 @@ go 1.18
 require (
 	cuelang.org/go v0.4.3
 	github.com/cucumber/godog v0.12.5
-	github.com/docker/go-connections v0.4.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-git/go-billy/v5 v5.3.1
 	github.com/go-git/go-git/v5 v5.4.2
@@ -14,7 +13,6 @@ require (
 	github.com/google/addlicense v1.0.0
 	github.com/google/go-containerregistry v0.8.1-0.20220216220642-00c59d91847c
 	github.com/hacbs-contract/enterprise-contract-controller v0.0.0-20220525095719-1a34e1604a54
-	github.com/hashicorp/go-getter v1.6.2
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/in-toto/in-toto-golang v0.3.4-0.20211211042327-af1f9fb822bf
 	github.com/open-policy-agent/conftest v0.33.0
@@ -136,6 +134,7 @@ require (
 	github.com/docker/distribution v2.8.1+incompatible // indirect
 	github.com/docker/docker v20.10.17+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.6.4 // indirect
+	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-metrics v0.0.1 // indirect
 	github.com/docker/go-units v0.4.0 // indirect
 	github.com/dustin/go-humanize v1.0.0 // indirect
@@ -225,6 +224,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.7.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
+	github.com/hashicorp/go-getter v1.6.2 // indirect
 	github.com/hashicorp/go-immutable-radix v1.3.1 // indirect
 	github.com/hashicorp/go-memdb v1.3.0 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.1 // indirect

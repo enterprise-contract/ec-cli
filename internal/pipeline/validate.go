@@ -8,7 +8,7 @@
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.`
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
@@ -19,20 +19,22 @@ package pipeline
 import (
 	"context"
 
-	"github.com/hacbs-contract/ec-cli/internal/policy"
+	"github.com/hacbs-contract/ec-cli/internal/evaluation_target/pipeline_definition_file"
+	"github.com/hacbs-contract/ec-cli/internal/output"
+	"github.com/hacbs-contract/ec-cli/internal/policy_source"
 )
 
-//ValidatePipeline calls NewPipelineEvaluator to obtain an Evaluator. It then executes the associated TestRunner
+//ValidatePipeline calls NewPipelineEvaluator to obtain an PipelineEvaluator. It then executes the associated TestRunner
 //which tests the associated pipeline file(s) against the associated policies, and displays the output.
-func ValidatePipeline(ctx context.Context, fpath string, policyRepo PolicyRepo, namespace string) (*policy.Output, error) {
-	e, err := NewPipelineEvaluator(ctx, fpath, policyRepo, namespace)
-	if err != nil {
-		return nil, err
-	}
-	results, err := e.TestRunner.Run(ctx, []string{fpath})
+func ValidatePipeline(ctx context.Context, fpath string, policyRepo policy_source.PolicyRepo, namespace string) (*output.Output, error) {
+	p, err := pipeline_definition_file.NewPipelineDefinitionFile(ctx, fpath, policyRepo, namespace)
 	if err != nil {
 		return nil, err
 	}
 
-	return &policy.Output{PolicyCheck: results}, nil
+	results, err := p.Evaluator.TestRunner.Run(p.Evaluator.Context, []string{p.Fpath})
+	if err != nil {
+		return nil, err
+	}
+	return &output.Output{PolicyCheck: results}, nil
 }

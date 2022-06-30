@@ -14,7 +14,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// Forwards logs to testing.T.Log* methods
+// Package log forwards logs to testing.T.Log* methods
 package log
 
 import (
@@ -24,7 +24,7 @@ import (
 
 type Testing int
 
-// Key to the *testing.T instance in Context
+// TestingKey Key to the *testing.T instance in Context
 const TestingKey Testing = 0
 
 type Logger interface {

@@ -14,7 +14,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// A stub implementation of the Kubernetes apiserver
+// Package kubernetes is a stub implementation of the Kubernetes apiserver
 package kubernetes
 
 import (
@@ -23,10 +23,11 @@ import (
 	"os"
 
 	"github.com/cucumber/godog"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/git"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/wiremock"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
+
+	"github.com/hacbs-contract/ec-cli/internal/acceptance/git"
+	"github.com/hacbs-contract/ec-cli/internal/acceptance/wiremock"
 )
 
 // stubApiserverRunning starts the stub apiserver using WireMock
@@ -52,7 +53,7 @@ func stubPolicy(ctx context.Context, name string, specification *godog.DocString
 				"spec": %s
 			  }`, name, ns, os.Expand(specification.Content, func(key string) string {
 			if key == "GITHOST" {
-				return git.GitHost(ctx)
+				return git.Host(ctx)
 			}
 
 			return ""

@@ -14,7 +14,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// TODO: perhaps move this to registry?
+// Package registry is a stub implementation of a container registry
 package registry
 
 import (
@@ -22,16 +22,16 @@ import (
 	"fmt"
 
 	"github.com/cucumber/godog"
-	"github.com/docker/go-connections/nat"
 	"github.com/google/go-containerregistry/pkg/name"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/log"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/testenv"
 	"github.com/pkg/errors"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
+
+	"github.com/hacbs-contract/ec-cli/internal/acceptance/log"
+	"github.com/hacbs-contract/ec-cli/internal/acceptance/testenv"
 )
 
-// the image we're using to launch the stub image registyr
+// the image we're using to launch the stub image registry
 const registryImage = "docker.io/registry:2.8.1"
 
 type key int
@@ -66,7 +66,7 @@ func startStubRegistry(ctx context.Context) (context.Context, error) {
 	req := testenv.TestContainersRequest(ctx, testcontainers.ContainerRequest{
 		Image:        registryImage,
 		ExposedPorts: []string{"5000/tcp"},
-		WaitingFor:   wait.ForHTTP("/v2/").WithPort(nat.Port("5000/tcp")),
+		WaitingFor:   wait.ForHTTP("/v2/").WithPort("5000/tcp"),
 	})
 
 	registry, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
@@ -78,7 +78,7 @@ func startStubRegistry(ctx context.Context) (context.Context, error) {
 		return ctx, err
 	}
 
-	port, err := registry.MappedPort(ctx, nat.Port("5000/tcp"))
+	port, err := registry.MappedPort(ctx, "5000/tcp")
 	if err != nil {
 		return ctx, err
 	}
@@ -88,7 +88,7 @@ func startStubRegistry(ctx context.Context) (context.Context, error) {
 	return ctx, nil
 }
 
-// ImageReferenceInStubRegistry returns a reference for a image constructed by concatenating
+// ImageReferenceInStubRegistry returns a reference for an image constructed by concatenating
 // the host:port/`name` where the name is formatted by the given format and arguments
 func ImageReferenceInStubRegistry(ctx context.Context, format string, args ...interface{}) (name.Reference, error) {
 	registry, err := StubRegistry(ctx)

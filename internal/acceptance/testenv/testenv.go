@@ -14,7 +14,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// Test environment utilities
+// Package testenv contains test environment utilities
 package testenv
 
 import (
@@ -30,7 +30,7 @@ import (
 
 type testEnv int
 
-// Key we use to lookup the `persisted` flag, which pass it through the
+// Key we use to look up the `persisted` flag, which pass it through the
 // Context to prevent a package dependency cycle
 const (
 	PersistStubEnvironment testEnv = iota
@@ -135,7 +135,7 @@ func SetupState[S WithState](ctx context.Context, state **S) (context.Context, e
 	newS := new(S)
 	key := persistedKey(*newS)
 
-	store := (*p.(*map[string]any))
+	store := *p.(*map[string]any)
 
 	existing := store[key]
 
@@ -166,7 +166,7 @@ func FetchState[S WithState](ctx context.Context) *S {
 	newS := *new(S)
 	key := persistedKey(newS)
 
-	store := (*p.(*map[string]any))
+	store := *p.(*map[string]any)
 
 	state := store[key]
 	if state == nil {

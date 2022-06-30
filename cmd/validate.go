@@ -17,8 +17,10 @@
 package cmd
 
 import (
-	"github.com/hacbs-contract/ec-cli/internal/pipeline"
 	"github.com/spf13/cobra"
+
+	"github.com/hacbs-contract/ec-cli/internal/image"
+	"github.com/hacbs-contract/ec-cli/internal/pipeline"
 )
 
 func validateCmd() *cobra.Command {
@@ -33,5 +35,6 @@ func validateCmd() *cobra.Command {
 func init() {
 	validate := validateCmd()
 	validate.AddCommand(validatePipelineCmd(pipeline.ValidatePipeline))
+	validate.AddCommand(validateImageCmd(image.ValidateImage))
 	rootCmd.AddCommand(validate)
 }

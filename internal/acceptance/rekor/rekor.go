@@ -14,7 +14,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// Stub implementation of Rekord
+// Package rekor is a stub implementation of Rekord
 package rekor
 
 import (
@@ -26,12 +26,13 @@ import (
 
 	"github.com/cucumber/godog"
 	"github.com/go-openapi/strfmt"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/crypto"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/image"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/wiremock"
 	"github.com/sigstore/rekor/pkg/generated/models"
 	intoto "github.com/sigstore/rekor/pkg/types/intoto/v0.0.1"
 	"github.com/transparency-dev/merkle/rfc6962"
+
+	"github.com/hacbs-contract/ec-cli/internal/acceptance/crypto"
+	"github.com/hacbs-contract/ec-cli/internal/acceptance/image"
+	"github.com/hacbs-contract/ec-cli/internal/acceptance/wiremock"
 )
 
 // stubRekordRunning starts the stub apiserver using WireMock
@@ -51,13 +52,13 @@ func randomHex(len int) string {
 }
 
 // rekorEntryForAttestation given an image name for which attestation has been
-// previously performed via image.createAndPushAttestation, creates stub for a
-// empty attestation log entry in Rekor
+// previously performed via image.createAndPushAttestation, creates stub for
+//an empty attestation log entry in Rekor
 // TODO: match the request closer to the request for the specific lookup, this
 //       stub entry will match all lookups, i.e. won't take into account the
 //       image digest by whitch the entry is looked up
 func rekorEntryForAttestation(ctx context.Context, imageName string) error {
-	var logEntry models.LogEntry = models.LogEntry{}
+	var logEntry = models.LogEntry{}
 
 	attestation, err := image.AttestationFrom(ctx, imageName)
 	if err != nil {

@@ -22,7 +22,7 @@ Or run the acceptance_test.go test using `go test`:
 
     $ go test ./internal/acceptance/
 
-The latter is useful for specifying additional arguments. Currently two are
+The latter is useful for specifying additional arguments. Currently, two are
 supported:
 
   * `-persist` if specified the test environment will persist after test
@@ -38,7 +38,7 @@ created with:
 
     ryuk.container.privileged=true
 
-Also you will need to be able to run Docker without elevating the privileges,
+Also, you will need to be able to run Docker without elevating the privileges,
 that is as a non-root user. See the
 [documentation](https://docs.docker.com/engine/install/linux-postinstall/) on
 Docker website how to accomplish that.
