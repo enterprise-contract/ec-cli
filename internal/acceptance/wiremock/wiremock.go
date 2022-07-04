@@ -94,12 +94,17 @@ func (g wiremockState) Up() bool {
 // contentTypeFromString returns the content-type part of a MIME media type
 // for example given "type/subtype;parameter=value;..." returns "type/subtype"
 func contentTypeFromString(s string) string {
-	contentType, _, err := mime.ParseMediaType(s)
-	if err != nil {
-		panic(err)
+	for _, part := range strings.Split(s, ",") {
+		contentType, _, err := mime.ParseMediaType(part)
+		if err != nil {
+			continue
+		}
+
+		// first that parses without error
+		return contentType
 	}
 
-	return contentType
+	return "unknown/unknown"
 }
 
 // contentTypeFrom returns the content-type based on the Accept HTTP
