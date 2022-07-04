@@ -161,3 +161,141 @@ func Test_PrintOutputsExpectedJSON(t *testing.T) {
 		}
 	  ]`, buff.String())
 }
+
+func Test_Violations(t *testing.T) {
+	cases := []struct {
+		name     string
+		output   Output
+		expected []string
+	}{
+		{
+			name: "passing",
+			output: Output{
+				ImageSignatureCheck: VerificationStatus{
+					Passed: true,
+				},
+				AttestationSignatureCheck: VerificationStatus{
+					Passed: true,
+				},
+			},
+			expected: []string{},
+		},
+		{
+			name: "failing image signature",
+			output: Output{
+				ImageSignatureCheck: VerificationStatus{
+					Passed:  false,
+					Message: "image signature failed",
+				},
+				AttestationSignatureCheck: VerificationStatus{
+					Passed: true,
+				},
+			},
+			expected: []string{"image signature failed"},
+		},
+		{
+			name: "failing attestation signature",
+			output: Output{
+				ImageSignatureCheck: VerificationStatus{
+					Passed: true,
+				},
+				AttestationSignatureCheck: VerificationStatus{
+					Passed:  false,
+					Message: "attestation signature failed",
+				},
+			},
+			expected: []string{"attestation signature failed"},
+		},
+		{
+			name: "failing attestation signature",
+			output: Output{
+				ImageSignatureCheck: VerificationStatus{
+					Passed:  false,
+					Message: "image signature failed",
+				},
+				AttestationSignatureCheck: VerificationStatus{
+					Passed:  false,
+					Message: "attestation signature failed",
+				},
+			},
+			expected: []string{"image signature failed", "attestation signature failed"},
+		},
+		{
+			name: "failing policy check",
+			output: Output{
+				ImageSignatureCheck: VerificationStatus{
+					Passed: true,
+				},
+				AttestationSignatureCheck: VerificationStatus{
+					Passed: true,
+				},
+				PolicyCheck: []output.CheckResult{
+					{
+						Failures: []output.Result{
+							{
+								Message: "failed policy check",
+							},
+						},
+					},
+				},
+			},
+			expected: []string{"failed policy check"},
+		},
+		{
+			name: "failing multiple policy checks",
+			output: Output{
+				ImageSignatureCheck: VerificationStatus{
+					Passed: true,
+				},
+				AttestationSignatureCheck: VerificationStatus{
+					Passed: true,
+				},
+				PolicyCheck: []output.CheckResult{
+					{
+						Failures: []output.Result{
+							{
+								Message: "failed policy check 1",
+							},
+							{
+								Message: "failed policy check 2",
+							},
+						},
+					},
+				},
+			},
+			expected: []string{"failed policy check 1", "failed policy check 2"},
+		},
+		{
+			name: "failing everything",
+			output: Output{
+				ImageSignatureCheck: VerificationStatus{
+					Passed:  false,
+					Message: "image signature failed",
+				},
+				AttestationSignatureCheck: VerificationStatus{
+					Passed:  false,
+					Message: "attestation signature failed",
+				},
+				PolicyCheck: []output.CheckResult{
+					{
+						Failures: []output.Result{
+							{
+								Message: "failed policy check 1",
+							},
+							{
+								Message: "failed policy check 2",
+							},
+						},
+					},
+				},
+			},
+			expected: []string{"image signature failed", "attestation signature failed", "failed policy check 1", "failed policy check 2"},
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			assert.Equal(t, c.expected, c.output.Violations())
+		})
+	}
+}

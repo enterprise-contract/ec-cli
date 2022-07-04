@@ -36,10 +36,14 @@ type policyEvaluator struct {
 	out        output.Outputter
 }
 
+type PolicyEvaluator interface {
+	Evaluate(context.Context, []oci.Signature) ([]output.CheckResult, error)
+}
+
 var kubernetesCreator = NewKubernetes
 
 // NewPolicyEvaluator constructs a policyEvaluator that evaluates according to the pointed at policyConfiguration
-func NewPolicyEvaluator(policyConfiguration string) (*policyEvaluator, error) {
+func NewPolicyEvaluator(policyConfiguration string) (PolicyEvaluator, error) {
 	if policyConfiguration == "" {
 		return nil, errors.New("policy: policy name is required")
 	}
@@ -74,6 +78,18 @@ func NewPolicyEvaluator(policyConfiguration string) (*policyEvaluator, error) {
 }
 
 func (p *policyEvaluator) Evaluate(ctx context.Context, attestations []oci.Signature) ([]output.CheckResult, error) {
+	if len(attestations) == 0 {
+		return []output.CheckResult{
+			{
+				Failures: []output.Result{
+					{
+						Message: "no attestations available",
+					},
+				},
+			},
+		}, nil
+	}
+
 	ecp, err := p.k8s.fetchEnterpriseContractPolicy(ctx, p.policyName)
 	if err != nil {
 		return nil, err

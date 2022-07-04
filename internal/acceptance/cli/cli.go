@@ -198,7 +198,10 @@ func theExitStatusIs(ctx context.Context, expected int) error {
 		return err
 	}
 
-	if status.err != nil {
+	// if the error is a exec.ExitError we need to assert the status to
+	// be expected below and not fail here
+	var exitErr *exec.ExitError
+	if status.err != nil && !errors.As(status.err, &exitErr) {
 		logOutput(ctx, status)
 		return fmt.Errorf("failed to invoke the ec command: %#v", status.err)
 	}
