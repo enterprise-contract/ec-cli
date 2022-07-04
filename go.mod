@@ -18,6 +18,7 @@ require (
 	github.com/in-toto/in-toto-golang v0.3.4-0.20211211042327-af1f9fb822bf
 	github.com/mendersoftware/gobinarycoverage v0.0.0-20220328122436-2231dfd754e3
 	github.com/open-policy-agent/conftest v0.32.0
+	github.com/pkg/diff v0.0.0-20210226163009-20ebb0f2a09e
 	github.com/pkg/errors v0.9.1
 	github.com/redhat-appstudio/managed-gitops/appstudio-shared v0.0.0-20220615221006-a71c1aa4b97f
 	github.com/sigstore/cosign v1.8.0
@@ -29,6 +30,7 @@ require (
 	github.com/testcontainers/testcontainers-go v0.13.0
 	github.com/transparency-dev/merkle v0.0.1
 	github.com/walkerus/go-wiremock v1.2.0
+	github.com/yudai/gojsondiff v1.0.0
 	k8s.io/apimachinery v0.24.1
 	k8s.io/client-go v0.24.1
 	sigs.k8s.io/controller-runtime v0.12.1
@@ -365,6 +367,7 @@ require (
 	github.com/yagipy/maintidx v1.0.0 // indirect
 	github.com/yashtewari/glob-intersection v0.1.0 // indirect
 	github.com/yeya24/promlinter v0.2.0 // indirect
+	github.com/yudai/golcs v0.0.0-20170316035057-ecda9a501e82 // indirect
 	github.com/zclconf/go-cty v1.8.1 // indirect
 	gitlab.com/bosi/decorder v0.2.1 // indirect
 	go.etcd.io/bbolt v1.3.6 // indirect

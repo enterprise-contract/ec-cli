@@ -29,3 +29,23 @@ Feature: evaluate enterprise contract
     """
     When ec command is run with "eval --image ${REGISTRY}/acceptance/ec-happy-day --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
     Then the exit status should be 0
+    Then the standard output should contain
+    """
+    {
+      "components": [
+        {
+          "name": "Unnamed",
+          "containerImage": "localhost:(\\d+)/acceptance/ec-happy-day",
+          "success": true,
+          "violations": [
+            {
+              "filename": "/tmp/ecp_input.(\\d+)/input.json",
+              "namespace": "release.main",
+              "successes": 0
+            }
+          ]
+        }
+      ],
+      "success": true
+    }
+    """

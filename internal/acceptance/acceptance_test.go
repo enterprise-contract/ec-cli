@@ -44,6 +44,8 @@ var persist = flag.Bool("persist", false, "persist the stubbed environment to fa
 // run acceptance tests with the persisted environment
 var restore = flag.Bool("restore", false, "restore last persisted environment")
 
+var noColors = flag.Bool("no-colors", false, "disable colored output")
+
 // specify a subset of scenarios to run filtering by given tags
 var tags = flag.String("tags", "", "select scenarios to run based on tags")
 
@@ -71,6 +73,7 @@ func setupContext(t *testing.T) context.Context {
 	ctx := context.WithValue(context.Background(), log.TestingKey, t)
 	ctx = context.WithValue(ctx, testenv.PersistStubEnvironment, *persist)
 	ctx = context.WithValue(ctx, testenv.RestoreStubEnvironment, *restore)
+	ctx = context.WithValue(ctx, testenv.NoColors, *noColors)
 
 	return ctx
 }
@@ -96,6 +99,7 @@ func TestFeatures(t *testing.T) {
 		TestingT:       t,
 		DefaultContext: setupContext(t),
 		Tags:           *tags,
+		NoColors:       *noColors,
 	}
 
 	suite := godog.TestSuite{

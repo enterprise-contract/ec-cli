@@ -250,3 +250,13 @@ func Test_TestContainersRequest(t *testing.T) {
 		})
 	}
 }
+
+func Test_ColorFlag(t *testing.T) {
+	assert.False(t, NoColorOutput(context.TODO()))
+
+	ctx := context.WithValue(context.TODO(), NoColors, false)
+	assert.False(t, NoColorOutput(ctx))
+
+	ctx = context.WithValue(context.TODO(), NoColors, true)
+	assert.True(t, NoColorOutput(ctx))
+}
