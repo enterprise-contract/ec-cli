@@ -287,19 +287,19 @@ func theStandardOutputShouldContain(ctx context.Context, expected *godog.DocStri
 
 func matchesJSONRegex(obj any, diff gojsondiff.Diff) bool {
 	deltas := diff.Deltas()
-	if v, ok := obj.(map[string]interface{}); ok {
+	if v, ok := obj.(map[string]any); ok {
 		return matchesJSONObjectRegex(v, deltas)
-	} else if v, ok := obj.([]interface{}); ok {
+	} else if v, ok := obj.([]any); ok {
 		return matchesJSONArrayRegex(v, deltas)
 	}
 
 	return false
 }
 
-func matchesJSONArrayRegex(ary []interface{}, deltas []gojsondiff.Delta) bool {
+func matchesJSONArrayRegex(ary []any, deltas []gojsondiff.Delta) bool {
 	for i, v := range ary {
 		pos := gojsondiff.Index(i)
-		if ok := matchesJSONDeltaRegex(v, pos, deltas); !ok {
+		if matches := matchesJSONDeltaRegex(v, pos, deltas); !matches {
 			return false
 		}
 	}
@@ -307,10 +307,10 @@ func matchesJSONArrayRegex(ary []interface{}, deltas []gojsondiff.Delta) bool {
 	return true
 }
 
-func matchesJSONObjectRegex(obj map[string]interface{}, deltas []gojsondiff.Delta) bool {
+func matchesJSONObjectRegex(obj map[string]any, deltas []gojsondiff.Delta) bool {
 	for k, v := range obj {
 		pos := gojsondiff.Name(k)
-		if ok := matchesJSONDeltaRegex(v, pos, deltas); !ok {
+		if matches := matchesJSONDeltaRegex(v, pos, deltas); !matches {
 			return false
 		}
 	}
@@ -321,26 +321,52 @@ func matchesJSONObjectRegex(obj map[string]interface{}, deltas []gojsondiff.Delt
 func matchesJSONDeltaRegex(value any, pos gojsondiff.Position, deltas []gojsondiff.Delta) bool {
 	for _, delta := range deltas {
 		switch delta := delta.(type) {
-		case *gojsondiff.TextDiff:
-			r, err := regexp.Compile(delta.OldValue.(string))
-			if err == nil {
-				if !r.MatchString(delta.NewValue.(string)) {
-					return false
-				}
-			}
+		case *gojsondiff.Deleted:
+			return false
+		case *gojsondiff.Added:
+			return false
 		case gojsondiff.PostDelta:
 			if delta.PostPosition() == pos {
 				switch delta := delta.(type) {
 				case *gojsondiff.Object:
-					return matchesJSONObjectRegex(value.(map[string]interface{}), delta.Deltas)
+					return matchesJSONObjectRegex(value.(map[string]any), delta.Deltas)
 				case *gojsondiff.Array:
-					return matchesJSONArrayRegex(value.([]interface{}), delta.Deltas)
+					return matchesJSONArrayRegex(value.([]any), delta.Deltas)
+				case *gojsondiff.Modified:
+					return matchesRegex(delta.OldValue, delta.NewValue)
+
 				}
 			}
 		}
 	}
 
 	return true
+}
+
+func matchesRegex(regex any, value any) bool {
+	var r *regexp.Regexp
+	var v string
+	var err error
+
+	switch regex := regex.(type) {
+	case string:
+		r, err = regexp.Compile(regex)
+	case fmt.Stringer:
+		r, err = regexp.Compile(regex.String())
+	default:
+		r, err = regexp.Compile(fmt.Sprintf("%v", r))
+	}
+
+	switch value := value.(type) {
+	case string:
+		v = value
+	case fmt.Stringer:
+		v = value.String()
+	default:
+		v = fmt.Sprintf("%v", value)
+	}
+
+	return err == nil && r.MatchString(v)
 }
 
 func ecStatusFrom(ctx context.Context) (*status, error) {
