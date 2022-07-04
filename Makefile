@@ -59,8 +59,7 @@ acceptance: ## Run acceptance tests
 	@trap cleanup EXIT
 	@cp -R . "$(ACCEPTANCE_WORKDIR)"
 	@cd "$(ACCEPTANCE_WORKDIR)"
-	@go run github.com/mendersoftware/gobinarycoverage .
-	@git apply patches/acceptance_cover.diff
+	@go run internal/acceptance/coverage/coverage.go .
 	@$(MAKE) build
 	@export ROOT_DIR=$(ROOT_DIR)
 	@go test ./internal/acceptance
