@@ -205,7 +205,7 @@ func StartWiremock(ctx context.Context) (context.Context, error) {
 		Image:        wireMockImage,
 		ExposedPorts: []string{"8080/tcp", "8443/tcp"},
 		WaitingFor:   wait.ForHTTP("/__admin/mappings").WithPort(nat.Port("8080/tcp")),
-		Binds:        []string{fmt.Sprintf("%s:/recordings:Z", path.Join(cwd, "wiremock", "recordings"))}, // relative to the running test, i.e. $GITROOT/internal/acceptance
+		Binds:        []string{fmt.Sprintf("%s:/recordings:z", path.Join(cwd, "wiremock", "recordings"))}, // relative to the running test, i.e. $GITROOT/internal/acceptance
 		Cmd: []string{
 			"--root-dir=/recordings",
 		},
