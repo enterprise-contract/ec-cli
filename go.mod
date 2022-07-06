@@ -25,7 +25,7 @@ require (
 	github.com/sigstore/rekor v0.7.0
 	github.com/sigstore/sigstore v1.2.1-0.20220512194100-3ed986cc9758
 	github.com/spf13/afero v1.8.2
-	github.com/spf13/cobra v1.4.0
+	github.com/spf13/cobra v1.5.0
 	github.com/stretchr/testify v1.7.1
 	github.com/testcontainers/testcontainers-go v0.13.0
 	github.com/transparency-dev/merkle v0.0.1
