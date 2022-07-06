@@ -33,7 +33,7 @@ require (
 	github.com/yudai/gojsondiff v1.0.0
 	k8s.io/apimachinery v0.24.2
 	k8s.io/client-go v0.24.2
-	sigs.k8s.io/controller-runtime v0.12.2
+	sigs.k8s.io/controller-runtime v0.12.3
 )
 
 replace go.etcd.io/etcd/v3 => go.etcd.io/etcd/v3 v3.6.0-alpha.0
