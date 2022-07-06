@@ -33,7 +33,7 @@ require (
 	github.com/yudai/gojsondiff v1.0.0
 	k8s.io/apimachinery v0.24.2
 	k8s.io/client-go v0.24.2
-	sigs.k8s.io/controller-runtime v0.12.1
+	sigs.k8s.io/controller-runtime v0.12.2
 )
 
 replace go.etcd.io/etcd/v3 => go.etcd.io/etcd/v3 v3.6.0-alpha.0
@@ -422,8 +422,8 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 	honnef.co/go/tools v0.3.1 // indirect
 	k8s.io/api v0.24.2 // indirect
-	k8s.io/apiextensions-apiserver v0.24.0 // indirect
-	k8s.io/component-base v0.24.0 // indirect
+	k8s.io/apiextensions-apiserver v0.24.2 // indirect
+	k8s.io/component-base v0.24.2 // indirect
 	k8s.io/klog/v2 v2.60.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20220328201542-3ee0da9b0b42 // indirect
 	k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9 // indirect
