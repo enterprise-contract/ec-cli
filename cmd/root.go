@@ -22,7 +22,12 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+
+	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
+
+// The default log level
+var logLevel = 1
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -32,6 +37,17 @@ var rootCmd = &cobra.Command{
 
 	// Prevent usage instructions showing on every error
 	SilenceUsage: true,
+
+	// Initialize logging
+	PersistentPreRun: func(cmd *cobra.Command, _ []string) {
+		utils.InitLogging(logLevel)
+	},
+}
+
+func init() {
+	rootCmd.PersistentFlags().IntVarP(&logLevel, "log-level", "l", logLevel,
+		"controls how much log output (to stderr) is produced.\n"+
+			"3 is most verbose. -1 suppresses all log output.")
 }
 
 const globalTimeout = 5 * time.Minute

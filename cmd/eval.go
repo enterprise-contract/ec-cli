@@ -27,6 +27,7 @@ import (
 	"github.com/hacbs-contract/ec-cli/internal/applicationsnapshot"
 	"github.com/hacbs-contract/ec-cli/internal/image"
 	"github.com/hacbs-contract/ec-cli/internal/policy"
+	"github.com/hacbs-contract/ec-cli/internal/utils"
 	"github.com/hashicorp/go-multierror"
 	appstudioshared "github.com/redhat-appstudio/managed-gitops/appstudio-shared/apis/appstudio.redhat.com/v1alpha1"
 	"github.com/spf13/cobra"
