@@ -180,43 +180,60 @@ func determineInputSpec(arguments args) (*appstudioshared.ApplicationSnapshotSpe
 	var appSnapshot appstudioshared.ApplicationSnapshotSpec
 
 	// read ApplicationSnapshot provided as a file
-	if arguments.filepath != "" {
+	filepath := arguments.filepath
+	if filepath != "" {
+		utils.Trace("Reading application snapshot from %s", filepath)
 		j, err := ioutil.ReadFile(arguments.filepath)
 		if err != nil {
+			utils.Error("Failed to read application snapshot from %s")
 			return nil, err
 		}
 
+		utils.Trace("Parsing application snapshot data from %s", filepath)
 		err = json.Unmarshal(j, &appSnapshot)
 		if err != nil {
+			utils.Error("Unable to parse json snapshot data in %s", filepath)
 			return nil, err
 		}
 
+		utils.Info("Application snapshot loaded from %s", filepath)
+		utils.Trace("Application snapshot:\n  %s", appSnapshot)
 		return &appSnapshot, nil
 	}
 
 	// read ApplicationSnapshot provided as a string
-	if arguments.input != "" {
+	input := arguments.input
+	if input != "" {
+		utils.Info("Reading application snapshot from input param")
 		// Unmarshall json into struct, exit on failure
-		if err := json.Unmarshal([]byte(arguments.input), &appSnapshot); err != nil {
+		if err := json.Unmarshal([]byte(input), &appSnapshot); err != nil {
+			utils.Error("Unable to parse json snapshot data from input param")
 			return nil, err
 		}
 
+		utils.Info("Application snapshot loaded from input param")
+		utils.Trace("Application snapshot:\n  %s", appSnapshot)
 		return &appSnapshot, nil
 	}
 
 	// create ApplicationSnapshot with a single image
-	if arguments.imageRef != "" {
-		return &appstudioshared.ApplicationSnapshotSpec{
+	imageRef := arguments.imageRef
+	if imageRef != "" {
+		utils.Info("Generating application snapshot from image ref")
+		result := &appstudioshared.ApplicationSnapshotSpec{
 			Components: []appstudioshared.ApplicationSnapshotComponent{
 				{
 					Name:           "Unnamed",
 					ContainerImage: arguments.imageRef,
 				},
 			},
-		}, nil
+		}
+		utils.Trace("Application snapshot:\n  %s", *result)
+		return result, nil
 	}
 
-	return nil, errors.New("neither ApplicationSnapshot nor image reference provided to validate")
+	utils.Error("Not able to find or create an application snapshot!")
+	return nil, errors.New("Unable to load an application snapshot to validate")
 }
 
 func validateImage(ctx context.Context, imageRef, policyConfiguration, publicKey, rekorURL string) (*policy.Output, error) {
