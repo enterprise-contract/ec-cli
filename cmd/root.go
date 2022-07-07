@@ -21,6 +21,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/hacbs-contract/ec-cli/internal/logging"
 	"github.com/spf13/cobra"
 )
 
@@ -30,6 +31,20 @@ var rootCmd = &cobra.Command{
 	Short:        "Tool to enforce enterprise contracts",
 	Long:         `TODO: description`,
 	SilenceUsage: true,
+
+	PersistentPreRun: func(cmd *cobra.Command, _ []string) {
+		logging.InitLogging(verbose, quiet, debug)
+	},
+}
+
+var quiet bool = false
+var verbose bool = false
+var debug bool = false
+
+func init() {
+	rootCmd.PersistentFlags().BoolVar(&quiet, "quiet", quiet, "less verbose output")
+	rootCmd.PersistentFlags().BoolVar(&verbose, "verbose", verbose, "more verbose output")
+	rootCmd.PersistentFlags().BoolVar(&debug, "debug", debug, "same as verbose but also show function names and line numbers")
 }
 
 const globalTimeout = 5 * time.Minute
