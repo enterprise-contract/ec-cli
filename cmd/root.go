@@ -29,6 +29,9 @@ var rootCmd = &cobra.Command{
 	Use:   "ec",
 	Short: "Tool to enforce enterprise contracts",
 	Long:  `TODO: description`,
+
+	// Prevent usage instructions showing on every error
+	SilenceUsage: true,
 }
 
 const globalTimeout = 5 * time.Minute
