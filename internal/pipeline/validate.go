@@ -22,6 +22,7 @@ import (
 	"github.com/hacbs-contract/ec-cli/internal/evaluation_target/pipeline_definition_file"
 	"github.com/hacbs-contract/ec-cli/internal/output"
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
+	log "github.com/sirupsen/logrus"
 )
 
 //ValidatePipeline calls NewPipelineEvaluator to obtain an PipelineEvaluator. It then executes the associated TestRunner
@@ -29,12 +30,15 @@ import (
 func ValidatePipeline(ctx context.Context, fpath string, policyRepo source.PolicyRepo, namespace string) (*output.Output, error) {
 	p, err := pipeline_definition_file.NewPipelineDefinitionFile(ctx, fpath, policyRepo, namespace)
 	if err != nil {
+		log.Debug("Failed to create pipeline definition file!")
 		return nil, err
 	}
 
 	results, err := p.Evaluator.TestRunner.Run(p.Evaluator.Context, []string{p.Fpath})
 	if err != nil {
+		log.Debug("Problem running conftest policy check!")
 		return nil, err
 	}
+	log.Debug("Conftest policy check complete")
 	return &output.Output{PolicyCheck: results}, nil
 }

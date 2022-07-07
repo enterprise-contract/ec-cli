@@ -26,6 +26,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/plumbing/transport/client"
 	"github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
+	log "github.com/sirupsen/logrus"
 )
 
 //CheckoutRepo is used as an alias for git.PlainClone in order to facilitate testing
@@ -53,6 +54,7 @@ func (p *PolicyRepo) GetPolicyDir() string {
 // GetPolicies clones the repository for a given PolicyRepo
 func (p *PolicyRepo) GetPolicies(dest string) error {
 	// Checkout policy repo into work directory.
+	log.Debugf("Checking out repo %s at %s to work dir", p.RepoURL, p.RepoRef)
 	_, err := CheckoutRepo(dest, false, &git.CloneOptions{
 		URL:           p.RepoURL,
 		Progress:      nil,
@@ -67,30 +69,38 @@ func getRepoHeadRef(repoURL string) (*string, error) {
 	//set p.RepoRef
 	e, err := transport.NewEndpoint(repoURL)
 	if err != nil {
+		log.Debugf("Problem creating end point for git!")
 		return nil, err
 	}
 	cli, err := client.NewClient(e)
 	if err != nil {
+		log.Debugf("Problem creating git client!")
 		return nil, err
 	}
 	s, err := cli.NewUploadPackSession(e, nil)
 	if err != nil {
+		log.Debugf("Problem creating git session!")
 		return nil, err
 	}
 	info, err := s.AdvertisedReferences()
 	if err != nil {
+		log.Debugf("Problem finding git reference details!")
 		return nil, err
 	}
 	refs, err := info.AllReferences()
 	if err != nil {
+		log.Debugf("Problem fetching git references!")
 		return nil, err
 	}
 	var r = refs["HEAD"].Target().Short()
+	log.Debugf("Found head ref %s", r)
 	return &r, nil
 }
 
 // CreatePolicyRepoFromSource parses a v1alpha1.GitPolicySource into a PolicyRepo struct
 func CreatePolicyRepoFromSource(s v1alpha1.GitPolicySource) (PolicyRepo, error) {
+	log.Debug("Creating policy repo from git policy source")
+
 	u, policyDir, err := normalizeRepoUrl(s.Repository)
 	if err != nil {
 		return PolicyRepo{}, err
@@ -130,6 +140,7 @@ func normalizeRepoUrl(s string) (string, string, error) {
 	}(s)
 	u, err := url.Parse(s)
 	if err != nil {
+		log.Debugf("Problem parsing git repo url %s", s)
 		return "", "", err
 	}
 	path := strings.TrimLeft(u.Path, "/")
@@ -144,5 +155,6 @@ func normalizeRepoUrl(s string) (string, string, error) {
 		s = fmt.Sprintf("%s://%s/%s/%s", u.Scheme, u.Host, user, repo)
 		//policyDir = "policy"
 	}
+	log.Debugf("Normalized git repo url and policyDir %s %s", s, policyDir)
 	return s, policyDir, nil
 }
