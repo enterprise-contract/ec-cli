@@ -26,6 +26,8 @@ import (
 
 	ecp "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/hashicorp/go-getter"
+	"github.com/open-policy-agent/conftest/output"
+	"github.com/sigstore/cosign/pkg/oci"
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -97,7 +99,7 @@ func Test_NewPolicyEvaluator(t *testing.T) {
 		if created == nil {
 			assert.Nil(t, c.expectedName, "PolicyEvaluator wasn't created but an expectedName was set")
 		} else {
-			assert.Equal(t, *c.expectedName, created.policyName, c.name)
+			assert.Equal(t, *c.expectedName, created.(*policyEvaluator).policyName, c.name)
 		}
 	}
 }
@@ -144,6 +146,29 @@ func Test_Evaluate(t *testing.T) {
 	assert.Empty(t, result.Skipped)
 	assert.Empty(t, result.Warnings)
 	assert.Empty(t, result.Failures)
+	assert.Empty(t, result.Exceptions)
+	assert.Empty(t, result.Queries)
+}
+
+func Test_EmptyAttestations(t *testing.T) {
+	evaluator := policyEvaluator{}
+
+	attestations := []oci.Signature{}
+
+	results, err := evaluator.Evaluate(context.TODO(), attestations)
+	assert.NoError(t, err)
+	assert.Len(t, results, 1, "expected one result")
+
+	result := results[0]
+	assert.Empty(t, result.Namespace)
+	assert.Zero(t, result.Successes)
+	assert.Empty(t, result.Skipped)
+	assert.Empty(t, result.Warnings)
+	assert.Equal(t, []output.Result{
+		{
+			Message: "no attestations available",
+		},
+	}, result.Failures)
 	assert.Empty(t, result.Exceptions)
 	assert.Empty(t, result.Queries)
 }

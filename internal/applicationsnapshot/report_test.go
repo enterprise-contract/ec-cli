@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/open-policy-agent/conftest/output"
 	appstudioshared "github.com/redhat-appstudio/managed-gitops/appstudio-shared/apis/appstudio.redhat.com/v1alpha1"
 	"github.com/stretchr/testify/assert"
 )
@@ -65,7 +64,7 @@ func Test_Report(t *testing.T) {
 	var components []Component
 	for _, component := range snapshot.Components {
 		c := Component{
-			Violations: []output.CheckResult{},
+			Violations: []string{},
 			Success:    true,
 		}
 		c.Name, c.ContainerImage = component.Name, component.ContainerImage

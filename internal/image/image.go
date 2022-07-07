@@ -32,8 +32,14 @@ type imageValidator struct {
 	attestations []oci.Signature
 }
 
+type ImageValidator interface {
+	ValidateImageSignature(context.Context) error
+	ValidateAttestationSignature(context.Context) error
+	Attestations() []oci.Signature
+}
+
 // NewImageValidator constructs a new imageValidator with the provided parameters
-func NewImageValidator(ctx context.Context, image string, publicKey string, rekorURL string) (*imageValidator, error) {
+func NewImageValidator(ctx context.Context, image string, publicKey string, rekorURL string) (ImageValidator, error) {
 	ref, err := name.ParseReference(image)
 	if err != nil {
 		return nil, err
@@ -62,7 +68,7 @@ func NewImageValidator(ctx context.Context, image string, publicKey string, reko
 	}, nil
 }
 
-func (i *imageValidator) ValidateImageSignature(ctx context.Context) error {
+func (i imageValidator) ValidateImageSignature(ctx context.Context) error {
 	// TODO check what to do with _, _
 	_, _, err := cosign.VerifyImageSignatures(ctx, i.reference, &i.checkOpts)
 

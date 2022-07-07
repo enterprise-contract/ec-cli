@@ -98,8 +98,10 @@ func evalCmd(validate imageValidationFn) *cobra.Command {
 
 					// Skip on err to not panic. Error is return on routine completion.
 					if err == nil {
-						res.component.Violations = out.PolicyCheck
+						res.component.Violations = out.Violations()
 					}
+
+					res.component.Success = err == nil && len(res.component.Violations) == 0
 
 					ch <- res
 				}(c)
@@ -109,33 +111,30 @@ func evalCmd(validate imageValidationFn) *cobra.Command {
 			close(ch)
 
 			components := []applicationsnapshot.Component{}
-			var err error = nil
+			var allErrors error = nil
 			for r := range ch {
 				if r.err != nil {
 					e := fmt.Errorf("error validating image %s of component %s: %w", r.component.ContainerImage, r.component.Name, r.err)
-					err = multierror.Append(err, e)
+					allErrors = multierror.Append(allErrors, e)
 				} else {
 					components = append(components, r.component)
 				}
 			}
-			if err != nil {
-				return err
-			}
 
 			report, err, success := applicationsnapshot.Report(components)
-			if err != nil {
-				return err
+			if allErrors != nil {
+				return multierror.Append(allErrors, err)
 			}
 
 			if arguments.output != "" {
 				if err := ioutil.WriteFile(arguments.output, []byte(report), 0644); err != nil {
-					return err
+					return multierror.Append(allErrors, err)
 				}
 				fmt.Printf("Report written to %s\n", arguments.output)
 			} else {
-				_, err = cmd.OutOrStdout().Write([]byte(report))
+				_, err := cmd.OutOrStdout().Write([]byte(report))
 				if err != nil {
-					return err
+					return multierror.Append(allErrors, err)
 				}
 			}
 
@@ -220,31 +219,34 @@ func determineInputSpec(arguments args) (*appstudioshared.ApplicationSnapshotSpe
 }
 
 func validateImage(ctx context.Context, imageRef, policyConfiguration, publicKey, rekorURL string) (*policy.Output, error) {
+	imageValidator, err := image.NewImageValidator(ctx, imageRef, publicKey, rekorURL)
+	if err != nil {
+		return nil, err
+	}
+
+	policyEvaluator, err := policy.NewPolicyEvaluator(policyConfiguration)
+	if err != nil {
+		return nil, err
+	}
+
+	return validateImageWith(ctx, imageRef, policyConfiguration, publicKey, rekorURL, imageValidator, policyEvaluator)
+}
+
+func validateImageWith(ctx context.Context, imageRef, policyConfiguration, publicKey, rekorURL string, imageValidator image.ImageValidator, policyEvaluator policy.PolicyEvaluator) (*policy.Output, error) {
 	out := &policy.Output{}
-
-	i, err := image.NewImageValidator(ctx, imageRef, publicKey, rekorURL)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := i.ValidateImageSignature(ctx); err != nil {
+	if err := imageValidator.ValidateImageSignature(ctx); err != nil {
 		out.SetImageSignatureCheck(false, err.Error())
-		return nil, err
+	} else {
+		out.SetImageSignatureCheck(true, "success")
 	}
-	out.SetImageSignatureCheck(true, "success")
 
-	if err := i.ValidateAttestationSignature(ctx); err != nil {
+	if err := imageValidator.ValidateAttestationSignature(ctx); err != nil {
 		out.SetAttestationSignatureCheck(false, err.Error())
-		return nil, err
-	}
-	out.SetAttestationSignatureCheck(true, "success")
-
-	p, err := policy.NewPolicyEvaluator(policyConfiguration)
-	if err != nil {
-		return nil, err
+	} else {
+		out.SetAttestationSignatureCheck(true, "success")
 	}
 
-	results, err := p.Evaluate(ctx, i.Attestations())
+	results, err := policyEvaluator.Evaluate(ctx, imageValidator.Attestations())
 	if err != nil {
 		return nil, err
 	}

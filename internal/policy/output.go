@@ -29,6 +29,14 @@ type VerificationStatus struct {
 	Message string `json:"message,omitempty"`
 }
 
+func (v VerificationStatus) addToViolations(violations []string) []string {
+	if v.Passed {
+		return violations
+	}
+
+	return append(violations, v.Message)
+}
+
 type Output struct {
 	ImageSignatureCheck       VerificationStatus   `json:"imageSignatureCheck"`
 	AttestationSignatureCheck VerificationStatus   `json:"attestationSignatureCheck"`
@@ -56,6 +64,31 @@ func (o *Output) SetPolicyCheck(results []output.CheckResult) {
 	}
 	o.PolicyCheck = results
 	o.ExitCode = output.ExitCode(results)
+}
+
+func addCheckResultToViolations(c output.CheckResult, violations []string) []string {
+	for _, failure := range c.Failures {
+		violations = append(violations, failure.Message)
+	}
+
+	return violations
+}
+
+func addCheckResultsToViolations(c []output.CheckResult, violations []string) []string {
+	for _, check := range c {
+		violations = addCheckResultToViolations(check, violations)
+	}
+
+	return violations
+}
+
+func (o Output) Violations() []string {
+	violations := make([]string, 0, 10)
+	violations = o.ImageSignatureCheck.addToViolations(violations)
+	violations = o.AttestationSignatureCheck.addToViolations(violations)
+	violations = addCheckResultsToViolations(o.PolicyCheck, violations)
+
+	return violations
 }
 
 func (o *Output) Print(out io.Writer) error {
