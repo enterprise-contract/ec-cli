@@ -22,11 +22,11 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/open-policy-agent/conftest/output"
+	conftestOutput "github.com/open-policy-agent/conftest/output"
 	appstudioshared "github.com/redhat-appstudio/managed-gitops/appstudio-shared/apis/appstudio.redhat.com/v1alpha1"
 	"github.com/stretchr/testify/assert"
 
-	output2 "github.com/hacbs-contract/ec-cli/internal/output"
+	"github.com/hacbs-contract/ec-cli/internal/output"
 )
 
 type data struct {
@@ -146,15 +146,15 @@ func Test_determineInputSpec(t *testing.T) {
 }
 
 func Test_ValidateImageCommand(t *testing.T) {
-	validate := func(ctx context.Context, imageRef, policyConfiguration, publicKey, rekorURL string) (*output2.Output, error) {
-		return &output2.Output{
-			ImageSignatureCheck: output2.VerificationStatus{
+	validate := func(ctx context.Context, imageRef, policyConfiguration, publicKey, rekorURL string) (*output.Output, error) {
+		return &output.Output{
+			ImageSignatureCheck: output.VerificationStatus{
 				Passed: true,
 			},
-			AttestationSignatureCheck: output2.VerificationStatus{
+			AttestationSignatureCheck: output.VerificationStatus{
 				Passed: true,
 			},
-			PolicyCheck: []output.CheckResult{
+			PolicyCheck: []conftestOutput.CheckResult{
 				{
 					FileName:  "test.json",
 					Namespace: "test.main",
@@ -193,7 +193,7 @@ func Test_ValidateImageCommand(t *testing.T) {
 }
 
 func Test_ValidateErrorCommand(t *testing.T) {
-	validate := func(ctx context.Context, imageRef, policyConfiguration, publicKey, rekorURL string) (*output2.Output, error) {
+	validate := func(ctx context.Context, imageRef, policyConfiguration, publicKey, rekorURL string) (*output.Output, error) {
 		return nil, errors.New("expected")
 	}
 
@@ -220,13 +220,13 @@ func Test_ValidateErrorCommand(t *testing.T) {
 }
 
 func Test_FailureOutput(t *testing.T) {
-	validate := func(ctx context.Context, imageRef, policyConfiguration, publicKey, rekorURL string) (*output2.Output, error) {
-		return &output2.Output{
-			ImageSignatureCheck: output2.VerificationStatus{
+	validate := func(ctx context.Context, imageRef, policyConfiguration, publicKey, rekorURL string) (*output.Output, error) {
+		return &output.Output{
+			ImageSignatureCheck: output.VerificationStatus{
 				Passed:  false,
 				Message: "failed image signature check",
 			},
-			AttestationSignatureCheck: output2.VerificationStatus{
+			AttestationSignatureCheck: output.VerificationStatus{
 				Passed:  false,
 				Message: "failed attestation signature check",
 			},

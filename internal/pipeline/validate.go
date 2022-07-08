@@ -21,12 +21,12 @@ import (
 
 	"github.com/hacbs-contract/ec-cli/internal/evaluation_target/pipeline_definition_file"
 	"github.com/hacbs-contract/ec-cli/internal/output"
-	"github.com/hacbs-contract/ec-cli/internal/policy_source"
+	"github.com/hacbs-contract/ec-cli/internal/policy/source"
 )
 
 //ValidatePipeline calls NewPipelineEvaluator to obtain an PipelineEvaluator. It then executes the associated TestRunner
 //which tests the associated pipeline file(s) against the associated policies, and displays the output.
-func ValidatePipeline(ctx context.Context, fpath string, policyRepo policy_source.PolicyRepo, namespace string) (*output.Output, error) {
+func ValidatePipeline(ctx context.Context, fpath string, policyRepo source.PolicyRepo, namespace string) (*output.Output, error) {
 	p, err := pipeline_definition_file.NewPipelineDefinitionFile(ctx, fpath, policyRepo, namespace)
 	if err != nil {
 		return nil, err

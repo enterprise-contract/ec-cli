@@ -23,7 +23,7 @@ import (
 	"github.com/open-policy-agent/conftest/runner"
 	"github.com/spf13/afero"
 
-	"github.com/hacbs-contract/ec-cli/internal/policy_source"
+	"github.com/hacbs-contract/ec-cli/internal/policy/source"
 	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
 
@@ -33,7 +33,7 @@ var CreateWorkDir = afero.TempDir
 // ConftestEvaluator represents a structure which can be used to evaluate targets
 type ConftestEvaluator struct {
 	Context       context.Context
-	PolicySources []policy_source.PolicySource
+	PolicySources []source.PolicySource
 	Paths         ConfigurationPaths
 	TestRunner    runner.TestRunner
 	Namespace     []string
@@ -48,7 +48,7 @@ type ConfigurationPaths struct {
 }
 
 // NewConftestEvaluator returns a properly initialized ConftestEvaluator for usage
-func NewConftestEvaluator(ctx context.Context, policySources []policy_source.PolicySource, namespaces []string) (*ConftestEvaluator, error) {
+func NewConftestEvaluator(ctx context.Context, policySources []source.PolicySource, namespaces []string) (*ConftestEvaluator, error) {
 	c := &ConftestEvaluator{
 		Context:       ctx,
 		PolicySources: policySources,

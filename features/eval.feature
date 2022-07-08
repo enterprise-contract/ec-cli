@@ -75,7 +75,11 @@ Feature: evaluate enterprise contract
         {
           "name": "Unnamed",
           "containerImage": "localhost:(\\d+)/acceptance/invalid-image-signature",
-          "violations": ["no matching signatures:\nfailed to verify signature", "no matching attestations:\nAccepted signatures do not match threshold, Found: 0, Expected 1", "no attestations available"],
+          "violations": [
+            "no matching signatures:\nfailed to verify signature",
+            "no matching attestations:\nAccepted signatures do not match threshold, Found: 0, Expected 1",
+            "no attestations available"
+          ],
           "success": false
         }
       ]

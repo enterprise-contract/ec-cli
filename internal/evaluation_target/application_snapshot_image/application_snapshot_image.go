@@ -38,7 +38,7 @@ import (
 
 	"github.com/hacbs-contract/ec-cli/internal/evaluator"
 	"github.com/hacbs-contract/ec-cli/internal/kubernetes_client"
-	"github.com/hacbs-contract/ec-cli/internal/policy_source"
+	"github.com/hacbs-contract/ec-cli/internal/policy/source"
 )
 
 // ConftestNamespace is the default rego namespace using for policy evaluation
@@ -140,11 +140,11 @@ func getPolicyName(policyConfiguration string) types.NamespacedName {
 }
 
 // fetchPolicyRepos returns an array of Policy repos
-func fetchPolicyRepos(spec ecc.EnterpriseContractPolicySpec) ([]policy_source.PolicySource, error) {
-	policySources := make([]policy_source.PolicySource, 0, len(spec.Sources))
-	for _, source := range spec.Sources {
-		if source.GitRepository != nil {
-			repo, err := policy_source.CreatePolicyRepoFromSource(*source.GitRepository)
+func fetchPolicyRepos(spec ecc.EnterpriseContractPolicySpec) ([]source.PolicySource, error) {
+	policySources := make([]source.PolicySource, 0, len(spec.Sources))
+	for _, policySource := range spec.Sources {
+		if policySource.GitRepository != nil {
+			repo, err := source.CreatePolicyRepoFromSource(*policySource.GitRepository)
 			if err != nil {
 				return nil, err
 			}
