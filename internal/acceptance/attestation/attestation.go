@@ -14,7 +14,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// Helps create SLSA provenance attestations in-toto format, simulating what
+// Package attestation helps create SLSA provenance attestations in-toto format, simulating what
 // Tekton Chains would perform.
 package attestation
 
@@ -25,12 +25,13 @@ import (
 	"fmt"
 
 	v1 "github.com/google/go-containerregistry/pkg/v1"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/crypto"
 	"github.com/in-toto/in-toto-golang/in_toto"
 	"github.com/sigstore/cosign/pkg/cosign/attestation"
 	"github.com/sigstore/cosign/pkg/types"
 	"github.com/sigstore/sigstore/pkg/signature/dsse"
 	"github.com/sigstore/sigstore/pkg/signature/options"
+
+	"github.com/hacbs-contract/ec-cli/internal/acceptance/crypto"
 )
 
 const (
@@ -39,7 +40,7 @@ const (
 	PredicateType        = "slsaprovenance"
 )
 
-// CreateStatementFor creates a empty statement that can be further customized
+// CreateStatementFor creates an empty statement that can be further customized
 // to add and subsequently signed by SignStatement.
 func CreateStatementFor(imageName string, image v1.Image) (*in_toto.ProvenanceStatement, error) {
 	digest, err := image.Digest()

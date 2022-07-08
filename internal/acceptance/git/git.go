@@ -14,9 +14,9 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// Creates a stub git repository available over HTTP. The repositories
+// Package git creates a stub git repository available over HTTP. The repositories
 // are available on localhost:`port`/git/`name`.git, the host and port
-// can be obtained from GitHost
+// can be obtained from Host
 package git
 
 import (
@@ -28,16 +28,16 @@ import (
 	"time"
 
 	"github.com/cucumber/godog"
-	"github.com/docker/go-connections/nat"
 	"github.com/go-git/go-billy/v5/osfs"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/cache"
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/storage/filesystem"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/log"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/testenv"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
+
+	"github.com/hacbs-contract/ec-cli/internal/acceptance/log"
+	"github.com/hacbs-contract/ec-cli/internal/acceptance/testenv"
 )
 
 type key int
@@ -78,7 +78,7 @@ func startStubGitServer(ctx context.Context) (context.Context, error) {
 	req := testenv.TestContainersRequest(ctx, testcontainers.ContainerRequest{
 		Image:        "docker.io/ynohat/git-http-backend",
 		ExposedPorts: []string{"80/tcp"},
-		WaitingFor:   wait.ForListeningPort(nat.Port("80/tcp")),
+		WaitingFor:   wait.ForListeningPort("80/tcp"),
 		Binds: []string{
 			fmt.Sprintf("%s:/git:Z", repositories), // :Z is to allow accessing the directory under SELinux
 		},
@@ -93,7 +93,7 @@ func startStubGitServer(ctx context.Context) (context.Context, error) {
 		return ctx, err
 	}
 
-	port, err := git.MappedPort(ctx, nat.Port("80/tcp"))
+	port, err := git.MappedPort(ctx, "80/tcp")
 	if err != nil {
 		return ctx, err
 	}
@@ -104,9 +104,9 @@ func startStubGitServer(ctx context.Context) (context.Context, error) {
 	return ctx, nil
 }
 
-// GitHost returns the `host:port` of the git server. The repository can be accessed
+// Host returns the `host:port` of the git server. The repository can be accessed
 // via http://host:port/git/`name`git
-func GitHost(ctx context.Context) string {
+func Host(ctx context.Context) string {
 	return testenv.FetchState[gitState](ctx).HostAndPort
 }
 

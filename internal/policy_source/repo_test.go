@@ -14,9 +14,17 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package pipeline
+package policy_source
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/go-git/go-git/v5"
+)
+
+func checkoutRepoMock(_ string, _ bool, _ *git.CloneOptions) (*git.Repository, error) {
+	return &git.Repository{}, nil
+}
 
 func TestPolicyRepo_getPolicies(t *testing.T) {
 	type fields struct {
@@ -50,8 +58,8 @@ func TestPolicyRepo_getPolicies(t *testing.T) {
 				RepoURL:   tt.fields.RepoURL,
 				RepoRef:   tt.fields.RepoRef,
 			}
-			if err := p.getPolicies(tt.args.dest); (err != nil) != tt.wantErr {
-				t.Errorf("getPolicies() error = %v, wantErr %v", err, tt.wantErr)
+			if err := p.GetPolicies(tt.args.dest); (err != nil) != tt.wantErr {
+				t.Errorf("GetPolicies() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
@@ -85,8 +93,8 @@ func TestPolicyRepo_getPolicyDir(t *testing.T) {
 				RepoURL:   tt.fields.RepoURL,
 				RepoRef:   tt.fields.RepoRef,
 			}
-			if got := p.getPolicyDir(); got != tt.want {
-				t.Errorf("getPolicyDir() = %v, want %v", got, tt.want)
+			if got := p.GetPolicyDir(); got != tt.want {
+				t.Errorf("GetPolicyDir() = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -47,7 +47,7 @@ spec:
     - test:conftest-clair
   sources:
   - git:
-      repository: github.com/simonbaird/ec-policies//policy
+      repository: https://github.com/simonbaird/ec-policies/policy
       revision: main
 EOF
 

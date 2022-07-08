@@ -22,23 +22,29 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/hacbs-contract/ec-cli/internal/policy"
 	"github.com/open-policy-agent/conftest/output"
 	appstudioshared "github.com/redhat-appstudio/managed-gitops/appstudio-shared/apis/appstudio.redhat.com/v1alpha1"
-	"github.com/sigstore/cosign/pkg/oci"
 	"github.com/stretchr/testify/assert"
+
+	output2 "github.com/hacbs-contract/ec-cli/internal/output"
 )
+
+type data struct {
+	imageRef string
+	input    string
+	filePath string
+}
 
 func Test_determineInputSpec(t *testing.T) {
 	cases := []struct {
 		name      string
-		arguments args
+		arguments data
 		spec      *appstudioshared.ApplicationSnapshotSpec
 		err       string
 	}{
 		{
 			name: "imageRef",
-			arguments: args{
+			arguments: data{
 				imageRef: "registry/image:tag",
 			},
 			spec: &appstudioshared.ApplicationSnapshotSpec{
@@ -52,21 +58,21 @@ func Test_determineInputSpec(t *testing.T) {
 		},
 		{
 			name: "empty ApplicationSnapshot string",
-			arguments: args{
+			arguments: data{
 				input: "{}",
 			},
 			spec: &appstudioshared.ApplicationSnapshotSpec{},
 		},
 		{
 			name: "faulty ApplicationSnapshot string",
-			arguments: args{
+			arguments: data{
 				input: "/",
 			},
 			err: "invalid character '/' looking for beginning of value",
 		},
 		{
 			name: "ApplicationSnapshot string",
-			arguments: args{
+			arguments: data{
 				input: `{
 					"application": "app1",
 					"components": [
@@ -105,8 +111,8 @@ func Test_determineInputSpec(t *testing.T) {
 		},
 		{
 			name: "ApplicationSnapshot file",
-			arguments: args{
-				filepath: "test_application_snapshot.json",
+			arguments: data{
+				filePath: "test_application_snapshot.json",
 			},
 			spec: &appstudioshared.ApplicationSnapshotSpec{
 				Application: "app1",
@@ -130,7 +136,7 @@ func Test_determineInputSpec(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			s, err := determineInputSpec(c.arguments)
+			s, err := determineInputSpec(c.arguments.filePath, c.arguments.input, c.arguments.imageRef)
 			if c.err != "" {
 				assert.EqualError(t, err, c.err)
 			}
@@ -140,12 +146,12 @@ func Test_determineInputSpec(t *testing.T) {
 }
 
 func Test_ValidateImageCommand(t *testing.T) {
-	validate := func(ctx context.Context, imageRef, policyConfiguration, publicKey, rekorURL string) (*policy.Output, error) {
-		return &policy.Output{
-			ImageSignatureCheck: policy.VerificationStatus{
+	validate := func(ctx context.Context, imageRef, policyConfiguration, publicKey, rekorURL string) (*output2.Output, error) {
+		return &output2.Output{
+			ImageSignatureCheck: output2.VerificationStatus{
 				Passed: true,
 			},
-			AttestationSignatureCheck: policy.VerificationStatus{
+			AttestationSignatureCheck: output2.VerificationStatus{
 				Passed: true,
 			},
 			PolicyCheck: []output.CheckResult{
@@ -159,7 +165,7 @@ func Test_ValidateImageCommand(t *testing.T) {
 		}, nil
 	}
 
-	cmd := evalCmd(validate)
+	cmd := validateImageCmd(validate)
 
 	cmd.SetArgs([]string{
 		"--image",
@@ -187,11 +193,11 @@ func Test_ValidateImageCommand(t *testing.T) {
 }
 
 func Test_ValidateErrorCommand(t *testing.T) {
-	validate := func(ctx context.Context, imageRef, policyConfiguration, publicKey, rekorURL string) (*policy.Output, error) {
+	validate := func(ctx context.Context, imageRef, policyConfiguration, publicKey, rekorURL string) (*output2.Output, error) {
 		return nil, errors.New("expected")
 	}
 
-	cmd := evalCmd(validate)
+	cmd := validateImageCmd(validate)
 
 	cmd.SetArgs([]string{
 		"--image",
@@ -214,20 +220,20 @@ func Test_ValidateErrorCommand(t *testing.T) {
 }
 
 func Test_FailureOutput(t *testing.T) {
-	validate := func(ctx context.Context, imageRef, policyConfiguration, publicKey, rekorURL string) (*policy.Output, error) {
-		return &policy.Output{
-			ImageSignatureCheck: policy.VerificationStatus{
+	validate := func(ctx context.Context, imageRef, policyConfiguration, publicKey, rekorURL string) (*output2.Output, error) {
+		return &output2.Output{
+			ImageSignatureCheck: output2.VerificationStatus{
 				Passed:  false,
 				Message: "failed image signature check",
 			},
-			AttestationSignatureCheck: policy.VerificationStatus{
+			AttestationSignatureCheck: output2.VerificationStatus{
 				Passed:  false,
 				Message: "failed attestation signature check",
 			},
 		}, nil
 	}
 
-	cmd := evalCmd(validate)
+	cmd := validateImageCmd(validate)
 
 	cmd.SetArgs([]string{
 		"--image",
@@ -255,125 +261,4 @@ func Test_FailureOutput(t *testing.T) {
 		  }
 		]
 	  }`, out.String())
-}
-
-type mockImageValidator struct {
-	validateImageErr       error
-	validateAttestationErr error
-	attestations           []oci.Signature
-}
-
-func (m mockImageValidator) ValidateImageSignature(context.Context) error {
-	return m.validateImageErr
-}
-
-func (m mockImageValidator) ValidateAttestationSignature(context.Context) error {
-	return m.validateAttestationErr
-}
-
-func (m mockImageValidator) Attestations() []oci.Signature {
-	return m.attestations
-}
-
-type mockPolicyEvaluator struct {
-	result []output.CheckResult
-	err    error
-}
-
-func (m mockPolicyEvaluator) Evaluate(ctx context.Context, attestations []oci.Signature) ([]output.CheckResult, error) {
-	if len(attestations) == 0 {
-		return nil, m.err
-	}
-
-	return m.result, m.err
-}
-
-func Test_validateImageWith(t *testing.T) {
-	cases := []struct {
-		name                       string
-		policyResult               []output.CheckResult
-		policyError                error
-		imageValidationError       error
-		attestationValidationError error
-		attestations               []oci.Signature
-		expected                   *policy.Output
-		expectedErr                error
-	}{
-		{
-			name: "all passed",
-			policyResult: []output.CheckResult{
-				{},
-			},
-			attestations: make([]oci.Signature, 1),
-			expected: &policy.Output{
-				ImageSignatureCheck: policy.VerificationStatus{
-					Passed:  true,
-					Message: "success",
-				},
-				AttestationSignatureCheck: policy.VerificationStatus{
-					Passed:  true,
-					Message: "success",
-				},
-				PolicyCheck: []output.CheckResult{
-					{},
-				},
-			},
-		},
-		{
-			name:                 "image failed",
-			imageValidationError: errors.New("image failed"),
-			policyResult: []output.CheckResult{
-				{},
-			},
-			expected: &policy.Output{
-				ImageSignatureCheck: policy.VerificationStatus{
-					Passed:  false,
-					Message: "image failed",
-				},
-				AttestationSignatureCheck: policy.VerificationStatus{
-					Passed:  true,
-					Message: "success",
-				},
-			},
-		},
-		{
-			name:                       "attestation failed",
-			attestationValidationError: errors.New("attestation failed"),
-			policyResult: []output.CheckResult{
-				{},
-			},
-			expected: &policy.Output{
-				ImageSignatureCheck: policy.VerificationStatus{
-					Passed:  true,
-					Message: "success",
-				},
-				AttestationSignatureCheck: policy.VerificationStatus{
-					Passed:  false,
-					Message: "attestation failed",
-				},
-			},
-		},
-		{
-			name:        "policy evaluation failure",
-			policyError: errors.New("policy evaluation failure"),
-			expectedErr: errors.New("policy evaluation failure"),
-		},
-	}
-
-	for _, c := range cases {
-		t.Run(c.name, func(t *testing.T) {
-
-			out, err := validateImageWith(context.TODO(), "registry/image:tag", "policy-config", "public-key", "https://rekor.url", mockImageValidator{
-				validateImageErr:       c.imageValidationError,
-				validateAttestationErr: c.attestationValidationError,
-				attestations:           c.attestations,
-			}, mockPolicyEvaluator{
-				result: c.policyResult,
-				err:    c.policyError,
-			})
-
-			assert.Equal(t, c.expectedErr, err)
-			assert.Equal(t, c.expected, out)
-		})
-	}
 }

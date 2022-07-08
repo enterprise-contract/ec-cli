@@ -1,0 +1,57 @@
+// Copyright 2022 Red Hat, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+// SPDX-License-Identifier: Apache-2.0
+
+package pipeline_definition_file
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/spf13/afero"
+
+	"github.com/hacbs-contract/ec-cli/internal/evaluator"
+	"github.com/hacbs-contract/ec-cli/internal/policy_source"
+	"github.com/hacbs-contract/ec-cli/internal/utils"
+)
+
+var newConftestEvaluator = evaluator.NewConftestEvaluator
+
+// DefinitionFile represents the structure needed to evaluate a pipeline definition file
+type DefinitionFile struct {
+	Fpath     string
+	Evaluator *evaluator.ConftestEvaluator
+}
+
+// NewPipelineDefinitionFile returns a DefinitionFile struct with FPath and evaluator ready to use
+func NewPipelineDefinitionFile(ctx context.Context, fpath string, policyRepo policy_source.PolicyRepo, namespace string) (*DefinitionFile, error) {
+	exists, err := afero.Exists(utils.AppFS, fpath)
+	if err != nil {
+		return nil, err
+	}
+	if !exists {
+		return nil, fmt.Errorf("fpath '%s' does not exist", fpath)
+	}
+	p := &DefinitionFile{
+		Fpath: fpath,
+	}
+	c, err := newConftestEvaluator(ctx, []policy_source.PolicySource{&policyRepo}, []string{namespace})
+	if err != nil {
+		return nil, err
+	}
+	p.Evaluator = c
+
+	return p, nil
+}

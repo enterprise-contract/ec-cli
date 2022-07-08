@@ -26,9 +26,10 @@ import (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "ec",
-	Short: "Tool to enforce enterprise contracts",
-	Long:  `TODO: description`,
+	Use:          "ec",
+	Short:        "Tool to enforce enterprise contracts",
+	Long:         `TODO: description`,
+	SilenceUsage: true,
 }
 
 const globalTimeout = 5 * time.Minute

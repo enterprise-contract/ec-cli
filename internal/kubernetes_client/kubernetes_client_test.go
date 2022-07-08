@@ -14,7 +14,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package policy
+package kubernetes_client
 
 import (
 	"context"
@@ -25,6 +25,7 @@ import (
 
 	ecp "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -32,6 +33,26 @@ import (
 )
 
 var fakeClient client.Client
+
+var testECP = ecp.EnterpriseContractPolicy{
+	TypeMeta: v1.TypeMeta{
+		Kind:       "EnterpriseContractPolicy",
+		APIVersion: "appstudio.redhat.com/v1alpha1",
+	},
+	ObjectMeta: v1.ObjectMeta{
+		Name:      "ec-policy",
+		Namespace: "test",
+	},
+	Spec: ecp.EnterpriseContractPolicySpec{
+		Sources: []ecp.PolicySource{
+			{
+				GitRepository: &ecp.GitPolicySource{
+					Repository: "test_policies",
+				},
+			},
+		},
+	},
+}
 
 func init() {
 	scheme := runtime.NewScheme()
@@ -105,11 +126,11 @@ func Test_FetchEnterpriseContractPolicy(t *testing.T) {
 				}
 				t.Setenv("KUBECONFIG", kubeconfig)
 			}
-			k := kubernetes{
-				client: fakeClient,
+			k := Kubernetes{
+				Client: fakeClient,
 			}
 
-			got, err := k.fetchEnterpriseContractPolicy(context.TODO(), tc.namespacedName)
+			got, err := k.FetchEnterpriseContractPolicy(context.TODO(), tc.namespacedName)
 
 			if tc.err == "" {
 				assert.NoError(t, err)

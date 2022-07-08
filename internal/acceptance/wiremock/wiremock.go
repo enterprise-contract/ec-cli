@@ -14,7 +14,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// HTTP protocol stubbing using WireMock (https://wiremock.org/)
+// Package wiremock does HTTP protocol stubbing using WireMock (https://wiremock.org/)
 package wiremock
 
 import (
@@ -30,12 +30,12 @@ import (
 
 	"cuelang.org/go/pkg/strings"
 	"github.com/cucumber/godog"
-	"github.com/docker/go-connections/nat"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/log"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/testenv"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
-	wiremock "github.com/walkerus/go-wiremock"
+	"github.com/walkerus/go-wiremock"
+
+	"github.com/hacbs-contract/ec-cli/internal/acceptance/log"
+	"github.com/hacbs-contract/ec-cli/internal/acceptance/testenv"
 )
 
 type key int
@@ -48,9 +48,9 @@ const (
 // to make it simpler on imports in the clients of this package,
 // we re-expose functions from the wiremock package, add others
 // as needed
+
 var Get = wiremock.Get
 var Post = wiremock.Post
-var URLEqualTo = wiremock.URLEqualTo
 var URLPathEqualTo = wiremock.URLPathEqualTo
 
 type client struct {
@@ -107,11 +107,11 @@ func contentTypeFromString(s string) string {
 	return "unknown/unknown"
 }
 
-// contentTypeFrom returns the content-type based on the Accept HTTP
-// header of a HTTP request, given that HTTP headers can be multi-valued
+// contentTypeFrom returns the content-type based on the "Accept" HTTP
+// header of a HTTP request, given that HTTP headers can be multivalued
 // it either returns the single value or the first value of many
-// "&lt;unknown&gt;" is returned when the Accept HTTP header is not
-// present or it contains no values
+// "&lt;unknown&gt;" is returned when the "Accept" HTTP header is not
+// present, or it contains no values
 func contentTypeFrom(u unmatchedRequest) string {
 	for key, value := range u.Headers {
 		if strings.ToLower(key) == "accept" {
@@ -204,7 +204,7 @@ func StartWiremock(ctx context.Context) (context.Context, error) {
 	req := testenv.TestContainersRequest(ctx, testcontainers.ContainerRequest{
 		Image:        wireMockImage,
 		ExposedPorts: []string{"8080/tcp", "8443/tcp"},
-		WaitingFor:   wait.ForHTTP("/__admin/mappings").WithPort(nat.Port("8080/tcp")),
+		WaitingFor:   wait.ForHTTP("/__admin/mappings").WithPort("8080/tcp"),
 		Binds:        []string{fmt.Sprintf("%s:/recordings:z", path.Join(cwd, "wiremock", "recordings"))}, // relative to the running test, i.e. $GITROOT/internal/acceptance
 		Cmd: []string{
 			"--root-dir=/recordings",
@@ -220,7 +220,7 @@ func StartWiremock(ctx context.Context) (context.Context, error) {
 		return ctx, err
 	}
 
-	port, err := w.MappedPort(ctx, nat.Port("8080/tcp"))
+	port, err := w.MappedPort(ctx, "8080/tcp")
 	if err != nil {
 		return ctx, err
 	}
@@ -236,7 +236,7 @@ func wiremockFrom(ctx context.Context) (*client, error) {
 	state := testenv.FetchState[wiremockState](ctx)
 
 	if !state.Up() {
-		return nil, errors.New("WireMock is not up, did you start it first?")
+		return nil, errors.New("wireMock is not up, did you start it first")
 	}
 
 	return newClient(state.URL), nil
@@ -258,7 +258,7 @@ func Endpoint(ctx context.Context) (string, error) {
 	state := testenv.FetchState[wiremockState](ctx)
 
 	if !state.Up() {
-		return "", errors.New("WireMock is not up, did you start it first?")
+		return "", errors.New("wireMock is not up, did you start it first")
 	}
 
 	return state.URL, nil

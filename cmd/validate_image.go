@@ -1,0 +1,204 @@
+package cmd
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io/ioutil"
+	"sync"
+
+	"github.com/hashicorp/go-multierror"
+	appstudioshared "github.com/redhat-appstudio/managed-gitops/appstudio-shared/apis/appstudio.redhat.com/v1alpha1"
+	"github.com/spf13/afero"
+	"github.com/spf13/cobra"
+
+	"github.com/hacbs-contract/ec-cli/internal/applicationsnapshot"
+	"github.com/hacbs-contract/ec-cli/internal/output"
+	"github.com/hacbs-contract/ec-cli/internal/utils"
+)
+
+// Copyright 2022 Red Hat, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+// SPDX-License-Identifier: Apache-2.0
+
+type imageValidationFunc func(ctx context.Context, imageRef, policyConfiguration, publicKey, rekorURL string) (*output.Output, error)
+
+func validateImageCmd(validate imageValidationFunc) *cobra.Command {
+	var data = struct {
+		policyConfiguration string
+		imageRef            string
+		publicKey           string
+		rekorURL            string
+		strict              bool
+		input               string
+		filePath            string
+		output              string
+		spec                *appstudioshared.ApplicationSnapshotSpec
+	}{
+		policyConfiguration: "ec-policy",
+		rekorURL:            "https://rekor.sigstore.dev/",
+		strict:              false,
+	}
+	cmd := &cobra.Command{
+		Use:     "image",
+		Short:   "Validates an ApplicationSnapshot image",
+		Long:    "TODO",
+		Example: "",
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			s, err := determineInputSpec(data.filePath, data.input, data.imageRef)
+			if err != nil {
+				return err
+			}
+
+			data.spec = s
+
+			return nil
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			type result struct {
+				err       error
+				component applicationsnapshot.Component
+			}
+
+			appComponents := data.spec.Components
+
+			ch := make(chan result, len(appComponents))
+
+			var lock sync.WaitGroup
+			for _, c := range appComponents {
+				lock.Add(1)
+				go func(comp appstudioshared.ApplicationSnapshotComponent) {
+					defer lock.Done()
+
+					out, err := validate(cmd.Context(), comp.ContainerImage, data.policyConfiguration, data.publicKey, data.rekorURL)
+					res := result{
+						err: err,
+						component: applicationsnapshot.Component{
+							ApplicationSnapshotComponent: appstudioshared.ApplicationSnapshotComponent{
+								Name:           comp.Name,
+								ContainerImage: comp.ContainerImage,
+							},
+							Success: err == nil,
+						},
+					}
+
+					// Skip on err to not panic. Error is return on routine completion.
+					if err == nil {
+						res.component.Violations = out.Violations()
+					}
+					res.component.Success = err == nil && len(res.component.Violations) == 0
+
+					ch <- res
+				}(c)
+			}
+
+			lock.Wait()
+			close(ch)
+
+			var components []applicationsnapshot.Component
+			var allErrors error = nil
+			for r := range ch {
+				if r.err != nil {
+					e := fmt.Errorf("error validating image %s of component %s: %w", r.component.ContainerImage, r.component.Name, r.err)
+					allErrors = multierror.Append(allErrors, e)
+				} else {
+					components = append(components, r.component)
+				}
+			}
+
+			report, err, success := applicationsnapshot.Report(components)
+			if allErrors != nil {
+				return multierror.Append(allErrors, err)
+			}
+
+			if len(data.output) > 0 {
+				if err := ioutil.WriteFile(data.output, []byte(report), 0644); err != nil {
+					return multierror.Append(allErrors, err)
+				}
+				fmt.Printf("Report written to %s\n", data.output)
+			} else {
+				_, err := cmd.OutOrStdout().Write([]byte(report))
+				if err != nil {
+					return multierror.Append(allErrors, err)
+				}
+			}
+
+			if data.strict && !success {
+				// TODO: replace this with proper message and exit code 1.
+				return errors.New("success criteria not met")
+			}
+
+			return nil
+		},
+	}
+	cmd.Flags().StringVarP(&data.policyConfiguration, "policy", "p", data.policyConfiguration, "Policy configuration name")
+	cmd.Flags().StringVarP(&data.imageRef, "image", "i", data.imageRef, "Image reference")
+	cmd.Flags().StringVarP(&data.publicKey, "public-key", "k", data.publicKey, "Public key")
+	cmd.Flags().StringVarP(&data.rekorURL, "rekor-url", "r", data.rekorURL, "Rekor URL")
+	cmd.Flags().StringVarP(&data.filePath, "file-path", "f", data.filePath, "Path to ApplicationSnapshot JSON file")
+	cmd.Flags().StringVarP(&data.input, "json-input", "j", data.input, "ApplicationSnapshot JSON string")
+	cmd.Flags().StringVarP(&data.output, "output-file", "o", data.output, "Path to output file")
+	cmd.Flags().BoolVarP(&data.strict, "strict", "s", data.strict, "Enable strict mode")
+
+	_ = cmd.MarkFlagRequired("public-key")
+	if len(data.input) > 0 || len(data.filePath) > 0 {
+		_ = cmd.MarkFlagRequired("image")
+	}
+	return cmd
+}
+
+func determineInputSpec(filePath string, input string, imageRef string) (*appstudioshared.ApplicationSnapshotSpec, error) {
+	var appSnapshot appstudioshared.ApplicationSnapshotSpec
+
+	// read ApplicationSnapshot provided as a file
+	if len(filePath) > 0 {
+		content, err := afero.ReadFile(utils.AppFS, filePath)
+		if err != nil {
+			return nil, err
+		}
+
+		err = json.Unmarshal(content, &appSnapshot)
+		if err != nil {
+			return nil, err
+		}
+
+		return &appSnapshot, nil
+	}
+
+	// read ApplicationSnapshot provided as a string
+	if len(input) > 0 {
+		// Unmarshall json into struct, exit on failure
+		if err := json.Unmarshal([]byte(input), &appSnapshot); err != nil {
+			return nil, err
+		}
+
+		return &appSnapshot, nil
+	}
+
+	// create ApplicationSnapshot with a single image
+	if len(imageRef) > 0 {
+		return &appstudioshared.ApplicationSnapshotSpec{
+			Components: []appstudioshared.ApplicationSnapshotComponent{
+				{
+					Name:           "Unnamed",
+					ContainerImage: imageRef,
+				},
+			},
+		}, nil
+	}
+
+	return nil, errors.New("neither ApplicationSnapshot nor image reference provided to validate")
+}

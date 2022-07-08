@@ -36,6 +36,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"go/ast"
+	"go/parser"
+	"go/printer"
+	"go/token"
 	"io"
 	"io/ioutil"
 	"os"
@@ -43,15 +47,9 @@ import (
 	"strconv"
 	"strings"
 	"text/template"
-
-	// Parse Go source code
-	"go/ast"
-	"go/parser"
-	"go/printer"
-	"go/token"
 )
 
-var usageString string = `
+var usageString = `
 Usage:
 
    gobinarycoverage package [package]...
@@ -415,7 +413,7 @@ func generateMainFromTemplate(fset *token.FileSet, cover *Cover) (*ast.File, err
 	return f, nil
 }
 
-var testmainTmplStr string = `
+var testmainTmplStr = `
 package main
 
 import (

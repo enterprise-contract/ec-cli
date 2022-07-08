@@ -46,7 +46,7 @@ func hasJSONPrefix(buf []byte) bool {
 	return hasPrefix(buf, jsonPrefix)
 }
 
-// Return true if the first non-whitespace bytes in buf is prefix.
+// hasPrefix returns true if the first non-whitespace bytes in buf is prefix.
 func hasPrefix(buf []byte, prefix []byte) bool {
 	trim := bytes.TrimLeftFunc(buf, unicode.IsSpace)
 	return bytes.HasPrefix(trim, prefix)

@@ -14,7 +14,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// Handles image operations, like creating a random image, image signature
+// Package image handles image operations, like creating a random image, image signature
 // or attestation images
 package image
 
@@ -32,13 +32,14 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/random"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/google/go-containerregistry/pkg/v1/types"
+	"github.com/sigstore/cosign/pkg/oci/static"
+	cosigntypes "github.com/sigstore/cosign/pkg/types"
+	"github.com/sigstore/sigstore/pkg/signature"
+
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/attestation"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/crypto"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/registry"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/testenv"
-	"github.com/sigstore/cosign/pkg/oci/static"
-	cosigntypes "github.com/sigstore/cosign/pkg/types"
-	"github.com/sigstore/sigstore/pkg/signature"
 )
 
 type key int
@@ -60,7 +61,7 @@ func imageFrom(ctx context.Context, imageName string) (v1.Image, error) {
 	state := testenv.FetchState[imageState](ctx)
 
 	if state.Images[imageName] == "" {
-		return nil, fmt.Errorf("can't find image info for image named %s, did you create the image beforehand?", imageName)
+		return nil, fmt.Errorf("can't find image info for image named %s, did you create the image beforehand", imageName)
 	}
 
 	ref, err := name.ParseReference(state.Images[imageName])
@@ -156,7 +157,7 @@ func createAndPushImageSignature(ctx context.Context, imageName string, keyName 
 	return ctx, nil
 }
 
-// createAndPushAttestation for a named image in the Context creates a attestation
+// createAndPushAttestation for a named image in the Context creates an attestation
 // image, same as `cosign attest` or Tekton Chains would, and pushes it to the stub
 // registry as a new tag for that image akin to how cosign and Tekton Chains do it
 func createAndPushAttestation(ctx context.Context, imageName, keyName string) (context.Context, error) {
@@ -284,7 +285,7 @@ func AttestationFrom(ctx context.Context, imageName string) ([]byte, error) {
 	refStr := state.Attestations[imageName]
 
 	if refStr == "" {
-		return nil, fmt.Errorf("no attestation found for image %s, did you create a attestation beforehand?", imageName)
+		return nil, fmt.Errorf("no attestation found for image %s, did you create a attestation beforehand", imageName)
 	}
 
 	ref, err := name.ParseReference(refStr)
@@ -316,7 +317,7 @@ func AttestationFrom(ctx context.Context, imageName string) ([]byte, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("no attestation found for image %s, did you create a attestation beforehand?", imageName)
+	return nil, fmt.Errorf("no attestation found for image %s, did you create a attestation beforehand", imageName)
 }
 
 // AddStepsTo adds Gherkin steps to the godog ScenarioContext

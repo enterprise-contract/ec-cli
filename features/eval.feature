@@ -21,13 +21,13 @@ Feature: evaluate enterprise contract
       "sources": [
         {
           "git": {
-            "repository": "git::http://${GITHOST}/git/happy-day-policy.git"
+            "repository": "http://${GITHOST}/git/happy-day-policy.git"
           }
         }
       ]
-		}
+    }
     """
-    When ec command is run with "eval --image ${REGISTRY}/acceptance/ec-happy-day --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
     Then the exit status should be 0
     Then the standard output should contain
     """
@@ -59,13 +59,13 @@ Feature: evaluate enterprise contract
       "sources": [
         {
           "git": {
-            "repository": "git::http://${GITHOST}/git/invalid-image-signature.git"
+            "repository": "http://${GITHOST}/git/invalid-image-signature.git"
           }
         }
       ]
-		}
+    }
     """
-    When ec command is run with "eval --image ${REGISTRY}/acceptance/invalid-image-signature --policy acceptance/invalid-image-signature-policy --public-key ${unknown_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/invalid-image-signature --policy acceptance/invalid-image-signature-policy --public-key ${unknown_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
     Then the exit status should be 1
     Then the standard output should contain
     """
@@ -75,11 +75,7 @@ Feature: evaluate enterprise contract
         {
           "name": "Unnamed",
           "containerImage": "localhost:(\\d+)/acceptance/invalid-image-signature",
-          "violations": [
-            "no matching signatures:\nfailed to verify signature",
-            "no matching attestations:\nAccepted signatures do not match threshold, Found: 0, Expected 1",
-            "no attestations available"
-          ],
+          "violations": ["no matching signatures:\nfailed to verify signature", "no matching attestations:\nAccepted signatures do not match threshold, Found: 0, Expected 1", "no attestations available"],
           "success": false
         }
       ]
