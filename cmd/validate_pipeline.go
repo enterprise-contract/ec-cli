@@ -23,10 +23,10 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/hacbs-contract/ec-cli/internal/output"
-	"github.com/hacbs-contract/ec-cli/internal/policy_source"
+	"github.com/hacbs-contract/ec-cli/internal/policy/source"
 )
 
-type pipelineValidationFn func(context.Context, string, policy_source.PolicyRepo, string) (*output.Output, error)
+type pipelineValidationFn func(context.Context, string, source.PolicyRepo, string) (*output.Output, error)
 
 func validatePipelineCmd(validate pipelineValidationFn) *cobra.Command {
 	var data = struct {
@@ -68,7 +68,7 @@ func validatePipelineCmd(validate pipelineValidationFn) *cobra.Command {
 			var outputs output.Outputs
 			for i := range data.FilePaths {
 				fpath := data.FilePaths[i]
-				policySource := policy_source.PolicyRepo{
+				policySource := source.PolicyRepo{
 					PolicyDir: data.PolicyDir,
 					RepoURL:   data.PolicyRepo,
 					RepoRef:   data.Ref,

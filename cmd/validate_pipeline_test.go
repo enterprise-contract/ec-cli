@@ -26,11 +26,11 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	output2 "github.com/hacbs-contract/ec-cli/internal/output"
-	"github.com/hacbs-contract/ec-cli/internal/policy_source"
+	"github.com/hacbs-contract/ec-cli/internal/policy/source"
 )
 
 func Test_ValidatePipelineCommandOutput(t *testing.T) {
-	validate := func(ctx context.Context, fpath string, policyRepo policy_source.PolicyRepo, namespace string) (*output2.Output, error) {
+	validate := func(ctx context.Context, fpath string, policyRepo source.PolicyRepo, namespace string) (*output2.Output, error) {
 		return &output2.Output{
 			PolicyCheck: []output.CheckResult{
 				{
@@ -91,7 +91,7 @@ func Test_ValidatePipelineCommandOutput(t *testing.T) {
 }
 
 func Test_ValidatePipelineCommandErrors(t *testing.T) {
-	validate := func(ctx context.Context, fpath string, policyRepo policy_source.PolicyRepo, namespace string) (*output2.Output, error) {
+	validate := func(ctx context.Context, fpath string, policyRepo source.PolicyRepo, namespace string) (*output2.Output, error) {
 		return nil, errors.New(fpath)
 	}
 
