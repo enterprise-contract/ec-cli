@@ -43,6 +43,30 @@
             "args": [
                 "-restore"
             ]
+        },
+        {
+            "name": "ec validate image (against persisted environment - update as needed)",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/main.go",
+            "args": [
+                "validate",
+                "image",
+                "--image",
+                "localhost:49344/acceptance/ec-happy-day",
+                "--public-key",
+                "/tmp/4253412524.pub",
+                "--rekor-url",
+                "http://localhost:49342",
+                "--policy",
+                "acceptance/ec-policy",
+                "--strict"
+            ],
+            "env": {
+                "KUBECONFIG": "/tmp/3638873222.kubeconfig",
+                "SIGSTORE_REKOR_PUBLIC_KEY": "/tmp/rekor-1211047596.pub"
+            }
         }
     ]
 }
