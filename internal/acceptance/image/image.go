@@ -320,6 +320,38 @@ func AttestationFrom(ctx context.Context, imageName string) ([]byte, error) {
 	return nil, fmt.Errorf("no attestation found for image %s, did you create a attestation beforehand", imageName)
 }
 
+// ImageSignatureFrom returns the image signature previously created by createAndPushImageSignature
+func ImageSignatureFrom(ctx context.Context, imageName string) ([]byte, error) {
+	state := testenv.FetchState[imageState](ctx)
+
+	refStr := state.Signatures[imageName]
+
+	if refStr == "" {
+		return nil, fmt.Errorf("no image signature found for image %s, did you create it beforehand?", imageName)
+	}
+
+	ref, err := name.ParseReference(refStr)
+	if err != nil {
+		return nil, err
+	}
+
+	image, err := remote.Image(ref)
+	if err != nil {
+		return nil, err
+	}
+
+	manifest, err := image.Manifest()
+	if err != nil {
+		return nil, err
+	}
+
+	annotations := manifest.Layers[0].Annotations
+
+	signature := annotations[static.SignatureAnnotationKey]
+
+	return base64.StdEncoding.DecodeString(signature)
+}
+
 // AddStepsTo adds Gherkin steps to the godog ScenarioContext
 func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^an image named "([^"]*)"$`, createAndPushImage)
