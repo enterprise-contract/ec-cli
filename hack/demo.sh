@@ -51,7 +51,7 @@ spec:
     - test:conftest-clair
   sources:
   - git:
-      repository: https://github.com/simonbaird/ec-policies/policy
+      repository: https://github.com/hacbs-contract/ec-policies/policy
       revision: main
 EOF
 
