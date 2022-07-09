@@ -63,7 +63,7 @@ acceptance: ## Run acceptance tests
 	@$(MAKE) build
 	@export ROOT_DIR=$(ROOT_DIR)
 	@go test ./internal/acceptance
-	@mv $(ROOT_DIR)/coverage-acceptance*.out $(ROOT_DIR)/coverage-acceptance.out
+	@mv $(ROOT_DIR)/coverage-acceptance?*.out $(ROOT_DIR)/coverage-acceptance.out
 
 .PHONY: lint
 lint: ## Run linter
