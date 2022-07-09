@@ -53,10 +53,10 @@ EOF
 
 for IMG in 'quay.io/hacbs-contract-demo/single-nodejs-app:120e9a3' 'quay.io/hacbs-contract-demo/spring-petclinic:dc80a7f' 'quay.io/hacbs-contract-demo/single-container-app:62c06bf'; do
   printf "\n🩺 Evaluating policy for %s\n\n" "${IMG}"
-  echo "💲 ${EC}" eval --image "${IMG}" --public-key "${HACK_DIR}/cosign.pub" --policy demo/ec-demo
-  "${EC}" eval --image "${IMG}" --public-key "${HACK_DIR}/cosign.pub" --policy demo/ec-demo
+  echo "💲 ${EC}" validate image --image "${IMG}" --public-key "${HACK_DIR}/cosign.pub" --policy demo/ec-demo
+  "${EC}" validate image --image "${IMG}" --public-key "${HACK_DIR}/cosign.pub" --policy demo/ec-demo
 done
 
 printf "\n🩺 Evaluating application snapshot \n\n%s\n\n" "${SNAPSHOT}"
-echo "💲 ${EC}" eval --filepath "${HACK_DIR}/application_snapshot.json" --public-key "${HACK_DIR}/cosign.pub" --policy demo/ec-demo
-"${EC}" eval --filepath "${HACK_DIR}/application_snapshot.json" --public-key "${HACK_DIR}/cosign.pub" --policy demo/ec-demo | jq
+echo "💲 ${EC}" validate image --file-path "${HACK_DIR}/application_snapshot.json" --public-key "${HACK_DIR}/cosign.pub" --policy demo/ec-demo
+"${EC}" validate image --file-path "${HACK_DIR}/application_snapshot.json" --public-key "${HACK_DIR}/cosign.pub" --policy demo/ec-demo | jq
