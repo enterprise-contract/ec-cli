@@ -208,6 +208,7 @@ func StartWiremock(ctx context.Context) (context.Context, error) {
 		Binds:        []string{fmt.Sprintf("%s:/recordings:z", path.Join(cwd, "wiremock", "recordings"))}, // relative to the running test, i.e. $GITROOT/internal/acceptance
 		Cmd: []string{
 			"--root-dir=/recordings",
+			"--verbose",
 		},
 	})
 
