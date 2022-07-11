@@ -106,7 +106,7 @@ func ecCommandIsRunWith(ctx context.Context, parameters string) (context.Context
 		return ctx, err
 	}
 
-	rekor, err := rekor.StubRekor(ctx)
+	rekorURL, err := rekor.StubRekor(ctx)
 	if err != nil {
 		return ctx, err
 	}
@@ -115,7 +115,7 @@ func ecCommandIsRunWith(ctx context.Context, parameters string) (context.Context
 	// provided by the `parameters`` parameter
 	vars := map[string]string{
 		"REGISTRY": registry,
-		"REKOR":    rekor,
+		"REKOR":    rekorURL,
 	}
 
 	// there could be several key pairs created, for testing
@@ -147,6 +147,24 @@ func ecCommandIsRunWith(ctx context.Context, parameters string) (context.Context
 		vars[name+"_PUBLIC_KEY"] = key.Name()
 	}
 
+	rekorPublicKey, err := os.CreateTemp("", "rekor-*.pub")
+	if err != nil {
+		return ctx, err
+	}
+	defer func() {
+		if !testenv.Persisted(ctx) {
+			os.Remove(rekorPublicKey.Name())
+		}
+	}()
+	_, err = rekorPublicKey.Write(rekor.PublicKey(ctx))
+	if err != nil {
+		return ctx, err
+	}
+	err = rekorPublicKey.Close()
+	if err != nil {
+		return ctx, err
+	}
+
 	// performs the actual substitution of ${...} with the
 	// values from `vars``
 	args := os.Expand(parameters, func(key string) string {
@@ -159,6 +177,7 @@ func ecCommandIsRunWith(ctx context.Context, parameters string) (context.Context
 	environment := []string{
 		"PATH=" + os.Getenv("PATH"),
 		"KUBECONFIG=" + kubeconfig.Name(),
+		"SIGSTORE_REKOR_PUBLIC_KEY=" + rekorPublicKey.Name(),
 		"COVERAGE_FILEPATH=" + os.Getenv("ROOT_DIR"), // where to put the coverage file, $ROOT_DIR is provided by the Makefile, if empty it'll be $TMPDIR
 		"COVERAGE_FILENAME=-acceptance",              // suffix for the coverage file
 	}
@@ -396,17 +415,16 @@ func logOutput(ctx context.Context, s *status) {
 	}
 
 	if testenv.Persisted(ctx) {
-		var kubeconfig string
+		var environment []string
 		for _, e := range s.Env {
-			if strings.HasPrefix(e, "KUBECONFIG=") {
-				kubeconfig = e
-				break
+			if strings.HasPrefix(e, "KUBECONFIG=") || strings.HasPrefix(e, "SIGSTORE_") {
+				environment = append(environment, e)
 			}
 		}
 
 		output += fmt.Sprintf(`The test environment is persisted, to recreate the failure run:
 %s %s
-`, kubeconfig, strings.Join(s.Cmd.Args, " "))
+`, strings.Join(environment, " "), strings.Join(s.Cmd.Args, " "))
 	} else {
 		output += "HINT: To recreate the failure re-run the test with `-args -persist` to persist the stubbed environment\n"
 	}

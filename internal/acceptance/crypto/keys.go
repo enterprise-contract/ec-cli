@@ -46,8 +46,8 @@ func GenerateKeyPair() (*cosign.KeysBytes, error) {
 	return cosign.GenerateKeyPair(nil)
 }
 
-// generateKeyPair generates a key pair and stores it in the Context
-func generateKeyPair(ctx context.Context, name string) (context.Context, error) {
+// GenerateKeyPairNamed generates a key pair and stores it in the Context
+func GenerateKeyPairNamed(ctx context.Context, name string) (context.Context, error) {
 	var state *keyState
 	ctx, err := testenv.SetupState(ctx, &state)
 	if err != nil {
@@ -115,5 +115,5 @@ func PublicKeysFrom(ctx context.Context) map[string]string {
 
 // AddStepsTo adds Gherkin steps to the godog ScenarioContext
 func AddStepsTo(sc *godog.ScenarioContext) {
-	sc.Step(`^a key pair named "([^"]*)"$`, generateKeyPair)
+	sc.Step(`^a key pair named "([^"]*)"$`, GenerateKeyPairNamed)
 }

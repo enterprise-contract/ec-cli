@@ -11,6 +11,7 @@ Feature: evaluate enterprise contract
     Given a key pair named "known"
     Given an image named "acceptance/ec-happy-day"
     Given a valid image signature of "acceptance/ec-happy-day" image signed by the "known" key
+    Given a valid Rekor entry for image signature of "acceptance/ec-happy-day"
     Given a valid attestation of "acceptance/ec-happy-day" signed by the "known" key
     Given a valid Rekor entry for attestation of "acceptance/ec-happy-day"
     Given a git repository named "happy-day-policy" with
