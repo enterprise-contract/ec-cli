@@ -21,6 +21,7 @@ import (
 	"path/filepath"
 
 	"github.com/open-policy-agent/conftest/runner"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
@@ -59,19 +60,25 @@ func NewConftestEvaluator(ctx context.Context, policySources []source.PolicySour
 
 	dir, err := c.createWorkDir()
 	if err != nil {
+		log.Debug("Failed to create work dir!")
 		return nil, err
 	}
 	c.WorkDir = dir
+	log.Debugf("Created work dir %s", dir)
 
 	err = c.addPolicyPaths()
 	if err != nil {
+		log.Debug("Failed to add policy paths!")
 		return nil, err
 	}
+	log.Debug("Added policy paths")
 
 	err = c.addDataPath()
 	if err != nil {
+		log.Debug("Failed to add add data path!")
 		return nil, err
 	}
+	log.Debug("Added data path")
 
 	c.TestRunner = runner.TestRunner{
 		Data:      c.Paths.DataPaths,
@@ -81,6 +88,7 @@ func NewConftestEvaluator(ctx context.Context, policySources []source.PolicySour
 		Output:    c.OutputFormat,
 	}
 
+	log.Debug("Conftest test runner created")
 	return c, nil
 }
 

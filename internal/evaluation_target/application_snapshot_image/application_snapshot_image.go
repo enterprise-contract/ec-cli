@@ -34,6 +34,7 @@ import (
 	"github.com/sigstore/cosign/pkg/policy"
 	"github.com/sigstore/cosign/pkg/signature"
 	cosignTypes "github.com/sigstore/cosign/pkg/types"
+	log "github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/types"
 
 	"github.com/hacbs-contract/ec-cli/internal/evaluator"
@@ -63,13 +64,17 @@ func NewApplicationSnapshotImage(ctx context.Context, image string, publicKey st
 	if len(policyConfiguration) == 0 {
 		return nil, fmt.Errorf("policy: policy name is required")
 	}
+	log.Debugf("Raw policy name %s", policyConfiguration)
 
 	policyName := getPolicyName(policyConfiguration)
+	log.Debugf("Parsed policy name %s", policyName)
 
 	ref, err := name.ParseReference(image)
 	if err != nil {
+		log.Debugf("Failed to parse reference %s", image)
 		return nil, err
 	}
+	log.Debugf("Parsed reference %s", ref)
 
 	checkOpts, err := getCheckOpts(ctx, publicKey, rekorURL)
 	if err != nil {
@@ -83,23 +88,34 @@ func NewApplicationSnapshotImage(ctx context.Context, image string, publicKey st
 
 	k8s, err := kubernetesCreator()
 	if err != nil {
+		log.Debug("Failed to initialize k8s")
 		return nil, err
 	}
 
 	ecp, err := k8s.FetchEnterpriseContractPolicy(ctx, policyName)
 	if err != nil {
+		log.Debug("Failed to fetch the enterprise contract policy from the cluster!")
 		return nil, err
 	}
+	log.Debug("Enterprise contract policy fetched from cluster")
 
 	policies, err := fetchPolicyRepos(ecp.Spec)
 	if err != nil {
+		log.Debug("Failed to fetch the policy repos from the ECP!")
 		return nil, err
+	}
+	log.Debug("Policy repos fetched")
+	for _, policyRepo := range policies {
+		policyRepoJson, _ := json.Marshal(policyRepo)
+		log.Debugf("%s", policyRepoJson)
 	}
 
 	c, err := newConftestEvaluator(ctx, policies, []string{ConftestNamespace})
 	if err != nil {
+		log.Debug("Failed to initialize the conftest evaluator!")
 		return nil, err
 	}
+	log.Debug("Conftest evaluator initialized")
 	a.Evaluator = c
 	return a, nil
 }
@@ -108,18 +124,23 @@ func NewApplicationSnapshotImage(ctx context.Context, image string, publicKey st
 func getCheckOpts(ctx context.Context, publicKey string, rekorURL string) (cosign.CheckOpts, error) {
 	verifier, err := signature.PublicKeyFromKeyRef(ctx, publicKey)
 	if err != nil {
+		log.Debugf("Problem creating signature verifier using public key %s", publicKey)
 		return cosign.CheckOpts{}, err
 	}
 
 	checkOpts := cosign.CheckOpts{}
 	checkOpts.SigVerifier = verifier
+	log.Debugf("Signature verifier created using public key %s", publicKey)
+
 	if len(rekorURL) > 0 {
 		rekorClient, err := rekor.NewClient(rekorURL)
 		if err != nil {
+			log.Debug("Problem creating a rekor client")
 			return cosign.CheckOpts{}, err
 		}
 
 		checkOpts.RekorClient = rekorClient
+		log.Debug("Rekor client created")
 	}
 	return checkOpts, nil
 }
@@ -177,51 +198,65 @@ func (a *ApplicationSnapshotImage) Attestations() []oci.Signature {
 
 // WriteInputFiles writes the JSON from the attestations to input.json in a random temp dir
 func (a *ApplicationSnapshotImage) WriteInputFiles() ([]string, error) {
-	inputs := make([]string, 0, len(a.attestations))
+	attCount := len(a.attestations)
+	log.Debugf("Attempting to write %d attestations to inputs", attCount)
+	inputs := make([]string, 0, attCount)
+
 	for _, att := range a.attestations {
 		typ, err := att.MediaType()
 		if err != nil {
+			log.Debug("Problem finding media type!")
 			return nil, err
 		}
 
 		if typ != cosignTypes.DssePayloadType {
+			log.Debugf("Skipping unexpected media type %s", typ)
 			continue
 		}
 		payload, err := policy.AttestationToPayloadJSON(a.Evaluator.Context, "slsaprovenance", att)
 		if err != nil {
+			log.Debug("Problem extracting json payload from attestation!")
 			return nil, err
 		}
 
 		var statement in_toto.Statement
 		err = json.Unmarshal(payload, &statement)
 		if err != nil {
+			log.Debug("Problem parsing attestation payload json!")
 			return nil, err
 		}
 
 		predicates, ok := statement.Predicate.(map[string]interface{})
 		if !ok {
+			log.Debug("Unexpected attestation payload format!")
 			return nil, errors.New("expecting map with string keys in in-toto Statement, did not find it")
 		}
 
 		if predicates["buildType"] != PipelineRunBuildType {
+			log.Debugf("Skipping attestation with unexpected predicate buildType '%s'", predicates["buildType"])
 			continue
 		}
 
 		inputDir, err := os.MkdirTemp("", "ecp_input.*")
 		if err != nil {
+			log.Debug("Problem making temp dir!")
 			return nil, err
 		}
+		log.Debugf("Created dir %s", inputDir)
 		inputJSONPath := path.Join(inputDir, "input.json")
 		input, err := os.Create(inputJSONPath)
 		if err != nil {
+			log.Debugf("Problem creating file in %s", inputDir)
 			return nil, err
 		}
+		log.Debugf("Created json file in %s", inputDir)
 		defer input.Close()
 
 		fmt.Fprint(input, `{"attestations":[`)
 		j := json.NewEncoder(input)
 		err = j.Encode(statement)
 		if err != nil {
+			log.Debug("Problem encoding attestion json!")
 			return nil, err
 		}
 		fmt.Fprint(input, `]}`)
@@ -230,5 +265,6 @@ func (a *ApplicationSnapshotImage) WriteInputFiles() ([]string, error) {
 
 	}
 
+	log.Debugf("Done preparing inputs:\n%s", inputs)
 	return inputs, nil
 }

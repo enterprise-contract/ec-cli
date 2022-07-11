@@ -18,9 +18,11 @@ package kubernetes_client
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	ecp "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
+	log "github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/clientcmd"
@@ -36,6 +38,7 @@ type Kubernetes struct {
 func NewKubernetes() (*Kubernetes, error) {
 	kClient, err := createControllerRuntimeClient()
 	if err != nil {
+		log.Debug("Failed to create k8s client!")
 		return nil, err
 	}
 
@@ -70,15 +73,20 @@ func (k *Kubernetes) FetchEnterpriseContractPolicy(ctx context.Context, name typ
 	if name.Namespace == "" {
 		namespace, err := getCurrentNamespace()
 		if err != nil {
+			log.Debug("Failed to get current k8s namespace!")
 			return nil, err
 		}
+		log.Debugf("Found k8s namespace %s", namespace)
 		name.Namespace = namespace
 	}
 
 	err := k.Client.Get(ctx, name, policy)
 	if err != nil {
+		log.Debug("Failed to get policy from cluster!")
 		return nil, err
 	}
+	policyJson, _ := json.Marshal(policy.Spec)
+	log.Debugf("Policy fetched:\n%s", policyJson)
 	return policy, nil
 }
 

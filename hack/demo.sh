@@ -25,6 +25,10 @@ HACK_DIR="$(dirname "${BASH_SOURCE[0]}")"
 EC="${HACK_DIR}/../dist/ec_$(go env GOOS)_$(go env GOARCH)"
 SNAPSHOT="$(cat ${HACK_DIR}/application_snapshot.json)"
 
+# To run with debug output enabled:
+#  EC_DEBUG=1 hack/demo.sh
+[[ -n "${EC_DEBUG:-}" ]] && DEBUG_OPT="--debug"
+
 echo "Using ec version $("${EC}" version)"
 
 if [[ ! -x "${EC}" ]]; then
@@ -47,16 +51,16 @@ spec:
     - test:conftest-clair
   sources:
   - git:
-      repository: https://github.com/simonbaird/ec-policies/policy
+      repository: https://github.com/hacbs-contract/ec-policies/policy
       revision: main
 EOF
 
 for IMG in 'quay.io/hacbs-contract-demo/single-nodejs-app:120e9a3' 'quay.io/hacbs-contract-demo/spring-petclinic:dc80a7f' 'quay.io/hacbs-contract-demo/single-container-app:62c06bf'; do
-  printf "\n🩺 Evaluating policy for %s\n\n" "${IMG}"
-  echo "💲 ${EC}" eval --image "${IMG}" --public-key "${HACK_DIR}/cosign.pub" --policy demo/ec-demo
-  "${EC}" eval --image "${IMG}" --public-key "${HACK_DIR}/cosign.pub" --policy demo/ec-demo
+  printf "\n\n🩺 Evaluating policy for %s\n\n" "${IMG}"
+  echo "💲 ${EC}" validate image --image "${IMG}" --public-key "${HACK_DIR}/cosign.pub" --policy demo/ec-demo ${DEBUG_OPT:-}
+  "${EC}" validate image --image "${IMG}" --public-key "${HACK_DIR}/cosign.pub" --policy demo/ec-demo ${DEBUG_OPT:-} | jq
 done
 
-printf "\n🩺 Evaluating application snapshot \n\n%s\n\n" "${SNAPSHOT}"
-echo "💲 ${EC}" eval --filepath "${HACK_DIR}/application_snapshot.json" --public-key "${HACK_DIR}/cosign.pub" --policy demo/ec-demo
-"${EC}" eval --filepath "${HACK_DIR}/application_snapshot.json" --public-key "${HACK_DIR}/cosign.pub" --policy demo/ec-demo | jq
+printf "\n\n🩺 Evaluating application snapshot:\n%s\n\n" "${SNAPSHOT}"
+echo "💲 ${EC}" validate image --file-path "${HACK_DIR}/application_snapshot.json" --public-key "${HACK_DIR}/cosign.pub" --policy demo/ec-demo ${DEBUG_OPT:-}
+"${EC}" validate image --file-path "${HACK_DIR}/application_snapshot.json" --public-key "${HACK_DIR}/cosign.pub" --policy demo/ec-demo ${DEBUG_OPT:-} | jq
