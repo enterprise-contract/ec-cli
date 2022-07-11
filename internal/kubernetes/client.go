@@ -14,7 +14,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package kubernetes_client
+package kubernetes
 
 import (
 	"context"
@@ -30,20 +30,20 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-type Kubernetes struct {
-	Client client.Client
+type Client struct {
+	client client.Client
 }
 
-// NewKubernetes constructs a new kubernetes with the default "live" client
-func NewKubernetes() (*Kubernetes, error) {
-	kClient, err := createControllerRuntimeClient()
+// NewClient constructs a new kubernetes with the default "live" client
+func NewClient() (*Client, error) {
+	clnt, err := createControllerRuntimeClient()
 	if err != nil {
 		log.Debug("Failed to create k8s client!")
 		return nil, err
 	}
 
-	return &Kubernetes{
-		Client: kClient,
+	return &Client{
+		client: clnt,
 	}, nil
 }
 
@@ -68,7 +68,7 @@ func createControllerRuntimeClient() (client.Client, error) {
 }
 
 // FetchEnterpriseContractPolicy gets the Enterprise Contract Policy from the given namespace in a Kubernetes cluster
-func (k *Kubernetes) FetchEnterpriseContractPolicy(ctx context.Context, name types.NamespacedName) (*ecp.EnterpriseContractPolicy, error) {
+func (k *Client) FetchEnterpriseContractPolicy(ctx context.Context, name types.NamespacedName) (*ecp.EnterpriseContractPolicy, error) {
 	policy := &ecp.EnterpriseContractPolicy{}
 	if name.Namespace == "" {
 		namespace, err := getCurrentNamespace()
@@ -80,7 +80,7 @@ func (k *Kubernetes) FetchEnterpriseContractPolicy(ctx context.Context, name typ
 		name.Namespace = namespace
 	}
 
-	err := k.Client.Get(ctx, name, policy)
+	err := k.client.Get(ctx, name, policy)
 	if err != nil {
 		log.Debug("Failed to get policy from cluster!")
 		return nil, err

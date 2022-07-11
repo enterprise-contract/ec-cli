@@ -38,7 +38,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 
 	"github.com/hacbs-contract/ec-cli/internal/evaluator"
-	"github.com/hacbs-contract/ec-cli/internal/kubernetes_client"
+	"github.com/hacbs-contract/ec-cli/internal/kubernetes"
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
 )
 
@@ -49,7 +49,7 @@ const ConftestNamespace = "release.main"
 const PipelineRunBuildType = "https://tekton.dev/attestations/chains/pipelinerun@v2"
 
 var newConftestEvaluator = evaluator.NewConftestEvaluator
-var kubernetesCreator = kubernetes_client.NewKubernetes
+var kubernetesClientCreator = kubernetes.NewClient
 
 // ApplicationSnapshotImage represents the structure needed to evaluate an Application Snapshot Image
 type ApplicationSnapshotImage struct {
@@ -86,9 +86,9 @@ func NewApplicationSnapshotImage(ctx context.Context, image string, publicKey st
 		checkOpts: checkOpts,
 	}
 
-	k8s, err := kubernetesCreator()
+	k8s, err := kubernetesClientCreator()
 	if err != nil {
-		log.Debug("Failed to initialize k8s")
+		log.Debug("Failed to initialize Kubernetes client")
 		return nil, err
 	}
 

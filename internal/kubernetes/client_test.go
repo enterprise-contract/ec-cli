@@ -14,7 +14,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package kubernetes_client
+package kubernetes
 
 import (
 	"context"
@@ -126,8 +126,8 @@ func Test_FetchEnterpriseContractPolicy(t *testing.T) {
 				}
 				t.Setenv("KUBECONFIG", kubeconfig)
 			}
-			k := Kubernetes{
-				Client: fakeClient,
+			k := Client{
+				client: fakeClient,
 			}
 
 			got, err := k.FetchEnterpriseContractPolicy(context.TODO(), tc.namespacedName)
