@@ -54,10 +54,23 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		strict:              false,
 	}
 	cmd := &cobra.Command{
-		Use:     "image",
-		Short:   "Validates an ApplicationSnapshot image",
-		Long:    "TODO",
-		Example: "",
+		Use:   "image",
+		Short: "Validates container image conformance with the Enterprise Contract",
+		Long: `Validates image signature, signature of related artifacts such as build
+attestation signature, transparency logs for the image signature and releated
+artifacts, gathers build related data and evaluates the enterprise policy
+against it.`,
+		Example: `Validate single image "registry/name:tag" with the default policy defined in
+the EnterpriseContractPolicy custom resource named "ec-policy" in the current
+Kubernetes namespace:
+
+  ec validate image --image registry/name:tag
+
+Validate an application snapshot provided by the ApplicationSnapshot custom
+resource provided via a file using a custom public key and a private Rekor
+instance in strict mode:
+
+ec validate image --file-path my-app.yaml --public-key my-key.pem --rekor-url https://rekor.example.org --strict`,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			s, err := determineInputSpec(data.filePath, data.input, data.imageRef)
 			if err != nil {
