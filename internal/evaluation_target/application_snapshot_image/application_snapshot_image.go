@@ -54,7 +54,7 @@ type ApplicationSnapshotImage struct {
 	reference    name.Reference
 	checkOpts    cosign.CheckOpts
 	attestations []oci.Signature
-	Evaluator    *evaluator.ConftestEvaluator
+	Evaluator    evaluator.Evaluator
 }
 
 // NewApplicationSnapshotImage returns an ApplicationSnapshotImage struct with reference, checkOpts, and evaluator ready to use.
@@ -111,7 +111,7 @@ func NewApplicationSnapshotImage(ctx context.Context, image string, publicKey st
 		log.Debugf("%s", policyRepoJson)
 	}
 
-	c, err := newConftestEvaluator(ctx, policies, []string{ConftestNamespace})
+	c, err := newConftestEvaluator(policies, []string{ConftestNamespace})
 	if err != nil {
 		log.Debug("Failed to initialize the conftest evaluator!")
 		return nil, err
@@ -162,14 +162,14 @@ func fetchPolicyRepos(spec ecc.EnterpriseContractPolicySpec) ([]source.PolicySou
 }
 
 // ValidateImageSignature executes the cosign.VerifyImageSignature method on the ApplicationSnapshotImage image ref.
-func (a *ApplicationSnapshotImage) ValidateImageSignature() error {
-	_, _, err := cosign.VerifyImageSignatures(a.Evaluator.Context, a.reference, &a.checkOpts)
+func (a *ApplicationSnapshotImage) ValidateImageSignature(ctx context.Context) error {
+	_, _, err := cosign.VerifyImageSignatures(ctx, a.reference, &a.checkOpts)
 	return err
 }
 
 // ValidateAttestationSignature executes the cosign.VerifyImageAttestations method
-func (a *ApplicationSnapshotImage) ValidateAttestationSignature() error {
-	attestations, _, err := cosign.VerifyImageAttestations(a.Evaluator.Context, a.reference, &a.checkOpts)
+func (a *ApplicationSnapshotImage) ValidateAttestationSignature(ctx context.Context) error {
+	attestations, _, err := cosign.VerifyImageAttestations(ctx, a.reference, &a.checkOpts)
 	if err != nil {
 		return err
 	}
@@ -183,7 +183,7 @@ func (a *ApplicationSnapshotImage) Attestations() []oci.Signature {
 }
 
 // WriteInputFiles writes the JSON from the attestations to input.json in a random temp dir
-func (a *ApplicationSnapshotImage) WriteInputFiles() ([]string, error) {
+func (a *ApplicationSnapshotImage) WriteInputFiles(ctx context.Context) ([]string, error) {
 	attCount := len(a.attestations)
 	log.Debugf("Attempting to write %d attestations to inputs", attCount)
 	inputs := make([]string, 0, attCount)
@@ -199,7 +199,7 @@ func (a *ApplicationSnapshotImage) WriteInputFiles() ([]string, error) {
 			log.Debugf("Skipping unexpected media type %s", typ)
 			continue
 		}
-		payload, err := policy.AttestationToPayloadJSON(a.Evaluator.Context, "slsaprovenance", att)
+		payload, err := policy.AttestationToPayloadJSON(ctx, "slsaprovenance", att)
 		if err != nil {
 			log.Debug("Problem extracting json payload from attestation!")
 			return nil, err

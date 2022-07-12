@@ -20,6 +20,7 @@ import (
 	"context"
 	"path/filepath"
 
+	"github.com/open-policy-agent/conftest/output"
 	"github.com/open-policy-agent/conftest/runner"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
@@ -32,14 +33,13 @@ import (
 var CreateWorkDir = afero.TempDir
 
 // ConftestEvaluator represents a structure which can be used to evaluate targets
-type ConftestEvaluator struct {
-	Context       context.Context
-	PolicySources []source.PolicySource
-	Paths         ConfigurationPaths
-	TestRunner    runner.TestRunner
-	Namespace     []string
-	OutputFormat  string
-	WorkDir       string
+type conftestEvaluator struct {
+	policySources []source.PolicySource
+	paths         ConfigurationPaths
+	testRunner    runner.TestRunner
+	namespace     []string
+	outputFormat  string
+	workDir       string
 }
 
 //ConfigurationPaths is a structs containing necessary paths for an Evaluator struct
@@ -48,14 +48,14 @@ type ConfigurationPaths struct {
 	DataPaths   []string
 }
 
-// NewConftestEvaluator returns a properly initialized ConftestEvaluator for usage
-func NewConftestEvaluator(ctx context.Context, policySources []source.PolicySource, namespaces []string) (*ConftestEvaluator, error) {
-	c := &ConftestEvaluator{
-		Context:       ctx,
-		PolicySources: policySources,
-		Paths:         ConfigurationPaths{},
-		Namespace:     namespaces,
-		OutputFormat:  "json",
+// NewConftestEvaluator returns initialized conftestEvaluator implementing
+// Evaluator interface
+func NewConftestEvaluator(policySources []source.PolicySource, namespaces []string) (Evaluator, error) {
+	c := conftestEvaluator{
+		policySources: policySources,
+		paths:         ConfigurationPaths{},
+		namespace:     namespaces,
+		outputFormat:  "json",
 	}
 
 	dir, err := c.createWorkDir()
@@ -63,7 +63,7 @@ func NewConftestEvaluator(ctx context.Context, policySources []source.PolicySour
 		log.Debug("Failed to create work dir!")
 		return nil, err
 	}
-	c.WorkDir = dir
+	c.workDir = dir
 	log.Debugf("Created work dir %s", dir)
 
 	err = c.addPolicyPaths()
@@ -80,53 +80,57 @@ func NewConftestEvaluator(ctx context.Context, policySources []source.PolicySour
 	}
 	log.Debug("Added data path")
 
-	c.TestRunner = runner.TestRunner{
-		Data:      c.Paths.DataPaths,
-		Policy:    c.Paths.PolicyPaths,
-		Namespace: c.Namespace,
+	c.testRunner = runner.TestRunner{
+		Data:      c.paths.DataPaths,
+		Policy:    c.paths.PolicyPaths,
+		Namespace: c.namespace,
 		NoFail:    true,
-		Output:    c.OutputFormat,
+		Output:    c.outputFormat,
 	}
 
 	log.Debug("Conftest test runner created")
 	return c, nil
 }
 
+func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) ([]output.CheckResult, error) {
+	return c.testRunner.Run(ctx, inputs)
+}
+
 // addDataPath adds the appropriate data path to the ConfigurationPaths DataPaths field array.
-func (c *ConftestEvaluator) addDataPath() error {
+func (c *conftestEvaluator) addDataPath() error {
 	// Todo: Read from epc.Spec and right the nonblocking to this file.
-	dataDir := filepath.Join(c.WorkDir, "data")
+	dataDir := filepath.Join(c.workDir, "data")
 	exists, err := afero.DirExists(utils.AppFS, dataDir)
 	if err != nil {
 		return err
 	}
 	if !exists {
 		_ = utils.AppFS.MkdirAll(dataDir, 0755)
-		err = afero.WriteFile(utils.AppFS, filepath.Join(c.WorkDir, "data/data.json"), []byte("{\"config\":{}}\n"), 0777)
+		err = afero.WriteFile(utils.AppFS, filepath.Join(c.workDir, "data/data.json"), []byte("{\"config\":{}}\n"), 0777)
 		if err != nil {
 			return err
 		}
 	}
-	c.Paths.DataPaths = append(c.Paths.DataPaths, dataDir)
+	c.paths.DataPaths = append(c.paths.DataPaths, dataDir)
 
 	return nil
 }
 
 // addPolicyPaths adds the appropriate policy path to the ConfigurationPaths PolicyPaths field array
-func (c *ConftestEvaluator) addPolicyPaths() error {
-	for _, policy := range c.PolicySources {
-		err := policy.GetPolicies(c.WorkDir)
+func (c *conftestEvaluator) addPolicyPaths() error {
+	for _, policy := range c.policySources {
+		err := policy.GetPolicies(c.workDir)
 		if err != nil {
 			return err
 		}
 		policyDir := policy.GetPolicyDir()
-		policyPath := filepath.Join(c.WorkDir, policyDir)
-		c.Paths.PolicyPaths = append(c.Paths.PolicyPaths, policyPath)
+		policyPath := filepath.Join(c.workDir, policyDir)
+		c.paths.PolicyPaths = append(c.paths.PolicyPaths, policyPath)
 	}
 	return nil
 }
 
 // createWorkDir creates the working directory in tmp
-func (c *ConftestEvaluator) createWorkDir() (string, error) {
+func (c *conftestEvaluator) createWorkDir() (string, error) {
 	return CreateWorkDir(utils.AppFS, afero.GetTempDir(utils.AppFS, ""), "ec-work-")
 }

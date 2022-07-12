@@ -36,7 +36,7 @@ func ValidateImage(ctx context.Context, imageRef, policyConfiguration, publicKey
 		return nil, err
 	}
 
-	if err = a.ValidateImageSignature(); err != nil {
+	if err = a.ValidateImageSignature(ctx); err != nil {
 		log.Debug("Image signature check failed")
 		out.SetImageSignatureCheck(false, err.Error())
 	} else {
@@ -44,7 +44,7 @@ func ValidateImage(ctx context.Context, imageRef, policyConfiguration, publicKey
 		out.SetImageSignatureCheck(true, "success")
 	}
 
-	if err = a.ValidateAttestationSignature(); err != nil {
+	if err = a.ValidateAttestationSignature(ctx); err != nil {
 		log.Debug("Image attestation signature check failed")
 		out.SetAttestationSignatureCheck(false, err.Error())
 	} else {
@@ -67,13 +67,13 @@ func ValidateImage(ctx context.Context, imageRef, policyConfiguration, publicKey
 		return out, nil
 	}
 
-	inputs, err := a.WriteInputFiles()
+	inputs, err := a.WriteInputFiles(ctx)
 	if err != nil {
 		log.Debug("Problem writing input files!")
 		return nil, err
 	}
 
-	results, err := a.Evaluator.TestRunner.Run(a.Evaluator.Context, inputs)
+	results, err := a.Evaluator.Evaluate(ctx, inputs)
 
 	if err != nil {
 		log.Debug("Problem running conftest policy check!")
