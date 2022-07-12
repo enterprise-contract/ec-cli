@@ -19,8 +19,6 @@ package kubernetes
 import (
 	"context"
 	"errors"
-	"os"
-	"path"
 	"testing"
 
 	ecp "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
@@ -64,84 +62,48 @@ func init() {
 	fakeClient = fake.NewClientBuilder().WithScheme(scheme).WithObjects(&testECP).Build()
 }
 
-const testKubeconfig = `
-apiVersion: v1
-kind: Config
-contexts:
-- context:
-    namespace: test
-  name: test/my-cluster-com:6443/kube:admin
-current-context: test/my-cluster-com:6443/kube:admin
-`
-
 func Test_FetchEnterpriseContractPolicy(t *testing.T) {
 	testCases := []struct {
 		name           string
 		namespacedName types.NamespacedName
 		ecp            *ecp.EnterpriseContractPolicy
-		kubeconfig     string
 		err            string
 	}{
 		{
 			name:           "fetch-with-name-and-namespace",
 			namespacedName: types.NamespacedName{Name: "ec-policy", Namespace: "test"},
 			ecp:            &testECP,
-			kubeconfig:     "",
-			err:            "",
 		},
 		{
 			name:           "fetch-with-name-only",
 			namespacedName: types.NamespacedName{Name: "ec-policy"},
-			ecp:            &testECP,
-			kubeconfig:     testKubeconfig,
-			err:            "",
-		},
-		{
-			name:           "fetch-with-undetectable-namespace",
-			namespacedName: types.NamespacedName{Name: "ec-policy"},
-			ecp:            nil,
-			kubeconfig:     "",
-			err:            "Unable to determine current namespace: missing current context",
+			err:            "missing namespace",
 		},
 		{
 			name:           "fetch-policy-not-found",
 			namespacedName: types.NamespacedName{Name: "ec-policy", Namespace: "missing"},
-			ecp:            nil,
-			kubeconfig:     "",
 			err:            `enterprisecontractpolicies.appstudio.redhat.com "ec-policy" not found`,
 		},
 	}
 
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			t.Setenv("KUBECONFIG", "/non/existent/path")
-			if tc.kubeconfig != "" {
-				kubeconfig := path.Join(t.TempDir(), "KUBECONFIG")
-				kubeconfigFile, err := os.Create(kubeconfig)
-				assert.NoError(t, err)
-				defer kubeconfigFile.Close()
-				_, err = kubeconfigFile.WriteString(tc.kubeconfig)
-				if err != nil {
-					t.Fatal(err)
-				}
-				t.Setenv("KUBECONFIG", kubeconfig)
-			}
+	for _, c := range testCases {
+		t.Run(c.name, func(t *testing.T) {
 			k := Client{
 				client: fakeClient,
 			}
 
-			got, err := k.FetchEnterpriseContractPolicy(context.TODO(), tc.namespacedName)
+			got, err := k.FetchEnterpriseContractPolicy(context.TODO(), c.namespacedName)
 
-			if tc.err == "" {
+			if c.err == "" {
 				assert.NoError(t, err)
 			} else {
-				assert.ErrorContains(t, err, tc.err)
+				assert.ErrorContains(t, err, c.err)
 			}
 
-			if tc.ecp == nil {
+			if c.ecp == nil {
 				assert.Nil(t, got)
 			} else {
-				assert.Equal(t, *tc.ecp, *got, "should return the stubbed EnterpriseContractPolicy")
+				assert.Equal(t, *c.ecp, *got, "should return the stubbed EnterpriseContractPolicy")
 			}
 		})
 	}
