@@ -26,6 +26,7 @@ import (
 	appstudioshared "github.com/redhat-appstudio/managed-gitops/appstudio-shared/apis/appstudio.redhat.com/v1alpha1"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/hacbs-contract/ec-cli/internal/applicationsnapshot"
 	"github.com/hacbs-contract/ec-cli/internal/output"
 )
 
@@ -136,7 +137,7 @@ func Test_determineInputSpec(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			s, err := determineInputSpec(c.arguments.filePath, c.arguments.input, c.arguments.imageRef)
+			s, err := applicationsnapshot.DetermineInputSpec(c.arguments.filePath, c.arguments.input, c.arguments.imageRef)
 			if c.err != "" {
 				assert.EqualError(t, err, c.err)
 			}

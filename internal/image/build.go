@@ -17,10 +17,16 @@
 package image
 
 import (
+	"fmt"
+	"net/mail"
+	"os"
+	"regexp"
+	"strings"
+
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
-	"github.com/go-git/go-git/v5/storage/memory"
+	log "github.com/sirupsen/logrus"
 )
 
 type invocation struct {
@@ -29,13 +35,18 @@ type invocation struct {
 	Environment  map[string]interface{} `json:"environment"`
 }
 
+type materials struct {
+	Uri    string            `json:"uri"`
+	Digest map[string]string `json:"digest"`
+}
+
 type predicate struct {
-	Invocation  invocation               `json:"invocation"`
-	BuildType   string                   `json:"buildType"`
-	Metadata    map[string]interface{}   `json:"metadata"`
-	Builder     map[string]interface{}   `json:"builder"`
-	BuildConfig map[string]interface{}   `json:"buildConfig"`
-	Materials   []map[string]interface{} `json:"materials"`
+	Invocation  invocation             `json:"invocation"`
+	BuildType   string                 `json:"buildType"`
+	Metadata    map[string]interface{} `json:"metadata"`
+	Builder     map[string]interface{} `json:"builder"`
+	BuildConfig map[string]interface{} `json:"buildConfig"`
+	Materials   []materials            `json:"materials"`
 }
 
 type attestation struct {
@@ -45,142 +56,135 @@ type attestation struct {
 	Type          string                   `json:"_type"`
 }
 
-type buildSigner interface {
-	GetBuildSignOff() (*signOffSignature, error)
+type commitSignOff struct {
+	source        string
+	commitSha     string
+	getCommit     func(*git.Repository, string) (*object.Commit, error)
+	getRepository func(string) (*git.Repository, error)
 }
 
-type commitSignoffSource struct {
-	source    string
-	commitSha string
+// there can be multiple sign off sources (git commit, tag and jira issues)
+type signOffSource interface {
+	GetSignOff() (*signOffSignature, error)
 }
 
-type jiraSignoffSource struct {
-	source string
-	jiraid string
-}
-
-type tagSignoffSource struct {
-	source    string
-	tag       string
-	commitSha string
+type commit struct {
+	Sha     string `json:"sha"`
+	Author  string `json:"author"`
+	Date    string `json:"date"`
+	Message string `json:"message"`
 }
 
 type signOffSignature struct {
-	Payload interface{} `json:"payload"`
-	Source  string      `json:"source"`
-}
-
-// mocking
-type sourceRepository interface {
-	getRepository(string) (*git.Repository, error)
+	Body       interface{} `json:"body"`
+	Signatures []string    `json:"signatures"`
 }
 
 // From an attestation, find the signOff source (commit, tag, jira)
-func (a *attestation) AttestationSignoffSource() (buildSigner, error) {
+func (a *attestation) NewSignOffSource() (signOffSource, error) {
 	// the signoff source can be determined by looking into the attestation.
 	// the attestation can have an env var or something that this can key off of
 
-	// A tag is the preferred sign off method, then the commit, then jira
-	tag := a.getBuildTag()
 	commitSha := a.getBuildCommitSha()
-
-	if tag != "" && commitSha != "" {
-		return &tagSignoffSource{
-			source:    a.getBuildSCM(),
-			tag:       tag,
-			commitSha: commitSha,
+	repo := a.getBuildSCM()
+	if commitSha != "" && repo != "" {
+		return &commitSignOff{
+			source:        a.getBuildSCM(),
+			commitSha:     commitSha,
+			getCommit:     getCommit,
+			getRepository: getRepository,
 		}, nil
 	}
-
-	if commitSha != "" {
-		return &commitSignoffSource{
-			source:    a.getBuildSCM(),
-			commitSha: commitSha,
-		}, nil
-	}
-
 	return nil, nil
 }
 
 // get the last commit used for the component build
 func (a *attestation) getBuildCommitSha() string {
-	return a.Predicate.Invocation.Parameters["revision"]
+	sha := ""
+	if len(a.Predicate.Materials) == 1 {
+		sha = a.Predicate.Materials[0].Digest["sha1"]
+	}
+	log.Debugf("using commit with sha: '%v'", sha)
+	return sha
 }
 
 // the git url used for the component build
 func (a *attestation) getBuildSCM() string {
-	return a.Predicate.Invocation.Parameters["git-url"]
-}
-
-// if the component repo was tagged, get the tag from the attestation
-func (a *attestation) getBuildTag() string {
-	return a.Predicate.Invocation.Parameters["tag"]
-}
-
-// clone the repo for use
-func getRepository(repositoryUrl string) (*git.Repository, error) {
-	return git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
-		URL: repositoryUrl,
-	})
-}
-
-// get the commit used for the component build
-func getCommit(repositoryUrl, commitSha string) (*object.Commit, error) {
-	repo, err := getRepository(repositoryUrl)
-	if err != nil {
-		return nil, err
+	uri := ""
+	if len(a.Predicate.Materials) == 1 {
+		uri = a.Predicate.Materials[0].Uri
 	}
-
-	commit, err := repo.CommitObject(plumbing.NewHash(commitSha))
-	if err != nil {
-		return nil, err
-	}
-
-	return commit, nil
+	log.Debugf("using repo '%v'", uri)
+	return uri
 }
 
-// get the tag used for the component build
-func getTag(repositoryUrl, tag string) (*plumbing.Reference, error) {
-	repo, err := getRepository(repositoryUrl)
-	if err != nil {
-		return nil, err
-	}
-
-	ref, err := repo.Tag(tag)
-	if err != nil {
-		return nil, err
-	}
-
-	return ref, nil
-}
-
-// get the commit used for the build and return the repo url and the commit
-func (c *commitSignoffSource) GetBuildSignOff() (*signOffSignature, error) {
-	commit, err := getCommit(c.source, c.commitSha)
+// returns the signOff signature and body of the source
+func (c *commitSignOff) GetSignOff() (*signOffSignature, error) {
+	commit, err := getCommitSource(c)
 	if err != nil {
 		return nil, err
 	}
 
 	return &signOffSignature{
-		Payload: commit,
-		Source:  c.source,
+		Body:       commit,
+		Signatures: captureCommitSignOff(commit.Message),
 	}, nil
 }
 
-// get the tag used for the build and return the repo url and the commit
-func (t *tagSignoffSource) GetBuildSignOff() (*signOffSignature, error) {
-	ref, err := getTag(t.source, t.tag)
+func getRepository(url string) (*git.Repository, error) {
+	dir, err := os.MkdirTemp("", "ec_commit")
 	if err != nil {
 		return nil, err
 	}
 
-	return &signOffSignature{
-		Payload: ref,
-		Source:  t.source,
-	}, nil
+	return git.PlainClone(dir, false, &git.CloneOptions{URL: url})
 }
 
-// get the jira used for sign off and return the jira and the jira url
-func (j *jiraSignoffSource) GetBuildSignOff() (*signOffSignature, error) {
-	return &signOffSignature{}, nil
+func getCommit(repository *git.Repository, sha string) (*object.Commit, error) {
+	return repository.CommitObject(plumbing.NewHash(sha))
+}
+
+// get the build commit source for use in GetSignOff
+func getCommitSource(c *commitSignOff) (*commit, error) {
+	repo, err := c.getRepository(c.source)
+	if err != nil {
+		return nil, err
+	}
+
+	gitCommit, err := c.getCommit(repo, c.commitSha)
+	if err != nil {
+		return nil, err
+	}
+
+	return &commit{
+		Sha:     gitCommit.Hash.String(),
+		Author:  fmt.Sprintf("%s <%s>", gitCommit.Author.Name, gitCommit.Author.Email),
+		Date:    gitCommit.Author.When.String(),
+		Message: gitCommit.Message,
+	}, nil
+
+}
+
+// parse a commit and capture signatures
+func captureCommitSignOff(message string) []string {
+	var capturedSignatures []string
+	signatureHeader := "Signed-off-by:"
+	// loop over each line of the commit message looking for "Signed-off-by:"
+	for _, line := range strings.Split(message, "\n") {
+		regex := fmt.Sprintf("^%s", signatureHeader)
+		match, _ := regexp.MatchString(regex, line)
+		// if there's a match, split on "Signed-off-by:", then capture each signature after
+		if match {
+			results := strings.Split(line, signatureHeader)
+			signatures, err := mail.ParseAddressList(results[len(results)-1])
+			if err != nil {
+				continue
+			}
+			for _, signature := range signatures {
+				capturedSignatures = append(capturedSignatures, signature.Address)
+			}
+		}
+	}
+
+	return capturedSignatures
 }

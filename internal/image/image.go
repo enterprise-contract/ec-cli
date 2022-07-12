@@ -30,9 +30,11 @@ import (
 )
 
 type imageValidator struct {
-	reference    name.Reference
-	checkOpts    cosign.CheckOpts
-	attestations []oci.Signature
+	reference          name.Reference
+	checkOpts          cosign.CheckOpts
+	attestations       []oci.Signature
+	verifySignatures   func(context.Context, name.Reference, *cosign.CheckOpts) (checkedAttestations []oci.Signature, bundleVerified bool, err error)
+	verifyAttestations func(context.Context, name.Reference, *cosign.CheckOpts) (checkedAttestations []oci.Signature, bundleVerified bool, err error)
 }
 
 type validatedImage struct {
@@ -66,37 +68,20 @@ func NewImageValidator(ctx context.Context, image string, publicKey string, reko
 	}
 
 	return &imageValidator{
-		reference: ref,
-		checkOpts: checkOpts,
+		reference:          ref,
+		checkOpts:          checkOpts,
+		verifySignatures:   cosign.VerifyImageSignatures,
+		verifyAttestations: cosign.VerifyImageAttestations,
 	}, nil
 }
 
-func (i *imageValidator) ValidateImageSignature(ctx context.Context) error {
-	// TODO check what to do with _, _
-	_, _, err := cosign.VerifyImageSignatures(ctx, i.reference, &i.checkOpts)
-
-	return err
-}
-
-func (i *imageValidator) ValidateAttestationSignature(ctx context.Context) error {
-	// TODO check what to do with _
-	attestations, _, err := cosign.VerifyImageAttestations(ctx, i.reference, &i.checkOpts)
-	if err != nil {
-		return err
-	}
-
-	i.attestations = attestations
-
-	return nil
-}
-
 func (i *imageValidator) ValidateImage(ctx context.Context) (*validatedImage, error) {
-	signatures, _, err := cosign.VerifyImageSignatures(ctx, i.reference, &i.checkOpts)
+	signatures, _, err := i.verifySignatures(ctx, i.reference, &i.checkOpts)
 	if err != nil {
 		return nil, err
 	}
 
-	attestations, _, err := cosign.VerifyImageAttestations(ctx, i.reference, &i.checkOpts)
+	attestations, _, err := i.verifyAttestations(ctx, i.reference, &i.checkOpts)
 	attStatements := make([]attestation, 0, len(attestations))
 	for _, att := range attestations {
 		attStatement, err := signatureToAttestation(ctx, att)
@@ -135,8 +120,4 @@ func signatureToAttestation(ctx context.Context, signature oci.Signature) (attes
 	}
 
 	return att, nil
-}
-
-func (i *imageValidator) Attestations() []oci.Signature {
-	return i.attestations
 }
