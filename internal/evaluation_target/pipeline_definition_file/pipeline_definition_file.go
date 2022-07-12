@@ -32,7 +32,7 @@ var newConftestEvaluator = evaluator.NewConftestEvaluator
 // DefinitionFile represents the structure needed to evaluate a pipeline definition file
 type DefinitionFile struct {
 	Fpath     string
-	Evaluator *evaluator.ConftestEvaluator
+	Evaluator evaluator.Evaluator
 }
 
 // NewPipelineDefinitionFile returns a DefinitionFile struct with FPath and evaluator ready to use
@@ -47,7 +47,7 @@ func NewPipelineDefinitionFile(ctx context.Context, fpath string, policyRepo sou
 	p := &DefinitionFile{
 		Fpath: fpath,
 	}
-	c, err := newConftestEvaluator(ctx, []source.PolicySource{&policyRepo}, []string{namespace})
+	c, err := newConftestEvaluator([]source.PolicySource{&policyRepo}, []string{namespace})
 	if err != nil {
 		return nil, err
 	}

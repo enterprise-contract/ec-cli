@@ -34,7 +34,7 @@ func ValidatePipeline(ctx context.Context, fpath string, policyRepo source.Polic
 		return nil, err
 	}
 
-	results, err := p.Evaluator.TestRunner.Run(p.Evaluator.Context, []string{p.Fpath})
+	results, err := p.Evaluator.Evaluate(ctx, []string{p.Fpath})
 	if err != nil {
 		log.Debug("Problem running conftest policy check!")
 		return nil, err
