@@ -45,60 +45,33 @@ type attestation struct {
 	Type          string                   `json:"_type"`
 }
 
-type buildSigner interface {
-	GetBuildSignOff() (*signOffSignature, error)
-}
-
-type commitSignoffSource struct {
+type commitSignOff struct {
 	source    string
 	commitSha string
 }
 
-type jiraSignoffSource struct {
-	source string
-	jiraid string
-}
-
-type tagSignoffSource struct {
-	source    string
-	tag       string
-	commitSha string
+type signOffSource interface {
+	GetSignOff() (*signOffSignature, error)
+	getSource() (interface{}, error)
 }
 
 type signOffSignature struct {
-	Payload interface{} `json:"payload"`
-	Source  string      `json:"source"`
-}
-
-// mocking
-type sourceRepository interface {
-	getRepository(string) (*git.Repository, error)
+	Payload    interface{} `json:"payload"`
+	Signatures string      `json:"signatures"`
 }
 
 // From an attestation, find the signOff source (commit, tag, jira)
-func (a *attestation) AttestationSignoffSource() (buildSigner, error) {
+func (a *attestation) NewSignoffSource() (signOffSource, error) {
 	// the signoff source can be determined by looking into the attestation.
 	// the attestation can have an env var or something that this can key off of
 
-	// A tag is the preferred sign off method, then the commit, then jira
-	tag := a.getBuildTag()
 	commitSha := a.getBuildCommitSha()
-
-	if tag != "" && commitSha != "" {
-		return &tagSignoffSource{
-			source:    a.getBuildSCM(),
-			tag:       tag,
-			commitSha: commitSha,
-		}, nil
-	}
-
 	if commitSha != "" {
-		return &commitSignoffSource{
+		return &commitSignOff{
 			source:    a.getBuildSCM(),
 			commitSha: commitSha,
 		}, nil
 	}
-
 	return nil, nil
 }
 
@@ -112,75 +85,34 @@ func (a *attestation) getBuildSCM() string {
 	return a.Predicate.Invocation.Parameters["git-url"]
 }
 
-// if the component repo was tagged, get the tag from the attestation
+// the git url used for the component build
 func (a *attestation) getBuildTag() string {
 	return a.Predicate.Invocation.Parameters["tag"]
 }
 
-// clone the repo for use
-func getRepository(repositoryUrl string) (*git.Repository, error) {
-	return git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
-		URL: repositoryUrl,
-	})
-}
-
-// get the commit used for the component build
-func getCommit(repositoryUrl, commitSha string) (*object.Commit, error) {
-	repo, err := getRepository(repositoryUrl)
+func (c *commitSignOff) GetSignOff() (*signOffSignature, error) {
+	commit, err := c.getSource()
 	if err != nil {
 		return nil, err
 	}
 
-	commit, err := repo.CommitObject(plumbing.NewHash(commitSha))
+	return &signOffSignature{
+		Payload: commit.(*object.Commit),
+	}, nil
+}
+
+func (c *commitSignOff) getSource() (interface{}, error) {
+	repo, err := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
+		URL: c.source,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	commit, err := repo.CommitObject(plumbing.NewHash(c.commitSha))
 	if err != nil {
 		return nil, err
 	}
 
 	return commit, nil
-}
-
-// get the tag used for the component build
-func getTag(repositoryUrl, tag string) (*plumbing.Reference, error) {
-	repo, err := getRepository(repositoryUrl)
-	if err != nil {
-		return nil, err
-	}
-
-	ref, err := repo.Tag(tag)
-	if err != nil {
-		return nil, err
-	}
-
-	return ref, nil
-}
-
-// get the commit used for the build and return the repo url and the commit
-func (c *commitSignoffSource) GetBuildSignOff() (*signOffSignature, error) {
-	commit, err := getCommit(c.source, c.commitSha)
-	if err != nil {
-		return nil, err
-	}
-
-	return &signOffSignature{
-		Payload: commit,
-		Source:  c.source,
-	}, nil
-}
-
-// get the tag used for the build and return the repo url and the commit
-func (t *tagSignoffSource) GetBuildSignOff() (*signOffSignature, error) {
-	ref, err := getTag(t.source, t.tag)
-	if err != nil {
-		return nil, err
-	}
-
-	return &signOffSignature{
-		Payload: ref,
-		Source:  t.source,
-	}, nil
-}
-
-// get the jira used for sign off and return the jira and the jira url
-func (j *jiraSignoffSource) GetBuildSignOff() (*signOffSignature, error) {
-	return &signOffSignature{}, nil
 }

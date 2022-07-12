@@ -42,7 +42,7 @@ func signOffCmd() *cobra.Command {
 			}
 
 			for _, att := range validatedImage.Attestations {
-				signoffSource, err := att.AttestationSignoffSource()
+				signoffSource, err := att.NewSignoffSource()
 				if err != nil {
 					return err
 				}
@@ -50,7 +50,7 @@ func signOffCmd() *cobra.Command {
 					return errors.New("there is no signoff source in attestation")
 				}
 
-				signOff, _ := signoffSource.GetBuildSignOff()
+				signOff, _ := signoffSource.GetSignOff()
 
 				if signOff.Payload != "" {
 					payload, err := json.Marshal(signOff)
