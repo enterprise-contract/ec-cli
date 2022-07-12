@@ -23,7 +23,6 @@ import (
 	"fmt"
 	"os"
 	"path"
-	"strings"
 
 	"github.com/google/go-containerregistry/pkg/name"
 	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
@@ -35,7 +34,6 @@ import (
 	"github.com/sigstore/cosign/pkg/signature"
 	cosignTypes "github.com/sigstore/cosign/pkg/types"
 	log "github.com/sirupsen/logrus"
-	"k8s.io/apimachinery/pkg/types"
 
 	"github.com/hacbs-contract/ec-cli/internal/evaluator"
 	"github.com/hacbs-contract/ec-cli/internal/kubernetes"
@@ -66,7 +64,10 @@ func NewApplicationSnapshotImage(ctx context.Context, image string, publicKey st
 	}
 	log.Debugf("Raw policy name %s", policyConfiguration)
 
-	policyName := getPolicyName(policyConfiguration)
+	policyName, err := kubernetes.NamespacedName(policyConfiguration)
+	if err != nil {
+		return nil, err
+	}
 	log.Debugf("Parsed policy name %s", policyName)
 
 	ref, err := name.ParseReference(image)
@@ -92,7 +93,7 @@ func NewApplicationSnapshotImage(ctx context.Context, image string, publicKey st
 		return nil, err
 	}
 
-	ecp, err := k8s.FetchEnterpriseContractPolicy(ctx, policyName)
+	ecp, err := k8s.FetchEnterpriseContractPolicy(ctx, *policyName)
 	if err != nil {
 		log.Debug("Failed to fetch the enterprise contract policy from the cluster!")
 		return nil, err
@@ -143,21 +144,6 @@ func getCheckOpts(ctx context.Context, publicKey string, rekorURL string) (cosig
 		log.Debug("Rekor client created")
 	}
 	return checkOpts, nil
-}
-
-// getPolicyName returns a types.NamespacedName
-func getPolicyName(policyConfiguration string) types.NamespacedName {
-	policyName := types.NamespacedName{
-		Name: policyConfiguration,
-	}
-	policyParts := strings.SplitN(policyConfiguration, string(types.Separator), 2)
-	if len(policyParts) == 2 {
-		policyName = types.NamespacedName{
-			Namespace: policyParts[0],
-			Name:      policyParts[1],
-		}
-	}
-	return policyName
 }
 
 // fetchPolicyRepos returns an array of Policy repos

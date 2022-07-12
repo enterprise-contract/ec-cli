@@ -19,13 +19,12 @@ package kubernetes
 import (
 	"context"
 	"encoding/json"
-	"fmt"
+	"errors"
 
 	ecp "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/tools/clientcmd"
 	controllerruntime "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -69,16 +68,11 @@ func createControllerRuntimeClient() (client.Client, error) {
 
 // FetchEnterpriseContractPolicy gets the Enterprise Contract Policy from the given namespace in a Kubernetes cluster
 func (k *Client) FetchEnterpriseContractPolicy(ctx context.Context, name types.NamespacedName) (*ecp.EnterpriseContractPolicy, error) {
-	policy := &ecp.EnterpriseContractPolicy{}
 	if name.Namespace == "" {
-		namespace, err := getCurrentNamespace()
-		if err != nil {
-			log.Debug("Failed to get current k8s namespace!")
-			return nil, err
-		}
-		log.Debugf("Found k8s namespace %s", namespace)
-		name.Namespace = namespace
+		return nil, errors.New("missing namespace")
 	}
+
+	policy := &ecp.EnterpriseContractPolicy{}
 
 	err := k.client.Get(ctx, name, policy)
 	if err != nil {
@@ -88,34 +82,4 @@ func (k *Client) FetchEnterpriseContractPolicy(ctx context.Context, name types.N
 	policyJson, _ := json.Marshal(policy.Spec)
 	log.Debugf("Policy fetched:\n%s", policyJson)
 	return policy, nil
-}
-
-// getCurrentNamespace returns the namespace of the current context if one is set.
-func getCurrentNamespace() (namespace string, err error) {
-	baseErr := "Unable to determine current namespace"
-	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
-	if loadingRules == nil {
-		err = fmt.Errorf("%s: missing loading rules", baseErr)
-		return
-	}
-	clientCfg, err := loadingRules.Load()
-	if err != nil {
-		return
-	}
-	contexts := clientCfg.Contexts
-	if contexts == nil {
-		err = fmt.Errorf("%s: missing contexts", baseErr)
-		return
-	}
-	c := contexts[clientCfg.CurrentContext]
-	if c == nil {
-		err = fmt.Errorf("%s: missing current context", baseErr)
-		return
-	}
-	namespace = c.Namespace
-	if namespace == "" {
-		err = fmt.Errorf("%s: namespace is blank", baseErr)
-		return
-	}
-	return
 }
