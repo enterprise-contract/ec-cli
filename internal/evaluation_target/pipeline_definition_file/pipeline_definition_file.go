@@ -47,7 +47,7 @@ func NewPipelineDefinitionFile(ctx context.Context, fpath string, policyRepo sou
 	p := &DefinitionFile{
 		Fpath: fpath,
 	}
-	c, err := newConftestEvaluator([]source.PolicySource{&policyRepo}, namespace)
+	c, err := newConftestEvaluator(ctx, []source.PolicySource{&policyRepo}, namespace)
 	if err != nil {
 		return nil, err
 	}
