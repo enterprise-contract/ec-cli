@@ -21,8 +21,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/hacbs-contract/ec-cli/internal/logging"
 	"github.com/spf13/cobra"
+
+	"github.com/hacbs-contract/ec-cli/internal/logging"
 )
 
 // rootCmd represents the base command when called without any subcommands

@@ -76,6 +76,7 @@ lint: ## Run linter
 .PHONY: lint-fix
 lint-fix: ## Fix linting issues automagically
 	@go run github.com/google/addlicense -c $(COPY) -s .
+	@go run github.com/daixiang0/gci write -s standard -s default -s "prefix(github.com/hacbs-contract/ec-cli)" .
 	@go run github.com/golangci/golangci-lint/cmd/golangci-lint run --fix
 
 .PHONY: clean
