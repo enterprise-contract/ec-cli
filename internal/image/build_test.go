@@ -197,7 +197,7 @@ Signed-off-by: <jstuart@redhat.com>, <blah@redhat.com>
 			},
 			&signOffSignature{
 				Body:       commitObject,
-				Signatures: "jstuart@redhat.com",
+				Signatures: []string{"jstuart@redhat.com"},
 			},
 		},
 	}
@@ -209,7 +209,7 @@ Signed-off-by: <jstuart@redhat.com>, <blah@redhat.com>
 				t.Logf("error: %v", err)
 			} else if reflect.TypeOf(signOff) != reflect.TypeOf(tc.want) {
 				t.Fatalf("got %v want %v", signOff, tc.want)
-			} else if signOff.Signatures != tc.want.Signatures {
+			} else if signOff.Signatures[0] != tc.want.Signatures[0] {
 				t.Fatalf("got %v want %v", signOff.Signatures, tc.want.Signatures)
 			} else {
 				t.Logf("Success!")

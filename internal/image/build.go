@@ -61,7 +61,7 @@ type signOffSource interface {
 
 type signOffSignature struct {
 	Body       interface{} `json:"body"`
-	Signatures string      `json:"signatures"`
+	Signatures []string    `json:"signatures"`
 }
 
 // From an attestation, find the signOff source (commit, tag, jira)
@@ -125,7 +125,7 @@ func getCommitSource(data *commitSignOff) (*object.Commit, error) {
 }
 
 // parse a commit and capture signatures
-func captureCommitSignatures(message string) string {
+func captureCommitSignatures(message string) []string {
 	var capturedSignatures []string
 	signatureHeader := "Signed-off-by"
 	// loop over each line of the commit message looking for "Signed-off-by"
@@ -146,8 +146,8 @@ func captureCommitSignatures(message string) string {
 	}
 
 	if len(capturedSignatures) > 0 {
-		return strings.Join(capturedSignatures, ",")
+		return capturedSignatures
 	}
-	return ""
+	return []string{}
 
 }
