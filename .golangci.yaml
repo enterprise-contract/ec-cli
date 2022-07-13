@@ -16,3 +16,10 @@
 linters:
   enable:
     - goimports
+    - gci
+linters-settings:
+  gci:
+    sections:
+      - standard
+      - default
+      - prefix(github.com/hacbs-contract/ec-cli)

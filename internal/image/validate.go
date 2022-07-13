@@ -20,10 +20,10 @@ import (
 	"context"
 
 	conftestOutput "github.com/open-policy-agent/conftest/output"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/hacbs-contract/ec-cli/internal/evaluation_target/application_snapshot_image"
 	"github.com/hacbs-contract/ec-cli/internal/output"
-	log "github.com/sirupsen/logrus"
 )
 
 // ValidateImage executes the required method calls to evaluate a given policy against a given imageRef
