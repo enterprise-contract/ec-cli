@@ -37,7 +37,7 @@ type conftestEvaluator struct {
 	policySources []source.PolicySource
 	paths         ConfigurationPaths
 	testRunner    runner.TestRunner
-	namespace     []string
+	namespace     string
 	outputFormat  string
 	workDir       string
 }
@@ -50,11 +50,11 @@ type ConfigurationPaths struct {
 
 // NewConftestEvaluator returns initialized conftestEvaluator implementing
 // Evaluator interface
-func NewConftestEvaluator(policySources []source.PolicySource, namespaces []string) (Evaluator, error) {
+func NewConftestEvaluator(policySources []source.PolicySource, namespace string) (Evaluator, error) {
 	c := conftestEvaluator{
 		policySources: policySources,
 		paths:         ConfigurationPaths{},
-		namespace:     namespaces,
+		namespace:     namespace,
 		outputFormat:  "json",
 	}
 
@@ -83,7 +83,7 @@ func NewConftestEvaluator(policySources []source.PolicySource, namespaces []stri
 	c.testRunner = runner.TestRunner{
 		Data:      c.paths.DataPaths,
 		Policy:    c.paths.PolicyPaths,
-		Namespace: c.namespace,
+		Namespace: []string{c.namespace},
 		NoFail:    true,
 		Output:    c.outputFormat,
 	}
