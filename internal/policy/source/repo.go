@@ -17,6 +17,7 @@
 package source
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"strings"
@@ -29,13 +30,13 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//CheckoutRepo is used as an alias for git.PlainClone in order to facilitate testing
-var CheckoutRepo = git.PlainClone
+//CheckoutRepo is used as an alias for git.PlainCloneContext in order to facilitate testing
+var CheckoutRepo = git.PlainCloneContext
 
 //PolicySource in an interface representing the location of policies.
 //Must implement the GetPolicies() and GetPolicyDir() methods.
 type PolicySource interface {
-	GetPolicies(dest string) error
+	GetPolicies(ctx context.Context, dest string) error
 	GetPolicyDir() string
 }
 
@@ -52,10 +53,10 @@ func (p *PolicyRepo) GetPolicyDir() string {
 }
 
 // GetPolicies clones the repository for a given PolicyRepo
-func (p *PolicyRepo) GetPolicies(dest string) error {
+func (p *PolicyRepo) GetPolicies(ctx context.Context, dest string) error {
 	// Checkout policy repo into work directory.
 	log.Debugf("Checking out repo %s at %s to work dir", p.RepoURL, p.RepoRef)
-	_, err := CheckoutRepo(dest, false, &git.CloneOptions{
+	_, err := CheckoutRepo(ctx, dest, false, &git.CloneOptions{
 		URL:           p.RepoURL,
 		Progress:      nil,
 		SingleBranch:  true,

@@ -50,7 +50,7 @@ type ConfigurationPaths struct {
 
 // NewConftestEvaluator returns initialized conftestEvaluator implementing
 // Evaluator interface
-func NewConftestEvaluator(policySources []source.PolicySource, namespace string) (Evaluator, error) {
+func NewConftestEvaluator(ctx context.Context, policySources []source.PolicySource, namespace string) (Evaluator, error) {
 	c := conftestEvaluator{
 		policySources: policySources,
 		paths:         ConfigurationPaths{},
@@ -66,7 +66,7 @@ func NewConftestEvaluator(policySources []source.PolicySource, namespace string)
 	c.workDir = dir
 	log.Debugf("Created work dir %s", dir)
 
-	err = c.addPolicyPaths()
+	err = c.addPolicyPaths(ctx)
 	if err != nil {
 		log.Debug("Failed to add policy paths!")
 		return nil, err
@@ -117,9 +117,9 @@ func (c *conftestEvaluator) addDataPath() error {
 }
 
 // addPolicyPaths adds the appropriate policy path to the ConfigurationPaths PolicyPaths field array
-func (c *conftestEvaluator) addPolicyPaths() error {
+func (c *conftestEvaluator) addPolicyPaths(ctx context.Context) error {
 	for _, policy := range c.policySources {
-		err := policy.GetPolicies(c.workDir)
+		err := policy.GetPolicies(ctx, c.workDir)
 		if err != nil {
 			return err
 		}

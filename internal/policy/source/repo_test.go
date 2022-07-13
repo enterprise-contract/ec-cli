@@ -17,12 +17,13 @@
 package source
 
 import (
+	"context"
 	"testing"
 
 	"github.com/go-git/go-git/v5"
 )
 
-func checkoutRepoMock(_ string, _ bool, _ *git.CloneOptions) (*git.Repository, error) {
+func checkoutRepoMock(_ context.Context, _ string, _ bool, _ *git.CloneOptions) (*git.Repository, error) {
 	return &git.Repository{}, nil
 }
 
@@ -58,7 +59,7 @@ func TestPolicyRepo_getPolicies(t *testing.T) {
 				RepoURL:   tt.fields.RepoURL,
 				RepoRef:   tt.fields.RepoRef,
 			}
-			if err := p.GetPolicies(tt.args.dest); (err != nil) != tt.wantErr {
+			if err := p.GetPolicies(context.TODO(), tt.args.dest); (err != nil) != tt.wantErr {
 				t.Errorf("GetPolicies() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
