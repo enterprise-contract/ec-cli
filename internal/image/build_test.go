@@ -31,7 +31,7 @@ func paramsInput(input string) attestation {
 	if input == "good-commit" {
 		params = map[string]string{
 			"git-url":  "https://github.com/joejstuart/ec-cli.git",
-			"revision": "7efe1826a741d23f8ed874598f6ce9b882734d88",
+			"revision": "6c1f093c0c197add71579d392da8a79a984fcd62",
 		}
 	} else if input == "bad-commit" {
 		params = map[string]string{
@@ -79,7 +79,7 @@ func Test_AttestationSignoffSource_commit(t *testing.T) {
 			paramsInput("good-commit"),
 			&commitSignOff{
 				source:    "https://github.com/joejstuart/ec-cli.git",
-				commitSha: "7efe1826a741d23f8ed874598f6ce9b882734d88",
+				commitSha: "6c1f093c0c197add71579d392da8a79a984fcd62",
 			},
 		},
 		{
@@ -105,7 +105,7 @@ func Test_GetBuildCommitSha(t *testing.T) {
 		input attestation
 		want  string
 	}{
-		{paramsInput("good-commit"), "7efe1826a741d23f8ed874598f6ce9b882734d88"},
+		{paramsInput("good-commit"), "6c1f093c0c197add71579d392da8a79a984fcd62"},
 		{paramsInput("bad-commit"), ""},
 	}
 
@@ -164,7 +164,7 @@ func Test_GetBuildTag(t *testing.T) {
 }
 
 func Test_GetSignOff(t *testing.T) {
-	hash := "7efe1826a741d23f8ed874598f6ce9b882734d88"
+	hash := "6c1f093c0c197add71579d392da8a79a984fcd62"
 	message := `Create signoff methods for builds
 
 validate the image signature and attestation
@@ -172,6 +172,8 @@ validate the image signature and attestation
 from the validated attestation determine the signoff source
 
 get the signoff from the source
+
+Signed-off-by: <jstuart@redhat.com>, <blah@redhat.com>
 `
 
 	commitObject := &object.Commit{
@@ -191,21 +193,26 @@ get the signoff from the source
 		{
 			&commitSignOff{
 				source:    "https://github.com/joejstuart/ec-cli.git",
-				commitSha: "7efe1826a741d23f8ed874598f6ce9b882734d88",
+				commitSha: "6c1f093c0c197add71579d392da8a79a984fcd62",
 			},
 			&signOffSignature{
-				Payload: commitObject,
+				Body:       commitObject,
+				Signatures: "jstuart@redhat.com",
 			},
 		},
 	}
 
 	for i, tc := range tests {
 		t.Run(fmt.Sprintf("GetSignoffSource=%d", i), func(t *testing.T) {
-			signOff, _ := tc.input.GetSignOff()
-			if reflect.TypeOf(signOff) != reflect.TypeOf(tc.want) {
+			signOff, err := tc.input.GetSignOff()
+			if err != nil {
+				t.Logf("error: %v", err)
+			} else if reflect.TypeOf(signOff) != reflect.TypeOf(tc.want) {
 				t.Fatalf("got %v want %v", signOff, tc.want)
+			} else if signOff.Signatures != tc.want.Signatures {
+				t.Fatalf("got %v want %v", signOff.Signatures, tc.want.Signatures)
 			} else {
-				t.Logf("Success !")
+				t.Logf("Success!")
 			}
 		})
 	}

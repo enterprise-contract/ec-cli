@@ -17,6 +17,10 @@
 package image
 
 import (
+	"fmt"
+	"regexp"
+	"strings"
+
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
@@ -50,13 +54,13 @@ type commitSignOff struct {
 	commitSha string
 }
 
+// there can be multiple sign off sources (git commit, tag and jira issues)
 type signOffSource interface {
 	GetSignOff() (*signOffSignature, error)
-	getSource() (interface{}, error)
 }
 
 type signOffSignature struct {
-	Payload    interface{} `json:"payload"`
+	Body       interface{} `json:"body"`
 	Signatures string      `json:"signatures"`
 }
 
@@ -90,29 +94,60 @@ func (a *attestation) getBuildTag() string {
 	return a.Predicate.Invocation.Parameters["tag"]
 }
 
+// returns the signOff signature and body of the source
 func (c *commitSignOff) GetSignOff() (*signOffSignature, error) {
-	commit, err := c.getSource()
+	commit, err := getCommitSource(c)
 	if err != nil {
 		return nil, err
 	}
 
 	return &signOffSignature{
-		Payload: commit.(*object.Commit),
+		Body:       commit,
+		Signatures: captureCommitSignatures(commit.Message),
 	}, nil
 }
 
-func (c *commitSignOff) getSource() (interface{}, error) {
+// get the build commit source for use in GetSignOff
+func getCommitSource(data *commitSignOff) (*object.Commit, error) {
 	repo, err := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
-		URL: c.source,
+		URL: data.source,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	commit, err := repo.CommitObject(plumbing.NewHash(c.commitSha))
+	commit, err := repo.CommitObject(plumbing.NewHash(data.commitSha))
 	if err != nil {
 		return nil, err
 	}
 
 	return commit, nil
+}
+
+// parse a commit and capture signatures
+func captureCommitSignatures(message string) string {
+	var capturedSignatures []string
+	signatureHeader := "Signed-off-by"
+	// loop over each line of the commit message looking for "Signed-off-by"
+	for _, line := range strings.Split(message, "\n") {
+		regex := fmt.Sprintf("^%s", signatureHeader)
+		match, _ := regexp.MatchString(regex, line)
+		// if there's a match, split on "Signed-off-by", then capture each signature after
+		if match {
+			results := strings.Split(line, signatureHeader)
+			for _, signature := range strings.Split(results[len(results)-1], ",") {
+				sigRegex := regexp.MustCompile("([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+.[a-zA-Z0-9_-]+)")
+				sigMatch := sigRegex.FindAllStringSubmatch(signature, -1)
+				if len(sigMatch) > 0 {
+					capturedSignatures = append(capturedSignatures, sigMatch[0][0])
+				}
+			}
+		}
+	}
+
+	if len(capturedSignatures) > 0 {
+		return strings.Join(capturedSignatures, ",")
+	}
+	return ""
+
 }
