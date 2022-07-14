@@ -27,6 +27,8 @@ import (
 	"github.com/go-git/go-git/v5/storage/memory"
 )
 
+var gitClone = git.Clone
+
 type invocation struct {
 	ConfigSource map[string]interface{} `json:"configSource"`
 	Parameters   map[string]string      `json:"parameters"`
@@ -65,7 +67,7 @@ type signOffSignature struct {
 }
 
 // From an attestation, find the signOff source (commit, tag, jira)
-func (a *attestation) NewSignoffSource() (signOffSource, error) {
+func (a *attestation) NewSignOffSource() (signOffSource, error) {
 	// the signoff source can be determined by looking into the attestation.
 	// the attestation can have an env var or something that this can key off of
 
@@ -103,15 +105,17 @@ func (c *commitSignOff) GetSignOff() (*signOffSignature, error) {
 
 	return &signOffSignature{
 		Body:       commit,
-		Signatures: captureCommitSignatures(commit.Message),
+		Signatures: captureCommitSignOff(commit.Message),
 	}, nil
 }
 
 // get the build commit source for use in GetSignOff
 func getCommitSource(data *commitSignOff) (*object.Commit, error) {
-	repo, err := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
+	repo, err := gitClone(memory.NewStorage(), nil, &git.CloneOptions{
 		URL: data.source,
 	})
+
+	fmt.Println(repo)
 	if err != nil {
 		return nil, err
 	}
@@ -125,7 +129,7 @@ func getCommitSource(data *commitSignOff) (*object.Commit, error) {
 }
 
 // parse a commit and capture signatures
-func captureCommitSignatures(message string) []string {
+func captureCommitSignOff(message string) []string {
 	var capturedSignatures []string
 	signatureHeader := "Signed-off-by"
 	// loop over each line of the commit message looking for "Signed-off-by"

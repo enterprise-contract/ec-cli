@@ -22,8 +22,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-git/go-billy/v5"
+	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
+	"github.com/go-git/go-git/v5/storage"
+	"github.com/go-git/go-git/v5/storage/memory"
 )
 
 func paramsInput(input string) attestation {
@@ -90,7 +94,7 @@ func Test_AttestationSignoffSource_commit(t *testing.T) {
 
 	for i, tc := range tests {
 		t.Run(fmt.Sprintf("AttestationSignoffSource=%d", i), func(t *testing.T) {
-			got, _ := tc.input.NewSignoffSource()
+			got, _ := tc.input.NewSignOffSource()
 			if !reflect.DeepEqual(got, tc.want) {
 				t.Fatalf("got %v; want %v", got, tc.want)
 			} else {
@@ -200,6 +204,15 @@ Signed-off-by: <jstuart@redhat.com>, <blah@redhat.com>
 				Signatures: []string{"jstuart@redhat.com"},
 			},
 		},
+	}
+
+	savedClone := gitClone
+	defer func() { gitClone = savedClone }()
+
+	gitClone = func(s storage.Storer, worktree billy.Filesystem, o *git.CloneOptions) (*git.Repository, error) {
+		return &git.Repository{
+			Storer: memory.NewStorage(),
+		}, nil
 	}
 
 	for i, tc := range tests {
