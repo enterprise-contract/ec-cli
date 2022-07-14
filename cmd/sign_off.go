@@ -34,11 +34,11 @@ func signOffCmd() *cobra.Command {
 		publicKey: "",
 	}
 	cmd := &cobra.Command{
-		Use:   "signOff",
+		Use:   "sign-off",
 		Short: "Capture signed off signatures from a source (github repo, Jira)",
-		Long: `capture signed off signatures from a source (github repo, Jira):
-
-	supported signature sources are commits captured from a git repo and jira issues.`,
+		Long: `Supported sign off sources are commits captured from a git repo and jira issues.
+               The git sources return a signed off value and the git commit. The jira issue is
+			   a TODO, but will return the Jira issue with any sign off values.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			imageValidator, err := image.NewImageValidator(cmd.Context(), data.imageRef, data.publicKey, "")
 			if err != nil {
@@ -51,7 +51,7 @@ func signOffCmd() *cobra.Command {
 			}
 
 			for _, att := range validatedImage.Attestations {
-				signoffSource, err := att.NewSignoffSource()
+				signoffSource, err := att.NewSignOffSource()
 				if err != nil {
 					return err
 				}
@@ -59,7 +59,10 @@ func signOffCmd() *cobra.Command {
 					return errors.New("there is no signoff source in attestation")
 				}
 
-				signOff, _ := signoffSource.GetSignOff()
+				signOff, err := signoffSource.GetSignOff()
+				if err != nil {
+					return err
+				}
 
 				if signOff != nil {
 					payload, err := json.Marshal(signOff)
