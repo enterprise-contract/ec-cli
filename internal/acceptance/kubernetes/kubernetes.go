@@ -97,6 +97,10 @@ func KubeConfig(ctx context.Context) (string, error) {
 	return string(b), nil
 }
 
+func IsRunning(ctx context.Context) bool {
+	return wiremock.IsRunning(ctx)
+}
+
 // AddStepsTo adds Gherkin steps to the godog ScenarioContext
 func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^stub apiserver running$`, stubApiserverRunning)

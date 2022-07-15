@@ -20,12 +20,9 @@ package log
 import (
 	"context"
 	"testing"
+
+	"github.com/hacbs-contract/ec-cli/internal/acceptance/testenv"
 )
-
-type Testing int
-
-// TestingKey Key to the *testing.T instance in Context
-const TestingKey Testing = 0
 
 type Logger interface {
 	Log(args ...interface{})
@@ -56,5 +53,5 @@ func (l logger) Printf(format string, args ...interface{}) {
 // expected that a *testing.T instance is stored in the Context
 // under the TestingKey key
 func LoggerFor(ctx context.Context) Logger {
-	return logger{ctx.Value(TestingKey).(*testing.T)}
+	return logger{testenv.Testing(ctx)}
 }

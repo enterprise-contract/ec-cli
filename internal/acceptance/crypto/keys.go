@@ -75,6 +75,10 @@ func GenerateKeyPairNamed(ctx context.Context, name string) (context.Context, er
 
 // allKeysFrom returns all key pairs from the Context
 func allKeysFrom(ctx context.Context) map[string]*cosign.KeysBytes {
+	if !testenv.HasState[keyState](ctx) {
+		return nil
+	}
+
 	return testenv.FetchState[keyState](ctx).Keys
 }
 

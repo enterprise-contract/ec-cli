@@ -300,6 +300,10 @@ func PublicKey(ctx context.Context) []byte {
 	return state.KeyPair.PublicBytes
 }
 
+func IsRunning(ctx context.Context) bool {
+	return wiremock.IsRunning(ctx)
+}
+
 // AddStepsTo adds Gherkin steps to the godog ScenarioContext
 func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^stub rekord running$`, stubRekordRunning)
