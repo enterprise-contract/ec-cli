@@ -24,19 +24,20 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"testing"
 
 	"github.com/testcontainers/testcontainers-go"
 )
 
 type testEnv int
 
-// Key we use to look up the `persisted` flag, which pass it through the
-// Context to prevent a package dependency cycle
+// Keys we use to look up the state in the Context
 const (
-	PersistStubEnvironment testEnv = iota
-	RestoreStubEnvironment
-	NoColors
-	persistedEnv
+	PersistStubEnvironment testEnv = iota // key to a bool flag telling if the environment is persisted
+	RestoreStubEnvironment                // key to a bool flag telling if the environment is restored
+	NoColors                              // key to a bool flag telling if the colors should be used in output
+	TestingT                              // key to the *testing.T instance in Context
+	persistedEnv                          // key to a map of persisted environment states
 
 	persistedFile = ".persisted"
 )
@@ -176,12 +177,32 @@ func FetchState[S WithState](ctx context.Context) *S {
 	return state.(*S)
 }
 
+// HasState returns true if the state for the provided type is present in the context
+func HasState[S WithState](ctx context.Context) bool {
+	p := ctx.Value(persistedEnv)
+	if p == nil {
+		return false
+	}
+
+	newS := *new(S)
+	key := persistedKey(newS)
+
+	store := *p.(*map[string]any)
+
+	state := store[key]
+	return state != nil
+}
+
 // NoColorOutput returns true if the output produced should not contain colors, which is
 // useful when a terminal or medium can't interpret ANSI colors
 func NoColorOutput(ctx context.Context) bool {
 	noColors, ok := ctx.Value(NoColors).(bool)
 
 	return ok && noColors
+}
+
+func Testing(ctx context.Context) *testing.T {
+	return ctx.Value(TestingT).(*testing.T)
 }
 
 // TestContainersRequest modifies the req to keep the container running after the test if PersistStubEnvironment is set to true in the ctx

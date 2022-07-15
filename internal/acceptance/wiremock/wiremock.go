@@ -266,11 +266,25 @@ func Endpoint(ctx context.Context) (string, error) {
 	return state.URL, nil
 }
 
+func IsRunning(ctx context.Context) bool {
+	if !testenv.HasState[wiremockState](ctx) {
+		return false
+	}
+
+	state := testenv.FetchState[wiremockState](ctx)
+
+	return state.Up()
+}
+
 // AddStepsTo makes sure that nay unmatched requests, i.e. requests that are not
 // stubbed get reported at the end of a scenario run
 // TODO: reset stub state after the scenario (given not persisted flag is set)
 func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.After(func(ctx context.Context, finished *godog.Scenario, scenarioErr error) (context.Context, error) {
+		if !IsRunning(ctx) {
+			return ctx, nil
+		}
+
 		w, err := wiremockFrom(ctx)
 		if err != nil {
 			// wiremock wasn't launched, we don't need to proceed

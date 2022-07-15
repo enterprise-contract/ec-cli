@@ -30,7 +30,6 @@ import (
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/git"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/image"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/kubernetes"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/log"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/registry"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/rekor"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/testenv"
@@ -70,7 +69,7 @@ func initializeScenario(sc *godog.ScenarioContext) {
 // setupContext creates a Context prepopulated with the *testing.T and *persist
 // values
 func setupContext(t *testing.T) context.Context {
-	ctx := context.WithValue(context.Background(), log.TestingKey, t)
+	ctx := context.WithValue(context.Background(), testenv.TestingT, t)
 	ctx = context.WithValue(ctx, testenv.PersistStubEnvironment, *persist)
 	ctx = context.WithValue(ctx, testenv.RestoreStubEnvironment, *restore)
 	ctx = context.WithValue(ctx, testenv.NoColors, *noColors)

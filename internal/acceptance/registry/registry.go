@@ -117,6 +117,15 @@ func StubRegistry(ctx context.Context) (string, error) {
 	return state.HostAndPort, nil
 }
 
+func IsRunning(ctx context.Context) bool {
+	if !testenv.HasState[registryState](ctx) {
+		return false
+	}
+
+	state := testenv.FetchState[registryState](ctx)
+	return state.Up()
+}
+
 // AddStepsTo adds Gherkin steps to the godog ScenarioContext
 func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^stub registry running$`, startStubRegistry)

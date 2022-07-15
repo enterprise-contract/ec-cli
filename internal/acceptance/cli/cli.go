@@ -77,91 +77,32 @@ func ecCommandIsRunWith(ctx context.Context, parameters string) (context.Context
 		return ctx, fmt.Errorf("%s is a not a regular file", ec)
 	}
 
-	kubeconfig, err := os.CreateTemp("", "*.kubeconfig")
-	if err != nil {
-		return ctx, err
-	}
-	defer func() {
-		if !testenv.Persisted(ctx) {
-			os.Remove(kubeconfig.Name())
-		}
-	}()
-
-	cfg, err := kubernetes.KubeConfig(ctx)
-	if err != nil {
-		return ctx, err
-	}
-
-	_, err = kubeconfig.WriteString(cfg)
-	if err != nil {
-		return ctx, err
-	}
-	err = kubeconfig.Close()
-	if err != nil {
-		return ctx, err
-	}
-
-	registry, err := registry.StubRegistry(ctx)
-	if err != nil {
-		return ctx, err
-	}
-
-	rekorURL, err := rekor.StubRekor(ctx)
-	if err != nil {
-		return ctx, err
+	// environment that the ec command line will run with
+	// we need to keep the $PATH, otherwise go-getter could
+	// fail if it can't locate the git command
+	environment := []string{
+		"PATH=" + os.Getenv("PATH"),
+		"COVERAGE_FILEPATH=" + os.Getenv("ROOT_DIR"), // where to put the coverage file, $ROOT_DIR is provided by the Makefile, if empty it'll be $TMPDIR
+		"COVERAGE_FILENAME=-acceptance",              // suffix for the coverage file
 	}
 
 	// variables that can be substituted on the command line
 	// provided by the `parameters`` parameter
-	vars := map[string]string{
-		"REGISTRY": registry,
-		"REKOR":    rekorURL,
-	}
+	vars := map[string]string{}
 
-	// there could be several key pairs created, for testing
-	// signature validation against a wrong public key we want
-	// to avail all public keys that have been generated for
-	// substitution
-	publicKeys := crypto.PublicKeysFrom(ctx)
-
-	for name, publicKey := range publicKeys {
-		key, err := os.CreateTemp("", "*.pub")
-		if err != nil {
-			return ctx, err
-		}
-		defer func() {
-			if !testenv.Persisted(ctx) {
-				os.Remove(key.Name())
-			}
-		}()
-
-		_, err = key.WriteString(publicKey)
-		if err != nil {
-			return ctx, err
-		}
-		err = key.Close()
-		if err != nil {
-			return ctx, err
-		}
-
-		vars[name+"_PUBLIC_KEY"] = key.Name()
-	}
-
-	rekorPublicKey, err := os.CreateTemp("", "rekor-*.pub")
-	if err != nil {
+	if environment, vars, err = setupKubernetes(ctx, vars, environment); err != nil {
 		return ctx, err
 	}
-	defer func() {
-		if !testenv.Persisted(ctx) {
-			os.Remove(rekorPublicKey.Name())
-		}
-	}()
-	_, err = rekorPublicKey.Write(rekor.PublicKey(ctx))
-	if err != nil {
+
+	if environment, vars, err = setupRegistry(ctx, vars, environment); err != nil {
 		return ctx, err
 	}
-	err = rekorPublicKey.Close()
-	if err != nil {
+
+	if environment, vars, err = setupRekor(ctx, vars, environment); err != nil {
+		return ctx, err
+	}
+
+	if environment, vars, err = setupKeys(ctx, vars, environment); err != nil {
 		return ctx, err
 	}
 
@@ -170,17 +111,6 @@ func ecCommandIsRunWith(ctx context.Context, parameters string) (context.Context
 	args := os.Expand(parameters, func(key string) string {
 		return vars[key]
 	})
-
-	// environment that the ec command line will run with
-	// we need to keep the $PATH, otherwise go-getter could
-	// fail if it can't locate the git command
-	environment := []string{
-		"PATH=" + os.Getenv("PATH"),
-		"KUBECONFIG=" + kubeconfig.Name(),
-		"SIGSTORE_REKOR_PUBLIC_KEY=" + rekorPublicKey.Name(),
-		"COVERAGE_FILEPATH=" + os.Getenv("ROOT_DIR"), // where to put the coverage file, $ROOT_DIR is provided by the Makefile, if empty it'll be $TMPDIR
-		"COVERAGE_FILENAME=-acceptance",              // suffix for the coverage file
-	}
 
 	logger := log.LoggerFor(ctx)
 	logger.Logf("Command: %s", ec)
@@ -207,6 +137,126 @@ func ecCommandIsRunWith(ctx context.Context, parameters string) (context.Context
 
 	// store the outcome in the Context
 	return context.WithValue(ctx, processStatusKey, &status{Cmd: cmd, err: err, stdout: stdout.String(), stderr: stderr.String()}), nil
+}
+
+func setupKeys(ctx context.Context, vars map[string]string, environment []string) ([]string, map[string]string, error) {
+	// there could be several key pairs created, for testing
+	// signature validation against a wrong public key we want
+	// to avail all public keys that have been generated for
+	// substitution
+	publicKeys := crypto.PublicKeysFrom(ctx)
+
+	for name, publicKey := range publicKeys {
+		key, err := os.CreateTemp("", "*.pub")
+		if err != nil {
+			return environment, vars, err
+		}
+
+		if !testenv.Persisted(ctx) {
+			testenv.Testing(ctx).Cleanup(func() {
+				os.Remove(key.Name())
+			})
+		}
+
+		_, err = key.WriteString(publicKey)
+		if err != nil {
+			return environment, vars, err
+		}
+		err = key.Close()
+		if err != nil {
+			return environment, vars, err
+		}
+
+		vars[name+"_PUBLIC_KEY"] = key.Name()
+	}
+
+	return environment, vars, nil
+}
+
+func setupRekor(ctx context.Context, vars map[string]string, environment []string) ([]string, map[string]string, error) {
+	if !rekor.IsRunning(ctx) {
+		return environment, vars, nil
+	}
+
+	rekorURL, err := rekor.StubRekor(ctx)
+	if err != nil {
+		return environment, vars, err
+	}
+
+	rekorPublicKey, err := os.CreateTemp("", "rekor-*.pub")
+	if err != nil {
+		return environment, vars, err
+	}
+
+	if !testenv.Persisted(ctx) {
+		testenv.Testing(ctx).Cleanup(func() {
+			os.Remove(rekorPublicKey.Name())
+		})
+	}
+
+	_, err = rekorPublicKey.Write(rekor.PublicKey(ctx))
+	if err != nil {
+		return environment, vars, err
+	}
+	err = rekorPublicKey.Close()
+	if err != nil {
+		return environment, vars, err
+	}
+
+	environment = append(environment, "SIGSTORE_REKOR_PUBLIC_KEY="+rekorPublicKey.Name())
+	vars["REKOR"] = rekorURL
+
+	return environment, vars, nil
+}
+
+func setupRegistry(ctx context.Context, vars map[string]string, environment []string) ([]string, map[string]string, error) {
+	if !registry.IsRunning(ctx) {
+		return environment, vars, nil
+	}
+
+	registryURL, err := registry.StubRegistry(ctx)
+	if err != nil {
+		return environment, vars, err
+	}
+
+	vars["REGISTRY"] = registryURL
+
+	return environment, vars, nil
+}
+
+func setupKubernetes(ctx context.Context, vars map[string]string, environment []string) ([]string, map[string]string, error) {
+	if !kubernetes.IsRunning(ctx) {
+		return environment, vars, nil
+	}
+
+	kubeconfig, err := os.CreateTemp("", "*.kubeconfig")
+	if err != nil {
+		return environment, vars, err
+	}
+
+	testenv.Testing(ctx).Cleanup(func() {
+		if !testenv.Persisted(ctx) {
+			os.Remove(kubeconfig.Name())
+		}
+	})
+
+	cfg, err := kubernetes.KubeConfig(ctx)
+	if err != nil {
+		return environment, vars, err
+	}
+
+	_, err = kubeconfig.WriteString(cfg)
+	if err != nil {
+		return environment, vars, err
+	}
+	err = kubeconfig.Close()
+	if err != nil {
+		return environment, vars, err
+	}
+
+	environment = append(environment, "KUBECONFIG="+kubeconfig.Name())
+
+	return environment, vars, nil
 }
 
 // theExitStatusIs checks that the exit status of ec command line is 0
