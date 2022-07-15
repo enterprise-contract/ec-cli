@@ -31,6 +31,7 @@ require (
 	github.com/testcontainers/testcontainers-go v0.13.0
 	github.com/theupdateframework/go-tuf v0.3.1
 	github.com/transparency-dev/merkle v0.0.1
+	github.com/wadey/gocovmerge v0.0.0-20160331181800-b5bfa59ec0ad
 	github.com/walkerus/go-wiremock v1.2.0
 	github.com/yudai/gojsondiff v1.0.0
 	k8s.io/apimachinery v0.24.3
