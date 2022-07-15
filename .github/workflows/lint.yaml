@@ -47,4 +47,5 @@ jobs:
         with:
           version: latest
           only-new-issues: true
+          skip-cache: true
           args: --timeout 5m --sort-results
