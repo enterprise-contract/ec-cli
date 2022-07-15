@@ -14,14 +14,15 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+---
 name: Lint
 
-on:
+"on":
   pull_request:
     branches:
       - main
   push:
-    branches:    
+    branches:
       - main
 
 jobs:

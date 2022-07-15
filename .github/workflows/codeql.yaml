@@ -14,14 +14,15 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+---
 name: "CodeQL"
 
-on:
+"on":
   pull_request:
     branches:
       - main
   push:
-    branches:    
+    branches:
       - main
   schedule:
     - cron: '35 3 * * 4'

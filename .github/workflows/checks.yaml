@@ -14,9 +14,10 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+---
 name: Checks
 
-on:
+"on":
   pull_request:
     branches:
       - main
