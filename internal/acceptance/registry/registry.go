@@ -23,6 +23,7 @@ import (
 
 	"github.com/cucumber/godog"
 	"github.com/google/go-containerregistry/pkg/name"
+	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/pkg/errors"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
@@ -124,6 +125,55 @@ func IsRunning(ctx context.Context) bool {
 
 	state := testenv.FetchState[registryState](ctx)
 	return state.Up()
+}
+
+// AllHashes returns a map of image hashes keyed by `repository:tag` for all
+// images stored in the registry
+func AllHashes(ctx context.Context) (map[string]string, error) {
+	url, err := StubRegistry(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	registry, err := name.NewRegistry(url)
+	if err != nil {
+		return nil, err
+	}
+
+	repositories, err := remote.Catalog(ctx, registry, remote.WithContext(ctx))
+	if err != nil {
+		return nil, err
+	}
+
+	all := map[string]string{}
+	for _, repository := range repositories {
+		r, err := name.NewRepository(repository, name.WithDefaultRegistry(url))
+		if err != nil {
+			return nil, err
+		}
+
+		tags, err := remote.List(r, remote.WithContext(ctx))
+		if err != nil {
+			return nil, err
+		}
+
+		for _, tag := range tags {
+			ref, err := name.ParseReference(repository+":"+tag, name.WithDefaultRegistry(url))
+			if err != nil {
+				return nil, err
+			}
+
+			descriptor, err := remote.Get(ref, remote.WithContext(ctx))
+			if err != nil {
+				return nil, err
+			}
+
+			all[repository+":"+tag] = descriptor.Digest.String()
+		}
+
+	}
+
+	return all, nil
 }
 
 // AddStepsTo adds Gherkin steps to the godog ScenarioContext
