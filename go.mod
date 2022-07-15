@@ -6,7 +6,7 @@ require (
 	cuelang.org/go v0.4.3
 	github.com/cucumber/godog v0.12.5
 	github.com/cyberphone/json-canonicalization v0.0.0-20210823021906-dc406ceaf94b
-	github.com/daixiang0/gci v0.4.1
+	github.com/daixiang0/gci v0.4.2
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-git/go-billy/v5 v5.3.1
 	github.com/go-git/go-git/v5 v5.4.2
