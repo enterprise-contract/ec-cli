@@ -82,8 +82,8 @@ func ecCommandIsRunWith(ctx context.Context, parameters string) (context.Context
 	// fail if it can't locate the git command
 	environment := []string{
 		"PATH=" + os.Getenv("PATH"),
-		"COVERAGE_FILEPATH=" + os.Getenv("ROOT_DIR"), // where to put the coverage file, $ROOT_DIR is provided by the Makefile, if empty it'll be $TMPDIR
-		"COVERAGE_FILENAME=-acceptance",              // suffix for the coverage file
+		"COVERAGE_FILEPATH=" + os.Getenv("COVERAGE_FILEPATH"), // where to put the coverage file, $COVERAGE_FILEPATH is provided by the Makefile, if empty it'll be $TMPDIR
+		"COVERAGE_FILENAME=" + os.Getenv("COVERAGE_FILENAME"), // suffix for the coverage file
 	}
 
 	// variables that can be substituted on the command line

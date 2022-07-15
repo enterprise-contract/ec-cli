@@ -61,9 +61,10 @@ acceptance: ## Run acceptance tests
 	@cd "$(ACCEPTANCE_WORKDIR)"
 	@go run internal/acceptance/coverage/coverage.go .
 	@$(MAKE) build
-	@export ROOT_DIR=$(ROOT_DIR)
+	@export COVERAGE_FILEPATH="$(ACCEPTANCE_WORKDIR)"
+	@export COVERAGE_FILENAME="-acceptance"
 	@go test ./internal/acceptance
-	@mv $(ROOT_DIR)/coverage-acceptance?*.out $(ROOT_DIR)/coverage-acceptance.out
+	@go run github.com/wadey/gocovmerge "$(ACCEPTANCE_WORKDIR)"/coverage-acceptance*.out > "$(ROOT_DIR)/coverage-acceptance.out"
 
 .PHONY: lint
 lint: ## Run linter
