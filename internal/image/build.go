@@ -18,6 +18,7 @@ package image
 
 import (
 	"fmt"
+	"net/mail"
 	"regexp"
 	"strings"
 
@@ -34,13 +35,18 @@ type invocation struct {
 	Environment  map[string]interface{} `json:"environment"`
 }
 
+type materials struct {
+	Uri    string            `json:"sha"`
+	Digest map[string]string `json:"digest"`
+}
+
 type predicate struct {
-	Invocation  invocation               `json:"invocation"`
-	BuildType   string                   `json:"buildType"`
-	Metadata    map[string]interface{}   `json:"metadata"`
-	Builder     map[string]interface{}   `json:"builder"`
-	BuildConfig map[string]interface{}   `json:"buildConfig"`
-	Materials   []map[string]interface{} `json:"materials"`
+	Invocation  invocation             `json:"invocation"`
+	BuildType   string                 `json:"buildType"`
+	Metadata    map[string]interface{} `json:"metadata"`
+	Builder     map[string]interface{} `json:"builder"`
+	BuildConfig map[string]interface{} `json:"buildConfig"`
+	Materials   []materials            `json:"materials"`
 }
 
 type attestation struct {
@@ -90,34 +96,18 @@ func (a *attestation) NewSignOffSource() (signOffSource, error) {
 
 // get the last commit used for the component build
 func (a *attestation) getBuildCommitSha() string {
-	digest := a.getMaterialsMap("digest")
-	if digest != nil {
-		return digest["sha"]
+	if len(a.Predicate.Materials) == 1 {
+		return a.Predicate.Materials[0].Digest["sha"]
 	}
 	return ""
 }
 
 // the git url used for the component build
 func (a *attestation) getBuildSCM() string {
-	return a.getMaterialsString("uri")
-}
-
-func (a *attestation) getMaterialsMap(key string) map[string]string {
-	materials := a.Predicate.Materials
-	// materials is an array. If it's empty or greater than 1, return nothing
-	if len(materials) != 1 {
-		return map[string]string{}
+	if len(a.Predicate.Materials) == 1 {
+		return a.Predicate.Materials[0].Uri
 	}
-	return materials[0][key].(map[string]string)
-}
-
-func (a *attestation) getMaterialsString(key string) string {
-	materials := a.Predicate.Materials
-	// materials is an array. If it's empty or greater than 1, return nothing
-	if len(materials) != 1 {
-		return ""
-	}
-	return materials[0][key].(string)
+	return ""
 }
 
 // returns the signOff signature and body of the source
@@ -160,20 +150,20 @@ func getCommitSource(data *commitSignOff) (*commit, error) {
 // parse a commit and capture signatures
 func captureCommitSignOff(message string) []string {
 	var capturedSignatures []string
-	signatureHeader := "Signed-off-by"
-	// loop over each line of the commit message looking for "Signed-off-by"
+	signatureHeader := "Signed-off-by:"
+	// loop over each line of the commit message looking for "Signed-off-by:"
 	for _, line := range strings.Split(message, "\n") {
 		regex := fmt.Sprintf("^%s", signatureHeader)
 		match, _ := regexp.MatchString(regex, line)
-		// if there's a match, split on "Signed-off-by", then capture each signature after
+		// if there's a match, split on "Signed-off-by:", then capture each signature after
 		if match {
 			results := strings.Split(line, signatureHeader)
-			for _, signature := range strings.Split(results[len(results)-1], ",") {
-				sigRegex := regexp.MustCompile("([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+.[a-zA-Z0-9_-]+)")
-				sigMatch := sigRegex.FindAllStringSubmatch(signature, -1)
-				if len(sigMatch) > 0 {
-					capturedSignatures = append(capturedSignatures, sigMatch[0][0])
-				}
+			signatures, err := mail.ParseAddressList(results[len(results)-1])
+			if err != nil {
+				continue
+			}
+			for _, signature := range signatures {
+				capturedSignatures = append(capturedSignatures, signature.Address)
 			}
 		}
 	}
@@ -182,5 +172,4 @@ func captureCommitSignOff(message string) []string {
 		return capturedSignatures
 	}
 	return []string{}
-
 }
