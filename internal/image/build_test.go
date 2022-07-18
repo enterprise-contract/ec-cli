@@ -23,8 +23,8 @@ import (
 
 	"github.com/go-git/go-billy/v5"
 	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/storage"
+	"github.com/go-git/go-git/v5/storage/memory"
 )
 
 func paramsInput(input string) attestation {
@@ -163,37 +163,6 @@ Signed-off-by: <jstuart@redhat.com>, <blah@redhat.com>
 	}, nil
 }
 
-type repo interface {
-	CommitObject(hash plumbing.Hash) (*mockCommit, error)
-}
-
-type mockAuthor struct {
-	Name  string
-	Email string
-	When  string
-}
-
-type mockCommit struct {
-	Author  mockAuthor
-	Message string
-	Hash    string
-}
-
-type mockRepo struct {
-}
-
-func (r *mockRepo) CommitObject(hash plumbing.Hash) (*mockCommit, error) {
-	return &mockCommit{
-		Author: mockAuthor{
-			Name:  "ec RedHat",
-			Email: "<ec@redhat.com>",
-			When:  "Wed July 6 5:28:33 2022 -0500",
-		},
-		Message: "Signed-off-by: <jstuart@redhat.com>",
-		Hash:    "6c1f093c0c197add71579d392da8a79a984fcd62",
-	}, nil
-}
-
 func Test_GetSignOff(t *testing.T) {
 	tests := []struct {
 		input *commitSignOff
@@ -218,8 +187,10 @@ func Test_GetSignOff(t *testing.T) {
 	savedClone := gitClone
 	defer func() { gitClone = savedClone }()
 
-	gitClone = func(s storage.Storer, worktree billy.Filesystem, o *git.CloneOptions) (*repo, error) {
-		return &mockRepo{}, nil
+	gitClone = func(s storage.Storer, worktree billy.Filesystem, o *git.CloneOptions) (*git.Repository, error) {
+		return &git.Repository{
+			Storer: memory.NewStorage(),
+		}, nil
 	}
 
 	for i, tc := range tests {

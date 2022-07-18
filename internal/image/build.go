@@ -90,12 +90,25 @@ func (a *attestation) NewSignOffSource() (signOffSource, error) {
 
 // get the last commit used for the component build
 func (a *attestation) getBuildCommitSha() string {
-	return a.getMaterialsString("CHAINS-GIT_COMMIT")
+	digest := a.getMaterialsMap("digest")
+	if digest != nil {
+		return digest["sha"]
+	}
+	return ""
 }
 
 // the git url used for the component build
 func (a *attestation) getBuildSCM() string {
-	return a.getMaterialsString("CHAINS-GIT_URL")
+	return a.getMaterialsString("uri")
+}
+
+func (a *attestation) getMaterialsMap(key string) map[string]string {
+	materials := a.Predicate.Materials
+	// materials is an array. If it's empty or greater than 1, return nothing
+	if len(materials) != 1 {
+		return map[string]string{}
+	}
+	return materials[0][key].(map[string]string)
 }
 
 func (a *attestation) getMaterialsString(key string) string {
@@ -104,7 +117,7 @@ func (a *attestation) getMaterialsString(key string) string {
 	if len(materials) != 1 {
 		return ""
 	}
-	return a.Predicate.Materials[0][key].(string)
+	return materials[0][key].(string)
 }
 
 // returns the signOff signature and body of the source
