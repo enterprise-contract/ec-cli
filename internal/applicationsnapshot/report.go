@@ -50,7 +50,7 @@ func Report(components []Component) (string, error, bool) {
 		Components: components,
 	}
 
-	j, err := json.Marshal(output)
+	j, err := json.MarshalIndent(output, "", "  ")
 	if err != nil {
 		return "", err, false
 	}

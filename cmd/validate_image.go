@@ -22,6 +22,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"sync"
 
 	"github.com/hashicorp/go-multierror"
@@ -138,16 +139,18 @@ ec validate image --file-path my-app.yaml --public-key my-key.pem --rekor-url ht
 				return multierror.Append(allErrors, err)
 			}
 
+			_, err = cmd.OutOrStdout().Write([]byte(report))
+			if err != nil {
+				return multierror.Append(allErrors, err)
+			}
+
 			if len(data.output) > 0 {
 				if err := ioutil.WriteFile(data.output, []byte(report), 0644); err != nil {
 					return multierror.Append(allErrors, err)
 				}
-				fmt.Printf("Report written to %s\n", data.output)
-			} else {
-				_, err := cmd.OutOrStdout().Write([]byte(report))
-				if err != nil {
-					return multierror.Append(allErrors, err)
-				}
+				// Ensure following output always starts on a new line.
+				fmt.Println()
+				fmt.Fprintf(os.Stderr, "Report written to %s\n", data.output)
 			}
 
 			if data.strict && !success {
