@@ -20,14 +20,11 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
-	"time"
 
 	"github.com/go-git/go-billy/v5"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
-	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/storage"
-	"github.com/go-git/go-git/v5/storage/memory"
 )
 
 func paramsInput(input string) attestation {
@@ -146,28 +143,7 @@ func Test_GetBuildSCM(t *testing.T) {
 	}
 }
 
-func Test_GetBuildTag(t *testing.T) {
-	tests := []struct {
-		input attestation
-		want  string
-	}{
-		{paramsInput("good-just-tag"), "v0.0.1"},
-		{paramsInput("bad-just-tag"), ""},
-	}
-
-	for i, tc := range tests {
-		t.Run(fmt.Sprintf("GetBuildTag=%d", i), func(t *testing.T) {
-			got := tc.input.getBuildTag()
-			if got != tc.want {
-				t.Fatalf("got %v; want %v", got, tc.want)
-			} else {
-				t.Logf("Success !")
-			}
-		})
-	}
-}
-
-func Test_GetSignOff(t *testing.T) {
+func mock_commit_getter(data *commitSignOff) (*commit, error) {
 	hash := "6c1f093c0c197add71579d392da8a79a984fcd62"
 	message := `Create signoff methods for builds
 
@@ -179,17 +155,46 @@ get the signoff from the source
 
 Signed-off-by: <jstuart@redhat.com>, <blah@redhat.com>
 `
-
-	commitObject := &object.Commit{
-		Hash:    plumbing.NewHash(hash),
+	return &commit{
+		Sha:     hash,
+		Author:  "ec RedHat <ec@gmail.com>",
+		Date:    "Wed July 6 5:28:33 2022 -0500",
 		Message: message,
-		Author: object.Signature{
-			Name:  "Joe Stuart",
-			Email: "joe.stuart@gmail.com",
-			When: time.Date(
-				2022, 07, 06, 17, 28, 33, 50000, time.Local),
+	}, nil
+}
+
+type repo interface {
+	CommitObject(hash plumbing.Hash) (*mockCommit, error)
+}
+
+type mockAuthor struct {
+	Name  string
+	Email string
+	When  string
+}
+
+type mockCommit struct {
+	Author  mockAuthor
+	Message string
+	Hash    string
+}
+
+type mockRepo struct {
+}
+
+func (r *mockRepo) CommitObject(hash plumbing.Hash) (*mockCommit, error) {
+	return &mockCommit{
+		Author: mockAuthor{
+			Name:  "ec RedHat",
+			Email: "<ec@redhat.com>",
+			When:  "Wed July 6 5:28:33 2022 -0500",
 		},
-	}
+		Message: "Signed-off-by: <jstuart@redhat.com>",
+		Hash:    "6c1f093c0c197add71579d392da8a79a984fcd62",
+	}, nil
+}
+
+func Test_GetSignOff(t *testing.T) {
 	tests := []struct {
 		input *commitSignOff
 		want  *signOffSignature
@@ -200,7 +205,11 @@ Signed-off-by: <jstuart@redhat.com>, <blah@redhat.com>
 				commitSha: "6c1f093c0c197add71579d392da8a79a984fcd62",
 			},
 			&signOffSignature{
-				Body:       commitObject,
+				Body: commit{
+					Sha:    "6c1f093c0c197add71579d392da8a79a984fcd62",
+					Author: "ec RedHat <ec@gmail.com>",
+					Date:   "Wed July 6 5:28:33 2022 -0500",
+				},
 				Signatures: []string{"jstuart@redhat.com"},
 			},
 		},
@@ -209,10 +218,8 @@ Signed-off-by: <jstuart@redhat.com>, <blah@redhat.com>
 	savedClone := gitClone
 	defer func() { gitClone = savedClone }()
 
-	gitClone = func(s storage.Storer, worktree billy.Filesystem, o *git.CloneOptions) (*git.Repository, error) {
-		return &git.Repository{
-			Storer: memory.NewStorage(),
-		}, nil
+	gitClone = func(s storage.Storer, worktree billy.Filesystem, o *git.CloneOptions) (*repo, error) {
+		return &mockRepo{}, nil
 	}
 
 	for i, tc := range tests {
