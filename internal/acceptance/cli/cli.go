@@ -46,6 +46,7 @@ import (
 
 type status struct {
 	*exec.Cmd
+	vars   map[string]string
 	err    error
 	stdout string
 	stderr string
@@ -136,7 +137,7 @@ func ecCommandIsRunWith(ctx context.Context, parameters string) (context.Context
 	}
 
 	// store the outcome in the Context
-	return context.WithValue(ctx, processStatusKey, &status{Cmd: cmd, err: err, stdout: stdout.String(), stderr: stderr.String()}), nil
+	return context.WithValue(ctx, processStatusKey, &status{Cmd: cmd, vars: vars, err: err, stdout: stdout.String(), stderr: stderr.String()}), nil
 }
 
 func setupKeys(ctx context.Context, vars map[string]string, environment []string) ([]string, map[string]string, error) {
@@ -221,6 +222,15 @@ func setupRegistry(ctx context.Context, vars map[string]string, environment []st
 
 	vars["REGISTRY"] = registryURL
 
+	hashes, err := registry.AllHashes(ctx)
+	if err != nil {
+		return environment, vars, err
+	}
+
+	for repositoryAndTag, hash := range hashes {
+		vars[fmt.Sprintf("REGISTRY_%s_HASH", repositoryAndTag)] = hash
+	}
+
 	return environment, vars, nil
 }
 
@@ -298,16 +308,24 @@ func theStandardOutputShouldContain(ctx context.Context, expected *godog.DocStri
 		return errors.New("must provide expected output")
 	}
 
+	expectedStdOut := os.Expand(expected.Content, func(key string) string {
+		return status.vars[key]
+	})
+
 	// shortcut, if the output is exactly as expected
-	if status.stdout == expected.Content {
+	if status.stdout == expectedStdOut {
+		return nil
+	}
+
+	if matched, err := regexp.MatchString(expectedStdOut, status.stdout); matched && err == nil {
 		return nil
 	}
 
 	// see if the expected value is JSON, i.e. if it starts with either { or [
-	trimmed := strings.TrimLeftFunc(expected.Content, unicode.IsSpace)
+	trimmed := strings.TrimLeftFunc(expectedStdOut, unicode.IsSpace)
 	isJSON := trimmed[0] == '{' || trimmed[0] == '['
 	if isJSON {
-		expectedBytes := []byte(expected.Content)
+		expectedBytes := []byte(expectedStdOut)
 
 		// compute the diff between expected and resulting JSON
 		differ := gojsondiff.New()
@@ -349,7 +367,7 @@ func theStandardOutputShouldContain(ctx context.Context, expected *godog.DocStri
 	}
 
 	var b bytes.Buffer
-	err = diff.Text("stdout", "expected", status.stdout, expected.Content, &b)
+	err = diff.Text("stdout", "expected", status.stdout, expectedStdOut, &b)
 	if err != nil {
 		return err
 	}

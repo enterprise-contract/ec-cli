@@ -32,6 +32,7 @@ import (
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/kubernetes"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/registry"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/rekor"
+	"github.com/hacbs-contract/ec-cli/internal/acceptance/tekton"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/testenv"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/wiremock"
 )
@@ -58,6 +59,7 @@ func initializeScenario(sc *godog.ScenarioContext) {
 	kubernetes.AddStepsTo(sc)
 	registry.AddStepsTo(sc)
 	rekor.AddStepsTo(sc)
+	tekton.AddStepsTo(sc)
 	wiremock.AddStepsTo(sc)
 
 	sc.After(func(ctx context.Context, scenario *godog.Scenario, scenarioErr error) (context.Context, error) {
