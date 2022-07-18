@@ -25,44 +25,33 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/storage"
 	"github.com/go-git/go-git/v5/storage/memory"
+	"github.com/stretchr/testify/assert"
 )
 
 func paramsInput(input string) attestation {
-	params := map[string]string{}
+	params := materials{}
 	if input == "good-commit" {
-		params = map[string]string{
-			"git-url":  "https://github.com/joejstuart/ec-cli.git",
-			"revision": "6c1f093c0c197add71579d392da8a79a984fcd62",
+		params.Digest = map[string]string{
+			"sha": "6c1f093c0c197add71579d392da8a79a984fcd62",
 		}
+		params.Uri = "https://github.com/joejstuart/ec-cli.git"
 	} else if input == "bad-commit" {
-		params = map[string]string{
-			"git-url": "https://github.com/joejstuart/ec-cli.git",
-		}
+		params.Uri = ""
 	} else if input == "bad-git" {
-		params = map[string]string{
-			"tag": "v0.0.1",
-		}
+		params.Uri = ""
 	} else if input == "good-git" {
-		params = map[string]string{
-			"git-url": "https://github.com/joejstuart/ec-cli.git",
-			"tag":     "v0.0.1",
-		}
-	} else if input == "good-just-tag" {
-		params = map[string]string{
-			"tag": "v0.0.1",
-		}
-	} else if input == "bad-just-tag" {
-		params = map[string]string{
-			"git-url": "https://github.com/joejstuart/ec-cli.git",
+		params.Uri = "https://github.com/joejstuart/ec-cli.git"
+		params.Digest = map[string]string{
+			"sha": "6c1f093c0c197add71579d392da8a79a984fcd62",
 		}
 	}
 
-	invocation := invocation{
-		Parameters: params,
+	materials := []materials{
+		params,
 	}
 
 	pred := predicate{
-		Invocation: invocation,
+		Materials: materials,
 	}
 	att := attestation{
 		Predicate: pred,
@@ -92,7 +81,7 @@ func Test_AttestationSignoffSource_commit(t *testing.T) {
 	for i, tc := range tests {
 		t.Run(fmt.Sprintf("AttestationSignoffSource=%d", i), func(t *testing.T) {
 			got, _ := tc.input.NewSignOffSource()
-			if !reflect.DeepEqual(got, tc.want) {
+			if !assert.ObjectsAreEqual(tc.want, got) {
 				t.Fatalf("got %v; want %v", got, tc.want)
 			} else {
 				t.Logf("Success !")
@@ -141,26 +130,6 @@ func Test_GetBuildSCM(t *testing.T) {
 			}
 		})
 	}
-}
-
-func mock_commit_getter(data *commitSignOff) (*commit, error) {
-	hash := "6c1f093c0c197add71579d392da8a79a984fcd62"
-	message := `Create signoff methods for builds
-
-validate the image signature and attestation
-
-from the validated attestation determine the signoff source
-
-get the signoff from the source
-
-Signed-off-by: <jstuart@redhat.com>, <blah@redhat.com>
-`
-	return &commit{
-		Sha:     hash,
-		Author:  "ec RedHat <ec@gmail.com>",
-		Date:    "Wed July 6 5:28:33 2022 -0500",
-		Message: message,
-	}, nil
 }
 
 func Test_GetSignOff(t *testing.T) {

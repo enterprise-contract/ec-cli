@@ -21,8 +21,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/hacbs-contract/ec-cli/internal/image"
 	"github.com/spf13/cobra"
+
+	"github.com/hacbs-contract/ec-cli/internal/image"
 )
 
 func signOffCmd() *cobra.Command {
