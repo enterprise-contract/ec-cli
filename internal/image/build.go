@@ -23,7 +23,6 @@ import (
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
-	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/storage/memory"
 )
 
@@ -61,6 +60,13 @@ type signOffSource interface {
 	GetSignOff() (*signOffSignature, error)
 }
 
+type commit struct {
+	Sha     string `json:"sha"`
+	Author  string `json:"author"`
+	Date    string `json:"date"`
+	Message string `json:"message"`
+}
+
 type signOffSignature struct {
 	Body       interface{} `json:"body"`
 	Signatures []string    `json:"signatures"`
@@ -72,7 +78,8 @@ func (a *attestation) NewSignOffSource() (signOffSource, error) {
 	// the attestation can have an env var or something that this can key off of
 
 	commitSha := a.getBuildCommitSha()
-	if commitSha != "" {
+	repo := a.getBuildSCM()
+	if commitSha != "" && repo != "" {
 		return &commitSignOff{
 			source:    a.getBuildSCM(),
 			commitSha: commitSha,
@@ -83,17 +90,21 @@ func (a *attestation) NewSignOffSource() (signOffSource, error) {
 
 // get the last commit used for the component build
 func (a *attestation) getBuildCommitSha() string {
-	return a.Predicate.Invocation.Parameters["revision"]
+	return a.getMaterialsString("CHAINS-GIT_COMMIT")
 }
 
 // the git url used for the component build
 func (a *attestation) getBuildSCM() string {
-	return a.Predicate.Invocation.Parameters["git-url"]
+	return a.getMaterialsString("CHAINS-GIT_URL")
 }
 
-// the git url used for the component build
-func (a *attestation) getBuildTag() string {
-	return a.Predicate.Invocation.Parameters["tag"]
+func (a *attestation) getMaterialsString(key string) string {
+	materials := a.Predicate.Materials
+	// materials is an array. If it's empty or greater than 1, return nothing
+	if len(materials) != 1 {
+		return ""
+	}
+	return a.Predicate.Materials[0][key].(string)
 }
 
 // returns the signOff signature and body of the source
@@ -110,22 +121,27 @@ func (c *commitSignOff) GetSignOff() (*signOffSignature, error) {
 }
 
 // get the build commit source for use in GetSignOff
-func getCommitSource(data *commitSignOff) (*object.Commit, error) {
+func getCommitSource(data *commitSignOff) (*commit, error) {
 	repo, err := gitClone(memory.NewStorage(), nil, &git.CloneOptions{
 		URL: data.source,
 	})
 
-	fmt.Println(repo)
 	if err != nil {
 		return nil, err
 	}
 
-	commit, err := repo.CommitObject(plumbing.NewHash(data.commitSha))
+	gitCommit, err := repo.CommitObject(plumbing.NewHash(data.commitSha))
 	if err != nil {
 		return nil, err
 	}
 
-	return commit, nil
+	return &commit{
+		Sha:     gitCommit.Hash.String(),
+		Author:  fmt.Sprintf("%s <%s>", gitCommit.Author.Name, gitCommit.Author.Email),
+		Date:    gitCommit.Author.When.String(),
+		Message: gitCommit.Message,
+	}, nil
+
 }
 
 // parse a commit and capture signatures
