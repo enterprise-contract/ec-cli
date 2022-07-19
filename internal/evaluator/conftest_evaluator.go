@@ -18,8 +18,10 @@ package evaluator
 
 import (
 	"context"
+	"encoding/json"
 	"path/filepath"
 
+	"github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/open-policy-agent/conftest/output"
 	"github.com/open-policy-agent/conftest/runner"
 	log "github.com/sirupsen/logrus"
@@ -50,7 +52,7 @@ type ConfigurationPaths struct {
 
 // NewConftestEvaluator returns initialized conftestEvaluator implementing
 // Evaluator interface
-func NewConftestEvaluator(ctx context.Context, policySources []source.PolicySource, namespace string) (Evaluator, error) {
+func NewConftestEvaluator(ctx context.Context, policySources []source.PolicySource, namespace string, ecpSpec *v1alpha1.EnterpriseContractPolicySpec) (Evaluator, error) {
 	c := conftestEvaluator{
 		policySources: policySources,
 		paths:         ConfigurationPaths{},
@@ -73,7 +75,7 @@ func NewConftestEvaluator(ctx context.Context, policySources []source.PolicySour
 	}
 	log.Debug("Added policy paths")
 
-	err = c.addDataPath()
+	err = c.addDataPath(ecpSpec)
 	if err != nil {
 		log.Debug("Failed to add add data path!")
 		return nil, err
@@ -97,20 +99,55 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) ([]out
 }
 
 // addDataPath adds the appropriate data path to the ConfigurationPaths DataPaths field array.
-func (c *conftestEvaluator) addDataPath() error {
-	// Todo: Read from epc.Spec and right the nonblocking to this file.
+func (c *conftestEvaluator) addDataPath(spec *v1alpha1.EnterpriseContractPolicySpec) error {
 	dataDir := filepath.Join(c.workDir, "data")
+	dataFilePath := filepath.Join(dataDir, "data.json")
 	exists, err := afero.DirExists(utils.AppFS, dataDir)
 	if err != nil {
 		return err
 	}
 	if !exists {
+		log.Debugf("Data dir '%s' does not exist, will create.", dataDir)
 		_ = utils.AppFS.MkdirAll(dataDir, 0755)
-		err = afero.WriteFile(utils.AppFS, filepath.Join(c.workDir, "data/data.json"), []byte("{\"config\":{}}\n"), 0777)
+	}
+
+	var config = map[string]interface{}{
+		"config": map[string]interface{}{},
+	}
+
+	if spec != nil {
+		if spec.Exceptions != nil {
+			log.Debug("Non-blocking exceptions found. These will be written to file", dataDir)
+			config["config"] = map[string]interface{}{
+				"policy": map[string]interface{}{
+					"non_blocking_checks": spec.Exceptions.NonBlocking,
+				},
+			}
+		}
+	}
+
+	jsonData, marshalErr := json.MarshalIndent(config, "", "    ")
+	if marshalErr != nil {
+		return err
+	}
+	// Check to see if the data.json file exists
+	exists, err = afero.Exists(utils.AppFS, dataFilePath)
+	if err != nil {
+		return err
+	}
+	// if so, remove it
+	if exists {
+		err = utils.AppFS.Remove(dataFilePath)
 		if err != nil {
 			return err
 		}
 	}
+	// write our jsonData content to the data.json file in the data directory under the workDir
+	err = afero.WriteFile(utils.AppFS, dataFilePath, jsonData, 0777)
+	if err != nil {
+		return err
+	}
+
 	c.paths.DataPaths = append(c.paths.DataPaths, dataDir)
 
 	return nil

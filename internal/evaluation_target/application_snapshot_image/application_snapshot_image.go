@@ -111,7 +111,7 @@ func NewApplicationSnapshotImage(ctx context.Context, image string, publicKey st
 		log.Debugf("%s", policyRepoJson)
 	}
 
-	c, err := newConftestEvaluator(ctx, policies, ConftestNamespace)
+	c, err := newConftestEvaluator(ctx, policies, ConftestNamespace, &ecp.Spec)
 	if err != nil {
 		log.Debug("Failed to initialize the conftest evaluator!")
 		return nil, err
