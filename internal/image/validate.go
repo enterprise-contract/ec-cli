@@ -18,6 +18,9 @@ package image
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
+	"io/ioutil"
 
 	conftestOutput "github.com/open-policy-agent/conftest/output"
 	log "github.com/sirupsen/logrus"
@@ -73,6 +76,20 @@ func ValidateImage(ctx context.Context, imageRef, policyConfiguration, publicKey
 		return nil, err
 	}
 
+	attStatements := make([]attestation, 0, len(a.Attestations()))
+	for _, att := range a.Attestations() {
+		attStatement, err := SignatureToAttestation(ctx, att)
+		if err != nil {
+			return nil, err
+		}
+		attStatements = append(attStatements, attStatement)
+	}
+
+	commitFile := "/tmp/commit.json"
+	writeCommitData(attStatements, commitFile)
+
+	inputs = append(inputs, commitFile)
+
 	results, err := a.Evaluator.Evaluate(ctx, inputs)
 
 	if err != nil {
@@ -84,4 +101,34 @@ func ValidateImage(ctx context.Context, imageRef, policyConfiguration, publicKey
 	out.SetPolicyCheck(results)
 
 	return out, nil
+}
+
+func writeCommitData(attestations []attestation, commitFile string) error {
+	payloads := make([]string, 0, len(attestations))
+	for _, att := range attestations {
+		signoffSource, err := att.NewSignOffSource()
+		if err != nil {
+			return err
+		}
+		if signoffSource == nil {
+			return errors.New("there is no signoff source in attestation")
+		}
+
+		signOff, err := signoffSource.GetSignOff()
+		if err != nil {
+			return err
+		}
+
+		if signOff != nil {
+			payload, err := json.MarshalIndent(signOff, "", " ")
+			if err != nil {
+				return err
+			}
+			payloads = append(payloads, string(payload))
+		}
+	}
+
+	payloadJson, _ := json.Marshal(payloads)
+	_ = ioutil.WriteFile(commitFile, payloadJson, 0644)
+	return nil
 }

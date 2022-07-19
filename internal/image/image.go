@@ -99,7 +99,7 @@ func (i *imageValidator) ValidateImage(ctx context.Context) (*validatedImage, er
 	attestations, _, err := cosign.VerifyImageAttestations(ctx, i.reference, &i.checkOpts)
 	attStatements := make([]attestation, 0, len(attestations))
 	for _, att := range attestations {
-		attStatement, err := signatureToAttestation(ctx, att)
+		attStatement, err := SignatureToAttestation(ctx, att)
 		if err != nil {
 			return nil, err
 		}
@@ -118,7 +118,7 @@ func (i *imageValidator) ValidateImage(ctx context.Context) (*validatedImage, er
 
 }
 
-func signatureToAttestation(ctx context.Context, signature oci.Signature) (attestation, error) {
+func SignatureToAttestation(ctx context.Context, signature oci.Signature) (attestation, error) {
 	var att attestation
 	payload, err := policy.AttestationToPayloadJSON(ctx, "slsaprovenance", signature)
 	if err != nil {
