@@ -17,19 +17,65 @@
 package tekton
 
 import (
+	"archive/tar"
+	"bytes"
 	"context"
+	"fmt"
+	"io/ioutil"
+	"strings"
 
 	"github.com/cucumber/godog"
-	"github.com/google/go-containerregistry/pkg/v1/random"
+	"github.com/google/go-containerregistry/pkg/v1/empty"
+	"github.com/google/go-containerregistry/pkg/v1/mutate"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
+	"github.com/google/go-containerregistry/pkg/v1/stream"
+	"github.com/tektoncd/pipeline/pkg/remote/oci"
 
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/registry"
 )
 
+const version = "v1beta1"
+
 func createTektonBundle(ctx context.Context, name string, data *godog.Table) (context.Context, error) {
-	img, err := random.Image(4096, 2)
-	if err != nil {
-		return ctx, err
+	img := empty.Image
+
+	for _, row := range data.Rows {
+		kind := row.Cells[0].Value
+		name := row.Cells[1].Value
+
+		content := contentFor(kind, name)
+
+		data := bytes.Buffer{}
+		writer := tar.NewWriter(&data)
+		if err := writer.WriteHeader(&tar.Header{
+			Name:     name,
+			Mode:     0600,
+			Size:     int64(len(content)),
+			Typeflag: tar.TypeReg,
+		}); err != nil {
+			return ctx, err
+		}
+		if _, err := writer.Write(content); err != nil {
+			return ctx, err
+		}
+		if err := writer.Close(); err != nil {
+			return ctx, err
+		}
+
+		layer := stream.NewLayer(ioutil.NopCloser(&data))
+
+		var err error
+		img, err = mutate.Append(img, mutate.Addendum{
+			Layer: layer,
+			Annotations: map[string]string{
+				oci.APIVersionAnnotation: version,
+				oci.KindAnnotation:       strings.ToLower(kind),
+				oci.TitleAnnotation:      name,
+			},
+		})
+		if err != nil {
+			return ctx, err
+		}
 	}
 
 	ref, err := registry.ImageReferenceInStubRegistry(ctx, name)
@@ -43,6 +89,16 @@ func createTektonBundle(ctx context.Context, name string, data *godog.Table) (co
 	}
 
 	return ctx, nil
+}
+
+func contentFor(kind, name string) []byte {
+	content := fmt.Sprintf(`apiVersion: tekton.dev/%s
+kind: %s
+metadata:
+	name: %s
+spec:`, version, kind, name)
+
+	return []byte(content)
 }
 
 func AddStepsTo(sc *godog.ScenarioContext) {

@@ -32,6 +32,8 @@ import (
 	"github.com/leanovate/gopter/arbitrary"
 	"github.com/leanovate/gopter/gen"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/hacbs-contract/ec-cli/internal/image"
 )
 
 var sampleHashOne = v1.Hash{
@@ -165,7 +167,9 @@ task-bundles:
 				_, err = f.WriteString(tt.input)
 				assert.NoError(t, err)
 			}
-			output, err := Track(context.TODO(), tt.urls, "pipeline-bundles", inputFile)
+			output, err := Track(context.TODO(), tt.urls, inputFile, func(ctx context.Context, ref image.ImageReference) ([]string, error) {
+				return []string{"pipeline"}, nil
+			})
 			assert.NoError(t, err)
 			assert.Equal(t, tt.output, string(output))
 		})

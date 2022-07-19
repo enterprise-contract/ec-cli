@@ -111,3 +111,7 @@ func newImageReference(url string) (*ImageReference, error) {
 
 	return imageRef, nil
 }
+
+func (i ImageReference) Ref() name.Reference {
+	return i.ref
+}

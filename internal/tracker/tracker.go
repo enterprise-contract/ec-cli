@@ -38,6 +38,8 @@ type Record struct {
 
 type Tracker map[string]map[string][]Record
 
+type Collector func(context.Context, image.ImageReference) ([]string, error)
+
 // newTracker returns a new initialized instance of Tracker. If path
 // is "", an empty instance is returned.
 func newTracker(path string) (t Tracker, err error) {
@@ -85,7 +87,7 @@ func (t Tracker) Output() ([]byte, error) {
 
 // Track implements the common workflow of loading an existing tracker file and adding
 // records to one of its collections.
-func Track(ctx context.Context, urls []string, collection string, input string) ([]byte, error) {
+func Track(ctx context.Context, urls []string, input string, collector Collector) ([]byte, error) {
 	refs, err := image.ParseAndResolveAll(urls)
 	if err != nil {
 		return nil, err
@@ -98,13 +100,20 @@ func Track(ctx context.Context, urls []string, collection string, input string) 
 
 	effective_on := effectiveOn()
 	for _, ref := range refs {
-		t.add(Record{
-			Digest:      ref.Digest,
-			Tag:         ref.Tag,
-			EffectiveOn: effective_on,
-			Repository:  ref.Repository,
-			Collection:  collection,
-		})
+		collections, err := collector(ctx, ref)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, collection := range collections {
+			t.add(Record{
+				Digest:      ref.Digest,
+				Tag:         ref.Tag,
+				EffectiveOn: effective_on,
+				Repository:  ref.Repository,
+				Collection:  collection + "-bundles",
+			})
+		}
 	}
 
 	out, err := yaml.Marshal(t)
