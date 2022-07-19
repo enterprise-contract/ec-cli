@@ -104,7 +104,7 @@ func ValidateImage(ctx context.Context, imageRef, policyConfiguration, publicKey
 }
 
 func writeCommitData(attestations []attestation, commitFile string) error {
-	payloads := make([]string, 0, len(attestations))
+	payloads := make([]*signOffSignature, 0, len(attestations))
 	for _, att := range attestations {
 		signoffSource, err := att.NewSignOffSource()
 		if err != nil {
@@ -120,11 +120,7 @@ func writeCommitData(attestations []attestation, commitFile string) error {
 		}
 
 		if signOff != nil {
-			payload, err := json.MarshalIndent(signOff, "", " ")
-			if err != nil {
-				return err
-			}
-			payloads = append(payloads, string(payload))
+			payloads = append(payloads, signOff)
 		}
 	}
 
