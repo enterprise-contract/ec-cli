@@ -96,14 +96,16 @@ func (a *attestation) NewSignOffSource() (signOffSource, error) {
 
 // get the last commit used for the component build
 func (a *attestation) getBuildCommitSha() string {
+	//return "6c1f093c0c197add71579d392da8a79a984fcd62"
 	if len(a.Predicate.Materials) == 1 {
-		return a.Predicate.Materials[0].Digest["sha"]
+		return a.Predicate.Materials[0].Digest["sha1"]
 	}
 	return ""
 }
 
 // the git url used for the component build
 func (a *attestation) getBuildSCM() string {
+	//return "https://github.com/joejstuart/ec-cli.git"
 	if len(a.Predicate.Materials) == 1 {
 		return a.Predicate.Materials[0].Uri
 	}
