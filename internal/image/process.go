@@ -85,6 +85,19 @@ func (i ImageReference) resolveDigest() (*ImageReference, error) {
 	return newImageReference(fmt.Sprintf("%s:%s@%s", i.Repository, i.Tag, digest))
 }
 
+func (i *ImageReference) String() string {
+	// An image reference has at most 3 parts (repo, tag, digest) plus 2 separators
+	parts := make([]string, 0, 5)
+	parts = append(parts, i.Repository)
+	if i.Tag != "" {
+		parts = append(parts, ":", i.Tag)
+	}
+	if i.Digest != "" {
+		parts = append(parts, "@", i.Digest)
+	}
+	return strings.Join(parts, "")
+}
+
 // newImageReference returns an ImageReference instance based on the given url.
 func newImageReference(url string) (*ImageReference, error) {
 	ref, err := name.ParseReference(url, name.StrictValidation)
