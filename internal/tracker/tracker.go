@@ -17,11 +17,13 @@
 package tracker
 
 import (
+	"bytes"
 	"context"
 	"io/ioutil"
 	"time"
 
 	"github.com/ghodss/yaml"
+	"github.com/stuart-warren/yamlfmt"
 
 	"github.com/hacbs-contract/ec-cli/internal/image"
 )
@@ -68,6 +70,17 @@ func (t Tracker) add(record Record) {
 	} else {
 		collection[record.Repository] = append(newRecords, collection[record.Repository]...)
 	}
+}
+
+// Output serializes the Tracker state as YAML
+func (t Tracker) Output() ([]byte, error) {
+	out, err := yaml.Marshal(t)
+	if err != nil {
+		return nil, err
+	}
+
+	// sorts the YAML document making it deterministic
+	return yamlfmt.Format(bytes.NewBuffer(out))
 }
 
 // Track implements the common workflow of loading an existing tracker file and adding
