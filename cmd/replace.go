@@ -17,40 +17,58 @@
 package cmd
 
 import (
-	"bufio"
-	"bytes"
 	"fmt"
 	"os"
-	"regexp"
 
 	"github.com/spf13/cobra"
 
-	"github.com/hacbs-contract/ec-cli/internal/image"
+	"github.com/hacbs-contract/ec-cli/internal/replacer"
 )
 
-type replaceFn func([]string, string) ([]byte, error)
+type replaceFn func([]string, string, *replacer.CatalogOptions) ([]byte, error)
 
 func replaceCmd(replace replaceFn) *cobra.Command {
 	var data = struct {
-		Source     string
-		Overwrite  bool
-		OutputFile string
-	}{}
+		Source           string
+		Overwrite        bool
+		OutputFile       string
+		CatalogName      string
+		CatalogRepoBase  string
+		CatalogHubAPIURL string
+	}{
+		CatalogName:      "tekton",
+		CatalogRepoBase:  "gcr.io/tekton-releases/catalog/upstream/",
+		CatalogHubAPIURL: "https://api.hub.tekton.dev",
+	}
 
 	cmd := &cobra.Command{
 		Use:   "replace",
 		Short: "Replace image references in the given input",
-		Example: `ec replace --source <source path> <image uri> [<image uri> ...]
+		Example: `ec replace --source <source path> [<image uri> ...]
 
-# replace all occurences of an image reference in source file
-ec replace --source resource.yaml <IMAGE>
+Display a modified version of the source file where
+all occurences of bundle references from the main Tekton
+catalog are replace with the corresponding latest version:
 
-# replace all occurences of multiple image references in source file
-ec replace --source resource.yaml <IMAGE> <IMAGE>`,
-		Args: cobra.MinimumNArgs(1),
+  ec replace --source resource.yaml
+
+In addition to the Tekton catalog, also replace occurences of
+the provided image:
+
+  ec replace --source resource.yaml <IMAGE>
+
+In addition to the Tekton catalog, also replace occurences of
+the provided images:
+
+  ec replace --source resource.yaml <IMAGE> <IMAGE>`,
 		RunE: func(cmd *cobra.Command, images []string) (err error) {
+			catalogOptions := &replacer.CatalogOptions{
+				CatalogName: data.CatalogName,
+				RepoBase:    data.CatalogRepoBase,
+				HubAPIURL:   data.CatalogHubAPIURL,
+			}
 
-			out, err := replace(images, data.Source)
+			out, err := replace(images, data.Source, catalogOptions)
 			if err != nil {
 				return err
 			}
@@ -98,6 +116,16 @@ ec replace --source resource.yaml <IMAGE> <IMAGE>`,
 	cmd.Flags().StringVarP(&data.OutputFile, "output", "o", data.OutputFile,
 		"Write changes to a file. Use empty string for stdout, default behavior")
 
+	cmd.Flags().StringVar(&data.CatalogName, "catalog-name", data.CatalogName,
+		"Name of the catalog in the Tekton Hub")
+
+	cmd.Flags().StringVar(&data.CatalogRepoBase, "catalog-repo-base", data.CatalogRepoBase,
+		"Base of the OCI repository where images from the Tekton Hub are found. "+
+			"The full image reference is created as <base><name>:<version>")
+
+	cmd.Flags().StringVar(&data.CatalogHubAPIURL, "catalog-hub-api", data.CatalogHubAPIURL,
+		"URL for the Tekton Hub API")
+
 	// TODO: We should check the error result here
 	_ = cmd.MarkFlagRequired("image")
 	_ = cmd.MarkFlagRequired("source")
@@ -106,69 +134,6 @@ ec replace --source resource.yaml <IMAGE> <IMAGE>`,
 }
 
 func init() {
-	r := replaceCmd(replace)
+	r := replaceCmd(replacer.Replace)
 	rootCmd.AddCommand(r)
-}
-
-type imageReplacer struct {
-	*image.ImageReference
-	regex *regexp.Regexp
-}
-
-func (i *imageReplacer) match(b []byte) bool {
-	return i.regex.Match(b)
-}
-
-func (i *imageReplacer) replace(b []byte) []byte {
-	return i.regex.ReplaceAll(b, []byte(i.String()))
-}
-
-func NewimageReplacer(ref image.ImageReference) (*imageReplacer, error) {
-	regex, err := regexp.Compile(ref.Repository + `(:|@)\S+`)
-	if err != nil {
-		return nil, err
-	}
-	return &imageReplacer{&ref, regex}, nil
-}
-
-func replace(images []string, source string) ([]byte, error) {
-	resolvedImages, err := image.ParseAndResolveAll(images)
-	if err != nil {
-		return nil, err
-	}
-
-	replacers := make([]*imageReplacer, 0, len(resolvedImages))
-	for _, image := range resolvedImages {
-		replacer, err := NewimageReplacer(image)
-		if err != nil {
-			return nil, err
-		}
-		replacers = append(replacers, replacer)
-	}
-
-	sourceFile, err := os.Open(source)
-	if err != nil {
-		return nil, err
-	}
-	defer sourceFile.Close()
-
-	scanner := bufio.NewScanner(sourceFile)
-	scanner.Split(bufio.ScanLines)
-
-	writer := bytes.NewBuffer(nil)
-	for scanner.Scan() {
-		line := scanner.Bytes()
-		for _, replacer := range replacers {
-			if replacer.match(line) {
-				line = replacer.replace(line)
-			}
-		}
-		if _, err := writer.Write(line); err != nil {
-			return nil, err
-		}
-		if _, err = writer.WriteString("\n"); err != nil {
-			return nil, err
-		}
-	}
-	return writer.Bytes(), nil
 }
