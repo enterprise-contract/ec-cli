@@ -47,7 +47,11 @@ build: dist/ec_$(shell go env GOOS)_$(shell go env GOARCH) ## Build the ec binar
 
 .PHONY: test
 test: ## Run unit tests
-	@go test -race -covermode=atomic -coverprofile=coverage-unit.out -short -timeout 500ms ./...
+# Given the nature of generative tests the test timeout was increased from 500ms
+# to 30s to accommodate many samples being generated and test cases being run.
+# This is not something we should tolerate for long and we should revert to
+# 500ms test deadline with exceptions for long tests.
+	@go test -race -covermode=atomic -coverprofile=coverage-unit.out -short -timeout 30s ./...
 
 .ONESHELL:
 .PHONY: acceptance

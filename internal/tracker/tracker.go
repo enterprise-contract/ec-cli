@@ -17,11 +17,13 @@
 package tracker
 
 import (
+	"bytes"
 	"context"
 	"io/ioutil"
 	"time"
 
 	"github.com/ghodss/yaml"
+	"github.com/stuart-warren/yamlfmt"
 
 	"github.com/hacbs-contract/ec-cli/internal/image"
 )
@@ -35,6 +37,8 @@ type Record struct {
 }
 
 type Tracker map[string]map[string][]Record
+
+type Collector func(context.Context, image.ImageReference) ([]string, error)
 
 // newTracker returns a new initialized instance of Tracker. If path
 // is "", an empty instance is returned.
@@ -70,9 +74,20 @@ func (t Tracker) add(record Record) {
 	}
 }
 
+// Output serializes the Tracker state as YAML
+func (t Tracker) Output() ([]byte, error) {
+	out, err := yaml.Marshal(t)
+	if err != nil {
+		return nil, err
+	}
+
+	// sorts the YAML document making it deterministic
+	return yamlfmt.Format(bytes.NewBuffer(out))
+}
+
 // Track implements the common workflow of loading an existing tracker file and adding
 // records to one of its collections.
-func Track(ctx context.Context, urls []string, collection string, input string) ([]byte, error) {
+func Track(ctx context.Context, urls []string, input string, collector Collector) ([]byte, error) {
 	refs, err := image.ParseAndResolveAll(urls)
 	if err != nil {
 		return nil, err
@@ -85,13 +100,20 @@ func Track(ctx context.Context, urls []string, collection string, input string) 
 
 	effective_on := effectiveOn()
 	for _, ref := range refs {
-		t.add(Record{
-			Digest:      ref.Digest,
-			Tag:         ref.Tag,
-			EffectiveOn: effective_on,
-			Repository:  ref.Repository,
-			Collection:  collection,
-		})
+		collections, err := collector(ctx, ref)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, collection := range collections {
+			t.add(Record{
+				Digest:      ref.Digest,
+				Tag:         ref.Tag,
+				EffectiveOn: effective_on,
+				Repository:  ref.Repository,
+				Collection:  collection + "-bundles",
+			})
+		}
 	}
 
 	out, err := yaml.Marshal(t)

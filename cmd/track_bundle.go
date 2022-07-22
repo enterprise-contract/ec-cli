@@ -21,25 +21,23 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/spf13/cobra"
+	"github.com/tektoncd/pipeline/pkg/remote/oci"
+
+	"github.com/hacbs-contract/ec-cli/internal/image"
+	"github.com/hacbs-contract/ec-cli/internal/tracker"
 )
 
-type trackBundleFn func(context.Context, []string, string, string) ([]byte, error)
+type trackBundleFn func(context.Context, []string, string, tracker.Collector) ([]byte, error)
 
 func trackBundleCmd(track trackBundleFn) *cobra.Command {
-	// TODO: We should probably not ignore the returned error here.
-	bundleTypes, _ := newFlagEnum([]string{"pipeline-bundles", "task-bundles"})
-
 	var data = struct {
 		Bundles    []string
 		Input      string
-		Type       *stringEnum
 		Replace    bool
 		OutputFile string
-	}{
-		Type: bundleTypes,
-		// Omitted values default to their native zero value.
-	}
+	}{}
 
 	cmd := &cobra.Command{
 		Use:   "bundle",
@@ -47,7 +45,7 @@ func trackBundleCmd(track trackBundleFn) *cobra.Command {
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 
-			out, err := track(cmd.Context(), data.Bundles, data.Type.String(), data.Input)
+			out, err := track(cmd.Context(), data.Bundles, data.Input, tektonBundleCollector)
 			if err != nil {
 				return err
 			}
@@ -91,9 +89,6 @@ func trackBundleCmd(track trackBundleFn) *cobra.Command {
 	cmd.Flags().StringSliceVarP(&data.Bundles, "bundle", "b", data.Bundles,
 		"REQUIRED - The bundle image reference to  track - may be used multiple times")
 
-	cmd.Flags().VarP(bundleTypes, "type", "t",
-		fmt.Sprintf("REQUIRED - The type of the bundle image (%s)", bundleTypes.AllowedPretty()))
-
 	cmd.Flags().BoolVarP(&data.Replace, "replace", "r", data.Replace, "Modify input file in-place.")
 
 	cmd.Flags().StringVarP(&data.OutputFile, "output", "o", data.OutputFile,
@@ -101,7 +96,34 @@ func trackBundleCmd(track trackBundleFn) *cobra.Command {
 
 	// TODO: We should check the error result here
 	_ = cmd.MarkFlagRequired("bundle")
-	_ = cmd.MarkFlagRequired("type")
 
 	return cmd
+}
+
+var fetchImage = remote.Image
+
+func tektonBundleCollector(ctx context.Context, ref image.ImageReference) ([]string, error) {
+	img, err := fetchImage(ref.Ref(), remote.WithContext(ctx))
+	if err != nil {
+		return nil, err
+	}
+
+	manifest, err := img.Manifest()
+	if err != nil {
+		return nil, err
+	}
+
+	collectionsMap := map[string]bool{}
+	for _, layer := range manifest.Layers {
+		if kind, ok := layer.Annotations[oci.KindAnnotation]; ok {
+			collectionsMap[kind] = true
+		}
+	}
+
+	collections := make([]string, 0, len(collectionsMap))
+	for c := range collectionsMap {
+		collections = append(collections, c)
+	}
+
+	return collections, nil
 }
