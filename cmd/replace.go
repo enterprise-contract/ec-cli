@@ -92,8 +92,8 @@ ec replace --source resource.yaml <IMAGE> <IMAGE>`,
 	cmd.Flags().StringVarP(&data.Source, "source", "s", data.Source,
 		"REQUIRED - An existing YAML file")
 
-	cmd.Flags().BoolVar(&data.Overwrite, "replace", data.Overwrite,
-		"Ovewrite source file with changes.")
+	cmd.Flags().BoolVar(&data.Overwrite, "overwrite", data.Overwrite,
+		"Overwrite source file with changes")
 
 	cmd.Flags().StringVarP(&data.OutputFile, "output", "o", data.OutputFile,
 		"Write changes to a file. Use empty string for stdout, default behavior")
