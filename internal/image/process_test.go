@@ -116,3 +116,50 @@ func TestParseAndResolveAll(t *testing.T) {
 		})
 	}
 }
+
+func TestImageReferenceString(t *testing.T) {
+	cases := []struct {
+		name     string
+		ref      ImageReference
+		expected string
+	}{
+		{
+			name: "repository only",
+			ref: ImageReference{
+				Repository: "repository.com/repo",
+			},
+			expected: "repository.com/repo",
+		},
+		{
+			name: "digest only",
+			ref: ImageReference{
+				Repository: "repository.com/repo",
+				Digest:     testHash.String(),
+			},
+			expected: "repository.com/repo@" + testHash.String(),
+		},
+		{
+			name: "tag only",
+			ref: ImageReference{
+				Repository: "repository.com/repo",
+				Tag:        "1.0",
+			},
+			expected: "repository.com/repo:1.0",
+		},
+		{
+			name: "both digest and tag",
+			ref: ImageReference{
+				Repository: "repository.com/repo",
+				Digest:     testHash.String(),
+				Tag:        "1.0",
+			},
+			expected: "repository.com/repo:1.0@" + testHash.String(),
+		},
+	}
+
+	for _, c := range cases {
+		t.Run("", func(t *testing.T) {
+			assert.Equal(t, c.expected, c.ref.String())
+		})
+	}
+}
