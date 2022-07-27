@@ -25,25 +25,34 @@ import (
 	"github.com/hashicorp/go-multierror"
 )
 
-// ParseAndResolveAll parses each of the urls into an ImageReference object. The digest
-// is resolved for each reference if needed.
+// ParseAndResolve parses the url into an ImageReference object. The digest is
+// resolved if needed.
+func ParseAndResolve(url string) (*ImageReference, error) {
+	ref, err := NewImageReference(url)
+	if err != nil {
+		return nil, err
+	}
+
+	if ref.Digest == "" {
+		ref, err = ref.resolveDigest()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return ref, nil
+}
+
+// ParseAndResolveAll is like ParseAndResolve, but for a list of urls.
 func ParseAndResolveAll(urls []string) ([]ImageReference, error) {
 	var errs error
 
 	refs := make([]ImageReference, 0, len(urls))
 	for _, url := range urls {
-		ref, err := newImageReference(url)
+		ref, err := ParseAndResolve(url)
 		if err != nil {
 			errs = multierror.Append(errs, err)
 			continue
-		}
-
-		if ref.Digest == "" {
-			ref, err = ref.resolveDigest()
-			if err != nil {
-				errs = multierror.Append(errs, err)
-				continue
-			}
 		}
 
 		refs = append(refs, *ref)
@@ -82,7 +91,7 @@ func (i ImageReference) resolveDigest() (*ImageReference, error) {
 		return nil, fmt.Errorf("digest for image %q is empty", i.ref.String())
 	}
 
-	return newImageReference(fmt.Sprintf("%s:%s@%s", i.Repository, i.Tag, digest))
+	return NewImageReference(fmt.Sprintf("%s:%s@%s", i.Repository, i.Tag, digest))
 }
 
 func (i *ImageReference) String() string {
@@ -98,8 +107,8 @@ func (i *ImageReference) String() string {
 	return strings.Join(parts, "")
 }
 
-// newImageReference returns an ImageReference instance based on the given url.
-func newImageReference(url string) (*ImageReference, error) {
+// NewImageReference returns an ImageReference instance based on the given url.
+func NewImageReference(url string) (*ImageReference, error) {
 	ref, err := name.ParseReference(url, name.StrictValidation)
 	if err != nil {
 		return nil, err
