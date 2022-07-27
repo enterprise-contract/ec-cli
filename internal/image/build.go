@@ -63,9 +63,31 @@ type commitSignOff struct {
 	getRepository func(string) (*git.Repository, error)
 }
 
+type k8sSignOff struct {
+	repo      string
+	commitSha string
+	getSource func(string, string) error
+}
+
 // there can be multiple sign off sources (git commit, tag and jira issues)
-type signOffSource interface {
+type signOffGetter interface {
 	GetSignOff() (*signOffSignature, error)
+}
+
+type SignOffSource interface {
+	GetSource() (signOffGetter, error)
+}
+
+// holds config information to get client instance
+type K8sSource struct {
+	namespace string
+	server    string
+}
+
+// holds config information to get client instance
+type GitSource struct {
+	repoUrl   string
+	commitSha string
 }
 
 type commit struct {
@@ -75,27 +97,51 @@ type commit struct {
 	Message string `json:"message"`
 }
 
+type k8sResource struct {
+}
+
 type signOffSignature struct {
 	Body       interface{} `json:"body"`
 	Signatures []string    `json:"signatures"`
 }
 
-// From an attestation, find the signOff source (commit, tag, jira)
-func (a *attestation) NewSignOffSource() (signOffSource, error) {
-	// the signoff source can be determined by looking into the attestation.
-	// the attestation can have an env var or something that this can key off of
+// get the source (commit, k8sresource), return signOffGetter
+// have the source implement GetSignOff
 
-	commitSha := a.getBuildCommitSha()
-	repo := a.getBuildSCM()
-	if commitSha != "" && repo != "" {
-		return &commitSignOff{
-			source:        a.getBuildSCM(),
-			commitSha:     commitSha,
-			getCommit:     getCommit,
-			getRepository: getRepository,
-		}, nil
+func (g *GitSource) GetSource() (signOffGetter, error) {
+	repo, err := getRepository(g.repoUrl)
+	if err != nil {
+		return nil, err
 	}
-	return nil, nil
+	gitCommit, err := getCommit(repo, g.commitSha)
+	if err != nil {
+		return nil, err
+	}
+
+	return &commit{
+		Sha:     gitCommit.Hash.String(),
+		Author:  fmt.Sprintf("%s <%s>", gitCommit.Author.Name, gitCommit.Author.Email),
+		Date:    gitCommit.Author.When.String(),
+		Message: gitCommit.Message,
+	}, nil
+}
+
+func (k *K8sSource) GetSource() (signOffGetter, error) {
+	return &k8sResource{}, nil
+}
+
+func (a *attestation) NewGitSource() (*GitSource, error) {
+	return &GitSource{
+		repoUrl:   a.getBuildSCM(),
+		commitSha: a.getBuildCommitSha(),
+	}, nil
+}
+
+func NewK8sSource(server, namespace string) (*K8sSource, error) {
+	return &K8sSource{
+		namespace: namespace,
+		server:    server,
+	}, nil
 }
 
 // get the last commit used for the component build
@@ -119,16 +165,16 @@ func (a *attestation) getBuildSCM() string {
 }
 
 // returns the signOff signature and body of the source
-func (c *commitSignOff) GetSignOff() (*signOffSignature, error) {
-	commit, err := getCommitSource(c)
-	if err != nil {
-		return nil, err
-	}
-
+func (c *commit) GetSignOff() (*signOffSignature, error) {
 	return &signOffSignature{
-		Body:       commit,
-		Signatures: captureCommitSignOff(commit.Message),
+		Body:       c,
+		Signatures: captureCommitSignOff(c.Message),
 	}, nil
+}
+
+func (k *k8sResource) GetSignOff() (*signOffSignature, error) {
+	// fetch the k8s resource
+	return &signOffSignature{}, nil
 }
 
 func getRepository(url string) (*git.Repository, error) {
@@ -144,25 +190,8 @@ func getCommit(repository *git.Repository, sha string) (*object.Commit, error) {
 	return repository.CommitObject(plumbing.NewHash(sha))
 }
 
-// get the build commit source for use in GetSignOff
-func getCommitSource(c *commitSignOff) (*commit, error) {
-	repo, err := c.getRepository(c.source)
-	if err != nil {
-		return nil, err
-	}
-
-	gitCommit, err := c.getCommit(repo, c.commitSha)
-	if err != nil {
-		return nil, err
-	}
-
-	return &commit{
-		Sha:     gitCommit.Hash.String(),
-		Author:  fmt.Sprintf("%s <%s>", gitCommit.Author.Name, gitCommit.Author.Email),
-		Date:    gitCommit.Author.When.String(),
-		Message: gitCommit.Message,
-	}, nil
-
+func getECResource(namespace, server string) error {
+	return nil
 }
 
 // parse a commit and capture signatures
@@ -187,4 +216,13 @@ func captureCommitSignOff(message string) []string {
 	}
 
 	return capturedSignatures
+}
+
+func GetAuthorization(source SignOffSource) (*signOffSignature, error) {
+	authorizationSource, err := source.GetSource()
+	if err != nil {
+		return nil, err
+	}
+
+	return authorizationSource.GetSignOff()
 }

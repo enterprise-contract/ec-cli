@@ -18,9 +18,7 @@ package cmd
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 
 	appstudioshared "github.com/redhat-appstudio/managed-gitops/appstudio-shared/apis/appstudio.redhat.com/v1alpha1"
@@ -30,7 +28,7 @@ import (
 	"github.com/hacbs-contract/ec-cli/internal/image"
 )
 
-func signOffCmd() *cobra.Command {
+func commitAuthorizationCmd() *cobra.Command {
 	var data = struct {
 		imageRef  string
 		publicKey string
@@ -60,7 +58,7 @@ func signOffCmd() *cobra.Command {
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			for _, comp := range data.spec.Components {
-				err := validate(cmd.Context(), comp.ContainerImage, data.publicKey)
+				err := validateGitSource(cmd.Context(), comp.ContainerImage, data.publicKey)
 				if err != nil {
 					log.Println(err)
 					continue
@@ -78,7 +76,7 @@ func signOffCmd() *cobra.Command {
 	return cmd
 }
 
-func validate(ctx context.Context, imageRef, publicKey string) error {
+func validateGitSource(ctx context.Context, imageRef, publicKey string) error {
 	imageValidator, err := image.NewImageValidator(ctx, imageRef, publicKey, "")
 	if err != nil {
 		return err
@@ -90,30 +88,20 @@ func validate(ctx context.Context, imageRef, publicKey string) error {
 	}
 
 	for _, att := range validatedImage.Attestations {
-		signoffSource, err := att.NewSignOffSource()
+		gitSource, err := att.NewGitSource()
 		if err != nil {
 			return err
 		}
-		if signoffSource == nil {
-			return errors.New("there is no signoff source in attestation")
+		if gitSource == nil {
+			return errors.New("there is no authorization source in attestation")
 		}
 
-		signOff, err := signoffSource.GetSignOff()
+		authorization, err := image.GetAuthorization(gitSource)
 		if err != nil {
 			return err
 		}
 
-		if signOff != nil {
-			payload, err := json.Marshal(signOff)
-			if err != nil {
-				return err
-			}
-			fmt.Println(string(payload))
-		}
+		// do something with the authorization and attestation
 	}
 	return nil
-}
-
-func init() {
-	RootCmd.AddCommand(signOffCmd())
 }
