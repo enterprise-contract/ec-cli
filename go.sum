@@ -2212,8 +2212,8 @@ github.com/tdakkota/asciicheck v0.0.0-20200416190851-d7f85be797a2/go.mod h1:yHp0
 github.com/tdakkota/asciicheck v0.0.0-20200416200610-e657995f937b/go.mod h1:yHp0ai0Z9gUljN3o0xMhYJnH/IcvkdTBOX2fmJ93JEM=
 github.com/tdakkota/asciicheck v0.1.1 h1:PKzG7JUTUmVspQTDqtkX9eSiLGossXTybutHwTXuO0A=
 github.com/tdakkota/asciicheck v0.1.1/go.mod h1:yHp0ai0Z9gUljN3o0xMhYJnH/IcvkdTBOX2fmJ93JEM=
-github.com/tektoncd/pipeline v0.38.0 h1:MkxAi7zyqn9GdVAC5TEDttGPXnIqYCEmOhXP9QBFiyI=
-github.com/tektoncd/pipeline v0.38.0/go.mod h1:9uQZ6PdOZXPtoceupLMyChXUR6elsTuHpVNlEGAIJXU=
+github.com/tektoncd/pipeline v0.38.1 h1:CdvuP8/Qi4jrm+i0EUcfKvdu7oaswGvUu0HUB3EULkk=
+github.com/tektoncd/pipeline v0.38.1/go.mod h1:9uQZ6PdOZXPtoceupLMyChXUR6elsTuHpVNlEGAIJXU=
 github.com/tektoncd/resolution v0.0.0-20220331203013-e4203c70c5eb h1:bSrsnmoOJJh1JorlaTDSusq/eIBnk5zRKAVXOhnJyD8=
 github.com/tenntenn/modver v1.0.1 h1:2klLppGhDgzJrScMpkj9Ujy3rXPUspSjAcev9tSEBgA=
 github.com/tenntenn/modver v1.0.1/go.mod h1:bePIyQPb7UeioSRkw3Q0XeMhYZSMx9B8ePqg6SAMGH0=
