@@ -18,7 +18,6 @@ package cmd
 
 import (
 	"context"
-	"errors"
 	"log"
 
 	appstudioshared "github.com/redhat-appstudio/managed-gitops/appstudio-shared/apis/appstudio.redhat.com/v1alpha1"
@@ -40,7 +39,7 @@ func commitAuthorizationCmd() *cobra.Command {
 		publicKey: "",
 	}
 	cmd := &cobra.Command{
-		Use:   "sign-off",
+		Use:   "commit",
 		Short: "Capture signed off signatures from a source (github repo, Jira)",
 		Long: `Supported sign off sources are commits captured from a git repo and jira issues.
                The git sources return a signed off value and the git commit. The jira issue is
@@ -69,9 +68,9 @@ func commitAuthorizationCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&data.publicKey, "public-key", "", "Public key")
-	cmd.Flags().StringVar(&data.imageRef, "image-ref", data.imageRef, "The OCI repo to fetch the attestation from.")
-	cmd.Flags().StringVarP(&data.filePath, "file-path", "f", data.filePath, "Path to ApplicationSnapshot JSON file")
-	cmd.Flags().StringVarP(&data.input, "json-input", "j", data.input, "ApplicationSnapshot JSON string")
+	cmd.Flags().StringVar(&data.imageRef, "image-ref", "", "The OCI repo to fetch the attestation from.")
+	cmd.Flags().StringVarP(&data.filePath, "file-path", "f", "", "Path to ApplicationSnapshot JSON file")
+	cmd.Flags().StringVarP(&data.input, "json-input", "j", "", "ApplicationSnapshot JSON string")
 
 	return cmd
 }
@@ -92,16 +91,16 @@ func validateGitSource(ctx context.Context, imageRef, publicKey string) error {
 		if err != nil {
 			return err
 		}
-		if gitSource == nil {
-			return errors.New("there is no authorization source in attestation")
-		}
 
 		authorization, err := image.GetAuthorization(gitSource)
 		if err != nil {
 			return err
 		}
 
-		// do something with the authorization and attestation
+		err = image.PrintAuthorization(authorization, &att)
+		if err != nil {
+			continue
+		}
 	}
 	return nil
 }

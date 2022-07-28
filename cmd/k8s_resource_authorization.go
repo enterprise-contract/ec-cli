@@ -22,18 +22,13 @@ func k8sResourceAuthorizationCmd() *cobra.Command {
 		input     string
 		namespace string
 		server    string
+		resource  string
 		spec      *appstudioshared.ApplicationSnapshotSpec
 	}{}
-	// k8sResourceAuthorizationCmd represents the k8sResourceAuthorization command
 	cmd := &cobra.Command{
 		Use:   "k8s-resource",
-		Short: "A brief description of your command",
-		Long: `A longer description that spans multiple lines and likely contains examples
-		and usage of using your command. For example:
-
-		Cobra is a CLI library for Go that empowers applications.
-		This application is a tool to generate the needed files
-		to quickly create a Cobra application.`,
+		Short: "Capture signed off signatures from a k8s resource.",
+		Long:  "Authorizations are defined in the enterprise contract resource.",
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			spec, err := applicationsnapshot.DetermineInputSpec(data.filePath, data.input, data.imageRef)
 			if err != nil {
@@ -52,6 +47,7 @@ func k8sResourceAuthorizationCmd() *cobra.Command {
 					data.publicKey,
 					data.namespace,
 					data.server,
+					data.resource,
 				)
 				if err != nil {
 					log.Println(err)
@@ -67,13 +63,14 @@ func k8sResourceAuthorizationCmd() *cobra.Command {
 	cmd.Flags().StringVarP(&data.filePath, "file-path", "f", data.filePath, "Path to ApplicationSnapshot JSON file")
 	cmd.Flags().StringVarP(&data.input, "json-input", "j", data.input, "ApplicationSnapshot JSON string")
 	cmd.Flags().StringVarP(&data.namespace, "namespace", "n", data.namespace, "Namespace containing the ec resource")
-	cmd.Flags().StringVarP(&data.server, "server", "n", data.server, "Kubernetes server containing the ec resource")
+	cmd.Flags().StringVarP(&data.server, "server", "s", data.server, "Kubernetes server containing the ec resource")
+	cmd.Flags().StringVarP(&data.resource, "resource", "r", data.resource, "The ec resource holding the authorization")
 
 	return cmd
 }
 
-func validateK8sSource(ctx context.Context, imageRef, publicKey, namespace, server string) error {
-	k8sSource, err := image.NewK8sSource(namespace, server)
+func validateK8sSource(ctx context.Context, imageRef, publicKey, namespace, server, resource string) error {
+	k8sSource, err := image.NewK8sSource(namespace, server, resource)
 	if err != nil {
 		return err
 	}
@@ -94,7 +91,10 @@ func validateK8sSource(ctx context.Context, imageRef, publicKey, namespace, serv
 	}
 
 	for _, att := range validatedImage.Attestations {
-		// compare the authorization and attestation
+		err = image.PrintAuthorization(authorization, &att)
+		if err != nil {
+			continue
+		}
 
 	}
 	return nil

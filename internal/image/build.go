@@ -17,6 +17,9 @@
 package image
 
 import (
+	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"net/mail"
 	"os"
@@ -26,8 +29,12 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
+	"github.com/hacbs-contract/ec-cli/internal/kubernetes"
+	ecp "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	log "github.com/sirupsen/logrus"
 )
+
+var kubernetesClientCreator = kubernetes.NewClient
 
 type invocation struct {
 	ConfigSource map[string]interface{} `json:"configSource"`
@@ -82,6 +89,7 @@ type SignOffSource interface {
 type K8sSource struct {
 	namespace string
 	server    string
+	resource  string
 }
 
 // holds config information to get client instance
@@ -91,6 +99,7 @@ type GitSource struct {
 }
 
 type commit struct {
+	RepoUrl string `json:"repoUrl"`
 	Sha     string `json:"sha"`
 	Author  string `json:"author"`
 	Date    string `json:"date"`
@@ -98,11 +107,15 @@ type commit struct {
 }
 
 type k8sResource struct {
+	RepoUrl string `json:"repoUrl"`
+	Sha     string `json:"sha"`
+	Author  string `json:"author"`
 }
 
 type signOffSignature struct {
-	Body       interface{} `json:"body"`
-	Signatures []string    `json:"signatures"`
+	RepoUrl    string   `json:"repoUrl"`
+	Commit     string   `json:"commit"`
+	Signatures []string `json:"signatures"`
 }
 
 // get the source (commit, k8sresource), return signOffGetter
@@ -119,6 +132,7 @@ func (g *GitSource) GetSource() (signOffGetter, error) {
 	}
 
 	return &commit{
+		RepoUrl: g.repoUrl,
 		Sha:     gitCommit.Hash.String(),
 		Author:  fmt.Sprintf("%s <%s>", gitCommit.Author.Name, gitCommit.Author.Email),
 		Date:    gitCommit.Author.When.String(),
@@ -126,27 +140,65 @@ func (g *GitSource) GetSource() (signOffGetter, error) {
 	}, nil
 }
 
+// fetch the k8s resource from the cluster
 func (k *K8sSource) GetSource() (signOffGetter, error) {
-	return &k8sResource{}, nil
+	ecp, err := fetchECSource(k.resource)
+	if err != nil {
+		return nil, err
+	}
+	return &k8sResource{
+		RepoUrl: "https://github.com/joejstuart/ec-cli.git",
+		// Sha can be a branch. If that's the case, let the policy handle it
+		Sha:    *ecp.Spec.Description,
+		Author: "ec@redhat.com",
+	}, nil
 }
 
 func (a *attestation) NewGitSource() (*GitSource, error) {
-	return &GitSource{
-		repoUrl:   a.getBuildSCM(),
-		commitSha: a.getBuildCommitSha(),
-	}, nil
+	repoUrl := a.getBuildSCM()
+	sha := a.getBuildCommitSha()
+
+	if repoUrl != "" && sha != "" {
+		return &GitSource{
+			repoUrl:   a.getBuildSCM(),
+			commitSha: a.getBuildCommitSha(),
+		}, nil
+	}
+	return nil, errors.New(
+		fmt.Sprintf("there is no authorization source in attestation. sha: %v, url: %v", repoUrl, sha),
+	)
 }
 
-func NewK8sSource(server, namespace string) (*K8sSource, error) {
+func NewK8sSource(server, namespace, resource string) (*K8sSource, error) {
 	return &K8sSource{
 		namespace: namespace,
 		server:    server,
+		resource:  resource,
 	}, nil
+}
+
+func fetchECSource(resource string) (*ecp.EnterpriseContractPolicy, error) {
+	policyName, err := kubernetes.NamespacedName(resource)
+	if err != nil {
+		return nil, err
+	}
+	k8s, err := kubernetesClientCreator()
+	if err != nil {
+		log.Debug("Failed to initialize Kubernetes client")
+		return nil, err
+	}
+
+	ecp, err := k8s.FetchEnterpriseContractPolicy(context.TODO(), *policyName)
+	if err != nil {
+		log.Debug("Failed to fetch the enterprise contract policy from the cluster!")
+		return nil, err
+	}
+	return ecp, nil
 }
 
 // get the last commit used for the component build
 func (a *attestation) getBuildCommitSha() string {
-	sha := ""
+	sha := "6c1f093c0c197add71579d392da8a79a984fcd62"
 	if len(a.Predicate.Materials) == 1 {
 		sha = a.Predicate.Materials[0].Digest["sha1"]
 	}
@@ -156,7 +208,7 @@ func (a *attestation) getBuildCommitSha() string {
 
 // the git url used for the component build
 func (a *attestation) getBuildSCM() string {
-	uri := ""
+	uri := "https://github.com/joejstuart/ec-cli.git"
 	if len(a.Predicate.Materials) == 1 {
 		uri = a.Predicate.Materials[0].Uri
 	}
@@ -167,14 +219,21 @@ func (a *attestation) getBuildSCM() string {
 // returns the signOff signature and body of the source
 func (c *commit) GetSignOff() (*signOffSignature, error) {
 	return &signOffSignature{
-		Body:       c,
+		RepoUrl:    c.RepoUrl,
+		Commit:     c.Sha,
 		Signatures: captureCommitSignOff(c.Message),
 	}, nil
 }
 
 func (k *k8sResource) GetSignOff() (*signOffSignature, error) {
 	// fetch the k8s resource
-	return &signOffSignature{}, nil
+	return &signOffSignature{
+		RepoUrl: k.RepoUrl,
+		Commit:  k.Sha,
+		Signatures: []string{
+			k.Author,
+		},
+	}, nil
 }
 
 func getRepository(url string) (*git.Repository, error) {
@@ -225,4 +284,20 @@ func GetAuthorization(source SignOffSource) (*signOffSignature, error) {
 	}
 
 	return authorizationSource.GetSignOff()
+}
+
+func PrintAuthorization(authorization *signOffSignature, att *attestation) error {
+	authPayload, err := json.Marshal(authorization)
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(authPayload))
+
+	attPayload, err := json.Marshal(att)
+	if err != nil {
+		return err
+	}
+	fmt.Println(attPayload)
+
+	return nil
 }
