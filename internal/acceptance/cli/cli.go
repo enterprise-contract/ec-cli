@@ -184,27 +184,6 @@ func setupRekor(ctx context.Context, vars map[string]string, environment []strin
 		return environment, vars, err
 	}
 
-	rekorPublicKey, err := os.CreateTemp("", "rekor-*.pub")
-	if err != nil {
-		return environment, vars, err
-	}
-
-	if !testenv.Persisted(ctx) {
-		testenv.Testing(ctx).Cleanup(func() {
-			os.Remove(rekorPublicKey.Name())
-		})
-	}
-
-	_, err = rekorPublicKey.Write(rekor.PublicKey(ctx))
-	if err != nil {
-		return environment, vars, err
-	}
-	err = rekorPublicKey.Close()
-	if err != nil {
-		return environment, vars, err
-	}
-
-	environment = append(environment, "SIGSTORE_REKOR_PUBLIC_KEY="+rekorPublicKey.Name())
 	vars["REKOR"] = rekorURL
 
 	return environment, vars, nil

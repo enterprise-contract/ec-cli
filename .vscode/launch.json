@@ -64,8 +64,7 @@
                 "--strict"
             ],
             "env": {
-                "KUBECONFIG": "/tmp/3638873222.kubeconfig",
-                "SIGSTORE_REKOR_PUBLIC_KEY": "/tmp/rekor-1211047596.pub"
+                "KUBECONFIG": "/tmp/200114254.kubeconfig"
             }
         }
     ]

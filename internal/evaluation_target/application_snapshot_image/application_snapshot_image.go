@@ -82,6 +82,20 @@ func NewApplicationSnapshotImage(ctx context.Context, image string, publicKey st
 		return nil, err
 	}
 
+	if checkOpts.RekorClient != nil {
+		// By using Cosign directly the log entries are validated against the
+		// Rekor public key, the public key for Rekor can be supplied via three
+		// different means:
+		// - TUF, which is hardcoded to
+		//   https://sigstore-tuf-root.storage.googleapis.com
+		// - SIGSTORE_REKOR_PUBLIC_KEY environment variable, which emits warning
+		//   to stderr
+		// - SIGSTORE_TRUST_REKOR_API_PUBLIC_KEY to fetch the public key via the
+		//   Rekor API
+		// Here we opt for the last option
+		os.Setenv("SIGSTORE_TRUST_REKOR_API_PUBLIC_KEY", "1")
+	}
+
 	a := &ApplicationSnapshotImage{
 		reference: ref,
 		checkOpts: checkOpts,
