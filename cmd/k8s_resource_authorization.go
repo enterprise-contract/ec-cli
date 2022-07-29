@@ -8,10 +8,11 @@ import (
 	"context"
 	"log"
 
-	"github.com/hacbs-contract/ec-cli/internal/applicationsnapshot"
-	"github.com/hacbs-contract/ec-cli/internal/image"
 	appstudioshared "github.com/redhat-appstudio/managed-gitops/appstudio-shared/apis/appstudio.redhat.com/v1alpha1"
 	"github.com/spf13/cobra"
+
+	"github.com/hacbs-contract/ec-cli/internal/applicationsnapshot"
+	"github.com/hacbs-contract/ec-cli/internal/image"
 )
 
 func k8sResourceAuthorizationCmd() *cobra.Command {

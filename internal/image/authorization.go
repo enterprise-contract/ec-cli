@@ -28,25 +28,13 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
-	"github.com/hacbs-contract/ec-cli/internal/kubernetes"
 	ecp "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/hacbs-contract/ec-cli/internal/kubernetes"
 )
 
 var kubernetesClientCreator = kubernetes.NewClient
-
-type commitSignOff struct {
-	source        string
-	commitSha     string
-	getCommit     func(*git.Repository, string) (*object.Commit, error)
-	getRepository func(string) (*git.Repository, error)
-}
-
-type k8sSignOff struct {
-	repo      string
-	commitSha string
-	getSource func(string, string) error
-}
 
 // there can be multiple sign off sources (git commit, tag and jira issues)
 type signOffGetter interface {
@@ -59,17 +47,20 @@ type SignOffSource interface {
 
 // holds config information to get client instance
 type K8sSource struct {
-	namespace string
-	server    string
-	resource  string
+	namespace   string
+	server      string
+	resource    string
+	fetchSource func(string) (*ecp.EnterpriseContractPolicy, error)
 }
 
 // holds config information to get client instance
 type GitSource struct {
-	repoUrl   string
-	commitSha string
+	repoUrl     string
+	commitSha   string
+	fetchSource func(string, string) (*object.Commit, error)
 }
 
+// the object GitSource fetches
 type commit struct {
 	RepoUrl string `json:"repoUrl"`
 	Sha     string `json:"sha"`
@@ -78,6 +69,7 @@ type commit struct {
 	Message string `json:"message"`
 }
 
+// the object K8sSource fetches
 type k8sResource struct {
 	RepoUrl string `json:"repoUrl"`
 	Sha     string `json:"sha"`
@@ -90,15 +82,17 @@ type signOffSignature struct {
 	Signatures []string `json:"signatures"`
 }
 
-// get the source (commit, k8sresource), return signOffGetter
-// have the source implement GetSignOff
+func NewK8sSource(server, namespace, resource string) (*K8sSource, error) {
+	return &K8sSource{
+		namespace:   namespace,
+		server:      server,
+		resource:    resource,
+		fetchSource: fetchECSource,
+	}, nil
+}
 
 func (g *GitSource) GetSource() (signOffGetter, error) {
-	repo, err := getRepository(g.repoUrl)
-	if err != nil {
-		return nil, err
-	}
-	gitCommit, err := getCommit(repo, g.commitSha)
+	gitCommit, err := g.fetchSource(g.repoUrl, g.commitSha)
 	if err != nil {
 		return nil, err
 	}
