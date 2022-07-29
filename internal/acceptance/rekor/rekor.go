@@ -66,7 +66,31 @@ func stubRekordRunning(ctx context.Context) (context.Context, error) {
 		return ctx, err
 	}
 
-	return wiremock.StartWiremock(ctx)
+	if state.KeyPair == nil {
+		// not used for any signing, we just need the public key in PEM for the
+		// in-toto schema below
+		keyPair, err := crypto.GenerateKeyPair()
+		if err != nil {
+			return ctx, err
+		}
+
+		state.KeyPair = keyPair
+	}
+
+	ctx, err = wiremock.StartWiremock(ctx)
+	if err != nil {
+		return ctx, err
+	}
+
+	if err = wiremock.StubFor(ctx, wiremock.Get(wiremock.URLPathEqualTo("/api/v1/log/publicKey")).
+		WillReturn(string(state.KeyPair.PublicBytes),
+			map[string]string{"Content-Type": "application/x-pem-file"},
+			200,
+		)); err != nil {
+		return ctx, err
+	}
+
+	return ctx, nil
 }
 
 // randomHex generates a random hex string of the given length
@@ -219,16 +243,6 @@ func computeEntryTimestamp(privateKey, password []byte, logEntry models.LogEntry
 // and this entries' hash
 func stubRekorEntryFor(ctx context.Context, data []byte) error {
 	state := testenv.FetchState[rekorState](ctx)
-	if state.KeyPair == nil {
-		// not used for any signing, we just need the public key in PEM for the
-		// in-toto schema below
-		keyPair, err := crypto.GenerateKeyPair()
-		if err != nil {
-			return err
-		}
-
-		state.KeyPair = keyPair
-	}
 
 	logEntry, entryUUID, err := computeLogEntry(ctx, state.KeyPair.PublicBytes, data)
 	if err != nil {
