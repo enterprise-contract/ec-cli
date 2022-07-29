@@ -1,0 +1,57 @@
+.nh
+.TH "EC-TRACK-BUNDLE" "1" "Jul 2022" "" ""
+
+.SH NAME
+.PP
+ec-track-bundle - Record tracking information about the bundle
+
+
+.SH SYNOPSIS
+.PP
+\fBec track bundle [flags]\fP
+
+
+.SH DESCRIPTION
+.PP
+Record tracking information about the bundle
+
+
+.SH OPTIONS
+.PP
+\fB-b\fP, \fB--bundle\fP=[]
+	REQUIRED - The bundle image reference to  track - may be used multiple times
+
+.PP
+\fB-h\fP, \fB--help\fP[=false]
+	help for bundle
+
+.PP
+\fB-i\fP, \fB--input\fP=""
+	An existing tracking file
+
+.PP
+\fB-o\fP, \fB--output\fP=""
+	Write modified tracking file to a file. Use empty string for stdout, default behavior
+
+.PP
+\fB-r\fP, \fB--replace\fP[=false]
+	Modify input file in-place.
+
+
+.SH OPTIONS INHERITED FROM PARENT COMMANDS
+.PP
+\fB--debug\fP[=false]
+	same as verbose but also show function names and line numbers
+
+.PP
+\fB--quiet\fP[=false]
+	less verbose output
+
+.PP
+\fB--verbose\fP[=false]
+	more verbose output
+
+
+.SH SEE ALSO
+.PP
+\fBec-track(1)\fP

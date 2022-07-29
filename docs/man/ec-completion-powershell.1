@@ -1,0 +1,61 @@
+.nh
+.TH "EC-COMPLETION-POWERSHELL" "1" "Jul 2022" "" ""
+
+.SH NAME
+.PP
+ec-completion-powershell - Generate the autocompletion script for powershell
+
+
+.SH SYNOPSIS
+.PP
+\fBec completion powershell [flags]\fP
+
+
+.SH DESCRIPTION
+.PP
+Generate the autocompletion script for powershell.
+
+.PP
+To load completions in your current shell session:
+
+.PP
+.RS
+
+.nf
+ec completion powershell | Out-String | Invoke-Expression
+
+.fi
+.RE
+
+.PP
+To load completions for every new session, add the output of the above command
+to your powershell profile.
+
+
+.SH OPTIONS
+.PP
+\fB-h\fP, \fB--help\fP[=false]
+	help for powershell
+
+.PP
+\fB--no-descriptions\fP[=false]
+	disable completion descriptions
+
+
+.SH OPTIONS INHERITED FROM PARENT COMMANDS
+.PP
+\fB--debug\fP[=false]
+	same as verbose but also show function names and line numbers
+
+.PP
+\fB--quiet\fP[=false]
+	less verbose output
+
+.PP
+\fB--verbose\fP[=false]
+	more verbose output
+
+
+.SH SEE ALSO
+.PP
+\fBec-completion(1)\fP

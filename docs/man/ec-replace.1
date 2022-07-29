@@ -1,0 +1,92 @@
+.nh
+.TH "EC-REPLACE" "1" "Jul 2022" "" ""
+
+.SH NAME
+.PP
+ec-replace - Replace image references in the given input
+
+
+.SH SYNOPSIS
+.PP
+\fBec replace [flags]\fP
+
+
+.SH DESCRIPTION
+.PP
+Replace image references in the given input
+
+
+.SH OPTIONS
+.PP
+\fB--catalog-hub-api\fP="https://api.hub.tekton.dev"
+	URL for the Tekton Hub API
+
+.PP
+\fB--catalog-name\fP="tekton"
+	Name of the catalog in the Tekton Hub
+
+.PP
+\fB--catalog-repo-base\fP="gcr.io/tekton-releases/catalog/upstream/"
+	Base of the OCI repository where images from the Tekton Hub are found. The full image reference is created as :
+
+.PP
+\fB-h\fP, \fB--help\fP[=false]
+	help for replace
+
+.PP
+\fB-o\fP, \fB--output\fP=""
+	Write changes to a file. Use empty string for stdout, default behavior
+
+.PP
+\fB--overwrite\fP[=false]
+	Overwrite source file with changes
+
+.PP
+\fB-s\fP, \fB--source\fP=""
+	REQUIRED - An existing YAML file
+
+
+.SH OPTIONS INHERITED FROM PARENT COMMANDS
+.PP
+\fB--debug\fP[=false]
+	same as verbose but also show function names and line numbers
+
+.PP
+\fB--quiet\fP[=false]
+	less verbose output
+
+.PP
+\fB--verbose\fP[=false]
+	more verbose output
+
+
+.SH EXAMPLE
+.PP
+.RS
+
+.nf
+ec replace --source <source path> [<image uri> ...]
+
+Display a modified version of the source file where
+all occurences of bundle references from the main Tekton
+catalog are replace with the corresponding latest version:
+
+  ec replace --source resource.yaml
+
+In addition to the Tekton catalog, also replace occurences of
+the provided image:
+
+  ec replace --source resource.yaml <IMAGE>
+
+In addition to the Tekton catalog, also replace occurences of
+the provided images:
+
+  ec replace --source resource.yaml <IMAGE> <IMAGE>
+
+.fi
+.RE
+
+
+.SH SEE ALSO
+.PP
+\fBec(1)\fP
