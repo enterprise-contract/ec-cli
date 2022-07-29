@@ -54,21 +54,22 @@ test: ## Run unit tests
 	@go test -race -covermode=atomic -coverprofile=coverage-unit.out -short -timeout 30s ./...
 
 .ONESHELL:
+.SHELLFLAGS=-e -c
 .PHONY: acceptance
 acceptance: ## Run acceptance tests
-	@$(eval ACCEPTANCE_WORKDIR=$(shell mktemp -d))
+	@ACCEPTANCE_WORKDIR="$$(mktemp -d)"
 	@function cleanup() {
-	  rm -rf "$(ACCEPTANCE_WORKDIR)"
+	  rm -rf "$${ACCEPTANCE_WORKDIR}"
 	}
 	@trap cleanup EXIT
-	@cp -R . "$(ACCEPTANCE_WORKDIR)"
-	@cd "$(ACCEPTANCE_WORKDIR)"
+	@cp -R . "$${ACCEPTANCE_WORKDIR}"
+	@cd "$${ACCEPTANCE_WORKDIR}"
 	@go run internal/acceptance/coverage/coverage.go .
 	@$(MAKE) build
-	@export COVERAGE_FILEPATH="$(ACCEPTANCE_WORKDIR)"
+	@export COVERAGE_FILEPATH="$${ACCEPTANCE_WORKDIR}"
 	@export COVERAGE_FILENAME="-acceptance"
 	@go test ./internal/acceptance
-	@go run github.com/wadey/gocovmerge "$(ACCEPTANCE_WORKDIR)"/coverage-acceptance*.out > "$(ROOT_DIR)/coverage-acceptance.out"
+	@go run github.com/wadey/gocovmerge "$${ACCEPTANCE_WORKDIR}"/coverage-acceptance*.out > "$(ROOT_DIR)/coverage-acceptance.out"
 
 .PHONY: lint
 lint: ## Run linter
