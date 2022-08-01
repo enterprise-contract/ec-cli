@@ -17,6 +17,7 @@
 package image
 
 import (
+	"fmt"
 	"testing"
 
 	ecp "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
@@ -79,4 +80,35 @@ func Test_GetGitSignOff(t *testing.T) {
 	signOff, err := input.GetSignOff()
 	assert.NoError(t, err)
 	assert.Equal(t, expected, signOff)
+}
+
+func Test_GetAuthorization(t *testing.T) {
+	tests := []struct {
+		input SignOffSource
+		want  *signOffSignature
+		err   error
+	}{
+		{
+			&K8sSource{
+				namespace:   "enterprise-contract",
+				server:      "k8s-server",
+				resource:    "ecp/resource",
+				fetchSource: mockFetchECSource,
+			},
+			&signOffSignature{
+				RepoUrl:    "my-git-repo",
+				Commit:     "1234",
+				Signatures: []string{"ec@redhat.com"},
+			},
+			nil,
+		},
+	}
+
+	for i, tc := range tests {
+		t.Run(fmt.Sprintf("GetAuthorization=%d", i), func(t *testing.T) {
+			signOff, err := GetAuthorization(tc.input)
+			assert.ObjectsAreEqualValues(tc.want, signOff)
+			assert.Equal(t, tc.err, err)
+		})
+	}
 }

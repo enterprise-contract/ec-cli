@@ -27,5 +27,5 @@ func init() {
 	authorization := authorizationCmd()
 	authorization.AddCommand(commitAuthorizationCmd())
 	authorization.AddCommand(k8sResourceAuthorizationCmd())
-	rootCmd.AddCommand(authorization)
+	RootCmd.AddCommand(authorization)
 }

@@ -108,20 +108,20 @@ func (g *GitSource) GetSource() (signOffGetter, error) {
 
 // fetch the k8s resource from the cluster
 func (k *K8sSource) GetSource() (signOffGetter, error) {
-	ecp, err := fetchECSource(k.resource)
+	ecp, err := k.fetchSource(k.resource)
 	if err != nil {
 		return nil, err
 	}
 	return &k8sResource{
-		RepoUrl: "https://github.com/joejstuart/ec-cli.git",
+		RepoUrl: ecp.Spec.Authorization.Repository,
 		// Sha can be a branch. If that's the case, let the policy handle it
-		Sha:    *ecp.Spec.Description,
-		Author: "ec@redhat.com",
+		Sha:    ecp.Spec.Authorization.ChangeID,
+		Author: ecp.Spec.Authorization.Authorizer,
 	}, nil
 }
 
-func fetchECSource(resource string) (*ecp.EnterpriseContractPolicy, error) {
-	policyName, err := kubernetes.NamespacedName(resource)
+func fetchECSource(namedResource string) (*ecp.EnterpriseContractPolicy, error) {
+	policyName, err := kubernetes.NamespacedName(namedResource)
 	if err != nil {
 		return nil, err
 	}
@@ -205,18 +205,12 @@ func GetAuthorization(source SignOffSource) (*signOffSignature, error) {
 	return authorizationSource.GetSignOff()
 }
 
-func PrintAuthorization(authorization *signOffSignature, att *attestation) error {
+func PrintAuthorization(authorization *signOffSignature) error {
 	authPayload, err := json.Marshal(authorization)
 	if err != nil {
 		return err
 	}
 	fmt.Println(string(authPayload))
-
-	attPayload, err := json.Marshal(att)
-	if err != nil {
-		return err
-	}
-	fmt.Println(attPayload)
 
 	return nil
 }

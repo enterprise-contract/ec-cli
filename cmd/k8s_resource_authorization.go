@@ -86,17 +86,15 @@ func validateK8sSource(ctx context.Context, imageRef, publicKey, namespace, serv
 		return err
 	}
 
-	validatedImage, err := imageValidator.ValidateImage(ctx)
+	_, err = imageValidator.ValidateImage(ctx)
 	if err != nil {
 		return err
 	}
 
-	for _, att := range validatedImage.Attestations {
-		err = image.PrintAuthorization(authorization, &att)
-		if err != nil {
-			continue
-		}
-
+	err = image.PrintAuthorization(authorization)
+	if err != nil {
+		return err
 	}
+
 	return nil
 }
