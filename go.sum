@@ -2083,8 +2083,8 @@ github.com/shurcooL/go-goon v0.0.0-20170922171312-37c2f522c041/go.mod h1:N5mDOms
 github.com/shurcooL/sanitized_anchor_name v1.0.0/go.mod h1:1NzhyTcUVG4SuEtjjoZeVRXNmyL/1OwPU0+IJeTBvfc=
 github.com/sigstore/cosign v1.10.0 h1:KhJDa1PF+QkCmKv/5LHFXkX+obV+OOHkDT9rXcUaZww=
 github.com/sigstore/cosign v1.10.0/go.mod h1:F1UVPisVNndRrb3Sbi977WFaRvfNmvA4/hbtIEvMYTM=
-github.com/sigstore/rekor v0.9.1 h1:xk+Sg6xWLYctIqlIxZP+sxZl9sfEl0OIbPgxo527Gxg=
-github.com/sigstore/rekor v0.9.1/go.mod h1:7YBvw8sKQpTUD8jwahpAgex3zF+q2+RAEsgnWXb3O4I=
+github.com/sigstore/rekor v0.10.0 h1:lhqu403gtsfqf7yOBUm6G5KkI17g4s55jnDOHceYEEM=
+github.com/sigstore/rekor v0.10.0/go.mod h1:optBScc+ylAO6nTRyH3kY5me1ClbQufeLiglesAEiwg=
 github.com/sigstore/sigstore v1.2.1-0.20220614141825-9c0e2e247545 h1:S6ZnBcLFZNdB6mw8QnjLgtGU1myK+X0UPpRwJ71/Z/o=
 github.com/sigstore/sigstore v1.2.1-0.20220614141825-9c0e2e247545/go.mod h1:xr0T+0gIaZyrmWtC99G8llLi1izy70nZpgVp+C1jb5k=
 github.com/sirupsen/logrus v1.0.4-0.20170822132746-89742aefa4b2/go.mod h1:pMByvHTf9Beacp5x1UXfOR9xyW/9antXMhjMPG0dEzc=
@@ -3595,8 +3595,8 @@ sigs.k8s.io/controller-runtime v0.12.3/go.mod h1:qKsk4WE6zW2Hfj0G4v10EnNB2jMG1C+
 sigs.k8s.io/json v0.0.0-20211020170558-c049b76a60c6/go.mod h1:p4QtZmO4uMYipTQNzagwnNoseA6OxSUutVw05NhYDRs=
 sigs.k8s.io/json v0.0.0-20211208200746-9f7c6b3444d2 h1:kDi4JBNAsJWfz1aEXhO8Jg87JJaPNLh5tIzYHgStQ9Y=
 sigs.k8s.io/json v0.0.0-20211208200746-9f7c6b3444d2/go.mod h1:B+TnT182UBxE84DiCz4CVE26eOSDAeYCpfDnC2kdKMY=
-sigs.k8s.io/release-utils v0.7.1 h1:dQuGqQi7XGW4PSLJ6JRlN2JUDkeXSepDL1nTdl9QTPY=
-sigs.k8s.io/release-utils v0.7.1/go.mod h1:SK+/kkc2i7ZO0CFXDCvXpzIZyt13cPlscaApaZD7VmU=
+sigs.k8s.io/release-utils v0.7.3 h1:6pS8x6c5RmdUgR9qcg1LO6hjUzuE4Yo9TGZ3DemrZdM=
+sigs.k8s.io/release-utils v0.7.3/go.mod h1:n0mVez/1PZYZaZUTJmxewxH3RJ/Lf7JUDh7TG1CASOE=
 sigs.k8s.io/structured-merge-diff v0.0.0-20190525122527-15d366b2352e/go.mod h1:wWxsB5ozmmv/SG7nM11ayaAW51xMvak/t1r0CSlcokI=
 sigs.k8s.io/structured-merge-diff v1.0.1-0.20191108220359-b1b620dd3f06/go.mod h1:/ULNhyfzRopfcjskuui0cTITekDduZ7ycKN3oUT9R18=
 sigs.k8s.io/structured-merge-diff/v4 v4.0.1/go.mod h1:bJZC9H9iH24zzfZ/41RGcq60oK1F7G282QMXDPYydCw=
