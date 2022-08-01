@@ -135,5 +135,5 @@ the provided images:
 
 func init() {
 	r := replaceCmd(replacer.Replace)
-	rootCmd.AddCommand(r)
+	RootCmd.AddCommand(r)
 }
