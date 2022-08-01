@@ -45,6 +45,10 @@ dist: $(ALL_SUPPORTED_OS_ARCH) ## Build binaries for all supported operating sys
 build: dist/ec_$(shell go env GOOS)_$(shell go env GOARCH) ## Build the ec binary for the current platform
 	@ln -sf ec_$(shell go env GOOS)_$(shell go env GOARCH) dist/ec
 
+.PHONY: docs
+docs: ## Generate documentation
+	@go run internal/documentation/documentation.go 
+
 .PHONY: test
 test: ## Run unit tests
 # Given the nature of generative tests the test timeout was increased from 500ms

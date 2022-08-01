@@ -36,5 +36,5 @@ func init() {
 	validate := validateCmd()
 	validate.AddCommand(validatePipelineCmd(pipeline.ValidatePipeline))
 	validate.AddCommand(validateImageCmd(image.ValidateImage))
-	rootCmd.AddCommand(validate)
+	RootCmd.AddCommand(validate)
 }

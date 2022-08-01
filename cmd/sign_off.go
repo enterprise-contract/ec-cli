@@ -115,5 +115,5 @@ func validate(ctx context.Context, imageRef, publicKey string) error {
 }
 
 func init() {
-	rootCmd.AddCommand(signOffCmd())
+	RootCmd.AddCommand(signOffCmd())
 }

@@ -33,5 +33,5 @@ func trackCmd() *cobra.Command {
 func init() {
 	track := trackCmd()
 	track.AddCommand(trackBundleCmd(tracker.Track))
-	rootCmd.AddCommand(track)
+	RootCmd.AddCommand(track)
 }

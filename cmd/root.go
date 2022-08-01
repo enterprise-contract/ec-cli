@@ -26,8 +26,8 @@ import (
 	"github.com/hacbs-contract/ec-cli/internal/logging"
 )
 
-// rootCmd represents the base command when called without any subcommands
-var rootCmd = &cobra.Command{
+// RootCmd represents the base command when called without any subcommands
+var RootCmd = &cobra.Command{
 	Use:          "ec",
 	Short:        "Tool to enforce enterprise contracts",
 	Long:         `TODO: description`,
@@ -43,9 +43,9 @@ var verbose bool = false
 var debug bool = false
 
 func init() {
-	rootCmd.PersistentFlags().BoolVar(&quiet, "quiet", quiet, "less verbose output")
-	rootCmd.PersistentFlags().BoolVar(&verbose, "verbose", verbose, "more verbose output")
-	rootCmd.PersistentFlags().BoolVar(&debug, "debug", debug, "same as verbose but also show function names and line numbers")
+	RootCmd.PersistentFlags().BoolVar(&quiet, "quiet", quiet, "less verbose output")
+	RootCmd.PersistentFlags().BoolVar(&verbose, "verbose", verbose, "more verbose output")
+	RootCmd.PersistentFlags().BoolVar(&debug, "debug", debug, "same as verbose but also show function names and line numbers")
 }
 
 const globalTimeout = 5 * time.Minute
@@ -56,7 +56,7 @@ func Execute() {
 	ctx, cancel := context.WithTimeout(context.Background(), globalTimeout)
 	defer cancel()
 
-	err := rootCmd.ExecuteContext(ctx)
+	err := RootCmd.ExecuteContext(ctx)
 	if err != nil {
 		os.Exit(1)
 	}
