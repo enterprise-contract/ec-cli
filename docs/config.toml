@@ -1,0 +1,5 @@
+baseURL = 'https://hacbs-contract.github.io/'
+languageCode = 'en-us'
+title = 'HACBS Enterprise Contract Command Line Interface'
+theme = "hugo-book"
+relativeURLs = true
