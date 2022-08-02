@@ -47,7 +47,11 @@ build: dist/ec_$(shell go env GOOS)_$(shell go env GOARCH) ## Build the ec binar
 
 .PHONY: docs
 docs: ## Generate documentation
-	@go run internal/documentation/documentation.go 
+	@go run internal/documentation/documentation.go
+
+.PHONY: website
+website: docs ## Generate website
+	@cd docs; go run -tags=extended github.com/gohugoio/hugo
 
 .PHONY: test
 test: ## Run unit tests
