@@ -92,7 +92,12 @@ func NewApplicationSnapshotImage(ctx context.Context, image string, publicKey st
 		//   to stderr
 		// - SIGSTORE_TRUST_REKOR_API_PUBLIC_KEY to fetch the public key via the
 		//   Rekor API
-		// Here we opt for the last option
+		// Here we opt for the last option as we can't influence the first
+		// option and the second option unconditionally prints to standard
+		// error.
+		// TODO: Ideally we would have a --rekor-public-key parameter to pass in
+		// the Rekor public key in addition to having TUF setup which makes it
+		// easier to rotate keys
 		os.Setenv("SIGSTORE_TRUST_REKOR_API_PUBLIC_KEY", "1")
 	}
 
