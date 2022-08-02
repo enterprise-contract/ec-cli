@@ -29,16 +29,16 @@ type replaceFn func([]string, string, *replacer.CatalogOptions) ([]byte, error)
 
 func replaceCmd(replace replaceFn) *cobra.Command {
 	var data = struct {
-		Source           string
-		Overwrite        bool
-		OutputFile       string
-		CatalogName      string
-		CatalogRepoBase  string
-		CatalogHubAPIURL string
+		source           string
+		overwrite        bool
+		outputFile       string
+		catalogName      string
+		catalogRepoBase  string
+		catalogHubAPIURL string
 	}{
-		CatalogName:      "tekton",
-		CatalogRepoBase:  "gcr.io/tekton-releases/catalog/upstream/",
-		CatalogHubAPIURL: "https://api.hub.tekton.dev",
+		catalogName:      "tekton",
+		catalogRepoBase:  "gcr.io/tekton-releases/catalog/upstream/",
+		catalogHubAPIURL: "https://api.hub.tekton.dev",
 	}
 
 	cmd := &cobra.Command{
@@ -63,20 +63,20 @@ the provided images:
   ec replace --source resource.yaml <IMAGE> <IMAGE>`,
 		RunE: func(cmd *cobra.Command, images []string) (err error) {
 			catalogOptions := &replacer.CatalogOptions{
-				CatalogName: data.CatalogName,
-				RepoBase:    data.CatalogRepoBase,
-				HubAPIURL:   data.CatalogHubAPIURL,
+				CatalogName: data.catalogName,
+				RepoBase:    data.catalogRepoBase,
+				HubAPIURL:   data.catalogHubAPIURL,
 			}
 
-			out, err := replace(images, data.Source, catalogOptions)
+			out, err := replace(images, data.source, catalogOptions)
 			if err != nil {
 				return err
 			}
 
-			if data.OutputFile == "" {
+			if data.outputFile == "" {
 				fmt.Println(string(out))
 			} else {
-				f, err := os.Create(data.OutputFile)
+				f, err := os.Create(data.outputFile)
 				if err != nil {
 					return err
 				}
@@ -87,12 +87,12 @@ the provided images:
 				}
 			}
 
-			if data.Overwrite {
-				stat, err := os.Stat(data.Source)
+			if data.overwrite {
+				stat, err := os.Stat(data.source)
 				if err != nil {
 					return err
 				}
-				f, err := os.OpenFile(data.Source, os.O_RDWR, stat.Mode())
+				f, err := os.OpenFile(data.source, os.O_RDWR, stat.Mode())
 				if err != nil {
 					return err
 				}
@@ -107,23 +107,23 @@ the provided images:
 		},
 	}
 
-	cmd.Flags().StringVarP(&data.Source, "source", "s", data.Source,
+	cmd.Flags().StringVarP(&data.source, "source", "s", data.source,
 		"REQUIRED - An existing YAML file")
 
-	cmd.Flags().BoolVar(&data.Overwrite, "overwrite", data.Overwrite,
+	cmd.Flags().BoolVar(&data.overwrite, "overwrite", data.overwrite,
 		"Overwrite source file with changes")
 
-	cmd.Flags().StringVarP(&data.OutputFile, "output", "o", data.OutputFile,
+	cmd.Flags().StringVarP(&data.outputFile, "output", "o", data.outputFile,
 		"Write changes to a file. Use empty string for stdout, default behavior")
 
-	cmd.Flags().StringVar(&data.CatalogName, "catalog-name", data.CatalogName,
+	cmd.Flags().StringVar(&data.catalogName, "catalog-name", data.catalogName,
 		"Name of the catalog in the Tekton Hub")
 
-	cmd.Flags().StringVar(&data.CatalogRepoBase, "catalog-repo-base", data.CatalogRepoBase,
+	cmd.Flags().StringVar(&data.catalogRepoBase, "catalog-repo-base", data.catalogRepoBase,
 		"Base of the OCI repository where images from the Tekton Hub are found. "+
 			"The full image reference is created as <base><name>:<version>")
 
-	cmd.Flags().StringVar(&data.CatalogHubAPIURL, "catalog-hub-api", data.CatalogHubAPIURL,
+	cmd.Flags().StringVar(&data.catalogHubAPIURL, "catalog-hub-api", data.catalogHubAPIURL,
 		"URL for the Tekton Hub API")
 
 	// TODO: We should check the error result here
