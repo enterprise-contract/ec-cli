@@ -2323,8 +2323,8 @@ github.com/vmihailenco/tagparser v0.1.1/go.mod h1:OeAg3pn3UbLjkWt+rN9oFYB6u/cQgq
 github.com/vmware/govmomi v0.20.3/go.mod h1:URlwyTFZX72RmxtxuaFL2Uj3fD1JTvZdx59bHWk6aFU=
 github.com/wadey/gocovmerge v0.0.0-20160331181800-b5bfa59ec0ad h1:W0LEBv82YCGEtcmPA3uNZBI33/qF//HAAs3MawDjRa0=
 github.com/wadey/gocovmerge v0.0.0-20160331181800-b5bfa59ec0ad/go.mod h1:Hy8o65+MXnS6EwGElrSRjUzQDLXreJlzYLlWiHtt8hM=
-github.com/walkerus/go-wiremock v1.2.0 h1:c8Y6ihQdTact5Z7NvYLBTu8n19hXocEDvqOgTbkBwhU=
-github.com/walkerus/go-wiremock v1.2.0/go.mod h1:LLgrMO0k+kiwm5YvnXbvNL/EgqBKFcOoJXpA+ZwuKDk=
+github.com/walkerus/go-wiremock v1.3.0 h1:gzNbTCE81Dj3VqpFSuOm1B3QZZbNWqz9ZPY/kV1qhTo=
+github.com/walkerus/go-wiremock v1.3.0/go.mod h1:ZxCbQHZq/Gb845TS6Ss02iSA1qdL+m3mFW4LO04zL30=
 github.com/willf/bitset v1.1.10/go.mod h1:RjeCKbqT1RxIR/KWY6phxZiaY1IyutSBfGjNPySAYV4=
 github.com/willf/bitset v1.1.11-0.20200630133818-d5bec3311243/go.mod h1:RjeCKbqT1RxIR/KWY6phxZiaY1IyutSBfGjNPySAYV4=
 github.com/willf/bitset v1.1.11/go.mod h1:83CECat5yLh5zVOf4P1ErAgKA5UDvKtgyUABdr3+MjI=
