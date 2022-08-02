@@ -17,59 +17,72 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
+	"path"
+	"strings"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/spf13/cobra/doc"
 
 	cmd "github.com/hacbs-contract/ec-cli/cmd"
 )
 
+const DirectoryPermissions = 0755
+
+var markdown = flag.String("markdown", "docs/content/docs", "Location of the generated MarkDown files")
+var man = flag.String("man", "", "Location of the generated Man files")
+var rst = flag.String("rst", "", "Location of the generated reStructuredText files")
+
 func main() {
-	var errs error
-	docsdir, ok := os.LookupEnv("EC_CLI_DOCS_DIR")
-	if !ok {
-		dir, err := os.Getwd()
+	// Disable generated tags
+	cmd.RootCmd.DisableAutoGenTag = true
+
+	var err error
+	defer func() {
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		docsdir = dir + "/docs"
-	}
-	mdPath := docsdir + "/md"
-	manPath := docsdir + "/man"
-	rstPath := docsdir + "/rst"
-	paths := []string{mdPath, manPath, rstPath}
-	// Disable generated tags
-	cmd.RootCmd.DisableAutoGenTag = true
+	}()
 
-	// Create the target paths
-	for _, p := range paths {
-		if err := os.MkdirAll(p, os.ModePerm); err != nil {
-			errs = multierror.Append(errs, err)
-			continue
+	// Markdown
+	if *markdown != "" {
+		if err = os.MkdirAll(*markdown, DirectoryPermissions); err != nil {
+			return
+		}
+
+		prepender := func(s string) string {
+			title := strings.ReplaceAll(strings.TrimSuffix(path.Base(s), ".md"), "_", " ")
+			return fmt.Sprintf("---\ntitle: %s\n---\n", title)
+		}
+
+		linkHandler := func(s string) string {
+			return fmt.Sprintf(`{{< relref "%s" >}}`, strings.TrimSuffix(s, ".md"))
+		}
+
+		if err = doc.GenMarkdownTreeCustom(cmd.RootCmd, *markdown, prepender, linkHandler); err != nil {
+			return
 		}
 	}
 
-	// Markdown
-	if err := doc.GenMarkdownTree(cmd.RootCmd, mdPath); err != nil {
-		errs = multierror.Append(errs, err)
-	}
-
 	// Man pages
-	if err := doc.GenManTree(cmd.RootCmd, nil, manPath); err != nil {
-		errs = multierror.Append(errs, err)
+	if *man != "" {
+		if err = os.MkdirAll(*man, DirectoryPermissions); err != nil {
+			return
+		}
+		if err = doc.GenManTree(cmd.RootCmd, nil, *man); err != nil {
+			return
+		}
 	}
 
 	// ReStructuredText
-	if err := doc.GenReSTTree(cmd.RootCmd, rstPath); err != nil {
-		errs = multierror.Append(errs, err)
+	if *rst != "" {
+		if err = os.MkdirAll(*rst, DirectoryPermissions); err != nil {
+			return
+		}
+		if err = doc.GenReSTTree(cmd.RootCmd, *rst); err != nil {
+			return
+		}
 	}
-
-	if errs != nil {
-		fmt.Println(errs)
-		os.Exit(1)
-	}
-	os.Exit(0)
 }
