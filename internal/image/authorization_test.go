@@ -52,10 +52,10 @@ func Test_GeKk8sSignOff(t *testing.T) {
 		Sha:     "1234",
 		Author:  "ec@redhat.com",
 	}
-	expected := &signOffSignature{
-		RepoUrl:    "my-git-repo",
-		Commit:     "1234",
-		Signatures: []string{"ec@redhat.com"},
+	expected := &authorizationSignature{
+		RepoUrl:     "my-git-repo",
+		Commit:      "1234",
+		Authorizers: []string{"ec@redhat.com"},
 	}
 
 	signOff, err := input.GetSignOff()
@@ -71,10 +71,10 @@ func Test_GetGitSignOff(t *testing.T) {
 		Date:    "01-01-2022",
 		Message: "Signed-off-by: ec <ec@redhat.com>",
 	}
-	expected := &signOffSignature{
-		RepoUrl:    "my-git-repo",
-		Commit:     "1234",
-		Signatures: []string{"ec@redhat.com"},
+	expected := &authorizationSignature{
+		RepoUrl:     "my-git-repo",
+		Commit:      "1234",
+		Authorizers: []string{"ec@redhat.com"},
 	}
 
 	signOff, err := input.GetSignOff()
@@ -84,8 +84,8 @@ func Test_GetGitSignOff(t *testing.T) {
 
 func Test_GetAuthorization(t *testing.T) {
 	tests := []struct {
-		input SignOffSource
-		want  *signOffSignature
+		input AuthorizationSource
+		want  *authorizationSignature
 		err   error
 	}{
 		{
@@ -95,10 +95,10 @@ func Test_GetAuthorization(t *testing.T) {
 				resource:    "ecp/resource",
 				fetchSource: mockFetchECSource,
 			},
-			&signOffSignature{
-				RepoUrl:    "my-git-repo",
-				Commit:     "1234",
-				Signatures: []string{"ec@redhat.com"},
+			&authorizationSignature{
+				RepoUrl:     "my-git-repo",
+				Commit:      "1234",
+				Authorizers: []string{"ec@redhat.com"},
 			},
 			nil,
 		},

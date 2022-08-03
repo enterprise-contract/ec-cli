@@ -40,7 +40,7 @@ func commitAuthorizationCmd() *cobra.Command {
 	}
 	cmd := &cobra.Command{
 		Use:   "commit",
-		Short: "Capture signed off signatures from a source (github repo, Jira)",
+		Short: "Capture authorizations from a source (github repo, Jira)",
 		Long: `Supported sign off sources are commits captured from a git repo and jira issues.
                The git sources return a signed off value and the git commit. The jira issue is
 			   a TODO, but will return the Jira issue with any sign off values.`,

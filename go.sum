@@ -1472,10 +1472,8 @@ github.com/grpc-ecosystem/grpc-gateway v1.16.0/go.mod h1:BDjrQk3hbvj6Nolgz8mAMFb
 github.com/grpc-ecosystem/grpc-gateway/v2 v2.7.0 h1:BZHcxBETFHIdVyhyEfOvn/RdU/QGdLI4y34qQGjGWO0=
 github.com/grpc-ecosystem/grpc-gateway/v2 v2.7.0/go.mod h1:hgWBS7lorOAVIJEQMi4ZsPv9hVvWI6+ch50m39Pf2Ks=
 github.com/grpc-ecosystem/grpc-opentracing v0.0.0-20180507213350-8e809c8a8645/go.mod h1:6iZfnjpejD4L/4DwD7NryNaJyCQdzwWwH2MWhCA90Kw=
-github.com/hacbs-contract/enterprise-contract-controller v0.0.0-20220608144538-7d47a3f5da49 h1:FnV0az+++1gCXHm8jA8WLRJmzntYkGKazj3PkpaAU0U=
-github.com/hacbs-contract/enterprise-contract-controller v0.0.0-20220608144538-7d47a3f5da49/go.mod h1:HvkKDp1N58ymh+WAmsSDfZCc13dUhH8jigwKAlZXb+M=
-github.com/hairyhenderson/go-codeowners v0.2.3-0.20201026200250-cdc7c0759690 h1:XWjCrg/HJRLZCbvsUxS5R/9JhwiiwNctEsRvZ1Vjz5k=
-github.com/hairyhenderson/go-codeowners v0.2.3-0.20201026200250-cdc7c0759690/go.mod h1:8Qu9UmnhCRunfRv365Z3w+mT/WfLGKJiK+vugY9qNCU=
+github.com/hacbs-contract/enterprise-contract-controller v0.0.0-20220802135410-ad91c7378251 h1:VyXomOVfZ/ltMK3IIeL1Gud8C1oluQhlyvcfjNO+orE=
+github.com/hacbs-contract/enterprise-contract-controller v0.0.0-20220802135410-ad91c7378251/go.mod h1:HvkKDp1N58ymh+WAmsSDfZCc13dUhH8jigwKAlZXb+M=
 github.com/hanwen/go-fuse v1.0.0/go.mod h1:unqXarDXqzAk0rt98O2tVndEPIpUgLD9+rwFisZH3Ok=
 github.com/hanwen/go-fuse/v2 v2.0.3/go.mod h1:0EQM6aH2ctVpvZ6a+onrQ/vaykxh2GH7hy3e13vzTUY=
 github.com/hanwen/go-fuse/v2 v2.1.0/go.mod h1:oRyA5eK+pvJyv5otpO/DgccS8y/RvYMaO00GgRLGryc=

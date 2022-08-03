@@ -37,12 +37,12 @@ import (
 var kubernetesClientCreator = kubernetes.NewClient
 
 // there can be multiple sign off sources (git commit, tag and jira issues)
-type signOffGetter interface {
-	GetSignOff() (*signOffSignature, error)
+type authorizationGetter interface {
+	GetSignOff() (*authorizationSignature, error)
 }
 
-type SignOffSource interface {
-	GetSource() (signOffGetter, error)
+type AuthorizationSource interface {
+	GetSource() (authorizationGetter, error)
 }
 
 // holds config information to get client instance
@@ -76,10 +76,10 @@ type k8sResource struct {
 	Author  string `json:"author"`
 }
 
-type signOffSignature struct {
-	RepoUrl    string   `json:"repoUrl"`
-	Commit     string   `json:"commit"`
-	Signatures []string `json:"signatures"`
+type authorizationSignature struct {
+	RepoUrl     string   `json:"repoUrl"`
+	Commit      string   `json:"commit"`
+	Authorizers []string `json:"authorizers"`
 }
 
 func NewK8sSource(server, namespace, resource string) (*K8sSource, error) {
@@ -91,7 +91,7 @@ func NewK8sSource(server, namespace, resource string) (*K8sSource, error) {
 	}, nil
 }
 
-func (g *GitSource) GetSource() (signOffGetter, error) {
+func (g *GitSource) GetSource() (authorizationGetter, error) {
 	gitCommit, err := g.fetchSource(g.repoUrl, g.commitSha)
 	if err != nil {
 		return nil, err
@@ -107,11 +107,12 @@ func (g *GitSource) GetSource() (signOffGetter, error) {
 }
 
 // fetch the k8s resource from the cluster
-func (k *K8sSource) GetSource() (signOffGetter, error) {
+func (k *K8sSource) GetSource() (authorizationGetter, error) {
 	ecp, err := k.fetchSource(k.resource)
 	if err != nil {
 		return nil, err
 	}
+
 	return &k8sResource{
 		RepoUrl: ecp.Spec.Authorization.Repository,
 		// Sha can be a branch. If that's the case, let the policy handle it
@@ -140,20 +141,20 @@ func fetchECSource(namedResource string) (*ecp.EnterpriseContractPolicy, error) 
 }
 
 // returns the signOff signature and body of the source
-func (c *commit) GetSignOff() (*signOffSignature, error) {
-	return &signOffSignature{
-		RepoUrl:    c.RepoUrl,
-		Commit:     c.Sha,
-		Signatures: captureCommitSignOff(c.Message),
+func (c *commit) GetSignOff() (*authorizationSignature, error) {
+	return &authorizationSignature{
+		RepoUrl:     c.RepoUrl,
+		Commit:      c.Sha,
+		Authorizers: captureCommitSignOff(c.Message),
 	}, nil
 }
 
-func (k *k8sResource) GetSignOff() (*signOffSignature, error) {
+func (k *k8sResource) GetSignOff() (*authorizationSignature, error) {
 	// fetch the k8s resource
-	return &signOffSignature{
+	return &authorizationSignature{
 		RepoUrl: k.RepoUrl,
 		Commit:  k.Sha,
-		Signatures: []string{
+		Authorizers: []string{
 			k.Author,
 		},
 	}, nil
@@ -196,7 +197,7 @@ func captureCommitSignOff(message string) []string {
 	return capturedSignatures
 }
 
-func GetAuthorization(source SignOffSource) (*signOffSignature, error) {
+func GetAuthorization(source AuthorizationSource) (*authorizationSignature, error) {
 	authorizationSource, err := source.GetSource()
 	if err != nil {
 		return nil, err
@@ -205,7 +206,7 @@ func GetAuthorization(source SignOffSource) (*signOffSignature, error) {
 	return authorizationSource.GetSignOff()
 }
 
-func PrintAuthorization(authorization *signOffSignature) error {
+func PrintAuthorization(authorization *authorizationSignature) error {
 	authPayload, err := json.Marshal(authorization)
 	if err != nil {
 		return err
