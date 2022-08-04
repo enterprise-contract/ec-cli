@@ -18,9 +18,6 @@ package cmd
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
-	"fmt"
 	"log"
 
 	appstudioshared "github.com/redhat-appstudio/managed-gitops/appstudio-shared/apis/appstudio.redhat.com/v1alpha1"
@@ -30,7 +27,7 @@ import (
 	"github.com/hacbs-contract/ec-cli/internal/image"
 )
 
-func signOffCmd() *cobra.Command {
+func commitAuthorizationCmd() *cobra.Command {
 	var data = struct {
 		imageRef  string
 		publicKey string
@@ -42,8 +39,8 @@ func signOffCmd() *cobra.Command {
 		publicKey: "",
 	}
 	cmd := &cobra.Command{
-		Use:   "sign-off",
-		Short: "Capture signed off signatures from a source (github repo, Jira)",
+		Use:   "commit",
+		Short: "Capture authorizations from a source (github repo, Jira)",
 		Long: `Supported sign off sources are commits captured from a git repo and jira issues.
                The git sources return a signed off value and the git commit. The jira issue is
 			   a TODO, but will return the Jira issue with any sign off values.`,
@@ -60,7 +57,7 @@ func signOffCmd() *cobra.Command {
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			for _, comp := range data.spec.Components {
-				err := validate(cmd.Context(), comp.ContainerImage, data.publicKey)
+				err := validateGitSource(cmd.Context(), comp.ContainerImage, data.publicKey)
 				if err != nil {
 					log.Println(err)
 					continue
@@ -71,14 +68,14 @@ func signOffCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&data.publicKey, "public-key", "", "Public key")
-	cmd.Flags().StringVar(&data.imageRef, "image-ref", data.imageRef, "The OCI repo to fetch the attestation from.")
-	cmd.Flags().StringVarP(&data.filePath, "file-path", "f", data.filePath, "Path to ApplicationSnapshot JSON file")
-	cmd.Flags().StringVarP(&data.input, "json-input", "j", data.input, "ApplicationSnapshot JSON string")
+	cmd.Flags().StringVar(&data.imageRef, "image-ref", "", "The OCI repo to fetch the attestation from.")
+	cmd.Flags().StringVarP(&data.filePath, "file-path", "f", "", "Path to ApplicationSnapshot JSON file")
+	cmd.Flags().StringVarP(&data.input, "json-input", "j", "", "ApplicationSnapshot JSON string")
 
 	return cmd
 }
 
-func validate(ctx context.Context, imageRef, publicKey string) error {
+func validateGitSource(ctx context.Context, imageRef, publicKey string) error {
 	imageValidator, err := image.NewImageValidator(ctx, imageRef, publicKey, "")
 	if err != nil {
 		return err
@@ -90,30 +87,20 @@ func validate(ctx context.Context, imageRef, publicKey string) error {
 	}
 
 	for _, att := range validatedImage.Attestations {
-		signoffSource, err := att.NewSignOffSource()
-		if err != nil {
-			return err
-		}
-		if signoffSource == nil {
-			return errors.New("there is no signoff source in attestation")
-		}
-
-		signOff, err := signoffSource.GetSignOff()
+		gitSource, err := att.NewGitSource()
 		if err != nil {
 			return err
 		}
 
-		if signOff != nil {
-			payload, err := json.Marshal(signOff)
-			if err != nil {
-				return err
-			}
-			fmt.Println(string(payload))
+		authorization, err := image.GetAuthorization(gitSource)
+		if err != nil {
+			return err
+		}
+
+		err = image.PrintAuthorization(authorization)
+		if err != nil {
+			continue
 		}
 	}
 	return nil
-}
-
-func init() {
-	RootCmd.AddCommand(signOffCmd())
 }

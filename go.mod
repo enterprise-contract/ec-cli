@@ -15,7 +15,7 @@ require (
 	github.com/golangci/golangci-lint v1.47.3
 	github.com/google/addlicense v1.0.0
 	github.com/google/go-containerregistry v0.11.0
-	github.com/hacbs-contract/enterprise-contract-controller v0.0.0-20220525095719-1a34e1604a54
+	github.com/hacbs-contract/enterprise-contract-controller v0.0.0-20220802135410-ad91c7378251
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/in-toto/in-toto-golang v0.3.4-0.20220709202702-fa494aaa0add
 	github.com/leanovate/gopter v0.2.9

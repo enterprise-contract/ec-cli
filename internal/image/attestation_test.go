@@ -21,20 +21,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
-	"github.com/go-git/go-git/v5/storage/memory"
 	"github.com/stretchr/testify/assert"
 )
 
-func mockGetRepository(url string) (*git.Repository, error) {
-	return &git.Repository{
-		Storer: memory.NewStorage(),
-	}, nil
-}
-
-func mockGetCommit(repository *git.Repository, sha string) (*object.Commit, error) {
+func mockFetchCommitSource(url, sha string) (*object.Commit, error) {
 	return &object.Commit{
 		Hash: plumbing.NewHash("6c1f093c0c197add71579d392da8a79a984fcd62"),
 		Author: object.Signature{
@@ -78,31 +70,37 @@ func paramsInput(input string) attestation {
 	return att
 }
 
-func Test_AttestationSignoffSource_commit(t *testing.T) {
+func Test_NewGitSource(t *testing.T) {
 	tests := []struct {
 		input attestation
-		want  signOffSource
+		want  *GitSource
+		err   error
 	}{
 		{
 			paramsInput("good-commit"),
-			&commitSignOff{
-				source:        "https://github.com/joejstuart/ec-cli.git",
-				commitSha:     "6c1f093c0c197add71579d392da8a79a984fcd62",
-				getCommit:     mockGetCommit,
-				getRepository: mockGetRepository,
+			&GitSource{
+				repoUrl:     "https://github.com/joejstuart/ec-cli.git",
+				commitSha:   "6c1f093c0c197add71579d392da8a79a984fcd62",
+				fetchSource: mockFetchCommitSource,
 			},
+			nil,
 		},
 		{
 			paramsInput("bad-commit"),
 			nil,
+			fmt.Errorf(
+				"there is no authorization source in attestation. sha: %v, url: %v",
+				"",
+				"",
+			),
 		},
 	}
 
 	for i, tc := range tests {
-		t.Run(fmt.Sprintf("AttestationSignoffSource=%d", i), func(t *testing.T) {
-			signOff, err := tc.input.NewSignOffSource()
-			assert.NoError(t, err)
-			assert.ObjectsAreEqualValues(tc.want, signOff)
+		t.Run(fmt.Sprintf("NewGitSource=%d", i), func(t *testing.T) {
+			gitSource, err := tc.input.NewGitSource()
+			assert.ObjectsAreEqualValues(tc.want, gitSource)
+			assert.Equal(t, tc.err, err)
 		})
 	}
 }
@@ -137,38 +135,6 @@ func Test_GetBuildSCM(t *testing.T) {
 		t.Run(fmt.Sprintf("GetBuildSCM=%d", i), func(t *testing.T) {
 			got := tc.input.getBuildSCM()
 			assert.Equal(t, tc.want, got)
-		})
-	}
-}
-
-func Test_GetSignOff(t *testing.T) {
-	tests := []struct {
-		input *commitSignOff
-		want  *signOffSignature
-	}{
-		{
-			&commitSignOff{
-				source:        "https://github.com/joejstuart/ec-cli.git",
-				commitSha:     "6c1f093c0c197add71579d392da8a79a984fcd62",
-				getCommit:     mockGetCommit,
-				getRepository: mockGetRepository,
-			},
-			&signOffSignature{
-				Body: &commit{
-					Sha:    "6c1f093c0c197add71579d392da8a79a984fcd62",
-					Author: "ec RedHat <ec@gmail.com>",
-					Date:   "0001-01-01 00:00:00 +0000 UTC",
-				},
-				Signatures: []string{"ec@redhat.com"},
-			},
-		},
-	}
-
-	for i, tc := range tests {
-		t.Run(fmt.Sprintf("GetSignoffSource=%d", i), func(t *testing.T) {
-			signOff, err := tc.input.GetSignOff()
-			assert.NoError(t, err)
-			assert.Equal(t, tc.want.Signatures, signOff.Signatures)
 		})
 	}
 }
