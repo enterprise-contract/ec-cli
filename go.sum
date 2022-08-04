@@ -2396,8 +2396,8 @@ github.com/tdewolff/parse/v2 v2.6.0 h1:f2D7w32JtqjCv6SczWkfwK+m15et42qEtDnZXHoNY
 github.com/tdewolff/parse/v2 v2.6.0/go.mod h1:WzaJpRSbwq++EIQHYIRTpbYKNA3gn9it1Ik++q4zyho=
 github.com/tdewolff/test v1.0.6 h1:76mzYJQ83Op284kMT+63iCNCI7NEERsIN8dLM+RiKr4=
 github.com/tdewolff/test v1.0.6/go.mod h1:6DAvZliBAAnD7rhVgwaM7DE5/d9NMOAJ09SqYqeK4QE=
-github.com/tektoncd/pipeline v0.38.1 h1:CdvuP8/Qi4jrm+i0EUcfKvdu7oaswGvUu0HUB3EULkk=
-github.com/tektoncd/pipeline v0.38.1/go.mod h1:9uQZ6PdOZXPtoceupLMyChXUR6elsTuHpVNlEGAIJXU=
+github.com/tektoncd/pipeline v0.38.2 h1:7XLuyVq4ZNrAtuUKjjX/q4KILtQg/z1qySCzC1J8mw4=
+github.com/tektoncd/pipeline v0.38.2/go.mod h1:9uQZ6PdOZXPtoceupLMyChXUR6elsTuHpVNlEGAIJXU=
 github.com/tektoncd/resolution v0.0.0-20220331203013-e4203c70c5eb h1:bSrsnmoOJJh1JorlaTDSusq/eIBnk5zRKAVXOhnJyD8=
 github.com/tenntenn/modver v1.0.1 h1:2klLppGhDgzJrScMpkj9Ujy3rXPUspSjAcev9tSEBgA=
 github.com/tenntenn/modver v1.0.1/go.mod h1:bePIyQPb7UeioSRkw3Q0XeMhYZSMx9B8ePqg6SAMGH0=
