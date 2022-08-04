@@ -1,0 +1,35 @@
+name: ec fetch commit
+synopsis: Capture authorizations from a source (github repo, Jira)
+description: "Supported sign off sources are commits captured from a git repo and
+  jira issues.\n               The git sources return a signed off value and the git
+  commit. The jira issue is\n\t\t\t   a TODO, but will return the Jira issue with
+  any sign off values."
+usage: ec fetch commit [flags]
+options:
+- name: file-path
+  shorthand: f
+  usage: Path to ApplicationSnapshot JSON file
+- name: help
+  shorthand: h
+  default_value: "false"
+  usage: help for commit
+- name: image-ref
+  usage: The OCI repo to fetch the attestation from.
+- name: json-input
+  shorthand: j
+  usage: ApplicationSnapshot JSON string
+- name: public-key
+  usage: Public key
+inherited_options:
+- name: debug
+  default_value: "false"
+  usage: |
+    same as verbose but also show function names and line numbers
+- name: quiet
+  default_value: "false"
+  usage: less verbose output
+- name: verbose
+  default_value: "false"
+  usage: more verbose output
+see_also:
+- ec fetch - A subcommand to fetch various data for the enterprise contract.

@@ -66,7 +66,7 @@ Validate an application snapshot provided by the ApplicationSnapshot custom
 resource provided via a file using a custom public key and a private Rekor
 instance in strict mode:
 
-ec validate image --file-path my-app.yaml --public-key my-key.pem --rekor-url https://rekor.example.org --strict`,
+  ec validate image --file-path my-app.yaml --public-key my-key.pem --rekor-url https://rekor.example.org --strict`,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			s, err := applicationsnapshot.DetermineInputSpec(data.filePath, data.input, data.imageRef)
 			if err != nil {

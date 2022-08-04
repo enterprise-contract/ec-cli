@@ -1,0 +1,25 @@
+---
+runtime:
+  cache_dir: ./.cache/antora
+  log:
+    failure_level: warn
+site:
+  title: HACBS Enterprise Contract Command Line Interface
+  url: https://hacbs-contract.github.io/ec-cli/
+  start_page: ec-cli::index.adoc
+  robots: allow
+content:
+  sources:
+    - url: .
+      start_path: docs
+      branches: HEAD
+ui:
+  bundle:
+    url: https://gitlab.com/antora/antora-ui-default/-/jobs/artifacts/HEAD/raw/build/ui-bundle.zip?job=bundle-stable
+    snapshot: true
+  supplemental_files: ./supplemental-ui
+output:
+  dir: ./public
+antora:
+  extensions:
+  - require: ./docs/lib/reference.js

@@ -1,0 +1,24 @@
+name: ec
+synopsis: Tool to enforce enterprise contracts
+description: 'TODO: description'
+options:
+- name: debug
+  default_value: "false"
+  usage: |
+    same as verbose but also show function names and line numbers
+- name: help
+  shorthand: h
+  default_value: "false"
+  usage: help for ec
+- name: quiet
+  default_value: "false"
+  usage: less verbose output
+- name: verbose
+  default_value: "false"
+  usage: more verbose output
+see_also:
+- ec fetch - A subcommand to fetch various data for the enterprise contract.
+- ec replace - Replace image references in the given input
+- ec track - Track resources
+- ec validate - Provides validation of various object
+- ec version - Print version information

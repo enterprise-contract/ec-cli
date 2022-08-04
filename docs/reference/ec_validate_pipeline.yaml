@@ -1,0 +1,60 @@
+name: ec validate pipeline
+synopsis: Validates a pipeline file
+description: |-
+  This command validates one or more Tekton Pipeline definition files.Definition
+  files can be either YAML or JSON format. Multiple definition files can be
+  specified by providing a comma seperated list, ensuring no spaces, or by
+  repeating the `--pipeline-file` flag.
+
+  The git repository, from which the policies should be checked out, can be
+  specified as can a specific branch. If policies are not contained in the
+  standard 'policy' subdirectory, the appropriate subdirectory within the
+  repository can be specified.
+
+  The namespace of policies can be specified as well, by use of the
+  '--namespace' flag.
+usage: ec validate pipeline [flags]
+options:
+- name: branch
+  default_value: main
+  usage: Branch to use.
+- name: help
+  shorthand: h
+  default_value: "false"
+  usage: help for pipeline
+- name: namespace
+  default_value: pipeline.main
+  usage: Namespace of policy to validate against
+- name: pipeline-file
+  shorthand: p
+  default_value: '[]'
+  usage: |
+    REQUIRED - The path to the pipeline file to validate. Can be JSON or YAML
+- name: policy-dir
+  default_value: policy
+  usage: |
+    Subdirectory containing policies, if not in default 'policy' subdirectory.
+- name: policy-repo
+  default_value: https://github.com/hacbs-contract/ec-policies.git
+  usage: Git repo containing policies.
+inherited_options:
+- name: debug
+  default_value: "false"
+  usage: |
+    same as verbose but also show function names and line numbers
+- name: quiet
+  default_value: "false"
+  usage: less verbose output
+- name: verbose
+  default_value: "false"
+  usage: more verbose output
+example: |2
+    ec validate pipeline --pipeline-file /path/to/pipeline.file
+    ec validate pipeline --pipeline-file /path/to/pipeline.file,/path/to/other-pipeline.file
+    ec validate pipeline --pipeline-file /path/to/pipeline.file --pipeline-file /path/to/other-pipeline.file
+    ec validate pipeline --pipeline-file /path/to/pipeline.file --policy-repo https://example.com/user/repo.git
+    ec validate pipeline --pipeline-file /path/to/pipeline.file --branch foo
+    ec validate pipeline --pipeline-file /path/to/pipeline.file --policy-dir policies
+    ec validate pipeline --pipeline-file /path/to/pipeline.file --namespace pipeline.basic
+see_also:
+- ec validate - Provides validation of various object

@@ -1,0 +1,37 @@
+name: ec track bundle
+synopsis: Record tracking information about the bundle
+usage: ec track bundle [flags]
+options:
+- name: bundle
+  shorthand: b
+  default_value: '[]'
+  usage: |
+    REQUIRED - The bundle image reference to  track - may be used multiple times
+- name: help
+  shorthand: h
+  default_value: "false"
+  usage: help for bundle
+- name: input
+  shorthand: i
+  usage: An existing tracking file
+- name: output
+  shorthand: o
+  usage: |
+    Write modified tracking file to a file. Use empty string for stdout, default behavior
+- name: replace
+  shorthand: r
+  default_value: "false"
+  usage: Modify input file in-place.
+inherited_options:
+- name: debug
+  default_value: "false"
+  usage: |
+    same as verbose but also show function names and line numbers
+- name: quiet
+  default_value: "false"
+  usage: less verbose output
+- name: verbose
+  default_value: "false"
+  usage: more verbose output
+see_also:
+- ec track - Track resources

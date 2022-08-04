@@ -44,7 +44,7 @@ func replaceCmd(replace replaceFn) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "replace",
 		Short: "Replace image references in the given input",
-		Example: `ec replace --source <source path> [<image uri> ...]
+		Example: `  ec replace --source <source path> [<image uri> ...]
 
 Display a modified version of the source file where
 all occurences of bundle references from the main Tekton

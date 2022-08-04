@@ -1,0 +1,5 @@
+* xref:index.adoc[Documentation]
+** xref:reference.adoc[Reference]
+{{#each reference}}
+*** xref:{{ path }}[{{ name }}]
+{{/each}}

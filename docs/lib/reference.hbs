@@ -1,0 +1,39 @@
+= {{ name }}
+
+{{ synopsis }}
+
+{{#if description}}
+== Synopsis
+
+{{ description}}
+
+{{#if usage}}
+[source,shell]
+----
+{{{ usage }}}
+----
+{{/if}}
+{{/if}}{{! #if description }}
+
+{{#if example}}
+== Examples
+{{{ example }}}
+{{/if}}
+
+== Options
+
+{{#each options}}
+{{#if shorthand }}--{{ shorthand }}, {{/if}} --{{ name }}:: {{ usage }}{{#if default_value}} (Default: {{ default_value }}){{/if}}
+{{/each}}
+
+== Options inherited from parent commands
+
+{{#each inherited_options}}
+{{#if shorthand }}--{{ shorthand }}, {{/if}} --{{ name }}:: {{ usage }}{{#if default_value}} (Default: {{ default_value }}){{/if}}
+{{/each}}
+
+== See also
+
+{{#each see_also}}
+ * {{ seeAlso . }}
+{{/each}}

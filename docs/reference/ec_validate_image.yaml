@@ -1,0 +1,66 @@
+name: ec validate image
+synopsis: |
+  Validates container image conformance with the Enterprise Contract
+description: |-
+  Validates image signature, signature of related artifacts such as build
+  attestation signature, transparency logs for the image signature and releated
+  artifacts, gathers build related data and evaluates the enterprise policy
+  against it.
+usage: ec validate image [flags]
+options:
+- name: file-path
+  shorthand: f
+  usage: Path to ApplicationSnapshot JSON file
+- name: help
+  shorthand: h
+  default_value: "false"
+  usage: help for image
+- name: image
+  shorthand: i
+  usage: Image reference
+- name: json-input
+  shorthand: j
+  usage: ApplicationSnapshot JSON string
+- name: output-file
+  shorthand: o
+  usage: Path to output file
+- name: policy
+  shorthand: p
+  default_value: ec-policy
+  usage: Policy configuration name
+- name: public-key
+  shorthand: k
+  usage: Public key
+- name: rekor-url
+  shorthand: r
+  default_value: https://rekor.sigstore.dev/
+  usage: Rekor URL
+- name: strict
+  shorthand: s
+  default_value: "false"
+  usage: Enable strict mode
+inherited_options:
+- name: debug
+  default_value: "false"
+  usage: |
+    same as verbose but also show function names and line numbers
+- name: quiet
+  default_value: "false"
+  usage: less verbose output
+- name: verbose
+  default_value: "false"
+  usage: more verbose output
+example: |-
+  Validate single image "registry/name:tag" with the default policy defined in
+  the EnterpriseContractPolicy custom resource named "ec-policy" in the current
+  Kubernetes namespace:
+
+    ec validate image --image registry/name:tag
+
+  Validate an application snapshot provided by the ApplicationSnapshot custom
+  resource provided via a file using a custom public key and a private Rekor
+  instance in strict mode:
+
+    ec validate image --file-path my-app.yaml --public-key my-key.pem --rekor-url https://rekor.example.org --strict
+see_also:
+- ec validate - Provides validation of various object

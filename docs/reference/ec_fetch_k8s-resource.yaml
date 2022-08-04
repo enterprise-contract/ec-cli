@@ -1,0 +1,42 @@
+name: ec fetch k8s-resource
+synopsis: Capture signed off signatures from a k8s resource.
+description: |
+  Authorizations are defined in the enterprise contract resource.
+usage: ec fetch k8s-resource [flags]
+options:
+- name: file-path
+  shorthand: f
+  usage: Path to ApplicationSnapshot JSON file
+- name: help
+  shorthand: h
+  default_value: "false"
+  usage: help for k8s-resource
+- name: image-ref
+  usage: The OCI repo to fetch the attestation from.
+- name: json-input
+  shorthand: j
+  usage: ApplicationSnapshot JSON string
+- name: namespace
+  shorthand: "n"
+  usage: Namespace containing the ec resource
+- name: public-key
+  usage: Public key
+- name: resource
+  shorthand: r
+  usage: The ec resource holding the authorization
+- name: server
+  shorthand: s
+  usage: Kubernetes server containing the ec resource
+inherited_options:
+- name: debug
+  default_value: "false"
+  usage: |
+    same as verbose but also show function names and line numbers
+- name: quiet
+  default_value: "false"
+  usage: less verbose output
+- name: verbose
+  default_value: "false"
+  usage: more verbose output
+see_also:
+- ec fetch - A subcommand to fetch various data for the enterprise contract.
