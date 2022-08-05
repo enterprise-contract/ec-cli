@@ -13,9 +13,14 @@
 # limitations under the License.
 #
 # SPDX-License-Identifier: Apache-2.0
-
+---
 ignore:
   - "internal/acceptance"
 parsers:
   go:
     partials_as_hits: true
+coverage:
+  status:
+    project:
+      ec-cli:
+        threshold: 5%
