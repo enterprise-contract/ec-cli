@@ -176,4 +176,5 @@ internal/acceptance/.persisted
 # Antora cache
 .cache
 # Rendered documentation output
-public
+website/public
+node_modules

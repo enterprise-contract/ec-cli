@@ -10,7 +10,7 @@ site:
   robots: allow
 content:
   sources:
-    - url: .
+    - url: ..
       start_path: docs
       branches: HEAD
 ui:
@@ -22,4 +22,4 @@ output:
   dir: ./public
 antora:
   extensions:
-  - require: ./docs/lib/reference.js
+    - require: '@hacbs-contract/reference-antora-extension'

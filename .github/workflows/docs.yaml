@@ -12,6 +12,7 @@ jobs:
     permissions:
       pages: write
       id-token: write
+      packages: read
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -25,8 +26,14 @@ jobs:
           cache: true
           go-version-file: go.mod
 
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
       - name: Generate website
-        run: make docs
+        run: make website
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v1
@@ -34,7 +41,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
-          path: 'public'
+          path: 'website/public'
 
       - name: Deploy to GitHub Pages
         id: deployment
