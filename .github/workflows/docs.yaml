@@ -35,6 +35,9 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Check for uncommitted changes
+        run: git diff --exit-code -- docs/reference
+
       - name: Setup Pages
         uses: actions/configure-pages@v1
 
