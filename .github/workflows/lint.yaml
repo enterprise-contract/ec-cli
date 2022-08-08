@@ -35,6 +35,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Setup Go environment
         uses: actions/setup-go@v3
@@ -42,10 +44,5 @@ jobs:
           cache: true
           go-version-file: go.mod
 
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v3
-        with:
-          version: latest
-          only-new-issues: true
-          skip-cache: true
-          args: --timeout 5m --sort-results
+      - name: Lint
+        run: make lint
