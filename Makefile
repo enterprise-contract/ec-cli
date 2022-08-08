@@ -47,6 +47,7 @@ build: dist/ec_$(shell go env GOOS)_$(shell go env GOARCH) ## Build the ec binar
 
 .PHONY: docs
 docs: ## Generate documentation
+	@rm docs/reference/*.yaml
 	@go run internal/documentation/documentation.go -yaml docs/reference
 
 .PHONY: website
