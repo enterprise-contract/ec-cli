@@ -44,5 +44,8 @@ jobs:
           cache: true
           go-version-file: go.mod
 
+      - name: Download go dependencies
+        run: go mod download
+
       - name: Lint
         run: make lint

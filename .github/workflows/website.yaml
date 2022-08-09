@@ -45,6 +45,9 @@ jobs:
           cache: true
           go-version-file: go.mod
 
+      - name: Download go dependencies
+        run: go mod download
+
       - uses: actions/setup-node@v3
         with:
           node-version: 18
