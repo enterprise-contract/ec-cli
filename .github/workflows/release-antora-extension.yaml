@@ -35,10 +35,9 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-          registry-url: 'https://npm.pkg.github.com'
       - run: |
           npm version prerelease --preid $(git rev-parse HEAD)
-          npm publish
+          npm publish --access=public
         working-directory: reference-antora-extension
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

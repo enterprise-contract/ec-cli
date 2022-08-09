@@ -8,9 +8,7 @@
   },
   "homepage": "https://hacbs-contract.github.io/ec-cli/",
   "devDependencies": {
-    "@hacbs-contract/reference-antora-extension": "latest"
-  },
-  "dependencies": {
+    "@hacbs-contract/reference-antora-extension": "latest",
     "antora": "^3.0.3"
   },
   "overrides": {
