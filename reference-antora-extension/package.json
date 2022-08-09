@@ -13,8 +13,5 @@
   "bugs": {
     "url": "https://issues.redhat.com/browse/HACBS"
   },
-  "homepage": "https://github.com/hacbs-contract/ec-cli/tree/main/reference-antora-extension#readme",
-  "publishConfig": {
-    "registry":"https://npm.pkg.github.com"
-  }
+  "homepage": "https://github.com/hacbs-contract/ec-cli/tree/main/reference-antora-extension#readme"
 }
