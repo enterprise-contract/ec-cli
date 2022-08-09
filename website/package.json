@@ -9,5 +9,14 @@
   "homepage": "https://hacbs-contract.github.io/ec-cli/",
   "devDependencies": {
     "@hacbs-contract/reference-antora-extension": "latest"
+  },
+  "dependencies": {
+    "antora": "^3.0.3"
+  },
+  "overrides": {
+    "glob-parent": "6.0.2"
+  },
+  "scripts": {
+    "render": "antora generate --clean --fetch antora-playbook.yml"
   }
 }

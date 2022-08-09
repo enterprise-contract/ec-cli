@@ -56,7 +56,7 @@ website: docs ## Render the website
 # On GitHub actions we authenticate from the workflow, locally folk must authenticate using:
 # https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-npm-registry#authenticating-with-a-personal-access-token
 	@npm install --no-progress
-	@npm exec -y --quiet -- antora generate --clean --fetch antora-playbook.yml
+	@npm run render
 
 .PHONY: test
 test: ## Run unit tests
