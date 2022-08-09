@@ -18,7 +18,7 @@ options:
   usage: more verbose output
 see_also:
 - ec fetch - A subcommand to fetch various data for the enterprise contract.
-- ec replace - Replace image references in the given input
+- ec replace - Replace image references in the given source
 - ec track - Track resources
 - ec validate - Provides validation of various object
 - ec version - Print version information
