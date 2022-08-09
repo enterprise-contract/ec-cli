@@ -30,7 +30,7 @@ module.exports.register = function () {
             return `xref:${path}[${name}] - ${description}`
         })
 
-        const content = contentAggregate[0] // ROOT module
+        const content = contentAggregate.find(c => c.name === 'ec-cli') // ec-cli module
 
         const referenceTemplate = content.files.find(f => f.path.endsWith('reference.hbs'))
         const template = Handlebars.compile(referenceTemplate.contents.toString());
