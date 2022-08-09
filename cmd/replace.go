@@ -17,6 +17,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -25,7 +26,7 @@ import (
 	"github.com/hacbs-contract/ec-cli/internal/replacer"
 )
 
-type replaceFn func([]string, string, *replacer.CatalogOptions) ([]byte, error)
+type replaceFn func(context.Context, []string, string, bool, *replacer.CatalogOptions) ([]byte, error)
 
 func replaceCmd(replace replaceFn) *cobra.Command {
 	var data = struct {
@@ -43,7 +44,33 @@ func replaceCmd(replace replaceFn) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "replace",
-		Short: "Replace image references in the given input",
+		Short: "Replace image references in the given source",
+		Long: `Replace image references in the given source
+
+Given a source, process its contents to identify Tekton bundle
+image references and replace them with an updated version.
+
+For any image reference matching the catalog-repo-base, Tekton
+Hub is consulted to determine the latest version of the task,
+and its latest image reference. The original image reference is
+then replaced with its latest version.
+
+If one or more image parameters are provided, they will also be
+used to replace image references matching the same OCI repository.
+For example, the image reference "example.com/repo:1.2" would
+replace the image reference "example.com/repo:1.1". The provided
+image reference can inlude a tag, a digest, or both. If a digest
+is not provided, ec will query the repository for this value.
+
+The following source types are supported:
+
+file: simply a file accessible by the local file system. It
+  can be optionally prefixed with the string file://
+
+git repo: a reference to a git repository. By default, the
+  branch named main is used. Add the suffix #<branch> to
+  specify a different branch. This source type is defined by
+  any one of the prefixes https:// http:// git://`,
 		Example: `  ec replace --source <source path> [<image uri> ...]
 
 Display a modified version of the source file where
@@ -51,6 +78,14 @@ all occurences of bundle references from the main Tekton
 catalog are replace with the corresponding latest version:
 
   ec replace --source resource.yaml
+
+Process all the yaml files in the main branch of a git repository:
+
+  ec replace --source https://git.example.com/org/repo
+
+Specify an alternative branch:
+
+  ec replace --source https://git.example.com/org/repo#my-branch
 
 In addition to the Tekton catalog, also replace occurences of
 the provided image:
@@ -68,7 +103,7 @@ the provided images:
 				HubAPIURL:   data.catalogHubAPIURL,
 			}
 
-			out, err := replace(images, data.source, catalogOptions)
+			out, err := replace(cmd.Context(), images, data.source, data.overwrite, catalogOptions)
 			if err != nil {
 				return err
 			}
@@ -87,28 +122,12 @@ the provided images:
 				}
 			}
 
-			if data.overwrite {
-				stat, err := os.Stat(data.source)
-				if err != nil {
-					return err
-				}
-				f, err := os.OpenFile(data.source, os.O_RDWR, stat.Mode())
-				if err != nil {
-					return err
-				}
-				defer f.Close()
-				_, err = f.Write(out)
-				if err != nil {
-					return err
-				}
-			}
-
 			return nil
 		},
 	}
 
 	cmd.Flags().StringVarP(&data.source, "source", "s", data.source,
-		"REQUIRED - An existing YAML file")
+		"REQUIRED - An existing YAML file or a git repository reference")
 
 	cmd.Flags().BoolVar(&data.overwrite, "overwrite", data.overwrite,
 		"Overwrite source file with changes")
