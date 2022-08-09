@@ -87,14 +87,14 @@ acceptance: ## Run acceptance tests
 .PHONY: lint
 lint: ## Run linter
 # addlicense doesn't give us a nice explanation so we prefix it with one
-	@go run github.com/google/addlicense -c $(COPY) -s -check . | sed 's/^/Missing license header in: /g'
+	@go run github.com/google/addlicense -c $(COPY) -s -check -ignore 'docs/reference/*.yaml' . | sed 's/^/Missing license header in: /g'
 # piping to sed above looses the exit code, luckily addlicense is fast so we invoke it for the second time to exit 1 in case of issues
-	@go run github.com/google/addlicense -c $(COPY) -s -check . >/dev/null 2>&1
+	@go run github.com/google/addlicense -c $(COPY) -s -check -ignore 'docs/reference/*.yaml' . >/dev/null 2>&1
 	@go run github.com/golangci/golangci-lint/cmd/golangci-lint run --sort-results $(if $(GITHUB_ACTIONS), --out-format=github-actions --timeout=5m0s)
 
 .PHONY: lint-fix
 lint-fix: ## Fix linting issues automagically
-	@go run github.com/google/addlicense -c $(COPY) -s .
+	@go run github.com/google/addlicense -c $(COPY) -s -ignore 'docs/reference/*.yaml' .
 	@go run github.com/daixiang0/gci write -s standard -s default -s "prefix(github.com/hacbs-contract/ec-cli)" .
 	@go run github.com/golangci/golangci-lint/cmd/golangci-lint run --fix
 
