@@ -55,7 +55,7 @@ website: docs ## Render the website
 	@cd website
 # On GitHub actions we authenticate from the workflow, locally folk must authenticate using:
 # https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-npm-registry#authenticating-with-a-personal-access-token
-	@npm install --no-progress
+	@npm clean-install --no-progress
 	@npm run render
 
 .PHONY: test
