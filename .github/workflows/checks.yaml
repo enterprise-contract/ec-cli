@@ -39,6 +39,9 @@ jobs:
           cache: true
           go-version-file: go.mod
 
+      - name: Download go dependencies
+        run: go mod download
+
       - name: Test
         run: make test
 
