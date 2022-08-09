@@ -1,0 +1,23 @@
+name: ec validate
+synopsis: Provides validation of various object
+description: TODO
+options:
+- name: help
+  shorthand: h
+  default_value: "false"
+  usage: help for validate
+inherited_options:
+- name: debug
+  default_value: "false"
+  usage: |
+    same as verbose but also show function names and line numbers
+- name: quiet
+  default_value: "false"
+  usage: less verbose output
+- name: verbose
+  default_value: "false"
+  usage: more verbose output
+see_also:
+- ec - Tool to enforce enterprise contracts
+- ec validate image - Validates container image conformance with the Enterprise Contract
+- ec validate pipeline - Validates a pipeline file

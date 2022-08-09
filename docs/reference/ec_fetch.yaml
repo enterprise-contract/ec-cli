@@ -1,0 +1,23 @@
+name: ec fetch
+synopsis: |
+  A subcommand to fetch various data for the enterprise contract.
+options:
+- name: help
+  shorthand: h
+  default_value: "false"
+  usage: help for fetch
+inherited_options:
+- name: debug
+  default_value: "false"
+  usage: |
+    same as verbose but also show function names and line numbers
+- name: quiet
+  default_value: "false"
+  usage: less verbose output
+- name: verbose
+  default_value: "false"
+  usage: more verbose output
+see_also:
+- ec - Tool to enforce enterprise contracts
+- ec fetch commit - Capture authorizations from a source (github repo, Jira)
+- ec fetch k8s-resource - Capture signed off signatures from a k8s resource.

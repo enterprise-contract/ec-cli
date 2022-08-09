@@ -23,19 +23,18 @@ name: Docs
       - main
 
 jobs:
-  hugo:
+  antora:
     runs-on: ubuntu-latest
     permissions:
       pages: write
       id-token: write
+      packages: read
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-        with:
-          submodules: true
 
       - name: Setup Go environment
         uses: actions/setup-go@v3
@@ -43,8 +42,17 @@ jobs:
           cache: true
           go-version-file: go.mod
 
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
       - name: Generate website
         run: make website
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check for uncommitted changes
+        run: git diff --exit-code -- docs/reference
 
       - name: Setup Pages
         uses: actions/configure-pages@v1
@@ -52,7 +60,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
-          path: 'docs/public'
+          path: 'website/public'
 
       - name: Deploy to GitHub Pages
         id: deployment

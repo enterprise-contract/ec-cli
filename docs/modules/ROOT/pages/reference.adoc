@@ -1,0 +1,3 @@
+= ec command line reference documentation
+
+TODO add command reference introduction here

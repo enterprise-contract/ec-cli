@@ -45,6 +45,8 @@ require (
 
 replace go.etcd.io/etcd/v3 => go.etcd.io/etcd/v3 v3.6.0-alpha.0
 
+replace github.com/spf13/cobra => github.com/zregvart/cobra v0.0.0-20220804134604-e8f9808db600
+
 require (
 	4d63.com/gochecknoglobals v0.1.0 // indirect
 	bitbucket.org/creachadair/shell v0.0.7 // indirect

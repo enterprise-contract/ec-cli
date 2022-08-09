@@ -15,7 +15,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 ---
-name: Release
+name: Release ec CLI
 
 "on":
   push:
@@ -23,7 +23,7 @@ name: Release
       - main
 
 jobs:
-  build:
+  release-ec:
 
     name: Release
     runs-on: ubuntu-latest

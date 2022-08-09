@@ -47,11 +47,16 @@ build: dist/ec_$(shell go env GOOS)_$(shell go env GOARCH) ## Build the ec binar
 
 .PHONY: docs
 docs: ## Generate documentation
-	@go run internal/documentation/documentation.go
+	@rm docs/reference/*.yaml
+	@go run internal/documentation/documentation.go -yaml docs/reference
 
 .PHONY: website
-website: docs ## Generate website
-	@cd docs; go run -tags=extended github.com/gohugoio/hugo
+website: docs ## Render the website
+	@cd website
+# On GitHub actions we authenticate from the workflow, locally folk must authenticate using:
+# https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-npm-registry#authenticating-with-a-personal-access-token
+	@npm install --no-progress
+	@npm exec -y --quiet -- antora generate --clean --fetch antora-playbook.yml
 
 .PHONY: test
 test: ## Run unit tests
