@@ -30,11 +30,10 @@ options:
   usage: Policy configuration name
 - name: public-key
   shorthand: k
-  usage: Public key
+  usage: Public key. Overrides publicKey from policy configuration
 - name: rekor-url
   shorthand: r
-  default_value: https://rekor.sigstore.dev/
-  usage: Rekor URL
+  usage: Rekor URL. Overrides rekorURL from policy configuration
 - name: strict
   shorthand: s
   default_value: "false"

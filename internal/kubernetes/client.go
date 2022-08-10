@@ -18,13 +18,11 @@ package kubernetes
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 
 	ecp "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	controllerruntime "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -66,20 +64,32 @@ func createControllerRuntimeClient() (client.Client, error) {
 	return clnt, err
 }
 
-// FetchEnterpriseContractPolicy gets the Enterprise Contract Policy from the given namespace in a Kubernetes cluster
-func (k *Client) FetchEnterpriseContractPolicy(ctx context.Context, name types.NamespacedName) (*ecp.EnterpriseContractPolicy, error) {
+// FetchEnterpriseContractPolicy gets the Enterprise Contract Policy from the given
+// reference in a Kubernetes cluster.
+//
+// The reference is expected to be in the format [<namespace>/]<name>. If it does not contain
+// a namespace, the current namespace is used.
+func (k *Client) FetchEnterpriseContractPolicy(ctx context.Context, ref string) (*ecp.EnterpriseContractPolicy, error) {
+	if len(ref) == 0 {
+		return nil, errors.New("policy reference cannot be empty")
+	}
+	log.Debugf("Raw policy reference: %q", ref)
+
+	name, err := NamespacedName(ref)
+	if err != nil {
+		return nil, err
+	}
+	log.Debugf("Parsed policy reference: %v", name)
 	if name.Namespace == "" {
-		return nil, errors.New("missing namespace")
+		return nil, errors.New("unable to determine namespace for policy")
 	}
 
 	policy := &ecp.EnterpriseContractPolicy{}
-
-	err := k.client.Get(ctx, name, policy)
-	if err != nil {
-		log.Debug("Failed to get policy from cluster!")
+	if err := k.client.Get(ctx, *name, policy); err != nil {
+		log.Debugf("Failed to fetch the policy from cluster: %s", err)
 		return nil, err
 	}
-	policyJson, _ := json.Marshal(policy.Spec)
-	log.Debugf("Policy fetched:\n%s", policyJson)
+	log.Debugf("Policy successfully fetched from cluster: %#v", policy)
+
 	return policy, nil
 }

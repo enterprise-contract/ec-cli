@@ -27,16 +27,15 @@ import (
 	"github.com/google/go-containerregistry/pkg/name"
 	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/in-toto/in-toto-golang/in_toto"
-	"github.com/sigstore/cosign/cmd/cosign/cli/rekor"
 	"github.com/sigstore/cosign/pkg/cosign"
 	"github.com/sigstore/cosign/pkg/oci"
-	"github.com/sigstore/cosign/pkg/policy"
-	"github.com/sigstore/cosign/pkg/signature"
+	cosignPolicy "github.com/sigstore/cosign/pkg/policy"
 	cosignTypes "github.com/sigstore/cosign/pkg/types"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/hacbs-contract/ec-cli/internal/evaluator"
 	"github.com/hacbs-contract/ec-cli/internal/kubernetes"
+	"github.com/hacbs-contract/ec-cli/internal/policy"
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
 )
 
@@ -59,17 +58,6 @@ type ApplicationSnapshotImage struct {
 
 // NewApplicationSnapshotImage returns an ApplicationSnapshotImage struct with reference, checkOpts, and evaluator ready to use.
 func NewApplicationSnapshotImage(ctx context.Context, image string, publicKey string, rekorURL string, policyConfiguration string) (*ApplicationSnapshotImage, error) {
-	if len(policyConfiguration) == 0 {
-		return nil, fmt.Errorf("policy: policy name is required")
-	}
-	log.Debugf("Raw policy name %s", policyConfiguration)
-
-	policyName, err := kubernetes.NamespacedName(policyConfiguration)
-	if err != nil {
-		return nil, err
-	}
-	log.Debugf("Parsed policy name %s", policyName)
-
 	ref, err := name.ParseReference(image)
 	if err != nil {
 		log.Debugf("Failed to parse reference %s", image)
@@ -77,7 +65,22 @@ func NewApplicationSnapshotImage(ctx context.Context, image string, publicKey st
 	}
 	log.Debugf("Parsed reference %s", ref)
 
-	checkOpts, err := getCheckOpts(ctx, publicKey, rekorURL)
+	k8s, err := kubernetesClientCreator()
+	if err != nil {
+		log.Debug("Failed to initialize Kubernetes client")
+		return nil, err
+	}
+
+	ecp, err := k8s.FetchEnterpriseContractPolicy(ctx, policyConfiguration)
+	if err != nil {
+		log.Debug("Failed to fetch the enterprise contract policy from the cluster!")
+		return nil, err
+	}
+	log.Debug("Enterprise contract policy fetched from cluster")
+	ecp = policy.WithRekorUrl(ecp, rekorURL)
+	ecp = policy.WithPublicKey(ecp, publicKey)
+
+	checkOpts, err := policy.CheckOpts(ctx, ecp)
 	if err != nil {
 		return nil, err
 	}
@@ -103,21 +106,8 @@ func NewApplicationSnapshotImage(ctx context.Context, image string, publicKey st
 
 	a := &ApplicationSnapshotImage{
 		reference: ref,
-		checkOpts: checkOpts,
+		checkOpts: *checkOpts,
 	}
-
-	k8s, err := kubernetesClientCreator()
-	if err != nil {
-		log.Debug("Failed to initialize Kubernetes client")
-		return nil, err
-	}
-
-	ecp, err := k8s.FetchEnterpriseContractPolicy(ctx, *policyName)
-	if err != nil {
-		log.Debug("Failed to fetch the enterprise contract policy from the cluster!")
-		return nil, err
-	}
-	log.Debug("Enterprise contract policy fetched from cluster")
 
 	policies, err := fetchPolicyRepos(ecp.Spec)
 	if err != nil {
@@ -138,31 +128,6 @@ func NewApplicationSnapshotImage(ctx context.Context, image string, publicKey st
 	log.Debug("Conftest evaluator initialized")
 	a.Evaluator = c
 	return a, nil
-}
-
-// getCheckOpts returns a cosign.CheckOpts struct
-func getCheckOpts(ctx context.Context, publicKey string, rekorURL string) (cosign.CheckOpts, error) {
-	verifier, err := signature.PublicKeyFromKeyRef(ctx, publicKey)
-	if err != nil {
-		log.Debugf("Problem creating signature verifier using public key %s", publicKey)
-		return cosign.CheckOpts{}, err
-	}
-
-	checkOpts := cosign.CheckOpts{}
-	checkOpts.SigVerifier = verifier
-	log.Debugf("Signature verifier created using public key %s", publicKey)
-
-	if len(rekorURL) > 0 {
-		rekorClient, err := rekor.NewClient(rekorURL)
-		if err != nil {
-			log.Debug("Problem creating a rekor client")
-			return cosign.CheckOpts{}, err
-		}
-
-		checkOpts.RekorClient = rekorClient
-		log.Debug("Rekor client created")
-	}
-	return checkOpts, nil
 }
 
 // fetchPolicyRepos returns an array of Policy repos
@@ -218,7 +183,7 @@ func (a *ApplicationSnapshotImage) WriteInputFiles(ctx context.Context) ([]strin
 			log.Debugf("Skipping unexpected media type %s", typ)
 			continue
 		}
-		payload, err := policy.AttestationToPayloadJSON(ctx, "slsaprovenance", att)
+		payload, err := cosignPolicy.AttestationToPayloadJSON(ctx, "slsaprovenance", att)
 		if err != nil {
 			log.Debug("Problem extracting json payload from attestation!")
 			return nil, err

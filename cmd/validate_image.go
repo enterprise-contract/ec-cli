@@ -46,7 +46,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		spec                *appstudioshared.ApplicationSnapshotSpec
 	}{
 		policyConfiguration: "ec-policy",
-		rekorURL:            "https://rekor.sigstore.dev/",
+		rekorURL:            "",
 		strict:              false,
 	}
 	cmd := &cobra.Command{
@@ -156,14 +156,15 @@ instance in strict mode:
 	}
 	cmd.Flags().StringVarP(&data.policyConfiguration, "policy", "p", data.policyConfiguration, "Policy configuration name")
 	cmd.Flags().StringVarP(&data.imageRef, "image", "i", data.imageRef, "Image reference")
-	cmd.Flags().StringVarP(&data.publicKey, "public-key", "k", data.publicKey, "Public key")
-	cmd.Flags().StringVarP(&data.rekorURL, "rekor-url", "r", data.rekorURL, "Rekor URL")
+	cmd.Flags().StringVarP(&data.publicKey, "public-key", "k", data.publicKey,
+		"Public key. Overrides publicKey from policy configuration")
+	cmd.Flags().StringVarP(&data.rekorURL, "rekor-url", "r", data.rekorURL,
+		"Rekor URL. Overrides rekorURL from policy configuration")
 	cmd.Flags().StringVarP(&data.filePath, "file-path", "f", data.filePath, "Path to ApplicationSnapshot JSON file")
 	cmd.Flags().StringVarP(&data.input, "json-input", "j", data.input, "ApplicationSnapshot JSON string")
 	cmd.Flags().StringVarP(&data.output, "output-file", "o", data.output, "Path to output file")
 	cmd.Flags().BoolVarP(&data.strict, "strict", "s", data.strict, "Enable strict mode")
 
-	_ = cmd.MarkFlagRequired("public-key")
 	if len(data.input) > 0 || len(data.filePath) > 0 {
 		_ = cmd.MarkFlagRequired("image")
 	}

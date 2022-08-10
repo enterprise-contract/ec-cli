@@ -122,17 +122,13 @@ func (k *K8sSource) GetSource() (authorizationGetter, error) {
 }
 
 func fetchECSource(namedResource string) (*ecp.EnterpriseContractPolicy, error) {
-	policyName, err := kubernetes.NamespacedName(namedResource)
-	if err != nil {
-		return nil, err
-	}
 	k8s, err := kubernetesClientCreator()
 	if err != nil {
 		log.Debug("Failed to initialize Kubernetes client")
 		return nil, err
 	}
 
-	ecp, err := k8s.FetchEnterpriseContractPolicy(context.TODO(), *policyName)
+	ecp, err := k8s.FetchEnterpriseContractPolicy(context.TODO(), namedResource)
 	if err != nil {
 		log.Debug("Failed to fetch the enterprise contract policy from the cluster!")
 		return nil, err
