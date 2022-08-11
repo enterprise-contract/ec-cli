@@ -243,40 +243,35 @@ bundle: registry.com/catalog/task-one:1.0
 			}
 
 			expected := `diff --git a/.tekton/pipeline.yaml b/.tekton/pipeline.yaml
-index 7bbff0e62405d90b8c7852014f105e538735df26..47d47116f5c10ed27eb436cc719ad493288a7355 100755
+index 7bbff0e..47d4711 100755
 --- a/.tekton/pipeline.yaml
 +++ b/.tekton/pipeline.yaml
 @@ -1,5 +1,5 @@
--
-+
--spec:
-+spec:
--  pipelineRef:
-+  pipelineRef:
+
+ spec:
+   pipelineRef:
 -	bundle: registry.com/catalog/task-one:1.0
 +	bundle: registry.com/catalog/task-one:1.9@` + testDigest + `
--	name: simple-build
-+	name: simple-build
+ 	name: simple-build
 diff --git a/.tekton/task.yml b/.tekton/task.yml
-index 837cf14d10f90a28b519f9d3394c6cf6cf396d08..48e4035d7bda12d211cc3d90a3163fb81021a5fa 100755
+index 837cf14..48e4035 100755
 --- a/.tekton/task.yml
 +++ b/.tekton/task.yml
 @@ -1,4 +1,4 @@
--
-+
--spec:
-+spec:
--  taskRef:
-+  taskRef:
+
+ spec:
+   taskRef:
 -    bundle: registry.com/catalog/task-two:2.0
 +    bundle: registry.com/catalog/task-two:2.9@` + testDigest + `
+diff --git a/empty/dir/is/ignored/ b/empty/dir/is/ignored/
+deleted file mode 100755
+index e69de29..0000000
 diff --git a/input.yaml b/input.yaml
-index 76af797baed197ed19ce96fa9fc674cdf99338c5..b6a3c5664135222c5aba9d54103167d0a615452e 100755
+index 76af797..b6a3c56 100755
 --- a/input.yaml
 +++ b/input.yaml
 @@ -1,2 +1,2 @@
--
-+
+
 -bundle-o-landia: registry.com/other/repo@sha256:abc
 +bundle-o-landia: registry.com/other/repo:2.9@` + testDigest + `
 `
