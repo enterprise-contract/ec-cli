@@ -19,13 +19,14 @@ package kubernetes
 import (
 	"context"
 	"errors"
+	"io/ioutil"
+	"path"
 	"testing"
 
 	ecp "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 )
@@ -64,25 +65,25 @@ func init() {
 
 func Test_FetchEnterpriseContractPolicy(t *testing.T) {
 	testCases := []struct {
-		name           string
-		namespacedName types.NamespacedName
-		ecp            *ecp.EnterpriseContractPolicy
-		err            string
+		name       string
+		policyName string
+		ecp        *ecp.EnterpriseContractPolicy
+		err        string
 	}{
 		{
-			name:           "fetch-with-name-and-namespace",
-			namespacedName: types.NamespacedName{Name: "ec-policy", Namespace: "test"},
-			ecp:            &testECP,
+			name:       "fetch-with-name-and-namespace",
+			policyName: "test/ec-policy",
+			ecp:        &testECP,
 		},
 		{
-			name:           "fetch-with-name-only",
-			namespacedName: types.NamespacedName{Name: "ec-policy"},
-			err:            "missing namespace",
+			name:       "fetch-with-name-only",
+			policyName: "ec-policy",
+			ecp:        &testECP,
 		},
 		{
-			name:           "fetch-policy-not-found",
-			namespacedName: types.NamespacedName{Name: "ec-policy", Namespace: "missing"},
-			err:            `enterprisecontractpolicies.appstudio.redhat.com "ec-policy" not found`,
+			name:       "fetch-policy-not-found",
+			policyName: "missing/ec-policy",
+			err:        `enterprisecontractpolicies.appstudio.redhat.com "ec-policy" not found`,
 		},
 	}
 
@@ -92,7 +93,12 @@ func Test_FetchEnterpriseContractPolicy(t *testing.T) {
 				client: fakeClient,
 			}
 
-			got, err := k.FetchEnterpriseContractPolicy(context.TODO(), c.namespacedName)
+			kubeconfigFile := path.Join(t.TempDir(), "KUBECONFIG")
+			err := ioutil.WriteFile(kubeconfigFile, testKubeconfig, 0777)
+			assert.NoError(t, err)
+			t.Setenv("KUBECONFIG", kubeconfigFile)
+
+			got, err := k.FetchEnterpriseContractPolicy(context.TODO(), c.policyName)
 
 			if c.err == "" {
 				assert.NoError(t, err)
@@ -124,3 +130,18 @@ func Test_FailureToAddScheme(t *testing.T) {
 
 	assert.EqualError(t, err, "expected")
 }
+
+var testKubeconfig = []byte(`
+apiVersion: v1
+kind: Config
+clusters:
+- cluster:
+    server: https://api.test
+  name: test-cluster
+contexts:
+- context:
+    cluster: test-cluster
+    namespace: test
+  name: test-context
+current-context: test-context
+`)
