@@ -31,9 +31,6 @@ import (
 	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
 
-//CreateWorkDir is a var which can be overwritten in testing.
-var CreateWorkDir = afero.TempDir
-
 // ConftestEvaluator represents a structure which can be used to evaluate targets
 type conftestEvaluator struct {
 	policySources []source.PolicySource
@@ -60,7 +57,7 @@ func NewConftestEvaluator(ctx context.Context, policySources []source.PolicySour
 		outputFormat:  "json",
 	}
 
-	dir, err := c.createWorkDir()
+	dir, err := utils.CreateWorkDir()
 	if err != nil {
 		log.Debug("Failed to create work dir!")
 		return nil, err
@@ -165,9 +162,4 @@ func (c *conftestEvaluator) addPolicyPaths(ctx context.Context) error {
 		c.paths.PolicyPaths = append(c.paths.PolicyPaths, policyPath)
 	}
 	return nil
-}
-
-// createWorkDir creates the working directory in tmp
-func (c *conftestEvaluator) createWorkDir() (string, error) {
-	return CreateWorkDir(utils.AppFS, afero.GetTempDir(utils.AppFS, ""), "ec-work-")
 }

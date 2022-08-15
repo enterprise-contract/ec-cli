@@ -17,6 +17,8 @@ options:
   default_value: "false"
   usage: more verbose output
 see_also:
+- ec create-pr - Create a PR based on the changes in the specified branch targeting
+  the specified branch
 - ec fetch - A subcommand to fetch various data for the enterprise contract.
 - ec replace - Replace image references in the given source
 - ec track - Track resources
