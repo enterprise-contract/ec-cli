@@ -25,7 +25,8 @@ import (
 )
 
 var (
-	AppFS = afero.NewOsFs()
+	AppFS        = afero.NewOsFs()
+	CreateTmpDir = afero.TempDir
 )
 
 // ToJSON converts a single YAML document into a JSON document
@@ -50,4 +51,9 @@ func hasJSONPrefix(buf []byte) bool {
 func hasPrefix(buf []byte, prefix []byte) bool {
 	trim := bytes.TrimLeftFunc(buf, unicode.IsSpace)
 	return bytes.HasPrefix(trim, prefix)
+}
+
+// CreateWorkDir creates the working directory in tmp
+func CreateWorkDir() (string, error) {
+	return CreateTmpDir(AppFS, afero.GetTempDir(AppFS, ""), "ec-work-")
 }
