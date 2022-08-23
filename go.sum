@@ -1520,7 +1520,7 @@ github.com/hashicorp/go-rootcerts v1.0.2 h1:jzhAVGtqPKbwpyCPELlgNWhE1znq+qwJtW5O
 github.com/hashicorp/go-safetemp v1.0.0 h1:2HR189eFNrjHQyENnQMMpCiBAsRxzbTMIgBhEyExpmo=
 github.com/hashicorp/go-safetemp v1.0.0/go.mod h1:oaerMy3BhqiTbVye6QuFhFtIceqFoDHxNAB65b+Rj1I=
 github.com/hashicorp/go-secure-stdlib/mlock v0.1.2 h1:p4AKXPPS24tO8Wc8i1gLvSKdmkiSY5xuju57czJ/IJQ=
-github.com/hashicorp/go-secure-stdlib/parseutil v0.1.7 h1:UpiO20jno/eV1eVZcxqWnUohyKRe1g8FPV/xH1s/2qs=
+github.com/hashicorp/go-secure-stdlib/parseutil v0.1.6 h1:om4Al8Oy7kCm/B86rLCLah4Dt5Aa0Fr5rYBG60OzwHQ=
 github.com/hashicorp/go-secure-stdlib/strutil v0.1.2 h1:kes8mmyCpxJsI7FTwtzRqEy9CdjCtrXrXGuOpxEA7Ts=
 github.com/hashicorp/go-sockaddr v1.0.0/go.mod h1:7Xibr9yA9JjQq1JpNB2Vw7kxv8xerXegt+ozgdvDeDU=
 github.com/hashicorp/go-sockaddr v1.0.2 h1:ztczhD1jLxIRjVejw8gFomI1BQZOe2WoVOu0SyteCQc=
@@ -2266,8 +2266,8 @@ github.com/shteou/go-ignore v0.3.1/go.mod h1:hMVyBe+qt5/Z11W/Fxxf86b5SuL8kM29xNW
 github.com/shurcooL/go v0.0.0-20180423040247-9e1955d9fb6e/go.mod h1:TDJrrUr11Vxrven61rcy3hJMUqaf/CLWYhHNPmT14Lk=
 github.com/shurcooL/go-goon v0.0.0-20170922171312-37c2f522c041/go.mod h1:N5mDOmsrJOB+vfqUK+7DmDyjhSLIIBnXo9lvZJj3MWQ=
 github.com/shurcooL/sanitized_anchor_name v1.0.0/go.mod h1:1NzhyTcUVG4SuEtjjoZeVRXNmyL/1OwPU0+IJeTBvfc=
-github.com/sigstore/cosign v1.11.0 h1:jw0nXSEdcM+6OPSaP5oGCHITM+Brh/rjRerrMrH93e0=
-github.com/sigstore/cosign v1.11.0/go.mod h1:YaoVdaXyZCnCRJeAmsIq5LVD0Cu7saupPp2Ub9dZ5i4=
+github.com/sigstore/cosign v1.10.1 h1:mFRTtJmZtC55tbBE4SHUfqBXux/jN01Wysk7/duyYPA=
+github.com/sigstore/cosign v1.10.1/go.mod h1:7ltQF49sIWp0p0UvXhFtHDQUa4PPw6W53TYlIRlayRA=
 github.com/sigstore/rekor v0.10.0 h1:lhqu403gtsfqf7yOBUm6G5KkI17g4s55jnDOHceYEEM=
 github.com/sigstore/rekor v0.10.0/go.mod h1:optBScc+ylAO6nTRyH3kY5me1ClbQufeLiglesAEiwg=
 github.com/sigstore/sigstore v1.4.0 h1:5A3eUhbSQkhiqJNUPi/2UMKdTyb3NKfWcVjaTBkkaJk=
