@@ -24,19 +24,19 @@ import (
 	"github.com/open-policy-agent/conftest/output"
 )
 
-// VerificationStatus represents the status and message of pass / fail
+// VerificationStatus represents the status of a verification check.
 type VerificationStatus struct {
-	Passed  bool   `json:"passed"`
-	Message string `json:"message,omitempty"`
+	Passed bool           `json:"passed"`
+	Result *output.Result `json:"result,omitempty"`
 }
 
-// addToViolations appends v.Message to the violations array provided
-func (v VerificationStatus) addToViolations(violations []string) []string {
+// addToViolations appends the failure result to the violations slice.
+func (v VerificationStatus) addToViolations(violations []output.Result) []output.Result {
 	if v.Passed {
 		return violations
 	}
 
-	return append(violations, v.Message)
+	return append(violations, *v.Result)
 }
 
 // Output is a struct representing checks and exit code.
@@ -47,16 +47,16 @@ type Output struct {
 	ExitCode                  int                  `json:"-"`
 }
 
-// SetImageSignatureCheck sets the passed and message fields of the ImageSignatureCheck to the given values.
+// SetImageSignatureCheck sets the passed and result.message fields of the ImageSignatureCheck to the given values.
 func (o *Output) SetImageSignatureCheck(passed bool, message string) {
 	o.ImageSignatureCheck.Passed = passed
-	o.ImageSignatureCheck.Message = message
+	o.ImageSignatureCheck.Result = &output.Result{Message: message}
 }
 
-// SetAttestationSignatureCheck sets the passed and message fields of the AttestationSignatureCheck to the given values.
+// SetAttestationSignatureCheck sets the passed and result.message fields of the AttestationSignatureCheck to the given values.
 func (o *Output) SetAttestationSignatureCheck(passed bool, message string) {
 	o.AttestationSignatureCheck.Passed = passed
-	o.AttestationSignatureCheck.Message = message
+	o.AttestationSignatureCheck.Result = &output.Result{Message: message}
 }
 
 // SetPolicyCheck sets the PolicyCheck and ExitCode to the results and exit code of the Results
@@ -72,33 +72,32 @@ func (o *Output) SetPolicyCheck(results []output.CheckResult) {
 	o.ExitCode = output.ExitCode(results)
 }
 
-// addCheckResultToViolations appends the failures from a given output.CheckResult to the violations array
-func addCheckResultToViolations(c output.CheckResult, violations []string) []string {
-	for _, failure := range c.Failures {
-		violations = append(violations, failure.Message)
+// addCheckResultsToViolations appends the Failures from CheckResult to the violations slice.
+func (o Output) addCheckResultsToViolations(violations []output.Result) []output.Result {
+	for _, check := range o.PolicyCheck {
+		violations = append(violations, check.Failures...)
 	}
 
 	return violations
 }
 
-// addCheckResultsToViolations calls addCheckResultToViolation for each output.CheckResult in the given array and add it's
-// failures to the violations array
-func addCheckResultsToViolations(c []output.CheckResult, violations []string) []string {
-	for _, check := range c {
-		violations = addCheckResultToViolations(check, violations)
-	}
-
-	return violations
-}
-
-// Violations returns an array of violations
-func (o Output) Violations() []string {
-	violations := make([]string, 0, 10)
+// Violations aggregates and returns all violations.
+func (o Output) Violations() []output.Result {
+	violations := make([]output.Result, 0, 10)
 	violations = o.ImageSignatureCheck.addToViolations(violations)
 	violations = o.AttestationSignatureCheck.addToViolations(violations)
-	violations = addCheckResultsToViolations(o.PolicyCheck, violations)
+	violations = o.addCheckResultsToViolations(violations)
 
 	return violations
+}
+
+// Warnings aggregates and returns all warnings.
+func (o Output) Warnings() []output.Result {
+	warnings := make([]output.Result, 0, 10)
+	for _, result := range o.PolicyCheck {
+		warnings = append(warnings, result.Warnings...)
+	}
+	return warnings
 }
 
 // Print prints an Output instance

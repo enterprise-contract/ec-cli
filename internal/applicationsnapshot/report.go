@@ -19,13 +19,15 @@ package applicationsnapshot
 import (
 	"encoding/json"
 
+	"github.com/open-policy-agent/conftest/output"
 	appstudioshared "github.com/redhat-appstudio/managed-gitops/appstudio-shared/apis/appstudio.redhat.com/v1alpha1"
 )
 
 type Component struct {
 	appstudioshared.ApplicationSnapshotComponent
-	Violations []string `json:"violations"`
-	Success    bool     `json:"success"`
+	Violations []output.Result `json:"violations"`
+	Warnings   []output.Result `json:"warnings"`
+	Success    bool            `json:"success"`
 }
 
 type report struct {

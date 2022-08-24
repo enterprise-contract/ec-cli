@@ -39,6 +39,7 @@ Feature: evaluate enterprise contract
           "name": "Unnamed",
           "containerImage": "localhost:(\\d+)/acceptance/ec-happy-day",
           "violations": [],
+          "warnings": [],
           "success": true
         }
       ]
@@ -77,10 +78,11 @@ Feature: evaluate enterprise contract
           "name": "Unnamed",
           "containerImage": "localhost:(\\d+)/acceptance/invalid-image-signature",
           "violations": [
-            "no matching signatures:\nfailed to verify signature",
-            "no matching attestations:\nAccepted signatures do not match threshold, Found: 0, Expected 1",
-            "no attestations available"
+            {"msg": "no matching signatures:\nfailed to verify signature"},
+            {"msg": "no matching attestations:\nAccepted signatures do not match threshold, Found: 0, Expected 1"},
+            {"msg": "no attestations available"}
           ],
+          "warnings": [],
           "success": false
         }
       ]
