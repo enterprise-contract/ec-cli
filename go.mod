@@ -24,7 +24,7 @@ require (
 	github.com/pkg/diff v0.0.0-20210226163009-20ebb0f2a09e
 	github.com/pkg/errors v0.9.1
 	github.com/redhat-appstudio/managed-gitops/appstudio-shared v0.0.0-20220615221006-a71c1aa4b97f
-	github.com/sigstore/cosign v1.10.1
+	github.com/sigstore/cosign v1.11.0
 	github.com/sigstore/rekor v0.10.0
 	github.com/sigstore/sigstore v1.4.0
 	github.com/sirupsen/logrus v1.9.0
