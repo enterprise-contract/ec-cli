@@ -130,8 +130,8 @@ func computeLogEntry(ctx context.Context, publicKey, data []byte) (logEntry *mod
 
 	// the contentHash should relate to other entries but since we're faking a single
 	// entry, not related to other entries -- any random contentHash-like hex will be
-	// okay
-	contentHash := randomHex(64)
+	// okay. Similarly, for testing purposes, any payload hash will do.
+	hash := randomHex(64)
 
 	publicKeyBase64 := strfmt.Base64(publicKey)
 
@@ -141,7 +141,11 @@ func computeLogEntry(ctx context.Context, publicKey, data []byte) (logEntry *mod
 			Content: &models.IntotoV001SchemaContent{
 				Hash: &models.IntotoV001SchemaContentHash{
 					Algorithm: &algorithm,
-					Value:     &contentHash,
+					Value:     &hash,
+				},
+				PayloadHash: &models.IntotoV001SchemaContentPayloadHash{
+					Algorithm: &algorithm,
+					Value:     &hash,
 				},
 			},
 			PublicKey: &publicKeyBase64,
