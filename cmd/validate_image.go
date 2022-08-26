@@ -108,6 +108,7 @@ instance in strict mode:
 					// Skip on err to not panic. Error is return on routine completion.
 					if err == nil {
 						res.component.Violations = out.Violations()
+						res.component.Warnings = out.Warnings()
 					}
 					res.component.Success = err == nil && len(res.component.Violations) == 0
 

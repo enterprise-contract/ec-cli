@@ -187,6 +187,7 @@ func Test_ValidateImageCommand(t *testing.T) {
 			"name": "Unnamed",
 			"containerImage": "registry/image:tag",
 			"violations": [],
+			"warnings": [],
 			"success": true
 		  }
 		]
@@ -224,12 +225,12 @@ func Test_FailureOutput(t *testing.T) {
 	validate := func(ctx context.Context, imageRef, policyConfiguration, publicKey, rekorURL string) (*output.Output, error) {
 		return &output.Output{
 			ImageSignatureCheck: output.VerificationStatus{
-				Passed:  false,
-				Message: "failed image signature check",
+				Passed: false,
+				Result: &conftestOutput.Result{Message: "failed image signature check"},
 			},
 			AttestationSignatureCheck: output.VerificationStatus{
-				Passed:  false,
-				Message: "failed attestation signature check",
+				Passed: false,
+				Result: &conftestOutput.Result{Message: "failed attestation signature check"},
 			},
 		}, nil
 	}
@@ -255,10 +256,62 @@ func Test_FailureOutput(t *testing.T) {
 			"name": "Unnamed",
 			"containerImage": "registry/image:tag",
 			"violations": [
-			  "failed image signature check",
-			  "failed attestation signature check"
+			  {"msg": "failed image signature check"},
+			  {"msg": "failed attestation signature check"}
 			],
+			"warnings": [],
 			"success": false
+		  }
+		]
+	  }`, out.String())
+}
+
+func Test_WarningOutput(t *testing.T) {
+	validate := func(ctx context.Context, imageRef, policyConfiguration, publicKey, rekorURL string) (*output.Output, error) {
+		return &output.Output{
+			ImageSignatureCheck: output.VerificationStatus{
+				Passed: true,
+			},
+			AttestationSignatureCheck: output.VerificationStatus{
+				Passed: true,
+			},
+			PolicyCheck: []conftestOutput.CheckResult{
+				{
+					Warnings: []conftestOutput.Result{
+						{Message: "warning for policy check 1"},
+						{Message: "warning for policy check 2"},
+					},
+				},
+			},
+		}, nil
+	}
+
+	cmd := validateImageCmd(validate)
+
+	cmd.SetArgs([]string{
+		"--image",
+		"registry/image:tag",
+		"--public-key",
+		"test-public-key",
+	})
+
+	var out bytes.Buffer
+	cmd.SetOut(&out)
+
+	err := cmd.Execute()
+	assert.NoError(t, err)
+	assert.JSONEq(t, `{
+		"success": true,
+		"components": [
+		  {
+			"name": "Unnamed",
+			"containerImage": "registry/image:tag",
+			"violations": [],
+			"warnings": [
+				{"msg": "warning for policy check 1"},
+				{"msg": "warning for policy check 2"}
+			],
+			"success": true
 		  }
 		]
 	  }`, out.String())
