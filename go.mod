@@ -11,7 +11,7 @@ require (
 	github.com/go-git/go-billy/v5 v5.3.1
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/go-openapi/strfmt v0.21.3
-	github.com/gohugoio/hugo v0.101.0
+	github.com/gohugoio/hugo v0.102.0
 	github.com/golangci/golangci-lint v1.49.0
 	github.com/google/addlicense v1.0.0
 	github.com/google/go-containerregistry v0.11.0
@@ -185,7 +185,7 @@ require (
 	github.com/ettle/strcase v0.1.1 // indirect
 	github.com/evanphx/json-patch v5.6.0+incompatible // indirect
 	github.com/evanphx/json-patch/v5 v5.6.0 // indirect
-	github.com/evanw/esbuild v0.14.43 // indirect
+	github.com/evanw/esbuild v0.15.5 // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/firefart/nonamedreturns v1.0.4 // indirect
@@ -193,7 +193,7 @@ require (
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/fullstorydev/grpcurl v1.8.6 // indirect
 	github.com/fzipp/gocyclo v0.6.0 // indirect
-	github.com/getkin/kin-openapi v0.97.0 // indirect
+	github.com/getkin/kin-openapi v0.98.0 // indirect
 	github.com/go-akka/configuration v0.0.0-20200606091224-a002c0330665 // indirect
 	github.com/go-chi/chi v4.1.2+incompatible // indirect
 	github.com/go-critic/go-critic v0.6.4 // indirect
@@ -310,7 +310,7 @@ require (
 	github.com/kulti/thelper v0.6.3 // indirect
 	github.com/kunwardeep/paralleltest v1.0.6 // indirect
 	github.com/kyoh86/exportloopref v0.1.8 // indirect
-	github.com/kyokomi/emoji/v2 v2.2.9 // indirect
+	github.com/kyokomi/emoji/v2 v2.2.10 // indirect
 	github.com/ldez/gomoddirectives v0.2.3 // indirect
 	github.com/ldez/tagliatelle v0.3.1 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
@@ -361,7 +361,7 @@ require (
 	github.com/opencontainers/runc v1.1.3 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
-	github.com/pelletier/go-toml/v2 v2.0.2 // indirect
+	github.com/pelletier/go-toml/v2 v2.0.4 // indirect
 	github.com/phayes/checkstyle v0.0.0-20170904204023-bfd46e6a821d // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/polyfloyd/go-errorlint v1.0.2 // indirect
@@ -376,7 +376,7 @@ require (
 	github.com/quasilyte/stdinfo v0.0.0-20220114132959-f7386bf02567 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
-	github.com/rogpeppe/go-internal v1.8.1 // indirect
+	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/rwcarlsen/goexif v0.0.0-20190401172101-9e8deecbddbd // indirect
 	github.com/ryancurrah/gomodguard v1.2.4 // indirect
@@ -411,8 +411,8 @@ require (
 	github.com/sylvia7788/contextcheck v1.0.6 // indirect
 	github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7 // indirect
 	github.com/tdakkota/asciicheck v0.1.1 // indirect
-	github.com/tdewolff/minify/v2 v2.11.10 // indirect
-	github.com/tdewolff/parse/v2 v2.6.0 // indirect
+	github.com/tdewolff/minify/v2 v2.12.0 // indirect
+	github.com/tdewolff/parse/v2 v2.6.2 // indirect
 	github.com/tent/canonical-json-go v0.0.0-20130607151641-96e4ba3a7613 // indirect
 	github.com/tetafro/godot v1.4.11 // indirect
 	github.com/thales-e-security/pool v0.0.2 // indirect
