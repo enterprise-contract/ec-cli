@@ -1,6 +1,5 @@
 name: ec version
 synopsis: Print version information
-description: 'TODO: description'
 usage: ec version [flags]
 options:
 - name: help
@@ -19,4 +18,4 @@ inherited_options:
   default_value: "false"
   usage: more verbose output
 see_also:
-- ec - Tool to enforce enterprise contracts
+- ec - Enterprise Contract CLI

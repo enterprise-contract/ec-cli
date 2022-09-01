@@ -1,25 +1,34 @@
 name: ec fetch commit
-synopsis: Capture authorizations from a source (github repo, Jira)
-description: "Supported sign off sources are commits captured from a git repo and
-  jira issues.\n               The git sources return a signed off value and the git
-  commit. The jira issue is\n\t\t\t   a TODO, but will return the Jira issue with
-  any sign off values."
+synopsis: Fetch authorizations from a git repository
+description: |-
+  Fetch authorizations from a git repository
+
+  An authorization, within the context of this command, is loosely
+  defined as the person who appears in the "Signed-off-by:" line
+  in the git commit message.
+
+  This command also verifies the provided images have been attested
+  with the provided public key.
+
+  The git commit and git repository are extracted from the field
+  ".predicate.materials" of the image attestation.
 usage: ec fetch commit [flags]
 options:
 - name: file-path
   shorthand: f
-  usage: Path to ApplicationSnapshot JSON file
+  usage: path to ApplicationSnapshot Spec JSON file
 - name: help
   shorthand: h
   default_value: "false"
   usage: help for commit
 - name: image-ref
-  usage: The OCI repo to fetch the attestation from.
+  usage: OCI reference to the attested image
 - name: json-input
   shorthand: j
-  usage: ApplicationSnapshot JSON string
+  usage: JSON representation of an ApplicationSnapshot Spec
 - name: public-key
-  usage: Public key
+  usage: |
+    path to the public key associated with the image attestation(s)
 inherited_options:
 - name: debug
   default_value: "false"
@@ -31,5 +40,21 @@ inherited_options:
 - name: verbose
   default_value: "false"
   usage: more verbose output
+example: |-
+  Process git commit from a single image:
+
+    ec fetch commit --image-ref <image url> --public-key <path/to/public/key>
+
+  Process git commit from an ApplicationSnapshot Spec file:
+
+    ec fetch commit --file-path <path/to/ApplicationSnapshot/file> --public-key <path/to/public/key>
+
+  Process git commit from an inline ApplicationSnapshot Spec:
+
+    ec fetch commit --json-input '{"components":[{"containerImage":"<image url>"}]}' --public-key <path/to/public/key>
+
+  Use public key from a kubernetes secret:
+
+    ec fetch commit --image-ref <image url> --public-key k8s://<namespace>/<secret-name>
 see_also:
-- ec fetch - A subcommand to fetch various data for the enterprise contract.
+- ec fetch - Fetch data for policy evaluation

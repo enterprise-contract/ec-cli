@@ -1,43 +1,60 @@
 name: ec validate image
 synopsis: |
-  Validates container image conformance with the Enterprise Contract
+  Validate conformance of container images with the Enterprise Contract
 description: |-
-  Validates image signature, signature of related artifacts such as build
-  attestation signature, transparency logs for the image signature and releated
-  artifacts, gathers build related data and evaluates the enterprise policy
-  against it.
+  Validate conformance of container images with the Enterprise Contract
+
+  For each image, validation is performed in stages to determine if the image
+  conforms to the Enterprise Contract.
+
+  The first validation stage determines if an image has been signed, and the
+  signature matches the provided public key. This is akin to the "cosign verify"
+  command.
+
+  The second validation stage determines if one or more attestations exist, and
+  those attestations have been signed matching the provided public key, similarly
+  to the "cosign verify-attestation" command. This stage temporarily stores the
+  attestations for usage in the next stage.
+
+  The final stage verifies the attestations conform to rego policies defined in
+  the EnterpriseContractPolicy.
+
+  Validation advances each stage as much as possible for each image in order to
+  capture all issues in a single execution.
 usage: ec validate image [flags]
 options:
 - name: file-path
   shorthand: f
-  usage: Path to ApplicationSnapshot JSON file
+  usage: path to ApplicationSnapshot Spec JSON file
 - name: help
   shorthand: h
   default_value: "false"
   usage: help for image
 - name: image
   shorthand: i
-  usage: Image reference
+  usage: OCI image reference
 - name: json-input
   shorthand: j
-  usage: ApplicationSnapshot JSON string
+  usage: JSON represenation of an ApplicationSnapshot Spec
 - name: output-file
   shorthand: o
-  usage: Path to output file
+  usage: |
+    write output to a file. Use empty string for stdout, default behavior
 - name: policy
   shorthand: p
   default_value: ec-policy
-  usage: Policy configuration name
+  usage: EntepriseContractPolicy reference [<namespace>/]<name>
 - name: public-key
   shorthand: k
-  usage: Public key. Overrides publicKey from policy configuration
+  usage: |
+    path to the public key. Overrides publicKey from EnterpriseContractPolicy
 - name: rekor-url
   shorthand: r
-  usage: Rekor URL. Overrides rekorURL from policy configuration
+  usage: Rekor URL. Overrides rekorURL from EnterpriseContractPolicy
 - name: strict
   shorthand: s
   default_value: "false"
-  usage: Enable strict mode
+  usage: return non-zero status on non-successful validation
 inherited_options:
 - name: debug
   default_value: "false"
@@ -50,16 +67,38 @@ inherited_options:
   default_value: "false"
   usage: more verbose output
 example: |-
-  Validate single image "registry/name:tag" with the default policy defined in
-  the EnterpriseContractPolicy custom resource named "ec-policy" in the current
+  Validate single image with the default policy defined in the
+  EnterpriseContractPolicy custom resource named "ec-policy" in the current
   Kubernetes namespace:
 
     ec validate image --image registry/name:tag
 
-  Validate an application snapshot provided by the ApplicationSnapshot custom
-  resource provided via a file using a custom public key and a private Rekor
-  instance in strict mode:
+  Validate multiple images from an ApplicationSnapshot Spec file:
 
-    ec validate image --file-path my-app.yaml --public-key my-key.pem --rekor-url https://rekor.example.org --strict
+    ec validate image --file-path my-app.yaml
+
+  Validate attestation of images from an inline ApplicationSnapshot Spec:
+
+    ec validate image --json-input '{"components":[{"containerImage":"<image url>"}]}'
+
+  Use a different public key than the one from the EnterpriseContractPolicy resource:
+
+    ec validate image --image registry/name:tag --public-key <path/to/public/key>
+
+  Use a different Rekor URL than the one from the EnterpriseContractPolicy resource:
+
+    ec validate image --image registry/name:tag --rekor-url https://rekor.example.org
+
+  Return a non-zero status code on validation failure:
+
+    ec validate image --image registry/name:tag --strict
+
+  Use an EnterpriseContractPolicy resource from the currently active kubernetes context:
+
+    ec validate image --image registry/name:tag --policy my-policy
+
+  Use an EnterpriseContractPolicy resource from a different namespace:
+
+    ec validate image --image registry/name:tag --policy my-namespace/my-policy
 see_also:
-- ec validate - Provides validation of various object
+- ec validate - Validate conformance with the Enterprise Contract

@@ -1,27 +1,43 @@
 name: ec track bundle
-synopsis: Record tracking information about the bundle
+synopsis: Record tracking information about Tekton bundles
+description: |-
+  Record tracking information about Tekton bundles
+
+  Given one or more Tekton Bundles, categorize each as "pipeline-bundles",
+  "tekton-bundles", or both. Then, generate a YAML represenation of this
+  categorization.
+
+  Each Tekton Bundle is expected to be a proper OCI image reference. They
+  may contain a tag, a digest, or both. If a digest is not provided, this
+  command will query the registry to determine its value. Either a tag
+  or a digest is required.
+
+  The output is meant to assist enforcement of policies that ensure the
+  most recent Tekton Bundle is used. As such, each entry contains an
+  "effective_on" date which is set to 30 days from today. This indicates
+  the Tekton Bundle usage should be updated within that period.
 usage: ec track bundle [flags]
 options:
 - name: bundle
   shorthand: b
   default_value: '[]'
   usage: |
-    REQUIRED - The bundle image reference to  track - may be used multiple times
+    bundle image reference to track - may be used multiple times (required)
 - name: help
   shorthand: h
   default_value: "false"
   usage: help for bundle
 - name: input
   shorthand: i
-  usage: An existing tracking file
+  usage: existing tracking file
 - name: output
   shorthand: o
   usage: |
-    Write modified tracking file to a file. Use empty string for stdout, default behavior
+    write modified tracking file to a file. Use empty string for stdout, default behavior
 - name: replace
   shorthand: r
   default_value: "false"
-  usage: Modify input file in-place.
+  usage: write changes to input file
 inherited_options:
 - name: debug
   default_value: "false"
@@ -33,5 +49,21 @@ inherited_options:
 - name: verbose
   default_value: "false"
   usage: more verbose output
+example: |-
+  Track multiple bundles:
+
+    ec track bundle --bundle <IMAGE1> --bundle <IMAGE2>
+
+  Save tracking information into a new tracking file:
+
+    ec track bundle --bundle <IMAGE1> --output <path/to/new/file>
+
+  Extend an existing tracking file with a new bundle:
+
+    ec track bundle --bundle <IMAGE1> --input <path/to/input/file>
+
+  Extend an existing tracking file with a new bundle and save changes:
+
+    ec track bundle --bundle <IMAGE1> --input <path/to/input/file> --replace
 see_also:
-- ec track - Track resources
+- ec track - Record resource references for tracking purposes

@@ -51,22 +51,59 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 	}
 	cmd := &cobra.Command{
 		Use:   "image",
-		Short: "Validates container image conformance with the Enterprise Contract",
-		Long: `Validates image signature, signature of related artifacts such as build
-attestation signature, transparency logs for the image signature and releated
-artifacts, gathers build related data and evaluates the enterprise policy
-against it.`,
-		Example: `Validate single image "registry/name:tag" with the default policy defined in
-the EnterpriseContractPolicy custom resource named "ec-policy" in the current
+		Short: "Validate conformance of container images with the Enterprise Contract",
+		Long: `Validate conformance of container images with the Enterprise Contract
+
+For each image, validation is performed in stages to determine if the image
+conforms to the Enterprise Contract.
+
+The first validation stage determines if an image has been signed, and the
+signature matches the provided public key. This is akin to the "cosign verify"
+command.
+
+The second validation stage determines if one or more attestations exist, and
+those attestations have been signed matching the provided public key, similarly
+to the "cosign verify-attestation" command. This stage temporarily stores the
+attestations for usage in the next stage.
+
+The final stage verifies the attestations conform to rego policies defined in
+the EnterpriseContractPolicy.
+
+Validation advances each stage as much as possible for each image in order to
+capture all issues in a single execution.`,
+		Example: `Validate single image with the default policy defined in the
+EnterpriseContractPolicy custom resource named "ec-policy" in the current
 Kubernetes namespace:
 
   ec validate image --image registry/name:tag
 
-Validate an application snapshot provided by the ApplicationSnapshot custom
-resource provided via a file using a custom public key and a private Rekor
-instance in strict mode:
+Validate multiple images from an ApplicationSnapshot Spec file:
 
-  ec validate image --file-path my-app.yaml --public-key my-key.pem --rekor-url https://rekor.example.org --strict`,
+  ec validate image --file-path my-app.yaml
+
+Validate attestation of images from an inline ApplicationSnapshot Spec:
+
+  ec validate image --json-input '{"components":[{"containerImage":"<image url>"}]}'
+
+Use a different public key than the one from the EnterpriseContractPolicy resource:
+
+  ec validate image --image registry/name:tag --public-key <path/to/public/key>
+
+Use a different Rekor URL than the one from the EnterpriseContractPolicy resource:
+
+  ec validate image --image registry/name:tag --rekor-url https://rekor.example.org
+
+Return a non-zero status code on validation failure:
+
+  ec validate image --image registry/name:tag --strict
+
+Use an EnterpriseContractPolicy resource from the currently active kubernetes context:
+
+  ec validate image --image registry/name:tag --policy my-policy
+
+Use an EnterpriseContractPolicy resource from a different namespace:
+
+  ec validate image --image registry/name:tag --policy my-namespace/my-policy`,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			s, err := applicationsnapshot.DetermineInputSpec(data.filePath, data.input, data.imageRef)
 			if err != nil {
@@ -155,19 +192,26 @@ instance in strict mode:
 			return nil
 		},
 	}
-	cmd.Flags().StringVarP(&data.policyConfiguration, "policy", "p", data.policyConfiguration, "Policy configuration name")
-	cmd.Flags().StringVarP(&data.imageRef, "image", "i", data.imageRef, "Image reference")
+	cmd.Flags().StringVarP(&data.policyConfiguration, "policy", "p", data.policyConfiguration,
+		"EntepriseContractPolicy reference [<namespace>/]<name>")
+	cmd.Flags().StringVarP(&data.imageRef, "image", "i", data.imageRef, "OCI image reference")
 	cmd.Flags().StringVarP(&data.publicKey, "public-key", "k", data.publicKey,
-		"Public key. Overrides publicKey from policy configuration")
+		"path to the public key. Overrides publicKey from EnterpriseContractPolicy")
 	cmd.Flags().StringVarP(&data.rekorURL, "rekor-url", "r", data.rekorURL,
-		"Rekor URL. Overrides rekorURL from policy configuration")
-	cmd.Flags().StringVarP(&data.filePath, "file-path", "f", data.filePath, "Path to ApplicationSnapshot JSON file")
-	cmd.Flags().StringVarP(&data.input, "json-input", "j", data.input, "ApplicationSnapshot JSON string")
-	cmd.Flags().StringVarP(&data.output, "output-file", "o", data.output, "Path to output file")
-	cmd.Flags().BoolVarP(&data.strict, "strict", "s", data.strict, "Enable strict mode")
+		"Rekor URL. Overrides rekorURL from EnterpriseContractPolicy")
+	cmd.Flags().StringVarP(&data.filePath, "file-path", "f", data.filePath,
+		"path to ApplicationSnapshot Spec JSON file")
+	cmd.Flags().StringVarP(&data.input, "json-input", "j", data.input,
+		"JSON represenation of an ApplicationSnapshot Spec")
+	cmd.Flags().StringVarP(&data.output, "output-file", "o", data.output,
+		"write output to a file. Use empty string for stdout, default behavior")
+	cmd.Flags().BoolVarP(&data.strict, "strict", "s", data.strict,
+		"return non-zero status on non-successful validation")
 
 	if len(data.input) > 0 || len(data.filePath) > 0 {
-		_ = cmd.MarkFlagRequired("image")
+		if err := cmd.MarkFlagRequired("image"); err != nil {
+			panic(err)
+		}
 	}
 	return cmd
 }

@@ -1,5 +1,5 @@
 name: ec track
-synopsis: Track resources
+synopsis: Record resource references for tracking purposes
 options:
 - name: help
   shorthand: h
@@ -17,5 +17,5 @@ inherited_options:
   default_value: "false"
   usage: more verbose output
 see_also:
-- ec - Tool to enforce enterprise contracts
-- ec track bundle - Record tracking information about the bundle
+- ec - Enterprise Contract CLI
+- ec track bundle - Record tracking information about Tekton bundles

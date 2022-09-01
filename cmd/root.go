@@ -28,9 +28,11 @@ import (
 
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
-	Use:          "ec",
-	Short:        "Tool to enforce enterprise contracts",
-	Long:         `TODO: description`,
+	Use:   "ec",
+	Short: "Enterprise Contract CLI",
+	Long: `Enterprise Contract CLI
+
+Set of commands to help validate resources with the Enterprise Contract.`,
 	SilenceUsage: true,
 
 	PersistentPreRun: func(cmd *cobra.Command, _ []string) {

@@ -3,10 +3,10 @@
 The `ec` tool is used to evaluate Enterprise Contract policies for Software
 Supply Chain. Various sub-commands can be used to assert facts about an artifact
 such as:
-  * Container image signature
-  * Container image build attestation signature
-  * Evaluating enterprise [contract policies][pol] over the build attestation
-  * Artifact authorization (sign-off)
+  * Validating container image signature
+  * Validating container image provenance
+  * Evaluating Enterprise Contract [policies][pol] over the container image provenance
+  * Fetching artifact authorization
 
 Consult the [documentation][docs] for available sub-commands, descriptions and
 examples of use.
@@ -35,4 +35,4 @@ the Tekton Chains controller from the `poc-tep-84` branch, e.g. via the
 image built here: https://github.com/hacbs-contract/chains/pkgs/container/chains%2Fcontroller/?tag=poc-tep-84
 
 [pol]: https://github.com/hacbs-contract/ec-policies/
-[docs]: https://hacbs-contract.github.io/ec-policies/
+[docs]: https://hacbs-contract.github.io/ec-cli/
