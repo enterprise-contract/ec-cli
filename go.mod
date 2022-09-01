@@ -11,7 +11,7 @@ require (
 	github.com/go-git/go-billy/v5 v5.3.1
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/go-openapi/strfmt v0.21.3
-	github.com/gohugoio/hugo v0.102.1
+	github.com/gohugoio/hugo v0.102.2
 	github.com/golangci/golangci-lint v1.49.0
 	github.com/google/addlicense v1.0.0
 	github.com/google/go-containerregistry v0.11.0
@@ -411,8 +411,8 @@ require (
 	github.com/sylvia7788/contextcheck v1.0.6 // indirect
 	github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7 // indirect
 	github.com/tdakkota/asciicheck v0.1.1 // indirect
-	github.com/tdewolff/minify/v2 v2.12.0 // indirect
-	github.com/tdewolff/parse/v2 v2.6.2 // indirect
+	github.com/tdewolff/minify/v2 v2.12.1 // indirect
+	github.com/tdewolff/parse/v2 v2.6.3 // indirect
 	github.com/tent/canonical-json-go v0.0.0-20130607151641-96e4ba3a7613 // indirect
 	github.com/tetafro/godot v1.4.11 // indirect
 	github.com/thales-e-security/pool v0.0.2 // indirect
