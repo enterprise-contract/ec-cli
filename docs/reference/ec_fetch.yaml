@@ -1,6 +1,5 @@
 name: ec fetch
-synopsis: |
-  A subcommand to fetch various data for the enterprise contract.
+synopsis: Fetch data for policy evaluation
 options:
 - name: help
   shorthand: h
@@ -18,6 +17,6 @@ inherited_options:
   default_value: "false"
   usage: more verbose output
 see_also:
-- ec - Tool to enforce enterprise contracts
-- ec fetch commit - Capture authorizations from a source (github repo, Jira)
-- ec fetch k8s-resource - Capture signed off signatures from a k8s resource.
+- ec - Enterprise Contract CLI
+- ec fetch commit - Fetch authorizations from a git repository
+- ec fetch k8s-resource - Fetch authorizations from a kubernetes resource

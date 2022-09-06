@@ -44,8 +44,8 @@ func replaceCmd(replace replaceFn) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "replace",
-		Short: "Replace image references in the given source",
-		Long: `Replace image references in the given source
+		Short: "Replace image references in a given source",
+		Long: `Replace image references in a given source
 
 Given a source, process its contents to identify Tekton bundle
 image references and replace them with an updated version.
@@ -60,7 +60,8 @@ used to replace image references matching the same OCI repository.
 For example, the image reference "example.com/repo:1.2" would
 replace the image reference "example.com/repo:1.1". The provided
 image reference can inlude a tag, a digest, or both. If a digest
-is not provided, ec will query the repository for this value.
+is not provided, this command will query the repository for this
+value.
 
 The following source types are supported:
 
@@ -71,11 +72,9 @@ git repo: a reference to a git repository. By default, the
   branch named main is used. Add the suffix #<branch> to
   specify a different branch. This source type is defined by
   any one of the prefixes https:// http:// git://`,
-		Example: `  ec replace --source <source path> [<image uri> ...]
-
-Display a modified version of the source file where
+		Example: `Display a modified version of the source file where
 all occurences of bundle references from the main Tekton
-catalog are replace with the corresponding latest version:
+catalog are replaced with the corresponding latest version:
 
   ec replace --source resource.yaml
 
@@ -86,11 +85,6 @@ Process all the yaml files in the main branch of a git repository:
 Specify an alternative branch:
 
   ec replace --source https://git.example.com/org/repo#my-branch
-
-In addition to the Tekton catalog, also replace occurences of
-the provided image:
-
-  ec replace --source resource.yaml <IMAGE>
 
 In addition to the Tekton catalog, also replace occurences of
 the provided images:
@@ -127,27 +121,27 @@ the provided images:
 	}
 
 	cmd.Flags().StringVarP(&data.source, "source", "s", data.source,
-		"REQUIRED - An existing YAML file or a git repository reference")
+		"existing YAML file or a git repository reference (required)")
 
 	cmd.Flags().BoolVar(&data.overwrite, "overwrite", data.overwrite,
-		"Overwrite source file with changes")
+		"overwrite source file with changes")
 
 	cmd.Flags().StringVarP(&data.outputFile, "output", "o", data.outputFile,
-		"Write changes to a file. Use empty string for stdout, default behavior")
+		"write changes to a file. Use empty string for stdout, default behavior")
 
 	cmd.Flags().StringVar(&data.catalogName, "catalog-name", data.catalogName,
-		"Name of the catalog in the Tekton Hub")
+		"name of the catalog in the Tekton Hub")
 
 	cmd.Flags().StringVar(&data.catalogRepoBase, "catalog-repo-base", data.catalogRepoBase,
-		"Base of the OCI repository where images from the Tekton Hub are found. "+
-			"The full image reference is created as <base><name>:<version>")
+		"base of the OCI repository where images from the Tekton Hub are found. "+
+			"The full image reference is created as <catalog-repo-base><name>:<version>")
 
 	cmd.Flags().StringVar(&data.catalogHubAPIURL, "catalog-hub-api", data.catalogHubAPIURL,
 		"URL for the Tekton Hub API")
 
-	// TODO: We should check the error result here
-	_ = cmd.MarkFlagRequired("image")
-	_ = cmd.MarkFlagRequired("source")
+	if err := cmd.MarkFlagRequired("source"); err != nil {
+		panic(err)
+	}
 
 	return cmd
 }

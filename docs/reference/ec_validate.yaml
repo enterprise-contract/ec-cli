@@ -1,6 +1,5 @@
 name: ec validate
-synopsis: Provides validation of various object
-description: TODO
+synopsis: Validate conformance with the Enterprise Contract
 options:
 - name: help
   shorthand: h
@@ -18,6 +17,7 @@ inherited_options:
   default_value: "false"
   usage: more verbose output
 see_also:
-- ec - Tool to enforce enterprise contracts
-- ec validate image - Validates container image conformance with the Enterprise Contract
-- ec validate pipeline - Validates a pipeline file
+- ec - Enterprise Contract CLI
+- ec validate image - Validate conformance of container images with the Enterprise
+  Contract
+- ec validate pipeline - Validate Pipeline conformance with the Enterprise Contract

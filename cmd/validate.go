@@ -26,8 +26,7 @@ import (
 func validateCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "validate",
-		Short: "Provides validation of various object",
-		Long:  "TODO",
+		Short: "Validate conformance with the Enterprise Contract",
 	}
 	return cmd
 }

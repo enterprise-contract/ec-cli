@@ -40,10 +40,33 @@ func commitAuthorizationCmd() *cobra.Command {
 	}
 	cmd := &cobra.Command{
 		Use:   "commit",
-		Short: "Capture authorizations from a source (github repo, Jira)",
-		Long: `Supported sign off sources are commits captured from a git repo and jira issues.
-               The git sources return a signed off value and the git commit. The jira issue is
-			   a TODO, but will return the Jira issue with any sign off values.`,
+		Short: "Fetch authorizations from a git repository",
+		Long: `Fetch authorizations from a git repository
+
+An authorization, within the context of this command, is loosely
+defined as the person who appears in the "Signed-off-by:" line
+in the git commit message.
+
+This command also verifies the provided images have been attested
+with the provided public key.
+
+The git commit and git repository are extracted from the field
+".predicate.materials" of the image attestation.`,
+		Example: `Process git commit from a single image:
+
+  ec fetch commit --image-ref <image url> --public-key <path/to/public/key>
+
+Process git commit from an ApplicationSnapshot Spec file:
+
+  ec fetch commit --file-path <path/to/ApplicationSnapshot/file> --public-key <path/to/public/key>
+
+Process git commit from an inline ApplicationSnapshot Spec:
+
+  ec fetch commit --json-input '{"components":[{"containerImage":"<image url>"}]}' --public-key <path/to/public/key>
+
+Use public key from a kubernetes secret:
+
+  ec fetch commit --image-ref <image url> --public-key k8s://<namespace>/<secret-name>`,
 
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			spec, err := applicationsnapshot.DetermineInputSpec(data.filePath, data.input, data.imageRef)
@@ -67,10 +90,10 @@ func commitAuthorizationCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVar(&data.publicKey, "public-key", "", "Public key")
-	cmd.Flags().StringVar(&data.imageRef, "image-ref", "", "The OCI repo to fetch the attestation from.")
-	cmd.Flags().StringVarP(&data.filePath, "file-path", "f", "", "Path to ApplicationSnapshot JSON file")
-	cmd.Flags().StringVarP(&data.input, "json-input", "j", "", "ApplicationSnapshot JSON string")
+	cmd.Flags().StringVar(&data.publicKey, "public-key", data.publicKey, "path to the public key associated with the image attestation(s)")
+	cmd.Flags().StringVar(&data.imageRef, "image-ref", data.imageRef, "OCI reference to the attested image")
+	cmd.Flags().StringVarP(&data.filePath, "file-path", "f", data.filePath, "path to ApplicationSnapshot Spec JSON file")
+	cmd.Flags().StringVarP(&data.input, "json-input", "j", data.input, "JSON representation of an ApplicationSnapshot Spec")
 
 	return cmd
 }

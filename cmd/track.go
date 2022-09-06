@@ -25,7 +25,7 @@ import (
 func trackCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "track",
-		Short: "Track resources",
+		Short: "Record resource references for tracking purposes",
 	}
 	return cmd
 }

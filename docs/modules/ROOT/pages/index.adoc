@@ -1,1 +1,9 @@
-TODO add introduction here
+:pol: https://github.com/hacbs-contract/ec-policies/
+
+The EC CLI is used to evaluate Enterprise Contract policies for Software Supply Chain.
+Various sub-commands can be used to assert facts about an artifact such as:
+
+* Validating container image signature
+* Validating container image provenance
+* Evaluating Enterprise Contract {pol}[policies] over the container image provenance
+* Fetching artifact authorization

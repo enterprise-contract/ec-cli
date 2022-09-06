@@ -1,6 +1,9 @@
 name: ec
-synopsis: Tool to enforce enterprise contracts
-description: 'TODO: description'
+synopsis: Enterprise Contract CLI
+description: |-
+  Enterprise Contract CLI
+
+  Set of commands to help validate resources with the Enterprise Contract.
 options:
 - name: debug
   default_value: "false"
@@ -17,10 +20,9 @@ options:
   default_value: "false"
   usage: more verbose output
 see_also:
-- ec create-pr - Create a PR based on the changes in the specified branch targeting
-  the specified branch
-- ec fetch - A subcommand to fetch various data for the enterprise contract.
-- ec replace - Replace image references in the given source
-- ec track - Track resources
-- ec validate - Provides validation of various object
+- ec create-pr - Create a GitHub pull request based on source and target branches
+- ec fetch - Fetch data for policy evaluation
+- ec replace - Replace image references in a given source
+- ec track - Record resource references for tracking purposes
+- ec validate - Validate conformance with the Enterprise Contract
 - ec version - Print version information

@@ -28,7 +28,6 @@ var Version = "development"
 var version = &cobra.Command{
 	Use:   "version",
 	Short: "Print version information",
-	Long:  `TODO: description`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println(Version)
 	},

@@ -1,3 +1,4 @@
 = ec command line reference documentation
 
-TODO add command reference introduction here
+Use the navigation bar to view the help documenation for each command of the EC CLI.
+
