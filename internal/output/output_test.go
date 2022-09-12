@@ -30,9 +30,13 @@ func Test_PrintExpectedJSON(t *testing.T) {
 			Passed: true,
 			Result: &output.Result{Message: "message1"},
 		},
+		ImageAccessibleCheck: VerificationStatus{
+			Passed: true,
+			Result: &output.Result{Message: "message2"},
+		},
 		AttestationSignatureCheck: VerificationStatus{
 			Passed: false,
-			Result: &output.Result{Message: "message2"},
+			Result: &output.Result{Message: "message3"},
 		},
 		PolicyCheck: []output.CheckResult{
 			{
@@ -76,10 +80,16 @@ func Test_PrintExpectedJSON(t *testing.T) {
 		    "msg": "message1"
 		  }
 		},
+		"imageAccessibleCheck": {
+		  "passed": true,
+		  "result": {
+		    "msg": "message2"
+		  }
+		},
 		"attestationSignatureCheck": {
 		  "passed": false,
 		  "result": {
-		    "msg": "message2"
+		    "msg": "message3"
 		  }
 		},
 		"policyCheck": [
@@ -139,6 +149,9 @@ func Test_PrintOutputsExpectedJSON(t *testing.T) {
 		  "imageSignatureCheck": {
 			"passed": false
 		  },
+		  "imageAccessibleCheck": {
+			"passed": false
+		  },
 		  "attestationSignatureCheck": {
 			"passed": false
 		  },
@@ -146,6 +159,9 @@ func Test_PrintOutputsExpectedJSON(t *testing.T) {
 		},
 		{
 		  "imageSignatureCheck": {
+			"passed": false
+		  },
+		  "imageAccessibleCheck": {
 			"passed": false
 		  },
 		  "attestationSignatureCheck": {
@@ -171,6 +187,9 @@ func Test_Violations(t *testing.T) {
 				AttestationSignatureCheck: VerificationStatus{
 					Passed: true,
 				},
+				ImageAccessibleCheck: VerificationStatus{
+					Passed: true,
+				},
 			},
 			expected: []output.Result{},
 		},
@@ -180,6 +199,9 @@ func Test_Violations(t *testing.T) {
 				ImageSignatureCheck: VerificationStatus{
 					Passed: false,
 					Result: &output.Result{Message: "image signature failed"},
+				},
+				ImageAccessibleCheck: VerificationStatus{
+					Passed: true,
 				},
 				AttestationSignatureCheck: VerificationStatus{
 					Passed: true,
@@ -191,6 +213,9 @@ func Test_Violations(t *testing.T) {
 			name: "failing attestation signature",
 			output: Output{
 				ImageSignatureCheck: VerificationStatus{
+					Passed: true,
+				},
+				ImageAccessibleCheck: VerificationStatus{
 					Passed: true,
 				},
 				AttestationSignatureCheck: VerificationStatus{
@@ -207,6 +232,9 @@ func Test_Violations(t *testing.T) {
 					Passed: false,
 					Result: &output.Result{Message: "image signature failed"},
 				},
+				ImageAccessibleCheck: VerificationStatus{
+					Passed: true,
+				},
 				AttestationSignatureCheck: VerificationStatus{
 					Passed: false,
 					Result: &output.Result{Message: "attestation signature failed"},
@@ -221,6 +249,9 @@ func Test_Violations(t *testing.T) {
 			name: "failing policy check",
 			output: Output{
 				ImageSignatureCheck: VerificationStatus{
+					Passed: true,
+				},
+				ImageAccessibleCheck: VerificationStatus{
 					Passed: true,
 				},
 				AttestationSignatureCheck: VerificationStatus{
@@ -242,6 +273,9 @@ func Test_Violations(t *testing.T) {
 			name: "failing multiple policy checks",
 			output: Output{
 				ImageSignatureCheck: VerificationStatus{
+					Passed: true,
+				},
+				ImageAccessibleCheck: VerificationStatus{
 					Passed: true,
 				},
 				AttestationSignatureCheck: VerificationStatus{
@@ -270,6 +304,9 @@ func Test_Violations(t *testing.T) {
 				ImageSignatureCheck: VerificationStatus{
 					Passed: false,
 					Result: &output.Result{Message: "image signature failed"},
+				},
+				ImageAccessibleCheck: VerificationStatus{
+					Passed: true,
 				},
 				AttestationSignatureCheck: VerificationStatus{
 					Passed: false,
@@ -301,6 +338,9 @@ func Test_Violations(t *testing.T) {
 				ImageSignatureCheck: VerificationStatus{
 					Passed: false,
 					Result: &output.Result{Message: "image signature failed"},
+				},
+				ImageAccessibleCheck: VerificationStatus{
+					Passed: true,
 				},
 				AttestationSignatureCheck: VerificationStatus{
 					Passed: false,

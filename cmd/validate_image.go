@@ -109,7 +109,6 @@ Use an EnterpriseContractPolicy resource from a different namespace:
 			if err != nil {
 				return err
 			}
-
 			data.spec = s
 
 			return nil

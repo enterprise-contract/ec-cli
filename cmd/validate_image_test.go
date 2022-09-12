@@ -152,6 +152,9 @@ func Test_ValidateImageCommand(t *testing.T) {
 			ImageSignatureCheck: output.VerificationStatus{
 				Passed: true,
 			},
+			ImageAccessibleCheck: output.VerificationStatus{
+				Passed: true,
+			},
 			AttestationSignatureCheck: output.VerificationStatus{
 				Passed: true,
 			},
@@ -221,12 +224,65 @@ func Test_ValidateErrorCommand(t *testing.T) {
 	assert.Empty(t, out.String())
 }
 
+func Test_FailureImageAccessibility(t *testing.T) {
+	validate := func(ctx context.Context, imageRef, policyConfiguration, publicKey, rekorURL string) (*output.Output, error) {
+		return &output.Output{
+			ImageSignatureCheck: output.VerificationStatus{
+				Passed: false,
+				Result: &conftestOutput.Result{Message: "skipped due to inaccessible image ref"},
+			},
+			ImageAccessibleCheck: output.VerificationStatus{
+				Passed: false,
+				Result: &conftestOutput.Result{Message: "image ref not accessible. HEAD registry/image:tag: unexpected status code 404 Not Found (HEAD responses have no body, use GET for details)"},
+			},
+			AttestationSignatureCheck: output.VerificationStatus{
+				Passed: false,
+				Result: &conftestOutput.Result{Message: "skipped due to inaccessible image ref"},
+			},
+		}, nil
+	}
+
+	cmd := validateImageCmd(validate)
+
+	cmd.SetArgs([]string{
+		"--image",
+		"registry/image:tag",
+		"--public-key",
+		"test-public-key",
+	})
+
+	var out bytes.Buffer
+	cmd.SetOut(&out)
+
+	err := cmd.Execute()
+	assert.NoError(t, err)
+	assert.JSONEq(t, `{
+		"success": false,
+		"components": [
+		  {
+			"name": "Unnamed",
+			"containerImage": "registry/image:tag",
+			"violations": [
+			  {"msg": "skipped due to inaccessible image ref"},
+			  {"msg": "image ref not accessible. HEAD registry/image:tag: unexpected status code 404 Not Found (HEAD responses have no body, use GET for details)"},
+			  {"msg": "skipped due to inaccessible image ref"}
+			],
+			"warnings": [],
+			"success": false
+		  }
+		]
+	  }`, out.String())
+}
+
 func Test_FailureOutput(t *testing.T) {
 	validate := func(ctx context.Context, imageRef, policyConfiguration, publicKey, rekorURL string) (*output.Output, error) {
 		return &output.Output{
 			ImageSignatureCheck: output.VerificationStatus{
 				Passed: false,
 				Result: &conftestOutput.Result{Message: "failed image signature check"},
+			},
+			ImageAccessibleCheck: output.VerificationStatus{
+				Passed: true,
 			},
 			AttestationSignatureCheck: output.VerificationStatus{
 				Passed: false,
@@ -270,6 +326,9 @@ func Test_WarningOutput(t *testing.T) {
 	validate := func(ctx context.Context, imageRef, policyConfiguration, publicKey, rekorURL string) (*output.Output, error) {
 		return &output.Output{
 			ImageSignatureCheck: output.VerificationStatus{
+				Passed: true,
+			},
+			ImageAccessibleCheck: output.VerificationStatus{
 				Passed: true,
 			},
 			AttestationSignatureCheck: output.VerificationStatus{

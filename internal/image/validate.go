@@ -18,6 +18,7 @@ package image
 
 import (
 	"context"
+	"fmt"
 
 	conftestOutput "github.com/open-policy-agent/conftest/output"
 	log "github.com/sirupsen/logrus"
@@ -36,6 +37,17 @@ func ValidateImage(ctx context.Context, imageRef, policyConfiguration, publicKey
 		return nil, err
 	}
 
+	if err = a.ValidateImageAccess(ctx); err != nil {
+		log.Debugf("Image access check failed. Error: %s", err.Error())
+		out.SetImageAccessibleCheck(false, fmt.Sprintf("image ref not accessible. %s", err))
+		out.SetImageSignatureCheck(false, "")
+		out.SetAttestationSignatureCheck(false, "")
+		out.SetPolicyCheck(nil)
+		return out, nil
+	} else {
+		log.Debug("Image access check passed")
+		out.SetImageAccessibleCheck(true, "success")
+	}
 	if err = a.ValidateImageSignature(ctx); err != nil {
 		log.Debug("Image signature check failed")
 		out.SetImageSignatureCheck(false, err.Error())
@@ -43,7 +55,6 @@ func ValidateImage(ctx context.Context, imageRef, policyConfiguration, publicKey
 		log.Debug("Image signature check passed")
 		out.SetImageSignatureCheck(true, "success")
 	}
-
 	if err = a.ValidateAttestationSignature(ctx); err != nil {
 		log.Debug("Image attestation signature check failed")
 		out.SetAttestationSignatureCheck(false, err.Error())
