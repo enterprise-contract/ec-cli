@@ -25,12 +25,14 @@ import (
 	"path"
 
 	"github.com/google/go-containerregistry/pkg/name"
+	"github.com/google/go-containerregistry/pkg/v1/remote"
 	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/in-toto/in-toto-golang/in_toto"
 	"github.com/sigstore/cosign/pkg/cosign"
 	"github.com/sigstore/cosign/pkg/oci"
 	cosignPolicy "github.com/sigstore/cosign/pkg/policy"
 	cosignTypes "github.com/sigstore/cosign/pkg/types"
+	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/hacbs-contract/ec-cli/internal/evaluator"
@@ -47,6 +49,11 @@ const PipelineRunBuildType = "https://tekton.dev/attestations/chains/pipelinerun
 
 var newConftestEvaluator = evaluator.NewConftestEvaluator
 var kubernetesClientCreator = kubernetes.NewClient
+
+// imageRefTransport is used to inject the type of transport to use with the
+// remote.WithTransport function. By default, remote.DefaultTransport is
+// equivalent to http.DefaultTransport, with a reduced timeout and keep-alive
+var imageRefTransport = remote.WithTransport(remote.DefaultTransport)
 
 // ApplicationSnapshotImage represents the structure needed to evaluate an Application Snapshot Image
 type ApplicationSnapshotImage struct {
@@ -70,6 +77,7 @@ func NewApplicationSnapshotImage(ctx context.Context, image string, publicKey st
 		log.Debug("Failed to initialize Kubernetes client")
 		return nil, err
 	}
+	log.Debug("Initialized Kubernetes client")
 
 	ecp, err := k8s.FetchEnterpriseContractPolicy(ctx, policyConfiguration)
 	if err != nil {
@@ -143,6 +151,20 @@ func fetchPolicyRepos(spec ecc.EnterpriseContractPolicySpec) ([]source.PolicySou
 		}
 	}
 	return policySources, nil
+}
+
+// ValidateImageAccess executes the remote.Head method on the ApplicationSnapshotImage image ref
+func (a *ApplicationSnapshotImage) ValidateImageAccess(ctx context.Context) error {
+	resp, err := remote.Head(a.reference, imageRefTransport, remote.WithContext(ctx))
+	if err != nil {
+		return err
+	}
+	if resp == nil {
+		return errors.New("no response received")
+	}
+	logrus.Debugf("Resp: %+v", resp)
+	return nil
+
 }
 
 // ValidateImageSignature executes the cosign.VerifyImageSignature method on the ApplicationSnapshotImage image ref.

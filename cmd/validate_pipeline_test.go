@@ -61,6 +61,9 @@ func Test_ValidatePipelineCommandOutput(t *testing.T) {
 		  "imageSignatureCheck": {
 			"passed": false
 		  },
+	      "imageAccessibleCheck": {
+			"passed": false
+		  },
 		  "attestationSignatureCheck": {
 			"passed": false
 		  },
@@ -74,6 +77,9 @@ func Test_ValidatePipelineCommandOutput(t *testing.T) {
 		},
 		{
 		  "imageSignatureCheck": {
+			"passed": false
+		  },
+	      "imageAccessibleCheck": {
 			"passed": false
 		  },
 		  "attestationSignatureCheck": {
