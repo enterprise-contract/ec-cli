@@ -84,12 +84,13 @@ acceptance: ## Run acceptance tests
 	@go test ./internal/acceptance
 	@go run github.com/wadey/gocovmerge "$${ACCEPTANCE_WORKDIR}"/coverage-acceptance*.out > "$(ROOT_DIR)/coverage-acceptance.out"
 
+LICENSE_IGNORE=-ignore 'docs/reference/*.yaml' -ignore 'website/node_modules/**' -ignore 'website/public/**'
 .PHONY: lint
 lint: ## Run linter
 # addlicense doesn't give us a nice explanation so we prefix it with one
-	@go run github.com/google/addlicense -c $(COPY) -s -check -ignore 'docs/reference/*.yaml' . | sed 's/^/Missing license header in: /g'
+	@go run github.com/google/addlicense -c $(COPY) -s -check $(LICENSE_IGNORE) . | sed 's/^/Missing license header in: /g'
 # piping to sed above looses the exit code, luckily addlicense is fast so we invoke it for the second time to exit 1 in case of issues
-	@go run github.com/google/addlicense -c $(COPY) -s -check -ignore 'docs/reference/*.yaml' . >/dev/null 2>&1
+	@go run github.com/google/addlicense -c $(COPY) -s -check $(LICENSE_IGNORE) . >/dev/null 2>&1
 	@go run github.com/golangci/golangci-lint/cmd/golangci-lint run --sort-results $(if $(GITHUB_ACTIONS), --out-format=github-actions --timeout=5m0s)
 
 .PHONY: lint-fix
