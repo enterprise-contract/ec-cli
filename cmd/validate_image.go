@@ -46,8 +46,6 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		spec                *appstudioshared.ApplicationSnapshotSpec
 	}{
 		policyConfiguration: "ec-policy",
-		rekorURL:            "",
-		strict:              false,
 	}
 	cmd := &cobra.Command{
 		Use:   "image",
