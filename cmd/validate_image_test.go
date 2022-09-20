@@ -22,6 +22,7 @@ import (
 	"errors"
 	"testing"
 
+	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	conftestOutput "github.com/open-policy-agent/conftest/output"
 	appstudioshared "github.com/redhat-appstudio/managed-gitops/appstudio-shared/apis/appstudio.redhat.com/v1alpha1"
 	"github.com/stretchr/testify/assert"
@@ -147,7 +148,7 @@ func Test_determineInputSpec(t *testing.T) {
 }
 
 func Test_ValidateImageCommand(t *testing.T) {
-	validate := func(ctx context.Context, imageRef, policyConfiguration, publicKey, rekorURL string) (*output.Output, error) {
+	validate := func(ctx context.Context, imageRef string, policy *ecc.EnterpriseContractPolicySpec) (*output.Output, error) {
 		return &output.Output{
 			ImageSignatureCheck: output.VerificationStatus{
 				Passed: true,
@@ -174,8 +175,8 @@ func Test_ValidateImageCommand(t *testing.T) {
 	cmd.SetArgs([]string{
 		"--image",
 		"registry/image:tag",
-		"--public-key",
-		"test-public-key",
+		"--policy",
+		`{"publicKey": "test-public-key"}`,
 	})
 
 	var out bytes.Buffer
@@ -198,7 +199,7 @@ func Test_ValidateImageCommand(t *testing.T) {
 }
 
 func Test_ValidateErrorCommand(t *testing.T) {
-	validate := func(ctx context.Context, imageRef, policyConfiguration, publicKey, rekorURL string) (*output.Output, error) {
+	validate := func(ctx context.Context, imageRef string, policy *ecc.EnterpriseContractPolicySpec) (*output.Output, error) {
 		return nil, errors.New("expected")
 	}
 
@@ -207,8 +208,8 @@ func Test_ValidateErrorCommand(t *testing.T) {
 	cmd.SetArgs([]string{
 		"--image",
 		"registry/image:tag",
-		"--public-key",
-		"test-public-key",
+		"--policy",
+		`{"publicKey": "test-public-key"}`,
 	})
 
 	var out bytes.Buffer
@@ -225,7 +226,7 @@ func Test_ValidateErrorCommand(t *testing.T) {
 }
 
 func Test_FailureImageAccessibility(t *testing.T) {
-	validate := func(ctx context.Context, imageRef, policyConfiguration, publicKey, rekorURL string) (*output.Output, error) {
+	validate := func(ctx context.Context, imageRef string, policy *ecc.EnterpriseContractPolicySpec) (*output.Output, error) {
 		return &output.Output{
 			ImageSignatureCheck: output.VerificationStatus{
 				Passed: false,
@@ -247,8 +248,8 @@ func Test_FailureImageAccessibility(t *testing.T) {
 	cmd.SetArgs([]string{
 		"--image",
 		"registry/image:tag",
-		"--public-key",
-		"test-public-key",
+		"--policy",
+		`{"publicKey": "test-public-key"}`,
 	})
 
 	var out bytes.Buffer
@@ -275,7 +276,7 @@ func Test_FailureImageAccessibility(t *testing.T) {
 }
 
 func Test_FailureOutput(t *testing.T) {
-	validate := func(ctx context.Context, imageRef, policyConfiguration, publicKey, rekorURL string) (*output.Output, error) {
+	validate := func(ctx context.Context, imageRef string, policy *ecc.EnterpriseContractPolicySpec) (*output.Output, error) {
 		return &output.Output{
 			ImageSignatureCheck: output.VerificationStatus{
 				Passed: false,
@@ -296,8 +297,8 @@ func Test_FailureOutput(t *testing.T) {
 	cmd.SetArgs([]string{
 		"--image",
 		"registry/image:tag",
-		"--public-key",
-		"test-public-key",
+		"--policy",
+		`{"publicKey": "test-public-key"}`,
 	})
 
 	var out bytes.Buffer
@@ -323,7 +324,7 @@ func Test_FailureOutput(t *testing.T) {
 }
 
 func Test_WarningOutput(t *testing.T) {
-	validate := func(ctx context.Context, imageRef, policyConfiguration, publicKey, rekorURL string) (*output.Output, error) {
+	validate := func(_ context.Context, _ string, _ *ecc.EnterpriseContractPolicySpec) (*output.Output, error) {
 		return &output.Output{
 			ImageSignatureCheck: output.VerificationStatus{
 				Passed: true,
@@ -350,8 +351,8 @@ func Test_WarningOutput(t *testing.T) {
 	cmd.SetArgs([]string{
 		"--image",
 		"registry/image:tag",
-		"--public-key",
-		"test-public-key",
+		"--policy",
+		`{"publicKey": "test-public-key"}`,
 	})
 
 	var out bytes.Buffer

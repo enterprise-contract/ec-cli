@@ -20,33 +20,37 @@ import (
 	"context"
 	"errors"
 
-	ecp "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
+	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/runtime"
 	controllerruntime "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-type Client struct {
+type Client interface {
+	FetchEnterpriseContractPolicy(ctx context.Context, ref string) (*ecc.EnterpriseContractPolicy, error)
+}
+
+type kubernetesClient struct {
 	client client.Client
 }
 
 // NewClient constructs a new kubernetes with the default "live" client
-func NewClient() (*Client, error) {
+func NewClient() (Client, error) {
 	clnt, err := createControllerRuntimeClient()
 	if err != nil {
 		log.Debug("Failed to create k8s client!")
 		return nil, err
 	}
 
-	return &Client{
+	return &kubernetesClient{
 		client: clnt,
 	}, nil
 }
 
 func createControllerRuntimeClient() (client.Client, error) {
 	scheme := runtime.NewScheme()
-	err := ecp.AddToScheme(scheme)
+	err := ecc.AddToScheme(scheme)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +73,7 @@ func createControllerRuntimeClient() (client.Client, error) {
 //
 // The reference is expected to be in the format [<namespace>/]<name>. If it does not contain
 // a namespace, the current namespace is used.
-func (k *Client) FetchEnterpriseContractPolicy(ctx context.Context, ref string) (*ecp.EnterpriseContractPolicy, error) {
+func (k *kubernetesClient) FetchEnterpriseContractPolicy(ctx context.Context, ref string) (*ecc.EnterpriseContractPolicy, error) {
 	if len(ref) == 0 {
 		return nil, errors.New("policy reference cannot be empty")
 	}
@@ -84,7 +88,7 @@ func (k *Client) FetchEnterpriseContractPolicy(ctx context.Context, ref string) 
 		return nil, errors.New("unable to determine namespace for policy")
 	}
 
-	policy := &ecp.EnterpriseContractPolicy{}
+	policy := &ecc.EnterpriseContractPolicy{}
 	if err := k.client.Get(ctx, *name, policy); err != nil {
 		log.Debugf("Failed to fetch the policy from cluster: %s", err)
 		return nil, err

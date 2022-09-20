@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 
+	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	conftestOutput "github.com/open-policy-agent/conftest/output"
 	log "github.com/sirupsen/logrus"
 
@@ -28,10 +29,10 @@ import (
 )
 
 // ValidateImage executes the required method calls to evaluate a given policy against a given imageRef
-func ValidateImage(ctx context.Context, imageRef, policyConfiguration, publicKey, rekorURL string) (*output.Output, error) {
+func ValidateImage(ctx context.Context, imageRef string, policy *ecc.EnterpriseContractPolicySpec) (*output.Output, error) {
 	log.Debugf("Validating image %s", imageRef)
 	out := &output.Output{}
-	a, err := application_snapshot_image.NewApplicationSnapshotImage(ctx, imageRef, publicKey, rekorURL, policyConfiguration)
+	a, err := application_snapshot_image.NewApplicationSnapshotImage(ctx, imageRef, policy)
 	if err != nil {
 		log.Debug("Failed to create application snapshot image!")
 		return nil, err

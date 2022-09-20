@@ -23,15 +23,17 @@ import (
 	"io/ioutil"
 	"sync"
 
+	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/hashicorp/go-multierror"
 	appstudioshared "github.com/redhat-appstudio/managed-gitops/appstudio-shared/apis/appstudio.redhat.com/v1alpha1"
 	"github.com/spf13/cobra"
 
 	"github.com/hacbs-contract/ec-cli/internal/applicationsnapshot"
 	"github.com/hacbs-contract/ec-cli/internal/output"
+	"github.com/hacbs-contract/ec-cli/internal/policy"
 )
 
-type imageValidationFunc func(ctx context.Context, imageRef, policyConfiguration, publicKey, rekorURL string) (*output.Output, error)
+type imageValidationFunc func(ctx context.Context, imageRef string, policy *ecc.EnterpriseContractPolicySpec) (*output.Output, error)
 
 func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 	var data = struct {
@@ -44,6 +46,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		filePath            string
 		output              string
 		spec                *appstudioshared.ApplicationSnapshotSpec
+		policy              *ecc.EnterpriseContractPolicySpec
 	}{
 		policyConfiguration: "ec-policy",
 	}
@@ -101,15 +104,28 @@ Use an EnterpriseContractPolicy resource from the currently active kubernetes co
 
 Use an EnterpriseContractPolicy resource from a different namespace:
 
-  ec validate image --image registry/name:tag --policy my-namespace/my-policy`,
-		PreRunE: func(cmd *cobra.Command, args []string) error {
-			s, err := applicationsnapshot.DetermineInputSpec(data.filePath, data.input, data.imageRef)
-			if err != nil {
-				return err
-			}
-			data.spec = s
+  ec validate image --image registry/name:tag --policy my-namespace/my-policy
 
-			return nil
+Use an inline EnterpriseContractPolicy spec
+  ec validate image --image registry/name:tag --policy '{"publicKey": "<path/to/public/key>"}'`,
+		PreRunE: func(cmd *cobra.Command, args []string) (allErrors error) {
+			if s, err := applicationsnapshot.DetermineInputSpec(
+				data.filePath, data.input, data.imageRef,
+			); err != nil {
+				allErrors = multierror.Append(allErrors, err)
+			} else {
+				data.spec = s
+			}
+
+			if policy, err := policy.NewPolicy(
+				cmd.Context(), data.policyConfiguration, data.rekorURL, data.publicKey,
+			); err != nil {
+				allErrors = multierror.Append(allErrors, err)
+			} else {
+				data.policy = policy
+			}
+
+			return
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			type result struct {
@@ -127,7 +143,7 @@ Use an EnterpriseContractPolicy resource from a different namespace:
 				go func(comp appstudioshared.ApplicationSnapshotComponent) {
 					defer lock.Done()
 
-					out, err := validate(cmd.Context(), comp.ContainerImage, data.policyConfiguration, data.publicKey, data.rekorURL)
+					out, err := validate(cmd.Context(), comp.ContainerImage, data.policy)
 					res := result{
 						err: err,
 						component: applicationsnapshot.Component{

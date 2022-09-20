@@ -19,7 +19,9 @@ package policy
 import (
 	"context"
 	"crypto"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"strings"
 
 	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
@@ -28,36 +30,72 @@ import (
 	cosignSig "github.com/sigstore/cosign/pkg/signature"
 	sigstoreSig "github.com/sigstore/sigstore/pkg/signature"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/hacbs-contract/ec-cli/internal/kubernetes"
 )
 
-// WithRekorUrl returns a new instance of EnterpriseContractPolicy if an update
-// to its rekorUrl is needed. Otherwise, the same instance is returned.
-func WithRekorUrl(policy *ecc.EnterpriseContractPolicy, rekorUrl string) *ecc.EnterpriseContractPolicy {
-	if rekorUrl != "" && rekorUrl != policy.Spec.RekorUrl {
-		newPolicy := policy.DeepCopy()
-		newPolicy.Spec.RekorUrl = rekorUrl
+var kubernetesClientCreator = kubernetes.NewClient
+
+// NewEnterpriseContractPolicy construct and return a new instance of EnterpriseContractPolicySpec.
+//
+// The policyRef parameter is expected to be either a JSON-encoded instance of
+// EnterpriseContractPolicySpec, or reference to the location of the EnterpriseContractPolicy
+// resource in Kubernetes using the format: [namespace/]name
+//
+// If policyRef is blank, an empty EnterpriseContractPolicySpec is used.
+//
+// rekorUrl and publicKey provide a mechanism to overwrite the attributes, of same name, in the
+// EnterpriseContractPolicySpec.
+func NewPolicy(ctx context.Context, policyRef, rekorUrl, publicKey string) (*ecc.EnterpriseContractPolicySpec, error) {
+	var policy *ecc.EnterpriseContractPolicySpec
+
+	if policyRef == "" {
+		log.Debug("Using an empty EnterpriseContractPolicy")
+		// Default to an empty policy instead of returning an error because the required
+		// values, e.g. PublicKey, may be provided via other means, e.g. publicKey param.
+		policy = &ecc.EnterpriseContractPolicySpec{}
+	} else if strings.Contains(policyRef, "{") {
+		log.Debug("Read EnterpriseContractPolicy as JSON")
+		if err := json.Unmarshal([]byte(policyRef), &policy); err != nil {
+			log.Debugf("Problem parsing EnterpriseContractPolicy Spec from %q", policyRef)
+			return nil, fmt.Errorf("unable to parse EnterpriseContractPolicy Spec: %w", err)
+		}
+	} else {
+		log.Debug("Read EnterpriseContractPolicy as k8s resource")
+		k8s, err := kubernetesClientCreator()
+		if err != nil {
+			log.Debug("Failed to initialize Kubernetes client")
+			return nil, fmt.Errorf("cannot initialize Kubernetes client: %w", err)
+		}
+		log.Debug("Initialized Kubernetes client")
+
+		ecp, err := k8s.FetchEnterpriseContractPolicy(ctx, policyRef)
+		if err != nil {
+			log.Debug("Failed to fetch the enterprise contract policy from the cluster!")
+			return nil, fmt.Errorf("unable to fetch EnterpriseContractPolicy: %w", err)
+		}
+		policy = &ecp.Spec
+	}
+
+	if rekorUrl != "" && rekorUrl != policy.RekorUrl {
+		policy.RekorUrl = rekorUrl
 		log.Debugf("Updated rekor URL in policy to %q", rekorUrl)
-		return newPolicy
-	} else {
-		return policy
 	}
-}
 
-// WithPublicKey returns a new instance of EnterpriseContractPolicy if an update
-// to its publicKey is needed. Otherwise, the same instance is returned.
-func WithPublicKey(policy *ecc.EnterpriseContractPolicy, publicKey string) *ecc.EnterpriseContractPolicy {
-	if publicKey != "" && publicKey != policy.Spec.PublicKey {
-		newPolicy := policy.DeepCopy()
-		newPolicy.Spec.PublicKey = publicKey
+	if publicKey != "" && publicKey != policy.PublicKey {
+		policy.PublicKey = publicKey
 		log.Debugf("Updated public key in policy to %q", publicKey)
-		return newPolicy
-	} else {
-		return policy
 	}
+
+	if policy.PublicKey == "" {
+		return nil, errors.New("policy must provide a public key")
+	}
+
+	return policy, nil
 }
 
-// CheckOpts returns an instance based on attributes of the EnterpriseContractPolicy.
-func CheckOpts(ctx context.Context, policy *ecc.EnterpriseContractPolicy) (*cosign.CheckOpts, error) {
+// CheckOpts returns an instance based on attributes of the EnterpriseContractPolicySpec.
+func CheckOpts(ctx context.Context, policy *ecc.EnterpriseContractPolicySpec) (*cosign.CheckOpts, error) {
 	checkOpts := cosign.CheckOpts{}
 
 	verifier, err := signatureVerifier(ctx, policy)
@@ -66,7 +104,7 @@ func CheckOpts(ctx context.Context, policy *ecc.EnterpriseContractPolicy) (*cosi
 	}
 	checkOpts.SigVerifier = verifier
 
-	rekorUrl := policy.Spec.RekorUrl
+	rekorUrl := policy.RekorUrl
 	if rekorUrl != "" {
 		rekorClient, err := rekor.NewClient(rekorUrl)
 		if err != nil {
@@ -84,9 +122,9 @@ func CheckOpts(ctx context.Context, policy *ecc.EnterpriseContractPolicy) (*cosi
 var publicKeyFromKeyRef = cosignSig.PublicKeyFromKeyRef
 
 // signatureVerifier creates a new instance based on the PublicKey from the
-// EnterpriseContractPolicy.
-func signatureVerifier(ctx context.Context, policy *ecc.EnterpriseContractPolicy) (sigstoreSig.Verifier, error) {
-	publicKey := policy.Spec.PublicKey
+// EnterpriseContractPolicySpec.
+func signatureVerifier(ctx context.Context, policy *ecc.EnterpriseContractPolicySpec) (sigstoreSig.Verifier, error) {
+	publicKey := policy.PublicKey
 	if publicKey == "" {
 		return nil, errors.New("public key cannot be empty")
 	}
