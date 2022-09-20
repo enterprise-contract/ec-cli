@@ -31,7 +31,7 @@ require (
 	github.com/spf13/cobra v1.5.0
 	github.com/stretchr/testify v1.8.0
 	github.com/stuart-warren/yamlfmt v0.1.2
-	github.com/tektoncd/pipeline v0.39.0
+	github.com/tektoncd/pipeline v0.40.0
 	github.com/testcontainers/testcontainers-go v0.14.0
 	github.com/theupdateframework/go-tuf v0.5.0
 	github.com/transparency-dev/merkle v0.0.1
@@ -432,7 +432,7 @@ require (
 	go.opentelemetry.io/proto/otlp v0.16.0 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
-	go.uber.org/zap v1.22.0 // indirect
+	go.uber.org/zap v1.23.0 // indirect
 	golang.org/x/crypto v0.0.0-20220829220503-c86fa9a7ed90 // indirect
 	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e // indirect
 	golang.org/x/exp/typeparams v0.0.0-20220613132600-b0d781184e0d // indirect
@@ -466,7 +466,7 @@ require (
 	k8s.io/klog/v2 v2.70.2-0.20220707122935-0990e81f1a8f // indirect
 	k8s.io/kube-openapi v0.0.0-20220803164354-a70c9af30aea // indirect
 	k8s.io/utils v0.0.0-20220810061631-2e139fc3ae1e // indirect
-	knative.dev/pkg v0.0.0-20220805012121-7b8b06028e4f // indirect
+	knative.dev/pkg v0.0.0-20220818004048-4a03844c0b15 // indirect
 	muzzammil.xyz/jsonc v1.0.0 // indirect
 	mvdan.cc/gofumpt v0.3.1 // indirect
 	mvdan.cc/interfacer v0.0.0-20180901003855-c20040233aed // indirect
