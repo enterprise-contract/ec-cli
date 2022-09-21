@@ -27,6 +27,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+type contextKey string
+
+const clientContextKey contextKey = "ec.kubernetes.client"
+
 type Client interface {
 	FetchEnterpriseContractPolicy(ctx context.Context, ref string) (*ecc.EnterpriseContractPolicy, error)
 }
@@ -35,16 +39,25 @@ type kubernetesClient struct {
 	client client.Client
 }
 
+func WithClient(ctx context.Context, client Client) context.Context {
+	return context.WithValue(ctx, clientContextKey, client)
+}
+
 // NewClient constructs a new kubernetes with the default "live" client
-func NewClient() (Client, error) {
-	clnt, err := createControllerRuntimeClient()
+func NewClient(ctx context.Context) (Client, error) {
+	client, ok := ctx.Value(clientContextKey).(Client)
+	if ok && client != nil {
+		return client, nil
+	}
+
+	k8sClient, err := createControllerRuntimeClient()
 	if err != nil {
 		log.Debug("Failed to create k8s client!")
 		return nil, err
 	}
 
 	return &kubernetesClient{
-		client: clnt,
+		client: k8sClient,
 	}, nil
 }
 

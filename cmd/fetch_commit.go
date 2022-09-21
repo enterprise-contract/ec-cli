@@ -115,7 +115,7 @@ func validateGitSource(ctx context.Context, imageRef, publicKey string) error {
 			return err
 		}
 
-		authorization, err := image.GetAuthorization(gitSource)
+		authorization, err := image.GetAuthorization(ctx, gitSource)
 		if err != nil {
 			return err
 		}

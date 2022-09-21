@@ -17,6 +17,7 @@
 package image
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -26,7 +27,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func mockFetchCommitSource(url, sha string) (*object.Commit, error) {
+func mockFetchCommitSource(ctx context.Context, url, sha string) (*object.Commit, error) {
 	return &object.Commit{
 		Hash: plumbing.NewHash("6c1f093c0c197add71579d392da8a79a984fcd62"),
 		Author: object.Signature{

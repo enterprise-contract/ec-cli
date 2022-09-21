@@ -17,6 +17,7 @@
 package image
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/go-git/go-git/v5/plumbing/object"
@@ -86,7 +87,7 @@ func (a *attestation) getBuildSCM() string {
 	return uri
 }
 
-func fetchCommitSource(repoUrl, commitSha string) (*object.Commit, error) {
+func fetchCommitSource(ctx context.Context, repoUrl, commitSha string) (*object.Commit, error) {
 	repo, err := getRepository(repoUrl)
 	if err != nil {
 		return nil, err

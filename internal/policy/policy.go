@@ -34,8 +34,6 @@ import (
 	"github.com/hacbs-contract/ec-cli/internal/kubernetes"
 )
 
-var kubernetesClientCreator = kubernetes.NewClient
-
 // NewEnterpriseContractPolicy construct and return a new instance of EnterpriseContractPolicySpec.
 //
 // The policyRef parameter is expected to be either a JSON-encoded instance of
@@ -62,7 +60,7 @@ func NewPolicy(ctx context.Context, policyRef, rekorUrl, publicKey string) (*ecc
 		}
 	} else {
 		log.Debug("Read EnterpriseContractPolicy as k8s resource")
-		k8s, err := kubernetesClientCreator()
+		k8s, err := kubernetes.NewClient(ctx)
 		if err != nil {
 			log.Debug("Failed to initialize Kubernetes client")
 			return nil, fmt.Errorf("cannot initialize Kubernetes client: %w", err)
@@ -118,8 +116,32 @@ func CheckOpts(ctx context.Context, policy *ecc.EnterpriseContractPolicySpec) (*
 	return &checkOpts, nil
 }
 
-// publicKeyFromKeyRef facilitates with unit testing.
-var publicKeyFromKeyRef = cosignSig.PublicKeyFromKeyRef
+type signatureClient interface {
+	publicKeyFromKeyRef(context.Context, string) (sigstoreSig.Verifier, error)
+}
+
+type cosignClient struct{}
+
+func (c *cosignClient) publicKeyFromKeyRef(ctx context.Context, publicKey string) (sigstoreSig.Verifier, error) {
+	return cosignSig.PublicKeyFromKeyRef(ctx, publicKey)
+}
+
+type contextKey string
+
+const signatureClientContextKey contextKey = "ec.policy.signature.client"
+
+func withSignatureClient(ctx context.Context, client signatureClient) context.Context {
+	return context.WithValue(ctx, signatureClientContextKey, client)
+}
+
+func newSignatureClient(ctx context.Context) signatureClient {
+	client, ok := ctx.Value(signatureClientContextKey).(signatureClient)
+	if ok && client != nil {
+		return client
+	}
+
+	return &cosignClient{}
+}
 
 // signatureVerifier creates a new instance based on the PublicKey from the
 // EnterpriseContractPolicySpec.
@@ -137,7 +159,7 @@ func signatureVerifier(ctx context.Context, policy *ecc.EnterpriseContractPolicy
 		return verifier, nil
 	}
 
-	verifier, err := publicKeyFromKeyRef(ctx, publicKey)
+	verifier, err := newSignatureClient(ctx).publicKeyFromKeyRef(ctx, publicKey)
 	if err != nil {
 		// log.Debugf("Problem creating signature verifier using public key %q", publicKey)
 		return nil, err

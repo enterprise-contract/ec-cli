@@ -42,7 +42,7 @@ type authorizationGetter interface {
 }
 
 type AuthorizationSource interface {
-	GetSource() (authorizationGetter, error)
+	GetSource(context.Context) (authorizationGetter, error)
 }
 
 // holds config information to get client instance
@@ -50,14 +50,14 @@ type K8sSource struct {
 	namespace   string
 	server      string
 	resource    string
-	fetchSource func(string) (*ecp.EnterpriseContractPolicy, error)
+	fetchSource func(context.Context, string) (*ecp.EnterpriseContractPolicy, error)
 }
 
 // holds config information to get client instance
 type GitSource struct {
 	repoUrl     string
 	commitSha   string
-	fetchSource func(string, string) (*object.Commit, error)
+	fetchSource func(context.Context, string, string) (*object.Commit, error)
 }
 
 // the object GitSource fetches
@@ -91,8 +91,8 @@ func NewK8sSource(server, namespace, resource string) (*K8sSource, error) {
 	}, nil
 }
 
-func (g *GitSource) GetSource() (authorizationGetter, error) {
-	gitCommit, err := g.fetchSource(g.repoUrl, g.commitSha)
+func (g *GitSource) GetSource(ctx context.Context) (authorizationGetter, error) {
+	gitCommit, err := g.fetchSource(ctx, g.repoUrl, g.commitSha)
 	if err != nil {
 		return nil, err
 	}
@@ -107,8 +107,8 @@ func (g *GitSource) GetSource() (authorizationGetter, error) {
 }
 
 // fetch the k8s resource from the cluster
-func (k *K8sSource) GetSource() (authorizationGetter, error) {
-	ecp, err := k.fetchSource(k.resource)
+func (k *K8sSource) GetSource(ctx context.Context) (authorizationGetter, error) {
+	ecp, err := k.fetchSource(ctx, k.resource)
 	if err != nil {
 		return nil, err
 	}
@@ -121,14 +121,14 @@ func (k *K8sSource) GetSource() (authorizationGetter, error) {
 	}, nil
 }
 
-func fetchECSource(namedResource string) (*ecp.EnterpriseContractPolicy, error) {
-	k8s, err := kubernetesClientCreator()
+func fetchECSource(ctx context.Context, namedResource string) (*ecp.EnterpriseContractPolicy, error) {
+	k8s, err := kubernetesClientCreator(ctx)
 	if err != nil {
 		log.Debug("Failed to initialize Kubernetes client")
 		return nil, err
 	}
 
-	ecp, err := k8s.FetchEnterpriseContractPolicy(context.TODO(), namedResource)
+	ecp, err := k8s.FetchEnterpriseContractPolicy(ctx, namedResource)
 	if err != nil {
 		log.Debug("Failed to fetch the enterprise contract policy from the cluster!")
 		return nil, err
@@ -193,8 +193,8 @@ func captureCommitSignOff(message string) []string {
 	return capturedSignatures
 }
 
-func GetAuthorization(source AuthorizationSource) (*authorizationSignature, error) {
-	authorizationSource, err := source.GetSource()
+func GetAuthorization(ctx context.Context, source AuthorizationSource) (*authorizationSignature, error) {
+	authorizationSource, err := source.GetSource(ctx)
 	if err != nil {
 		return nil, err
 	}

@@ -40,12 +40,12 @@ CTeemlLBj+GVwnrnTgS1ow2jxgOgNFs0ADh2UfqHQqxeXFmphmsiAxtOxA==
 
 const testRekorUrl = "https://example.com/api"
 
-type FakeClient struct {
+type FakeKubernetesClient struct {
 	policy     ecc.EnterpriseContractPolicySpec
 	fetchError bool
 }
 
-func (c *FakeClient) FetchEnterpriseContractPolicy(ctx context.Context, ref string) (*ecc.EnterpriseContractPolicy, error) {
+func (c *FakeKubernetesClient) FetchEnterpriseContractPolicy(ctx context.Context, ref string) (*ecc.EnterpriseContractPolicy, error) {
 	if c.fetchError {
 		return nil, errors.New("no fetching for you")
 	}
@@ -119,18 +119,10 @@ func TestNewPolicy(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			ctx := context.Background()
-
 			// Setup an fake client to simulate external connections.
 			if c.k8sResource != nil {
-				originalClientF := kubernetesClientCreator
-				defer func() {
-					kubernetesClientCreator = originalClientF
-				}()
-				kubernetesClientCreator = func() (kubernetes.Client, error) {
-					return &FakeClient{policy: *c.k8sResource}, nil
-				}
+				ctx = kubernetes.WithClient(ctx, &FakeKubernetesClient{policy: *c.k8sResource})
 			}
-
 			got, err := NewPolicy(ctx, c.policyRef, c.rekorUrl, c.publicKey)
 			assert.NoError(t, err)
 			assert.Equal(t, c.expected, got)
@@ -165,18 +157,20 @@ func TestNewPolicyFailures(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			ctx := context.Background()
-			originalClientF := kubernetesClientCreator
-			defer func() {
-				kubernetesClientCreator = originalClientF
-			}()
-			kubernetesClientCreator = func() (kubernetes.Client, error) {
-				return &FakeClient{fetchError: c.k8sError}, nil
-			}
+			ctx = kubernetes.WithClient(ctx, &FakeKubernetesClient{fetchError: c.k8sError})
 			got, err := NewPolicy(ctx, c.policyRef, "", "")
 			assert.Nil(t, got)
 			assert.ErrorContains(t, err, c.errorCause)
 		})
 	}
+}
+
+type FakeCosignClient struct {
+	publicKey string
+}
+
+func (c *FakeCosignClient) publicKeyFromKeyRef(context.Context, string) (sigstoreSig.Verifier, error) {
+	return cosignSig.LoadPublicKeyRaw([]byte(c.publicKey), crypto.SHA256)
 }
 
 func TestCheckOpts(t *testing.T) {
@@ -210,14 +204,13 @@ func TestCheckOpts(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			publicKeyFromKeyRef = func(ctx context.Context, keyRef string) (sigstoreSig.Verifier, error) {
-				return cosignSig.LoadPublicKeyRaw([]byte(c.remotePublicKey), crypto.SHA256)
-			}
+			ctx := context.Background()
+			ctx = withSignatureClient(ctx, &FakeCosignClient{publicKey: c.remotePublicKey})
 			policy := &ecc.EnterpriseContractPolicySpec{
 				PublicKey: c.publicKey,
 				RekorUrl:  c.rekorUrl,
 			}
-			opts, err := CheckOpts(context.Background(), policy)
+			opts, err := CheckOpts(ctx, policy)
 			if c.err != "" {
 				assert.Empty(t, opts)
 				assert.ErrorContains(t, err, c.err)
