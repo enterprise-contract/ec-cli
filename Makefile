@@ -99,6 +99,9 @@ lint-fix: ## Fix linting issues automagically
 	@go run github.com/daixiang0/gci write -s standard -s default -s "prefix(github.com/hacbs-contract/ec-cli)" .
 	@go run github.com/golangci/golangci-lint/cmd/golangci-lint run --fix
 
+.PHONY: ci
+ci: test lint-fix docs acceptance ## Run the usual required CI tasks
+
 .PHONY: clean
 clean: ## Delete build output
 	@rm dist/*
