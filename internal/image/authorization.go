@@ -28,7 +28,7 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
-	ecp "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
+	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/hacbs-contract/ec-cli/internal/kubernetes"
@@ -50,7 +50,7 @@ type K8sSource struct {
 	namespace   string
 	server      string
 	resource    string
-	fetchSource func(context.Context, string) (*ecp.EnterpriseContractPolicy, error)
+	fetchSource func(context.Context, string) (*ecc.EnterpriseContractPolicy, error)
 }
 
 // holds config information to get client instance
@@ -121,7 +121,7 @@ func (k *K8sSource) GetSource(ctx context.Context) (authorizationGetter, error) 
 	}, nil
 }
 
-func fetchECSource(ctx context.Context, namedResource string) (*ecp.EnterpriseContractPolicy, error) {
+func fetchECSource(ctx context.Context, namedResource string) (*ecc.EnterpriseContractPolicy, error) {
 	k8s, err := kubernetesClientCreator(ctx)
 	if err != nil {
 		log.Debug("Failed to initialize Kubernetes client")

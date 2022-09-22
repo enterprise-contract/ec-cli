@@ -26,7 +26,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/plumbing/transport/client"
-	"github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
+	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -98,8 +98,8 @@ func getRepoHeadRef(repoURL string) (*string, error) {
 	return &r, nil
 }
 
-// CreatePolicyRepoFromSource parses a v1alpha1.GitPolicySource into a PolicyRepo struct
-func CreatePolicyRepoFromSource(s v1alpha1.GitPolicySource) (PolicyRepo, error) {
+// CreatePolicyRepoFromSource parses a ecc.GitPolicySource into a PolicyRepo struct
+func CreatePolicyRepoFromSource(s ecc.GitPolicySource) (PolicyRepo, error) {
 	log.Debug("Creating policy repo from git policy source")
 
 	u, policyDir, err := normalizeRepoUrl(s.Repository)

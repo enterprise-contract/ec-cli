@@ -23,7 +23,7 @@ import (
 	"path"
 	"testing"
 
-	ecp "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
+	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -33,7 +33,7 @@ import (
 
 var fakeClient client.Client
 
-var testECP = ecp.EnterpriseContractPolicy{
+var testECP = ecc.EnterpriseContractPolicy{
 	TypeMeta: v1.TypeMeta{
 		Kind:       "EnterpriseContractPolicy",
 		APIVersion: "appstudio.redhat.com/v1alpha1",
@@ -42,10 +42,10 @@ var testECP = ecp.EnterpriseContractPolicy{
 		Name:      "ec-policy",
 		Namespace: "test",
 	},
-	Spec: ecp.EnterpriseContractPolicySpec{
-		Sources: []ecp.PolicySource{
+	Spec: ecc.EnterpriseContractPolicySpec{
+		Sources: []ecc.PolicySource{
 			{
-				GitRepository: &ecp.GitPolicySource{
+				GitRepository: &ecc.GitPolicySource{
 					Repository: "test_policies",
 				},
 			},
@@ -55,7 +55,7 @@ var testECP = ecp.EnterpriseContractPolicy{
 
 func init() {
 	scheme := runtime.NewScheme()
-	err := ecp.AddToScheme(scheme)
+	err := ecc.AddToScheme(scheme)
 	if err != nil {
 		panic(err)
 	}
@@ -67,7 +67,7 @@ func Test_FetchEnterpriseContractPolicy(t *testing.T) {
 	testCases := []struct {
 		name       string
 		policyName string
-		ecp        *ecp.EnterpriseContractPolicy
+		ecp        *ecc.EnterpriseContractPolicy
 		err        string
 	}{
 		{
@@ -118,12 +118,12 @@ func Test_FetchEnterpriseContractPolicy(t *testing.T) {
 func Test_FailureToAddScheme(t *testing.T) {
 	expected := errors.New("expected")
 
-	def := ecp.AddToScheme
-	ecp.AddToScheme = func(s *runtime.Scheme) error {
+	def := ecc.AddToScheme
+	ecc.AddToScheme = func(s *runtime.Scheme) error {
 		return expected
 	}
 	defer func() {
-		ecp.AddToScheme = def
+		ecc.AddToScheme = def
 	}()
 
 	_, err := createControllerRuntimeClient()
