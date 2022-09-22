@@ -54,6 +54,11 @@ func paramsInput(input string) attestation {
 		params.Digest = map[string]string{
 			"sha1": "6c1f093c0c197add71579d392da8a79a984fcd62",
 		}
+	} else if input == "good-git+" {
+		params.Uri = "git+https://github.com/joejstuart/ec-cli.git"
+		params.Digest = map[string]string{
+			"sha1": "6c1f093c0c197add71579d392da8a79a984fcd62",
+		}
 	}
 
 	materials := []materials{
@@ -129,6 +134,7 @@ func Test_GetBuildSCM(t *testing.T) {
 	}{
 		{paramsInput("good-git"), "https://github.com/joejstuart/ec-cli.git"},
 		{paramsInput("bad-git"), ""},
+		{paramsInput("good-git+"), "https://github.com/joejstuart/ec-cli.git"},
 	}
 
 	for i, tc := range tests {

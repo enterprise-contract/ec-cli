@@ -18,6 +18,7 @@ package image
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/go-git/go-git/v5/plumbing/object"
 	log "github.com/sirupsen/logrus"
@@ -80,7 +81,8 @@ func (a *attestation) getBuildCommitSha() string {
 func (a *attestation) getBuildSCM() string {
 	uri := "" //https://github.com/joejstuart/ec-cli.git"
 	if len(a.Predicate.Materials) == 1 {
-		uri = a.Predicate.Materials[0].Uri
+		// If our URI has 'git+https' as the scheme, we will strip the "git+" portion.
+		uri = strings.TrimPrefix(a.Predicate.Materials[0].Uri, "git+")
 	}
 	log.Debugf("using repo '%v'", uri)
 	return uri
