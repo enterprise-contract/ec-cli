@@ -199,30 +199,85 @@ func Test_ValidateImageCommand(t *testing.T) {
 }
 
 func Test_ValidateErrorCommand(t *testing.T) {
-	validate := func(ctx context.Context, imageRef string, policy *ecc.EnterpriseContractPolicySpec) (*output.Output, error) {
-		return nil, errors.New("expected")
-	}
-
-	cmd := validateImageCmd(validate)
-
-	cmd.SetArgs([]string{
-		"--image",
-		"registry/image:tag",
-		"--policy",
-		`{"publicKey": "test-public-key"}`,
-	})
-
-	var out bytes.Buffer
-	cmd.SetOut(&out)
-	cmd.SilenceErrors = true
-	cmd.SilenceUsage = true
-
-	err := cmd.Execute()
-	assert.EqualError(t, err, `1 error occurred:
+	cases := []struct {
+		name     string
+		args     []string
+		expected string
+	}{
+		{
+			name: "image validation failure",
+			args: []string{
+				"--image",
+				"registry/image:tag",
+				"--policy",
+				`{"publicKey": "test-public-key"}`,
+			},
+			expected: `1 error occurred:
 	* error validating image registry/image:tag of component Unnamed: expected
 
-`)
-	assert.Empty(t, out.String())
+`,
+		},
+		{
+			name: "invalid policy JSON",
+			args: []string{
+				"--image",
+				"registry/image:tag",
+				"--policy",
+				"{invalid JSON}",
+			},
+			expected: `1 error occurred:
+	* unable to parse EnterpriseContractPolicy Spec: invalid character 'i' looking for beginning of object key string
+
+`,
+		},
+		{
+			name: "invalid input JSON",
+			args: []string{
+				"--json-input",
+				"{invalid JSON}",
+				"--policy",
+				`{"publicKey": "test-public-key"}`,
+			},
+			expected: `1 error occurred:
+	* invalid character 'i' looking for beginning of object key string
+
+`,
+		},
+		{
+			name: "invalid input and policy JSON",
+			args: []string{
+				"--json-input",
+				"{invalid JSON}",
+				"--policy",
+				"{invalid JSON}",
+			},
+			expected: `2 errors occurred:
+	* invalid character 'i' looking for beginning of object key string
+	* unable to parse EnterpriseContractPolicy Spec: invalid character 'i' looking for beginning of object key string
+
+`,
+		},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			validate := func(_ context.Context, _ string, _ *ecc.EnterpriseContractPolicySpec) (*output.Output, error) {
+				return nil, errors.New("expected")
+			}
+
+			cmd := validateImageCmd(validate)
+
+			cmd.SetArgs(c.args)
+
+			var out bytes.Buffer
+			cmd.SetOut(&out)
+			cmd.SilenceErrors = true
+			cmd.SilenceUsage = true
+
+			err := cmd.Execute()
+			assert.EqualError(t, err, c.expected)
+			assert.Empty(t, out.String())
+		})
+	}
 }
 
 func Test_FailureImageAccessibility(t *testing.T) {
