@@ -20,3 +20,4 @@ see_also:
 - ec - Enterprise Contract CLI
 - ec fetch commit - Fetch authorizations from a git repository
 - ec fetch k8s-resource - Fetch authorizations from a kubernetes resource
+- ec fetch policy - Fetch policy rules from a git repository or other source

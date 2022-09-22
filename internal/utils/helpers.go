@@ -18,6 +18,7 @@ package utils
 
 import (
 	"bytes"
+	"path/filepath"
 	"unicode"
 
 	"github.com/ghodss/yaml"
@@ -53,7 +54,25 @@ func hasPrefix(buf []byte, prefix []byte) bool {
 	return bytes.HasPrefix(trim, prefix)
 }
 
-// CreateWorkDir creates the working directory in tmp
+// CreateWorkDir creates the working directory in tmp and some subdirectories
 func CreateWorkDir() (string, error) {
-	return CreateTmpDir(AppFS, afero.GetTempDir(AppFS, ""), "ec-work-")
+	workDir, err := CreateTmpDir(AppFS, afero.GetTempDir(AppFS, ""), "ec-work-")
+	if err != nil {
+		return "", err
+	}
+
+	// Create top level directories for Conftest
+	for _, d := range []string{
+		"policy",
+		// Later maybe
+		//"data",
+		//"input",
+	} {
+		err := AppFS.Mkdir(filepath.Join(workDir, d), 0o755)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	return workDir, nil
 }

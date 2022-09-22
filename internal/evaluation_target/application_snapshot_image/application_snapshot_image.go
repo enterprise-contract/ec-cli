@@ -104,10 +104,10 @@ func NewApplicationSnapshotImage(ctx context.Context, image string, ecp *ecc.Ent
 		log.Debug("Failed to fetch the policy repos from the ECP!")
 		return nil, err
 	}
-	log.Debug("Policy repos fetched")
+	log.Debug("Policy repo source definitions fetched")
 	for _, policyRepo := range policies {
 		policyRepoJson, _ := json.Marshal(policyRepo)
-		log.Debugf("%s", policyRepoJson)
+		log.Debugf("policyRepoJson: %s", policyRepoJson)
 	}
 
 	c, err := newConftestEvaluator(ctx, policies, ConftestNamespace, ecp)

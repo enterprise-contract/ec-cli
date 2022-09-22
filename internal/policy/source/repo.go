@@ -22,29 +22,30 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/plumbing/transport/client"
 	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/hacbs-contract/ec-cli/internal/downloader"
 )
 
-//CheckoutRepo is used as an alias for git.PlainCloneContext in order to facilitate testing
-var CheckoutRepo = git.PlainCloneContext
+// For testing purposes
+var DownloadPolicy = downloader.DownloadPolicy
 
 //PolicySource in an interface representing the location of policies.
 //Must implement the GetPolicies() and GetPolicyDir() methods.
 type PolicySource interface {
-	GetPolicies(ctx context.Context, dest string) error
+	GetPolicies(ctx context.Context, dest string, showMsg bool) error
 	GetPolicyDir() string
 }
 
 //PolicyRepo is a struct representing a repository storing policy data.
 type PolicyRepo struct {
-	PolicyDir string
-	RepoURL   string
-	RepoRef   string
+	RawSourceURL string
+	PolicyDir    string
+	RepoURL      string
+	RepoRef      string
 }
 
 // GetPolicyDir returns the policy directory for a given PolicyRepo
@@ -53,16 +54,23 @@ func (p *PolicyRepo) GetPolicyDir() string {
 }
 
 // GetPolicies clones the repository for a given PolicyRepo
-func (p *PolicyRepo) GetPolicies(ctx context.Context, dest string) error {
+func (p *PolicyRepo) GetPolicies(ctx context.Context, dest string, showMsg bool) error {
 	// Checkout policy repo into work directory.
-	log.Debugf("Checking out repo %s at %s to work dir", p.RepoURL, p.RepoRef)
-	_, err := CheckoutRepo(ctx, dest, false, &git.CloneOptions{
-		URL:           p.RepoURL,
-		Progress:      nil,
-		SingleBranch:  true,
-		ReferenceName: plumbing.NewBranchReferenceName(p.RepoRef),
-	})
-	return err
+	log.Debugf("Checking out repo %s at %s to work dir at %s", p.RepoURL, p.RepoRef, dest)
+
+	var sourceUrl string
+	if downloader.ProbablyGoGetterFormat(p.RawSourceURL) {
+		// Assume the raw source url is a valid go getter url.
+		// Ignore the other fields and use it directly.
+		sourceUrl = p.RawSourceURL
+
+	} else {
+		// Create a go-getter url from the fields prepared earlier in
+		// source.CreatePolicyRepoFromSource
+		sourceUrl = downloader.GetterGitUrl(p.RepoURL, p.PolicyDir, p.RepoRef)
+	}
+
+	return DownloadPolicy(ctx, dest, sourceUrl, showMsg)
 }
 
 // getRepoHeadRef gets the default head reference for a given git URL
@@ -100,18 +108,24 @@ func getRepoHeadRef(repoURL string) (*string, error) {
 
 // CreatePolicyRepoFromSource parses a ecc.GitPolicySource into a PolicyRepo struct
 func CreatePolicyRepoFromSource(s ecc.GitPolicySource) (PolicyRepo, error) {
+	return CreatePolicyRepoFromRepoAndRevision(s.Repository, s.Revision)
+}
+
+func CreatePolicyRepoFromRepoAndRevision(repository string, revision *string) (PolicyRepo, error) {
 	log.Debug("Creating policy repo from git policy source")
 
-	u, policyDir, err := normalizeRepoUrl(s.Repository)
+	// Normalize the url, extract the policyDir if there is one, and determine the ref to use
+	u, policyDir, err := normalizeRepoUrl(repository)
 	if err != nil {
 		return PolicyRepo{}, err
 	}
 
-	if s.Revision != nil {
+	if revision != nil {
 		return PolicyRepo{
-			PolicyDir: policyDir,
-			RepoURL:   u,
-			RepoRef:   *s.Revision,
+			RawSourceURL: repository,
+			PolicyDir:    policyDir,
+			RepoURL:      u,
+			RepoRef:      *revision,
 		}, nil
 	}
 
@@ -122,11 +136,11 @@ func CreatePolicyRepoFromSource(s ecc.GitPolicySource) (PolicyRepo, error) {
 	}
 
 	return PolicyRepo{
-		PolicyDir: policyDir,
-		RepoURL:   u,
-		RepoRef:   *ref,
+		RawSourceURL: repository,
+		PolicyDir:    policyDir,
+		RepoURL:      u,
+		RepoRef:      *ref,
 	}, nil
-
 }
 
 // normalizeRepoUrl checks if a given URL string has a scheme (https or http),

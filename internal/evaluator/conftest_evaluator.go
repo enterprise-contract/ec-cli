@@ -28,6 +28,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 
+	"github.com/hacbs-contract/ec-cli/internal/downloader"
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
 	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
@@ -51,8 +52,12 @@ func newClient(ctx context.Context, c conftestEvaluator) testRunner {
 	}
 
 	return &runner.TestRunner{
-		Data:      c.paths.DataPaths,
-		Policy:    c.paths.PolicyPaths,
+		Data: c.paths.DataPaths,
+		// c.paths.PolicyPaths is not actually needed any more since all
+		// policies are are now placed under "policy" in the workdir.
+		// Todo: Refactor and remove it.
+		// Policy:    c.paths.PolicyPaths,
+		Policy:    []string{filepath.Join(c.workDir, downloader.PolicyDir)},
 		Namespace: []string{c.namespace},
 		NoFail:    true,
 		Output:    c.outputFormat,
@@ -114,6 +119,8 @@ func NewConftestEvaluator(ctx context.Context, policySources []source.PolicySour
 }
 
 func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) ([]output.CheckResult, error) {
+	log.Debugf("c.testRunner: %#v", c.testRunner)
+	log.Debugf("inputs: %#v", inputs)
 	results, err := c.testRunner.Run(ctx, inputs)
 	if err != nil {
 		return nil, err
@@ -181,6 +188,7 @@ func (c *conftestEvaluator) addDataPath(spec *ecc.EnterpriseContractPolicySpec) 
 		}
 	}
 	// write our jsonData content to the data.json file in the data directory under the workDir
+	log.Debugf("Writing config data to %s: %#v", dataFilePath, string(jsonData))
 	err = afero.WriteFile(utils.AppFS, dataFilePath, jsonData, 0777)
 	if err != nil {
 		return err
@@ -194,12 +202,14 @@ func (c *conftestEvaluator) addDataPath(spec *ecc.EnterpriseContractPolicySpec) 
 // addPolicyPaths adds the appropriate policy path to the ConfigurationPaths PolicyPaths field array
 func (c *conftestEvaluator) addPolicyPaths(ctx context.Context) error {
 	for _, policy := range c.policySources {
-		err := policy.GetPolicies(ctx, c.workDir)
+		log.Debugf("Policy source: %#v", policy)
+		err := policy.GetPolicies(ctx, c.workDir, false)
 		if err != nil {
 			return err
 		}
 		policyDir := policy.GetPolicyDir()
 		policyPath := filepath.Join(c.workDir, policyDir)
+		// Todo: PolicyPaths is not used any more so we should remove it
 		c.paths.PolicyPaths = append(c.paths.PolicyPaths, policyPath)
 	}
 	return nil
