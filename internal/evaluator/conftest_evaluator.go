@@ -21,7 +21,7 @@ import (
 	"encoding/json"
 	"path/filepath"
 
-	"github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
+	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/open-policy-agent/conftest/output"
 	"github.com/open-policy-agent/conftest/runner"
 	log "github.com/sirupsen/logrus"
@@ -49,7 +49,7 @@ type ConfigurationPaths struct {
 
 // NewConftestEvaluator returns initialized conftestEvaluator implementing
 // Evaluator interface
-func NewConftestEvaluator(ctx context.Context, policySources []source.PolicySource, namespace string, ecpSpec *v1alpha1.EnterpriseContractPolicySpec) (Evaluator, error) {
+func NewConftestEvaluator(ctx context.Context, policySources []source.PolicySource, namespace string, ecpSpec *ecc.EnterpriseContractPolicySpec) (Evaluator, error) {
 	c := conftestEvaluator{
 		policySources: policySources,
 		paths:         ConfigurationPaths{},
@@ -96,7 +96,7 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) ([]out
 }
 
 // addDataPath adds the appropriate data path to the ConfigurationPaths DataPaths field array.
-func (c *conftestEvaluator) addDataPath(spec *v1alpha1.EnterpriseContractPolicySpec) error {
+func (c *conftestEvaluator) addDataPath(spec *ecc.EnterpriseContractPolicySpec) error {
 	dataDir := filepath.Join(c.workDir, "data")
 	dataFilePath := filepath.Join(dataDir, "data.json")
 	exists, err := afero.DirExists(utils.AppFS, dataDir)

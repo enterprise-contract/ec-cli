@@ -119,7 +119,7 @@ func validateK8sSource(ctx context.Context, imageRef, publicKey, namespace, serv
 		return err
 	}
 
-	authorization, err := image.GetAuthorization(k8sSource)
+	authorization, err := image.GetAuthorization(ctx, k8sSource)
 	if err != nil {
 		return err
 	}

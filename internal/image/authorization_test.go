@@ -17,17 +17,18 @@
 package image
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
-	ecp "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
+	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
 )
 
-func mockFetchECSource(resource string) (*ecp.EnterpriseContractPolicy, error) {
+func mockFetchECSource(ctx context.Context, resource string) (*ecc.EnterpriseContractPolicy, error) {
 	description := "very descriptive"
-	return &ecp.EnterpriseContractPolicy{
-		Spec: ecp.EnterpriseContractPolicySpec{
+	return &ecc.EnterpriseContractPolicy{
+		Spec: ecc.EnterpriseContractPolicySpec{
 			Description: &description,
 		},
 	}, nil
@@ -106,7 +107,7 @@ func Test_GetAuthorization(t *testing.T) {
 
 	for i, tc := range tests {
 		t.Run(fmt.Sprintf("GetAuthorization=%d", i), func(t *testing.T) {
-			signOff, err := GetAuthorization(tc.input)
+			signOff, err := GetAuthorization(context.Background(), tc.input)
 			assert.ObjectsAreEqualValues(tc.want, signOff)
 			assert.Equal(t, tc.err, err)
 		})

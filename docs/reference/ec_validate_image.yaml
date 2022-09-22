@@ -100,5 +100,8 @@ example: |-
   Use an EnterpriseContractPolicy resource from a different namespace:
 
     ec validate image --image registry/name:tag --policy my-namespace/my-policy
+
+  Use an inline EnterpriseContractPolicy spec
+    ec validate image --image registry/name:tag --policy '{"publicKey": "<path/to/public/key>"}'
 see_also:
 - ec validate - Validate conformance with the Enterprise Contract

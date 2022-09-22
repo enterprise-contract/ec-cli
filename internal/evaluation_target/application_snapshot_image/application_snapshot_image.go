@@ -36,7 +36,6 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/hacbs-contract/ec-cli/internal/evaluator"
-	"github.com/hacbs-contract/ec-cli/internal/kubernetes"
 	"github.com/hacbs-contract/ec-cli/internal/policy"
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
 )
@@ -48,7 +47,6 @@ const ConftestNamespace = "release.main"
 const PipelineRunBuildType = "https://tekton.dev/attestations/chains/pipelinerun@v2"
 
 var newConftestEvaluator = evaluator.NewConftestEvaluator
-var kubernetesClientCreator = kubernetes.NewClient
 
 // imageRefTransport is used to inject the type of transport to use with the
 // remote.WithTransport function. By default, remote.DefaultTransport is
@@ -64,29 +62,13 @@ type ApplicationSnapshotImage struct {
 }
 
 // NewApplicationSnapshotImage returns an ApplicationSnapshotImage struct with reference, checkOpts, and evaluator ready to use.
-func NewApplicationSnapshotImage(ctx context.Context, image string, publicKey string, rekorURL string, policyConfiguration string) (*ApplicationSnapshotImage, error) {
+func NewApplicationSnapshotImage(ctx context.Context, image string, ecp *ecc.EnterpriseContractPolicySpec) (*ApplicationSnapshotImage, error) {
 	ref, err := name.ParseReference(image)
 	if err != nil {
 		log.Debugf("Failed to parse reference %s", image)
 		return nil, err
 	}
 	log.Debugf("Parsed reference %s", ref)
-
-	k8s, err := kubernetesClientCreator()
-	if err != nil {
-		log.Debug("Failed to initialize Kubernetes client")
-		return nil, err
-	}
-	log.Debug("Initialized Kubernetes client")
-
-	ecp, err := k8s.FetchEnterpriseContractPolicy(ctx, policyConfiguration)
-	if err != nil {
-		log.Debug("Failed to fetch the enterprise contract policy from the cluster!")
-		return nil, err
-	}
-	log.Debug("Enterprise contract policy fetched from cluster")
-	ecp = policy.WithRekorUrl(ecp, rekorURL)
-	ecp = policy.WithPublicKey(ecp, publicKey)
 
 	checkOpts, err := policy.CheckOpts(ctx, ecp)
 	if err != nil {
@@ -117,7 +99,7 @@ func NewApplicationSnapshotImage(ctx context.Context, image string, publicKey st
 		checkOpts: *checkOpts,
 	}
 
-	policies, err := fetchPolicyRepos(ecp.Spec)
+	policies, err := fetchPolicyRepos(ecp)
 	if err != nil {
 		log.Debug("Failed to fetch the policy repos from the ECP!")
 		return nil, err
@@ -128,7 +110,7 @@ func NewApplicationSnapshotImage(ctx context.Context, image string, publicKey st
 		log.Debugf("%s", policyRepoJson)
 	}
 
-	c, err := newConftestEvaluator(ctx, policies, ConftestNamespace, &ecp.Spec)
+	c, err := newConftestEvaluator(ctx, policies, ConftestNamespace, ecp)
 	if err != nil {
 		log.Debug("Failed to initialize the conftest evaluator!")
 		return nil, err
@@ -139,7 +121,7 @@ func NewApplicationSnapshotImage(ctx context.Context, image string, publicKey st
 }
 
 // fetchPolicyRepos returns an array of Policy repos
-func fetchPolicyRepos(spec ecc.EnterpriseContractPolicySpec) ([]source.PolicySource, error) {
+func fetchPolicyRepos(spec *ecc.EnterpriseContractPolicySpec) ([]source.PolicySource, error) {
 	policySources := make([]source.PolicySource, 0, len(spec.Sources))
 	for _, policySource := range spec.Sources {
 		if policySource.GitRepository != nil {
