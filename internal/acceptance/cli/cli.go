@@ -37,6 +37,7 @@ import (
 	"github.com/yudai/gojsondiff/formatter"
 
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/crypto"
+	"github.com/hacbs-contract/ec-cli/internal/acceptance/git"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/kubernetes"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/log"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/registry"
@@ -104,6 +105,10 @@ func ecCommandIsRunWith(ctx context.Context, parameters string) (context.Context
 	}
 
 	if environment, vars, err = setupKeys(ctx, vars, environment); err != nil {
+		return ctx, err
+	}
+
+	if environment, vars, err = setupGitHost(ctx, vars, environment); err != nil {
 		return ctx, err
 	}
 
@@ -245,6 +250,15 @@ func setupKubernetes(ctx context.Context, vars map[string]string, environment []
 
 	environment = append(environment, "KUBECONFIG="+kubeconfig.Name())
 
+	return environment, vars, nil
+}
+
+func setupGitHost(ctx context.Context, vars map[string]string, environment []string) ([]string, map[string]string, error) {
+	if !git.IsRunning(ctx) {
+		return environment, vars, nil
+	}
+
+	vars["GITHOST"] = git.Host(ctx)
 	return environment, vars, nil
 }
 
