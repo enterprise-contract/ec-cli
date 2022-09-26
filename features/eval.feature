@@ -88,3 +88,30 @@ Feature: evaluate enterprise contract
       ]
     }
     """
+
+  Scenario: inline policy
+    Given a key pair named "known"
+    Given an image named "acceptance/ec-happy-day"
+    Given a valid image signature of "acceptance/ec-happy-day" image signed by the "known" key
+    Given a valid Rekor entry for image signature of "acceptance/ec-happy-day"
+    Given a valid attestation of "acceptance/ec-happy-day" signed by the "known" key
+    Given a valid Rekor entry for attestation of "acceptance/ec-happy-day"
+    Given a git repository named "happy-day-policy" with
+      | main.rego | examples/happy_day.rego |
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy {"sources":[{"git":{"repository":"http://${GITHOST}/git/happy-day-policy.git"}}]} --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
+    Then the exit status should be 0
+    Then the standard output should contain
+    """
+    {
+      "success": true,
+      "components": [
+        {
+          "name": "Unnamed",
+          "containerImage": "localhost:(\\d+)/acceptance/ec-happy-day",
+          "violations": [],
+          "warnings": [],
+          "success": true
+        }
+      ]
+    }
+    """

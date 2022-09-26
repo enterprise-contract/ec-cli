@@ -38,6 +38,7 @@ import (
 
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/log"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/testenv"
+	"github.com/hacbs-contract/ec-cli/internal/acceptance/wiremock"
 )
 
 type key int
@@ -108,6 +109,10 @@ func startStubGitServer(ctx context.Context) (context.Context, error) {
 // via http://host:port/git/`name`git
 func Host(ctx context.Context) string {
 	return testenv.FetchState[gitState](ctx).HostAndPort
+}
+
+func IsRunning(ctx context.Context) bool {
+	return wiremock.IsRunning(ctx)
 }
 
 // createGitRepository uses go-git to initialize a git repository on the bound
