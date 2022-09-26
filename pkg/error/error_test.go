@@ -20,7 +20,8 @@ package error
 
 import (
 	"errors"
-	"reflect"
+	"fmt"
+	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -40,7 +41,7 @@ func TestError_CausedBy(t *testing.T) {
 		name   string
 		fields fields
 		args   args
-		want   Error
+		want   *ecError
 	}{
 		{
 			name: "returns underlying error message",
@@ -66,9 +67,11 @@ func TestError_CausedBy(t *testing.T) {
 				cause:      tt.fields.cause,
 				exitStatus: tt.fields.exitStatus,
 			}
-			if got := e.CausedBy(tt.args.err); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("CausedBy() = %v, want %v", got, tt.want)
-			}
+			_, file, line, ok := runtime.Caller(0)
+			assert.True(t, ok)
+			tt.want.file = file
+			tt.want.line = line + 4
+			assert.Equal(t, tt.want, e.CausedBy(tt.args.err))
 		})
 	}
 }
@@ -79,6 +82,8 @@ func TestError_Error(t *testing.T) {
 		message    string
 		cause      string
 		exitStatus int
+		file       string
+		line       int
 	}
 	tests := []struct {
 		name   string
@@ -92,8 +97,10 @@ func TestError_Error(t *testing.T) {
 				message:    "Something is wrong",
 				cause:      errors.New("error detected").Error(),
 				exitStatus: 1,
+				file:       "file.go",
+				line:       10,
 			},
-			want: "GE001: Something is wrong, caused by: error detected",
+			want: "GE001: Something is wrong, at file.go:10, caused by: error detected",
 		},
 	}
 	for _, tt := range tests {
@@ -103,6 +110,8 @@ func TestError_Error(t *testing.T) {
 				message:    tt.fields.message,
 				cause:      tt.fields.cause,
 				exitStatus: tt.fields.exitStatus,
+				file:       tt.fields.file,
+				line:       tt.fields.line,
 			}
 			assert.Equal(t, tt.want, e.Error())
 		})
@@ -111,4 +120,18 @@ func TestError_Error(t *testing.T) {
 
 func TestNilCauses(t *testing.T) {
 	assert.Nil(t, ecError{}.CausedBy(nil))
+}
+
+func TestNoCausedBy(t *testing.T) {
+	_, file, line, ok := runtime.Caller(0)
+	assert.True(t, ok)
+	e := NewError("CO001", "message", ErrorExitStatus)
+	assert.Equal(t, fmt.Sprintf("CO001: message, at %s:%d", file, line+2), e.Error())
+}
+
+func TestWithCausedBy(t *testing.T) {
+	_, file, line, ok := runtime.Caller(0)
+	assert.True(t, ok)
+	e := NewError("CO001", "message", ErrorExitStatus).CausedBy(errors.New("boom"))
+	assert.Equal(t, fmt.Sprintf("CO001: message, at %s:%d, caused by: boom", file, line+2), e.Error())
 }

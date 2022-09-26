@@ -18,6 +18,7 @@ package error
 
 import (
 	"fmt"
+	"runtime"
 )
 
 type Error interface {
@@ -30,6 +31,8 @@ type ecError struct {
 	message    string
 	cause      string
 	exitStatus int
+	file       string
+	line       int
 }
 
 const (
@@ -39,10 +42,13 @@ const (
 )
 
 func NewError(code, message string, exitStatus int) Error {
+	file, line := callerInfo()
 	return &ecError{
 		code:       code,
 		message:    message,
 		exitStatus: exitStatus,
+		file:       file,
+		line:       line,
 	}
 }
 
@@ -51,14 +57,31 @@ func (e ecError) CausedBy(err error) Error {
 		return nil
 	}
 
+	file, line := callerInfo()
+
 	return &ecError{
 		code:       e.code,
 		message:    e.message,
 		cause:      err.Error(),
 		exitStatus: e.exitStatus,
+		file:       file,
+		line:       line,
 	}
 }
 
 func (e ecError) Error() string {
-	return fmt.Sprintf("%s: %s, caused by: %s", e.code, e.message, e.cause)
+	if e.cause == "" {
+		return fmt.Sprintf("%s: %s, at %s:%d", e.code, e.message, e.file, e.line)
+	}
+	return fmt.Sprintf("%s: %s, at %s:%d, caused by: %s", e.code, e.message, e.file, e.line, e.cause)
+}
+
+func callerInfo() (file string, line int) {
+	var ok bool
+	if _, file, line, ok = runtime.Caller(2); !ok {
+		file = "unknown"
+		line = 0
+	}
+
+	return
 }
