@@ -18,6 +18,7 @@ package image
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"testing"
 
@@ -25,24 +26,30 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func mockFetchECSource(ctx context.Context, resource string) (*ecc.EnterpriseContractPolicy, error) {
+func mockFetchECSource(ctx context.Context, resource string) (*ecc.EnterpriseContractPolicySpec, error) {
 	description := "very descriptive"
-	return &ecc.EnterpriseContractPolicy{
-		Spec: ecc.EnterpriseContractPolicySpec{
-			Description: &description,
-		},
+	return &ecc.EnterpriseContractPolicySpec{
+		Description: &description,
 	}, nil
+}
+
+func mockPolicyConfigurationString() string {
+	description := "very descriptive"
+	config := &ecc.EnterpriseContractPolicySpec{
+		Description: &description,
+	}
+	configJson, _ := json.Marshal(config)
+	return string(configJson)
 }
 
 func Test_NewK8sSource(t *testing.T) {
 	wanted := &K8sSource{
-		namespace:   "enterprise-contract",
-		server:      "k8s-server",
-		resource:    "ecp/resource",
-		fetchSource: mockFetchECSource,
+		component:           "my-component",
+		policyConfiguration: mockPolicyConfigurationString(),
+		fetchSource:         mockFetchECSource,
 	}
 
-	source, err := NewK8sSource("k8s-server", "enterprise-contract", "ecp/resource")
+	source, err := NewK8sSource(mockPolicyConfigurationString(), "my-component")
 	assert.ObjectsAreEqualValues(wanted, source)
 	assert.NoError(t, err)
 }
@@ -91,10 +98,8 @@ func Test_GetAuthorization(t *testing.T) {
 	}{
 		{
 			&K8sSource{
-				namespace:   "enterprise-contract",
-				server:      "k8s-server",
-				resource:    "ecp/resource",
-				fetchSource: mockFetchECSource,
+				policyConfiguration: mockPolicyConfigurationString(),
+				fetchSource:         mockFetchECSource,
 			},
 			&authorizationSignature{
 				RepoUrl:     "my-git-repo",

@@ -32,6 +32,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/hacbs-contract/ec-cli/internal/kubernetes"
+	"github.com/hacbs-contract/ec-cli/internal/policy"
 )
 
 var kubernetesClientCreator = kubernetes.NewClient
@@ -47,10 +48,9 @@ type AuthorizationSource interface {
 
 // holds config information to get client instance
 type K8sSource struct {
-	namespace   string
-	server      string
-	resource    string
-	fetchSource func(context.Context, string) (*ecc.EnterpriseContractPolicy, error)
+	component           string
+	policyConfiguration string
+	fetchSource         func(context.Context, string) (*ecc.EnterpriseContractPolicySpec, error)
 }
 
 // holds config information to get client instance
@@ -82,12 +82,11 @@ type authorizationSignature struct {
 	Authorizers []string `json:"authorizers"`
 }
 
-func NewK8sSource(server, namespace, resource string) (*K8sSource, error) {
+func NewK8sSource(policyConfiguration, component string) (*K8sSource, error) {
 	return &K8sSource{
-		namespace:   namespace,
-		server:      server,
-		resource:    resource,
-		fetchSource: fetchECSource,
+		component:           component,
+		policyConfiguration: policyConfiguration,
+		fetchSource:         fetchECSource,
 	}, nil
 }
 
@@ -108,27 +107,25 @@ func (g *GitSource) GetSource(ctx context.Context) (authorizationGetter, error) 
 
 // fetch the k8s resource from the cluster
 func (k *K8sSource) GetSource(ctx context.Context) (authorizationGetter, error) {
-	ecp, err := k.fetchSource(ctx, k.resource)
+	ecp, err := k.fetchSource(ctx, k.policyConfiguration)
 	if err != nil {
 		return nil, err
 	}
 
+	return GetK8sResource(ecp, k.component)
+}
+
+func GetK8sResource(ecp *ecc.EnterpriseContractPolicySpec, component string) (authorizationGetter, error) {
 	return &k8sResource{
-		RepoUrl: ecp.Spec.Authorization.Repository,
+		RepoUrl: ecp.Authorization.Repository,
 		// Sha can be a branch. If that's the case, let the policy handle it
-		Sha:    ecp.Spec.Authorization.ChangeID,
-		Author: ecp.Spec.Authorization.Authorizer,
+		Sha:    ecp.Authorization.ChangeID,
+		Author: ecp.Authorization.Authorizer,
 	}, nil
 }
 
-func fetchECSource(ctx context.Context, namedResource string) (*ecc.EnterpriseContractPolicy, error) {
-	k8s, err := kubernetesClientCreator(ctx)
-	if err != nil {
-		log.Debug("Failed to initialize Kubernetes client")
-		return nil, err
-	}
-
-	ecp, err := k8s.FetchEnterpriseContractPolicy(ctx, namedResource)
+func fetchECSource(ctx context.Context, policyConfiguration string) (*ecc.EnterpriseContractPolicySpec, error) {
+	ecp, err := policy.NewPolicy(ctx, policyConfiguration, "", "")
 	if err != nil {
 		log.Debug("Failed to fetch the enterprise contract policy from the cluster!")
 		return nil, err

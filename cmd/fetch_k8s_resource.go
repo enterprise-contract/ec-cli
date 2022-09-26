@@ -23,20 +23,15 @@ import (
 	appstudioshared "github.com/redhat-appstudio/managed-gitops/appstudio-shared/apis/appstudio.redhat.com/v1alpha1"
 	"github.com/spf13/cobra"
 
-	"github.com/hacbs-contract/ec-cli/internal/applicationsnapshot"
 	"github.com/hacbs-contract/ec-cli/internal/image"
+	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 )
 
 func k8sResourceAuthorizationCmd() *cobra.Command {
 	var data = struct {
-		imageRef  string
-		publicKey string
-		filePath  string
-		input     string
-		namespace string
-		server    string
-		resource  string
-		spec      *appstudioshared.ApplicationSnapshotSpec
+		policyConfiguration string
+		component           string
+		spec                *appstudioshared.ApplicationSnapshotSpec
 	}{}
 	cmd := &cobra.Command{
 		Use:   "k8s-resource",
@@ -73,63 +68,52 @@ Use public key from a kubernetes secret:
 
   ec fetch k8s-resource --image-ref <image url> \
      --public-key k8s://<namespace>/<secret-name> --namespace <namespace> --resource <resource>`,
-		PreRunE: func(cmd *cobra.Command, args []string) error {
-			spec, err := applicationsnapshot.DetermineInputSpec(data.filePath, data.input, data.imageRef)
-			if err != nil {
-				return err
-			}
 
-			data.spec = spec
-
-			return nil
-		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			for _, comp := range data.spec.Components {
-				err := validateK8sSource(
-					cmd.Context(),
-					comp.ContainerImage,
-					data.publicKey,
-					data.namespace,
-					data.server,
-					data.resource,
-				)
-				if err != nil {
-					log.Println(err)
-					continue
-				}
+			err := validateK8sSource(
+				cmd.Context(),
+				data.component,
+				data.policyConfiguration,
+			)
+			if err != nil {
+				log.Println(err)
 			}
+
 			return nil
 		},
 	}
 
-	cmd.Flags().StringVar(&data.publicKey, "public-key", data.publicKey, "path to the public key associated with the image attestation")
-	cmd.Flags().StringVar(&data.imageRef, "image-ref", data.imageRef, "OCI reference to the attested image")
-	cmd.Flags().StringVarP(&data.filePath, "file-path", "f", data.filePath, "path to ApplicationSnapshot Spec JSON file")
-	cmd.Flags().StringVarP(&data.input, "json-input", "j", data.input, "JSON representation of an ApplicationSnapshot Spec")
-	cmd.Flags().StringVarP(&data.namespace, "namespace", "n", data.namespace, "namespace containing the EnterpriseContractPolicy resource")
-	cmd.Flags().StringVarP(&data.server, "server", "s", data.server, "kubernetes server URL containing the EnterpriseContractPolicy resource")
-	cmd.Flags().StringVarP(&data.resource, "resource", "r", data.resource, "name of the EnterpriseContractPolicy resource")
+	cmd.Flags().StringVarP(&data.policyConfiguration, "policy", "p", data.policyConfiguration,
+		"EntepriseContractPolicy reference [<namespace>/]<name>")
+	cmd.Flags().StringVarP(&data.component, "component", "c", data.component,
+		"The component to check authorization for")
 
 	return cmd
 }
 
-func validateK8sSource(ctx context.Context, imageRef, publicKey, namespace, server, resource string) error {
-	k8sSource, err := image.NewK8sSource(namespace, server, resource)
+func GetK8sAuthorization(ecp *ecc.EnterpriseContractPolicySpec, component string) error {
+	resource, err := image.GetK8sResource(ecp, component)
+	if err != nil {
+		return err
+	}
+
+	auth, err := resource.GetSignOff()
+
+	err = image.PrintAuthorization(auth)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func validateK8sSource(ctx context.Context, component, policyConfiguration string) error {
+	k8sSource, err := image.NewK8sSource(policyConfiguration, component)
 	if err != nil {
 		return err
 	}
 
 	authorization, err := image.GetAuthorization(ctx, k8sSource)
-	if err != nil {
-		return err
-	}
-
-	imageValidator, err := image.NewImageValidator(ctx, imageRef, publicKey, "")
-	if err != nil {
-		return err
-	}
-
-	_, err = imageValidator.ValidateImage(ctx)
 	if err != nil {
 		return err
 	}

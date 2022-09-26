@@ -56,7 +56,7 @@ func NewPolicy(ctx context.Context, policyRef, rekorUrl, publicKey string) (*ecc
 		log.Debug("Read EnterpriseContractPolicy as JSON")
 		if err := json.Unmarshal([]byte(policyRef), &policy); err != nil {
 			log.Debugf("Problem parsing EnterpriseContractPolicy Spec from %q", policyRef)
-			return nil, fmt.Errorf("unable to parse EnterpriseContractPolicy Spec: %w", err)
+			return nil, fmt.Errorf("unable to parse EnterpriseContractPolicy Spec: %w: %q", err, policyRef)
 		}
 	} else {
 		log.Debug("Read EnterpriseContractPolicy as k8s resource")
