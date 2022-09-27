@@ -149,9 +149,9 @@ func normalizeRepoUrl(s string) (string, string, error) {
 	user := splitPath[0]
 	repo := splitPath[1]
 	var policyDir string
-	if len(splitPath) == 3 {
+	if len(splitPath) >= 3 {
 		s = fmt.Sprintf("%s://%s/%s/%s.git", u.Scheme, u.Host, user, repo)
-		policyDir = splitPath[2]
+		policyDir = strings.Join(splitPath[2:], "/")
 	} else {
 		s = fmt.Sprintf("%s://%s/%s/%s", u.Scheme, u.Host, user, repo)
 		//policyDir = "policy"
