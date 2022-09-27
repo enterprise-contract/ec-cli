@@ -28,9 +28,16 @@ supported:
   * `-persist` if specified the test environment will persist after test
     execution, making it easy to recreate test failures and debugg the `ec`
     command line or acceptance test code
+  * `-restore` run the tests against the persisted environment with `-persist`
+  * `-no-colors` disable colored output, useful when running in a terminal that
+    doesn't support color escape sequences
   * `-tags=...` comma separated tags to run, e.g. `@bugs` - to run only the
     scenarios tagged with `@bugs`, or `@bugs,~@wip` to run all scenarios that
     are tagged with `@bugs` but not with `@wip`
+
+These arguments need to be prefixed with `-args` parameter, for example:
+
+    $ go test ./internal/acceptance/ -args -persist -tags=@focus
 
 Depending on your setup Testcontainer's ryuk container migh need to be run as
 privileged container. For that, $HOME/.testcontainers.properties needs to be
