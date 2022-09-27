@@ -58,8 +58,8 @@ func (a *attestation) NewGitSource() (*GitSource, error) {
 
 	if repoUrl != "" && sha != "" {
 		return &GitSource{
-			repoUrl:     a.getBuildSCM(),
-			commitSha:   a.getBuildCommitSha(),
+			repoUrl:     repoUrl,
+			commitSha:   sha,
 			fetchSource: fetchCommitSource,
 		}, nil
 	}

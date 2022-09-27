@@ -18,9 +18,12 @@ package cmd
 
 import (
 	"context"
-	"log"
+	"errors"
+	"fmt"
 
+	"github.com/hashicorp/go-multierror"
 	appstudioshared "github.com/redhat-appstudio/managed-gitops/appstudio-shared/apis/appstudio.redhat.com/v1alpha1"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/hacbs-contract/ec-cli/internal/applicationsnapshot"
@@ -79,14 +82,15 @@ Use public key from a kubernetes secret:
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
+			var errs error
 			for _, comp := range data.spec.Components {
 				err := validateGitSource(cmd.Context(), comp.ContainerImage, data.publicKey)
 				if err != nil {
-					log.Println(err)
+					errs = multierror.Append(errs, fmt.Errorf("component: %+v - %w", comp, err))
 					continue
 				}
 			}
-			return nil
+			return errs
 		},
 	}
 
@@ -109,11 +113,14 @@ func validateGitSource(ctx context.Context, imageRef, publicKey string) error {
 		return err
 	}
 
+	var gitSourceFound bool
 	for _, att := range validatedImage.Attestations {
 		gitSource, err := att.NewGitSource()
 		if err != nil {
-			return err
+			log.Debug("attestation has empty 'predicate.material' entry")
+			continue
 		}
+		gitSourceFound = true
 
 		authorization, err := image.GetAuthorization(ctx, gitSource)
 		if err != nil {
@@ -124,6 +131,9 @@ func validateGitSource(ctx context.Context, imageRef, publicKey string) error {
 		if err != nil {
 			continue
 		}
+	}
+	if !gitSourceFound {
+		return errors.New("all attestations for component failed to provide valid '.Predicate.Material' entry")
 	}
 	return nil
 }
