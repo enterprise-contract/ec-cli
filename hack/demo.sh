@@ -23,7 +23,7 @@ set -o posix
 
 HACK_DIR="$(dirname "${BASH_SOURCE[0]}")"
 EC="${HACK_DIR}/../dist/ec_$(go env GOOS)_$(go env GOARCH)"
-SNAPSHOT="$(cat ${HACK_DIR}/application_snapshot.json)"
+SNAPSHOT="$(cat "${HACK_DIR}"/application_snapshot.json)"
 
 # To run with debug output enabled:
 #  EC_DEBUG=1 hack/demo.sh
@@ -55,11 +55,12 @@ spec:
       revision: main
 EOF
 
-for IMG in 'quay.io/hacbs-contract-demo/single-nodejs-app:120e9a3' 'quay.io/hacbs-contract-demo/spring-petclinic:dc80a7f' 'quay.io/hacbs-contract-demo/single-container-app:62c06bf'; do
+while read -r IMG
+do
   printf "\n\n🩺 Evaluating policy for %s\n\n" "${IMG}"
   echo "💲 ${EC}" validate image --image "${IMG}" --public-key "${HACK_DIR}/cosign.pub" --policy demo/ec-demo ${DEBUG_OPT:-}
   "${EC}" validate image --image "${IMG}" --public-key "${HACK_DIR}/cosign.pub" --policy demo/ec-demo ${DEBUG_OPT:-} | jq
-done
+done < "${HACK_DIR}/images.txt"
 
 printf "\n\n🩺 Evaluating application snapshot:\n%s\n\n" "${SNAPSHOT}"
 echo "💲 ${EC}" validate image --file-path "${HACK_DIR}/application_snapshot.json" --public-key "${HACK_DIR}/cosign.pub" --policy demo/ec-demo ${DEBUG_OPT:-}

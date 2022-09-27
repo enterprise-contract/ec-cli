@@ -29,10 +29,10 @@ issues (formatting, import order, ...).
 ## Demo
 
 Run `hack/demo.sh` to evaluate the policy against images that have been
-built ahead of time. Or use `hack/test-builds.sh hacbs` from the
-https://github.com/redhat-appstudio/build-definitions/ repository with
-the Tekton Chains controller from the `poc-tep-84` branch, e.g. via the
-image built here: https://github.com/hacbs-contract/chains/pkgs/container/chains%2Fcontroller/?tag=poc-tep-84
+built ahead of time.
+
+To regenerate those images, say in case of change in the attestation data, run
+`hack/rebuild.sh`.
 
 [pol]: https://github.com/hacbs-contract/ec-policies/
 [docs]: https://hacbs-contract.github.io/ec-cli/
