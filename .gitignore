@@ -178,3 +178,6 @@ internal/acceptance/.persisted
 # Rendered documentation output
 website/public
 node_modules
+
+# Acceptance tests Sigstore/TUF test data
+internal/acceptance/.sigstore
