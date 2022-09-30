@@ -1,0 +1,2 @@
+quay.io/hacbs-contract-demo/single-container-app@sha256:84550a596e40024e6ea10ce5aab9ad5b0b91a14cb27161654722ab1d11c70ac2
+quay.io/hacbs-contract-demo/single-nodejs-app@sha256:abcbdfd92a75f7bba3ab97538b1324bf4677c1fb3eb82ca59cbd8970b3759b7e
