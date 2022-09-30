@@ -32,6 +32,7 @@ import (
 
 // For testing purposes
 var DownloadPolicy = downloader.DownloadPolicy
+var DownloadData = downloader.DownloadData
 
 //PolicySource in an interface representing the location of policies.
 //Must implement the GetPolicies() and GetPolicyDir() methods.
@@ -70,7 +71,19 @@ func (p *PolicyRepo) GetPolicies(ctx context.Context, dest string, showMsg bool)
 		sourceUrl = downloader.GetterGitUrl(p.RepoURL, p.PolicyDir, p.RepoRef)
 	}
 
-	return DownloadPolicy(ctx, dest, sourceUrl, showMsg)
+	if downloader.ProbablyDataSource(sourceUrl) {
+		// Special handling: Download it to the data directory instead Todo:
+		// This should be replaced by a more robust way to distinguish between
+		// "data" sources and "policy" sources. Doing it this way now so we
+		// don't need to depend on changes to the types imported from the ecc
+		// package. (In future we might have a v1alpha1.GitDataSource to go
+		// with v1alpha1.GitPolicySource in future, or something similar.)
+		return DownloadData(ctx, dest, sourceUrl, showMsg)
+	} else {
+		// Download it to the policy directory as per usual
+		return DownloadPolicy(ctx, dest, sourceUrl, showMsg)
+	}
+
 }
 
 // getRepoHeadRef gets the default head reference for a given git URL

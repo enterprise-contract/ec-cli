@@ -62,6 +62,13 @@ func TestDownloader_Download(t *testing.T) {
 			source:    "example.com/repo//somedir",
 			wantArgs:  "dir/policy/123456, [example.com/repo//somedir]",
 		},
+		{
+			name:      "DownloadData",
+			downloadF: DownloadData,
+			dest:      "dir",
+			source:    "example.com/repo//somedir",
+			wantArgs:  "dir/data/123456, [example.com/repo//somedir]",
+		},
 	}
 
 	for _, tt := range tests {
@@ -97,6 +104,28 @@ func TestDownloader_ProbablyGoGetterFormat(t *testing.T) {
 	for _, u := range trueUrls {
 		t.Run(u, func(t *testing.T) {
 			assert.True(t, ProbablyGoGetterFormat(u))
+		})
+	}
+}
+
+func TestDownloader_ProbablyDataSource(t *testing.T) {
+	falseUrls := []string{
+		"github.com/hacbs-contract/ec-policies//policy",
+		"github.com/hacbs-contract/ec-policies?ref=devel",
+	}
+	for _, u := range falseUrls {
+		t.Run(u, func(t *testing.T) {
+			assert.False(t, ProbablyDataSource(u))
+		})
+	}
+
+	trueUrls := []string{
+		"github.com/hacbs-contract/ec-policies//data",
+		"github.com/some/repo//other/data?ref=devel",
+	}
+	for _, u := range trueUrls {
+		t.Run(u, func(t *testing.T) {
+			assert.True(t, ProbablyDataSource(u))
 		})
 	}
 }

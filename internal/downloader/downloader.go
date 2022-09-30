@@ -66,13 +66,13 @@ func DownloadPolicy(ctx context.Context, workDir string, sourceUrl string, showM
 	return DownloadUnique(ctx, filepath.Join(workDir, PolicyDir), sourceUrl, showMsg)
 }
 
+var DataDir = "data"
+
+func DownloadData(ctx context.Context, workDir string, sourceUrl string, showMsg bool) error {
+	return DownloadUnique(ctx, filepath.Join(workDir, DataDir), sourceUrl, showMsg)
+}
+
 // For later maybe...
-//
-//var DataDir = "data"
-//
-//func DownloadData(ctx context.Context, workDir string, sourceUrl string, showMsg bool) error {
-//	return DownloadUnique(ctx, filepath.Join(workDir, DataDir), sourceUrl, showMsg)
-//}
 //
 //var InputDir = "input"
 //
@@ -106,6 +106,30 @@ func ProbablyGoGetterFormat(sourceUrl string) bool {
 		`\?.*(ref|sshkey)=`,
 	}
 
+	for _, m := range matchers {
+		match, err := regexp.MatchString(m, sourceUrl)
+		if err != nil {
+			panic(err)
+		}
+		if match {
+			return true
+		}
+	}
+	return false
+}
+
+// Try to guess if the source url is referring to data (json or yaml
+// files) instead of policies (rego files)
+//
+// The one url it needs to work for in the short term is this:
+//   "github.com/hacbs-contract/ec-policies/data"
+// Todo: This should be removed as soon as we have a more robust way
+// to differentiate policy sources from data sources.
+func ProbablyDataSource(sourceUrl string) bool {
+	matchers := []string{
+		`/.*//data`,
+		`/.*//.*/data`,
+	}
 	for _, m := range matchers {
 		match, err := regexp.MatchString(m, sourceUrl)
 		if err != nil {

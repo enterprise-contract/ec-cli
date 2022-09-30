@@ -64,8 +64,8 @@ func CreateWorkDir() (string, error) {
 	// Create top level directories for Conftest
 	for _, d := range []string{
 		"policy",
+		"data",
 		// Later maybe
-		//"data",
 		//"input",
 	} {
 		err := AppFS.Mkdir(filepath.Join(workDir, d), 0o755)

@@ -27,10 +27,17 @@ import (
 )
 
 var mockDownloadPolicyCalled bool
+var mockDownloadDataCalled bool
 var mockArgs string
 
 func mockDownloadPolicy(_ context.Context, dest string, sourceUrl string, showMsg bool) error {
 	mockDownloadPolicyCalled = true
+	mockArgs = fmt.Sprintf("%v, %v, %v", dest, sourceUrl, showMsg)
+	return nil
+}
+
+func mockDownloadData(_ context.Context, dest string, sourceUrl string, showMsg bool) error {
+	mockDownloadDataCalled = true
 	mockArgs = fmt.Sprintf("%v, %v, %v", dest, sourceUrl, showMsg)
 	return nil
 }
@@ -46,11 +53,12 @@ func TestPolicyRepo_getPolicies(t *testing.T) {
 		dest string
 	}
 	tests := []struct {
-		name     string
-		fields   fields
-		args     args
-		wantArgs string
-		wantErr  bool
+		name           string
+		fields         fields
+		args           args
+		wantArgs       string
+		wantDataSource bool
+		wantErr        bool
 	}{
 		{
 			name: "Gets policies",
@@ -62,7 +70,8 @@ func TestPolicyRepo_getPolicies(t *testing.T) {
 			args: args{
 				dest: "/tmp/ec-work-1234",
 			},
-			wantArgs: "/tmp/ec-work-1234, git::https://example.com/user/foo.git//policy?ref=main, false",
+			wantArgs:       "/tmp/ec-work-1234, git::https://example.com/user/foo.git//policy?ref=main, false",
+			wantDataSource: false,
 		},
 		{
 			name: "Gets policies with getter style source url",
@@ -76,12 +85,27 @@ func TestPolicyRepo_getPolicies(t *testing.T) {
 			args: args{
 				dest: "/tmp/ec-work-1234",
 			},
-			wantArgs: "/tmp/ec-work-1234, git::https://example.com/user/foo.git//subdir?ref=devel, false",
+			wantArgs:       "/tmp/ec-work-1234, git::https://example.com/user/foo.git//subdir?ref=devel, false",
+			wantDataSource: false,
+		},
+		{
+			// It should guess from the url that the source is data instead of policies
+			name: "Gets data",
+			fields: fields{
+				RawSourceURL: "https://example.com/user/foo.git//data?ref=devel",
+			},
+			args: args{
+				dest: "/tmp/ec-work-1234",
+			},
+			wantArgs:       "/tmp/ec-work-1234, https://example.com/user/foo.git//data?ref=devel, false",
+			wantDataSource: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			DownloadPolicy = mockDownloadPolicy
+			DownloadData = mockDownloadData
+
 			p := &PolicyRepo{
 				RawSourceURL: tt.fields.RawSourceURL,
 				PolicyDir:    tt.fields.PolicyDir,
@@ -90,11 +114,20 @@ func TestPolicyRepo_getPolicies(t *testing.T) {
 			}
 
 			mockDownloadPolicyCalled = false
+			mockDownloadDataCalled = false
 			mockArgs = ""
 
 			assert.Nil(t, p.GetPolicies(context.TODO(), tt.args.dest, false), "GetPolicies returned an error")
-			assert.True(t, mockDownloadPolicyCalled, "Download not called")
-			assert.Equal(t, tt.wantArgs, mockArgs, "Download called with unexpected args")
+
+			if tt.wantDataSource {
+				assert.False(t, mockDownloadPolicyCalled, "DownloadPolicy called unexpectedly")
+				assert.True(t, mockDownloadDataCalled, "DownloadData not called")
+				assert.Equal(t, tt.wantArgs, mockArgs, "DownloadData called with unexpected args")
+			} else {
+				assert.False(t, mockDownloadDataCalled, "DownloadData called unexpectedly")
+				assert.True(t, mockDownloadPolicyCalled, "DownloadPolicy not called")
+				assert.Equal(t, tt.wantArgs, mockArgs, "DownloadPolicy called with unexpected args")
+			}
 		})
 	}
 }
