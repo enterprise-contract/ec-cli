@@ -49,6 +49,26 @@ type PolicyRepo struct {
 	RepoRef      string
 }
 
+// Define additional sources that will always be fetched
+func HardCodedSources() []PolicySource {
+	sources := []PolicySource{}
+
+	repoUrls := []string{
+		// There are two important data files in this directory
+		"https://github.com/hacbs-contract/ec-policies/data",
+	}
+
+	for _, r := range repoUrls {
+		repo, err := CreatePolicyRepoFromRepoAndRevision(r, nil)
+		if err != nil {
+			panic(err)
+		}
+		sources = append(sources, &repo)
+	}
+
+	return sources
+}
+
 // GetPolicyDir returns the policy directory for a given PolicyRepo
 func (p *PolicyRepo) GetPolicyDir() string {
 	return p.PolicyDir

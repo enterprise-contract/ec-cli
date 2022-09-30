@@ -104,6 +104,11 @@ func NewApplicationSnapshotImage(ctx context.Context, image string, ecp *ecc.Ent
 		log.Debug("Failed to fetch the policy repos from the ECP!")
 		return nil, err
 	}
+
+	// Add additional source that we need to always be there.
+	// (Temporary workaround until we figure out a better design for this.)
+	policies = append(policies, source.HardCodedSources()...)
+
 	log.Debug("Policy repo source definitions fetched")
 	for _, policyRepo := range policies {
 		policyRepoJson, _ := json.Marshal(policyRepo)
