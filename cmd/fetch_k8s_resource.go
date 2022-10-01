@@ -30,7 +30,6 @@ import (
 func k8sResourceAuthorizationCmd() *cobra.Command {
 	var data = struct {
 		policyConfiguration string
-		component           string
 		spec                *appstudioshared.ApplicationSnapshotSpec
 	}{}
 	cmd := &cobra.Command{
@@ -72,7 +71,6 @@ Use public key from a kubernetes secret:
 		RunE: func(cmd *cobra.Command, args []string) error {
 			err := validateK8sSource(
 				cmd.Context(),
-				data.component,
 				data.policyConfiguration,
 			)
 			if err != nil {
@@ -85,14 +83,12 @@ Use public key from a kubernetes secret:
 
 	cmd.Flags().StringVarP(&data.policyConfiguration, "policy", "p", data.policyConfiguration,
 		"EntepriseContractPolicy reference [<namespace>/]<name>")
-	cmd.Flags().StringVarP(&data.component, "component", "c", data.component,
-		"The component to check authorization for")
 
 	return cmd
 }
 
-func GetK8sAuthorization(ecp *ecc.EnterpriseContractPolicySpec, component string) error {
-	resource, err := image.GetK8sResource(ecp, component)
+func GetK8sAuthorization(ecp *ecc.EnterpriseContractPolicySpec) error {
+	resource, err := image.GetK8sResource(ecp)
 	if err != nil {
 		return err
 	}
@@ -107,8 +103,8 @@ func GetK8sAuthorization(ecp *ecc.EnterpriseContractPolicySpec, component string
 	return nil
 }
 
-func validateK8sSource(ctx context.Context, component, policyConfiguration string) error {
-	k8sSource, err := image.NewK8sSource(policyConfiguration, component)
+func validateK8sSource(ctx context.Context, policyConfiguration string) error {
+	k8sSource, err := image.NewK8sSource(policyConfiguration)
 	if err != nil {
 		return err
 	}

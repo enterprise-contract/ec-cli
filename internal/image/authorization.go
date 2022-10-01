@@ -39,7 +39,7 @@ var kubernetesClientCreator = kubernetes.NewClient
 
 // there can be multiple sign off sources (git commit, tag and jira issues)
 type authorizationGetter interface {
-	GetSignOff() (*authorizationSignature, error)
+	GetSignOff() ([]authorizationSignature, error)
 }
 
 type AuthorizationSource interface {
@@ -48,7 +48,6 @@ type AuthorizationSource interface {
 
 // holds config information to get client instance
 type K8sSource struct {
-	component           string
 	policyConfiguration string
 	fetchSource         func(context.Context, string) (*ecc.EnterpriseContractPolicySpec, error)
 }
@@ -69,11 +68,15 @@ type commit struct {
 	Message string `json:"message"`
 }
 
-// the object K8sSource fetches
-type k8sResource struct {
+type authorizedComponent struct {
 	RepoUrl string `json:"repoUrl"`
 	Sha     string `json:"sha"`
 	Author  string `json:"author"`
+}
+
+// the object K8sSource fetches
+type k8sResource struct {
+	Components []ecc.AuthorizedComponent
 }
 
 type authorizationSignature struct {
@@ -82,9 +85,8 @@ type authorizationSignature struct {
 	Authorizers []string `json:"authorizers"`
 }
 
-func NewK8sSource(policyConfiguration, component string) (*K8sSource, error) {
+func NewK8sSource(policyConfiguration string) (*K8sSource, error) {
 	return &K8sSource{
-		component:           component,
 		policyConfiguration: policyConfiguration,
 		fetchSource:         fetchECSource,
 	}, nil
@@ -112,15 +114,14 @@ func (k *K8sSource) GetSource(ctx context.Context) (authorizationGetter, error) 
 		return nil, err
 	}
 
-	return GetK8sResource(ecp, k.component)
+	return &k8sResource{
+		Components: ecp.Authorization.Components,
+	}, nil
 }
 
-func GetK8sResource(ecp *ecc.EnterpriseContractPolicySpec, component string) (authorizationGetter, error) {
+func GetK8sResource(ecp *ecc.EnterpriseContractPolicySpec) (authorizationGetter, error) {
 	return &k8sResource{
-		RepoUrl: ecp.Authorization.Repository,
-		// Sha can be a branch. If that's the case, let the policy handle it
-		Sha:    ecp.Authorization.ChangeID,
-		Author: ecp.Authorization.Authorizer,
+		Components: ecp.Authorization.Components,
 	}, nil
 }
 
@@ -134,23 +135,30 @@ func fetchECSource(ctx context.Context, policyConfiguration string) (*ecc.Enterp
 }
 
 // returns the signOff signature and body of the source
-func (c *commit) GetSignOff() (*authorizationSignature, error) {
-	return &authorizationSignature{
-		RepoUrl:     c.RepoUrl,
-		Commit:      c.Sha,
-		Authorizers: captureCommitSignOff(c.Message),
+func (c *commit) GetSignOff() ([]authorizationSignature, error) {
+	return []authorizationSignature{
+		{
+			RepoUrl:     c.RepoUrl,
+			Commit:      c.Sha,
+			Authorizers: captureCommitSignOff(c.Message),
+		},
 	}, nil
 }
 
-func (k *k8sResource) GetSignOff() (*authorizationSignature, error) {
-	// fetch the k8s resource
-	return &authorizationSignature{
-		RepoUrl: k.RepoUrl,
-		Commit:  k.Sha,
-		Authorizers: []string{
-			k.Author,
-		},
-	}, nil
+func (k *k8sResource) GetSignOff() ([]authorizationSignature, error) {
+	var k8sAuths []authorizationSignature
+	for _, cmp := range k.Components {
+		k8sAuths = append(k8sAuths,
+			authorizationSignature{
+				RepoUrl: cmp.Repository,
+				Commit:  cmp.ChangeID,
+				Authorizers: []string{
+					cmp.Authorizer,
+				},
+			},
+		)
+	}
+	return k8sAuths, nil
 }
 
 func getRepository(url string) (*git.Repository, error) {
@@ -190,7 +198,7 @@ func captureCommitSignOff(message string) []string {
 	return capturedSignatures
 }
 
-func GetAuthorization(ctx context.Context, source AuthorizationSource) (*authorizationSignature, error) {
+func GetAuthorization(ctx context.Context, source AuthorizationSource) ([]authorizationSignature, error) {
 	authorizationSource, err := source.GetSource(ctx)
 	if err != nil {
 		return nil, err
