@@ -45,11 +45,17 @@ jobs:
       - name: Test
         run: make test
 
-      - name: Upload coverage report
+      - name: Upload unit test coverage report
         uses: codecov/codecov-action@v3
         with:
           files: ./coverage-unit.out
           flags: unit
+
+      - name: Upload generative test coverage report
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage-generative.out
+          flags: generative
 
       - name: Acceptance test
         run: make acceptance

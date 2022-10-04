@@ -14,6 +14,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+//go:build acceptance
+
 package acceptance
 
 import (
@@ -83,10 +85,6 @@ func setupContext(t *testing.T) context.Context {
 // in random order in parallel threads equal to the number of available
 // cores
 func TestFeatures(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping test in short mode.")
-	}
-
 	featuresDir, err := filepath.Abs("../../features")
 	if err != nil {
 		t.Error(err)
