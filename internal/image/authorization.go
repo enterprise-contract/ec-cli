@@ -68,12 +68,6 @@ type commit struct {
 	Message string `json:"message"`
 }
 
-type authorizedComponent struct {
-	RepoUrl string `json:"repoUrl"`
-	Sha     string `json:"sha"`
-	Author  string `json:"author"`
-}
-
 // the object K8sSource fetches
 type k8sResource struct {
 	Components []ecc.AuthorizedComponent
@@ -207,7 +201,7 @@ func GetAuthorization(ctx context.Context, source AuthorizationSource) ([]author
 	return authorizationSource.GetSignOff()
 }
 
-func PrintAuthorization(authorization *authorizationSignature) error {
+func PrintAuthorization(authorization []authorizationSignature) error {
 	authPayload, err := json.Marshal(authorization)
 	if err != nil {
 		return err

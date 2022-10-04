@@ -44,31 +44,36 @@ func mockPolicyConfigurationString() string {
 
 func Test_NewK8sSource(t *testing.T) {
 	wanted := &K8sSource{
-		component:           "my-component",
 		policyConfiguration: mockPolicyConfigurationString(),
 		fetchSource:         mockFetchECSource,
 	}
 
-	source, err := NewK8sSource(mockPolicyConfigurationString(), "my-component")
+	source, err := NewK8sSource(mockPolicyConfigurationString())
 	assert.ObjectsAreEqualValues(wanted, source)
 	assert.NoError(t, err)
 }
 
 func Test_GeKk8sSignOff(t *testing.T) {
 	input := &k8sResource{
-		RepoUrl: "my-git-repo",
-		Sha:     "1234",
-		Author:  "ec@redhat.com",
+		Components: []ecc.AuthorizedComponent{
+			{
+				ChangeID:   "1234",
+				Repository: "my-git-repo",
+				Authorizer: "ec@redhat.com",
+			},
+		},
 	}
-	expected := &authorizationSignature{
-		RepoUrl:     "my-git-repo",
-		Commit:      "1234",
-		Authorizers: []string{"ec@redhat.com"},
+	expected := []authorizationSignature{
+		{
+			RepoUrl:     "my-git-repo",
+			Commit:      "1234",
+			Authorizers: []string{"ec@redhat.com"},
+		},
 	}
 
 	signOff, err := input.GetSignOff()
 	assert.NoError(t, err)
-	assert.Equal(t, expected, signOff)
+	assert.ObjectsAreEqualValues(expected, signOff)
 }
 
 func Test_GetGitSignOff(t *testing.T) {
@@ -79,10 +84,12 @@ func Test_GetGitSignOff(t *testing.T) {
 		Date:    "01-01-2022",
 		Message: "Signed-off-by: ec <ec@redhat.com>",
 	}
-	expected := &authorizationSignature{
-		RepoUrl:     "my-git-repo",
-		Commit:      "1234",
-		Authorizers: []string{"ec@redhat.com"},
+	expected := []authorizationSignature{
+		{
+			RepoUrl:     "my-git-repo",
+			Commit:      "1234",
+			Authorizers: []string{"ec@redhat.com"},
+		},
 	}
 
 	signOff, err := input.GetSignOff()
@@ -93,7 +100,7 @@ func Test_GetGitSignOff(t *testing.T) {
 func Test_GetAuthorization(t *testing.T) {
 	tests := []struct {
 		input AuthorizationSource
-		want  *authorizationSignature
+		want  []authorizationSignature
 		err   error
 	}{
 		{
@@ -101,10 +108,12 @@ func Test_GetAuthorization(t *testing.T) {
 				policyConfiguration: mockPolicyConfigurationString(),
 				fetchSource:         mockFetchECSource,
 			},
-			&authorizationSignature{
-				RepoUrl:     "my-git-repo",
-				Commit:      "1234",
-				Authorizers: []string{"ec@redhat.com"},
+			[]authorizationSignature{
+				{
+					RepoUrl:     "my-git-repo",
+					Commit:      "1234",
+					Authorizers: []string{"ec@redhat.com"},
+				},
 			},
 			nil,
 		},

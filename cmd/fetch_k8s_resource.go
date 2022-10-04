@@ -20,17 +20,15 @@ import (
 	"context"
 	"log"
 
-	appstudioshared "github.com/redhat-appstudio/managed-gitops/appstudio-shared/apis/appstudio.redhat.com/v1alpha1"
+	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/spf13/cobra"
 
 	"github.com/hacbs-contract/ec-cli/internal/image"
-	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 )
 
 func k8sResourceAuthorizationCmd() *cobra.Command {
 	var data = struct {
 		policyConfiguration string
-		spec                *appstudioshared.ApplicationSnapshotSpec
 	}{}
 	cmd := &cobra.Command{
 		Use:   "k8s-resource",
@@ -40,33 +38,14 @@ func k8sResourceAuthorizationCmd() *cobra.Command {
 Authorizations are defined within the EnterpriseContractPolicy
 custom resource.
 
-This command also verifies the provided images have been attested
-with the provided public key.
+NOTE: All authorizations are fetched from the kubernetes resource.`,
+		Example: `Fetch authorizations using named resource:
 
-NOTE: All authorizations are fetched from the kubernetes resource.
-It is expected that the caller matches these authorizations with
-the corresponding images.`,
-		Example: `Validate attestation of a single image and fetch authorizations:
+  ec fetch k8s-resource --policy <namespace>/<resource>
 
-  ec fetch k8s-resource --image-ref <image url> \
-      --public-key <path/to/public/key> --namespace <namespace> --resource <resource>
+Fetch authorizations from a local EnterpriseContractPolicy spec:
 
-Validate attestation of multiple images from an ApplicationSnapshot Spec
-file and fetch authorizations:
-
-  ec fetch k8s-resource --file-path <path/to/ApplicationSnapshot/file> \
-      --public-key <path/to/public/key> --namespace <namespace> --resource <resource>
-
-Validate attestation of multiple images from an inline ApplicationSnapshot
-Spec and fetch authorizations:
-
-  ec fetch k8s-resource --json-input '{"components":[{"containerImage":"<image url>"}]}' \
-      --public-key <path/to/public/key> --namespace <namespace> --resource <resource>
-
-Use public key from a kubernetes secret:
-
-  ec fetch k8s-resource --image-ref <image url> \
-     --public-key k8s://<namespace>/<secret-name> --namespace <namespace> --resource <resource>`,
+  ec fetch k8s-resource --policy "$(cat /path/to/ecp.json)"`,
 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			err := validateK8sSource(
