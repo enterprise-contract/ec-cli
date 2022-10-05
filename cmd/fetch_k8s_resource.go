@@ -20,7 +20,6 @@ import (
 	"context"
 	"log"
 
-	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/spf13/cobra"
 
 	"github.com/hacbs-contract/ec-cli/internal/image"
@@ -48,7 +47,7 @@ Fetch authorizations from a local EnterpriseContractPolicy spec:
   ec fetch k8s-resource --policy "$(cat /path/to/ecp.json)"`,
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			err := validateK8sSource(
+			err := printK8sAuthorization(
 				cmd.Context(),
 				data.policyConfiguration,
 			)
@@ -66,23 +65,7 @@ Fetch authorizations from a local EnterpriseContractPolicy spec:
 	return cmd
 }
 
-func GetK8sAuthorization(ecp *ecc.EnterpriseContractPolicySpec) error {
-	resource, err := image.GetK8sResource(ecp)
-	if err != nil {
-		return err
-	}
-
-	auth, err := resource.GetSignOff()
-
-	err = image.PrintAuthorization(auth)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func validateK8sSource(ctx context.Context, policyConfiguration string) error {
+func printK8sAuthorization(ctx context.Context, policyConfiguration string) error {
 	k8sSource, err := image.NewK8sSource(policyConfiguration)
 	if err != nil {
 		return err
