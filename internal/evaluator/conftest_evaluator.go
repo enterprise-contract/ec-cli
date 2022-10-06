@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"path/filepath"
+	"time"
 
 	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/open-policy-agent/conftest/output"
@@ -31,11 +32,38 @@ import (
 	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
 
+type contextKey string
+
+const clientContextKey contextKey = "ec.evaluator.client"
+
+type testRunner interface {
+	Run(context.Context, []string) ([]output.CheckResult, error)
+}
+
+func withClient(ctx context.Context, clnt testRunner) context.Context {
+	return context.WithValue(ctx, clientContextKey, clnt)
+}
+
+func newClient(ctx context.Context, c conftestEvaluator) testRunner {
+	tr, ok := ctx.Value(clientContextKey).(testRunner)
+	if ok && tr != nil {
+		return tr
+	}
+
+	return &runner.TestRunner{
+		Data:      c.paths.DataPaths,
+		Policy:    c.paths.PolicyPaths,
+		Namespace: []string{c.namespace},
+		NoFail:    true,
+		Output:    c.outputFormat,
+	}
+}
+
 // ConftestEvaluator represents a structure which can be used to evaluate targets
 type conftestEvaluator struct {
 	policySources []source.PolicySource
 	paths         ConfigurationPaths
-	testRunner    runner.TestRunner
+	testRunner    testRunner
 	namespace     string
 	outputFormat  string
 	workDir       string
@@ -79,20 +107,33 @@ func NewConftestEvaluator(ctx context.Context, policySources []source.PolicySour
 	}
 	log.Debug("Added data path")
 
-	c.testRunner = runner.TestRunner{
-		Data:      c.paths.DataPaths,
-		Policy:    c.paths.PolicyPaths,
-		Namespace: []string{c.namespace},
-		NoFail:    true,
-		Output:    c.outputFormat,
-	}
+	c.testRunner = newClient(ctx, c)
 
 	log.Debug("Conftest test runner created")
 	return c, nil
 }
 
 func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) ([]output.CheckResult, error) {
-	return c.testRunner.Run(ctx, inputs)
+	results, err := c.testRunner.Run(ctx, inputs)
+	if err != nil {
+		return nil, err
+	}
+	now := time.Now()
+	for i, result := range results {
+		failures := []output.Result{}
+		for _, failure := range result.Failures {
+			if !isResultEffective(failure, now) {
+				// TODO: Instead of moving to warnings, create new attribute: "futureViolations"
+				result.Warnings = append(result.Warnings, failure)
+			} else {
+				failures = append(failures, failure)
+			}
+		}
+		result.Failures = failures
+		results[i] = result
+	}
+
+	return results, nil
 }
 
 // addDataPath adds the appropriate data path to the ConfigurationPaths DataPaths field array.
@@ -162,4 +203,29 @@ func (c *conftestEvaluator) addPolicyPaths(ctx context.Context) error {
 		c.paths.PolicyPaths = append(c.paths.PolicyPaths, policyPath)
 	}
 	return nil
+}
+
+const (
+	effectiveOnKey    = "effective_on"
+	effectiveOnFormat = "2006-01-02T15:04:05Z"
+)
+
+// isResultEffective returns whether or not the given result's effective date is before now.
+// Failure to determine the effective date is reported as the result being effective.
+func isResultEffective(failure output.Result, now time.Time) bool {
+	raw, ok := failure.Metadata[effectiveOnKey]
+	if !ok {
+		return true
+	}
+	str, ok := raw.(string)
+	if !ok {
+		log.Warnf("Ignoring non-string %q value %#v", effectiveOnKey, raw)
+		return true
+	}
+	effectiveOn, err := time.Parse(effectiveOnFormat, str)
+	if err != nil {
+		log.Warnf("Invalid %q value %q", effectiveOnKey, failure.Metadata)
+		return true
+	}
+	return effectiveOn.Before(now)
 }
