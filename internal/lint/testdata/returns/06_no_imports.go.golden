@@ -14,41 +14,12 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package ec_errors
+package something
 
-type Error struct {
-	code       string
-	message    string
-	cause      string
-	exitStatus int
-}
+import e "github.com/hacbs-contract/ec-cli/pkg/error"
 
-const (
-	SuccessExitStatus = iota
-	ErrorExitStatus
-	PolicyExitStatus
-)
+var TE004 = e.NewError("TE004", "", e.ErrorExitStatus) // TODO: add message and set the exit status
 
-var (
-	/*
-		Additional errors can be added in a similar way as below
-	*/
-	GE001 = Error{
-		code:       "GE001",
-		message:    "General error",
-		exitStatus: ErrorExitStatus,
-	}
-)
-
-func (e Error) CausedBy(err error) *Error {
-	return &Error{
-		code:       e.code,
-		message:    e.message,
-		cause:      err.Error(),
-		exitStatus: e.exitStatus,
-	}
-}
-
-func (e Error) Error() string {
-	return e.cause
+func noImportsRawError() error {
+	return TE004.CausedBy(noImportError) // want `don't return raw error, return pkg/error.Error`
 }

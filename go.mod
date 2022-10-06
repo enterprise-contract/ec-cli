@@ -40,6 +40,7 @@ require (
 	github.com/whilp/git-urls v1.0.0
 	github.com/yudai/gojsondiff v1.0.0
 	golang.org/x/oauth2 v0.0.0-20220909003341-f21342109be1
+	golang.org/x/tools v0.1.12
 	k8s.io/apimachinery v0.24.4
 	k8s.io/client-go v0.24.4
 	sigs.k8s.io/controller-runtime v0.12.3
@@ -444,7 +445,6 @@ require (
 	golang.org/x/term v0.0.0-20220919170432-7a66f970e087 // indirect
 	golang.org/x/text v0.3.8-0.20211004125949-5bd84dd9b33b // indirect
 	golang.org/x/time v0.0.0-20220922220347-f3bd1da661af // indirect
-	golang.org/x/tools v0.1.12 // indirect
 	golang.org/x/xerrors v0.0.0-20220609144429-65e65417b02f // indirect
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
 	google.golang.org/api v0.98.0 // indirect
