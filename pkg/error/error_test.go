@@ -16,12 +16,14 @@
 
 //go:build unit
 
-package ec_errors
+package error
 
 import (
 	"errors"
 	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestError_CausedBy(t *testing.T) {
@@ -38,7 +40,7 @@ func TestError_CausedBy(t *testing.T) {
 		name   string
 		fields fields
 		args   args
-		want   *Error
+		want   Error
 	}{
 		{
 			name: "returns underlying error message",
@@ -48,18 +50,17 @@ func TestError_CausedBy(t *testing.T) {
 				exitStatus: 0,
 			},
 			args: args{err: errors.New("A mistake")},
-			want: &Error{
+			want: &ecError{
 				code:       "GE001",
 				message:    "General error",
 				cause:      "A mistake",
 				exitStatus: 0,
 			},
 		},
-		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			e := &Error{
+			e := &ecError{
 				code:       tt.fields.code,
 				message:    tt.fields.message,
 				cause:      tt.fields.cause,
@@ -92,20 +93,22 @@ func TestError_Error(t *testing.T) {
 				cause:      errors.New("error detected").Error(),
 				exitStatus: 1,
 			},
-			want: "error detected",
+			want: "GE001: Something is wrong, caused by: error detected",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			e := Error{
+			e := ecError{
 				code:       tt.fields.code,
 				message:    tt.fields.message,
 				cause:      tt.fields.cause,
 				exitStatus: tt.fields.exitStatus,
 			}
-			if got := e.Error(); got != tt.want {
-				t.Errorf("Error() = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.want, e.Error())
 		})
 	}
+}
+
+func TestNilCauses(t *testing.T) {
+	assert.Nil(t, ecError{}.CausedBy(nil))
 }
