@@ -31,11 +31,8 @@ import (
 	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/hacbs-contract/ec-cli/internal/kubernetes"
 	"github.com/hacbs-contract/ec-cli/internal/policy"
 )
-
-var kubernetesClientCreator = kubernetes.NewClient
 
 // there can be multiple sign off sources (git commit, tag and jira issues)
 type authorizationGetter interface {

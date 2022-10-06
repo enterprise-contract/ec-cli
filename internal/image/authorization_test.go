@@ -30,6 +30,15 @@ func mockFetchECSource(ctx context.Context, resource string) (*ecc.EnterpriseCon
 	description := "very descriptive"
 	return &ecc.EnterpriseContractPolicySpec{
 		Description: &description,
+		Authorization: ecc.Authorization{
+			Components: []ecc.AuthorizedComponent{
+				{
+					ChangeID:   "1234",
+					Repository: "my-git-repo",
+					Authorizer: "ec@redhat.com",
+				},
+			},
+		},
 	}, nil
 }
 
@@ -43,13 +52,8 @@ func mockPolicyConfigurationString() string {
 }
 
 func Test_NewK8sSource(t *testing.T) {
-	wanted := &K8sSource{
-		policyConfiguration: mockPolicyConfigurationString(),
-		fetchSource:         mockFetchECSource,
-	}
-
 	source, err := NewK8sSource(mockPolicyConfigurationString())
-	assert.ObjectsAreEqualValues(wanted, source)
+	assert.IsType(t, &K8sSource{}, source)
 	assert.NoError(t, err)
 }
 
@@ -73,7 +77,7 @@ func Test_GeKk8sSignOff(t *testing.T) {
 
 	signOff, err := input.GetSignOff()
 	assert.NoError(t, err)
-	assert.ObjectsAreEqualValues(expected, signOff)
+	assert.Equal(t, expected, signOff)
 }
 
 func Test_GetGitSignOff(t *testing.T) {
@@ -122,7 +126,7 @@ func Test_GetAuthorization(t *testing.T) {
 	for i, tc := range tests {
 		t.Run(fmt.Sprintf("GetAuthorization=%d", i), func(t *testing.T) {
 			signOff, err := GetAuthorization(context.Background(), tc.input)
-			assert.ObjectsAreEqualValues(tc.want, signOff)
+			assert.Equal(t, tc.want, signOff)
 			assert.Equal(t, tc.err, err)
 		})
 	}
