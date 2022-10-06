@@ -57,6 +57,12 @@ jobs:
           files: ./coverage-generative.out
           flags: generative
 
+      - name: Upload integration test coverage report
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage-integration.out
+          flags: integration
+
       - name: Acceptance test
         run: make acceptance
 
