@@ -14,6 +14,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+//go:build unit
+
 package replacer
 
 import (
@@ -26,6 +28,8 @@ import (
 
 	"github.com/hacbs-contract/ec-cli/internal/image"
 )
+
+const testHash = "sha256:01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
 
 func TestBasicImageReplacer(t *testing.T) {
 	cases := []struct {
@@ -84,7 +88,7 @@ func TestCatalogImageReplacer(t *testing.T) {
 			latestVersion: "4.0",
 			inputLine:     "taskRef: registry.com/bundles/my-task:3.0",
 			expectedMatch: true,
-			expectedLine:  "taskRef: registry.com/bundles/my-task:4.0@" + testDigest,
+			expectedLine:  "taskRef: registry.com/bundles/my-task:4.0@" + testHash,
 		},
 		{
 			name:          "no replacement when not matched",
@@ -114,7 +118,7 @@ func TestCatalogImageReplacer(t *testing.T) {
 			imageParseAndResolve = func(url string) (*image.ImageReference, error) {
 				// Adding a digest makes it so the real image.ParseAndResolve doesn't make
 				// a network connection.
-				return image.ParseAndResolve(url + "@" + testDigest)
+				return image.ParseAndResolve(url + "@" + testHash)
 			}
 
 			replacer, err := newCatalogImageReplacer(&CatalogOptions{

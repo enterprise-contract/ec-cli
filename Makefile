@@ -60,11 +60,11 @@ website: docs ## Render the website
 
 .PHONY: test
 test: ## Run unit tests
-# Given the nature of generative tests the test timeout was increased from 500ms
+	@go test -race -covermode=atomic -coverprofile=coverage-unit.out -timeout 500ms -tags=unit ./...
+	@go test -race -covermode=atomic -coverprofile=coverage-integration.out -timeout 2s -tags=integration ./...
+# Given the nature of generative tests the test timeout is increased from 500ms
 # to 30s to accommodate many samples being generated and test cases being run.
-# This is not something we should tolerate for long and we should revert to
-# 500ms test deadline with exceptions for long tests.
-	@go test -race -covermode=atomic -coverprofile=coverage-unit.out -short -timeout 30s ./...
+	@go test -race -covermode=atomic -coverprofile=coverage-generative.out -timeout 30s -tags=generative ./...
 
 .ONESHELL:
 .SHELLFLAGS=-e -c
@@ -81,7 +81,7 @@ acceptance: ## Run acceptance tests
 	@$(MAKE) build
 	@export COVERAGE_FILEPATH="$${ACCEPTANCE_WORKDIR}"
 	@export COVERAGE_FILENAME="-acceptance"
-	@go test ./internal/acceptance
+	@go test -tags=acceptance ./...
 	@go run github.com/wadey/gocovmerge "$${ACCEPTANCE_WORKDIR}"/coverage-acceptance*.out > "$(ROOT_DIR)/coverage-acceptance.out"
 
 LICENSE_IGNORE=-ignore 'docs/reference/*.yaml' -ignore 'website/node_modules/**' -ignore 'website/public/**'

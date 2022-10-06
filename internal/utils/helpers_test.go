@@ -14,6 +14,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+//go:build unit
+
 package utils
 
 import (
@@ -49,7 +51,7 @@ var testJSONMissingPrefix = `"apiVersion": "tekton.dev/v1beta1",
 `
 
 var testHasPrefixData = `[
-  this is a test 
+  this is a test
 ]`
 
 func createTmpDirMock(appFS afero.Fs, path string, _ string) (name string, err error) {
