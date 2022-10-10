@@ -29,7 +29,7 @@ HACK_DIR="$(dirname "${BASH_SOURCE[0]}")"
 PIPELINE_SERVICE_ACCOUNT=pipeline
 
 # What pipeline bundle to use
-PIPELINE_BUNDLE=quay.io/redhat-appstudio/hacbs-core-service-templates-bundle:devel
+PIPELINE_BUNDLE=quay.io/redhat-appstudio/hacbs-templates-bundle:devel
 
 # Where to push the image(s)
 IMAGE_REPOSITORY=quay.io/hacbs-contract-demo
