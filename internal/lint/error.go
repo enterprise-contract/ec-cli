@@ -319,6 +319,35 @@ func printNode(fset *token.FileSet, node any) string {
 // wrapError transforms the provided expression by wrapping it in a
 // XXNNN.CausedBy(exp) expression, returns the baked suggestion fix
 func wrapError(pass *analysis.Pass, code string, exp ast.Expr) analysis.SuggestedFix {
+	if call, ok := exp.(*ast.CallExpr); ok && pass.TypesInfo.TypeOf(call.Fun).String() == "func(format string, a ...any) error" {
+		return wrapErrorf(pass, code, call)
+	}
+
+	return wrapErrorExpression(pass, code, exp)
+}
+
+func wrapErrorf(pass *analysis.Pass, code string, call *ast.CallExpr) analysis.SuggestedFix {
+	wrapped := ast.CallExpr{
+		Fun: &ast.SelectorExpr{
+			X:   ast.NewIdent(code),
+			Sel: ast.NewIdent("CausedByF"),
+		},
+		Args: call.Args,
+	}
+
+	return analysis.SuggestedFix{
+		Message: "use errors package",
+		TextEdits: []analysis.TextEdit{
+			{
+				Pos:     call.Pos(),
+				End:     call.End(),
+				NewText: []byte(printNode(pass.Fset, &wrapped)),
+			},
+		},
+	}
+}
+
+func wrapErrorExpression(pass *analysis.Pass, code string, exp ast.Expr) analysis.SuggestedFix {
 	wrapped := ast.CallExpr{
 		Fun: &ast.SelectorExpr{
 			X:   ast.NewIdent(code),

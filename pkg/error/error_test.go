@@ -135,3 +135,10 @@ func TestWithCausedBy(t *testing.T) {
 	e := NewError("CO001", "message", ErrorExitStatus).CausedBy(errors.New("boom"))
 	assert.Equal(t, fmt.Sprintf("CO001: message, at %s:%d, caused by: boom", file, line+2), e.Error())
 }
+
+func TestWithCausedByF(t *testing.T) {
+	_, file, line, ok := runtime.Caller(0)
+	assert.True(t, ok)
+	e := NewError("CO001", "message", ErrorExitStatus).CausedByF("error: %s %d", "boom", 4)
+	assert.Equal(t, fmt.Sprintf("CO001: message, at %s:%d, caused by: error: boom 4", file, line+2), e.Error())
+}

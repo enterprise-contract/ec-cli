@@ -24,6 +24,7 @@ import (
 type Error interface {
 	error
 	CausedBy(error) Error
+	CausedByF(format string, args ...any) Error
 }
 
 type ecError struct {
@@ -63,6 +64,19 @@ func (e ecError) CausedBy(err error) Error {
 		code:       e.code,
 		message:    e.message,
 		cause:      err.Error(),
+		exitStatus: e.exitStatus,
+		file:       file,
+		line:       line,
+	}
+}
+
+func (e ecError) CausedByF(format string, args ...any) Error {
+	file, line := callerInfo()
+
+	return &ecError{
+		code:       e.code,
+		message:    e.message,
+		cause:      fmt.Sprintf(format, args...),
 		exitStatus: e.exitStatus,
 		file:       file,
 		line:       line,
