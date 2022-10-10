@@ -159,6 +159,7 @@ func (c *conftestEvaluator) addDataPath(spec *ecc.EnterpriseContractPolicySpec) 
 			config["config"] = map[string]interface{}{
 				"policy": map[string]interface{}{
 					"non_blocking_checks": spec.Exceptions.NonBlocking,
+					"exclude_rules":       spec.Exceptions.NonBlocking,
 				},
 			}
 		}
