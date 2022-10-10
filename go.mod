@@ -15,7 +15,7 @@ require (
 	github.com/google/addlicense v1.0.0
 	github.com/google/go-containerregistry v0.11.0
 	github.com/google/go-github/v45 v45.2.0
-	github.com/hacbs-contract/enterprise-contract-controller v0.0.0-20220810194619-d9a0d933355a
+	github.com/hacbs-contract/enterprise-contract-controller v0.0.0-20220929185557-60408d043c5d
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/in-toto/in-toto-golang v0.3.4-0.20220709202702-fa494aaa0add
 	github.com/leanovate/gopter v0.2.9

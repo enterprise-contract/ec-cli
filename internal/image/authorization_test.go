@@ -20,6 +20,7 @@ package image
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"testing"
 
@@ -27,38 +28,53 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func mockFetchECSource(ctx context.Context, resource string) (*ecc.EnterpriseContractPolicy, error) {
+func mockFetchECSource(ctx context.Context, resource string) (*ecc.EnterpriseContractPolicySpec, error) {
 	description := "very descriptive"
-	return &ecc.EnterpriseContractPolicy{
-		Spec: ecc.EnterpriseContractPolicySpec{
-			Description: &description,
+	return &ecc.EnterpriseContractPolicySpec{
+		Description: &description,
+		Authorization: ecc.Authorization{
+			Components: []ecc.AuthorizedComponent{
+				{
+					ChangeID:   "1234",
+					Repository: "my-git-repo",
+					Authorizer: "ec@redhat.com",
+				},
+			},
 		},
 	}, nil
 }
 
-func Test_NewK8sSource(t *testing.T) {
-	wanted := &K8sSource{
-		namespace:   "enterprise-contract",
-		server:      "k8s-server",
-		resource:    "ecp/resource",
-		fetchSource: mockFetchECSource,
+func mockPolicyConfigurationString() string {
+	description := "very descriptive"
+	config := &ecc.EnterpriseContractPolicySpec{
+		Description: &description,
 	}
+	configJson, _ := json.Marshal(config)
+	return string(configJson)
+}
 
-	source, err := NewK8sSource("k8s-server", "enterprise-contract", "ecp/resource")
-	assert.ObjectsAreEqualValues(wanted, source)
+func Test_NewK8sSource(t *testing.T) {
+	source, err := NewK8sSource(mockPolicyConfigurationString())
+	assert.IsType(t, &K8sSource{}, source)
 	assert.NoError(t, err)
 }
 
 func Test_GeKk8sSignOff(t *testing.T) {
 	input := &k8sResource{
-		RepoUrl: "my-git-repo",
-		Sha:     "1234",
-		Author:  "ec@redhat.com",
+		Components: []ecc.AuthorizedComponent{
+			{
+				ChangeID:   "1234",
+				Repository: "my-git-repo",
+				Authorizer: "ec@redhat.com",
+			},
+		},
 	}
-	expected := &authorizationSignature{
-		RepoUrl:     "my-git-repo",
-		Commit:      "1234",
-		Authorizers: []string{"ec@redhat.com"},
+	expected := []authorizationSignature{
+		{
+			RepoUrl:     "my-git-repo",
+			Commit:      "1234",
+			Authorizers: []string{"ec@redhat.com"},
+		},
 	}
 
 	signOff, err := input.GetSignOff()
@@ -74,10 +90,12 @@ func Test_GetGitSignOff(t *testing.T) {
 		Date:    "01-01-2022",
 		Message: "Signed-off-by: ec <ec@redhat.com>",
 	}
-	expected := &authorizationSignature{
-		RepoUrl:     "my-git-repo",
-		Commit:      "1234",
-		Authorizers: []string{"ec@redhat.com"},
+	expected := []authorizationSignature{
+		{
+			RepoUrl:     "my-git-repo",
+			Commit:      "1234",
+			Authorizers: []string{"ec@redhat.com"},
+		},
 	}
 
 	signOff, err := input.GetSignOff()
@@ -88,20 +106,20 @@ func Test_GetGitSignOff(t *testing.T) {
 func Test_GetAuthorization(t *testing.T) {
 	tests := []struct {
 		input AuthorizationSource
-		want  *authorizationSignature
+		want  []authorizationSignature
 		err   error
 	}{
 		{
 			&K8sSource{
-				namespace:   "enterprise-contract",
-				server:      "k8s-server",
-				resource:    "ecp/resource",
-				fetchSource: mockFetchECSource,
+				policyConfiguration: mockPolicyConfigurationString(),
+				fetchSource:         mockFetchECSource,
 			},
-			&authorizationSignature{
-				RepoUrl:     "my-git-repo",
-				Commit:      "1234",
-				Authorizers: []string{"ec@redhat.com"},
+			[]authorizationSignature{
+				{
+					RepoUrl:     "my-git-repo",
+					Commit:      "1234",
+					Authorizers: []string{"ec@redhat.com"},
+				},
 			},
 			nil,
 		},
@@ -110,7 +128,7 @@ func Test_GetAuthorization(t *testing.T) {
 	for i, tc := range tests {
 		t.Run(fmt.Sprintf("GetAuthorization=%d", i), func(t *testing.T) {
 			signOff, err := GetAuthorization(context.Background(), tc.input)
-			assert.ObjectsAreEqualValues(tc.want, signOff)
+			assert.Equal(t, tc.want, signOff)
 			assert.Equal(t, tc.err, err)
 		})
 	}

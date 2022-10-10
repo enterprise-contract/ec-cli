@@ -19,27 +19,11 @@
 package image
 
 import (
-	"context"
 	"fmt"
 	"testing"
-	"time"
 
-	"github.com/go-git/go-git/v5/plumbing"
-	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/stretchr/testify/assert"
 )
-
-func mockFetchCommitSource(ctx context.Context, url, sha string) (*object.Commit, error) {
-	return &object.Commit{
-		Hash: plumbing.NewHash("6c1f093c0c197add71579d392da8a79a984fcd62"),
-		Author: object.Signature{
-			Name:  "ec RedHat",
-			Email: "ec@gmail.com",
-			When:  time.Time{},
-		},
-		Message: "Signed-off-by: EC <ec@redhat.com>",
-	}, nil
-}
 
 func paramsInput(input string) attestation {
 	params := materials{}
@@ -86,11 +70,7 @@ func Test_NewGitSource(t *testing.T) {
 	}{
 		{
 			paramsInput("good-commit"),
-			&GitSource{
-				repoUrl:     "https://github.com/joejstuart/ec-cli.git",
-				commitSha:   "6c1f093c0c197add71579d392da8a79a984fcd62",
-				fetchSource: mockFetchCommitSource,
-			},
+			&GitSource{},
 			nil,
 		},
 		{
@@ -107,7 +87,7 @@ func Test_NewGitSource(t *testing.T) {
 	for i, tc := range tests {
 		t.Run(fmt.Sprintf("NewGitSource=%d", i), func(t *testing.T) {
 			gitSource, err := tc.input.NewGitSource()
-			assert.ObjectsAreEqualValues(tc.want, gitSource)
+			assert.IsType(t, tc.want, gitSource)
 			assert.Equal(t, tc.err, err)
 		})
 	}

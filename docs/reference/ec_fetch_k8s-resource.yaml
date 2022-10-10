@@ -6,38 +6,16 @@ description: |-
   Authorizations are defined within the EnterpriseContractPolicy
   custom resource.
 
-  This command also verifies the provided images have been attested
-  with the provided public key.
-
   NOTE: All authorizations are fetched from the kubernetes resource.
-  It is expected that the caller matches these authorizations with
-  the corresponding images.
 usage: ec fetch k8s-resource [flags]
 options:
-- name: file-path
-  shorthand: f
-  usage: path to ApplicationSnapshot Spec JSON file
 - name: help
   shorthand: h
   default_value: "false"
   usage: help for k8s-resource
-- name: image-ref
-  usage: OCI reference to the attested image
-- name: json-input
-  shorthand: j
-  usage: JSON representation of an ApplicationSnapshot Spec
-- name: namespace
-  shorthand: "n"
-  usage: namespace containing the EnterpriseContractPolicy resource
-- name: public-key
-  usage: path to the public key associated with the image attestation
-- name: resource
-  shorthand: r
-  usage: name of the EnterpriseContractPolicy resource
-- name: server
-  shorthand: s
-  usage: |
-    kubernetes server URL containing the EnterpriseContractPolicy resource
+- name: policy
+  shorthand: p
+  usage: EntepriseContractPolicy reference [<namespace>/]<name>
 inherited_options:
 - name: debug
   default_value: "false"
@@ -50,26 +28,12 @@ inherited_options:
   default_value: "false"
   usage: more verbose output
 example: |-
-  Validate attestation of a single image and fetch authorizations:
+  Fetch authorizations using named resource:
 
-    ec fetch k8s-resource --image-ref <image url> \
-        --public-key <path/to/public/key> --namespace <namespace> --resource <resource>
+    ec fetch k8s-resource --policy <namespace>/<resource>
 
-  Validate attestation of multiple images from an ApplicationSnapshot Spec
-  file and fetch authorizations:
+  Fetch authorizations from a local EnterpriseContractPolicy spec:
 
-    ec fetch k8s-resource --file-path <path/to/ApplicationSnapshot/file> \
-        --public-key <path/to/public/key> --namespace <namespace> --resource <resource>
-
-  Validate attestation of multiple images from an inline ApplicationSnapshot
-  Spec and fetch authorizations:
-
-    ec fetch k8s-resource --json-input '{"components":[{"containerImage":"<image url>"}]}' \
-        --public-key <path/to/public/key> --namespace <namespace> --resource <resource>
-
-  Use public key from a kubernetes secret:
-
-    ec fetch k8s-resource --image-ref <image url> \
-       --public-key k8s://<namespace>/<secret-name> --namespace <namespace> --resource <resource>
+    ec fetch k8s-resource --policy "$(cat /path/to/ecp.json)"
 see_also:
 - ec fetch - Fetch data for policy evaluation
