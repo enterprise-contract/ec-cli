@@ -61,7 +61,7 @@ website: docs ## Render the website
 .PHONY: test
 test: ## Run unit tests
 	@go test -race -covermode=atomic -coverprofile=coverage-unit.out -timeout 500ms -tags=unit ./...
-	@go test -race -covermode=atomic -coverprofile=coverage-integration.out -timeout 2s -tags=integration ./...
+	@go test -race -covermode=atomic -coverprofile=coverage-integration.out -timeout 15s -tags=integration ./...
 # Given the nature of generative tests the test timeout is increased from 500ms
 # to 30s to accommodate many samples being generated and test cases being run.
 	@go test -race -covermode=atomic -coverprofile=coverage-generative.out -timeout 30s -tags=generative ./...
@@ -85,6 +85,7 @@ acceptance: ## Run acceptance tests
 	@go run github.com/wadey/gocovmerge "$${ACCEPTANCE_WORKDIR}"/coverage-acceptance*.out > "$(ROOT_DIR)/coverage-acceptance.out"
 
 LICENSE_IGNORE=-ignore 'docs/reference/*.yaml' -ignore 'website/node_modules/**' -ignore 'website/public/**'
+LINT_TO_GITHUB_ANNOTATIONS='map(map(.)[])[][] as $$d | $$d.posn | split(":") as $$posn | "::warning file=\($$posn[0]),line=\($$posn[1]),col=\($$posn[2])::\($$d.message)"'
 .PHONY: lint
 lint: ## Run linter
 # addlicense doesn't give us a nice explanation so we prefix it with one
@@ -92,12 +93,19 @@ lint: ## Run linter
 # piping to sed above looses the exit code, luckily addlicense is fast so we invoke it for the second time to exit 1 in case of issues
 	@go run github.com/google/addlicense -c $(COPY) -s -check $(LICENSE_IGNORE) . >/dev/null 2>&1
 	@go run github.com/golangci/golangci-lint/cmd/golangci-lint run --sort-results $(if $(GITHUB_ACTIONS), --out-format=github-actions --timeout=5m0s)
+# We don't fail on the internal (error handling) linter, we just report the
+# issues for now.
+# TODO: resolve the error handling issues and enable the linter failure
+	@go run ./internal/lint $(if $(GITHUB_ACTIONS), -json) $$(go list ./... | grep -v '/internal/acceptance/') $(if $(GITHUB_ACTIONS), | jq -r $(LINT_TO_GITHUB_ANNOTATIONS))
 
 .PHONY: lint-fix
 lint-fix: ## Fix linting issues automagically
 	@go run github.com/google/addlicense -c $(COPY) -s -ignore 'docs/reference/*.yaml' .
-	@go run github.com/daixiang0/gci write -s standard -s default -s "prefix(github.com/hacbs-contract/ec-cli)" .
 	@go run github.com/golangci/golangci-lint/cmd/golangci-lint run --fix
+# We don't apply the fixes from the internal (error handling) linter.
+# TODO: fix the outstanding error handling lint issues and enable the fixer
+#	@go run ./internal/lint -fix $$(go list ./... | grep -v '/internal/acceptance/')
+	@go run github.com/daixiang0/gci write -s standard -s default -s "prefix(github.com/hacbs-contract/ec-cli)" .
 
 .PHONY: ci
 ci: test lint-fix docs acceptance ## Run the usual required CI tasks
