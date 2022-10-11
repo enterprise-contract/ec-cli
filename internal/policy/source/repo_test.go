@@ -20,49 +20,113 @@ package source
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
-	"github.com/go-git/go-git/v5"
+	"github.com/stretchr/testify/assert"
 )
 
-func checkoutRepoMock(_ context.Context, _ string, _ bool, _ *git.CloneOptions) (*git.Repository, error) {
-	return &git.Repository{}, nil
+var mockDownloadPolicyCalled bool
+var mockDownloadDataCalled bool
+var mockArgs string
+
+func mockDownloadPolicy(_ context.Context, dest string, sourceUrl string, showMsg bool) error {
+	mockDownloadPolicyCalled = true
+	mockArgs = fmt.Sprintf("%v, %v, %v", dest, sourceUrl, showMsg)
+	return nil
+}
+
+func mockDownloadData(_ context.Context, dest string, sourceUrl string, showMsg bool) error {
+	mockDownloadDataCalled = true
+	mockArgs = fmt.Sprintf("%v, %v, %v", dest, sourceUrl, showMsg)
+	return nil
 }
 
 func TestPolicyRepo_getPolicies(t *testing.T) {
 	type fields struct {
-		PolicyDir string
-		RepoURL   string
-		RepoRef   string
+		RawSourceURL string
+		PolicyDir    string
+		RepoURL      string
+		RepoRef      string
 	}
 	type args struct {
 		dest string
 	}
 	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr bool
+		name           string
+		fields         fields
+		args           args
+		wantArgs       string
+		wantDataSource bool
+		wantErr        bool
 	}{
 		{
-			name: "Gets Policies",
+			name: "Gets policies",
 			fields: fields{
 				PolicyDir: "policy",
 				RepoURL:   "https://example.com/user/foo.git",
 				RepoRef:   "main",
 			},
+			args: args{
+				dest: "/tmp/ec-work-1234",
+			},
+			wantArgs:       "/tmp/ec-work-1234, git::https://example.com/user/foo.git//policy?ref=main, false",
+			wantDataSource: false,
+		},
+		{
+			name: "Gets policies with getter style source url",
+			fields: fields{
+				RawSourceURL: "git::https://example.com/user/foo.git//subdir?ref=devel",
+				// These are ignored because RawSourceURL appears to be a go-getter format url
+				PolicyDir: "policy",
+				RepoURL:   "https://example.com/user/foo.git",
+				RepoRef:   "main",
+			},
+			args: args{
+				dest: "/tmp/ec-work-1234",
+			},
+			wantArgs:       "/tmp/ec-work-1234, git::https://example.com/user/foo.git//subdir?ref=devel, false",
+			wantDataSource: false,
+		},
+		{
+			// It should guess from the url that the source is data instead of policies
+			name: "Gets data",
+			fields: fields{
+				RawSourceURL: "https://example.com/user/foo.git//data?ref=devel",
+			},
+			args: args{
+				dest: "/tmp/ec-work-1234",
+			},
+			wantArgs:       "/tmp/ec-work-1234, https://example.com/user/foo.git//data?ref=devel, false",
+			wantDataSource: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			CheckoutRepo = checkoutRepoMock
+			DownloadPolicy = mockDownloadPolicy
+			DownloadData = mockDownloadData
+
 			p := &PolicyRepo{
-				PolicyDir: tt.fields.PolicyDir,
-				RepoURL:   tt.fields.RepoURL,
-				RepoRef:   tt.fields.RepoRef,
+				RawSourceURL: tt.fields.RawSourceURL,
+				PolicyDir:    tt.fields.PolicyDir,
+				RepoURL:      tt.fields.RepoURL,
+				RepoRef:      tt.fields.RepoRef,
 			}
-			if err := p.GetPolicies(context.TODO(), tt.args.dest); (err != nil) != tt.wantErr {
-				t.Errorf("GetPolicies() error = %v, wantErr %v", err, tt.wantErr)
+
+			mockDownloadPolicyCalled = false
+			mockDownloadDataCalled = false
+			mockArgs = ""
+
+			assert.Nil(t, p.GetPolicies(context.TODO(), tt.args.dest, false), "GetPolicies returned an error")
+
+			if tt.wantDataSource {
+				assert.False(t, mockDownloadPolicyCalled, "DownloadPolicy called unexpectedly")
+				assert.True(t, mockDownloadDataCalled, "DownloadData not called")
+				assert.Equal(t, tt.wantArgs, mockArgs, "DownloadData called with unexpected args")
+			} else {
+				assert.False(t, mockDownloadDataCalled, "DownloadData called unexpectedly")
+				assert.True(t, mockDownloadPolicyCalled, "DownloadPolicy not called")
+				assert.Equal(t, tt.wantArgs, mockArgs, "DownloadPolicy called with unexpected args")
 			}
 		})
 	}

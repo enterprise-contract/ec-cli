@@ -89,6 +89,7 @@ func NewPolicy(ctx context.Context, policyRef, rekorUrl, publicKey string) (*ecc
 		return nil, errors.New("policy must provide a public key")
 	}
 
+	// log.Debugf("policy: %#v", policy)
 	return policy, nil
 }
 

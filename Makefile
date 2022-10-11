@@ -1,4 +1,4 @@
-MAKEFLAGS+=-j
+MAKEFLAGS+=-j --no-print-directory
 VERSION:=$$(git log -1 --format='%H')
 ALL_SUPPORTED_OS_ARCH:=$(shell go tool dist list -json|jq -r '.[] | select((.FirstClass == true or .GOARCH == "ppc64le") and .GOARCH != "386") | "dist/ec_\(.GOOS)_\(.GOARCH)"')
 SHELL=bash
