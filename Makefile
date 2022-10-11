@@ -50,14 +50,6 @@ docs: ## Generate documentation
 	@rm docs/reference/*.yaml
 	@go run internal/documentation/documentation.go -yaml docs/reference
 
-.PHONY: website
-website: docs ## Render the website
-	@cd website
-# On GitHub actions we authenticate from the workflow, locally folk must authenticate using:
-# https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-npm-registry#authenticating-with-a-personal-access-token
-	@npm clean-install --no-progress
-	@npm run render
-
 .PHONY: test
 test: ## Run unit tests
 	@go test -race -covermode=atomic -coverprofile=coverage-unit.out -timeout 500ms -tags=unit ./...
@@ -84,7 +76,7 @@ acceptance: ## Run acceptance tests
 	@go test -tags=acceptance ./...
 	@go run github.com/wadey/gocovmerge "$${ACCEPTANCE_WORKDIR}"/coverage-acceptance*.out > "$(ROOT_DIR)/coverage-acceptance.out"
 
-LICENSE_IGNORE=-ignore 'docs/reference/*.yaml' -ignore 'website/node_modules/**' -ignore 'website/public/**'
+LICENSE_IGNORE=-ignore 'docs/reference/*.yaml'
 LINT_TO_GITHUB_ANNOTATIONS='map(map(.)[])[][] as $$d | $$d.posn | split(":") as $$posn | "::warning file=\($$posn[0]),line=\($$posn[1]),col=\($$posn[2])::\($$d.message)"'
 .PHONY: lint
 lint: ## Run linter

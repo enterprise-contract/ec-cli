@@ -26,48 +26,6 @@ name: Website
       - 'website/**'
 
 jobs:
-  antora:
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Setup Go environment
-        uses: actions/setup-go@v3
-        with:
-          cache: true
-          go-version-file: go.mod
-
-      - name: Download go dependencies
-        run: go mod download
-
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 18
-
-      - name: Generate website
-        run: make website
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v2
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v1
-        with:
-          path: 'website/public'
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v1
-
   website_update:
     runs-on: ubuntu-latest
     steps:

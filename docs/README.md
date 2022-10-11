@@ -9,7 +9,5 @@ The `template` directory is used by the `reference-antora-extension` to
 transform those YAML files into Asciidoc and is in Handlebars syntax, the
 `modules/ROOT/nav.adoc` is also parsed and evaluated as a Handlebars template.
 
-Look into `../website` on how to render the Antora website.
-
 [antora]: https://docs.antora.org/
 [cobra]: https://cobra.dev/

@@ -26,10 +26,6 @@ updates:
     schedule:
       interval: "daily"
   - package-ecosystem: "npm"
-    directory: "/website/"
-    schedule:
-      interval: "daily"
-  - package-ecosystem: "npm"
     directory: "/reference-antora-extension/"
     schedule:
       interval: "daily"
