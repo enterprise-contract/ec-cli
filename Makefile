@@ -45,10 +45,10 @@ dist: $(ALL_SUPPORTED_OS_ARCH) ## Build binaries for all supported operating sys
 build: dist/ec_$(shell go env GOOS)_$(shell go env GOARCH) ## Build the ec binary for the current platform
 	@ln -sf ec_$(shell go env GOOS)_$(shell go env GOARCH) dist/ec
 
-.PHONY: docs
-docs: ## Generate documentation
-	@rm docs/reference/*.yaml
-	@go run internal/documentation/documentation.go -yaml docs/reference
+.PHONY: reference-docs
+reference-docs: ## Generate reference documentation input YAML files
+	@rm -rf dist/reference
+	@go run internal/documentation/documentation.go -yaml dist/reference
 
 .PHONY: test
 test: ## Run unit tests
@@ -76,7 +76,7 @@ acceptance: ## Run acceptance tests
 	@go test -tags=acceptance ./...
 	@go run github.com/wadey/gocovmerge "$${ACCEPTANCE_WORKDIR}"/coverage-acceptance*.out > "$(ROOT_DIR)/coverage-acceptance.out"
 
-LICENSE_IGNORE=-ignore 'docs/reference/*.yaml'
+LICENSE_IGNORE=-ignore 'dist/reference/*.yaml'
 LINT_TO_GITHUB_ANNOTATIONS='map(map(.)[])[][] as $$d | $$d.posn | split(":") as $$posn | "::warning file=\($$posn[0]),line=\($$posn[1]),col=\($$posn[2])::\($$d.message)"'
 .PHONY: lint
 lint: ## Run linter
@@ -92,7 +92,7 @@ lint: ## Run linter
 
 .PHONY: lint-fix
 lint-fix: ## Fix linting issues automagically
-	@go run github.com/google/addlicense -c $(COPY) -s -ignore 'docs/reference/*.yaml' .
+	@go run github.com/google/addlicense -c $(COPY) -s -ignore 'dist/reference/*.yaml' .
 	@go run github.com/golangci/golangci-lint/cmd/golangci-lint run --fix
 # We don't apply the fixes from the internal (error handling) linter.
 # TODO: fix the outstanding error handling lint issues and enable the fixer
@@ -100,7 +100,7 @@ lint-fix: ## Fix linting issues automagically
 	@go run github.com/daixiang0/gci write -s standard -s default -s "prefix(github.com/hacbs-contract/ec-cli)" .
 
 .PHONY: ci
-ci: test lint-fix docs acceptance ## Run the usual required CI tasks
+ci: test lint-fix acceptance ## Run the usual required CI tasks
 
 .PHONY: clean
 clean: ## Delete build output
