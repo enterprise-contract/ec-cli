@@ -35,4 +35,4 @@ To regenerate those images, say in case of change in the attestation data, run
 `hack/rebuild.sh`.
 
 [pol]: https://github.com/hacbs-contract/ec-policies/
-[docs]: https://hacbs-contract.github.io/ec-cli/
+[docs]: https://hacbs-contract.github.io/ec-cli/main/index.html
