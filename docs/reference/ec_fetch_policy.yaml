@@ -1,75 +1,75 @@
 name: ec fetch policy
 synopsis: Fetch policy rules from a git repository or other source
 description: |-
-  Fetch policy rules (rego files) from a git repository or other source.
+    Fetch policy rules (rego files) from a git repository or other source.
 
-  Each policy source will be downloaded into a separate unique directory inside
-  the "policy" directory under the destination directory specified. The
-  destination directory is either an automatically generated temporary work dir
-  if --work-dir is set, the directory specified with the --dest flag, or the
-  current directory if neither flag is specified.
+    Each policy source will be downloaded into a separate unique directory inside
+    the "policy" directory under the destination directory specified. The
+    destination directory is either an automatically generated temporary work dir
+    if --work-dir is set, the directory specified with the --dest flag, or the
+    current directory if neither flag is specified.
 
-  This command is based on 'conftest pull' so you can refer to the conftest pull
-  documentation for more usage examples and for details on the different types of
-  supported source URLs.
+    This command is based on 'conftest pull' so you can refer to the conftest pull
+    documentation for more usage examples and for details on the different types of
+    supported source URLs.
 
-  Note that this command is not typically required to verify the Enterprise
-  Contract. It has been made available for troubleshooting and debugging
-  purposes.
+    Note that this command is not typically required to verify the Enterprise
+    Contract. It has been made available for troubleshooting and debugging
+    purposes.
 usage: ec fetch policy --source <source-url> [flags]
 options:
-- name: dest
-  shorthand: d
-  default_value: .
-  usage: |
-    use the specified download destination directory. ignored if --work-dir is set
-- name: help
-  shorthand: h
-  default_value: "false"
-  usage: help for policy
-- name: source
-  shorthand: s
-  default_value: '[]'
-  usage: source url. multiple values are allowed
-- name: work-dir
-  shorthand: w
-  default_value: "false"
-  usage: |
-    use a temporary work dir as the download destination directory
+    - name: dest
+      shorthand: d
+      default_value: .
+      usage: |
+        use the specified download destination directory. ignored if --work-dir is set
+    - name: help
+      shorthand: h
+      default_value: "false"
+      usage: help for policy
+    - name: source
+      shorthand: s
+      default_value: '[]'
+      usage: source url. multiple values are allowed
+    - name: work-dir
+      shorthand: w
+      default_value: "false"
+      usage: |
+        use a temporary work dir as the download destination directory
 inherited_options:
-- name: debug
-  default_value: "false"
-  usage: |
-    same as verbose but also show function names and line numbers
-- name: quiet
-  default_value: "false"
-  usage: less verbose output
-- name: verbose
-  default_value: "false"
-  usage: more verbose output
+    - name: debug
+      default_value: "false"
+      usage: |
+        same as verbose but also show function names and line numbers
+    - name: quiet
+      default_value: "false"
+      usage: less verbose output
+    - name: verbose
+      default_value: "false"
+      usage: more verbose output
 example: |-
-  Fetching policies from multiple sources to a specific directory:
+    Fetching policies from multiple sources to a specific directory:
 
-    ec fetch policy --dest fetched-policies \
-      --source github.com/hacbs-contract/ec-policies//policy/lib \
-      --source github.com/hacbs-contract/ec-policies//policy/release
+      ec fetch policy --dest fetched-policies \
+        --source github.com/hacbs-contract/ec-policies//policy/lib \
+        --source github.com/hacbs-contract/ec-policies//policy/release
 
-  Fetching policies from multiple sources to an automatically generated temporary
-  work directory:
+    Fetching policies from multiple sources to an automatically generated temporary
+    work directory:
 
-    ec fetch policy --work-dir \
-      --source github.com/hacbs-contract/ec-policies//policy/lib \
-      --source github.com/hacbs-contract/ec-policies//policy/release
+      ec fetch policy --work-dir \
+        --source github.com/hacbs-contract/ec-policies//policy/lib \
+        --source github.com/hacbs-contract/ec-policies//policy/release
 
-  Different style url formats are supported. In this example "policy" is treated as
-  a subdirectory even without the go-getter style // delimiter:
+    Different style url formats are supported. In this example "policy" is treated as
+    a subdirectory even without the go-getter style // delimiter:
 
-    ec fetch policy --source https://github.com/hacbs-contract/ec-policies/policy
+      ec fetch policy --source https://github.com/hacbs-contract/ec-policies/policy
 
-  Notes:
+    Notes:
 
-  - The --dest flag will be ignored if --work-dir is set
-  - Adding a protocol prefix such as 'git::' to the source url forces it to be treated
-    as a go-getter style url.
+    - The --dest flag will be ignored if --work-dir is set
+    - Adding a protocol prefix such as 'git::' to the source url forces it to be treated
+      as a go-getter style url.
 see_also:
-- ec fetch - Fetch data for policy evaluation
+    - ec fetch - Fetch data for policy evaluation
