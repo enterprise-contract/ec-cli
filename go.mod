@@ -15,7 +15,7 @@ require (
 	github.com/google/addlicense v1.0.0
 	github.com/google/go-containerregistry v0.11.0
 	github.com/google/go-github/v45 v45.2.0
-	github.com/hacbs-contract/enterprise-contract-controller v0.0.0-20220929185557-60408d043c5d
+	github.com/hacbs-contract/enterprise-contract-controller v0.0.0-20221012083301-6cc9977bd09d
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/in-toto/in-toto-golang v0.3.4-0.20220709202702-fa494aaa0add
 	github.com/leanovate/gopter v0.2.9
@@ -370,7 +370,7 @@ require (
 	github.com/spdx/tools-golang v0.2.0 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
-	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/spf13/pflag v1.0.6-0.20210604193023-d5e0c0615ace // indirect
 	github.com/spf13/viper v1.13.0 // indirect
 	github.com/ssgreg/nlreturn/v2 v2.2.1 // indirect
 	github.com/stbenjam/no-sprintf-host-port v0.1.1 // indirect

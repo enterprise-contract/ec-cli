@@ -29,10 +29,9 @@ import (
 )
 
 func mockFetchECSource(ctx context.Context, resource string) (*ecc.EnterpriseContractPolicySpec, error) {
-	description := "very descriptive"
 	return &ecc.EnterpriseContractPolicySpec{
-		Description: &description,
-		Authorization: ecc.Authorization{
+		Description: "very descriptive",
+		Authorization: &ecc.Authorization{
 			Components: []ecc.AuthorizedComponent{
 				{
 					ChangeID:   "1234",
@@ -45,9 +44,8 @@ func mockFetchECSource(ctx context.Context, resource string) (*ecc.EnterpriseCon
 }
 
 func mockPolicyConfigurationString() string {
-	description := "very descriptive"
 	config := &ecc.EnterpriseContractPolicySpec{
-		Description: &description,
+		Description: "very descriptive",
 	}
 	configJson, _ := json.Marshal(config)
 	return string(configJson)

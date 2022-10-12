@@ -59,7 +59,7 @@ func HardCodedSources() []PolicySource {
 	}
 
 	for _, r := range repoUrls {
-		repo, err := CreatePolicyRepoFromRepoAndRevision(r, nil)
+		repo, err := CreatePolicyRepoFromRepoAndRevision(r, "")
 		if err != nil {
 			panic(err)
 		}
@@ -144,7 +144,7 @@ func CreatePolicyRepoFromSource(s ecc.GitPolicySource) (PolicyRepo, error) {
 	return CreatePolicyRepoFromRepoAndRevision(s.Repository, s.Revision)
 }
 
-func CreatePolicyRepoFromRepoAndRevision(repository string, revision *string) (PolicyRepo, error) {
+func CreatePolicyRepoFromRepoAndRevision(repository string, revision string) (PolicyRepo, error) {
 	log.Debug("Creating policy repo from git policy source")
 
 	// Normalize the url, extract the policyDir if there is one, and determine the ref to use
@@ -153,12 +153,12 @@ func CreatePolicyRepoFromRepoAndRevision(repository string, revision *string) (P
 		return PolicyRepo{}, err
 	}
 
-	if revision != nil {
+	if revision != "" {
 		return PolicyRepo{
 			RawSourceURL: repository,
 			PolicyDir:    policyDir,
 			RepoURL:      u,
-			RepoRef:      *revision,
+			RepoRef:      revision,
 		}, nil
 	}
 
