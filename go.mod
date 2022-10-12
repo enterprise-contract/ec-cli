@@ -28,7 +28,7 @@ require (
 	github.com/sigstore/sigstore v1.4.4
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/afero v1.9.2
-	github.com/spf13/cobra v1.5.0
+	github.com/spf13/cobra v1.6.0
 	github.com/stretchr/testify v1.8.0
 	github.com/stuart-warren/yamlfmt v0.1.2
 	github.com/tektoncd/pipeline v0.40.2
@@ -47,8 +47,6 @@ require (
 )
 
 replace go.etcd.io/etcd/v3 => go.etcd.io/etcd/v3 v3.6.0-alpha.0
-
-replace github.com/spf13/cobra => github.com/zregvart/cobra v0.0.0-20220804134604-e8f9808db600
 
 require (
 	4d63.com/gochecknoglobals v0.1.0 // indirect
@@ -267,7 +265,7 @@ require (
 	github.com/hashicorp/hcl/v2 v2.9.1 // indirect
 	github.com/hexops/gotextdiff v1.0.3 // indirect
 	github.com/imdario/mergo v0.3.13 // indirect
-	github.com/inconshreveable/mousetrap v1.0.0 // indirect
+	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/jedisct1/go-minisign v0.0.0-20211028175153-1c139d1cc84b // indirect
 	github.com/jgautheron/goconst v1.5.1 // indirect
