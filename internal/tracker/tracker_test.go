@@ -20,15 +20,22 @@ package tracker
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path"
 	"testing"
 	"time"
 
+	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
+	"github.com/google/go-containerregistry/pkg/v1/empty"
+	"github.com/google/go-containerregistry/pkg/v1/mutate"
+	"github.com/google/go-containerregistry/pkg/v1/random"
+	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/stretchr/testify/assert"
-
-	"github.com/hacbs-contract/ec-cli/internal/image"
+	"github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
+	"github.com/tektoncd/pipeline/pkg/remote/oci"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 var sampleHashOne = v1.Hash{
@@ -64,6 +71,12 @@ func TestTrack(t *testing.T) {
   - digest: ` + sampleHashTwo.String() + `
     effective_on: "` + expectedEffectiveOn + `"
     tag: two
+required-tasks:
+- effective_on: "` + expectedEffectiveOn + `"
+  tasks:
+  - buildah
+  - git-clone
+  - summary
 `,
 		},
 		{
@@ -81,6 +94,12 @@ func TestTrack(t *testing.T) {
   - digest: ` + sampleHashTwo.String() + `
     effective_on: "` + expectedEffectiveOn + `"
     tag: "2.0"
+required-tasks:
+- effective_on: "` + expectedEffectiveOn + `"
+  tasks:
+  - buildah
+  - git-clone
+  - summary
 `,
 		},
 		{
@@ -102,6 +121,12 @@ func TestTrack(t *testing.T) {
   - digest: ` + sampleHashOne.String() + `
     effective_on: "` + expectedEffectiveOn + `"
     tag: one
+required-tasks:
+- effective_on: "` + expectedEffectiveOn + `"
+  tasks:
+  - buildah
+  - git-clone
+  - summary
 `,
 		},
 		{
@@ -124,6 +149,12 @@ func TestTrack(t *testing.T) {
   - digest: ` + sampleHashTwo.String() + `
     effective_on: "` + expectedEffectiveOn + `"
     tag: "2.0"
+required-tasks:
+- effective_on: "` + expectedEffectiveOn + `"
+  tasks:
+  - buildah
+  - git-clone
+  - summary
 `,
 		},
 		{
@@ -142,6 +173,12 @@ func TestTrack(t *testing.T) {
   - digest: ` + sampleHashTwo.String() + `
     effective_on: "` + expectedEffectiveOn + `"
     tag: "2.0"
+required-tasks:
+- effective_on: "` + expectedEffectiveOn + `"
+  tasks:
+  - buildah
+  - git-clone
+  - summary
 task-bundles:
   registry.com/one:
   - digest: ` + sampleHashOne.String() + `
@@ -149,10 +186,122 @@ task-bundles:
     tag: "1.0"
 `,
 		},
+		{
+			name: "mixed tasks and pipelines",
+			urls: []string{
+				"registry.com/mixed:1.0@" + sampleHashOne.String(),
+			},
+			output: `pipeline-bundles:
+  registry.com/mixed:
+  - digest: ` + sampleHashOne.String() + `
+    effective_on: "` + expectedEffectiveOn + `"
+    tag: "1.0"
+required-tasks:
+- effective_on: "` + expectedEffectiveOn + `"
+  tasks:
+  - buildah
+  - git-clone
+  - summary
+task-bundles:
+  registry.com/mixed:
+  - digest: ` + sampleHashOne.String() + `
+    effective_on: "` + expectedEffectiveOn + `"
+    tag: "1.0"
+`,
+		},
+		{
+			name: "pipeline without tasks",
+			urls: []string{
+				"registry.com/empty-pipeline:1.0@" + sampleHashOne.String(),
+			},
+			output: `pipeline-bundles:
+  registry.com/empty-pipeline:
+  - digest: ` + sampleHashOne.String() + `
+    effective_on: "` + expectedEffectiveOn + `"
+    tag: "1.0"
+required-tasks:
+- effective_on: "` + expectedEffectiveOn + `"
+  tasks: []
+`,
+		},
+		{
+			name: "pipeline without tasks and pipeline with tasks",
+			urls: []string{
+				"registry.com/empty-pipeline:1.0@" + sampleHashOne.String(),
+				"registry.com/one:1.0@" + sampleHashOne.String(),
+			},
+			output: `pipeline-bundles:
+  registry.com/empty-pipeline:
+  - digest: ` + sampleHashOne.String() + `
+    effective_on: "` + expectedEffectiveOn + `"
+    tag: "1.0"
+  registry.com/one:
+  - digest: ` + sampleHashOne.String() + `
+    effective_on: "` + expectedEffectiveOn + `"
+    tag: "1.0"
+required-tasks:
+- effective_on: "` + expectedEffectiveOn + `"
+  tasks:
+  - buildah
+  - git-clone
+  - summary
+`,
+		},
+		{
+			name: "pipeline with tasks then pipeline without tasks",
+			urls: []string{
+				"registry.com/one:1.0@" + sampleHashOne.String(),
+				"registry.com/empty-pipeline:1.0@" + sampleHashOne.String(),
+			},
+			output: `pipeline-bundles:
+  registry.com/empty-pipeline:
+  - digest: ` + sampleHashOne.String() + `
+    effective_on: "` + expectedEffectiveOn + `"
+    tag: "1.0"
+  registry.com/one:
+  - digest: ` + sampleHashOne.String() + `
+    effective_on: "` + expectedEffectiveOn + `"
+    tag: "1.0"
+required-tasks:
+- effective_on: "` + expectedEffectiveOn + `"
+  tasks:
+  - buildah
+  - git-clone
+  - summary
+`,
+		},
+		{
+			name: "required tasks removed",
+			urls: []string{
+				"registry.com/empty-pipeline:1.0@" + sampleHashOne.String(),
+			},
+			input: `required-tasks:
+  - effective_on: "` + expectedEffectiveOn + `"
+    tasks:
+    - buildah
+    - git-clone
+    - summary
+`,
+			output: `pipeline-bundles:
+  registry.com/empty-pipeline:
+  - digest: ` + sampleHashOne.String() + `
+    effective_on: "` + expectedEffectiveOn + `"
+    tag: "1.0"
+required-tasks:
+- effective_on: "` + expectedEffectiveOn + `"
+  tasks: []
+- effective_on: "` + expectedEffectiveOn + `"
+  tasks:
+  - buildah
+  - git-clone
+  - summary
+`,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
 			inputFile := ""
 			if tt.input != "" {
 				inputFile = path.Join(t.TempDir(), "input.yaml")
@@ -162,12 +311,163 @@ task-bundles:
 				_, err = f.WriteString(tt.input)
 				assert.NoError(t, err)
 			}
-			output, err := Track(context.TODO(), tt.urls, inputFile, func(ctx context.Context, ref image.ImageReference) ([]string, error) {
-				return []string{"pipeline"}, nil
-			})
+
+			client := fakeClient{objects: testObjects, images: testImages}
+			ctx = WithClient(ctx, client)
+
+			output, err := Track(ctx, tt.urls, inputFile)
 			assert.NoError(t, err)
 			assert.Equal(t, tt.output, string(output))
 		})
 	}
 
+}
+
+type fakeClient struct {
+	objects map[string]map[string]map[string]runtime.Object
+	images  map[string]v1.Image
+}
+
+func (r fakeClient) GetTektonObject(ctx context.Context, bundle, kind, name string) (runtime.Object, error) {
+	if bundle, ok := r.objects[bundle]; ok {
+		if names, ok := bundle[kind]; ok {
+			if obj, ok := names[name]; ok {
+				return obj, nil
+			}
+		}
+	}
+	return nil, fmt.Errorf("resource named %q of kind %q not found", name, kind)
+}
+
+func (r fakeClient) GetImage(ctx context.Context, ref name.Reference) (v1.Image, error) {
+	if image, ok := r.images[ref.String()]; ok {
+		return image, nil
+	}
+	return nil, fmt.Errorf("image %q not found", ref)
+}
+
+var testObjects = map[string]map[string]map[string]runtime.Object{
+	"registry.com/one:1.0@" + sampleHashOne.String(): {
+		"pipeline": {
+			"pipeline-v1": mustCreateFakePipelineObject(),
+		},
+	},
+	"registry.com/two:2.0@" + sampleHashTwo.String(): {
+		"pipeline": {
+			"pipeline-v2": mustCreateFakePipelineObject(),
+		},
+	},
+	"registry.com/repo:one@" + sampleHashOne.String(): {
+		"pipeline": {
+			"pipeline-v1": mustCreateFakePipelineObject(),
+		},
+	},
+	"registry.com/repo:two@" + sampleHashTwo.String(): {
+		"pipeline": {
+			"pipeline-v2": mustCreateFakePipelineObject(),
+		},
+	},
+	"registry.com/mixed:1.0@" + sampleHashOne.String(): {
+		"pipeline": {
+			"pipeline-v1": mustCreateFakePipelineObject(),
+		},
+	},
+	"registry.com/empty-pipeline:1.0@" + sampleHashOne.String(): {
+		"pipeline": {
+			"pipeline-v1": mustCreateFakeEmptyPipelineObject(),
+		},
+	},
+}
+
+var testImages = map[string]v1.Image{
+	"registry.com/one:1.0@" + sampleHashOne.String(): mustCreateFakeBundleImage([]fakeDefinition{
+		{name: "pipeline-v1", kind: "pipeline"},
+		// {name: "task-v1", kind: "task"},
+	}),
+	"registry.com/two:2.0@" + sampleHashTwo.String(): mustCreateFakeBundleImage([]fakeDefinition{
+		{name: "pipeline-v2", kind: "pipeline"},
+	}),
+	"registry.com/repo:one@" + sampleHashOne.String(): mustCreateFakeBundleImage([]fakeDefinition{
+		{name: "pipeline-v1", kind: "pipeline"},
+		// {name: "task-v1", kind: "task"},
+	}),
+	"registry.com/repo:two@" + sampleHashTwo.String(): mustCreateFakeBundleImage([]fakeDefinition{
+		{name: "pipeline-v2", kind: "pipeline"},
+	}),
+	"registry.com/mixed:1.0@" + sampleHashOne.String(): mustCreateFakeBundleImage([]fakeDefinition{
+		{name: "pipeline-v1", kind: "pipeline"},
+		{name: "task-v1", kind: "task"},
+	}),
+	"registry.com/empty-pipeline:1.0@" + sampleHashOne.String(): mustCreateFakeBundleImage([]fakeDefinition{
+		{name: "pipeline-v1", kind: "pipeline"},
+	}),
+}
+
+type fakeDefinition struct {
+	name string
+	kind string
+}
+
+func mustCreateFakeBundleImage(defs []fakeDefinition) v1.Image {
+	adds := make([]mutate.Addendum, 0, len(defs))
+
+	for _, definition := range defs {
+		l, err := random.Layer(0, types.DockerLayer)
+		if err != nil {
+			panic("unable to create layer for test data")
+		}
+		adds = append(adds, mutate.Addendum{
+			Layer: l,
+			Annotations: map[string]string{
+				oci.KindAnnotation:  definition.kind,
+				oci.TitleAnnotation: definition.name,
+			},
+		})
+	}
+
+	img, err := mutate.Append(empty.Image, adds...)
+	if err != nil {
+		panic(err)
+	}
+	return img
+}
+
+func mustCreateFakePipelineObject() runtime.Object {
+	gitCloneTask := v1beta1.PipelineTask{
+		TaskRef: &v1beta1.TaskRef{
+			Name: "git-clone",
+		},
+	}
+	buildahTask := v1beta1.PipelineTask{
+		TaskRef: &v1beta1.TaskRef{
+			ResolverRef: v1beta1.ResolverRef{
+				Resolver: "bundle",
+				Params: []v1beta1.Param{
+					{
+						Name: "name",
+						Value: v1beta1.ParamValue{
+							StringVal: "buildah",
+						},
+					},
+				},
+			},
+		},
+	}
+	summaryTask := v1beta1.PipelineTask{
+		TaskRef: &v1beta1.TaskRef{
+			Name: "summary",
+		},
+	}
+	pipeline := v1beta1.Pipeline{}
+	pipeline.SetDefaults(context.Background())
+	pipeline.Spec.Tasks = []v1beta1.PipelineTask{gitCloneTask, buildahTask}
+	pipeline.Spec.Finally = []v1beta1.PipelineTask{summaryTask}
+
+	return &pipeline
+}
+
+func mustCreateFakeEmptyPipelineObject() runtime.Object {
+	pipeline := v1beta1.Pipeline{}
+	pipeline.SetDefaults(context.Background())
+	return &pipeline
 }

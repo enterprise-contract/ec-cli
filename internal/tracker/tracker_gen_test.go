@@ -41,7 +41,7 @@ func TestTrackerAddKeepsOrder(t *testing.T) {
 		return len(v) > 0
 	})
 	arbitraries.RegisterGen(gen.SliceOf(
-		gen.Struct(reflect.TypeOf(Record{}), map[string]gopter.Gen{
+		gen.Struct(reflect.TypeOf(bundleRecord{}), map[string]gopter.Gen{
 			"Digest":     gen.RegexMatch("^sha256:[a-f0-9]{64}$"),
 			"Collection": nonEmptyIdentifier,
 			"Tag":        gen.Identifier(),
@@ -51,10 +51,10 @@ func TestTrackerAddKeepsOrder(t *testing.T) {
 	properties := gopter.NewProperties(parameters)
 
 	properties.Property("collections are sorted", arbitraries.ForAll(
-		func(records []Record) bool {
+		func(records []bundleRecord) bool {
 			tracker := Tracker{}
 			for _, r := range records {
-				tracker.add(r)
+				tracker.addBundleRecord(r)
 			}
 
 			raw, err := tracker.Output()

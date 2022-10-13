@@ -18,18 +18,12 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 	"os"
 
-	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/spf13/cobra"
-	"github.com/tektoncd/pipeline/pkg/remote/oci"
-
-	"github.com/hacbs-contract/ec-cli/internal/image"
-	"github.com/hacbs-contract/ec-cli/internal/tracker"
 )
 
-type trackBundleFn func(context.Context, []string, string, tracker.Collector) ([]byte, error)
+type trackBundleFn func(context.Context, []string, string) ([]byte, error)
 
 func trackBundleCmd(track trackBundleFn) *cobra.Command {
 	var data = struct {
@@ -56,7 +50,12 @@ or a digest is required.
 The output is meant to assist enforcement of policies that ensure the
 most recent Tekton Bundle is used. As such, each entry contains an
 "effective_on" date which is set to 30 days from today. This indicates
-the Tekton Bundle usage should be updated within that period.`,
+the Tekton Bundle usage should be updated within that period.
+
+Additionally, the common set of Tasks referenced by all "important"
+Pipeline definitions are deemed required and displayed as such. An
+"important" Pipeline definition is defined as one that does NOT include
+the label "skip-hacbs-test" set to the value "true".`,
 		Example: `Track multiple bundles:
 
   ec track bundle --bundle <IMAGE1> --bundle <IMAGE2>
@@ -75,13 +74,15 @@ Extend an existing tracking file with a new bundle and save changes:
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 
-			out, err := track(cmd.Context(), data.Bundles, data.Input, tektonBundleCollector)
+			out, err := track(cmd.Context(), data.Bundles, data.Input)
 			if err != nil {
 				return err
 			}
 
 			if data.OutputFile == "" {
-				fmt.Println(string(out))
+				if _, err := cmd.OutOrStdout().Write(out); err != nil {
+					return err
+				}
 			} else {
 				f, err := os.Create(data.OutputFile)
 				if err != nil {
@@ -129,32 +130,4 @@ Extend an existing tracking file with a new bundle and save changes:
 	}
 
 	return cmd
-}
-
-var fetchImage = remote.Image
-
-func tektonBundleCollector(ctx context.Context, ref image.ImageReference) ([]string, error) {
-	img, err := fetchImage(ref.Ref(), remote.WithContext(ctx))
-	if err != nil {
-		return nil, err
-	}
-
-	manifest, err := img.Manifest()
-	if err != nil {
-		return nil, err
-	}
-
-	collectionsMap := map[string]bool{}
-	for _, layer := range manifest.Layers {
-		if kind, ok := layer.Annotations[oci.KindAnnotation]; ok {
-			collectionsMap[kind] = true
-		}
-	}
-
-	collections := make([]string, 0, len(collectionsMap))
-	for c := range collectionsMap {
-		collections = append(collections, c)
-	}
-
-	return collections, nil
 }
