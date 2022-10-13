@@ -20,11 +20,7 @@ Feature: evaluate enterprise contract
     """
     {
       "sources": [
-        {
-          "git": {
-            "repository": "http://${GITHOST}/git/happy-day-policy.git"
-          }
-        }
+        "git::http://${GITHOST}/git/happy-day-policy.git"
       ]
     }
     """
@@ -59,11 +55,7 @@ Feature: evaluate enterprise contract
     """
     {
       "sources": [
-        {
-          "git": {
-            "repository": "http://${GITHOST}/git/invalid-image-signature.git"
-          }
-        }
+        "git::http://${GITHOST}/git/invalid-image-signature.git"
       ]
     }
     """
@@ -98,7 +90,7 @@ Feature: evaluate enterprise contract
     Given a valid Rekor entry for attestation of "acceptance/ec-happy-day"
     Given a git repository named "happy-day-policy" with
       | main.rego | examples/happy_day.rego |
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy {"sources":[{"git":{"repository":"http://${GITHOST}/git/happy-day-policy.git"}}]} --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy {"sources":["git::http://${GITHOST}/git/happy-day-policy.git"]} --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
     Then the exit status should be 0
     Then the standard output should contain
     """
