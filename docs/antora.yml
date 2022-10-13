@@ -19,4 +19,10 @@ name: ec-cli
 title: Enterprise Contract CLI
 version: main
 nav:
-- modules/ROOT/nav.adoc
+  - modules/ROOT/nav.adoc
+ext:
+  collector:
+    run:
+      command: make reference-docs
+    scan:
+      dir: dist/reference

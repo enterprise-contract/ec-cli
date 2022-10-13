@@ -71,9 +71,3 @@ jobs:
         with:
           files: ./coverage-acceptance.out
           flags: acceptance
-
-      - name: Build docs
-        run: make docs
-
-      - name: Check for uncommitted changes
-        run: git diff --exit-code -- docs/reference
