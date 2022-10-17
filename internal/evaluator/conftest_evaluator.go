@@ -208,10 +208,6 @@ func (c *conftestEvaluator) addPolicyPaths(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-		policyDir := policy.GetPolicyDir()
-		policyPath := filepath.Join(c.workDir, policyDir)
-		// Todo: PolicyPaths is not used any more so we should remove it
-		c.paths.PolicyPaths = append(c.paths.PolicyPaths, policyPath)
 	}
 	return nil
 }

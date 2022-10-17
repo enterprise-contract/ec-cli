@@ -26,19 +26,17 @@ import (
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
 )
 
-type pipelineValidationFn func(context.Context, string, source.PolicyRepo, string) (*output.Output, error)
+type pipelineValidationFn func(context.Context, string, source.PolicyUrl, string) (*output.Output, error)
 
 func validatePipelineCmd(validate pipelineValidationFn) *cobra.Command {
 	var data = struct {
 		FilePaths         []string
-		PolicyRepo        string
-		PolicyDir         string
+		PolicyUrl         string
 		Ref               string
 		ConftestNamespace string
 	}{
 		FilePaths:         []string{},
-		PolicyRepo:        "https://github.com/hacbs-contract/ec-policies.git",
-		PolicyDir:         "policy",
+		PolicyUrl:         "git::https://github.com/hacbs-contract/ec-policies.git//policy",
 		ConftestNamespace: "pipeline.main",
 		Ref:               "main",
 	}
@@ -60,17 +58,13 @@ Validate multiple Pipeline definition files by repeating --pipeline-file:
 Sepcify a different location for the policies:
 
   ec validate pipeline --pipeline-file </path/to/pipeline/file> \
-    --policy-repo https://example.com/user/repo.git --branch foo --namespace pipeline.basic`,
+    --policy git::https://example.com/user/repo.git//policy?ref=main --namespace pipeline.basic`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 			var outputs output.Outputs
 			for i := range data.FilePaths {
 				fpath := data.FilePaths[i]
-				policySource := source.PolicyRepo{
-					PolicyDir: data.PolicyDir,
-					RepoURL:   data.PolicyRepo,
-					RepoRef:   data.Ref,
-				}
+				policySource := source.PolicyUrl(data.PolicyUrl)
 				if o, e := validate(cmd.Context(), fpath, policySource, data.ConftestNamespace); e != nil {
 					err = multierror.Append(err, e)
 				} else {
@@ -86,11 +80,8 @@ Sepcify a different location for the policies:
 	}
 	cmd.Flags().StringSliceVarP(&data.FilePaths, "pipeline-file", "p", data.FilePaths,
 		"path to pipeline definition YAML/JSON file (required)")
-	cmd.Flags().StringVar(&data.PolicyDir, "policy-dir", data.PolicyDir,
-		"directory within policy repo containing policies")
-	cmd.Flags().StringVar(&data.PolicyRepo, "policy-repo", data.PolicyRepo,
+	cmd.Flags().StringVar(&data.PolicyUrl, "policy", data.PolicyUrl,
 		"git repo containing policies")
-	cmd.Flags().StringVar(&data.Ref, "branch", data.Ref, "policy repo branch")
 	cmd.Flags().StringVar(&data.ConftestNamespace, "namespace", data.ConftestNamespace,
 		"rego namespace within policy repo")
 

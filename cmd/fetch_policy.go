@@ -88,11 +88,9 @@ Notes:
 
 			for _, s := range sourceUrls {
 				// Do everything the same way that it would be done when an image validation happens
-				policyRepo, err := source.CreatePolicyRepoFromRepoAndRevision(s, "")
-				if err != nil {
-					return err
-				}
-				err = policyRepo.GetPolicies(cmd.Context(), destDir, true)
+				policyUrl := source.PolicyUrl(s)
+				policySource := &policyUrl
+				err := policySource.GetPolicies(cmd.Context(), destDir, true)
 				if err != nil {
 					return err
 				}

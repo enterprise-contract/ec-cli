@@ -141,11 +141,3 @@ func ProbablyDataSource(sourceUrl string) bool {
 	}
 	return false
 }
-
-// Assemble a go-getter compatible url from PolicyRepo fields
-//
-// (Can't easily use the PolicyRepo type without creating an import
-// circle so that's why we're passing strings and not a PolicyRepo here.)
-func GetterGitUrl(repoURL string, policyDir string, repoRef string) string {
-	return fmt.Sprintf("git::%s//%s?ref=%s", repoURL, policyDir, repoRef)
-}

@@ -129,22 +129,3 @@ func TestDownloader_ProbablyDataSource(t *testing.T) {
 		})
 	}
 }
-
-func TestDownloader_GetterGitUrl(t *testing.T) {
-	tests := []struct {
-		name     string
-		args     []string
-		wantArgs string
-	}{
-		{
-			name:     "Download",
-			args:     []string{"foo", "bar", "baz"},
-			wantArgs: "git::foo//bar?ref=baz",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.wantArgs, GetterGitUrl(tt.args[0], tt.args[1], tt.args[2]))
-		})
-	}
-}

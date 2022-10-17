@@ -99,23 +99,23 @@ func NewApplicationSnapshotImage(ctx context.Context, image string, ecp *ecc.Ent
 		checkOpts: *checkOpts,
 	}
 
-	policies, err := fetchPolicyRepos(ecp)
+	policySources, err := fetchPolicySources(ecp)
 	if err != nil {
-		log.Debug("Failed to fetch the policy repos from the ECP!")
+		log.Debug("Failed to fetch the policy sources from the ECP!")
 		return nil, err
 	}
 
 	// Add additional source that we need to always be there.
 	// (Temporary workaround until we figure out a better design for this.)
-	policies = append(policies, source.HardCodedSources()...)
+	policySources = append(policySources, source.HardCodedSources()...)
 
-	log.Debug("Policy repo source definitions fetched")
-	for _, policyRepo := range policies {
-		policyRepoJson, _ := json.Marshal(policyRepo)
-		log.Debugf("policyRepoJson: %s", policyRepoJson)
+	log.Debug("Policy source definitions fetched")
+	for _, policySource := range policySources {
+		policySourceJson, _ := json.Marshal(policySource)
+		log.Debugf("policySourceJson: %s", policySourceJson)
 	}
 
-	c, err := newConftestEvaluator(ctx, policies, ConftestNamespace, ecp)
+	c, err := newConftestEvaluator(ctx, policySources, ConftestNamespace, ecp)
 	if err != nil {
 		log.Debug("Failed to initialize the conftest evaluator!")
 		return nil, err
@@ -125,17 +125,12 @@ func NewApplicationSnapshotImage(ctx context.Context, image string, ecp *ecc.Ent
 	return a, nil
 }
 
-// fetchPolicyRepos returns an array of Policy repos
-func fetchPolicyRepos(spec *ecc.EnterpriseContractPolicySpec) ([]source.PolicySource, error) {
+// fetchPolicySources returns an array of policy sources
+func fetchPolicySources(spec *ecc.EnterpriseContractPolicySpec) ([]source.PolicySource, error) {
 	policySources := make([]source.PolicySource, 0, len(spec.Sources))
-	for _, policySource := range spec.Sources {
-		if policySource.GitRepository != nil {
-			repo, err := source.CreatePolicyRepoFromSource(*policySource.GitRepository)
-			if err != nil {
-				return nil, err
-			}
-			policySources = append(policySources, &repo)
-		}
+	for _, sourceUrl := range spec.Sources {
+		url := source.PolicyUrl(sourceUrl)
+		policySources = append(policySources, &url)
 	}
 	return policySources, nil
 }
