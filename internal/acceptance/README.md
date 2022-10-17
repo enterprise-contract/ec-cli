@@ -20,13 +20,13 @@ from the root of the repository.
 
 Or run the acceptance_test.go test using `go test`:
 
-    $ go test ./internal/acceptance/
+    $ go test -tags=acceptance ./...
 
-The latter is useful for specifying additional arguments. Currently, two are
-supported:
+The latter is useful for specifying additional arguments. Currently, the
+following are supported:
 
   * `-persist` if specified the test environment will persist after test
-    execution, making it easy to recreate test failures and debugg the `ec`
+    execution, making it easy to recreate test failures and debug the `ec`
     command line or acceptance test code
   * `-restore` run the tests against the persisted environment with `-persist`
   * `-no-colors` disable colored output, useful when running in a terminal that
@@ -37,9 +37,18 @@ supported:
 
 These arguments need to be prefixed with `-args` parameter, for example:
 
-    $ go test ./internal/acceptance/ -args -persist -tags=@focus
+    $ go test -tags=acceptance ./internal/acceptance -args -persist -tags=@focus
 
-Depending on your setup Testcontainer's ryuk container migh need to be run as
+Notice that there are two arguments called `-tags`. One is for specifying the
+build tag, which is always `acceptance` for acceptance tests. The other is for
+selecting acceptance test scenarios.
+
+Also notice that there are different ways of specifying the path to the
+acceptance tests. `./...` can only be be used if `-args` is NOT used. Use,
+`./internal/acceptance` or `github.com/hacbs-contract/ec-cli/internal/acceptance`
+in such cases.
+
+Depending on your setup Testcontainer's ryuk container might need to be run as
 privileged container. For that, $HOME/.testcontainers.properties needs to be
 created with:
 
@@ -49,6 +58,22 @@ Also, you will need to be able to run Docker without elevating the privileges,
 that is as a non-root user. See the
 [documentation](https://docs.docker.com/engine/install/linux-postinstall/) on
 Docker website how to accomplish that.
+
+## Debugging
+
+The acceptance tests execute the `ec` binary during test execution. (For this
+reason `make acceptance` builds the binary prior to running the tests.)
+
+To use a debugger, like [delve](https://github.com/go-delve/delve), you must
+determine what part of the code is being debugged. If it's part of the
+acceptance module, `github.com/hacbs-contract/ec-cli/internal/acceptance`, or
+it is a dependency of the acceptance module, then the debugger can be invoked
+directly. However, if the code to be debugged is in any other module, first
+run the acceptance tests in `-persist` mode. The, scan the test logs for the
+exact command used during the test you want to debug. Finally, run the `ec` code
+via the debugger, for example:
+
+    dlv debug -- track bundle --bundle localhost:49167/acceptance/bundle:tag
 
 ## Creating acceptance tests
 
@@ -88,3 +113,8 @@ Whenever possible include enough information in the test failure to make it
 easy to reason about the context of the failure. Consider situations where
 all that is available is the log output of the tests and the error message
 from the test failure.
+
+## Known Issues
+
+`context deadline exceeded: failed to start container` may occur in some
+cases. `sudo systemctl restart docker` usually fixes it.
