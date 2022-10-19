@@ -18,6 +18,10 @@ Feature: track bundles
       - digest: ${REGISTRY_acceptance/bundle:tag_HASH}
         effective_on: "[0-9]{4}-[0-9]{2}-[0-9]{2}T00:00:00Z"
         tag: tag
+    required-tasks:
+    - effective_on: "[0-9]{4}-[0-9]{2}-[0-9]{2}T00:00:00Z"
+      tasks:
+      - git-clone
     task-bundles:
       ${REGISTRY}/acceptance/bundle:
       - digest: ${REGISTRY_acceptance/bundle:tag_HASH}
