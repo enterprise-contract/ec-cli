@@ -161,13 +161,38 @@ func (c *conftestEvaluator) addDataPath(spec *ecc.EnterpriseContractPolicySpec) 
 	}
 
 	if spec != nil {
+		type policyConfig struct {
+			NonBlocking  *[]string `json:"non_blocking_checks,omitempty"`
+			ExcludeRules *[]string `json:"exclude_rules,omitempty"`
+			IncludeRules *[]string `json:"include_rules,omitempty"`
+			Collections  *[]string `json:"collections,omitempty"`
+		}
+		pc := &policyConfig{}
+
+		// TODO: Once the NonBlocking field has been removed, update to dump the spec.Config into an updated policyConfig struct
 		if spec.Exceptions != nil {
 			log.Debug("Non-blocking exceptions found. These will be written to file", dataDir)
+			pc.NonBlocking = &spec.Exceptions.NonBlocking
+		}
+		if spec.Configuration != nil {
+			log.Debug("Include rules found. These will be written to file", dataDir)
+			if spec.Configuration.IncludeRules != nil {
+				pc.IncludeRules = &spec.Configuration.IncludeRules
+			}
+			log.Debug("Exclude rules found. These will be written to file", dataDir)
+			if spec.Configuration.ExcludeRules != nil {
+				pc.ExcludeRules = &spec.Configuration.ExcludeRules
+			}
+			log.Debug("Collections found. These will be written to file", dataDir)
+			if spec.Configuration.Collections != nil {
+				pc.Collections = &spec.Configuration.Collections
+			}
+		}
+		// Check to see that we've actually added any values to the policyConfig struct.
+		// If so, we'll update the config map. Otherwise, this is skipped.
+		if (policyConfig{} != *pc) {
 			config["config"] = map[string]interface{}{
-				"policy": map[string]interface{}{
-					"non_blocking_checks": spec.Exceptions.NonBlocking,
-					"exclude_rules":       spec.Exceptions.NonBlocking,
-				},
+				"policy": pc,
 			}
 		}
 	}
