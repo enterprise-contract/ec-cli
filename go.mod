@@ -40,7 +40,7 @@ require (
 	github.com/whilp/git-urls v1.0.0
 	github.com/yudai/gojsondiff v1.0.0
 	golang.org/x/oauth2 v0.1.0
-	golang.org/x/tools v0.1.12
+	golang.org/x/tools v0.2.0
 	k8s.io/apimachinery v0.24.4
 	k8s.io/client-go v0.24.4
 	sigs.k8s.io/controller-runtime v0.12.3
