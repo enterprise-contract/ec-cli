@@ -15,7 +15,7 @@ require (
 	github.com/google/addlicense v1.0.0
 	github.com/google/go-containerregistry v0.12.0
 	github.com/google/go-github/v45 v45.2.0
-	github.com/hacbs-contract/enterprise-contract-controller v0.0.0-20221014180348-9dd7c428a70a
+	github.com/hacbs-contract/enterprise-contract-controller/api v0.0.0-20221020122434-4e8a9ca8266f
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/in-toto/in-toto-golang v0.3.4-0.20220709202702-fa494aaa0add
 	github.com/leanovate/gopter v0.2.9
@@ -477,15 +477,4 @@ require (
 	sigs.k8s.io/release-utils v0.7.3 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
-)
-
-// Added to allow usage of github.com/hacbs-contract/enterprise-contract-controller
-replace (
-	github.com/kcp-dev/kcp/pkg/apis => github.com/kcp-dev/kcp/pkg/apis v0.9.0 // this line differs from the kcp's go.mod
-	k8s.io/cluster-bootstrap => github.com/kcp-dev/kubernetes/staging/src/k8s.io/cluster-bootstrap v0.0.0-20220915135949-eeba459ad2a1
-	k8s.io/component-helpers => github.com/kcp-dev/kubernetes/staging/src/k8s.io/component-helpers v0.0.0-20220915135949-eeba459ad2a1
-	k8s.io/kube-aggregator => github.com/kcp-dev/kubernetes/staging/src/k8s.io/kube-aggregator v0.0.0-20220915135949-eeba459ad2a1
-	k8s.io/kubelet => github.com/kcp-dev/kubernetes/staging/src/k8s.io/kubelet v0.0.0-20220915135949-eeba459ad2a1
-	k8s.io/mount-utils => github.com/kcp-dev/kubernetes/staging/src/k8s.io/mount-utils v0.0.0-20220915135949-eeba459ad2a1
-	k8s.io/pod-security-admission => github.com/kcp-dev/kubernetes/staging/src/k8s.io/pod-security-admission v0.0.0-20220915135949-eeba459ad2a1
 )
