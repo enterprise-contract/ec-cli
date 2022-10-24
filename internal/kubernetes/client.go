@@ -22,9 +22,13 @@ import (
 
 	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
-	controllerruntime "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 type contextKey string
@@ -36,7 +40,13 @@ type Client interface {
 }
 
 type kubernetesClient struct {
-	client client.Client
+	client dynamic.Interface
+}
+
+var kubeconfig string
+
+func AddKubeconfigFlag(cmd *cobra.Command) {
+	cmd.PersistentFlags().StringVar(&kubeconfig, "kubeconfig", "", "path to the Kubernetes config file to use")
 }
 
 func WithClient(ctx context.Context, client Client) context.Context {
@@ -50,35 +60,34 @@ func NewClient(ctx context.Context) (Client, error) {
 		return client, nil
 	}
 
-	k8sClient, err := createControllerRuntimeClient()
+	c, err := createK8SClient()
 	if err != nil {
 		log.Debug("Failed to create k8s client!")
 		return nil, err
 	}
 
 	return &kubernetesClient{
-		client: k8sClient,
+		client: c,
 	}, nil
 }
 
-func createControllerRuntimeClient() (client.Client, error) {
-	scheme := runtime.NewScheme()
-	err := ecc.AddToScheme(scheme)
-	if err != nil {
-		return nil, err
+func createK8SClient() (client dynamic.Interface, err error) {
+	rules := clientcmd.NewDefaultClientConfigLoadingRules()
+	if kubeconfig != "" {
+		rules.ExplicitPath = kubeconfig
 	}
 
-	kubeconfig, err := controllerruntime.GetConfig()
+	clientConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(rules, nil)
+
+	var config *rest.Config
+	config, err = clientConfig.ClientConfig()
 	if err != nil {
-		return nil, err
+		return
 	}
 
-	clnt, err := client.New(kubeconfig, client.Options{Scheme: scheme})
-	if err != nil {
-		return nil, err
-	}
+	client, err = dynamic.NewForConfig(config)
 
-	return clnt, err
+	return
 }
 
 // FetchEnterpriseContractPolicy gets the Enterprise Contract Policy from the given
@@ -101,12 +110,19 @@ func (k *kubernetesClient) FetchEnterpriseContractPolicy(ctx context.Context, re
 		return nil, errors.New("unable to determine namespace for policy")
 	}
 
-	policy := &ecc.EnterpriseContractPolicy{}
-	if err := k.client.Get(ctx, *name, policy); err != nil {
+	var unstructuredPolicy *unstructured.Unstructured
+	if unstructuredPolicy, err = k.client.Resource(ecc.GroupVersion.WithResource("enterprisecontractpolicies")).Namespace(name.Namespace).Get(ctx, name.Name, v1.GetOptions{}); err != nil {
 		log.Debugf("Failed to fetch the policy from cluster: %s", err)
 		return nil, err
 	}
+
+	policy := ecc.EnterpriseContractPolicy{}
+	if err := runtime.DefaultUnstructuredConverter.FromUnstructured(unstructuredPolicy.UnstructuredContent(), &policy); err != nil {
+		log.Debugf("Failed to convert unstructured content to concrete policy structure: %s", err)
+		return nil, err
+	}
+
 	log.Debugf("Policy successfully fetched from cluster: %#v", policy)
 
-	return policy, nil
+	return &policy, nil
 }

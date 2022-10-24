@@ -17,11 +17,14 @@
 package logging
 
 import (
+	"flag"
 	"fmt"
 	"path/filepath"
 	"runtime"
 
+	"github.com/go-logr/logr"
 	log "github.com/sirupsen/logrus"
+	"k8s.io/klog/v2"
 )
 
 // There are seven log levels supported by logrus but let's not
@@ -42,22 +45,37 @@ import (
 //
 func InitLogging(verbose bool, quiet bool, debug bool) {
 	var level log.Level
+	var v string
 	if debug {
 		level = log.DebugLevel
 		setupDebugMode()
-
+		v = "9"
 	} else if verbose {
 		level = log.DebugLevel
-
+		v = "9"
 	} else if quiet {
 		level = log.ErrorLevel
-
+		v = "1"
 	} else {
 		// Default
 		level = log.WarnLevel
-
+		v = "1"
 	}
 	log.SetLevel(level)
+
+	// The problem with klog is that it'll log to stdout/stderr, we want to
+	// control the logging and log via logrus instead. This accomplishes that
+	// but at the cost of loosing log levels, i.e. all klog messages will be
+	// logged with the INFO level.
+	// see
+	// https://github.com/kubernetes/community/blob/master/contributors/devel/sig-instrumentation/logging.md
+	// https://github.com/kubernetes/klog/issues/87
+	klog.SetLogger(logr.New(&logrusSink{}))
+	flags := &flag.FlagSet{}
+	klog.InitFlags(flags)
+	if err := flags.Set("v", v); err != nil {
+		panic(err)
+	}
 }
 
 func setupDebugMode() {
@@ -83,4 +101,66 @@ func setupDebugMode() {
 		},
 	}
 	log.SetFormatter(customTextFormatter)
+}
+
+// logrusSink implements logr.LogSink to pass klog messages to logrus
+type logrusSink struct {
+	name   string
+	fields []any
+}
+
+// entry creates a log.Entry with the the state (name, fields) passed in as
+// fields
+func (l logrusSink) entry() *log.Entry {
+	e := log.NewEntry(log.StandardLogger())
+	if l.name != "" {
+		e = e.WithField("name", l.name)
+	}
+	for i := 0; i < len(l.fields); i += 2 {
+		e = e.WithField(fmt.Sprintf("%v", l.fields[i]), l.fields[i+1])
+	}
+
+	return e
+}
+
+// toLevel converts a logr level to a logrus level, it might as well be replaced
+// with a constant returning log.InfoLevel as klog with LogSinks only logs at
+// level INFO
+func toLevel(level int) log.Level {
+	switch level {
+	case 0: // severity.InfoLog
+		return log.InfoLevel
+	case 1: // severity.WarningLog
+		return log.WarnLevel
+	case 2: // severity.ErrorLog
+		return log.ErrorLevel
+	case 3: // severity.FatalLog
+		return log.FatalLevel
+	}
+
+	return log.DebugLevel
+}
+
+func (l logrusSink) Init(info logr.RuntimeInfo) {
+	// nop
+}
+
+func (l logrusSink) Enabled(level int) bool {
+	return log.IsLevelEnabled(toLevel(level))
+}
+
+func (l logrusSink) Info(level int, msg string, keysAndValues ...interface{}) {
+	l.entry().Logf(toLevel(level), msg, keysAndValues...)
+}
+
+func (l logrusSink) Error(err error, msg string, keysAndValues ...interface{}) {
+	l.entry().WithError(err).Errorf(msg, keysAndValues...)
+}
+
+func (l logrusSink) WithValues(fields ...any) logr.LogSink {
+	return logrusSink{fields: fields, name: l.name}
+}
+
+func (l logrusSink) WithName(name string) logr.LogSink {
+	return logrusSink{fields: l.fields, name: name}
 }

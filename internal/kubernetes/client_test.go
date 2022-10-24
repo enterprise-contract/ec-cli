@@ -20,7 +20,6 @@ package kubernetes
 
 import (
 	"context"
-	"errors"
 	"io/ioutil"
 	"path"
 	"testing"
@@ -29,11 +28,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/client/fake"
+	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/dynamic/fake"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
-var fakeClient client.Client
+var fakeClient dynamic.Interface
 
 var testECP = ecc.EnterpriseContractPolicy{
 	TypeMeta: v1.TypeMeta{
@@ -51,6 +51,21 @@ var testECP = ecc.EnterpriseContractPolicy{
 	},
 }
 
+var testKubeconfig = []byte(`
+apiVersion: v1
+kind: Config
+clusters:
+- cluster:
+    server: https://api.test
+  name: test-cluster
+contexts:
+- context:
+    cluster: test-cluster
+    namespace: test
+  name: test-context
+current-context: test-context
+`)
+
 func init() {
 	scheme := runtime.NewScheme()
 	err := ecc.AddToScheme(scheme)
@@ -58,7 +73,7 @@ func init() {
 		panic(err)
 	}
 
-	fakeClient = fake.NewClientBuilder().WithScheme(scheme).WithObjects(&testECP).Build()
+	fakeClient = fake.NewSimpleDynamicClient(scheme, &testECP)
 }
 
 func Test_FetchEnterpriseContractPolicy(t *testing.T) {
@@ -113,33 +128,14 @@ func Test_FetchEnterpriseContractPolicy(t *testing.T) {
 	}
 }
 
-func Test_FailureToAddScheme(t *testing.T) {
-	expected := errors.New("expected")
+func Test_FailureToCreateClient(t *testing.T) {
+	t.Setenv("HOME", "/nonexistant")
+	oldRecommendedHomeFile := clientcmd.RecommendedHomeFile
+	t.Cleanup(func() {
+		clientcmd.RecommendedHomeFile = oldRecommendedHomeFile
+	})
+	clientcmd.RecommendedHomeFile = ""
+	_, err := createK8SClient()
 
-	def := ecc.AddToScheme
-	ecc.AddToScheme = func(s *runtime.Scheme) error {
-		return expected
-	}
-	defer func() {
-		ecc.AddToScheme = def
-	}()
-
-	_, err := createControllerRuntimeClient()
-
-	assert.EqualError(t, err, "expected")
+	assert.EqualError(t, err, "invalid configuration: no configuration has been provided, try setting KUBERNETES_MASTER environment variable")
 }
-
-var testKubeconfig = []byte(`
-apiVersion: v1
-kind: Config
-clusters:
-- cluster:
-    server: https://api.test
-  name: test-cluster
-contexts:
-- context:
-    cluster: test-cluster
-    namespace: test
-  name: test-context
-current-context: test-context
-`)
