@@ -32,7 +32,7 @@ require (
 	github.com/stretchr/testify v1.8.1
 	github.com/stuart-warren/yamlfmt v0.1.2
 	github.com/tektoncd/pipeline v0.40.2
-	github.com/testcontainers/testcontainers-go v0.14.0
+	github.com/testcontainers/testcontainers-go v0.15.0
 	github.com/theupdateframework/go-tuf v0.5.2-0.20220930112810-3890c1e7ace4
 	github.com/transparency-dev/merkle v0.0.1
 	github.com/wadey/gocovmerge v0.0.0-20160331181800-b5bfa59ec0ad
