@@ -18,6 +18,7 @@ package applicationsnapshot
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/open-policy-agent/conftest/output"
 	appstudioshared "github.com/redhat-appstudio/managed-gitops/appstudio-shared/apis/appstudio.redhat.com/v1alpha1"
@@ -30,13 +31,50 @@ type Component struct {
 	Success    bool            `json:"success"`
 }
 
-type report struct {
+type fullReport struct {
 	Success    bool        `json:"success"`
 	Components []Component `json:"components"`
 }
 
+type shortReport struct {
+	Components []shortComponent `json:"components"`
+	Success    bool             `json:"success"`
+}
+
+type shortComponent struct {
+	Name            string              `json:"name"`
+	Success         bool                `json:"success"`
+	Violations      map[string][]string `json:"violations"`
+	Warnings        map[string][]string `json:"warnings"`
+	TotalViolations int                 `json:"total_violations"`
+	TotalWarnings   int                 `json:"total_warnings"`
+}
+
+func NewReport(components []Component, shortReport bool) (string, error, bool) {
+	var j []byte
+	var err error
+	var success bool
+	if shortReport {
+		report := condensedReport(components)
+		success = report.Success
+		j, err = json.Marshal(report)
+		if err != nil {
+			return "", err, false
+		}
+	} else {
+		report := report(components)
+		success = report.Success
+		j, err = json.Marshal(report)
+		if err != nil {
+			return "", err, false
+		}
+
+	}
+	return string(j), nil, success
+}
+
 // Report the states of components from the snapshot
-func Report(components []Component) (string, error, bool) {
+func report(components []Component) fullReport {
 	success := true
 
 	// Set the report success, remains true if all components are successful
@@ -47,15 +85,53 @@ func Report(components []Component) (string, error, bool) {
 		}
 	}
 
-	output := report{
+	output := fullReport{
 		Success:    success,
 		Components: components,
 	}
+	return output
+}
 
-	j, err := json.Marshal(output)
-	if err != nil {
-		return "", err, false
+// a report with condensed error messaging
+func condensedReport(components []Component) shortReport {
+	var pr shortReport
+	for _, cmp := range components {
+		if !cmp.Success {
+			pr.Success = false
+		}
+		c := shortComponent{
+			TotalViolations: len(cmp.Violations),
+			TotalWarnings:   len(cmp.Warnings),
+			Success:         cmp.Success,
+			Name:            cmp.Name,
+			Violations:      condensedMsg(cmp.Violations),
+			Warnings:        condensedMsg(cmp.Warnings),
+		}
+		pr.Components = append(pr.Components, c)
 	}
+	return pr
+}
 
-	return string(j), nil, success
+// condense the error messages
+func condensedMsg(results []output.Result) map[string][]string {
+	maxErr := 1
+	shortNames := make(map[string][]string)
+	count := make(map[string]int)
+	for _, v := range results {
+		code, isPresent := v.Metadata["code"]
+		// we don't want to keep count of the empty string
+		if isPresent {
+			code := fmt.Sprintf("%v", code)
+			if count[code] < maxErr {
+				shortNames[code] = append(shortNames[code], v.Message)
+			}
+			count[code] = count[code] + 1
+		}
+	}
+	for k := range shortNames {
+		if count[k] > maxErr {
+			shortNames[k] = append(shortNames[k], fmt.Sprintf("There are %v more %q messages", count[k]-1, k))
+		}
+	}
+	return shortNames
 }

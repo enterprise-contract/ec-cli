@@ -47,6 +47,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		output              string
 		spec                *appstudioshared.ApplicationSnapshotSpec
 		policy              *ecc.EnterpriseContractPolicySpec
+		shortReport         bool
 	}{
 		policyConfiguration: "ec-policy",
 	}
@@ -180,7 +181,8 @@ Use an inline EnterpriseContractPolicy spec
 				}
 			}
 
-			report, err, success := applicationsnapshot.Report(components)
+			report, err, success := applicationsnapshot.NewReport(components, data.shortReport)
+
 			if allErrors != nil {
 				return multierror.Append(allErrors, err)
 			}
@@ -220,6 +222,7 @@ Use an inline EnterpriseContractPolicy spec
 		"write output to a file. Use empty string for stdout, default behavior")
 	cmd.Flags().BoolVarP(&data.strict, "strict", "s", data.strict,
 		"return non-zero status on non-successful validation")
+	cmd.Flags().BoolVarP(&data.shortReport, "short-report", "l", data.shortReport, "print condensed output of conftest")
 
 	if len(data.input) > 0 || len(data.filePath) > 0 {
 		if err := cmd.MarkFlagRequired("image"); err != nil {
