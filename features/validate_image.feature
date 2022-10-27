@@ -107,3 +107,53 @@ Feature: evaluate enterprise contract
       ]
     }
     """
+
+  @focus
+  Scenario: multiple policy sources
+    Given a key pair named "known"
+    Given an image named "acceptance/ec-multiple-sources"
+    Given a valid image signature of "acceptance/ec-multiple-sources" image signed by the "known" key
+    Given a valid Rekor entry for image signature of "acceptance/ec-multiple-sources"
+    Given a valid attestation of "acceptance/ec-multiple-sources" signed by the "known" key
+    Given a valid Rekor entry for attestation of "acceptance/ec-multiple-sources"
+    Given a git repository named "repository1" with
+      | main.rego | examples/happy_day.rego |
+    Given a git repository named "repository2" with
+      | main.rego | examples/reject.rego |
+Given a git repository named "repository3" with
+      | main.rego | examples/warn.rego |
+    Given policy configuration named "ec-policy" with specification
+    """
+    {
+      "sources": [
+        "git::http://${GITHOST}/git/repository1.git",
+        "git::http://${GITHOST}/git/repository2.git",
+        "git::http://${GITHOST}/git/repository3.git"
+      ]
+    }
+    """
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-multiple-sources --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
+    Then the exit status should be 1
+    Then the standard output should contain
+    """
+    {
+      "success": false,
+      "components": [
+        {
+          "name": "Unnamed",
+          "containerImage": "localhost:(\\d+)/acceptance/ec-happy-day",
+          "violations": [
+            {
+              "msg": "Fails always"
+            }
+          ],
+          "warnings": [
+            {
+              "msg": "Has a warning"
+            }
+          ],
+          "success": false
+        }
+      ]
+    }
+    """

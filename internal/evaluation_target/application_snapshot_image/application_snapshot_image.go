@@ -105,10 +105,6 @@ func NewApplicationSnapshotImage(ctx context.Context, image string, ecp *ecc.Ent
 		return nil, err
 	}
 
-	// Add additional source that we need to always be there.
-	// (Temporary workaround until we figure out a better design for this.)
-	policySources = append(policySources, source.HardCodedSources()...)
-
 	log.Debug("Policy source definitions fetched")
 	for _, policySource := range policySources {
 		policySourceJson, _ := json.Marshal(policySource)

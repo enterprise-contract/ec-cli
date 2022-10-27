@@ -33,53 +33,25 @@ import (
 	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
 
+const hardCodedRequiredData = "git::https://github.com/hacbs-contract/ec-policies//data"
+
 var fs = afero.NewOsFs()
 
 type contextKey string
 
-const clientContextKey contextKey = "ec.evaluator.client"
+const runnerKey contextKey = "ec.evaluator.runner"
 
 type testRunner interface {
 	Run(context.Context, []string) ([]output.CheckResult, error)
 }
 
-func withClient(ctx context.Context, clnt testRunner) context.Context {
-	return context.WithValue(ctx, clientContextKey, clnt)
-}
-
-func newClient(ctx context.Context, c conftestEvaluator) testRunner {
-	tr, ok := ctx.Value(clientContextKey).(testRunner)
-	if ok && tr != nil {
-		return tr
-	}
-
-	return &runner.TestRunner{
-		Data: c.paths.DataPaths,
-		// c.paths.PolicyPaths is not actually needed any more since all
-		// policies are are now placed under "policy" in the workdir.
-		// Todo: Refactor and remove it.
-		// Policy:    c.paths.PolicyPaths,
-		Policy:    []string{filepath.Join(c.workDir, downloader.PolicyDir)},
-		Namespace: []string{c.namespace},
-		NoFail:    true,
-		Output:    c.outputFormat,
-	}
-}
-
 // ConftestEvaluator represents a structure which can be used to evaluate targets
 type conftestEvaluator struct {
 	policySources []source.PolicySource
-	paths         ConfigurationPaths
-	testRunner    testRunner
 	namespace     string
 	outputFormat  string
 	workDir       string
-}
-
-//ConfigurationPaths is a structs containing necessary paths for an Evaluator struct
-type ConfigurationPaths struct {
-	PolicyPaths []string
-	DataPaths   []string
+	dataDir       string
 }
 
 // NewConftestEvaluator returns initialized conftestEvaluator implementing
@@ -87,7 +59,6 @@ type ConfigurationPaths struct {
 func NewConftestEvaluator(ctx context.Context, policySources []source.PolicySource, namespace string, ecpSpec *ecc.EnterpriseContractPolicySpec) (Evaluator, error) {
 	c := conftestEvaluator{
 		policySources: policySources,
-		paths:         ConfigurationPaths{},
 		namespace:     namespace,
 		outputFormat:  "json",
 	}
@@ -100,55 +71,144 @@ func NewConftestEvaluator(ctx context.Context, policySources []source.PolicySour
 	c.workDir = dir
 	log.Debugf("Created work dir %s", dir)
 
-	err = c.addPolicyPaths(ctx)
-	if err != nil {
-		log.Debug("Failed to add policy paths!")
+	if err := c.createDataDirectory(ctx, ecpSpec); err != nil {
 		return nil, err
 	}
-	log.Debug("Added policy paths")
-
-	err = c.addDataPath(ecpSpec)
-	if err != nil {
-		log.Debug("Failed to add add data path!")
-		return nil, err
-	}
-	log.Debug("Added data path")
-
-	c.testRunner = newClient(ctx, c)
 
 	log.Debug("Conftest test runner created")
 	return c, nil
 }
 
 func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) ([]output.CheckResult, error) {
-	log.Debugf("c.testRunner: %#v", c.testRunner)
-	log.Debugf("inputs: %#v", inputs)
-	results, err := c.testRunner.Run(ctx, inputs)
-	if err != nil {
-		return nil, err
-	}
-	now := time.Now()
-	for i, result := range results {
-		failures := []output.Result{}
-		for _, failure := range result.Failures {
-			if !isResultEffective(failure, now) {
-				// TODO: Instead of moving to warnings, create new attribute: "futureViolations"
-				result.Warnings = append(result.Warnings, failure)
-			} else {
-				failures = append(failures, failure)
+	results := make([]output.CheckResult, 0, 10)
+	for _, s := range c.policySources {
+		var r testRunner
+		var ok bool
+		if r, ok = ctx.Value(runnerKey).(testRunner); r == nil || !ok {
+			policy, err := s.GetPolicy(ctx, c.workDir, false)
+			if err != nil {
+				// TODO do we want to evaluate further policies instead of erroring out?
+				return nil, err
+			}
+
+			r = &runner.TestRunner{
+				Data:      []string{c.dataDir},
+				Policy:    []string{policy},
+				Namespace: []string{c.namespace},
+				NoFail:    true,
+				Output:    c.outputFormat,
 			}
 		}
-		result.Failures = failures
-		results[i] = result
+
+		log.Debugf("runner: %#v", r)
+		log.Debugf("inputs: %#v", inputs)
+		runResults, err := r.Run(ctx, inputs)
+		if err != nil {
+			// TODO do we want to evaluate further policies instead of erroring out?
+			return nil, err
+		}
+		now := time.Now()
+		for i, result := range runResults {
+			failures := []output.Result{}
+			for _, failure := range result.Failures {
+				if !isResultEffective(failure, now) {
+					// TODO: Instead of moving to warnings, create new attribute: "futureViolations"
+					result.Warnings = append(result.Warnings, failure)
+				} else {
+					failures = append(failures, failure)
+				}
+			}
+			result.Failures = failures
+			runResults[i] = result
+		}
+
+		results = append(results, runResults...)
 	}
 
 	return results, nil
 }
 
-// addDataPath adds the appropriate data path to the ConfigurationPaths DataPaths field array.
-func (c *conftestEvaluator) addDataPath(spec *ecc.EnterpriseContractPolicySpec) error {
+// createConfigJSON creates the config.json file with the provided configuration
+// in the data directory
+func createConfigJSON(dataDir string, spec *ecc.EnterpriseContractPolicySpec) error {
+	if spec == nil {
+		return nil
+	}
+
+	configFilePath := filepath.Join(dataDir, "config.json")
+
+	var config = map[string]interface{}{
+		"config": map[string]interface{}{},
+	}
+
+	type policyConfig struct {
+		NonBlocking  *[]string `json:"non_blocking_checks,omitempty"`
+		ExcludeRules *[]string `json:"exclude_rules,omitempty"`
+		IncludeRules *[]string `json:"include_rules,omitempty"`
+		Collections  *[]string `json:"collections,omitempty"`
+	}
+	pc := &policyConfig{}
+
+	// TODO: Once the NonBlocking field has been removed, update to dump the spec.Config into an updated policyConfig struct
+	if spec.Exceptions != nil {
+		log.Debug("Non-blocking exceptions found. These will be written to file", dataDir)
+		pc.NonBlocking = &spec.Exceptions.NonBlocking
+	}
+	if spec.Configuration != nil {
+		log.Debug("Include rules found. These will be written to file", dataDir)
+		if spec.Configuration.IncludeRules != nil {
+			pc.IncludeRules = &spec.Configuration.IncludeRules
+		}
+		log.Debug("Exclude rules found. These will be written to file", dataDir)
+		if spec.Configuration.ExcludeRules != nil {
+			pc.ExcludeRules = &spec.Configuration.ExcludeRules
+		}
+		log.Debug("Collections found. These will be written to file", dataDir)
+		if spec.Configuration.Collections != nil {
+			pc.Collections = &spec.Configuration.Collections
+		}
+	}
+	// Check to see that we've actually added any values to the policyConfig struct.
+	// If so, we'll update the config map. Otherwise, this is skipped.
+	if (policyConfig{} != *pc) {
+		config["config"] = map[string]interface{}{
+			"policy": pc,
+		}
+	}
+
+	configJSON, err := json.MarshalIndent(config, "", "    ")
+	if err != nil {
+		return err
+	}
+	// Check to see if the data.json file exists
+	exists, err := afero.Exists(fs, configFilePath)
+	if err != nil {
+		return err
+	}
+	// if so, remove it
+	if exists {
+		if err := fs.Remove(configFilePath); err != nil {
+			return err
+		}
+	}
+	// write our jsonData content to the data.json file in the data directory under the workDir
+	log.Debugf("Writing config data to %s: %#v", configFilePath, string(configJSON))
+	if err := afero.WriteFile(fs, configFilePath, configJSON, 0444); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// createHardCodedData downloads the hardcoded data to the data directory
+// TODO remove the need for this
+func createHardCodedData(ctx context.Context, dataDir string) error {
+	return downloader.Download(ctx, dataDir, hardCodedRequiredData, false)
+}
+
+// createDataDirectory creates the base content in the data directory
+func (c *conftestEvaluator) createDataDirectory(ctx context.Context, spec *ecc.EnterpriseContractPolicySpec) error {
 	dataDir := filepath.Join(c.workDir, "data")
-	dataFilePath := filepath.Join(dataDir, "data.json")
 	exists, err := afero.DirExists(fs, dataDir)
 	if err != nil {
 		return err
@@ -158,84 +218,16 @@ func (c *conftestEvaluator) addDataPath(spec *ecc.EnterpriseContractPolicySpec) 
 		_ = fs.MkdirAll(dataDir, 0755)
 	}
 
-	var config = map[string]interface{}{
-		"config": map[string]interface{}{},
-	}
+	c.dataDir = dataDir
 
-	if spec != nil {
-		type policyConfig struct {
-			NonBlocking  *[]string `json:"non_blocking_checks,omitempty"`
-			ExcludeRules *[]string `json:"exclude_rules,omitempty"`
-			IncludeRules *[]string `json:"include_rules,omitempty"`
-			Collections  *[]string `json:"collections,omitempty"`
-		}
-		pc := &policyConfig{}
-
-		// TODO: Once the NonBlocking field has been removed, update to dump the spec.Config into an updated policyConfig struct
-		if spec.Exceptions != nil {
-			log.Debug("Non-blocking exceptions found. These will be written to file", dataDir)
-			pc.NonBlocking = &spec.Exceptions.NonBlocking
-		}
-		if spec.Configuration != nil {
-			log.Debug("Include rules found. These will be written to file", dataDir)
-			if spec.Configuration.IncludeRules != nil {
-				pc.IncludeRules = &spec.Configuration.IncludeRules
-			}
-			log.Debug("Exclude rules found. These will be written to file", dataDir)
-			if spec.Configuration.ExcludeRules != nil {
-				pc.ExcludeRules = &spec.Configuration.ExcludeRules
-			}
-			log.Debug("Collections found. These will be written to file", dataDir)
-			if spec.Configuration.Collections != nil {
-				pc.Collections = &spec.Configuration.Collections
-			}
-		}
-		// Check to see that we've actually added any values to the policyConfig struct.
-		// If so, we'll update the config map. Otherwise, this is skipped.
-		if (policyConfig{} != *pc) {
-			config["config"] = map[string]interface{}{
-				"policy": pc,
-			}
-		}
-	}
-
-	jsonData, marshalErr := json.MarshalIndent(config, "", "    ")
-	if marshalErr != nil {
-		return err
-	}
-	// Check to see if the data.json file exists
-	exists, err = afero.Exists(fs, dataFilePath)
-	if err != nil {
-		return err
-	}
-	// if so, remove it
-	if exists {
-		err = fs.Remove(dataFilePath)
-		if err != nil {
-			return err
-		}
-	}
-	// write our jsonData content to the data.json file in the data directory under the workDir
-	log.Debugf("Writing config data to %s: %#v", dataFilePath, string(jsonData))
-	err = afero.WriteFile(fs, dataFilePath, jsonData, 0777)
-	if err != nil {
+	if err := createConfigJSON(dataDir, spec); err != nil {
 		return err
 	}
 
-	c.paths.DataPaths = append(c.paths.DataPaths, dataDir)
-
-	return nil
-}
-
-// addPolicyPaths adds the appropriate policy path to the ConfigurationPaths PolicyPaths field array
-func (c *conftestEvaluator) addPolicyPaths(ctx context.Context) error {
-	for _, policy := range c.policySources {
-		log.Debugf("Policy source: %#v", policy)
-		err := policy.GetPolicies(ctx, c.workDir, false)
-		if err != nil {
-			return err
-		}
+	if err := createHardCodedData(ctx, dataDir); err != nil {
+		return err
 	}
+
 	return nil
 }
 
