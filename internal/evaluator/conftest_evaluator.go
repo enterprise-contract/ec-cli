@@ -33,6 +33,8 @@ import (
 	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
 
+var fs = afero.NewOsFs()
+
 type contextKey string
 
 const clientContextKey contextKey = "ec.evaluator.client"
@@ -90,7 +92,7 @@ func NewConftestEvaluator(ctx context.Context, policySources []source.PolicySour
 		outputFormat:  "json",
 	}
 
-	dir, err := utils.CreateWorkDir()
+	dir, err := utils.CreateWorkDir(fs)
 	if err != nil {
 		log.Debug("Failed to create work dir!")
 		return nil, err
@@ -147,13 +149,13 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) ([]out
 func (c *conftestEvaluator) addDataPath(spec *ecc.EnterpriseContractPolicySpec) error {
 	dataDir := filepath.Join(c.workDir, "data")
 	dataFilePath := filepath.Join(dataDir, "data.json")
-	exists, err := afero.DirExists(utils.AppFS, dataDir)
+	exists, err := afero.DirExists(fs, dataDir)
 	if err != nil {
 		return err
 	}
 	if !exists {
 		log.Debugf("Data dir '%s' does not exist, will create.", dataDir)
-		_ = utils.AppFS.MkdirAll(dataDir, 0755)
+		_ = fs.MkdirAll(dataDir, 0755)
 	}
 
 	var config = map[string]interface{}{
@@ -202,20 +204,20 @@ func (c *conftestEvaluator) addDataPath(spec *ecc.EnterpriseContractPolicySpec) 
 		return err
 	}
 	// Check to see if the data.json file exists
-	exists, err = afero.Exists(utils.AppFS, dataFilePath)
+	exists, err = afero.Exists(fs, dataFilePath)
 	if err != nil {
 		return err
 	}
 	// if so, remove it
 	if exists {
-		err = utils.AppFS.Remove(dataFilePath)
+		err = fs.Remove(dataFilePath)
 		if err != nil {
 			return err
 		}
 	}
 	// write our jsonData content to the data.json file in the data directory under the workDir
 	log.Debugf("Writing config data to %s: %#v", dataFilePath, string(jsonData))
-	err = afero.WriteFile(utils.AppFS, dataFilePath, jsonData, 0777)
+	err = afero.WriteFile(fs, dataFilePath, jsonData, 0777)
 	if err != nil {
 		return err
 	}

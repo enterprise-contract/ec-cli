@@ -71,15 +71,15 @@ func Test_DetermineInputSpec(t *testing.T) {
 		},
 	}
 
-	savedReadfile := readFile
-	defer func() { readFile = savedReadfile }()
-
-	readFile = func(fs afero.Fs, filename string) ([]byte, error) {
-		return testJson, nil
-	}
+	fs = afero.NewMemMapFs()
 
 	for i, tc := range tests {
 		t.Run(fmt.Sprintf("DetermineInputSpec=%d", i), func(t *testing.T) {
+			if tc.filePath != "" {
+				if err := afero.WriteFile(fs, tc.filePath, []byte(testJson), 0400); err != nil {
+					panic(err)
+				}
+			}
 
 			got, err := DetermineInputSpec(tc.filePath, tc.input, tc.imageRef)
 			// expect an error so check for nil

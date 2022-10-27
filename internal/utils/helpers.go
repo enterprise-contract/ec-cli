@@ -25,11 +25,6 @@ import (
 	"github.com/spf13/afero"
 )
 
-var (
-	AppFS        = afero.NewOsFs()
-	CreateTmpDir = afero.TempDir
-)
-
 // ToJSON converts a single YAML document into a JSON document
 // or returns an error. If the document appears to be JSON the
 // YAML decoding path is not used.
@@ -55,8 +50,8 @@ func hasPrefix(buf []byte, prefix []byte) bool {
 }
 
 // CreateWorkDir creates the working directory in tmp and some subdirectories
-func CreateWorkDir() (string, error) {
-	workDir, err := CreateTmpDir(AppFS, afero.GetTempDir(AppFS, ""), "ec-work-")
+func CreateWorkDir(fs afero.Fs) (string, error) {
+	workDir, err := afero.TempDir(fs, afero.GetTempDir(fs, ""), "ec-work-")
 	if err != nil {
 		return "", err
 	}
@@ -68,7 +63,7 @@ func CreateWorkDir() (string, error) {
 		// Later maybe
 		//"input",
 	} {
-		err := AppFS.Mkdir(filepath.Join(workDir, d), 0o755)
+		err := fs.Mkdir(filepath.Join(workDir, d), 0o755)
 		if err != nil {
 			return "", err
 		}

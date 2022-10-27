@@ -23,18 +23,16 @@ import (
 	appstudioshared "github.com/redhat-appstudio/managed-gitops/appstudio-shared/apis/appstudio.redhat.com/v1alpha1"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
-
-	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
 
-var readFile = afero.ReadFile
+var fs = afero.NewOsFs()
 
 func DetermineInputSpec(filePath string, input string, imageRef string) (*appstudioshared.ApplicationSnapshotSpec, error) {
 	var appSnapshot appstudioshared.ApplicationSnapshotSpec
 
 	// read ApplicationSnapshot provided as a file
 	if len(filePath) > 0 {
-		content, err := readFile(utils.AppFS, filePath)
+		content, err := afero.ReadFile(fs, filePath)
 		if err != nil {
 			log.Debugf("Problem reading application snapshot from file %s", filePath)
 			return nil, err

@@ -19,6 +19,7 @@ package cmd
 
 import (
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
@@ -78,7 +79,7 @@ Notes:
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if useWorkDir {
-				workDir, err := utils.CreateWorkDir()
+				workDir, err := utils.CreateWorkDir(afero.NewOsFs())
 				if err != nil {
 					log.Debug("Failed to create work dir!")
 					return err

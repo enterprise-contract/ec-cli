@@ -23,6 +23,7 @@ import (
 	"testing"
 
 	"github.com/spf13/afero"
+	"github.com/stretchr/testify/assert"
 )
 
 var testJSONPipelineData = `{
@@ -54,9 +55,6 @@ var testHasPrefixData = `[
   this is a test
 ]`
 
-func createTmpDirMock(appFS afero.Fs, path string, _ string) (name string, err error) {
-	return "/tmp/workdir-1234", appFS.MkdirAll(path, 0755)
-}
 func TestToJSON(t *testing.T) {
 	type args struct {
 		data []byte
@@ -160,29 +158,8 @@ func Test_hasPrefix(t *testing.T) {
 	}
 }
 func TestCreateWorkDir(t *testing.T) {
-	tests := []struct {
-		name    string
-		want    string
-		wantErr bool
-	}{
-		{
-			name:    "Returns the correct work dir",
-			want:    "/tmp/workdir-1234",
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		AppFS = afero.NewMemMapFs()
-		CreateTmpDir = createTmpDirMock
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := CreateWorkDir()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("CreateWorkDir() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("CreateWorkDir() got = %v, want %v", got, tt.want)
-			}
-		})
-	}
+	temp, err := CreateWorkDir(afero.NewMemMapFs())
+
+	assert.NoError(t, err)
+	assert.Regexpf(t, `/tmp/ec-work-\d+`, temp, "Did not expect temp directory at: %s", temp)
 }
