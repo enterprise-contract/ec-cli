@@ -2,15 +2,16 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "ec eval (single-nodejs-app)",
+            "name": "ec validate image (single-nodejs-app)",
             "type": "go",
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/main.go",
             "args": [
-                "eval",
+                "validate",
+                "image",
                 "--image",
-                "quay.io/hacbs-contract-demo/single-nodejs-app:120e9a3",
+                "quay.io/hacbs-contract-demo/single-nodejs-app:abcbdfd92a75f7bba3ab97538b1324bf4677c1fb3eb82ca59cbd8970b3759b7e",
                 "--public-key",
                 "${workspaceFolder}/hack/cosign.pub",
                 "--policy",
@@ -22,7 +23,11 @@
             "type": "go",
             "request": "launch",
             "mode": "test",
-            "program": "${workspaceFolder}/internal/acceptance"
+            "program": "${workspaceFolder}/internal/acceptance",
+            "buildFlags": "-tags=acceptance",
+            "args": [
+                "-tags=@focus"
+            ]
         },
         {
             "name": "Acceptance tests (persist environment)",
@@ -30,6 +35,7 @@
             "request": "launch",
             "mode": "test",
             "program": "${workspaceFolder}/internal/acceptance",
+            "buildFlags": "-tags=acceptance",
             "args": [
                 "-persist"
             ]
@@ -40,6 +46,7 @@
             "request": "launch",
             "mode": "test",
             "program": "${workspaceFolder}/internal/acceptance",
+            "buildFlags": "-tags=acceptance",
             "args": [
                 "-restore"
             ]
