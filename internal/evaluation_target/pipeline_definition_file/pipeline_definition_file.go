@@ -24,10 +24,10 @@ import (
 
 	"github.com/hacbs-contract/ec-cli/internal/evaluator"
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
-	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
 
 var newConftestEvaluator = evaluator.NewConftestEvaluator
+var fs = afero.NewOsFs()
 
 // DefinitionFile represents the structure needed to evaluate a pipeline definition file
 type DefinitionFile struct {
@@ -37,7 +37,7 @@ type DefinitionFile struct {
 
 // NewPipelineDefinitionFile returns a DefinitionFile struct with FPath and evaluator ready to use
 func NewPipelineDefinitionFile(ctx context.Context, fpath string, policyUrl source.PolicyUrl, namespace string) (*DefinitionFile, error) {
-	exists, err := afero.Exists(utils.AppFS, fpath)
+	exists, err := afero.Exists(fs, fpath)
 	if err != nil {
 		return nil, err
 	}
