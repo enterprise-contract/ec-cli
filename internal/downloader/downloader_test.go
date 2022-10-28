@@ -18,66 +18,57 @@ package downloader
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
-var mockCalled bool
-var mockArgs string
-
-func mockCtdlDownload(_ context.Context, dst string, urls []string) error {
-	mockCalled = true
-	mockArgs = fmt.Sprintf("%v, %v", dst, urls)
-	return nil
+type mockDownloader struct {
+	mock.Mock
 }
 
-func mockUniqueDir(_ string) string {
-	return "123456"
+func (m *mockDownloader) Download(ctx context.Context, dest string, sourceUrls []string) error {
+	args := m.Called(ctx, dest, sourceUrls)
+
+	return args.Error(0)
 }
 
 func TestDownloader_Download(t *testing.T) {
-	CtdlDownload = mockCtdlDownload
-	UniqueDir = mockUniqueDir
-
 	tests := []struct {
-		name      string
-		downloadF func(context.Context, string, string, bool) error
-		dest      string
-		source    string
-		wantArgs  string
+		name   string
+		dest   string
+		source string
+		err    error
 	}{
 		{
-			name:      "Download",
-			downloadF: Download,
-			dest:      "dir",
-			source:    "example.com/repo.git",
-			wantArgs:  "dir, [example.com/repo.git]",
+			name:   "Downloads",
+			dest:   "dir",
+			source: "example.com/repo.git",
 		},
 		{
-			name:      "DownloadPolicy",
-			downloadF: DownloadPolicy,
-			dest:      "dir",
-			source:    "example.com/repo//somedir",
-			wantArgs:  "dir/policy/123456, [example.com/repo//somedir]",
-		},
-		{
-			name:      "DownloadData",
-			downloadF: DownloadData,
-			dest:      "dir",
-			source:    "example.com/repo//somedir",
-			wantArgs:  "dir/data/123456, [example.com/repo//somedir]",
+			name:   "Fails to download",
+			dest:   "dir",
+			source: "example.com/repo.git",
+			err:    errors.New("expected"),
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := tt.downloadF(context.TODO(), tt.dest, tt.source, true)
+			d := mockDownloader{}
+			ctx := WithDownloadImpl(context.TODO(), &d)
+			d.On("Download", ctx, tt.dest, []string{tt.source}).Return(tt.err)
 
-			assert.Nil(t, err, "Unexpected error")
-			assert.True(t, mockCalled, "Download not called")
-			assert.Equal(t, mockArgs, tt.wantArgs, "Download called with unexpected args")
+			err := Download(ctx, tt.dest, tt.source, false)
+			if tt.err == nil {
+				assert.NoError(t, err)
+			} else {
+				assert.EqualError(t, err, tt.err.Error())
+			}
+
+			mock.AssertExpectationsForObjects(t, &d)
 		})
 	}
 
@@ -104,28 +95,6 @@ func TestDownloader_ProbablyGoGetterFormat(t *testing.T) {
 	for _, u := range trueUrls {
 		t.Run(u, func(t *testing.T) {
 			assert.True(t, ProbablyGoGetterFormat(u))
-		})
-	}
-}
-
-func TestDownloader_ProbablyDataSource(t *testing.T) {
-	falseUrls := []string{
-		"github.com/hacbs-contract/ec-policies//policy",
-		"github.com/hacbs-contract/ec-policies?ref=devel",
-	}
-	for _, u := range falseUrls {
-		t.Run(u, func(t *testing.T) {
-			assert.False(t, ProbablyDataSource(u))
-		})
-	}
-
-	trueUrls := []string{
-		"github.com/hacbs-contract/ec-policies//data",
-		"github.com/some/repo//other/data?ref=devel",
-	}
-	for _, u := range trueUrls {
-		t.Run(u, func(t *testing.T) {
-			assert.True(t, ProbablyDataSource(u))
 		})
 	}
 }

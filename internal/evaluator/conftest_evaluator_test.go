@@ -18,20 +18,50 @@ package evaluator
 
 import (
 	"context"
+	"os"
+	"regexp"
 	"testing"
 
 	"github.com/open-policy-agent/conftest/output"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
+	"github.com/hacbs-contract/ec-cli/internal/downloader"
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
 )
 
-type fakeClient struct {
-	results []output.CheckResult
+type mockTestRunner struct {
+	mock.Mock
 }
 
-func (c *fakeClient) Run(ctx context.Context, fileList []string) ([]output.CheckResult, error) {
-	return c.results, nil
+func (m *mockTestRunner) Run(ctx context.Context, inputs []string) ([]output.CheckResult, error) {
+	args := m.Called(ctx, inputs)
+
+	return args.Get(0).([]output.CheckResult), args.Error(1)
+}
+
+func withTestRunner(ctx context.Context, clnt testRunner) context.Context {
+	return context.WithValue(ctx, runnerKey, clnt)
+}
+
+type testPolicySource struct{}
+
+func (t testPolicySource) GetPolicy(ctx context.Context, dest string, showMsg bool) (string, error) {
+	return "test-policy-path", nil
+}
+
+func (t testPolicySource) PolicyUrl() string {
+	return "test-url"
+}
+
+type mockDownloader struct {
+	mock.Mock
+}
+
+func (m *mockDownloader) Download(ctx context.Context, dest string, urls []string) error {
+	args := m.Called(ctx, dest, urls)
+
+	return args.Error(0)
 }
 
 func TestConftestEvaluatorEvaluate(t *testing.T) {
@@ -121,10 +151,30 @@ func TestConftestEvaluatorEvaluate(t *testing.T) {
 		},
 	}
 
-	ctx := withClient(context.Background(), &fakeClient{results: results})
-	evaluator, err := NewConftestEvaluator(ctx, []source.PolicySource{}, "release.main", nil)
+	r := mockTestRunner{}
+
+	dl := mockDownloader{}
+
+	inputs := []string{"inputs"}
+
+	ctx := downloader.WithDownloadImpl(withTestRunner(context.Background(), &r), &dl)
+
+	r.On("Run", ctx, inputs).Return(results, nil)
+
+	workDirData := regexp.MustCompile(`/tmp/ec-work-\d+/data`)
+	// download of hardcoded data
+	dl.On("Download", ctx, mock.MatchedBy(workDirData.MatchString), []string{hardCodedRequiredData}).Return(nil)
+
+	evaluator, err := NewConftestEvaluator(ctx, []source.PolicySource{
+		testPolicySource{},
+	}, "release.main", nil)
+
+	t.Cleanup(func() {
+		_ = os.RemoveAll(evaluator.(conftestEvaluator).workDir)
+	})
+
 	assert.NoError(t, err)
-	actualResults, err := evaluator.Evaluate(ctx, []string{})
+	actualResults, err := evaluator.Evaluate(ctx, inputs)
 	assert.NoError(t, err)
 	assert.Equal(t, expectedResults, actualResults)
 }

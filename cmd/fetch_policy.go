@@ -91,7 +91,7 @@ Notes:
 				// Do everything the same way that it would be done when an image validation happens
 				policyUrl := source.PolicyUrl(s)
 				policySource := &policyUrl
-				err := policySource.GetPolicies(cmd.Context(), destDir, true)
+				_, err := policySource.GetPolicy(cmd.Context(), destDir, true)
 				if err != nil {
 					return err
 				}

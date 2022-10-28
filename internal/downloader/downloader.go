@@ -20,70 +20,48 @@ package downloader
 
 import (
 	"context"
-	"crypto/md5"
 	"fmt"
-	"path/filepath"
 	"regexp"
-	"time"
 
-	ctdl "github.com/open-policy-agent/conftest/downloader"
+	"github.com/open-policy-agent/conftest/downloader"
 	log "github.com/sirupsen/logrus"
 )
 
-// To facilitate testing
-var CtdlDownload = ctdl.Download
-var UniqueDir = uniqueDir
+type key int
+
+const downloadImplKey key = 0
+
+type downloadImpl interface {
+	Download(context.Context, string, []string) error
+}
+
+// WithDownloadImpl replaces the downloadImpl implementation used
+func WithDownloadImpl(ctx context.Context, d downloadImpl) context.Context {
+	return context.WithValue(ctx, downloadImplKey, d)
+}
 
 // Download is used to download files from various sources.
 //
 // Note that it handles just one url at a time even though the equivalent
 // Conftest function can take a list of source urls.
-func Download(ctx context.Context, destDir string, sourceUrl string, showMsg bool) error {
+func Download(ctx context.Context, destDir string, sourceUrl string, showMsg bool) (err error) {
 	msg := fmt.Sprintf("Downloading %s to %s", sourceUrl, destDir)
 	log.Debug(msg)
 	if showMsg {
 		fmt.Println(msg)
 	}
-	err := CtdlDownload(ctx, destDir, []string{sourceUrl})
+
+	if d, ok := ctx.Value(downloadImplKey).(downloadImpl); ok {
+		err = d.Download(ctx, destDir, []string{sourceUrl})
+	} else {
+		err = downloader.Download(ctx, destDir, []string{sourceUrl})
+	}
+
 	if err != nil {
 		log.Debug("Download failed!")
 	}
-	return err
-}
 
-// Download files from various sources into a unique directory.
-//
-// It's the same as Download but we'll add an additional unique-ish directory
-// to make sure we don't get a name clash
-func DownloadUnique(ctx context.Context, destDir string, sourceUrl string, showMsg bool) error {
-	return Download(ctx, filepath.Join(destDir, UniqueDir(sourceUrl)), sourceUrl, showMsg)
-}
-
-var PolicyDir = "policy"
-
-// Download policies to the work dir
-func DownloadPolicy(ctx context.Context, workDir string, sourceUrl string, showMsg bool) error {
-	return DownloadUnique(ctx, filepath.Join(workDir, PolicyDir), sourceUrl, showMsg)
-}
-
-var DataDir = "data"
-
-func DownloadData(ctx context.Context, workDir string, sourceUrl string, showMsg bool) error {
-	return DownloadUnique(ctx, filepath.Join(workDir, DataDir), sourceUrl, showMsg)
-}
-
-// For later maybe...
-//
-//var InputDir = "input"
-//
-//func DownloadInput(ctx context.Context, workDir string, sourceUrl string, showMsg bool) error {
-//	return DownloadUnique(ctx, filepath.Join(workDir, InputDir), sourceUrl, showMsg)
-//}
-
-// Generate a reasonably unique string using an md5 sum with a timestamp appended to
-// the input for some extra randomness
-func uniqueDir(input string) string {
-	return fmt.Sprintf("%x", md5.Sum([]byte(fmt.Sprintf("%s/%s", input, time.Now()))))[:9]
+	return
 }
 
 // Try to guess if the source url is a go-getter format url or not.
@@ -106,30 +84,6 @@ func ProbablyGoGetterFormat(sourceUrl string) bool {
 		`\?.*(ref|sshkey)=`,
 	}
 
-	for _, m := range matchers {
-		match, err := regexp.MatchString(m, sourceUrl)
-		if err != nil {
-			panic(err)
-		}
-		if match {
-			return true
-		}
-	}
-	return false
-}
-
-// Try to guess if the source url is referring to data (json or yaml
-// files) instead of policies (rego files)
-//
-// The one url it needs to work for in the short term is this:
-//   "github.com/hacbs-contract/ec-policies/data"
-// Todo: This should be removed as soon as we have a more robust way
-// to differentiate policy sources from data sources.
-func ProbablyDataSource(sourceUrl string) bool {
-	matchers := []string{
-		`/.*//data`,
-		`/.*//.*/data`,
-	}
 	for _, m := range matchers {
 		match, err := regexp.MatchString(m, sourceUrl)
 		if err != nil {
