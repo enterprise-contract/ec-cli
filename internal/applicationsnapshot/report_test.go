@@ -32,7 +32,7 @@ import (
 //go:embed test_snapshot.json
 var testSnapshot string
 
-func Test_Report(t *testing.T) {
+func Test_FullReport(t *testing.T) {
 	var snapshot *appstudioshared.ApplicationSnapshotSpec
 	err := json.Unmarshal([]byte(testSnapshot), &snapshot)
 	if err != nil {
@@ -77,7 +77,7 @@ func Test_Report(t *testing.T) {
 		components = append(components, c)
 	}
 
-	report, _, success := Report(components)
+	report, _, success := NewReport(components, false)
 	assert.JSONEq(t, expected, report)
 	assert.True(t, success)
 
@@ -117,7 +117,144 @@ func Test_Report(t *testing.T) {
     }
   `
 	components = append(components, Component{Success: false})
-	report, _, success = Report(components)
+	report, _, success = NewReport(components, false)
 	assert.JSONEq(t, expected, report)
 	assert.False(t, success)
+}
+
+func Test_ShortReport(t *testing.T) {
+	tests := []struct {
+		name  string
+		input Component
+		want  shortReport
+	}{
+		{
+			"testing one violation and warning",
+			Component{
+				Violations: []output.Result{
+					{
+						Message: "short report",
+						Metadata: map[string]interface{}{
+							"code": "short_name",
+						},
+					},
+				},
+				Warnings: []output.Result{
+					{
+						Message: "short report",
+						Metadata: map[string]interface{}{
+							"code": "short_name",
+						},
+					},
+				},
+				Success: false,
+			},
+			shortReport{
+				Components: []shortComponent{
+					{
+						Violations: map[string][]string{
+							"short_name": {"short report"},
+						},
+						Warnings: map[string][]string{
+							"short_name": {"short report"},
+						},
+						TotalViolations: 1,
+						TotalWarnings:   1,
+						Success:         false,
+						Name:            "",
+					},
+				},
+				Success: false,
+			},
+		},
+		{
+			"testing no metadata",
+			Component{
+				Violations: []output.Result{
+					{
+						Message: "short report",
+					},
+				},
+				Warnings: []output.Result{
+					{
+						Message: "short report",
+					},
+				},
+				Success: false,
+			},
+			shortReport{
+				Components: []shortComponent{
+					{
+						Violations:      map[string][]string{},
+						Warnings:        map[string][]string{},
+						TotalViolations: 1,
+						TotalWarnings:   1,
+						Success:         false,
+						Name:            "",
+					},
+				},
+				Success: false,
+			},
+		},
+		{
+			"testing multiple violations and warnings",
+			Component{
+				Violations: []output.Result{
+					{
+						Message: "short report",
+						Metadata: map[string]interface{}{
+							"code": "short_name",
+						},
+					},
+					{
+						Message: "short report",
+						Metadata: map[string]interface{}{
+							"code": "short_name",
+						},
+					},
+				},
+				Warnings: []output.Result{
+					{
+						Message: "short report",
+						Metadata: map[string]interface{}{
+							"code": "short_name",
+						},
+					},
+					{
+						Message: "short report",
+						Metadata: map[string]interface{}{
+							"code": "short_name",
+						},
+					},
+				},
+				Success: false,
+			},
+			shortReport{
+				Components: []shortComponent{
+					{
+						Violations: map[string][]string{
+							"short_name": {"short report", "There are 1 more \"short_name\" messages"},
+						},
+						Warnings: map[string][]string{
+							"short_name": {"short report", "There are 1 more \"short_name\" messages"},
+						},
+						TotalViolations: 2,
+						TotalWarnings:   2,
+						Success:         false,
+						Name:            "",
+					},
+				},
+				Success: false,
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(fmt.Sprintf("NewReport=%s", tc.name), func(t *testing.T) {
+			msg, _, _ := NewReport([]Component{tc.input}, true)
+			assertedMsg, _ := json.Marshal(tc.want)
+			assert.Equal(t, string(assertedMsg), msg)
+		})
+	}
+
 }
