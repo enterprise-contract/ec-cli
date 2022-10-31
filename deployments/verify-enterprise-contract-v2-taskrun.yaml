@@ -1,0 +1,44 @@
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  annotations:
+    pipeline.tekton.dev/release: 9221ac3-dirty
+    tekton.dev/displayName: Verify Enterprise Contract V2
+    tekton.dev/pipelines.minVersion: "0.19"
+    tekton.dev/tags: ec, chains, signature, conftest
+  creationTimestamp: null
+  generateName: verify-enterprise-contract-v2-run-
+  generation: 1
+  labels:
+    app.kubernetes.io/managed-by: tekton-pipelines
+    app.kubernetes.io/version: "0.2"
+    tekton.dev/task: verify-enterprise-contract-v2
+spec:
+  params:
+  - name: HOMEDIR
+    value: /tekton/home
+  - name: IMAGES
+    value: |
+      {
+        "components": [
+          {
+            "containerImage": "quay.io/hacbs-contract-demo/single-container-app@sha256:84550a596e40024e6ea10ce5aab9ad5b0b91a14cb27161654722ab1d11c70ac2"
+          }
+        ]
+      }
+  - name: POLICY_CONFIGURATION
+    value: $(context.taskRun.namespace)/ec-policy
+  - name: PUBLIC_KEY
+    value: k8s://$(context.taskRun.namespace)/cosign-public-key
+  - name: REKOR_HOST
+    value: ""
+  - name: SSL_CERT_DIR
+    value: ""
+  - name: STRICT
+    value: "false"
+  resources: {}
+  serviceAccountName: default
+  taskRef:
+    kind: Task
+    name: verify-enterprise-contract-v2
+  timeout: 1h0m0s
