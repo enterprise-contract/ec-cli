@@ -47,7 +47,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		output              string
 		spec                *appstudioshared.ApplicationSnapshotSpec
 		policy              *ecc.EnterpriseContractPolicySpec
-		shortReport         bool
+		summary             bool
 	}{
 		policyConfiguration: "ec-policy",
 	}
@@ -99,6 +99,10 @@ Return a non-zero status code on validation failure:
 
   ec validate image --image registry/name:tag --strict
 
+Return a summary of test results:
+
+  ec validate image --image registry/name:tag --policy my-policy --summary
+
 Use an EnterpriseContractPolicy resource from the currently active kubernetes context:
 
   ec validate image --image registry/name:tag --policy my-policy
@@ -106,7 +110,11 @@ Use an EnterpriseContractPolicy resource from the currently active kubernetes co
 Use an EnterpriseContractPolicy resource from a different namespace:
 
   ec validate image --image registry/name:tag --policy my-namespace/my-policy
+  
+Use an EnterpriseContractPolicy resource from a different namespace:
 
+  ec validate image --image registry/name:tag --policy my-namespace/my-policy
+  
 Use an inline EnterpriseContractPolicy spec
   ec validate image --image registry/name:tag --policy '{"publicKey": "<path/to/public/key>"}'`,
 		PreRunE: func(cmd *cobra.Command, args []string) (allErrors error) {
@@ -181,7 +189,7 @@ Use an inline EnterpriseContractPolicy spec
 				}
 			}
 
-			report, err, success := applicationsnapshot.NewReport(components, data.shortReport)
+			report, err, success := applicationsnapshot.NewReport(components, data.summary)
 
 			if allErrors != nil {
 				return multierror.Append(allErrors, err)
@@ -222,7 +230,7 @@ Use an inline EnterpriseContractPolicy spec
 		"write output to a file. Use empty string for stdout, default behavior")
 	cmd.Flags().BoolVarP(&data.strict, "strict", "s", data.strict,
 		"return non-zero status on non-successful validation")
-	cmd.Flags().BoolVarP(&data.shortReport, "short-report", "l", data.shortReport, "print condensed output of conftest")
+	cmd.Flags().BoolVarP(&data.summary, "summary", "c", data.summary, "print condensed output of conftest")
 
 	if len(data.input) > 0 || len(data.filePath) > 0 {
 		if err := cmd.MarkFlagRequired("image"); err != nil {

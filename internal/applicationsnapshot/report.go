@@ -31,17 +31,17 @@ type Component struct {
 	Success    bool            `json:"success"`
 }
 
-type fullReport struct {
+type report struct {
 	Success    bool        `json:"success"`
 	Components []Component `json:"components"`
 }
 
-type shortReport struct {
-	Components []shortComponent `json:"components"`
-	Success    bool             `json:"success"`
+type summary struct {
+	Components []componentSummary `json:"components"`
+	Success    bool               `json:"success"`
 }
 
-type shortComponent struct {
+type componentSummary struct {
 	Name            string              `json:"name"`
 	Success         bool                `json:"success"`
 	Violations      map[string][]string `json:"violations"`
@@ -50,31 +50,28 @@ type shortComponent struct {
 	TotalWarnings   int                 `json:"total_warnings"`
 }
 
-func NewReport(components []Component, shortReport bool) (string, error, bool) {
+func NewReport(components []Component, reportSummary bool) (string, error, bool) {
 	var j []byte
 	var err error
-	var success bool
-	if shortReport {
-		report := condensedReport(components)
-		success = report.Success
-		j, err = json.Marshal(report)
-		if err != nil {
-			return "", err, false
-		}
-	} else {
-		report := report(components)
-		success = report.Success
-		j, err = json.Marshal(report)
-		if err != nil {
-			return "", err, false
-		}
 
+	report := Report(components)
+	success := report.Success
+
+	if reportSummary {
+		j, err = json.Marshal(report.reportSummary())
+	} else {
+		j, err = json.Marshal(report)
 	}
+
+	if err != nil {
+		return "", err, false
+	}
+
 	return string(j), nil, success
 }
 
 // Report the states of components from the snapshot
-func report(components []Component) fullReport {
+func Report(components []Component) report {
 	success := true
 
 	// Set the report success, remains true if all components are successful
@@ -85,7 +82,7 @@ func report(components []Component) fullReport {
 		}
 	}
 
-	output := fullReport{
+	output := report{
 		Success:    success,
 		Components: components,
 	}
@@ -93,13 +90,13 @@ func report(components []Component) fullReport {
 }
 
 // a report with condensed error messaging
-func condensedReport(components []Component) shortReport {
-	var pr shortReport
-	for _, cmp := range components {
+func (r *report) reportSummary() summary {
+	var pr summary
+	for _, cmp := range r.Components {
 		if !cmp.Success {
 			pr.Success = false
 		}
-		c := shortComponent{
+		c := componentSummary{
 			TotalViolations: len(cmp.Violations),
 			TotalWarnings:   len(cmp.Warnings),
 			Success:         cmp.Success,

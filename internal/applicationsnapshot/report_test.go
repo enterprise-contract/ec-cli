@@ -122,11 +122,11 @@ func Test_FullReport(t *testing.T) {
 	assert.False(t, success)
 }
 
-func Test_ShortReport(t *testing.T) {
+func Test_ReportSummary(t *testing.T) {
 	tests := []struct {
 		name  string
 		input Component
-		want  shortReport
+		want  summary
 	}{
 		{
 			"testing one violation and warning",
@@ -149,8 +149,8 @@ func Test_ShortReport(t *testing.T) {
 				},
 				Success: false,
 			},
-			shortReport{
-				Components: []shortComponent{
+			summary{
+				Components: []componentSummary{
 					{
 						Violations: map[string][]string{
 							"short_name": {"short report"},
@@ -182,8 +182,8 @@ func Test_ShortReport(t *testing.T) {
 				},
 				Success: false,
 			},
-			shortReport{
-				Components: []shortComponent{
+			summary{
+				Components: []componentSummary{
 					{
 						Violations:      map[string][]string{},
 						Warnings:        map[string][]string{},
@@ -229,8 +229,8 @@ func Test_ShortReport(t *testing.T) {
 				},
 				Success: false,
 			},
-			shortReport{
-				Components: []shortComponent{
+			summary{
+				Components: []componentSummary{
 					{
 						Violations: map[string][]string{
 							"short_name": {"short report", "There are 1 more \"short_name\" messages"},
