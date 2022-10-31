@@ -110,11 +110,7 @@ Use an EnterpriseContractPolicy resource from the currently active kubernetes co
 Use an EnterpriseContractPolicy resource from a different namespace:
 
   ec validate image --image registry/name:tag --policy my-namespace/my-policy
-  
-Use an EnterpriseContractPolicy resource from a different namespace:
 
-  ec validate image --image registry/name:tag --policy my-namespace/my-policy
-  
 Use an inline EnterpriseContractPolicy spec
   ec validate image --image registry/name:tag --policy '{"publicKey": "<path/to/public/key>"}'`,
 		PreRunE: func(cmd *cobra.Command, args []string) (allErrors error) {
@@ -230,7 +226,8 @@ Use an inline EnterpriseContractPolicy spec
 		"write output to a file. Use empty string for stdout, default behavior")
 	cmd.Flags().BoolVarP(&data.strict, "strict", "s", data.strict,
 		"return non-zero status on non-successful validation")
-	cmd.Flags().BoolVarP(&data.summary, "summary", "c", data.summary, "print condensed output of conftest")
+	cmd.Flags().BoolVarP(&data.summary, "summary", "c", data.summary,
+		"generate a summary of the default output. Condensing the violation and warning messages")
 
 	if len(data.input) > 0 || len(data.filePath) > 0 {
 		if err := cmd.MarkFlagRequired("image"); err != nil {
