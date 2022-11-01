@@ -47,6 +47,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		output              string
 		spec                *appstudioshared.ApplicationSnapshotSpec
 		policy              *ecc.EnterpriseContractPolicySpec
+		summary             bool
 	}{
 		policyConfiguration: "ec-policy",
 	}
@@ -97,6 +98,10 @@ Use a different Rekor URL than the one from the EnterpriseContractPolicy resourc
 Return a non-zero status code on validation failure:
 
   ec validate image --image registry/name:tag --strict
+
+Return a summary of test results:
+
+  ec validate image --image registry/name:tag --policy my-policy --summary
 
 Use an EnterpriseContractPolicy resource from the currently active kubernetes context:
 
@@ -180,7 +185,8 @@ Use an inline EnterpriseContractPolicy spec
 				}
 			}
 
-			report, err, success := applicationsnapshot.Report(components)
+			report, err, success := applicationsnapshot.NewReport(components, data.summary)
+
 			if allErrors != nil {
 				return multierror.Append(allErrors, err)
 			}
@@ -220,6 +226,8 @@ Use an inline EnterpriseContractPolicy spec
 		"write output to a file. Use empty string for stdout, default behavior")
 	cmd.Flags().BoolVarP(&data.strict, "strict", "s", data.strict,
 		"return non-zero status on non-successful validation")
+	cmd.Flags().BoolVarP(&data.summary, "summary", "c", data.summary,
+		"generate a summary of the default output. Condensing the violation and warning messages")
 
 	if len(data.input) > 0 || len(data.filePath) > 0 {
 		if err := cmd.MarkFlagRequired("image"); err != nil {
