@@ -71,7 +71,7 @@ func Test_DetermineInputSpec(t *testing.T) {
 		},
 	}
 
-	fs = afero.NewMemMapFs()
+	fs := afero.NewMemMapFs()
 
 	for i, tc := range tests {
 		t.Run(fmt.Sprintf("DetermineInputSpec=%d", i), func(t *testing.T) {
@@ -81,7 +81,7 @@ func Test_DetermineInputSpec(t *testing.T) {
 				}
 			}
 
-			got, err := DetermineInputSpec(tc.filePath, tc.input, tc.imageRef)
+			got, err := DetermineInputSpec(fs, tc.filePath, tc.input, tc.imageRef)
 			// expect an error so check for nil
 			if tc.want != nil {
 				assert.NoError(t, err)

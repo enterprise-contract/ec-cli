@@ -20,13 +20,14 @@ import (
 	"context"
 
 	"github.com/hashicorp/go-multierror"
+	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
 	"github.com/hacbs-contract/ec-cli/internal/output"
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
 )
 
-type pipelineValidationFn func(context.Context, string, source.PolicyUrl, string) (*output.Output, error)
+type pipelineValidationFn func(context.Context, afero.Fs, string, source.PolicyUrl, string) (*output.Output, error)
 
 func validatePipelineCmd(validate pipelineValidationFn) *cobra.Command {
 	var data = struct {
@@ -65,7 +66,8 @@ Sepcify a different location for the policies:
 			for i := range data.FilePaths {
 				fpath := data.FilePaths[i]
 				policySource := source.PolicyUrl(data.PolicyUrl)
-				if o, e := validate(cmd.Context(), fpath, policySource, data.ConftestNamespace); e != nil {
+				ctx := cmd.Context()
+				if o, e := validate(ctx, fs(ctx), fpath, policySource, data.ConftestNamespace); e != nil {
 					err = multierror.Append(err, e)
 				} else {
 					outputs = append(outputs, o)

@@ -19,11 +19,11 @@ package tracker
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
 	"time"
 
 	"github.com/ghodss/yaml"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/afero"
 	"github.com/stuart-warren/yamlfmt"
 	"k8s.io/apimachinery/pkg/util/sets"
 
@@ -65,10 +65,10 @@ type Tracker struct {
 
 // newTracker returns a new initialized instance of Tracker. If path
 // is "", an empty instance is returned.
-func newTracker(path string) (t Tracker, err error) {
+func newTracker(fs afero.Fs, path string) (t Tracker, err error) {
 	if path != "" {
 		var contents []byte
-		contents, err = ioutil.ReadFile(path)
+		contents, err = afero.ReadFile(fs, path)
 		if err != nil {
 			return
 		}
@@ -142,13 +142,13 @@ func (t Tracker) Output() ([]byte, error) {
 // records to one of its collections.
 // Each url is expected to reference a valid Tekton bundle. Each bundle may be added
 // to none, 1, or 2 collections depending on the Tekton resource types they include.
-func Track(ctx context.Context, urls []string, input string) ([]byte, error) {
+func Track(ctx context.Context, fs afero.Fs, urls []string, input string) ([]byte, error) {
 	refs, err := image.ParseAndResolveAll(urls)
 	if err != nil {
 		return nil, err
 	}
 
-	t, err := newTracker(input)
+	t, err := newTracker(fs, input)
 	if err != nil {
 		return nil, err
 	}

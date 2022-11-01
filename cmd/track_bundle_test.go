@@ -21,17 +21,13 @@ package cmd
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
-	"os"
-	"path"
 	"testing"
 
+	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 )
 
 func Test_TrackBundleCommand(t *testing.T) {
-	tempDir := t.TempDir()
-
 	cases := []struct {
 		name         string
 		args         []string
@@ -55,9 +51,9 @@ func Test_TrackBundleCommand(t *testing.T) {
 				"--bundle",
 				"registry/image:tag",
 				"--output",
-				path.Join(tempDir, "output-1.json"),
+				"output-1.json",
 			},
-			outputFile:   path.Join(tempDir, "output-1.json"),
+			outputFile:   "output-1.json",
 			expectUrls:   []string{"registry/image:tag"},
 			expectStdout: false,
 		},
@@ -67,10 +63,10 @@ func Test_TrackBundleCommand(t *testing.T) {
 				"--bundle",
 				"registry/image:tag",
 				"--input",
-				path.Join(tempDir, "input-3.json"),
+				"input-3.json",
 			},
 			expectUrls:   []string{"registry/image:tag"},
-			expectInput:  path.Join(tempDir, "input-3.json"),
+			expectInput:  "input-3.json",
 			expectStdout: true,
 		},
 		{
@@ -79,12 +75,12 @@ func Test_TrackBundleCommand(t *testing.T) {
 				"--bundle",
 				"registry/image:tag",
 				"--input",
-				path.Join(tempDir, "tracker-3.json"),
+				"tracker-3.json",
 				"--replace",
 			},
-			outputFile:   path.Join(tempDir, "tracker-3.json"),
+			outputFile:   "tracker-3.json",
 			expectUrls:   []string{"registry/image:tag"},
-			expectInput:  path.Join(tempDir, "tracker-3.json"),
+			expectInput:  "tracker-3.json",
 			expectStdout: true,
 		},
 		{
@@ -93,30 +89,34 @@ func Test_TrackBundleCommand(t *testing.T) {
 				"--bundle",
 				"registry/image:tag",
 				"--input",
-				path.Join(tempDir, "input-4.json"),
+				"input-4.json",
 				"--output",
-				path.Join(tempDir, "output-4.json"),
+				"output-4.json",
 			},
-			outputFile:   path.Join(tempDir, "output-4.json"),
+			outputFile:   "output-4.json",
 			expectUrls:   []string{"registry/image:tag"},
-			expectInput:  path.Join(tempDir, "input-4.json"),
+			expectInput:  "input-4.json",
 			expectStdout: false,
 		},
 	}
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
+			fs := afero.NewMemMapFs()
+			ctx := withFs(context.TODO(), fs)
+
 			if c.expectInput != "" {
-				err := os.WriteFile(c.expectInput, []byte(`{"spam": true}`), 0777)
+				err := afero.WriteFile(fs, c.expectInput, []byte(`{"spam": true}`), 0777)
 				assert.NoError(t, err)
 			}
 			testOutput := `{"test": true}`
-			track := func(ctx context.Context, urls []string, input string) ([]byte, error) {
+			track := func(ctx context.Context, fs afero.Fs, urls []string, input string) ([]byte, error) {
 				assert.Equal(t, c.expectUrls, urls)
 				assert.Equal(t, c.expectInput, input)
 				return []byte(testOutput), nil
 			}
 			cmd := trackBundleCmd(track)
+			cmd.SetContext(ctx)
 			cmd.SetArgs(c.args)
 			var out bytes.Buffer
 			cmd.SetOut(&out)
@@ -130,7 +130,7 @@ func Test_TrackBundleCommand(t *testing.T) {
 			}
 
 			if c.outputFile != "" {
-				actualOutput, err := ioutil.ReadFile(c.outputFile)
+				actualOutput, err := afero.ReadFile(fs, c.outputFile)
 				assert.NoError(t, err)
 				assert.JSONEq(t, testOutput, string(actualOutput))
 			}

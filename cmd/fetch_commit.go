@@ -72,7 +72,8 @@ Use public key from a kubernetes secret:
   ec fetch commit --image-ref <image url> --public-key k8s://<namespace>/<secret-name>`,
 
 		PreRunE: func(cmd *cobra.Command, args []string) error {
-			spec, err := applicationsnapshot.DetermineInputSpec(data.filePath, data.input, data.imageRef)
+			ctx := cmd.Context()
+			spec, err := applicationsnapshot.DetermineInputSpec(fs(ctx), data.filePath, data.input, data.imageRef)
 			if err != nil {
 				return err
 			}

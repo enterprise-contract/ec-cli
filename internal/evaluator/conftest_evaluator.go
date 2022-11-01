@@ -35,8 +35,6 @@ import (
 
 const hardCodedRequiredData = "git::https://github.com/hacbs-contract/ec-policies//data"
 
-var fs = afero.NewOsFs()
-
 type contextKey string
 
 const runnerKey contextKey = "ec.evaluator.runner"
@@ -56,7 +54,7 @@ type conftestEvaluator struct {
 
 // NewConftestEvaluator returns initialized conftestEvaluator implementing
 // Evaluator interface
-func NewConftestEvaluator(ctx context.Context, policySources []source.PolicySource, namespace string, ecpSpec *ecc.EnterpriseContractPolicySpec) (Evaluator, error) {
+func NewConftestEvaluator(ctx context.Context, fs afero.Fs, policySources []source.PolicySource, namespace string, ecpSpec *ecc.EnterpriseContractPolicySpec) (Evaluator, error) {
 	c := conftestEvaluator{
 		policySources: policySources,
 		namespace:     namespace,
@@ -71,7 +69,7 @@ func NewConftestEvaluator(ctx context.Context, policySources []source.PolicySour
 	c.workDir = dir
 	log.Debugf("Created work dir %s", dir)
 
-	if err := c.createDataDirectory(ctx, ecpSpec); err != nil {
+	if err := c.createDataDirectory(ctx, fs, ecpSpec); err != nil {
 		return nil, err
 	}
 
@@ -130,7 +128,7 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) ([]out
 
 // createConfigJSON creates the config.json file with the provided configuration
 // in the data directory
-func createConfigJSON(dataDir string, spec *ecc.EnterpriseContractPolicySpec) error {
+func createConfigJSON(fs afero.Fs, dataDir string, spec *ecc.EnterpriseContractPolicySpec) error {
 	if spec == nil {
 		return nil
 	}
@@ -207,7 +205,7 @@ func createHardCodedData(ctx context.Context, dataDir string) error {
 }
 
 // createDataDirectory creates the base content in the data directory
-func (c *conftestEvaluator) createDataDirectory(ctx context.Context, spec *ecc.EnterpriseContractPolicySpec) error {
+func (c *conftestEvaluator) createDataDirectory(ctx context.Context, fs afero.Fs, spec *ecc.EnterpriseContractPolicySpec) error {
 	dataDir := filepath.Join(c.workDir, "data")
 	exists, err := afero.DirExists(fs, dataDir)
 	if err != nil {
@@ -220,7 +218,7 @@ func (c *conftestEvaluator) createDataDirectory(ctx context.Context, spec *ecc.E
 
 	c.dataDir = dataDir
 
-	if err := createConfigJSON(dataDir, spec); err != nil {
+	if err := createConfigJSON(fs, dataDir, spec); err != nil {
 		return err
 	}
 

@@ -20,7 +20,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"os"
 	"path"
 
@@ -32,8 +31,8 @@ import (
 	"github.com/sigstore/cosign/pkg/oci"
 	cosignPolicy "github.com/sigstore/cosign/pkg/policy"
 	cosignTypes "github.com/sigstore/cosign/pkg/types"
-	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/afero"
 
 	"github.com/hacbs-contract/ec-cli/internal/evaluator"
 	"github.com/hacbs-contract/ec-cli/internal/policy"
@@ -62,7 +61,7 @@ type ApplicationSnapshotImage struct {
 }
 
 // NewApplicationSnapshotImage returns an ApplicationSnapshotImage struct with reference, checkOpts, and evaluator ready to use.
-func NewApplicationSnapshotImage(ctx context.Context, image string, ecp *ecc.EnterpriseContractPolicySpec) (*ApplicationSnapshotImage, error) {
+func NewApplicationSnapshotImage(ctx context.Context, fs afero.Fs, image string, ecp *ecc.EnterpriseContractPolicySpec) (*ApplicationSnapshotImage, error) {
 	ref, err := name.ParseReference(image)
 	if err != nil {
 		log.Debugf("Failed to parse reference %s", image)
@@ -111,7 +110,7 @@ func NewApplicationSnapshotImage(ctx context.Context, image string, ecp *ecc.Ent
 		log.Debugf("policySourceJson: %s", policySourceJson)
 	}
 
-	c, err := newConftestEvaluator(ctx, policySources, ConftestNamespace, ecp)
+	c, err := newConftestEvaluator(ctx, fs, policySources, ConftestNamespace, ecp)
 	if err != nil {
 		log.Debug("Failed to initialize the conftest evaluator!")
 		return nil, err
@@ -140,7 +139,7 @@ func (a *ApplicationSnapshotImage) ValidateImageAccess(ctx context.Context) erro
 	if resp == nil {
 		return errors.New("no response received")
 	}
-	logrus.Debugf("Resp: %+v", resp)
+	log.Debugf("Resp: %+v", resp)
 	return nil
 
 }
@@ -167,7 +166,7 @@ func (a *ApplicationSnapshotImage) Attestations() []oci.Signature {
 }
 
 // WriteInputFiles writes the JSON from the attestations to input.json in a random temp dir
-func (a *ApplicationSnapshotImage) WriteInputFiles(ctx context.Context) ([]string, error) {
+func (a *ApplicationSnapshotImage) WriteInputFiles(ctx context.Context, fs afero.Fs) ([]string, error) {
 	attCount := len(a.attestations)
 	log.Debugf("Attempting to write %d attestations to inputs", attCount)
 	inputs := make([]string, 0, attCount)
@@ -207,32 +206,35 @@ func (a *ApplicationSnapshotImage) WriteInputFiles(ctx context.Context) ([]strin
 			continue
 		}
 
-		inputDir, err := os.MkdirTemp("", "ecp_input.*")
+		inputDir, err := afero.TempDir(fs, "", "ecp_input.")
 		if err != nil {
 			log.Debug("Problem making temp dir!")
 			return nil, err
 		}
 		log.Debugf("Created dir %s", inputDir)
 		inputJSONPath := path.Join(inputDir, "input.json")
-		input, err := os.Create(inputJSONPath)
+
+		f, err := fs.OpenFile(inputJSONPath, os.O_CREATE|os.O_WRONLY|os.O_EXCL, 0644)
 		if err != nil {
 			log.Debugf("Problem creating file in %s", inputDir)
 			return nil, err
 		}
-		log.Debugf("Created json file in %s", inputDir)
-		defer input.Close()
+		defer f.Close()
+		j := json.NewEncoder(f)
 
-		fmt.Fprint(input, `{"attestations":[`)
-		j := json.NewEncoder(input)
-		err = j.Encode(statement)
+		attestations := map[string][]in_toto.Statement{
+			"attestations": {
+				statement,
+			},
+		}
+
+		err = j.Encode(attestations)
 		if err != nil {
-			log.Debug("Problem encoding attestion json!")
+			log.Debug("Problem encoding attestion JSON!")
 			return nil, err
 		}
-		fmt.Fprint(input, `]}`)
 
 		inputs = append(inputs, inputJSONPath)
-
 	}
 
 	log.Debugf("Done preparing inputs:\n%s", inputs)

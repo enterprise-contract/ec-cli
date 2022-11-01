@@ -18,12 +18,17 @@ package cmd
 
 import (
 	"context"
-	"fmt"
-	"os"
 
+	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
 	"github.com/hacbs-contract/ec-cli/internal/replacer"
+)
+
+const (
+	defaultCatalogName    = "tekton"
+	defaultRepositoryBase = "gcr.io/tekton-releases/catalog/upstream/"
+	defaultHubAPIURL      = "https://api.hub.tekton.dev"
 )
 
 type replaceFn func(context.Context, []string, string, bool, *replacer.CatalogOptions) ([]byte, error)
@@ -37,9 +42,9 @@ func replaceCmd(replace replaceFn) *cobra.Command {
 		catalogRepoBase  string
 		catalogHubAPIURL string
 	}{
-		catalogName:      "tekton",
-		catalogRepoBase:  "gcr.io/tekton-releases/catalog/upstream/",
-		catalogHubAPIURL: "https://api.hub.tekton.dev",
+		catalogName:      defaultCatalogName,
+		catalogRepoBase:  defaultRepositoryBase,
+		catalogHubAPIURL: defaultHubAPIURL,
 	}
 
 	cmd := &cobra.Command{
@@ -103,20 +108,12 @@ the provided images:
 			}
 
 			if data.outputFile == "" {
-				fmt.Println(string(out))
+				_, err = cmd.OutOrStdout().Write(out)
 			} else {
-				f, err := os.Create(data.outputFile)
-				if err != nil {
-					return err
-				}
-				defer f.Close()
-				_, err = f.Write(out)
-				if err != nil {
-					return err
-				}
+				err = afero.WriteFile(fs(cmd.Context()), data.outputFile, out, 0666)
 			}
 
-			return nil
+			return
 		},
 	}
 

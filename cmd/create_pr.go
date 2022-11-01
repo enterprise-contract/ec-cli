@@ -51,7 +51,8 @@ The following steps are performed to create a pull request:
 The environment variables GITHUB_USERNAME and GITHUB_TOKEN must be set accordingly.`,
 		Example: `  ec-cli create-pr --repo https://github.com/example/repo --branch-name <new branch name> --patch <path/to/patch/file>`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return ecgit.CreateAutomatedPR(cmd.Context(), data.componentRepoURL, data.patchFilePath, data.destinationBranch, data.prBranchName, data.prTitle, data.prBody)
+			ctx := cmd.Context()
+			return ecgit.CreateAutomatedPR(ctx, fs(ctx), data.componentRepoURL, data.patchFilePath, data.destinationBranch, data.prBranchName, data.prTitle, data.prBody)
 		},
 	}
 	cmd.Flags().StringVar(&data.componentRepoURL, "repo", data.componentRepoURL, "repo URL")

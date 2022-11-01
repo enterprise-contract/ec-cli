@@ -25,9 +25,7 @@ import (
 	"github.com/spf13/afero"
 )
 
-var fs = afero.NewOsFs()
-
-func DetermineInputSpec(filePath string, input string, imageRef string) (*appstudioshared.ApplicationSnapshotSpec, error) {
+func DetermineInputSpec(fs afero.Fs, filePath string, input string, imageRef string) (*appstudioshared.ApplicationSnapshotSpec, error) {
 	var appSnapshot appstudioshared.ApplicationSnapshotSpec
 
 	// read ApplicationSnapshot provided as a file
