@@ -43,7 +43,7 @@ require (
 	golang.org/x/tools v0.2.0
 	k8s.io/apimachinery v0.25.3
 	k8s.io/client-go v0.25.3
-	sigs.k8s.io/controller-runtime v0.12.3
+	sigs.k8s.io/controller-runtime v0.13.0
 )
 
 replace go.etcd.io/etcd/v3 => go.etcd.io/etcd/v3 v3.6.0-alpha.0
