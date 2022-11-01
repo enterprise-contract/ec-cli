@@ -31,7 +31,7 @@ require (
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.1
 	github.com/stuart-warren/yamlfmt v0.1.2
-	github.com/tektoncd/pipeline v0.40.2
+	github.com/tektoncd/pipeline v0.41.0
 	github.com/testcontainers/testcontainers-go v0.15.0
 	github.com/theupdateframework/go-tuf v0.5.2-0.20220930112810-3890c1e7ace4
 	github.com/transparency-dev/merkle v0.0.1
@@ -41,8 +41,8 @@ require (
 	github.com/yudai/gojsondiff v1.0.0
 	golang.org/x/oauth2 v0.1.0
 	golang.org/x/tools v0.2.0
-	k8s.io/apimachinery v0.24.4
-	k8s.io/client-go v0.24.4
+	k8s.io/apimachinery v0.25.3
+	k8s.io/client-go v0.25.3
 	sigs.k8s.io/controller-runtime v0.12.3
 )
 
@@ -145,7 +145,7 @@ require (
 	github.com/cockroachdb/apd/v2 v2.0.1 // indirect
 	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be // indirect
 	github.com/containerd/cgroups v1.0.4 // indirect
-	github.com/containerd/containerd v1.6.8 // indirect
+	github.com/containerd/containerd v1.6.9 // indirect
 	github.com/containerd/stargz-snapshotter/estargz v0.12.1 // indirect
 	github.com/containerd/typeurl v1.0.2 // indirect
 	github.com/coreos/go-semver v0.3.0 // indirect
@@ -188,7 +188,6 @@ require (
 	github.com/go-logfmt/logfmt v0.5.1 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
-	github.com/go-logr/zapr v1.2.3 // indirect
 	github.com/go-openapi/analysis v0.21.4 // indirect
 	github.com/go-openapi/errors v0.20.3 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
@@ -459,13 +458,13 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	honnef.co/go/tools v0.3.3 // indirect
-	k8s.io/api v0.24.4 // indirect
-	k8s.io/apiextensions-apiserver v0.24.3 // indirect
-	k8s.io/component-base v0.24.3 // indirect
+	k8s.io/api v0.25.3 // indirect
+	k8s.io/apiextensions-apiserver v0.25.2 // indirect
+	k8s.io/component-base v0.25.2 // indirect
 	k8s.io/klog/v2 v2.70.2-0.20220707122935-0990e81f1a8f // indirect
 	k8s.io/kube-openapi v0.0.0-20220803164354-a70c9af30aea // indirect
 	k8s.io/utils v0.0.0-20220810061631-2e139fc3ae1e // indirect
-	knative.dev/pkg v0.0.0-20220818004048-4a03844c0b15 // indirect
+	knative.dev/pkg v0.0.0-20221011175852-714b7630a836 // indirect
 	muzzammil.xyz/jsonc v1.0.0 // indirect
 	mvdan.cc/gofumpt v0.4.0 // indirect
 	mvdan.cc/interfacer v0.0.0-20180901003855-c20040233aed // indirect
