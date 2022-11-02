@@ -1,0 +1,38 @@
+{
+  "_type": "https://in-toto.io/Statement/v0.1",
+  "subject": [
+    {
+      "name": "_",
+      "digest": {
+        "sha256": "0bf474896363505e5ea5e5d6ace8ebfb13a760a409b1fb467d428fc716f9f284"
+      }
+    }
+  ],
+  "predicateType": "https://slsa.dev/provenance/v0.2",
+  "predicate": {
+    "buildType": "https://example.com/Makefile",
+    "builder": {
+      "id": "mailto:person@example.com"
+    },
+    "invocation": {
+      "configSource": {
+        "uri": "https://example.com/example-1.2.3.tar.gz",
+        "digest": {
+          "sha256": "0bf474896363505e5ea5e5d6ace8ebfb13a760a409b1fb467d428fc716f9f284"
+        },
+        "entryPoint": "src:foo"
+      },
+      "parameters": {
+        "CFLAGS": "-O3"
+      }
+    },
+    "materials": [
+      {
+        "uri": "https://example.com/example-1.2.3.tar.gz",
+        "digest": {
+          "sha256": "0bf474896363505e5ea5e5d6ace8ebfb13a760a409b1fb467d428fc716f9f284"
+        }
+      }
+    ]
+  }
+}

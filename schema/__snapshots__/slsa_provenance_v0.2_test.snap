@@ -1,0 +1,814 @@
+
+[TestTypeMustBeInToto/case_0 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/",
+        InvalidValue: map[string]interface {}{
+            "predicate": map[string]interface {}{
+                "buildType": "uri:val",
+                "builder":   map[string]interface {}{
+                    "id": "uri:val",
+                },
+            },
+            "predicateType": "https://slsa.dev/provenance/v0.2",
+            "subject":       []interface {}{
+                map[string]interface {}{
+                    "digest": map[string]interface {}{
+                        "sha512": "abcdef0123456789",
+                    },
+                    "name": "subject_name",
+                },
+            },
+        },
+        Message: "\"_type\" value is required",
+    },
+}
+---
+
+[TestTypeMustBeInToto/case_1 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/_type",
+        InvalidValue: "",
+        Message:      "must equal \"https://in-toto.io/...",
+    },
+}
+---
+
+[TestTypeMustBeInToto/case_2 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/_type",
+        InvalidValue: "something else",
+        Message:      "must equal \"https://in-toto.io/...",
+    },
+}
+---
+
+[TestTypeMustBeInToto/case_3 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestSubjectMustBeProvided/case_0 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/",
+        InvalidValue: map[string]interface {}{
+            "_type":     "https://in-toto.io/Statement/v0.1",
+            "predicate": map[string]interface {}{
+                "buildType": "uri:val",
+                "builder":   map[string]interface {}{
+                    "id": "uri:val",
+                },
+            },
+            "predicateType": "https://slsa.dev/provenance/v0.2",
+        },
+        Message: "\"subject\" value is required",
+    },
+}
+---
+
+[TestSubjectMustBeProvided/case_1 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/subject",
+        InvalidValue: []interface {}{
+        },
+        Message: "array length 0 below 1 minimum items",
+    },
+}
+---
+
+[TestSubjectMustBeProvided/case_2 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/subject/0",
+        InvalidValue: map[string]interface {}{
+        },
+        Message: "\"name\" value is required",
+    },
+    {
+        PropertyPath: "/subject/0",
+        InvalidValue: map[string]interface {}{
+        },
+        Message: "\"digest\" value is required",
+    },
+}
+---
+
+[TestSubjectMustBeProvided/case_3 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/subject/0",
+        InvalidValue: map[string]interface {}{
+            "name": "",
+        },
+        Message: "\"digest\" value is required",
+    },
+    {
+        PropertyPath: "/subject/0/name",
+        InvalidValue: "",
+        Message:      "min length of 1 characters required: ",
+    },
+}
+---
+
+[TestSubjectMustBeProvided/case_4 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/subject/0/digest/foo",
+        InvalidValue: "foo",
+        Message:      "should be one of [\"sha256\", \"sha224\", \"sha384\", \"sha512\", \"sha512_224\", \"sha512_256\", \"sha3_224\", \"sha3_256\", \"sha3_384\", \"sha3_512\", \"shake128\", \"shake256\", \"blake2b\", \"blake2s\", \"ripemd160\", \"sm3\", \"gost\", \"sha1\", \"md5\"]",
+    },
+}
+---
+
+[TestSubjectMustBeProvided/case_5 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/subject/0/digest/sha256",
+        InvalidValue: "",
+        Message:      "regexp pattern ^[a-f0-9]+$ mismatch on string: ",
+    },
+}
+---
+
+[TestSubjectMustBeProvided/case_6 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/subject/0/digest/sha256",
+        InvalidValue: "g%-A",
+        Message:      "regexp pattern ^[a-f0-9]+$ mismatch on string: g%-A",
+    },
+}
+---
+
+[TestSubjectMustBeProvided/case_7 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/subject",
+        InvalidValue: []interface {}{
+            map[string]interface {}{
+                "digest": map[string]interface {}{
+                    "sha256": "abcdef",
+                },
+                "name": "x",
+            },
+            map[string]interface {}{
+                "digest": map[string]interface {}{
+                    "sha256": "fedcba",
+                },
+                "name": "x",
+            },
+        },
+        Message: "found non unique value for JSON paths [/name]: {\"digest\":{\"sha256\":\"fedcba\"},\"name\":\"x\"}",
+    },
+}
+---
+
+[TestTypeMustBeSLSAProvenancev02/case_0 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestTypeMustBeSLSAProvenancev02/case_1 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/predicateType",
+        InvalidValue: "",
+        Message:      "must equal \"https://slsa.dev/pr...",
+    },
+}
+---
+
+[TestTypeMustBeSLSAProvenancev02/case_2 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/predicateType",
+        InvalidValue: "something else",
+        Message:      "must equal \"https://slsa.dev/pr...",
+    },
+}
+---
+
+[TestTypeMustBeSLSAProvenancev02/case_3 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateBuilderId/case_0 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/predicate/builder",
+        InvalidValue: map[string]interface {}{
+        },
+        Message: "\"id\" value is required",
+    },
+}
+---
+
+[TestPredicateBuilderId/case_1 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/predicate/builder/id",
+        InvalidValue: "",
+        Message:      "invalid uri: uri missing scheme prefix",
+    },
+}
+---
+
+[TestPredicateBuilderId/case_2 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/predicate/builder/id",
+        InvalidValue: "not_uri",
+        Message:      "invalid uri: uri missing scheme prefix",
+    },
+}
+---
+
+[TestPredicateBuilderId/case_3 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateBuilderType/case_0 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/predicate",
+        InvalidValue: map[string]interface {}{
+            "builder": map[string]interface {}{
+                "id": "uri:val",
+            },
+        },
+        Message: "\"buildType\" value is required",
+    },
+}
+---
+
+[TestPredicateBuilderType/case_1 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/predicate/buildType",
+        InvalidValue: "",
+        Message:      "invalid uri: uri missing scheme prefix",
+    },
+}
+---
+
+[TestPredicateBuilderType/case_2 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/predicate/buildType",
+        InvalidValue: "not_uri",
+        Message:      "invalid uri: uri missing scheme prefix",
+    },
+}
+---
+
+[TestPredicateBuilderType/case_3 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateInvocationConfigSourceUri/case_0 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateInvocationConfigSourceUri/case_1 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/predicate/invocation/configSource/uri",
+        InvalidValue: "",
+        Message:      "invalid uri: uri missing scheme prefix",
+    },
+}
+---
+
+[TestPredicateInvocationConfigSourceUri/case_2 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/predicate/invocation/configSource/uri",
+        InvalidValue: "not_uri",
+        Message:      "invalid uri: uri missing scheme prefix",
+    },
+}
+---
+
+[TestPredicateInvocationConfigSourceUri/case_3 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateInvocationConfigSourceDigest/case_0 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateInvocationConfigSourceDigest/case_1 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/predicate/invocation/configSource/digest/foo",
+        InvalidValue: "foo",
+        Message:      "should be one of [\"sha256\", \"sha224\", \"sha384\", \"sha512\", \"sha512_224\", \"sha512_256\", \"sha3_224\", \"sha3_256\", \"sha3_384\", \"sha3_512\", \"shake128\", \"shake256\", \"blake2b\", \"blake2s\", \"ripemd160\", \"sm3\", \"gost\", \"sha1\", \"md5\"]",
+    },
+}
+---
+
+[TestPredicateInvocationConfigSourceDigest/case_2 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/predicate/invocation/configSource/digest/sha256",
+        InvalidValue: "",
+        Message:      "regexp pattern ^[a-f0-9]+$ mismatch on string: ",
+    },
+}
+---
+
+[TestPredicateInvocationConfigSourceDigest/case_3 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/predicate/invocation/configSource/digest/sha256",
+        InvalidValue: "g%-A",
+        Message:      "regexp pattern ^[a-f0-9]+$ mismatch on string: g%-A",
+    },
+}
+---
+
+[TestPredicateInvocationConfigSourceDigest/case_4 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateInvocationConfigSourceEntryPoint/case_0 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateInvocationConfigSourceEntryPoint/case_1 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/predicate/invocation/configSource/entryPoint",
+        InvalidValue: "",
+        Message:      "min length of 1 characters required: ",
+    },
+}
+---
+
+[TestPredicateInvocationConfigSourceEntryPoint/case_2 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/predicate/invocation/configSource/entryPoint",
+        InvalidValue: float64(1),
+        Message:      "type should be string, got integer",
+    },
+}
+---
+
+[TestPredicateInvocationParameters/case_0 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateInvocationParameters/case_1 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/predicate/invocation/parameters",
+        InvalidValue: float64(1),
+        Message:      "type should be object, got integer",
+    },
+}
+---
+
+[TestPredicateInvocationParameters/case_2 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateInvocationEnvironment/case_0 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateInvocationEnvironment/case_1 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/predicate/invocation/environment",
+        InvalidValue: float64(1),
+        Message:      "type should be object, got integer",
+    },
+}
+---
+
+[TestPredicateInvocationEnvironment/case_2 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateMetadata/case_0 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateMetadata/case_1 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/predicate/metadata",
+        InvalidValue: float64(1),
+        Message:      "type should be object, got integer",
+    },
+}
+---
+
+[TestPredicateMetadataBuildInvocationId/case_0 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateMetadataBuildInvocationId/case_1 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/predicate/metadata/buildInvocationId",
+        InvalidValue: "",
+        Message:      "min length of 1 characters required: ",
+    },
+}
+---
+
+[TestPredicateMetadataBuildInvocationId/case_2 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/predicate/metadata/buildInvocationId",
+        InvalidValue: float64(1),
+        Message:      "type should be string, got integer",
+    },
+}
+---
+
+[TestPredicateMetadataBuildInvocationId/case_3 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateInvocationConfigSourceEntryPoint/case_3 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateMetadataBuildStartedOn/case_0 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateMetadataBuildStartedOn/case_1 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/predicate/metadata/buildStartedOn",
+        InvalidValue: "",
+        Message:      "regexp pattern Z$ mismatch on string: ",
+    },
+    {
+        PropertyPath: "/predicate/metadata/buildStartedOn",
+        InvalidValue: "",
+        Message:      "invalid date-time: date-time incorrectly Formatted: parsing time \"\" as \"2006-01-02T15:04:05Z07:00\": cannot parse \"\" as \"2006\"",
+    },
+}
+---
+
+[TestPredicateMetadataBuildStartedOn/case_2 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/predicate/metadata/buildStartedOn",
+        InvalidValue: float64(1),
+        Message:      "type should be string, got integer",
+    },
+}
+---
+
+[TestPredicateMetadataBuildStartedOn/case_3 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/predicate/metadata/buildStartedOn",
+        InvalidValue: "1937-01-01T12:00:27.87+00:20",
+        Message:      "regexp pattern Z$ mismatch on string: 1937-01-01T12:00:27.87+00:20",
+    },
+}
+---
+
+[TestPredicateMetadataBuildStartedOn/case_4 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateMetadataBuildFinishedOn/case_0 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateMetadataBuildFinishedOn/case_1 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/predicate/metadata/buildFinishedOn",
+        InvalidValue: "",
+        Message:      "regexp pattern Z$ mismatch on string: ",
+    },
+    {
+        PropertyPath: "/predicate/metadata/buildFinishedOn",
+        InvalidValue: "",
+        Message:      "invalid date-time: date-time incorrectly Formatted: parsing time \"\" as \"2006-01-02T15:04:05Z07:00\": cannot parse \"\" as \"2006\"",
+    },
+}
+---
+
+[TestPredicateMetadataBuildFinishedOn/case_2 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/predicate/metadata/buildFinishedOn",
+        InvalidValue: float64(1),
+        Message:      "type should be string, got integer",
+    },
+}
+---
+
+[TestPredicateMetadataBuildFinishedOn/case_3 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/predicate/metadata/buildFinishedOn",
+        InvalidValue: "1937-01-01T12:00:27.87+00:20",
+        Message:      "regexp pattern Z$ mismatch on string: 1937-01-01T12:00:27.87+00:20",
+    },
+}
+---
+
+[TestPredicateMetadataBuildFinishedOn/case_4 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateMetadataCompleteness/case_0 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateMetadataCompleteness/case_1 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/predicate/metadata/completeness",
+        InvalidValue: float64(1),
+        Message:      "type should be object, got integer",
+    },
+}
+---
+
+[TestPredicateMetadataCompleteness/case_2 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateMetadataCompleteness/case_3 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateMetadataCompletenessParameters/case_0 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateMetadataCompletenessParameters/case_1 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/predicate/metadata/completeness/parameters",
+        InvalidValue: float64(1),
+        Message:      "type should be boolean, got integer",
+    },
+}
+---
+
+[TestPredicateMetadataCompletenessParameters/case_2 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateMetadataCompletenessParameters/case_3 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateMetadataCompletenessEnvironment/case_0 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateMetadataCompletenessEnvironment/case_1 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/predicate/metadata/completeness/environment",
+        InvalidValue: float64(1),
+        Message:      "type should be boolean, got integer",
+    },
+}
+---
+
+[TestPredicateMetadataCompletenessEnvironment/case_2 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateMetadataCompletenessEnvironment/case_3 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateMetadataCompletenessMaterials/case_0 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateMetadataCompletenessMaterials/case_1 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/predicate/metadata/completeness/materials",
+        InvalidValue: float64(1),
+        Message:      "type should be boolean, got integer",
+    },
+}
+---
+
+[TestPredicateMetadataCompletenessMaterials/case_2 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateMetadataCompletenessMaterials/case_3 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateMetadataReproducible/case_0 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateMetadataReproducible/case_1 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/predicate/metadata/reproducible",
+        InvalidValue: float64(1),
+        Message:      "type should be boolean, got integer",
+    },
+}
+---
+
+[TestPredicateMetadataReproducible/case_2 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateMetadataReproducible/case_3 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateBuildConfig/case_0 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateBuildConfig/case_1 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/predicate/buildConfig",
+        InvalidValue: float64(1),
+        Message:      "type should be object, got integer",
+    },
+}
+---
+
+[TestPredicateBuildConfig/case_2 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateBuildConfig/case_3 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateMaterials/case_0 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateMaterials/case_1 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/predicate/materials",
+        InvalidValue: float64(1),
+        Message:      "type should be array, got integer",
+    },
+}
+---
+
+[TestPredicateMaterials/case_2 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/predicate/materials",
+        InvalidValue: map[string]interface {}{
+        },
+        Message: "type should be array, got object",
+    },
+}
+---
+
+[TestPredicateMaterials/case_3 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateMaterials/case_4 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateMaterialsUri/case_0 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateMaterialsUri/case_1 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/predicate/materials/0/uri",
+        InvalidValue: "",
+        Message:      "invalid uri: uri missing scheme prefix",
+    },
+}
+---
+
+[TestPredicateMaterialsUri/case_2 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/predicate/materials/0/uri",
+        InvalidValue: "not_uri",
+        Message:      "invalid uri: uri missing scheme prefix",
+    },
+}
+---
+
+[TestPredicateMaterialsUri/case_3 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateMaterialsDigest/case_0 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestPredicateMaterialsDigest/case_1 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/predicate/materials/0/digest/foo",
+        InvalidValue: "foo",
+        Message:      "should be one of [\"sha256\", \"sha224\", \"sha384\", \"sha512\", \"sha512_224\", \"sha512_256\", \"sha3_224\", \"sha3_256\", \"sha3_384\", \"sha3_512\", \"shake128\", \"shake256\", \"blake2b\", \"blake2s\", \"ripemd160\", \"sm3\", \"gost\", \"sha1\", \"md5\"]",
+    },
+}
+---
+
+[TestPredicateMaterialsDigest/case_2 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/predicate/materials/0/digest/sha256",
+        InvalidValue: "",
+        Message:      "regexp pattern ^[a-f0-9]+$ mismatch on string: ",
+    },
+}
+---
+
+[TestPredicateMaterialsDigest/case_3 - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/predicate/materials/0/digest/sha256",
+        InvalidValue: "g%-A",
+        Message:      "regexp pattern ^[a-f0-9]+$ mismatch on string: g%-A",
+    },
+}
+---
+
+[TestPredicateMaterialsDigest/case_4 - 1]
+[]jsonschema.KeyError{
+}
+---
+
+[TestExamples/examples/hacbs1_invalid.json - 1]
+[]jsonschema.KeyError{
+    {
+        PropertyPath: "/predicate/buildType",
+        InvalidValue: "tekton.dev/v1beta1/TaskRun",
+        Message:      "invalid uri: uri missing scheme prefix",
+    },
+}
+---
