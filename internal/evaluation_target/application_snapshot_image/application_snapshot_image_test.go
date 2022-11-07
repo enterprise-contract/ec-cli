@@ -20,12 +20,21 @@ package application_snapshot_image
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"testing"
 
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
+	"github.com/google/go-containerregistry/pkg/v1/types"
+	"github.com/in-toto/in-toto-golang/in_toto"
+	v02 "github.com/in-toto/in-toto-golang/in_toto/slsa_provenance/v0.2"
 	"github.com/sigstore/cosign/pkg/cosign"
 	"github.com/sigstore/cosign/pkg/oci"
+	"github.com/sigstore/cosign/pkg/oci/static"
+	cosignTypes "github.com/sigstore/cosign/pkg/types"
+	"github.com/spf13/afero"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/hacbs-contract/ec-cli/internal/evaluator"
 	"github.com/hacbs-contract/ec-cli/internal/mocks"
@@ -89,4 +98,63 @@ func TestApplicationSnapshotImage_ValidateImageAccess(t *testing.T) {
 			}
 		})
 	}
+}
+
+func createSimpleAttestation() (oci.Signature, error) {
+	statement := in_toto.Statement{
+		StatementHeader: in_toto.StatementHeader{
+			PredicateType: v02.PredicateSLSAProvenance,
+		},
+		Predicate: v02.ProvenancePredicate{
+			BuildType: PipelineRunBuildType,
+		},
+	}
+	statementJson, err := json.Marshal(statement)
+	if err != nil {
+		return nil, err
+	}
+
+	payload := base64.StdEncoding.EncodeToString(statementJson)
+
+	return static.NewSignature([]byte(`{"payload":"`+payload+`"}`), "signature", static.WithLayerMediaType(types.MediaType((cosignTypes.DssePayloadType))))
+}
+
+func TestWriteInputFiles(t *testing.T) {
+	att, err := createSimpleAttestation()
+	assert.NoError(t, err)
+	a := ApplicationSnapshotImage{
+		attestations: []oci.Signature{att},
+	}
+
+	fs := afero.NewMemMapFs()
+	inputs, err := a.WriteInputFiles(context.TODO(), fs)
+
+	assert.NoError(t, err)
+	assert.Len(t, inputs, 1)
+	assert.Regexp(t, `/ecp_input.\d+/input.json`, inputs[0])
+	fileExists, err := afero.Exists(fs, inputs[0])
+	assert.NoError(t, err)
+	assert.True(t, fileExists)
+
+	bytes, err := afero.ReadFile(fs, inputs[0])
+	assert.NoError(t, err)
+	assert.JSONEq(t, `{
+		"attestations": [
+		  {
+			"_type": "",
+			"predicateType": "https://slsa.dev/provenance/v0.2",
+			"subject": null,
+			"predicate": {
+			  "buildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+			  "builder": {
+				"id": ""
+			  },
+			  "invocation": {
+				"configSource": {}
+			  }
+			}
+		  }
+		]
+	  }
+	  `, string(bytes))
 }

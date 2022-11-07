@@ -20,17 +20,18 @@ import (
 	"context"
 	"os"
 
+	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 )
 
-type trackBundleFn func(context.Context, []string, string) ([]byte, error)
+type trackBundleFn func(context.Context, afero.Fs, []string, string) ([]byte, error)
 
 func trackBundleCmd(track trackBundleFn) *cobra.Command {
 	var data = struct {
-		Bundles    []string
-		Input      string
-		Replace    bool
-		OutputFile string
+		bundles    []string
+		input      string
+		replace    bool
+		outputFile string
 	}{}
 
 	cmd := &cobra.Command{
@@ -73,56 +74,46 @@ Extend an existing tracking file with a new bundle and save changes:
   ec track bundle --bundle <IMAGE1> --input <path/to/input/file> --replace`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
+			fs := fs(cmd.Context())
 
-			out, err := track(cmd.Context(), data.Bundles, data.Input)
+			out, err := track(cmd.Context(), fs, data.bundles, data.input)
 			if err != nil {
 				return err
 			}
 
-			if data.OutputFile == "" {
-				if _, err := cmd.OutOrStdout().Write(out); err != nil {
-					return err
-				}
+			if data.outputFile == "" {
+				_, err = cmd.OutOrStdout().Write(out)
 			} else {
-				f, err := os.Create(data.OutputFile)
-				if err != nil {
-					return err
-				}
-				defer f.Close()
-				_, err = f.Write(out)
-				if err != nil {
-					return err
-				}
+				err = afero.WriteFile(fs, data.outputFile, out, 0666)
 			}
 
-			if data.Input != "" && data.Replace {
-				stat, err := os.Stat(data.Input)
-				if err != nil {
-					return err
-				}
-				f, err := os.OpenFile(data.Input, os.O_RDWR, stat.Mode())
-				if err != nil {
-					return err
-				}
-				defer f.Close()
-				_, err = f.Write(out)
-				if err != nil {
-					return err
-				}
+			if err != nil {
+				return
 			}
 
-			return nil
+			if data.input != "" && data.replace {
+				var perm os.FileMode
+				if stat, err := fs.Stat(data.input); err != nil {
+					return err
+				} else {
+					perm = stat.Mode()
+				}
+
+				err = afero.WriteFile(fs, data.input, out, perm)
+			}
+
+			return
 		},
 	}
 
-	cmd.Flags().StringVarP(&data.Input, "input", "i", data.Input, "existing tracking file")
+	cmd.Flags().StringVarP(&data.input, "input", "i", data.input, "existing tracking file")
 
-	cmd.Flags().StringSliceVarP(&data.Bundles, "bundle", "b", data.Bundles,
+	cmd.Flags().StringSliceVarP(&data.bundles, "bundle", "b", data.bundles,
 		"bundle image reference to track - may be used multiple times (required)")
 
-	cmd.Flags().BoolVarP(&data.Replace, "replace", "r", data.Replace, "write changes to input file")
+	cmd.Flags().BoolVarP(&data.replace, "replace", "r", data.replace, "write changes to input file")
 
-	cmd.Flags().StringVarP(&data.OutputFile, "output", "o", data.OutputFile,
+	cmd.Flags().StringVarP(&data.outputFile, "output", "o", data.outputFile,
 		"write modified tracking file to a file. Use empty string for stdout, default behavior")
 
 	if err := cmd.MarkFlagRequired("bundle"); err != nil {

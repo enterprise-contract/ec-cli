@@ -21,8 +21,6 @@ package tracker
 import (
 	"context"
 	"fmt"
-	"os"
-	"path"
 	"testing"
 	"time"
 
@@ -32,6 +30,7 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/mutate"
 	"github.com/google/go-containerregistry/pkg/v1/random"
 	"github.com/google/go-containerregistry/pkg/v1/types"
+	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	"github.com/tektoncd/pipeline/pkg/remote/oci"
@@ -302,20 +301,18 @@ required-tasks:
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
+			fs := afero.NewMemMapFs()
 			inputFile := ""
 			if tt.input != "" {
-				inputFile = path.Join(t.TempDir(), "input.yaml")
-				f, err := os.Create(inputFile)
+				err := afero.WriteFile(fs, "input.yaml", []byte(tt.input), 0444)
 				assert.NoError(t, err)
-				defer f.Close()
-				_, err = f.WriteString(tt.input)
-				assert.NoError(t, err)
+				inputFile = "input.yaml"
 			}
 
 			client := fakeClient{objects: testObjects, images: testImages}
 			ctx = WithClient(ctx, client)
 
-			output, err := Track(ctx, tt.urls, inputFile)
+			output, err := Track(ctx, fs, tt.urls, inputFile)
 			assert.NoError(t, err)
 			assert.Equal(t, tt.output, string(output))
 		})

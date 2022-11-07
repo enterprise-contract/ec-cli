@@ -18,11 +18,11 @@ package evaluator
 
 import (
 	"context"
-	"os"
 	"regexp"
 	"testing"
 
 	"github.com/open-policy-agent/conftest/output"
+	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
@@ -165,13 +165,9 @@ func TestConftestEvaluatorEvaluate(t *testing.T) {
 	// download of hardcoded data
 	dl.On("Download", ctx, mock.MatchedBy(workDirData.MatchString), []string{hardCodedRequiredData}).Return(nil)
 
-	evaluator, err := NewConftestEvaluator(ctx, []source.PolicySource{
+	evaluator, err := NewConftestEvaluator(ctx, afero.NewMemMapFs(), []source.PolicySource{
 		testPolicySource{},
 	}, "release.main", nil)
-
-	t.Cleanup(func() {
-		_ = os.RemoveAll(evaluator.(conftestEvaluator).workDir)
-	})
 
 	assert.NoError(t, err)
 	actualResults, err := evaluator.Evaluate(ctx, inputs)
