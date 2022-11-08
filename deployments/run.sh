@@ -25,7 +25,7 @@ kubectl wait pods -n tekton-pipelines -l pipeline.tekton.dev/release=$tekton_ver
 
 # setup resources for the ec task to run
 kubectl create secret generic cosign-public-key --from-file=cosign.pub="${ROOT}/../hack/cosign.pub"
-kustomize build https://github.com/hacbs-contract/enterprise-contract-controller/config/crd?ref=main | kubectl apply -f -
+kubectl kustomize build https://github.com/hacbs-contract/enterprise-contract-controller/config/crd?ref=main | kubectl apply -f -
 kubectl create -f "${ROOT}/ecp-policy.yaml"
 kubectl apply -f "${ROOT}/verify-enterprise-contract.yaml"
 kubectl create -f "${ROOT}/verify-enterprise-contract-taskrun.yaml"
