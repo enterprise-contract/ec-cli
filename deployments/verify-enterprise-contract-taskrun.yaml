@@ -30,10 +30,6 @@ spec:
     value: $(context.taskRun.namespace)/ec-policy
   - name: PUBLIC_KEY
     value: k8s://$(context.taskRun.namespace)/cosign-public-key
-  - name: REKOR_HOST
-    value: ""
-  - name: SSL_CERT_DIR
-    value: ""
   - name: STRICT
     value: "false"
   resources: {}
