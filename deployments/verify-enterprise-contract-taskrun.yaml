@@ -1,0 +1,56 @@
+# Copyright 2022 Red Hat, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# SPDX-License-Identifier: Apache-2.0
+---
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  annotations:
+    pipeline.tekton.dev/release: 9221ac3-dirty
+    tekton.dev/displayName: Verify Enterprise Contract V2
+    tekton.dev/pipelines.minVersion: "0.19"
+    tekton.dev/tags: ec, chains, signature, conftest
+  creationTimestamp: null
+  generateName: verify-enterprise-contract-run-
+  generation: 1
+  labels:
+    app.kubernetes.io/managed-by: tekton-pipelines
+    app.kubernetes.io/version: "0.2"
+    tekton.dev/task: verify-enterprise-contract
+spec:
+  params:
+  - name: HOMEDIR
+    value: /tekton/home
+  - name: IMAGES
+    value: |
+      {
+        "components": [
+          {
+            "containerImage": "quay.io/hacbs-contract-demo/single-container-app@sha256:84550a596e40024e6ea10ce5aab9ad5b0b91a14cb27161654722ab1d11c70ac2"
+          }
+        ]
+      }
+  - name: POLICY_CONFIGURATION
+    value: $(context.taskRun.namespace)/ec-policy
+  - name: PUBLIC_KEY
+    value: k8s://$(context.taskRun.namespace)/cosign-public-key
+  - name: STRICT
+    value: "false"
+  resources: {}
+  serviceAccountName: default
+  taskRef:
+    kind: Task
+    name: verify-enterprise-contract
+  timeout: 1h0m0s
