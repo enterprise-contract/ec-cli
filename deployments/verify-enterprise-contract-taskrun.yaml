@@ -7,12 +7,12 @@ metadata:
     tekton.dev/pipelines.minVersion: "0.19"
     tekton.dev/tags: ec, chains, signature, conftest
   creationTimestamp: null
-  generateName: verify-enterprise-contract-v2-run-
+  generateName: verify-enterprise-contract-run-
   generation: 1
   labels:
     app.kubernetes.io/managed-by: tekton-pipelines
     app.kubernetes.io/version: "0.2"
-    tekton.dev/task: verify-enterprise-contract-v2
+    tekton.dev/task: verify-enterprise-contract
 spec:
   params:
   - name: HOMEDIR
@@ -40,5 +40,5 @@ spec:
   serviceAccountName: default
   taskRef:
     kind: Task
-    name: verify-enterprise-contract-v2
+    name: verify-enterprise-contract
   timeout: 1h0m0s
