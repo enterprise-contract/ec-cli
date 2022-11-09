@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"path"
 
@@ -27,6 +28,7 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/in-toto/in-toto-golang/in_toto"
+	"github.com/qri-io/jsonschema"
 	"github.com/sigstore/cosign/pkg/cosign"
 	"github.com/sigstore/cosign/pkg/oci"
 	cosignPolicy "github.com/sigstore/cosign/pkg/policy"
@@ -37,13 +39,18 @@ import (
 	"github.com/hacbs-contract/ec-cli/internal/evaluator"
 	"github.com/hacbs-contract/ec-cli/internal/policy"
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
+	ece "github.com/hacbs-contract/ec-cli/pkg/error"
+	"github.com/hacbs-contract/ec-cli/pkg/schema"
+)
+
+var (
+	EV001 = ece.NewError("EV001", "No attestation data", ece.ErrorExitStatus)
+	EV002 = ece.NewError("EV002", "Unable to decode attestation data from attestation image", ece.ErrorExitStatus)
+	EV003 = ece.NewError("EV003", "Attestation syntax validation failed", ece.ErrorExitStatus)
 )
 
 // ConftestNamespace is the default rego namespace using for policy evaluation
 const ConftestNamespace = "release.main"
-
-// PipelineRunBuildType is the type of attestation we're interested in evaluating
-const PipelineRunBuildType = "https://tekton.dev/attestations/chains/pipelinerun@v2"
 
 var newConftestEvaluator = evaluator.NewConftestEvaluator
 
@@ -51,6 +58,10 @@ var newConftestEvaluator = evaluator.NewConftestEvaluator
 // remote.WithTransport function. By default, remote.DefaultTransport is
 // equivalent to http.DefaultTransport, with a reduced timeout and keep-alive
 var imageRefTransport = remote.WithTransport(remote.DefaultTransport)
+
+var attestationSchemas = map[string]jsonschema.Schema{
+	"https://slsa.dev/provenance/v0.2": schema.SLSA_Provenance_v0_2,
+}
 
 // ApplicationSnapshotImage represents the structure needed to evaluate an Application Snapshot Image
 type ApplicationSnapshotImage struct {
@@ -160,6 +171,64 @@ func (a *ApplicationSnapshotImage) ValidateAttestationSignature(ctx context.Cont
 	return nil
 }
 
+// ValidateAttestationSyntax validates the attestations against known JSON
+// schemas, errors out if there are no attestations to check to prevent
+// sucessful syntax check of no inputs, must invoke
+// [ValidateAttestationSignature] to prefill the attestations.
+func (a ApplicationSnapshotImage) ValidateAttestationSyntax(ctx context.Context) error {
+	if len(a.attestations) == 0 {
+		log.Debug("No attestation data found, possibly due to attestation image signature not being validated beforehand")
+		return EV001
+	}
+
+	allErrors := map[string][]jsonschema.KeyError{}
+	for _, att := range a.attestations {
+		statementBytes, _, err := statementFrom(ctx, att)
+		if err != nil {
+			return EV002.CausedBy(err)
+		}
+		if statementBytes == nil {
+			return EV002.CausedByF("Unrecognized statement JSON")
+		}
+
+		// at least one of the schemas needs to pass validation
+		for id, schema := range attestationSchemas {
+			if errs, err := schema.ValidateBytes(ctx, statementBytes); err != nil {
+				return EV002.CausedBy(err)
+			} else {
+				if len(errs) == 0 {
+					// one schema validation suceeded, consider this a success
+					// TODO: one possible drawback of this is that JSON schemas
+					// are open by default, e.g. if additionalProperties=true
+					// (the default) properties not defined in the schema are
+					// allowed, which in turn means that the document might not
+					// contain any of the properties declared in the schema
+					continue
+				}
+
+				allErrors[id] = errs
+				log.Debugf("Validated the statement against %s schema and found the following errors: %v", id, errs)
+			}
+		}
+	}
+
+	if len(allErrors) == 0 {
+		// TODO another option might be to filter out invalid statement JSONs
+		// and keep only the valid ones
+		return nil
+	}
+
+	log.Debug("Failed to validate statements from the attastation image against all known schemas")
+	msg := ""
+	for id, errs := range allErrors {
+		msg += fmt.Sprintf("\nSchema ID: %s", id)
+		for _, e := range errs {
+			msg += fmt.Sprintf("\n - %s", e.Error())
+		}
+	}
+	return EV003.CausedBy(errors.New(msg))
+}
+
 // Attestations returns the value of the attestations field of the ApplicationSnapshotImage struct
 func (a *ApplicationSnapshotImage) Attestations() []oci.Signature {
 	return a.attestations
@@ -172,37 +241,11 @@ func (a *ApplicationSnapshotImage) WriteInputFiles(ctx context.Context, fs afero
 	inputs := make([]string, 0, attCount)
 
 	for _, att := range a.attestations {
-		typ, err := att.MediaType()
+		_, statement, err := statementFrom(ctx, att)
 		if err != nil {
-			log.Debug("Problem finding media type!")
 			return nil, err
 		}
-
-		if typ != cosignTypes.DssePayloadType {
-			log.Debugf("Skipping unexpected media type %s", typ)
-			continue
-		}
-		payload, err := cosignPolicy.AttestationToPayloadJSON(ctx, "slsaprovenance", att)
-		if err != nil {
-			log.Debug("Problem extracting json payload from attestation!")
-			return nil, err
-		}
-
-		var statement in_toto.Statement
-		err = json.Unmarshal(payload, &statement)
-		if err != nil {
-			log.Debug("Problem parsing attestation payload json!")
-			return nil, err
-		}
-
-		predicates, ok := statement.Predicate.(map[string]interface{})
-		if !ok {
-			log.Debug("Unexpected attestation payload format!")
-			return nil, errors.New("expecting map with string keys in in-toto Statement, did not find it")
-		}
-
-		if predicates["buildType"] != PipelineRunBuildType {
-			log.Debugf("Skipping attestation with unexpected predicate buildType '%s'", predicates["buildType"])
+		if statement == nil {
 			continue
 		}
 
@@ -224,7 +267,7 @@ func (a *ApplicationSnapshotImage) WriteInputFiles(ctx context.Context, fs afero
 
 		attestations := map[string][]in_toto.Statement{
 			"attestations": {
-				statement,
+				*statement,
 			},
 		}
 
@@ -239,4 +282,40 @@ func (a *ApplicationSnapshotImage) WriteInputFiles(ctx context.Context, fs afero
 
 	log.Debugf("Done preparing inputs:\n%s", inputs)
 	return inputs, nil
+}
+
+func statementFrom(ctx context.Context, att oci.Signature) ([]byte, *in_toto.Statement, error) {
+	if att == nil {
+		log.Debug("nil oci.Signature provided")
+		return nil, nil, errors.New("no signature provided")
+	}
+	typ, err := att.MediaType()
+	if err != nil {
+		log.Debug("Problem finding media type!")
+		return nil, nil, err
+	}
+
+	if typ != cosignTypes.DssePayloadType {
+		log.Debugf("Skipping unexpected media type %s", typ)
+		return nil, nil, nil
+	}
+	payload, err := cosignPolicy.AttestationToPayloadJSON(ctx, "slsaprovenance", att)
+	if err != nil {
+		log.Debug("Problem extracting json payload from attestation!")
+		return nil, nil, err
+	}
+
+	if len(payload) == 0 {
+		log.Debug("Empty attestation payload json (could be wrong type)!")
+		return nil, nil, nil
+	}
+
+	var statement in_toto.Statement
+	err = json.Unmarshal(payload, &statement)
+	if err != nil {
+		log.Debug("Problem parsing attestation payload json!")
+		return nil, nil, err
+	}
+
+	return payload, &statement, nil
 }

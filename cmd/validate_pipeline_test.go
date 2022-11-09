@@ -70,6 +70,9 @@ func Test_ValidatePipelineCommandOutput(t *testing.T) {
 		  "attestationSignatureCheck": {
 			"passed": false
 		  },
+		  "attestationSyntaxCheck": {
+			"passed": false
+		  },
 		  "policyCheck": [
 			{
 			  "filename": "/path/file1.yaml",
@@ -86,6 +89,9 @@ func Test_ValidatePipelineCommandOutput(t *testing.T) {
 			"passed": false
 		  },
 		  "attestationSignatureCheck": {
+			"passed": false
+		  },
+		  "attestationSyntaxCheck": {
 			"passed": false
 		  },
 		  "policyCheck": [

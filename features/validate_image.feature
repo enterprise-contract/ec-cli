@@ -72,6 +72,7 @@ Feature: evaluate enterprise contract
           "violations": [
             {"msg": "no matching signatures:\nfailed to verify signature"},
             {"msg": "no matching attestations:\nAccepted signatures do not match threshold, Found: 0, Expected 1"},
+            {"msg": "EV001: No attestation data, at github.com/hacbs-contract/ec-cli/internal/evaluation_target/application_snapshot_image/application_snapshot_image.go:47"},
             {"msg": "no attestations available"}
           ],
           "warnings": [],

@@ -164,6 +164,9 @@ func Test_ValidateImageCommand(t *testing.T) {
 			AttestationSignatureCheck: output.VerificationStatus{
 				Passed: true,
 			},
+			AttestationSyntaxCheck: output.VerificationStatus{
+				Passed: true,
+			},
 			PolicyCheck: []conftestOutput.CheckResult{
 				{
 					FileName:  "test.json",
