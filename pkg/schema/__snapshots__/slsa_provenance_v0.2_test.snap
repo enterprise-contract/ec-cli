@@ -249,21 +249,11 @@
 
 [TestPredicateBuilderType/case_1 - 1]
 []jsonschema.KeyError{
-    {
-        PropertyPath: "/predicate/buildType",
-        InvalidValue: "",
-        Message:      "invalid uri: uri missing scheme prefix",
-    },
 }
 ---
 
 [TestPredicateBuilderType/case_2 - 1]
 []jsonschema.KeyError{
-    {
-        PropertyPath: "/predicate/buildType",
-        InvalidValue: "not_uri",
-        Message:      "invalid uri: uri missing scheme prefix",
-    },
 }
 ---
 
@@ -805,10 +795,5 @@
 
 [TestExamples/examples/hacbs1_invalid.json - 1]
 []jsonschema.KeyError{
-    {
-        PropertyPath: "/predicate/buildType",
-        InvalidValue: "tekton.dev/v1beta1/TaskRun",
-        Message:      "invalid uri: uri missing scheme prefix",
-    },
 }
 ---

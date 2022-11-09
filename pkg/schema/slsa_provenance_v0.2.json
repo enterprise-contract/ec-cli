@@ -85,8 +85,7 @@
           ]
         },
         "buildType": {
-          "type": "string",
-          "format": "uri"
+          "type": "string"
         },
         "invocation": {
           "type": "object",
