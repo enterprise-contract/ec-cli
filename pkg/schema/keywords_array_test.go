@@ -132,7 +132,7 @@ func TestValidateKeyword(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			state := jsonschema.NewValidationState(&slsa_provenance_v0_2)
+			state := jsonschema.NewValidationState(&SLSA_Provenance_v0_2)
 			c.uniqueKeys.ValidateKeyword(context.Background(), state, c.data)
 
 			assert.Equal(t, c.expected, *state.Errs)

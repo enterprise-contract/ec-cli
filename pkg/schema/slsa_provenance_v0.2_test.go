@@ -65,7 +65,7 @@ func check(t *testing.T, patches ...string) {
 			j, err := jsonpatch.MergePatch(valid, []byte(patch))
 			assert.NoError(t, err)
 
-			errs, err := slsa_provenance_v0_2.ValidateBytes(context.Background(), j)
+			errs, err := SLSA_Provenance_v0_2.ValidateBytes(context.Background(), j)
 			assert.NoError(t, err)
 
 			snaps.MatchSnapshot(t, errs)
@@ -295,7 +295,7 @@ func TestExamples(t *testing.T) {
 			json, err := os.ReadFile(path)
 			assert.NoError(t, err)
 
-			errs, err := slsa_provenance_v0_2.ValidateBytes(context.Background(), json)
+			errs, err := SLSA_Provenance_v0_2.ValidateBytes(context.Background(), json)
 			assert.NoError(t, err)
 
 			valid := strings.HasSuffix(path, "_valid.json")

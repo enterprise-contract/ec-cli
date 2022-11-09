@@ -23,7 +23,7 @@ import (
 	"github.com/qri-io/jsonschema"
 )
 
-var slsa_provenance_v0_2 jsonschema.Schema
+var SLSA_Provenance_v0_2 jsonschema.Schema
 
 //go:embed slsa_provenance_v0.2.json
 var slsa_provenance_v0_2_json string
@@ -33,7 +33,7 @@ func init() {
 
 	jsonschema.LoadDraft2019_09()
 
-	if err := json.Unmarshal([]byte(slsa_provenance_v0_2_json), &slsa_provenance_v0_2); err != nil {
+	if err := json.Unmarshal([]byte(slsa_provenance_v0_2_json), &SLSA_Provenance_v0_2); err != nil {
 		panic(err)
 	}
 }
