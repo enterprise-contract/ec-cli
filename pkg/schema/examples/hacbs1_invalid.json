@@ -1,0 +1,107 @@
+{
+  "_type": "https://in-toto.io/Statement/v0.1",
+  "predicateType": "https://slsa.dev/provenance/v0.2",
+  "subject": [
+    {
+      "name": "quay.io/hacbs-contract-demo/single-nodejs-app",
+      "digest": {
+        "sha256": "abcbdfd92a75f7bba3ab97538b1324bf4677c1fb3eb82ca59cbd8970b3759b7e"
+      }
+    }
+  ],
+  "predicate": {
+    "builder": {
+      "id": "https://tekton.dev/chains/v2"
+    },
+    "buildType": "tekton.dev/v1beta1/TaskRun",
+    "invocation": {
+      "configSource": {},
+      "parameters": {
+        "BASE_IMAGE": "registry.access.redhat.com/ubi8/nodejs-16:1-37.1654147900",
+        "BUILDER_IMAGE": "registry.access.redhat.com/ubi9/buildah:9.0.0-19@sha256:c8b1d312815452964885680fc5bc8d99b3bfe9b6961228c71a09c72ca8e915eb",
+        "IMAGE": "quay.io/hacbs-contract-demo/single-nodejs-app",
+        "MAVEN_MIRROR_URL": "",
+        "PATH_CONTEXT": ".",
+        "PUSH_EXTRA_ARGS": "--authfile /workspace/source/.dockerconfigjson",
+        "TLSVERIFY": "true"
+      }
+    },
+    "buildConfig": {
+      "steps": [
+        {
+          "entryPoint": "s2i build $(params.PATH_CONTEXT) registry.access.redhat.com/ubi8/nodejs-16:1-37.1654147900 --as-dockerfile /gen-source/Dockerfile.gen",
+          "arguments": null,
+          "environment": {
+            "container": "generate",
+            "image": "registry.redhat.io/ocp-tools-4-tech-preview/source-to-image-rhel8@sha256:cd4996fba88519ec21499da63d8c3e26cc4552429b949da76914d0666c27872d"
+          },
+          "annotations": null
+        },
+        {
+          "entryPoint": "sed -i 's/^short-name-mode = .*/short-name-mode = \"disabled\"/' /etc/containers/registries.conf\nbuildah bud --tls-verify=$(params.TLSVERIFY) --layers -f /gen-source/Dockerfile.gen -t $(params.IMAGE) .\n",
+          "arguments": null,
+          "environment": {
+            "container": "build",
+            "image": "registry.access.redhat.com/ubi9/buildah@sha256:c8b1d312815452964885680fc5bc8d99b3bfe9b6961228c71a09c72ca8e915eb"
+          },
+          "annotations": null
+        },
+        {
+          "entryPoint": "container=$(buildah from --pull-never $(params.IMAGE))\nbuildah mount $container | tee /workspace/container_path\necho $container > /workspace/container_name\n",
+          "arguments": null,
+          "environment": {
+            "container": "mount-container",
+            "image": "registry.access.redhat.com/ubi9/buildah@sha256:c8b1d312815452964885680fc5bc8d99b3bfe9b6961228c71a09c72ca8e915eb"
+          },
+          "annotations": null
+        },
+        {
+          "entryPoint": "syft dir:$(workspaces.source.path) --file=$(workspaces.source.path)/sbom-source.json --output=cyclonedx-json\nfind $(cat /workspace/container_path) -xtype l -delete\nsyft dir:$(cat /workspace/container_path) --file=$(workspaces.source.path)/sbom-image.json --output=cyclonedx-json\n",
+          "arguments": null,
+          "environment": {
+            "container": "sbom-get",
+            "image": "quay.io/redhat-appstudio/syft@sha256:09afc449976230f66848c19bb5ccf344eb0eeb4ed50747e33b53aff49462c319"
+          },
+          "annotations": null
+        },
+        {
+          "entryPoint": "if [ -f /var/lib/containers/java ]; then\n  /opt/jboss/container/java/run/run-java.sh path $(cat /workspace/container_path) -s $(workspaces.source.path)/sbom-java.json\nfi\n",
+          "arguments": null,
+          "environment": {
+            "container": "analyse-dependencies-java-sbom",
+            "image": "quay.io/redhat-appstudio/hacbs-jvm-dependency-analyser@sha256:d53dbcb2133373af9a2fa65dfe64a04dfa2c8b7c5263b737da394f4b41e0476e"
+          },
+          "annotations": null
+        },
+        {
+          "entryPoint": "#!/bin/python3\nimport json\nimport os\n\n# load SBOMs\nwith open(\"./sbom-image.json\") as f:\n  image_sbom = json.load(f)\n\nwith open(\"./sbom-source.json\") as f:\n  source_sbom = json.load(f)\n\njava_sbom = { \"components\" : [] }\nif os.path.exists(\"./sbom-java.json\"):\n  with open(\"./sbom-java.json\") as f:\n    java_sbom = json.load(f)\n\n# fetch unique components from available SBOMs\ndef get_identifier(component):\n  return component[\"name\"] + '@' + component.get(\"version\", \"\")\n\nexisting_components = [get_identifier(component) for component in image_sbom[\"components\"]]\n\nfor component in source_sbom[\"components\"]:\n  if get_identifier(component) not in existing_components:\n    image_sbom[\"components\"].append(component)\n    existing_components.append(get_identifier(component))\n\nfor component in java_sbom.get(\"components\", []):\n  if get_identifier(component) not in existing_components:\n    image_sbom[\"components\"].append(component)\n\nimage_sbom[\"components\"].sort(key=lambda c: get_identifier(c))\n\n# write the CycloneDX unified SBOM\nwith open(\"./sbom-cyclonedx.json\", \"w\") as f:\n  json.dump(image_sbom, f, indent=4)\n\n# create and write the PURL unified SBOM\npurls = [{\"purl\": component[\"purl\"]} for component in image_sbom[\"components\"] if \"purl\" in component]\npurl_content = {\"image_contents\": {\"dependencies\": purls}}\n\nwith open(\"sbom-purl.json\", \"w\") as output_file:\n  json.dump(purl_content, output_file, indent=4)\n\n# create Tekton result containing counting of Java publishers\njava_publishers = {}\n\nfor component in java_sbom.get(\"components\", []):\n  publisher = component.get(\"publisher\", None)\n\n  if publisher is None:\n    continue\n\n  if publisher not in java_publishers.keys():\n    java_publishers[publisher] = 0\n\n  java_publishers[publisher] += 1\n\nwith open(os.getenv(\"SBOM_JAVA_COMPONENTS_COUNT_PATH\"), \"w\") as f:\n  json.dump(java_publishers, f, indent=4)\n",
+          "arguments": null,
+          "environment": {
+            "container": "merge-sboms",
+            "image": "registry.redhat.io/ubi8/python-39@sha256:ad1e728e0ebeffae9159c29d5aeb373797264a7bc7e3166a3780e290e1b524a4"
+          },
+          "annotations": null
+        },
+        {
+          "entryPoint": "# Expose base image digests\nbuildah images --format '{{ .Name }}:{{ .Tag }}@{{ .Digest }}' | grep -v $(params.IMAGE) > $(results.BASE_IMAGES_DIGESTS.path)\n\nbase_image_name=$(buildah inspect --format '{{ index .ImageAnnotations \"org.opencontainers.image.base.name\"}}' $(params.IMAGE))\nbase_image_digest=$(buildah inspect --format '{{ index .ImageAnnotations \"org.opencontainers.image.base.digest\"}}' $(params.IMAGE))\ncontainer=$(buildah from --pull-never $(params.IMAGE))\nbuildah copy $container sbom-cyclonedx.json sbom-purl.json /root/buildinfo/content_manifests/\nbuildah config -a org.opencontainers.image.base.name=${base_image_name} -a org.opencontainers.image.base.digest=${base_image_digest} $container\nbuildah commit $container $(params.IMAGE)\nbuildah push \\\n  $(params.PUSH_EXTRA_ARGS) --tls-verify=$(params.TLSVERIFY) \\\n  --digestfile $(workspaces.source.path)/image-digest $(params.IMAGE) \\\n  docker://$(params.IMAGE)\ncat \"$(workspaces.source.path)\"/image-digest | tee $(results.IMAGE_DIGEST.path)\necho \"$(params.IMAGE)\" | tee $(results.IMAGE_URL.path)\n",
+          "arguments": null,
+          "environment": {
+            "container": "inject-sbom-and-push",
+            "image": "registry.access.redhat.com/ubi9/buildah@sha256:c8b1d312815452964885680fc5bc8d99b3bfe9b6961228c71a09c72ca8e915eb"
+          },
+          "annotations": null
+        }
+      ]
+    },
+    "metadata": {
+      "buildStartedOn": "2022-09-29T11:48:03Z",
+      "buildFinishedOn": "2022-09-29T11:53:34Z",
+      "completeness": {
+        "parameters": false,
+        "environment": false,
+        "materials": false
+      },
+      "reproducible": false
+    }
+  }
+}

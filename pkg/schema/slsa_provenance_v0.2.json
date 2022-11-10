@@ -1,0 +1,179 @@
+{
+  "$id": "https://slsa.dev/provenance/v0.2",
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "$defs": {
+    "DigestSet": {
+      "type": "object",
+      "propertyNames": {
+        "enum": [
+          "sha256",
+          "sha224",
+          "sha384",
+          "sha512",
+          "sha512_224",
+          "sha512_256",
+          "sha3_224",
+          "sha3_256",
+          "sha3_384",
+          "sha3_512",
+          "shake128",
+          "shake256",
+          "blake2b",
+          "blake2s",
+          "ripemd160",
+          "sm3",
+          "gost",
+          "sha1",
+          "md5"
+        ]
+      },
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[a-f0-9]+$"
+      }
+    },
+    "Timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$"
+    }
+  },
+  "type": "object",
+  "properties": {
+    "_type": {
+      "const": "https://in-toto.io/Statement/v0.1"
+    },
+    "subject": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "digest": {
+            "$ref": "#/$defs/DigestSet"
+          }
+        },
+        "required": [
+          "name",
+          "digest"
+        ]
+      },
+      "uniqueKeys": [
+        "/name"
+      ]
+    },
+    "predicateType": {
+      "const": "https://slsa.dev/provenance/v0.2"
+    },
+    "predicate": {
+      "type": "object",
+      "properties": {
+        "builder": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "required": [
+            "id"
+          ]
+        },
+        "buildType": {
+          "type": "string"
+        },
+        "invocation": {
+          "type": "object",
+          "properties": {
+            "configSource": {
+              "type": "object",
+              "properties": {
+                "uri": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "digest": {
+                  "$ref": "#/$defs/DigestSet"
+                },
+                "entryPoint": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "parameters": {
+              "type": "object"
+            },
+            "environment": {
+              "type": "object"
+            }
+          }
+        },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "buildInvocationId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "buildStartedOn": {
+              "$ref": "#/$defs/Timestamp"
+            },
+            "buildFinishedOn": {
+              "$ref": "#/$defs/Timestamp"
+            },
+            "completeness": {
+              "type": "object",
+              "properties": {
+                "parameters": {
+                  "type": "boolean"
+                },
+                "environment": {
+                  "type": "boolean"
+                },
+                "materials": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "reproducible": {
+              "type": "boolean"
+            }
+          }
+        },
+        "buildConfig": {
+          "type": "object"
+        },
+        "materials": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "uri": {
+                "type": "string",
+                "format": "uri"
+              },
+              "digest": {
+                "$ref": "#/$defs/DigestSet"
+              }
+            }
+          }
+        }
+      },
+      "required": [
+        "builder",
+        "buildType"
+      ]
+    }
+  },
+  "required": [
+    "_type",
+    "subject",
+    "predicate"
+  ]
+}

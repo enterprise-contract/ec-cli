@@ -64,6 +64,13 @@ func ValidateImage(ctx context.Context, fs afero.Fs, imageRef string, policy *ec
 		log.Debug("Image attestation signature check passed")
 		out.SetAttestationSignatureCheck(true, "success")
 	}
+	if err = a.ValidateAttestationSyntax(ctx); err != nil {
+		log.Debug("Image attestation syntax check failed")
+		out.SetAttestationSyntaxCheck(false, err.Error())
+	} else {
+		log.Debug("Image attestation syntax check passed")
+		out.SetAttestationSyntaxCheck(true, "success")
+	}
 	attCount := len(a.Attestations())
 	log.Debugf("Found %d attestations", attCount)
 	if attCount == 0 {

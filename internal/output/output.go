@@ -36,7 +36,12 @@ func (v VerificationStatus) addToViolations(violations []output.Result) []output
 		return violations
 	}
 
-	return append(violations, *v.Result)
+	result := violations
+	if v.Result != nil {
+		result = append(violations, *v.Result)
+	}
+
+	return result
 }
 
 // Output is a struct representing checks and exit code.
@@ -44,6 +49,7 @@ type Output struct {
 	ImageAccessibleCheck      VerificationStatus   `json:"imageAccessibleCheck"`
 	ImageSignatureCheck       VerificationStatus   `json:"imageSignatureCheck"`
 	AttestationSignatureCheck VerificationStatus   `json:"attestationSignatureCheck"`
+	AttestationSyntaxCheck    VerificationStatus   `json:"attestationSyntaxCheck"`
 	PolicyCheck               []output.CheckResult `json:"policyCheck"`
 	ExitCode                  int                  `json:"-"`
 }
@@ -64,6 +70,12 @@ func (o *Output) SetImageSignatureCheck(passed bool, message string) {
 func (o *Output) SetAttestationSignatureCheck(passed bool, message string) {
 	o.AttestationSignatureCheck.Passed = passed
 	o.AttestationSignatureCheck.Result = &output.Result{Message: message}
+}
+
+// SetAttestationSyntaxCheck sets the passed and result.message fields of the AttestationSyntaxCheck to the given values.
+func (o *Output) SetAttestationSyntaxCheck(passed bool, message string) {
+	o.AttestationSyntaxCheck.Passed = passed
+	o.AttestationSyntaxCheck.Result = &output.Result{Message: message}
 }
 
 // SetPolicyCheck sets the PolicyCheck and ExitCode to the results and exit code of the Results
@@ -94,6 +106,7 @@ func (o Output) Violations() []output.Result {
 	violations = o.ImageSignatureCheck.addToViolations(violations)
 	violations = o.ImageAccessibleCheck.addToViolations(violations)
 	violations = o.AttestationSignatureCheck.addToViolations(violations)
+	violations = o.AttestationSyntaxCheck.addToViolations(violations)
 	violations = o.addCheckResultsToViolations(violations)
 
 	return violations

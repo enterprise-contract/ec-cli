@@ -1,0 +1,771 @@
+{
+  "_type": "https://in-toto.io/Statement/v0.1",
+  "predicateType": "https://slsa.dev/provenance/v0.2",
+  "subject": [
+    {
+      "name": "quay.io/hacbs-contract-demo/single-nodejs-app",
+      "digest": {
+        "sha256": "abcbdfd92a75f7bba3ab97538b1324bf4677c1fb3eb82ca59cbd8970b3759b7e"
+      }
+    }
+  ],
+  "predicate": {
+    "builder": {
+      "id": "https://tekton.dev/chains/v2"
+    },
+    "buildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+    "invocation": {
+      "configSource": {},
+      "parameters": {
+        "dockerfile": "Dockerfile",
+        "git-url": "https://github.com/jduimovich/single-nodejs-app",
+        "infra-deployment-update-script": "",
+        "output-image": "quay.io/hacbs-contract-demo/single-nodejs-app",
+        "path-context": ".",
+        "rebuild": "true",
+        "revision": ""
+      }
+    },
+    "buildConfig": {
+      "tasks": [
+        {
+          "name": "appstudio-init",
+          "ref": {
+            "name": "init",
+            "kind": "Task",
+            "bundle": "quay.io/redhat-appstudio/appstudio-tasks:8be37c13984bc3f8af4d6314d87b1ec5e494b6ca-1"
+          },
+          "startedOn": "2022-09-29T11:46:37Z",
+          "finishedOn": "2022-09-29T11:46:51Z",
+          "status": "Succeeded",
+          "steps": [
+            {
+              "entryPoint": "#!/bin/bash\necho \"App Studio Build Initialize: $(params.image-url)\"\necho\necho \"Determine if Image Already Exists\"\n# Build the image when image does not exists or rebuild is set to true\nif ! skopeo inspect --no-tags docker://$(params.image-url) &>/dev/null || [ \"$(params.rebuild)\" == \"true\" ]; then\n  echo -n \"true\" > $(results.build.path)\nelse\n  echo -n \"false\" > $(results.build.path)\nfi\n",
+              "arguments": null,
+              "environment": {
+                "container": "appstudio-init",
+                "image": "registry.access.redhat.com/ubi8/skopeo@sha256:cc58da50c3842f5f2a4ba8781b60f6052919a5555a000cb4eb18a0bd0241b2b3"
+              },
+              "annotations": null
+            },
+            {
+              "entryPoint": "if [ \"$(params.jvm-build-service-init)\" == \"true\" ] && ! oc get configmap jvm-build-config &>/dev/null; then\n  oc create configmap jvm-build-config --from-literal enable-rebuilds=\"false\"\nfi\n# Create empty secret which is now hardcoded in PaC Pipelinerun template\nif ! oc get secret redhat-appstudio-registry-pull-secret &>/dev/null; then\n  oc create secret generic redhat-appstudio-registry-pull-secret\nfi\n",
+              "arguments": null,
+              "environment": {
+                "container": "hacbs-init",
+                "image": "registry.redhat.io/openshift4/ose-cli@sha256:9aa3e73ab19113150864bcceaa18eaaf3961a37d713a3e97c55c6ab0eee6f2c1"
+              },
+              "annotations": null
+            }
+          ],
+          "invocation": {
+            "configSource": {},
+            "parameters": {
+              "image-url": "quay.io/hacbs-contract-demo/single-nodejs-app",
+              "jvm-build-service-init": "false",
+              "rebuild": "true"
+            }
+          },
+          "results": [
+            {
+              "name": "build",
+              "value": "true"
+            }
+          ]
+        },
+        {
+          "name": "clone-repository",
+          "after": [
+            "appstudio-init"
+          ],
+          "ref": {
+            "name": "git-clone",
+            "kind": "Task",
+            "bundle": "quay.io/redhat-appstudio/appstudio-tasks:8be37c13984bc3f8af4d6314d87b1ec5e494b6ca-1"
+          },
+          "startedOn": "2022-09-29T11:47:09Z",
+          "finishedOn": "2022-09-29T11:47:17Z",
+          "status": "Succeeded",
+          "steps": [
+            {
+              "entryPoint": "#!/usr/bin/env sh\nset -eu\n\nif [ \"${PARAM_VERBOSE}\" = \"true\" ] ; then\n  set -x\nfi\n\nif [ \"${WORKSPACE_BASIC_AUTH_DIRECTORY_BOUND}\" = \"true\" ] ; then\n  cp \"${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.git-credentials\" \"${PARAM_USER_HOME}/.git-credentials\"\n  cp \"${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.gitconfig\" \"${PARAM_USER_HOME}/.gitconfig\"\n  chmod 400 \"${PARAM_USER_HOME}/.git-credentials\"\n  chmod 400 \"${PARAM_USER_HOME}/.gitconfig\"\nfi\n\nif [ \"${WORKSPACE_SSH_DIRECTORY_BOUND}\" = \"true\" ] ; then\n  cp -R \"${WORKSPACE_SSH_DIRECTORY_PATH}\" \"${PARAM_USER_HOME}\"/.ssh\n  chmod 700 \"${PARAM_USER_HOME}\"/.ssh\n  chmod -R 400 \"${PARAM_USER_HOME}\"/.ssh/*\nfi\n\nCHECKOUT_DIR=\"${WORKSPACE_OUTPUT_PATH}/${PARAM_SUBDIRECTORY}\"\n\ncleandir() {\n  # Delete any existing contents of the repo directory if it exists.\n  #\n  # We don't just \"rm -rf ${CHECKOUT_DIR}\" because ${CHECKOUT_DIR} might be \"/\"\n  # or the root of a mounted volume.\n  if [ -d \"${CHECKOUT_DIR}\" ] ; then\n    # Delete non-hidden files and directories\n    rm -rf \"${CHECKOUT_DIR:?}\"/*\n    # Delete files and directories starting with . but excluding ..\n    rm -rf \"${CHECKOUT_DIR}\"/.[!.]*\n    # Delete files and directories starting with .. plus any other character\n    rm -rf \"${CHECKOUT_DIR}\"/..?*\n  fi\n}\n\nif [ \"${PARAM_DELETE_EXISTING}\" = \"true\" ] ; then\n  cleandir\nfi\n\ntest -z \"${PARAM_HTTP_PROXY}\" || export HTTP_PROXY=\"${PARAM_HTTP_PROXY}\"\ntest -z \"${PARAM_HTTPS_PROXY}\" || export HTTPS_PROXY=\"${PARAM_HTTPS_PROXY}\"\ntest -z \"${PARAM_NO_PROXY}\" || export NO_PROXY=\"${PARAM_NO_PROXY}\"\n\n/ko-app/git-init \\\n  -url=\"${PARAM_URL}\" \\\n  -revision=\"${PARAM_REVISION}\" \\\n  -refspec=\"${PARAM_REFSPEC}\" \\\n  -path=\"${CHECKOUT_DIR}\" \\\n  -sslVerify=\"${PARAM_SSL_VERIFY}\" \\\n  -submodules=\"${PARAM_SUBMODULES}\" \\\n  -depth=\"${PARAM_DEPTH}\" \\\n  -sparseCheckoutDirectories=\"${PARAM_SPARSE_CHECKOUT_DIRECTORIES}\"\ncd \"${CHECKOUT_DIR}\"\nRESULT_SHA=\"$(git rev-parse HEAD)\"\nEXIT_CODE=\"$?\"\nif [ \"${EXIT_CODE}\" != 0 ] ; then\n  exit \"${EXIT_CODE}\"\nfi\nprintf \"%s\" \"${RESULT_SHA}\" > \"$(results.commit.path)\"\nprintf \"%s\" \"${PARAM_URL}\" > \"$(results.url.path)\"\n",
+              "arguments": null,
+              "environment": {
+                "container": "clone",
+                "image": "registry.redhat.io/openshift-pipelines/pipelines-git-init-rhel8@sha256:af7dd5b3b1598a980f17d5f5d3d8a4b11ab4f5184677f7f17ad302baa36bd3c1"
+              },
+              "annotations": null
+            }
+          ],
+          "invocation": {
+            "configSource": {},
+            "parameters": {
+              "deleteExisting": "true",
+              "depth": "1",
+              "gitInitImage": "registry.redhat.io/openshift-pipelines/pipelines-git-init-rhel8@sha256:af7dd5b3b1598a980f17d5f5d3d8a4b11ab4f5184677f7f17ad302baa36bd3c1",
+              "httpProxy": "",
+              "httpsProxy": "",
+              "noProxy": "",
+              "refspec": "",
+              "revision": "",
+              "sparseCheckoutDirectories": "",
+              "sslVerify": "true",
+              "subdirectory": "",
+              "submodules": "true",
+              "url": "https://github.com/jduimovich/single-nodejs-app",
+              "userHome": "/tekton/home",
+              "verbose": "true"
+            }
+          },
+          "results": [
+            {
+              "name": "commit",
+              "value": "2857d4447f37b7151a2a7225200c809efdf984c4"
+            },
+            {
+              "name": "url",
+              "value": "https://github.com/jduimovich/single-nodejs-app"
+            }
+          ]
+        },
+        {
+          "name": "appstudio-configure-build",
+          "after": [
+            "clone-repository",
+            "appstudio-init"
+          ],
+          "ref": {
+            "name": "configure-build",
+            "kind": "Task",
+            "bundle": "quay.io/redhat-appstudio/appstudio-tasks:8be37c13984bc3f8af4d6314d87b1ec5e494b6ca-1"
+          },
+          "startedOn": "2022-09-29T11:47:36Z",
+          "finishedOn": "2022-09-29T11:47:49Z",
+          "status": "Succeeded",
+          "steps": [
+            {
+              "entryPoint": "#!/usr/bin/env bash\necho \"App Studio Configure Build\"\n\nDEST=/workspace/source/.dockerconfigjson\nDEF=/secret/default-push-secret/.dockerconfigjson\nAUTH=/workspace/registry-auth/.dockerconfigjson\nTMP=$(mktemp)\necho '{}' > $DEST\n# Set lowest priority on default shared secret\nFILES=\"$DEF\"\n# Use secrets from serviceAccount\ncd /tekton/creds-secrets\nfor file in $(ls); do\n  if [ -f \"$file/.dockerconfigjson\" ]; then\n    FILES=\"$FILES $file/.dockerconfigjson\"\n  elif [ -f \"$file/.dockercfg\" ]; then\n    # convert format from .dockercfg to .dockerconfigjson\n    newformat=$(mktemp)\n    jq '{\"auths\": .}' $file/.dockercfg > $newformat\n    FILES=\"$FILES $newformat\"\n  fi\ndone\n# set highest priority on registry-auth workspace\nFILES=\"$FILES $AUTH\"\necho \"Looking for Registry Auth Configs\"\n# Merge secrets into one file\nfor file in $FILES; do\n  if [ -f \"$file\" ]; then\n    echo \"$file found\"\n    jq -M -s '.[0] * .[1]' $DEST $file > $TMP\n    mv $TMP $DEST\n  fi\ndone\nchmod 644 $DEST\necho -n $DEST > /tekton/results/registry-auth\necho -n \"--authfile $DEST\"  >  /tekton/results/buildah-auth-param\n",
+              "arguments": null,
+              "environment": {
+                "container": "appstudio-configure-build",
+                "image": "quay.io/redhat-appstudio/appstudio-utils@sha256:e1d7e2bbff7032f078df41ab4d6345ada8474f615c0e93f6268ae9ba48a81b1d"
+              },
+              "annotations": null
+            }
+          ],
+          "invocation": {
+            "configSource": {},
+            "parameters": {
+              "shared-secret": "redhat-appstudio-staginguser"
+            }
+          },
+          "results": [
+            {
+              "name": "buildah-auth-param",
+              "value": "--authfile /workspace/source/.dockerconfigjson"
+            },
+            {
+              "name": "registry-auth",
+              "value": "/workspace/source/.dockerconfigjson"
+            }
+          ]
+        },
+        {
+          "name": "build-container",
+          "after": [
+            "appstudio-configure-build",
+            "appstudio-init"
+          ],
+          "ref": {
+            "name": "s2i-nodejs",
+            "kind": "Task",
+            "bundle": "quay.io/redhat-appstudio/appstudio-tasks:8be37c13984bc3f8af4d6314d87b1ec5e494b6ca-2"
+          },
+          "startedOn": "2022-09-29T11:48:03Z",
+          "finishedOn": "2022-09-29T11:53:34Z",
+          "status": "Succeeded",
+          "steps": [
+            {
+              "entryPoint": "s2i build $(params.PATH_CONTEXT) registry.access.redhat.com/ubi8/nodejs-16:1-37.1654147900 --as-dockerfile /gen-source/Dockerfile.gen",
+              "arguments": null,
+              "environment": {
+                "container": "generate",
+                "image": "registry.redhat.io/ocp-tools-4-tech-preview/source-to-image-rhel8@sha256:cd4996fba88519ec21499da63d8c3e26cc4552429b949da76914d0666c27872d"
+              },
+              "annotations": null
+            },
+            {
+              "entryPoint": "sed -i 's/^short-name-mode = .*/short-name-mode = \"disabled\"/' /etc/containers/registries.conf\nbuildah bud --tls-verify=$(params.TLSVERIFY) --layers -f /gen-source/Dockerfile.gen -t $(params.IMAGE) .\n",
+              "arguments": null,
+              "environment": {
+                "container": "build",
+                "image": "registry.access.redhat.com/ubi9/buildah@sha256:c8b1d312815452964885680fc5bc8d99b3bfe9b6961228c71a09c72ca8e915eb"
+              },
+              "annotations": null
+            },
+            {
+              "entryPoint": "container=$(buildah from --pull-never $(params.IMAGE))\nbuildah mount $container | tee /workspace/container_path\necho $container > /workspace/container_name\n",
+              "arguments": null,
+              "environment": {
+                "container": "mount-container",
+                "image": "registry.access.redhat.com/ubi9/buildah@sha256:c8b1d312815452964885680fc5bc8d99b3bfe9b6961228c71a09c72ca8e915eb"
+              },
+              "annotations": null
+            },
+            {
+              "entryPoint": "syft dir:$(workspaces.source.path) --file=$(workspaces.source.path)/sbom-source.json --output=cyclonedx-json\nfind $(cat /workspace/container_path) -xtype l -delete\nsyft dir:$(cat /workspace/container_path) --file=$(workspaces.source.path)/sbom-image.json --output=cyclonedx-json\n",
+              "arguments": null,
+              "environment": {
+                "container": "sbom-get",
+                "image": "quay.io/redhat-appstudio/syft@sha256:09afc449976230f66848c19bb5ccf344eb0eeb4ed50747e33b53aff49462c319"
+              },
+              "annotations": null
+            },
+            {
+              "entryPoint": "if [ -f /var/lib/containers/java ]; then\n  /opt/jboss/container/java/run/run-java.sh path $(cat /workspace/container_path) -s $(workspaces.source.path)/sbom-java.json\nfi\n",
+              "arguments": null,
+              "environment": {
+                "container": "analyse-dependencies-java-sbom",
+                "image": "quay.io/redhat-appstudio/hacbs-jvm-dependency-analyser@sha256:d53dbcb2133373af9a2fa65dfe64a04dfa2c8b7c5263b737da394f4b41e0476e"
+              },
+              "annotations": null
+            },
+            {
+              "entryPoint": "#!/bin/python3\nimport json\nimport os\n\n# load SBOMs\nwith open(\"./sbom-image.json\") as f:\n  image_sbom = json.load(f)\n\nwith open(\"./sbom-source.json\") as f:\n  source_sbom = json.load(f)\n\njava_sbom = { \"components\" : [] }\nif os.path.exists(\"./sbom-java.json\"):\n  with open(\"./sbom-java.json\") as f:\n    java_sbom = json.load(f)\n\n# fetch unique components from available SBOMs\ndef get_identifier(component):\n  return component[\"name\"] + '@' + component.get(\"version\", \"\")\n\nexisting_components = [get_identifier(component) for component in image_sbom[\"components\"]]\n\nfor component in source_sbom[\"components\"]:\n  if get_identifier(component) not in existing_components:\n    image_sbom[\"components\"].append(component)\n    existing_components.append(get_identifier(component))\n\nfor component in java_sbom.get(\"components\", []):\n  if get_identifier(component) not in existing_components:\n    image_sbom[\"components\"].append(component)\n\nimage_sbom[\"components\"].sort(key=lambda c: get_identifier(c))\n\n# write the CycloneDX unified SBOM\nwith open(\"./sbom-cyclonedx.json\", \"w\") as f:\n  json.dump(image_sbom, f, indent=4)\n\n# create and write the PURL unified SBOM\npurls = [{\"purl\": component[\"purl\"]} for component in image_sbom[\"components\"] if \"purl\" in component]\npurl_content = {\"image_contents\": {\"dependencies\": purls}}\n\nwith open(\"sbom-purl.json\", \"w\") as output_file:\n  json.dump(purl_content, output_file, indent=4)\n\n# create Tekton result containing counting of Java publishers\njava_publishers = {}\n\nfor component in java_sbom.get(\"components\", []):\n  publisher = component.get(\"publisher\", None)\n\n  if publisher is None:\n    continue\n\n  if publisher not in java_publishers.keys():\n    java_publishers[publisher] = 0\n\n  java_publishers[publisher] += 1\n\nwith open(os.getenv(\"SBOM_JAVA_COMPONENTS_COUNT_PATH\"), \"w\") as f:\n  json.dump(java_publishers, f, indent=4)\n",
+              "arguments": null,
+              "environment": {
+                "container": "merge-sboms",
+                "image": "registry.redhat.io/ubi8/python-39@sha256:ad1e728e0ebeffae9159c29d5aeb373797264a7bc7e3166a3780e290e1b524a4"
+              },
+              "annotations": null
+            },
+            {
+              "entryPoint": "# Expose base image digests\nbuildah images --format '{{ .Name }}:{{ .Tag }}@{{ .Digest }}' | grep -v $(params.IMAGE) > $(results.BASE_IMAGES_DIGESTS.path)\n\nbase_image_name=$(buildah inspect --format '{{ index .ImageAnnotations \"org.opencontainers.image.base.name\"}}' $(params.IMAGE))\nbase_image_digest=$(buildah inspect --format '{{ index .ImageAnnotations \"org.opencontainers.image.base.digest\"}}' $(params.IMAGE))\ncontainer=$(buildah from --pull-never $(params.IMAGE))\nbuildah copy $container sbom-cyclonedx.json sbom-purl.json /root/buildinfo/content_manifests/\nbuildah config -a org.opencontainers.image.base.name=${base_image_name} -a org.opencontainers.image.base.digest=${base_image_digest} $container\nbuildah commit $container $(params.IMAGE)\nbuildah push \\\n  $(params.PUSH_EXTRA_ARGS) --tls-verify=$(params.TLSVERIFY) \\\n  --digestfile $(workspaces.source.path)/image-digest $(params.IMAGE) \\\n  docker://$(params.IMAGE)\ncat \"$(workspaces.source.path)\"/image-digest | tee $(results.IMAGE_DIGEST.path)\necho \"$(params.IMAGE)\" | tee $(results.IMAGE_URL.path)\n",
+              "arguments": null,
+              "environment": {
+                "container": "inject-sbom-and-push",
+                "image": "registry.access.redhat.com/ubi9/buildah@sha256:c8b1d312815452964885680fc5bc8d99b3bfe9b6961228c71a09c72ca8e915eb"
+              },
+              "annotations": null
+            }
+          ],
+          "invocation": {
+            "configSource": {},
+            "parameters": {
+              "BASE_IMAGE": "registry.access.redhat.com/ubi8/nodejs-16:1-37.1654147900",
+              "BUILDER_IMAGE": "registry.access.redhat.com/ubi9/buildah:9.0.0-19@sha256:c8b1d312815452964885680fc5bc8d99b3bfe9b6961228c71a09c72ca8e915eb",
+              "IMAGE": "quay.io/hacbs-contract-demo/single-nodejs-app",
+              "MAVEN_MIRROR_URL": "",
+              "PATH_CONTEXT": ".",
+              "PUSH_EXTRA_ARGS": "--authfile /workspace/source/.dockerconfigjson",
+              "TLSVERIFY": "true"
+            }
+          },
+          "results": [
+            {
+              "name": "SBOM_JAVA_COMPONENTS_COUNT",
+              "value": "{}"
+            },
+            {
+              "name": "BASE_IMAGES_DIGESTS",
+              "value": "registry.access.redhat.com/ubi8/nodejs-16:1-37.1654147900@sha256:c827d8fbb93163dc66871c6b7fdabbae6a684f9d9f0e68e0aaee48e141394d22\n"
+            },
+            {
+              "name": "IMAGE_DIGEST",
+              "value": "sha256:abcbdfd92a75f7bba3ab97538b1324bf4677c1fb3eb82ca59cbd8970b3759b7e"
+            },
+            {
+              "name": "IMAGE_URL",
+              "value": "quay.io/hacbs-contract-demo/single-nodejs-app\n"
+            }
+          ]
+        },
+        {
+          "name": "sanity-inspect-image",
+          "after": [
+            "build-container"
+          ],
+          "ref": {
+            "name": "sanity-inspect-image",
+            "kind": "Task",
+            "bundle": "quay.io/redhat-appstudio/appstudio-tasks:8be37c13984bc3f8af4d6314d87b1ec5e494b6ca-2"
+          },
+          "startedOn": "2022-09-29T11:53:45Z",
+          "finishedOn": "2022-09-29T11:58:45Z",
+          "status": "Succeeded",
+          "steps": [
+            {
+              "entryPoint": "IMAGE_INSPECT=image_inspect.json\nBASE_IMAGE_INSPECT=base_image_inspect.json\nRAW_IMAGE_INSPECT=raw_image_inspect.json\n\necho \"Inspecting manifest for source image $(params.IMAGE_URL)\"\nskopeo inspect --no-tags docker://$(params.IMAGE_URL) > $IMAGE_INSPECT\nskopeo inspect --no-tags --raw docker://$(params.IMAGE_URL) > $RAW_IMAGE_INSPECT\n\necho \"Getting base image manifest for source image $(params.IMAGE_URL)\"\nBASE_IMAGE_NAME=\"$(jq -r \".annotations.\\\"org.opencontainers.image.base.name\\\"\" $RAW_IMAGE_INSPECT)\"\nBASE_IMAGE_DIGEST=\"$(jq -r \".annotations.\\\"org.opencontainers.image.base.digest\\\"\" $RAW_IMAGE_INSPECT)\"\nif [ $BASE_IMAGE_NAME == 'null' ]; then\n  echo \"Cannot get base image info from 'annotations'\"\n  echo \"Trying to get base image info from 'Labels'\"\n  BASE_IMAGE_NAME=\"$(jq -r \".Labels.\\\"org.opencontainers.image.base.name\\\"\" $IMAGE_INSPECT)\"\n  BASE_IMAGE_DIGEST=\"$(jq -r \".annotations.\\\"org.opencontainers.image.base.digest\\\"\" $IMAGE_INSPECT)\"\n  if [ \"$BASE_IMAGE_NAME\" == 'null' ]; then\n    echo \"Cannot get base image info from 'Labels', please check the source image $(params.IMAGE_URL)\"\n    exit 0\n  fi\nfi\nif [ -z \"$BASE_IMAGE_NAME\" ]; then\n  echo \"Source image $(params.IMAGE_URL) is built from scratch, so there is no base image\"\n  exit 0\nfi\nBASE_IMAGE=\"${BASE_IMAGE_NAME%:*}@$BASE_IMAGE_DIGEST\"\necho \"The base image is $BASE_IMAGE, get its manifest now\"\nskopeo inspect --no-tags docker://$BASE_IMAGE  > $BASE_IMAGE_INSPECT || true\necho \"$BASE_IMAGE\" | tee $(results.BASE_IMAGE.path)\n\njq -r \".Name\" $BASE_IMAGE_INSPECT | cut -d\"/\" -f2,3 | tee $(results.BASE_IMAGE_REPOSITORY.path)\n",
+              "arguments": null,
+              "environment": {
+                "container": "inspect-image",
+                "image": "quay.io/redhat-appstudio/hacbs-test@sha256:415e2724e9d5842d49344ad3a4e82dc92a05a278ba1f1dfdd1b2b5e59a7a364e"
+              },
+              "annotations": null
+            }
+          ],
+          "invocation": {
+            "configSource": {},
+            "parameters": {
+              "IMAGE_URL": "quay.io/hacbs-contract-demo/single-nodejs-app"
+            }
+          },
+          "results": [
+            {
+              "name": "BASE_IMAGE",
+              "value": "registry.access.redhat.com/ubi8/nodejs-16@sha256:ca5d106af65eb1b80f8dd12cdc3cbf536b83bf5b5b763ea33ff74f0fad76f959\n"
+            },
+            {
+              "name": "BASE_IMAGE_REPOSITORY",
+              "value": ""
+            }
+          ]
+        },
+        {
+          "name": "sanity-label-check",
+          "after": [
+            "sanity-inspect-image"
+          ],
+          "ref": {
+            "name": "sanity-label-check",
+            "kind": "Task",
+            "bundle": "quay.io/redhat-appstudio/appstudio-tasks:8be37c13984bc3f8af4d6314d87b1ec5e494b6ca-2"
+          },
+          "startedOn": "2022-09-29T11:58:56Z",
+          "finishedOn": "2022-09-29T11:59:18Z",
+          "status": "Succeeded",
+          "steps": [
+            {
+              "entryPoint": "CONFTEST_OPTIONS=\"\"\nif [ -s \"../sanity-inspect-image/base_image_inspect.json\" ]; then\n  CONFTEST_OPTIONS=\"-d=../sanity-inspect-image/base_image_inspect.json\"\nfi\n\necho \"Running conftest using $(params.POLICY_DIR) policy, $(params.POLICY_NAMESPACE) namespace\"\n/usr/bin/conftest test --no-fail ../sanity-inspect-image/image_inspect.json \"${CONFTEST_OPTIONS}\" \\\n--policy $(params.POLICY_DIR) --namespace $(params.POLICY_NAMESPACE) \\\n--output=json 2> stderr.txt | tee sanity_label_check_output.json\n\nERR_MSG=\"$(cat stderr.txt)\"\nERR_MSG=\"${ERR_MSG:-unknown}\"\nHACBS_ERROR_OUTPUT=$(jq -rc --arg date $(date +%s) --arg ERR_MSG \"${ERR_MSG: 0: 3000}\" --null-input \\\n  '{result: \"ERROR\", timestamp: $date, failures: [$ERR_MSG]}')\nHACBS_TEST_OUTPUT=$(jq -rce --arg date $(date +%s) \\\n  '.[] | { result: (if (.failures | length > 0) then \"FAILURE\" else \"SUCCESS\" end),\n           timestamp: $date,\n           namespace,\n           successes,\n           failures: (.failures // [])|map(.metadata.details.name) | unique\n         }' sanity_label_check_output.json || true)\necho \"${HACBS_TEST_OUTPUT:-${HACBS_ERROR_OUTPUT}}\" | tee $(results.HACBS_TEST_OUTPUT.path)\n",
+              "arguments": null,
+              "environment": {
+                "container": "basic-sanity-checks-required-labels",
+                "image": "quay.io/redhat-appstudio/hacbs-test@sha256:415e2724e9d5842d49344ad3a4e82dc92a05a278ba1f1dfdd1b2b5e59a7a364e"
+              },
+              "annotations": null
+            }
+          ],
+          "invocation": {
+            "configSource": {},
+            "parameters": {
+              "POLICY_DIR": "/project/image/",
+              "POLICY_NAMESPACE": "required_checks"
+            }
+          },
+          "results": [
+            {
+              "name": "HACBS_TEST_OUTPUT",
+              "value": "{\"result\":\"SUCCESS\",\"timestamp\":\"1664452757\",\"namespace\":\"required_checks\",\"successes\":22,\"failures\":[]}\n"
+            }
+          ]
+        },
+        {
+          "name": "sanity-optional-label-check",
+          "after": [
+            "sanity-inspect-image"
+          ],
+          "ref": {
+            "name": "sanity-label-check",
+            "kind": "Task",
+            "bundle": "quay.io/redhat-appstudio/appstudio-tasks:8be37c13984bc3f8af4d6314d87b1ec5e494b6ca-2"
+          },
+          "startedOn": "2022-09-29T11:58:57Z",
+          "finishedOn": "2022-09-29T11:59:18Z",
+          "status": "Succeeded",
+          "steps": [
+            {
+              "entryPoint": "CONFTEST_OPTIONS=\"\"\nif [ -s \"../sanity-inspect-image/base_image_inspect.json\" ]; then\n  CONFTEST_OPTIONS=\"-d=../sanity-inspect-image/base_image_inspect.json\"\nfi\n\necho \"Running conftest using $(params.POLICY_DIR) policy, $(params.POLICY_NAMESPACE) namespace\"\n/usr/bin/conftest test --no-fail ../sanity-inspect-image/image_inspect.json \"${CONFTEST_OPTIONS}\" \\\n--policy $(params.POLICY_DIR) --namespace $(params.POLICY_NAMESPACE) \\\n--output=json 2> stderr.txt | tee sanity_label_check_output.json\n\nERR_MSG=\"$(cat stderr.txt)\"\nERR_MSG=\"${ERR_MSG:-unknown}\"\nHACBS_ERROR_OUTPUT=$(jq -rc --arg date $(date +%s) --arg ERR_MSG \"${ERR_MSG: 0: 3000}\" --null-input \\\n  '{result: \"ERROR\", timestamp: $date, failures: [$ERR_MSG]}')\nHACBS_TEST_OUTPUT=$(jq -rce --arg date $(date +%s) \\\n  '.[] | { result: (if (.failures | length > 0) then \"FAILURE\" else \"SUCCESS\" end),\n           timestamp: $date,\n           namespace,\n           successes,\n           failures: (.failures // [])|map(.metadata.details.name) | unique\n         }' sanity_label_check_output.json || true)\necho \"${HACBS_TEST_OUTPUT:-${HACBS_ERROR_OUTPUT}}\" | tee $(results.HACBS_TEST_OUTPUT.path)\n",
+              "arguments": null,
+              "environment": {
+                "container": "basic-sanity-checks-required-labels",
+                "image": "quay.io/redhat-appstudio/hacbs-test@sha256:415e2724e9d5842d49344ad3a4e82dc92a05a278ba1f1dfdd1b2b5e59a7a364e"
+              },
+              "annotations": null
+            }
+          ],
+          "invocation": {
+            "configSource": {},
+            "parameters": {
+              "POLICY_DIR": "/project/image/",
+              "POLICY_NAMESPACE": "optional_checks"
+            }
+          },
+          "results": [
+            {
+              "name": "HACBS_TEST_OUTPUT",
+              "value": "{\"result\":\"SUCCESS\",\"timestamp\":\"1664452757\",\"namespace\":\"optional_checks\",\"successes\":7,\"failures\":[]}\n"
+            }
+          ]
+        },
+        {
+          "name": "deprecated-base-image-check",
+          "after": [
+            "sanity-inspect-image"
+          ],
+          "ref": {
+            "name": "deprecated-image-check",
+            "kind": "Task",
+            "bundle": "quay.io/redhat-appstudio/appstudio-tasks:8be37c13984bc3f8af4d6314d87b1ec5e494b6ca-1"
+          },
+          "startedOn": "2022-09-29T11:58:57Z",
+          "finishedOn": "2022-09-29T11:59:35Z",
+          "status": "Succeeded",
+          "steps": [
+            {
+              "entryPoint": "#!/usr/bin/env bash\necho \"Querying Pyxis for $(params.IMAGE_REPOSITORY)...\"\nhttp_code=$(curl -s -k -o $(workspaces.sanity-ws.path)/repository_data.json -w '%{http_code}' \"https://catalog.redhat.com/api/containers/v1/repositories/registry/$(params.IMAGE_REGISTRY)/repository/$(params.IMAGE_REPOSITORY)\")\n\necho \"Response code: $http_code\"\necho -n $http_code > $(results.PYXIS_HTTP_CODE.path)\n",
+              "arguments": null,
+              "environment": {
+                "container": "query-pyxis",
+                "image": "registry.access.redhat.com/ubi8/ubi@sha256:7977a31c6829d4629698ae5f3dcd5691e90f83bed1b336bff16d2afafa12cba4"
+              },
+              "annotations": null
+            },
+            {
+              "entryPoint": "#!/usr/bin/env sh\nhttp_code=$(cat $(results.PYXIS_HTTP_CODE.path))\n\nif [ \"$http_code\" == \"200\" ];\nthen\n  echo \"Running conftest using $(params.POLICY_DIR) policy, $(params.POLICY_NAMESPACE) namespace\"\n  /usr/bin/conftest test --no-fail $(workspaces.sanity-ws.path)/repository_data.json \\\n  --policy $(params.POLICY_DIR) --namespace $(params.POLICY_NAMESPACE) \\\n  --output=json 2> $(workspaces.sanity-ws.path)/stderr.txt | tee $(workspaces.sanity-ws.path)/deprecated_image_check_output.json\n  echo \"Done!\"\n  exit 0\nelif [ \"$http_code\" == \"404\" ];\nthen\n  echo \"Registry/image $(params.IMAGE_REGISTRY)/$(params.IMAGE_REPOSITORY) not found in Pyxis\" > $(workspaces.sanity-ws.path)/stderr.txt\n  cat $(workspaces.sanity-ws.path)/stderr.txt\nelse\n  echo \"Unexpected error (HTTP code $http_code) occured for registry/image $(params.IMAGE_REGISTRY)/$(params.IMAGE_REPOSITORY) during running conftest\" > $(workspaces.sanity-ws.path)/stderr.txt\n  cat $(workspaces.sanity-ws.path)/stderr.txt\nfi\n",
+              "arguments": null,
+              "environment": {
+                "container": "run-conftest",
+                "image": "quay.io/redhat-appstudio/hacbs-test@sha256:415e2724e9d5842d49344ad3a4e82dc92a05a278ba1f1dfdd1b2b5e59a7a364e"
+              },
+              "annotations": null
+            },
+            {
+              "entryPoint": "ERR_MSG=\"$(echo -n $(cat $(workspaces.sanity-ws.path)/stderr.txt))\"\nERR_MSG=\"${ERR_MSG:-unknown}\"\nHACBS_ERROR_OUTPUT=$(jq -rc --arg date $(date +%s) --arg MSG \"${ERR_MSG: 0: 3000}\" --null-input \\\n  '{result: \"ERROR\", timestamp: $date, failures: $MSG}')\nHACBS_TEST_OUTPUT=$(jq -rce --arg date $(date +%s) \\\n  '.[] | { result: (if (.failures | length > 0) then \"FAILURE\" else \"SUCCESS\" end),\n           timestamp: $date,\n           namespace,\n           successes,\n           failures: (.failures // [])|map(.metadata.details.name) | unique\n         }' $(workspaces.sanity-ws.path)/deprecated_image_check_output.json || true)\n\necho \"${HACBS_TEST_OUTPUT:-${HACBS_ERROR_OUTPUT}}\" | tee $(results.HACBS_TEST_OUTPUT.path)\n",
+              "arguments": null,
+              "environment": {
+                "container": "test-format-result",
+                "image": "quay.io/redhat-appstudio/hacbs-test@sha256:415e2724e9d5842d49344ad3a4e82dc92a05a278ba1f1dfdd1b2b5e59a7a364e"
+              },
+              "annotations": null
+            }
+          ],
+          "invocation": {
+            "configSource": {},
+            "parameters": {
+              "IMAGE_REGISTRY": "registry.access.redhat.com",
+              "IMAGE_REPOSITORY": "",
+              "POLICY_DIR": "/project/repository/",
+              "POLICY_NAMESPACE": "required_checks"
+            }
+          },
+          "results": [
+            {
+              "name": "PYXIS_HTTP_CODE",
+              "value": "404"
+            },
+            {
+              "name": "HACBS_TEST_OUTPUT",
+              "value": "{\"result\":\"ERROR\",\"timestamp\":\"1664452774\",\"failures\":\"Registry/image registry.access.redhat.com/ not found in Pyxis\"}\n"
+            }
+          ]
+        },
+        {
+          "name": "get-clair-results",
+          "after": [
+            "build-container"
+          ],
+          "ref": {
+            "name": "get-clair-scan",
+            "kind": "Task",
+            "bundle": "quay.io/redhat-appstudio/appstudio-tasks:8be37c13984bc3f8af4d6314d87b1ec5e494b6ca-1"
+          },
+          "startedOn": "2022-09-29T11:53:45Z",
+          "finishedOn": "2022-09-29T12:12:35Z",
+          "status": "Succeeded",
+          "steps": [
+            {
+              "entryPoint": "#!/usr/bin/env bash\n\nimagewithouttag=$(echo '$(params.image-url)' | sed \"s/\\(.*\\):.*/\\1/\" | tr -d '\\n')\n# strip new-line escape symbol from parameter and save it to variable\nimageanddigest=$(echo $imagewithouttag@'$(params.image-digest)')\n\n[ -f /workspace/registry-auth/.dockerconfigjson ] && REGISTRY_ARGS=\"/workspace/registry-auth/\"\n\nclair-action report --image-ref=$imageanddigest --db-path=/tmp/matcher.db --format=quay --docker-config-dir=$REGISTRY_ARGS > $(workspaces.clair-ws.path)/clair-result.json\n",
+              "arguments": null,
+              "environment": {
+                "container": "get-vulnerabilities",
+                "image": "quay.io/redhat-appstudio/clair-in-ci@sha256:60f732423d1a37e6f50463474cb553be739d188c047f39a36429a510c36ec5d9"
+              },
+              "annotations": null
+            }
+          ],
+          "invocation": {
+            "configSource": {},
+            "parameters": {
+              "image-digest": "sha256:abcbdfd92a75f7bba3ab97538b1324bf4677c1fb3eb82ca59cbd8970b3759b7e",
+              "image-url": "quay.io/hacbs-contract-demo/single-nodejs-app\n"
+            }
+          }
+        },
+        {
+          "name": "conftest-clair",
+          "after": [
+            "get-clair-results"
+          ],
+          "ref": {
+            "name": "conftest-clair",
+            "kind": "Task",
+            "bundle": "quay.io/redhat-appstudio/appstudio-tasks:8be37c13984bc3f8af4d6314d87b1ec5e494b6ca-1"
+          },
+          "startedOn": "2022-09-29T12:12:49Z",
+          "finishedOn": "2022-09-29T12:23:39Z",
+          "status": "Succeeded",
+          "steps": [
+            {
+              "entryPoint": "/usr/bin/conftest test --no-fail $(workspaces.conftest-ws.path)/clair-result.json \\\n--policy /project/clair/vulnerabilities-check.rego --namespace required_checks \\\n--output=json | tee $(workspaces.conftest-ws.path)/clair-vulnerabilities.json\n",
+              "arguments": null,
+              "environment": {
+                "container": "conftest-vulnerabilities",
+                "image": "quay.io/redhat-appstudio/hacbs-test@sha256:415e2724e9d5842d49344ad3a4e82dc92a05a278ba1f1dfdd1b2b5e59a7a364e"
+              },
+              "annotations": null
+            },
+            {
+              "entryPoint": "HACBS_ERROR_OUTPUT=$(jq -rc --arg date $(date +%s) --null-input \\\n  '{result: \"ERROR\", timestamp: $date}')\nHACBS_TEST_OUTPUT=$(jq -rce --arg date $(date +%s) \\\n  '.[] | { result: (if (.failures | length > 0) then \"FAILURE\" else \"SUCCESS\" end),\n           timestamp: $date,\n           namespace,\n           successes,\n           failures: (.failures // [])|map(.metadata.details.name) | unique\n         }' $(workspaces.conftest-ws.path)/clair-vulnerabilities.json || true)\necho \"${HACBS_TEST_OUTPUT:-${HACBS_ERROR_OUTPUT}}\" | tee $(results.HACBS_TEST_OUTPUT.path)\n",
+              "arguments": null,
+              "environment": {
+                "container": "test-format-result",
+                "image": "quay.io/redhat-appstudio/hacbs-test@sha256:415e2724e9d5842d49344ad3a4e82dc92a05a278ba1f1dfdd1b2b5e59a7a364e"
+              },
+              "annotations": null
+            }
+          ],
+          "invocation": {
+            "configSource": {},
+            "parameters": {}
+          },
+          "results": [
+            {
+              "name": "HACBS_TEST_OUTPUT",
+              "value": "{\"result\":\"FAILURE\",\"timestamp\":\"1664454218\",\"namespace\":\"required_checks\",\"successes\":2,\"failures\":[\"clair_high_vulnerabilities\",\"clair_medium_vulnerabilities\"]}\n"
+            }
+          ]
+        },
+        {
+          "name": "sast-go",
+          "after": [
+            "build-container"
+          ],
+          "ref": {
+            "name": "sast-go",
+            "kind": "Task",
+            "bundle": "quay.io/redhat-appstudio/appstudio-tasks:8be37c13984bc3f8af4d6314d87b1ec5e494b6ca-2"
+          },
+          "startedOn": "2022-09-29T11:53:47Z",
+          "finishedOn": "2022-09-29T11:57:47Z",
+          "status": "Succeeded",
+          "steps": [
+            {
+              "entryPoint": "/usr/local/go/bin/gosec -no-fail -fmt=sarif -out=gosec_output.json $(workspaces.workspace.path)/... | tee gosec_output.txt\n\n# Test if any package was found\n# Even with -no-fail, gosec uses exit code 1 for several states,\n# including when there are no packages found.\nSKIP_MSG=\"No packages found\"\ntest_not_skipped=0\ngrep -q \"$SKIP_MSG$\" gosec_output.txt || test_not_skipped=$?\n\nHACBS_ERROR_OUTPUT=$(jq -rc --arg date $(date +%s) --null-input \\\n  '{result: \"ERROR\", timestamp: $date}')\n\nif [ -f gosec_output.json ];\nthen\n  cat gosec_output.json\n  HACBS_TEST_OUTPUT=$(jq -rce --arg date $(date +%s) --arg tmp_not_skipped $test_not_skipped \\\n                         --arg SKIP_MESSAGE \"${SKIP_MSG}\" \\\n    '{ result: (if (.runs[].results | length > 0) then \"FAILURE\" elif $tmp_not_skipped==\"0\" then \"SKIPPED\" else \"SUCCESS\" end),\n       timestamp: $date,\n       namespace: \"default\",\n       successes: 0,\n       note: (if $tmp_not_skipped==\"0\" then $SKIP_MESSAGE else \"\" end),\n       failures: (.runs[].results // [])|map(.message.text) | unique\n     }' gosec_output.json || true)\nelse\n  HACBS_TEST_OUTPUT=$(jq -rc --arg date $(date +%s) --arg tmp_not_skipped $test_not_skipped --null-input \\\n                         --arg SKIP_MESSAGE \"${SKIP_MSG}\" \\\n    '{ result: (if $tmp_not_skipped==\"0\" then \"SKIPPED\" else \"SUCCESS\" end),\n       timestamp: $date,\n       namespace: \"default\",\n       successes: 0,\n       note: (if $tmp_not_skipped==\"0\" then $SKIP_MESSAGE else \"\" end),\n       failures: 0\n     }')\nfi\n\necho \"${HACBS_TEST_OUTPUT:-${HACBS_ERROR_OUTPUT}}\" | tee $(results.HACBS_TEST_OUTPUT.path)\n",
+              "arguments": null,
+              "environment": {
+                "container": "sast-go",
+                "image": "quay.io/redhat-appstudio/hacbs-test@sha256:dcffec734efe55096f1469bf444d8beea6dc00c80433f3f2018e9ce6a1fc5cfe"
+              },
+              "annotations": null
+            }
+          ],
+          "invocation": {
+            "configSource": {},
+            "parameters": {}
+          },
+          "results": [
+            {
+              "name": "HACBS_TEST_OUTPUT",
+              "value": "{\"result\":\"SUCCESS\",\"timestamp\":\"1664452666\",\"namespace\":\"default\",\"successes\":0,\"note\":\"\",\"failures\":0}\n"
+            }
+          ]
+        },
+        {
+          "name": "sast-java-sec-check",
+          "after": [
+            "build-container"
+          ],
+          "ref": {
+            "name": "sast-java-sec-check",
+            "kind": "Task",
+            "bundle": "quay.io/redhat-appstudio/appstudio-tasks:8be37c13984bc3f8af4d6314d87b1ec5e494b6ca-2"
+          },
+          "startedOn": "2022-09-29T11:53:47Z",
+          "finishedOn": "2022-09-29T11:58:38Z",
+          "status": "Succeeded",
+          "steps": [
+            {
+              "entryPoint": "#!/bin/bash -x\n\npushd $(workspaces.workspace.path)\nif [ -f \"$(params.PATH_CONTEXT)/pom.xml\" ]; then\n  mvn package -f $(params.PATH_CONTEXT)/\nelse\n  echo \"pom.xml file doesn't exist in $(workspaces.workspace.path)/$(params.PATH_CONTEXT)\"\nfi\npopd\n\nJAR_PATH=`ls $(workspaces.workspace.path)/$(params.PATH_CONTEXT)/target/*.jar`\nif [ -n \"$JAR_PATH\" ]; then\n  /home/findsecbugs-cli/findsecbugs.sh $(params.OPTIONAL_ARGS) $(params.OUTPUT_ONLY_ANALYZE) -$(params.OUTPUT_FORMAT) \\\n    -output sast_java_sec_output.json $JAR_PATH  2> stderr.txt\n  cat sast_java_sec_output.json\n  test_skipped=0\nelse\n  echo \"jar file $JAR_PATH doesn't exist\" > stderr.txt\n  test_skipped=1\nfi\n\nERR_MSG=\"$(echo -n $(cat stderr.txt))\"\nERR_MSG=\"${ERR_MSG:-unknown}\"\nHACBS_ERROR_OUTPUT=$(jq -rc --arg date $(date +%s) --arg MSG \"${ERR_MSG: 0: 3000}\" \\\n                      --arg test_skipped $test_skipped --null-input \\\n    '{result: (if $test_skipped==\"1\" then \"SKIPPED\" else \"ERROR\" end),\n      timestamp: $date,\n      note: (if $test_skipped==\"1\" then $MSG else \"\" end),\n      failures: (if $test_skipped==\"1\" then \"\" else [$MSG] end)}')\nHACBS_TEST_OUTPUT=$(jq -rce --arg date $(date +%s)  \\\n  '{ result: (if (.runs[].results | length > 0) then \"FAILURE\" else \"SUCCESS\" end),\n           timestamp: $date,\n           namespace: \"default\",\n           successes: 0,\n           note: \"\",\n           failures: (.runs[].results | length)\n         }' sast_java_sec_output.json || true)\necho \"${HACBS_TEST_OUTPUT:-${HACBS_ERROR_OUTPUT}}\" | tee $(results.HACBS_TEST_OUTPUT.path)\n",
+              "arguments": null,
+              "environment": {
+                "container": "java-sec-check",
+                "image": "quay.io/redhat-appstudio/hacbs-test@sha256:dcffec734efe55096f1469bf444d8beea6dc00c80433f3f2018e9ce6a1fc5cfe"
+              },
+              "annotations": null
+            }
+          ],
+          "invocation": {
+            "configSource": {},
+            "parameters": {
+              "OPTIONAL_ARGS": "",
+              "OUTPUT_FORMAT": "sarif",
+              "OUTPUT_ONLY_ANALYZE": "",
+              "PATH_CONTEXT": "."
+            }
+          },
+          "results": [
+            {
+              "name": "HACBS_TEST_OUTPUT",
+              "value": "{\"result\":\"SKIPPED\",\"timestamp\":\"1664452716\",\"note\":\"jar file doesn't exist\",\"failures\":\"\"}\n"
+            }
+          ]
+        },
+        {
+          "name": "sast-snyk-check",
+          "after": [
+            "clone-repository"
+          ],
+          "ref": {
+            "name": "sast-snyk-check",
+            "kind": "Task",
+            "bundle": "quay.io/redhat-appstudio/appstudio-tasks:8be37c13984bc3f8af4d6314d87b1ec5e494b6ca-2"
+          },
+          "startedOn": "2022-09-29T11:47:38Z",
+          "finishedOn": "2022-09-29T11:47:50Z",
+          "status": "Succeeded",
+          "steps": [
+            {
+              "entryPoint": "#!/usr/bin/env bash\nSNYK_TOKEN=\"$(cat /etc/secrets/snyk_token)\"\nif [[ -z $SNYK_TOKEN ]]; then\n  echo \"SNYK_TOKEN is empty and a secret 'test-team-snyk' which includes 'snyk_token' need to be created in test-team namespace\" | tee stdout.txt\n  exit 0\nfi\nexport SNYK_TOKEN\nSNYK_EXIT_CODE=0\nsnyk code test $(params.ARGS) ../.. --sarif-file-output=sast_snyk_check_out.json 1>&2>> stdout.txt || SNYK_EXIT_CODE=$?\ntest_not_skipped=0\nSKIP_MSG=\"We found 0 supported files\"\ngrep -q \"$SKIP_MSG\" stdout.txt || test_not_skipped=$?\nif [[ \"$SNYK_EXIT_CODE\" -eq 0 ]] || [[ \"$SNYK_EXIT_CODE\" -eq 1 ]]; then\n  cat sast_snyk_check_out.json\n  HACBS_TEST_OUTPUT=$(jq -rce --arg date $(date +%s) \\\n    '{ result: (if (.runs[].results | length > 0) then \"FAILURE\" else \"SUCCESS\" end),\n           timestamp: $date,\n           namespace: \"default\",\n           successes: 0,\n           note: \"\",\n           failures: (.runs[].results // [])|map(.message.text) | unique\n         }' sast_snyk_check_out.json || true)\n# When the test is skipped, the \"SNYK_EXIT_CODE\" is 3 and it can also be 3 in some other situation\nelif [[ \"$test_not_skipped\" -eq 0 ]]; then\n  HACBS_ERROR_OUTPUT=$(jq -rc --arg date $(date +%s) --arg SKIP_MESSAGE \"${SKIP_MSG}\" --null-input \\\n    '{result: \"SKIPPED\", note: $SKIP_MESSAGE, timestamp: $date}')\nelse\n  ERR_MSG=\"$(cat stdout.txt)\"\n  HACBS_ERROR_OUTPUT=$(jq -rc --arg date $(date +%s) --arg ERR_MESSAGE \"${ERR_MSG}\" --null-input \\\n    '{result: \"ERROR\", timestamp: $date, failures: [$ERR_MESSAGE]}')\nfi\necho \"${HACBS_TEST_OUTPUT:-${HACBS_ERROR_OUTPUT}}\" | tee $(results.HACBS_TEST_OUTPUT.path)\n",
+              "arguments": null,
+              "environment": {
+                "container": "sast-snyk-check",
+                "image": "quay.io/redhat-appstudio/hacbs-test@sha256:dcffec734efe55096f1469bf444d8beea6dc00c80433f3f2018e9ce6a1fc5cfe"
+              },
+              "annotations": null
+            }
+          ],
+          "invocation": {
+            "configSource": {},
+            "parameters": {
+              "ARGS": "--all-projects --exclude=test*,vendor,deps",
+              "SHARED_SECRET": "test-team-snyk"
+            }
+          }
+        },
+        {
+          "name": "clamav-scan",
+          "after": [
+            "build-container"
+          ],
+          "ref": {
+            "name": "clamav-scan",
+            "kind": "Task",
+            "bundle": "quay.io/redhat-appstudio/appstudio-tasks:8be37c13984bc3f8af4d6314d87b1ec5e494b6ca-1"
+          },
+          "startedOn": "2022-09-29T11:53:49Z",
+          "finishedOn": "2022-09-29T12:23:37Z",
+          "status": "Succeeded",
+          "steps": [
+            {
+              "entryPoint": "imagewithouttag=$(echo '$(params.image-url)' | sed \"s/\\(.*\\):.*/\\1/\" | tr -d '\\n')\n\n# strip new-line escape symbol from parameter and save it to variable\nimageanddigest=$(echo $imagewithouttag@'$(params.image-digest)')\n\n# check if image is attestation one, skip the clamav scan in such case\nif [[ $imageanddigest == *.att ]]\nthen\n    echo \"$imageanddigest is an attestation image, skipping clamav scan\"\n    exit 0\nfi\n[ -f /workspace/registry-auth/.dockerconfigjson ] && REGISTRY_ARGS=\"-a /workspace/registry-auth/.dockerconfigjson\"\nmkdir content\ncd content\necho Extracting image\nif ! oc image extract $REGISTRY_ARGS $imageanddigest; then\n  echo \"Unable to extract image! Skipping clamscan!\"\n  exit 0\nfi\necho Extraction done\nclamscan -ri --max-scansize=250M | tee /tekton/home/clamscan-result.log\necho \"Executed-on: Scan was executed on version - $(clamscan --version)\" | tee -a /tekton/home/clamscan-result.log\n",
+              "arguments": null,
+              "environment": {
+                "container": "extract-and-scan-image",
+                "image": "quay.io/redhat-appstudio/hacbs-test@sha256:43326f83b9aa7db155508826315ba87043ab6087e17f36c860eda0076230b20c"
+              },
+              "annotations": null
+            },
+            {
+              "entryPoint": "#!/usr/bin/env python3.9\nimport json\nimport dateutil.parser as parser\nimport os\n\nif os.stat(\"/tekton/home/clamscan-result.log\").st_size == 0:\n    print(\"clamscan-result.log file is empty, meaning previous step didn't extracted the compiled code, skipping parsing.\")\n    exit(0)\n\nwith open(\"/tekton/home/clamscan-result.log\", \"r\") as file:\n    clam_result_str = file.read()\n\ndef clam_result_str_to_json(clam_result_str):\n\n    clam_result_list = clam_result_str.split(\"\\n\")\n    clam_result_list.remove('')\n\n    results_marker = \\\n        clam_result_list.index(\"----------- SCAN SUMMARY -----------\")\n\n    hit_list = clam_result_list[:results_marker]\n    summary_list = clam_result_list[(results_marker + 1):]\n\n    r_dict = { \"hits\": hit_list }\n    for item in summary_list:\n        # in case of blank lines\n        if not item:\n            continue\n        split_index = [c == ':' for c in item].index(True)\n        key = item[:split_index].lower()\n        key = key.replace(\" \", \"_\")\n        value = item[(split_index + 1):].strip(\" \")\n        if (key == \"start_date\" or key == \"end_date\"):\n          isodate = parser.parse(value)\n          value = isodate.isoformat()\n        r_dict[key] = value\n    print(json.dumps(r_dict))\n    with open('/tekton/home/clamscan-result.json', 'w') as f:\n      print(json.dumps(r_dict), file=f)\n\ndef main():\n    clam_result_str_to_json(clam_result_str)\n\nif __name__ == \"__main__\":\n    main()\n",
+              "arguments": null,
+              "environment": {
+                "container": "modify-clam-output-to-json",
+                "image": "quay.io/redhat-appstudio/hacbs-test@sha256:43326f83b9aa7db155508826315ba87043ab6087e17f36c860eda0076230b20c"
+              },
+              "annotations": null
+            }
+          ],
+          "invocation": {
+            "configSource": {},
+            "parameters": {
+              "image-digest": "sha256:abcbdfd92a75f7bba3ab97538b1324bf4677c1fb3eb82ca59cbd8970b3759b7e",
+              "image-url": "quay.io/hacbs-contract-demo/single-nodejs-app\n"
+            }
+          }
+        },
+        {
+          "name": "show-summary",
+          "after": [
+            "clamav-scan"
+          ],
+          "ref": {
+            "name": "summary",
+            "kind": "Task",
+            "bundle": "quay.io/redhat-appstudio/appstudio-tasks:8be37c13984bc3f8af4d6314d87b1ec5e494b6ca-2"
+          },
+          "startedOn": "2022-09-29T12:23:43Z",
+          "finishedOn": "2022-09-29T12:25:05Z",
+          "status": "Succeeded",
+          "steps": [
+            {
+              "entryPoint": "#!/usr/bin/env bash\necho\necho \"App Studio Build Summary:\"\necho\necho \"Build repository: $(params.git-url)\"\necho \"Generated Image is in : $(params.image-url)\"\necho\noc annotate pipelinerun $(params.pipeline-run-name) build.appstudio.openshift.io/repo=$(params.git-url)\noc annotate pipelinerun $(params.pipeline-run-name) build.appstudio.openshift.io/image=$(params.image-url)\n\necho \"Output is in the following annotations:\"\n\necho \"Build Repo is in 'build.appstudio.openshift.io/repo' \"\necho 'oc get pr $(params.pipeline-run-name) -o jsonpath=\"{.metadata.annotations.build\\.appstudio\\.openshift\\.io/repo}\"'\n\necho \"Build Image is in 'build.appstudio.openshift.io/image' \"\necho 'oc get pr $(params.pipeline-run-name) -o jsonpath=\"{.metadata.annotations.build\\.appstudio\\.openshift\\.io/image}\"'\n\necho End Summary\n",
+              "arguments": null,
+              "environment": {
+                "container": "appstudio-summary",
+                "image": "registry.redhat.io/openshift4/ose-cli@sha256:9a1ca7a36cfdd6c69398b35a7311db662ca7c652e6e8bd440a6331c12f89703a"
+              },
+              "annotations": null
+            }
+          ],
+          "invocation": {
+            "configSource": {},
+            "parameters": {
+              "git-url": "https://github.com/jduimovich/single-nodejs-app",
+              "image-url": "quay.io/hacbs-contract-demo/single-nodejs-app",
+              "pipeline-run-name": "single-nodejs-app-0ba016cf2dab8c4d"
+            }
+          }
+        },
+        {
+          "name": "hacbs-test-evaluation",
+          "after": [
+            "sanity-inspect-image"
+          ],
+          "ref": {
+            "name": "hacbs-test-evaluation",
+            "kind": "Task",
+            "bundle": "quay.io/redhat-appstudio/appstudio-tasks:8be37c13984bc3f8af4d6314d87b1ec5e494b6ca-1"
+          },
+          "startedOn": "2022-09-29T12:23:43Z",
+          "finishedOn": "2022-09-29T12:24:52Z",
+          "status": "Succeeded",
+          "steps": [
+            {
+              "entryPoint": "#!/usr/bin/env bash\n\n# sanity-label-check required checks\nFAILURES=$(jq '.[] | .failures // {} | .[] | .msg' sanity-label-check-required_checks/sanity_label_check_output.json)\nif [ -n \"$FAILURES\" ]; then\n  echo sanity-label-check-required_checks test FAIL:\n  echo \"$FAILURES\"\nelse\n  echo sanity-label-check-required_checks test PASS\nfi\necho -------------\n\n# sanity-label-check optional checks\nFAILURES=$(jq '.[] | .failures // {} | .[] | .msg' sanity-label-check-optional_checks/sanity_label_check_output.json)\nif [ -n \"$FAILURES\" ]; then\n  echo sanity-label-check-optional_checks test FAIL:\n  echo \"$FAILURES\"\nelse\n  echo sanity-label-check-optional_checks test PASS\nfi\necho -------------\n\n# sanity-inspect-image\nif [ ! -s sanity-inspect-image/base_image_inspect.json ]; then\n  echo sanity-inspect-image test FAIL\n  echo Unable to inspect base image - $(params.BASE_IMAGE)\nelse\n   echo sanity-inspect-image test PASS\nfi\necho -------------\n",
+              "arguments": null,
+              "environment": {
+                "container": "summary",
+                "image": "quay.io/redhat-appstudio/hacbs-test@sha256:415e2724e9d5842d49344ad3a4e82dc92a05a278ba1f1dfdd1b2b5e59a7a364e"
+              },
+              "annotations": null
+            }
+          ],
+          "invocation": {
+            "configSource": {},
+            "parameters": {
+              "BASE_IMAGE": "registry.access.redhat.com/ubi8/nodejs-16@sha256:ca5d106af65eb1b80f8dd12cdc3cbf536b83bf5b5b763ea33ff74f0fad76f959\n"
+            }
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "buildStartedOn": "2022-09-29T11:46:37Z",
+      "buildFinishedOn": "2022-09-29T12:25:06Z",
+      "completeness": {
+        "parameters": false,
+        "environment": false,
+        "materials": false
+      },
+      "reproducible": false
+    },
+    "materials": [
+      {
+        "uri": "git+https://github.com/jduimovich/single-nodejs-app.git",
+        "digest": {
+          "sha1": "2857d4447f37b7151a2a7225200c809efdf984c4"
+        }
+      }
+    ]
+  }
+}
