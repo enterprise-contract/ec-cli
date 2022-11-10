@@ -46,8 +46,8 @@ jobs:
         uses: docker/login-action@v2
         with:
           registry: quay.io
-          username: ${{ secrets.QUAY_ROBOT_USER }}
-          password: ${{ secrets.QUAY_ROBOT_TOKEN }}
+          username: ${{ secrets.TASK_BUNDLE_PUSH_USER }}
+          password: ${{ secrets.TASK_BUNDLE_PUSH_PASS }}
 
       - name: Testing ec task
         env:
