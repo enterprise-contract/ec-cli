@@ -85,8 +85,11 @@ spec:
       default: /tekton/home
 
   results:
+    # TODO: Deprecate the REPORT result
     - name: REPORT
       description: Details of the policy evaluation for each image
+    - name: HACBS_TEST_OUTPUT
+      description: Short summary of the policy evaluation for each image
 
   stepTemplate:
     env:
@@ -114,10 +117,13 @@ spec:
         - "--rekor-url"
         - "$(params.REKOR_HOST)"
         # NOTE: The syntax below is required to negate boolean parameters
-        - "--strict=false"
-        - "--output-file"
-        - "$(results.REPORT.path)"
-        - "--summary"
+        - "--strict=$(params.STRICT)"
+        - "--output"
+        - "yaml"
+        - "--output"
+        - "json=$(results.REPORT.path)"
+        - "--output"
+        - "hacbs=$(results.HACBS_TEST_OUTPUT.path)"
       env:
         - name: SSL_CERT_DIR
           # The Tekton Operator automatically sets the SSL_CERT_DIR env to the value below but,
@@ -128,19 +134,3 @@ spec:
           # value expected by Tekton Pipelines. NOTE: If params.SSL_CERT_DIR is empty, the value
           # will contain a trailing ":" - this is ok.
           value: "/tekton-custom-certs:/etc/ssl/certs:/etc/pki/tls/certs:/system/etc/security/cacerts:$(params.SSL_CERT_DIR)"
-    - name: display
-      image: quay.io/jstuart/appstudio-utils
-      command: [jq]
-      args:
-        - "."
-        - "$(results.REPORT.path)"
-    - name: assert
-      image: quay.io/jstuart/appstudio-utils
-      command: [jq]
-      args:
-        - "--argjson"
-        - "strict"
-        - "$(params.STRICT)"
-        - "-e"
-        - ".success or ($strict | not)"
-        - "$(results.REPORT.path)"
