@@ -42,5 +42,3 @@ if [[ "$status" == "False" ]]; then
   kubectl describe $tr
   exit 1
 fi
-
-tkn bundle push ${OCI_REPO}:$TASK_VERSION -f "${TASK_DIR}/${TASK_FILE}"
