@@ -20,7 +20,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"sync"
 
 	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
@@ -45,10 +44,10 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		strict              bool
 		input               string
 		filePath            string
-		output              string
+		outputFile          string
+		output              []string
 		spec                *appstudioshared.ApplicationSnapshotSpec
 		policy              *ecc.EnterpriseContractPolicySpec
-		summary             bool
 	}{
 		policyConfiguration: "ec-policy",
 	}
@@ -100,10 +99,6 @@ Return a non-zero status code on validation failure:
 
   ec validate image --image registry/name:tag --strict
 
-Return a summary of test results:
-
-  ec validate image --image registry/name:tag --policy my-policy --summary
-
 Use an EnterpriseContractPolicy resource from the currently active kubernetes context:
 
   ec validate image --image registry/name:tag --policy my-policy
@@ -113,7 +108,13 @@ Use an EnterpriseContractPolicy resource from a different namespace:
   ec validate image --image registry/name:tag --policy my-namespace/my-policy
 
 Use an inline EnterpriseContractPolicy spec
-  ec validate image --image registry/name:tag --policy '{"publicKey": "<path/to/public/key>"}'`,
+  ec validate image --image registry/name:tag --policy '{"publicKey": "<path/to/public/key>"}'
+
+Write output in JSON format to a file
+  ec validate image --image registry/name:tag --output json=<path>
+
+Write output in YAML format to stdout and in HACBS format to a file
+  ec validate image --image registry/name:tag --output yaml --output hacbs=<path>`,
 		PreRunE: func(cmd *cobra.Command, args []string) (allErrors error) {
 			ctx := cmd.Context()
 			if s, err := applicationsnapshot.DetermineInputSpec(
@@ -187,26 +188,19 @@ Use an inline EnterpriseContractPolicy spec
 					components = append(components, r.component)
 				}
 			}
-
-			report, err, success := applicationsnapshot.NewReport(components, data.summary)
-
 			if allErrors != nil {
-				return multierror.Append(allErrors, err)
+				return allErrors
 			}
 
-			if len(data.output) > 0 {
-				if err := ioutil.WriteFile(data.output, []byte(report), 0644); err != nil {
-					return multierror.Append(allErrors, err)
-				}
-				fmt.Printf("Report written to %s\n", data.output)
-			} else {
-				_, err := cmd.OutOrStdout().Write([]byte(report))
-				if err != nil {
-					return multierror.Append(allErrors, err)
-				}
+			if len(data.outputFile) > 0 {
+				data.output = append(data.output, fmt.Sprintf("%s=%s", applicationsnapshot.JSON, data.outputFile))
+			}
+			report := applicationsnapshot.NewReport(components)
+			if err := report.WriteAll(data.output, cmd.OutOrStdout(), fs(cmd.Context())); err != nil {
+				return err
 			}
 
-			if data.strict && !success {
+			if data.strict && !report.Success {
 				// TODO: replace this with proper message and exit code 1.
 				return errors.New("success criteria not met")
 			}
@@ -225,12 +219,12 @@ Use an inline EnterpriseContractPolicy spec
 		"path to ApplicationSnapshot Spec JSON file")
 	cmd.Flags().StringVarP(&data.input, "json-input", "j", data.input,
 		"JSON represenation of an ApplicationSnapshot Spec")
-	cmd.Flags().StringVarP(&data.output, "output-file", "o", data.output,
-		"write output to a file. Use empty string for stdout, default behavior")
+	cmd.Flags().StringSliceVar(&data.output, "output", data.output,
+		"write output to a file in a specific format. Use empty string path for stdout. May be used multiple times. Possible formats are json, yaml, hacbs, and summary")
+	cmd.Flags().StringVarP(&data.outputFile, "output-file", "o", data.outputFile,
+		"[DEPRECATED] write output to a file. Use empty string for stdout, default behavior")
 	cmd.Flags().BoolVarP(&data.strict, "strict", "s", data.strict,
 		"return non-zero status on non-successful validation")
-	cmd.Flags().BoolVarP(&data.summary, "summary", "c", data.summary,
-		"generate a summary of the default output. Condensing the violation and warning messages")
 
 	if len(data.input) > 0 || len(data.filePath) > 0 {
 		if err := cmd.MarkFlagRequired("image"); err != nil {
