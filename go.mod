@@ -46,7 +46,7 @@ require (
 	github.com/yudai/gojsondiff v1.0.0
 	golang.org/x/oauth2 v0.2.0
 	golang.org/x/tools v0.3.0
-	k8s.io/apimachinery v0.25.3
+	k8s.io/apimachinery v0.25.4
 	k8s.io/client-go v0.25.3
 	k8s.io/klog/v2 v2.70.2-0.20220707122935-0990e81f1a8f
 )
