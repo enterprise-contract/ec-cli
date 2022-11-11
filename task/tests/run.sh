@@ -19,7 +19,7 @@
 # source variables to test
 ROOT=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 
-OCI_REPO="${OCI_REPO:-quay.io/hacbs-contract/verify-enterprise-contract}"
+OCI_REPO="${OCI_REPO:-quay.io/hacbs-contract/ec-task-bundle}"
 
 TASK=verify-enterprise-contract
 TASK_FILE="${TASK}.yaml"
