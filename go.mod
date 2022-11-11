@@ -47,7 +47,7 @@ require (
 	golang.org/x/oauth2 v0.2.0
 	golang.org/x/tools v0.3.0
 	k8s.io/apimachinery v0.25.4
-	k8s.io/client-go v0.25.3
+	k8s.io/client-go v0.25.4
 	k8s.io/klog/v2 v2.70.2-0.20220707122935-0990e81f1a8f
 )
 
@@ -469,7 +469,7 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	honnef.co/go/tools v0.3.3 // indirect
-	k8s.io/api v0.25.3 // indirect
+	k8s.io/api v0.25.4 // indirect
 	k8s.io/apiextensions-apiserver v0.25.2 // indirect
 	k8s.io/kube-openapi v0.0.0-20220803164354-a70c9af30aea // indirect
 	k8s.io/utils v0.0.0-20220810061631-2e139fc3ae1e // indirect
