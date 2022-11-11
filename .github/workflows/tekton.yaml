@@ -27,18 +27,30 @@ name: Checks
 
 jobs:
   Tekton:
-
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v3
 
       - name: setup kind cluster
         uses: container-tools/kind-action@v2
 
-      - name: Run ec task
-        run: |
-          ./deployments/run.sh
+      - name: install tkn cli
+        uses: jerop/tkn@v0.1.0
+
+      - name: setup tekton environment
+        run: hack/setup-environment.sh
+
+      - name: login to quay.io
+        uses: docker/login-action@v2
+        with:
+          registry: quay.io
+          username: ${{ secrets.BUNDLE_PUSH_USER }}
+          password: ${{ secrets.BUNDLE_PUSH_PASS }}
+
+      - name: Testing ec task
+        env:
+          TASK_VERSION: 0.1
+        run: task/tests/run.sh
           
            
 
