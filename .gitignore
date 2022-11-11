@@ -172,6 +172,3 @@ tags
 
 # Last persisted acceptance test run information
 internal/acceptance/.persisted
-
-# Acceptance tests Sigstore/TUF test data
-internal/acceptance/.sigstore
