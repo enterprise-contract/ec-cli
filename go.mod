@@ -16,7 +16,7 @@ require (
 	github.com/go-openapi/strfmt v0.21.3
 	github.com/golangci/golangci-lint v1.50.1
 	github.com/google/addlicense v1.0.0
-	github.com/google/go-containerregistry v0.12.0
+	github.com/google/go-containerregistry v0.12.1
 	github.com/google/go-github/v45 v45.2.0
 	github.com/hacbs-contract/enterprise-contract-controller/api v0.0.0-20221020122434-4e8a9ca8266f
 	github.com/hashicorp/go-multierror v1.1.1
