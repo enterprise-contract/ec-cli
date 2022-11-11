@@ -20,11 +20,11 @@ kind: Task
 metadata:
   name: verify-enterprise-contract
   annotations:
-    tekton.dev/displayName: Verify Enterprise Contract V2
+    tekton.dev/displayName: Verify Enterprise Contract
     tekton.dev/pipelines.minVersion: "0.19"
     tekton.dev/tags: ec, chains, signature, conftest
   labels:
-    app.kubernetes.io/version: "0.2"
+    app.kubernetes.io/version: "0.1"
 
 spec:
   description: Verify the enterprise contract is met
