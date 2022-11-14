@@ -95,12 +95,12 @@ spec:
 
   steps:
     - name: version
-      image: quay.io/jstuart/appstudio-utils
+      image: quay.io/hacbs-contract/ec-cli:snapshot
       command: [ec]
       args:
         - version
     - name: validate
-      image: quay.io/jstuart/appstudio-utils
+      image: quay.io/hacbs-contract/ec-cli:snapshot
       command: [ec]
       args:
         - validate
@@ -129,13 +129,13 @@ spec:
           # will contain a trailing ":" - this is ok.
           value: "/tekton-custom-certs:/etc/ssl/certs:/etc/pki/tls/certs:/system/etc/security/cacerts:$(params.SSL_CERT_DIR)"
     - name: display
-      image: quay.io/jstuart/appstudio-utils
+      image: quay.io/hacbs-contract/ec-cli:snapshot
       command: [jq]
       args:
         - "."
         - "$(results.REPORT.path)"
     - name: assert
-      image: quay.io/jstuart/appstudio-utils
+      image: quay.io/hacbs-contract/ec-cli:snapshot
       command: [jq]
       args:
         - "--argjson"
