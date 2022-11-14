@@ -39,6 +39,10 @@ status=$(kubectl get $tr -o jsonpath='{.status.conditions[*].status}')
 if [[ "$status" == "False" ]]; then
   echo "task {$tr} failed"
   echo "debugging info"
+  echo "all containers logs"
+  pod=$(kubectl get $tr -o jsonpath='{.status.podName}')
+  kubectl logs $pod --all-containers=true
+  echo "output from kubectl describe ${tr}"
   kubectl describe $tr
   exit 1
 fi

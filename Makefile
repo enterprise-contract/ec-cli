@@ -113,8 +113,13 @@ build-image: build ## Build container image with ec-cli
 	@podman build -t $(IMAGE_REPO):$(IMAGE_TAG) -f Dockerfile
 
 .PHONY: push-image
-push-image: ## Push ec-cli container image to default location
+push-image: build-image ## Push ec-cli container image to default location
 	@podman push $(IMAGE_REPO):$(IMAGE_TAG)
 
-.PHONY: image
-image: build-image push-image ## Build and push ec-cli container image
+.PHONY: build-snapshot-image
+build-snapshot-image: push-image # Build the ec-cli image and tag it with "snapshot"
+	@podman tag $(IMAGE_REPO):$(IMAGE_TAG) $(IMAGE_REPO):snapshot
+
+.PHONY: push-snapshot-image
+push-snapshot-image: build-snapshot-image # Push the ec-cli image with the "snapshot" tag
+	@podman push $(IMAGE_REPO):snapshot
