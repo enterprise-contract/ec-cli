@@ -109,12 +109,12 @@ clean: ## Delete build output
 IMAGE_TAG ?= latest
 IMAGE_REPO ?= quay.io/hacbs-contract/ec-cli
 .PHONY: build-image
-build-image: build
+build-image: build ## Build container image with ec-cli
 	@podman build -t $(IMAGE_REPO):$(IMAGE_TAG) -f Dockerfile
 
 .PHONY: push-image
-push-image:
+push-image: ## Push ec-cli container image to default location
 	@podman push $(IMAGE_REPO):$(IMAGE_TAG)
 
 .PHONY: image
-image: build-image push-image
+image: build-image push-image ## Build and push ec-cli container image
