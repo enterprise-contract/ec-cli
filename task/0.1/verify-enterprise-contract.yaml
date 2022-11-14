@@ -85,9 +85,6 @@ spec:
       default: /tekton/home
 
   results:
-    # TODO: Deprecate the REPORT result
-    - name: REPORT
-      description: Details of the policy evaluation for each image
     - name: HACBS_TEST_OUTPUT
       description: Short summary of the policy evaluation for each image
 
@@ -98,12 +95,12 @@ spec:
 
   steps:
     - name: version
-      image: quay.io/jstuart/appstudio-utils
+      image: quay.io/hacbs-contract/ec-cli:snapshot
       command: [ec]
       args:
         - version
     - name: validate
-      image: quay.io/jstuart/appstudio-utils
+      image: quay.io/hacbs-contract/ec-cli:snapshot
       command: [ec]
       args:
         - validate
@@ -120,8 +117,6 @@ spec:
         - "--strict=$(params.STRICT)"
         - "--output"
         - "yaml"
-        - "--output"
-        - "json=$(results.REPORT.path)"
         - "--output"
         - "hacbs=$(results.HACBS_TEST_OUTPUT.path)"
       env:
