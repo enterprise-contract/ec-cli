@@ -117,7 +117,6 @@ spec:
         - "--strict=false"
         - "--output-file"
         - "$(results.REPORT.path)"
-        - "--summary"
       env:
         - name: SSL_CERT_DIR
           # The Tekton Operator automatically sets the SSL_CERT_DIR env to the value below but,
