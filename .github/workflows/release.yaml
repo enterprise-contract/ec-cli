@@ -74,3 +74,9 @@ jobs:
 
       - name: Create image from snapshot
         run: make push-snapshot-image IMAGE_TAG=${{ github.sha }}
+
+      - name: install tkn cli to create the tekton bundle
+        uses: jerop/tkn@v0.1.0
+
+      - name: create and push the tekton bundle
+        run: make task-bundle-snapshot TASK_TAG=${{ github.sha }}
