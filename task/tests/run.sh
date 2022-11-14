@@ -40,5 +40,8 @@ if [[ "$status" == "False" ]]; then
   echo "task {$tr} failed"
   echo "debugging info"
   kubectl describe $tr
+  echo "getting container logs"
+  pod=$(kubectl get $tr -o jsonpath='{.status.podName}')
+  kubectl logs $pod -c step-validate
   exit 1
 fi
