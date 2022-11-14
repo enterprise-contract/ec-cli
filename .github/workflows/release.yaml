@@ -68,3 +68,12 @@ jobs:
           tag_name: snapshot
           generate_release_notes: true
           files: dist/*
+
+      - name: registry login
+        run: podman login -u ${{ secrets.BUNDLE_PUSH_USER  }} -p ${{ secrets.BUNDLE_PUSH_PASS }} quay.io
+        
+      - name: Build image
+        run: make build-image IMAGE_TAG=${{ github.sha }}
+
+      - name: Push image
+        run: make push-image IMAGE_TAG=${{ github.sha }}

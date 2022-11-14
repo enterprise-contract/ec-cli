@@ -105,3 +105,16 @@ ci: test lint-fix acceptance ## Run the usual required CI tasks
 .PHONY: clean
 clean: ## Delete build output
 	@rm dist/*
+
+IMAGE_TAG ?= latest
+IMAGE_REPO ?= quay.io/hacbs-contract/ec-cli
+.PHONY: build-image
+build-image: build
+	@podman build -t $(IMAGE_REPO):$(IMAGE_TAG) -f Dockerfile
+
+.PHONY: push-image
+push-image:
+	@podman push $(IMAGE_REPO):$(IMAGE_TAG)
+
+.PHONY: image
+image: build-image push-image
