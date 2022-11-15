@@ -134,6 +134,4 @@ task-bundle:
 
 .PHONY: task-bundle-snapshot
 task-bundle-snapshot: task-bundle # Push task bundle and then tag with "snapshot"
-	@podman pull $(TASK_REPO):$(TASK_TAG)
-	@podman tag $(TASK_REPO):$(TASK_TAG) $(TASK_REPO):snapshot
-	@podman push $(TASK_REPO):snapshot
+	@skopeo copy "docker://$(TASK_REPO):$(TASK_TAG)" "docker://$(TASK_REPO):snapshot"
