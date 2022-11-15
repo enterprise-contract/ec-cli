@@ -123,3 +123,15 @@ build-snapshot-image: push-image # Build the ec-cli image and tag it with "snaps
 .PHONY: push-snapshot-image
 push-snapshot-image: build-snapshot-image # Push the ec-cli image with the "snapshot" tag
 	@podman push $(IMAGE_REPO):snapshot
+
+TASK_TAG ?= latest
+TASK_REPO ?= quay.io/hacbs-contract/ec-task-bundle
+TASK_VERSION ?= 0.1
+TASK ?= task/$(TASK_VERSION)/verify-enterprise-contract.yaml
+.PHONY: task-bundle # Push task bundle to repo
+task-bundle:
+	@tkn bundle push $(TASK_REPO):$(TASK_TAG) -f $(TASK)
+
+.PHONY: task-bundle-snapshot
+task-bundle-snapshot: task-bundle # Push task bundle and then tag with "snapshot"
+	@skopeo copy "docker://$(TASK_REPO):$(TASK_TAG)" "docker://$(TASK_REPO):snapshot"

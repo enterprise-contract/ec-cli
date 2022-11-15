@@ -31,10 +31,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: setup kind cluster
+      - name: Setup kind cluster
         uses: container-tools/kind-action@v2
 
-      - name: setup tekton environment
+      - name: Setup tekton environment
         run: hack/setup-environment.sh
 
       - name: Testing ec task

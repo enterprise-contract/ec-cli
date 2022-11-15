@@ -69,8 +69,14 @@ jobs:
           generate_release_notes: true
           files: dist/*
 
-      - name: registry login
+      - name: Registry login
         run: podman login -u ${{ secrets.BUNDLE_PUSH_USER  }} -p ${{ secrets.BUNDLE_PUSH_PASS }} quay.io
 
       - name: Create image from snapshot
         run: make push-snapshot-image IMAGE_TAG=${{ github.sha }}
+
+      - name: Install tkn cli to create the tekton bundle
+        uses: jerop/tkn@v0.1.0
+
+      - name: Create and push the tekton bundle
+        run: make task-bundle-snapshot TASK_TAG=${{ github.sha }}
