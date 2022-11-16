@@ -6,7 +6,7 @@ require (
 	cuelang.org/go v0.4.3
 	github.com/cucumber/godog v0.12.5
 	github.com/cyberphone/json-canonicalization v0.0.0-20210823021906-dc406ceaf94b
-	github.com/daixiang0/gci v0.8.2
+	github.com/daixiang0/gci v0.8.0
 	github.com/evanphx/json-patch v5.6.0+incompatible
 	github.com/ghodss/yaml v1.0.0
 	github.com/gkampitakis/go-snaps v0.4.2
@@ -14,7 +14,7 @@ require (
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/go-logr/logr v1.2.3
 	github.com/go-openapi/strfmt v0.21.3
-	github.com/golangci/golangci-lint v1.50.1
+	github.com/golangci/golangci-lint v1.50.0
 	github.com/google/addlicense v1.1.0
 	github.com/google/go-containerregistry v0.12.1
 	github.com/google/go-github/v45 v45.2.0
