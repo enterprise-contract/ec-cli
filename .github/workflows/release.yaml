@@ -61,7 +61,13 @@ jobs:
           git push -f --tags
 
       - name: Release
-        uses: softprops/action-gh-release@v1
+        # we're using our own fork with
+        # https://github.com/softprops/action-gh-release/pull/275 on top of it,
+        # seems to solve a number of issues:
+        # - https://github.com/softprops/action-gh-release/issues/268
+        # - https://github.com/softprops/action-gh-release/issues/265
+        # - https://github.com/softprops/action-gh-release/issues/263
+        uses: hacbs-contract/action-gh-release@v2
         with:
           prerelease: true
           name: Development snapshot
