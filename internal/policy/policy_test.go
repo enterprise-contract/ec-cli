@@ -61,60 +61,69 @@ func TestNewPolicy(t *testing.T) {
 		k8sResource *ecc.EnterpriseContractPolicySpec
 		rekorUrl    string
 		publicKey   string
-		expected    *ecc.EnterpriseContractPolicySpec
+		expected    *Policy
 	}{
 		{
 			name:      "simple inline",
 			policyRef: toJson(&ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey}),
-			expected:  &ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey},
+			expected: &Policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
+				PublicKey: testPublicKey}},
 		},
 		{
 			name:      "inline with public key overwrite",
 			policyRef: toJson(&ecc.EnterpriseContractPolicySpec{PublicKey: "ignored"}),
 			publicKey: testPublicKey,
-			expected:  &ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey},
+			expected: &Policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
+				PublicKey: testPublicKey}},
 		},
 		{
 			name:      "inline with rekor URL",
 			policyRef: toJson(&ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey, RekorUrl: testRekorUrl}),
-			expected:  &ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey, RekorUrl: testRekorUrl},
+			expected: &Policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
+				PublicKey: testPublicKey, RekorUrl: testRekorUrl}},
 		},
 		{
 			name:      "inline with rekor URL overwrite",
 			policyRef: toJson(&ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey, RekorUrl: "ignored"}),
 			rekorUrl:  testRekorUrl,
-			expected:  &ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey, RekorUrl: testRekorUrl},
+			expected: &Policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
+				PublicKey: testPublicKey, RekorUrl: testRekorUrl}},
 		},
 		{
 			name:        "simple k8sPath",
 			policyRef:   "ec-policy",
 			k8sResource: &ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey},
-			expected:    &ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey},
+			expected: &Policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
+				PublicKey: testPublicKey}},
 		},
 		{
 			name:        "k8sPath with public key overwrite",
 			policyRef:   "ec-policy",
 			k8sResource: &ecc.EnterpriseContractPolicySpec{PublicKey: "ignored"},
 			publicKey:   testPublicKey,
-			expected:    &ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey},
+			expected: &Policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
+				PublicKey: testPublicKey}},
 		},
 		{
 			name:        "k8sPath with rekor URL",
 			policyRef:   "ec-policy",
 			k8sResource: &ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey, RekorUrl: testRekorUrl},
-			expected:    &ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey, RekorUrl: testRekorUrl},
+			expected: &Policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
+				PublicKey: testPublicKey, RekorUrl: testRekorUrl}},
 		},
 		{
 			name:        "k8sPath with rekor overwrite",
 			policyRef:   "ec-policy",
 			k8sResource: &ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey},
 			rekorUrl:    testRekorUrl,
-			expected:    &ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey, RekorUrl: testRekorUrl},
+			expected: &Policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
+				PublicKey: testPublicKey, RekorUrl: testRekorUrl}},
 		},
 		{
 			name:      "default empty policy",
 			publicKey: testPublicKey,
-			expected:  &ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey},
+			expected: &Policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
+				PublicKey: testPublicKey}},
 		},
 	}
 
@@ -127,6 +136,8 @@ func TestNewPolicy(t *testing.T) {
 			}
 			got, err := NewPolicy(ctx, c.policyRef, c.rekorUrl, c.publicKey)
 			assert.NoError(t, err)
+			// CheckOpts is more thoroughly checked in TestCheckOpts.
+			got.CheckOpts = nil
 			assert.Equal(t, c.expected, got)
 		})
 	}
@@ -189,11 +200,6 @@ func TestCheckOpts(t *testing.T) {
 			publicKey: testPublicKey,
 		},
 		{
-			name:      "public key is required",
-			publicKey: "",
-			err:       "public key cannot be empty",
-		},
-		{
 			name:      "inline public key",
 			publicKey: testPublicKey,
 		},
@@ -208,18 +214,15 @@ func TestCheckOpts(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			ctx := context.Background()
 			ctx = withSignatureClient(ctx, &FakeCosignClient{publicKey: c.remotePublicKey})
-			policy := &ecc.EnterpriseContractPolicySpec{
-				PublicKey: c.publicKey,
-				RekorUrl:  c.rekorUrl,
-			}
-			opts, err := CheckOpts(ctx, policy)
+			p, err := NewPolicy(ctx, "", c.rekorUrl, c.publicKey)
 			if c.err != "" {
-				assert.Empty(t, opts)
+				assert.Empty(t, p)
 				assert.ErrorContains(t, err, c.err)
 				return
 			}
 			assert.NoError(t, err)
 
+			opts := p.CheckOpts
 			if c.rekorUrl != "" {
 				assert.NotNil(t, opts.RekorClient)
 			} else {

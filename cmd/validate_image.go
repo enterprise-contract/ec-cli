@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"sync"
 
-	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/hashicorp/go-multierror"
 	appstudioshared "github.com/redhat-appstudio/managed-gitops/appstudio-shared/apis/appstudio.redhat.com/v1alpha1"
 	"github.com/spf13/afero"
@@ -33,7 +32,7 @@ import (
 	"github.com/hacbs-contract/ec-cli/internal/policy"
 )
 
-type imageValidationFunc func(ctx context.Context, fs afero.Fs, imageRef string, policy *ecc.EnterpriseContractPolicySpec) (*output.Output, error)
+type imageValidationFunc func(context.Context, afero.Fs, string, *policy.Policy) (*output.Output, error)
 
 func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 	var data = struct {
@@ -47,7 +46,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		outputFile          string
 		output              []string
 		spec                *appstudioshared.ApplicationSnapshotSpec
-		policy              *ecc.EnterpriseContractPolicySpec
+		policy              *policy.Policy
 	}{
 		policyConfiguration: "ec-policy",
 	}
@@ -125,12 +124,12 @@ Write output in YAML format to stdout and in HACBS format to a file
 				data.spec = s
 			}
 
-			if policy, err := policy.NewPolicy(
+			if p, err := policy.NewPolicy(
 				cmd.Context(), data.policyConfiguration, data.rekorURL, data.publicKey,
 			); err != nil {
 				allErrors = multierror.Append(allErrors, err)
 			} else {
-				data.policy = policy
+				data.policy = p
 			}
 
 			return
@@ -195,7 +194,12 @@ Write output in YAML format to stdout and in HACBS format to a file
 			if len(data.outputFile) > 0 {
 				data.output = append(data.output, fmt.Sprintf("%s=%s", applicationsnapshot.JSON, data.outputFile))
 			}
-			report := applicationsnapshot.NewReport(components)
+
+			publicKeyPEM, err := data.policy.PublicKeyPEM()
+			if err != nil {
+				return err
+			}
+			report := applicationsnapshot.NewReport(components, string(publicKeyPEM))
 			if err := report.WriteAll(data.output, cmd.OutOrStdout(), fs(cmd.Context())); err != nil {
 				return err
 			}

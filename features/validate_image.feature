@@ -30,6 +30,7 @@ Feature: evaluate enterprise contract
     """
     {
       "success": true,
+      "key": ${known_PUBLIC_KEY_JSON},
       "components": [
         {
           "name": "Unnamed",
@@ -65,6 +66,7 @@ Feature: evaluate enterprise contract
     """
     {
       "success": false,
+      "key": ${unknown_PUBLIC_KEY_JSON},
       "components": [
         {
           "name": "Unnamed",
@@ -97,6 +99,7 @@ Feature: evaluate enterprise contract
     """
     {
       "success": true,
+      "key": ${known_PUBLIC_KEY_JSON},
       "components": [
         {
           "name": "Unnamed",
@@ -139,6 +142,7 @@ Given a git repository named "repository3" with
     """
     {
       "success": false,
+      "key": ${known_PUBLIC_KEY_JSON},
       "components": [
         {
           "name": "Unnamed",

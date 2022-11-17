@@ -175,6 +175,12 @@ func setupKeys(ctx context.Context, vars map[string]string, environment []string
 		}
 
 		vars[name+"_PUBLIC_KEY"] = key.Name()
+
+		publicKeyJson, err := json.Marshal(publicKey)
+		if err != nil {
+			return environment, vars, err
+		}
+		vars[name+"_PUBLIC_KEY_JSON"] = string(publicKeyJson)
 	}
 
 	return environment, vars, nil

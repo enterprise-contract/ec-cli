@@ -43,11 +43,13 @@ type Report struct {
 	Success    bool `json:"success"`
 	created    time.Time
 	Components []Component `json:"components"`
+	Key        string      `json:"key"`
 }
 
 type summary struct {
 	Components []componentSummary `json:"components"`
 	Success    bool               `json:"success"`
+	Key        string             `json:"key"`
 }
 
 type componentSummary struct {
@@ -67,6 +69,7 @@ type hacbsReport struct {
 	Failures  int       `json:"failures"`
 	Warnings  int       `json:"warnings"`
 	Result    string    `json:"result"`
+	Note      string    `json:"note"`
 }
 
 // Possible formats the report can be written as.
@@ -79,7 +82,7 @@ const (
 
 // WriteReport returns a new instance of Report representing the state of
 // components from the snapshot.
-func NewReport(components []Component) Report {
+func NewReport(components []Component, key string) Report {
 	success := true
 
 	// Set the report success, remains true if all components are successful
@@ -94,6 +97,7 @@ func NewReport(components []Component) Report {
 		Success:    success,
 		Components: components,
 		created:    time.Now().UTC(),
+		Key:        key,
 	}
 }
 
@@ -146,6 +150,7 @@ func (r *Report) toSummary() summary {
 		}
 		pr.Components = append(pr.Components, c)
 	}
+	pr.Key = r.Key
 	return pr
 }
 
@@ -179,6 +184,7 @@ func (r *Report) toHACBS() hacbsReport {
 	result := hacbsReport{
 		Namespace: application_snapshot_image.ConftestNamespace,
 		Timestamp: r.created,
+		Note:      r.Key,
 	}
 
 	hasFailures := false

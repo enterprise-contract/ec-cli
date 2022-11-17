@@ -42,6 +42,7 @@ func Test_ReportJson(t *testing.T) {
 	expected := `
     {
       "success": true,
+	  "key": "my-public-key",
       "components": [
         {
           "name": "spam",
@@ -77,7 +78,7 @@ func Test_ReportJson(t *testing.T) {
 		components = append(components, c)
 	}
 
-	report := NewReport(components)
+	report := NewReport(components, "my-public-key")
 	reportJson, err := report.toFormat(JSON)
 	assert.NoError(t, err)
 	assert.JSONEq(t, expected, string(reportJson))
@@ -86,6 +87,7 @@ func Test_ReportJson(t *testing.T) {
 	expected = `
     {
       "success": false,
+	  "key": "my-public-key",
       "components": [
         {
           "name": "spam",
@@ -119,7 +121,7 @@ func Test_ReportJson(t *testing.T) {
     }
   `
 	components = append(components, Component{Success: false})
-	report = NewReport(components)
+	report = NewReport(components, "my-public-key")
 	reportJson, err = report.toFormat(JSON)
 	assert.NoError(t, err)
 	assert.JSONEq(t, expected, string(reportJson))
@@ -133,6 +135,7 @@ func Test_ReportYaml(t *testing.T) {
 
 	expected := `
 success: true
+key: my-public-key
 components:
   - name: spam
     containerImage: quay.io/caf/spam@sha256:123…
@@ -161,7 +164,7 @@ components:
 		components = append(components, c)
 	}
 
-	report := NewReport(components)
+	report := NewReport(components, "my-public-key")
 	reportYaml, err := report.toFormat(YAML)
 	assert.NoError(t, err)
 	assert.YAMLEq(t, expected, string(reportYaml))
@@ -169,6 +172,7 @@ components:
 
 	expected = `
 success: false
+key: my-public-key
 components:
   - name: spam
     containerImage: quay.io/caf/spam@sha256:123…
@@ -193,7 +197,7 @@ components:
 
 `
 	components = append(components, Component{Success: false})
-	report = NewReport(components)
+	report = NewReport(components, "my-public-key")
 	reportYaml, err = report.toFormat(YAML)
 	assert.NoError(t, err)
 	assert.YAMLEq(t, expected, string(reportYaml))
@@ -243,6 +247,7 @@ func Test_ReportSummary(t *testing.T) {
 					},
 				},
 				Success: false,
+				Key:     "my-public-key",
 			},
 		},
 		{
@@ -272,6 +277,7 @@ func Test_ReportSummary(t *testing.T) {
 					},
 				},
 				Success: false,
+				Key:     "my-public-key",
 			},
 		},
 		{
@@ -323,13 +329,14 @@ func Test_ReportSummary(t *testing.T) {
 					},
 				},
 				Success: false,
+				Key:     "my-public-key",
 			},
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("NewReport=%s", tc.name), func(t *testing.T) {
-			report := NewReport([]Component{tc.input})
+			report := NewReport([]Component{tc.input}, "my-public-key")
 			assert.Equal(t, tc.want, report.toSummary())
 		})
 	}
@@ -352,7 +359,8 @@ func Test_ReportHACBS(t *testing.T) {
 				"result": "SUCCESS",
 				"successes": 3,
 				"timestamp": "1970-01-01T00:00:00Z",
-				"warnings": 0
+				"warnings": 0,
+				"note": "my-public-key"
 			}`,
 			components: []Component{{Success: true}, {Success: true}, {Success: true}},
 			success:    true,
@@ -366,7 +374,8 @@ func Test_ReportHACBS(t *testing.T) {
 				"result": "WARNING",
 				"successes": 2,
 				"timestamp": "1970-01-01T00:00:00Z",
-				"warnings": 1
+				"warnings": 1,
+				"note": "my-public-key"
 			}`,
 			components: []Component{
 				{Success: true},
@@ -383,7 +392,8 @@ func Test_ReportHACBS(t *testing.T) {
 				"result": "FAILURE",
 				"successes": 1,
 				"timestamp": "1970-01-01T00:00:00Z",
-				"warnings": 0
+				"warnings": 0,
+				"note": "my-public-key"
 			}`,
 			components: []Component{
 				{Success: true},
@@ -400,7 +410,8 @@ func Test_ReportHACBS(t *testing.T) {
 				"result": "FAILURE",
 				"successes": 1,
 				"timestamp": "1970-01-01T00:00:00Z",
-				"warnings": 0
+				"warnings": 0,
+				"note": "my-public-key"
 			}`,
 			components: []Component{{Success: false}, {Success: true}},
 			success:    false,
@@ -414,7 +425,8 @@ func Test_ReportHACBS(t *testing.T) {
 				"result": "FAILURE",
 				"successes": 1,
 				"timestamp": "1970-01-01T00:00:00Z",
-				"warnings": 1
+				"warnings": 1,
+				"note": "my-public-key"
 			}`,
 			components: []Component{
 				{Success: true},
@@ -432,7 +444,8 @@ func Test_ReportHACBS(t *testing.T) {
 				"result": "SKIPPED",
 				"successes": 0,
 				"timestamp": "1970-01-01T00:00:00Z",
-				"warnings": 0
+				"warnings": 0,
+				"note": "my-public-key"
 			}`,
 			components: []Component{},
 			success:    true,
@@ -445,7 +458,7 @@ func Test_ReportHACBS(t *testing.T) {
 			defaultWriter, err := fs.Create("default")
 			assert.NoError(t, err)
 
-			report := NewReport(c.components)
+			report := NewReport(c.components, "my-public-key")
 			assert.False(t, report.created.IsZero())
 			assert.Equal(t, c.success, report.Success)
 

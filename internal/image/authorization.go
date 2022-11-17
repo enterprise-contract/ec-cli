@@ -46,7 +46,7 @@ type AuthorizationSource interface {
 // holds config information to get client instance
 type K8sSource struct {
 	policyConfiguration string
-	fetchSource         func(context.Context, string) (*ecc.EnterpriseContractPolicySpec, error)
+	fetchSource         func(context.Context, string) (*policy.Policy, error)
 }
 
 // holds config information to get client instance
@@ -116,13 +116,13 @@ func GetK8sResource(ecp *ecc.EnterpriseContractPolicySpec) (authorizationGetter,
 	}, nil
 }
 
-func fetchECSource(ctx context.Context, policyConfiguration string) (*ecc.EnterpriseContractPolicySpec, error) {
-	ecp, err := policy.NewPolicy(ctx, policyConfiguration, "", "")
+func fetchECSource(ctx context.Context, policyConfiguration string) (*policy.Policy, error) {
+	p, err := policy.NewPolicy(ctx, policyConfiguration, "", "")
 	if err != nil {
 		log.Debug("Failed to fetch the enterprise contract policy from the cluster!")
 		return nil, err
 	}
-	return ecp, nil
+	return p, nil
 }
 
 // returns the signOff signature and body of the source
