@@ -3,7 +3,7 @@ module github.com/hacbs-contract/ec-cli/internal/tools
 go 1.18
 
 require (
-	github.com/daixiang0/gci v0.8.1
+	github.com/daixiang0/gci v0.8.5
 	github.com/golangci/golangci-lint v1.50.1
 	github.com/google/addlicense v1.1.0
 	github.com/tektoncd/cli v0.27.0
