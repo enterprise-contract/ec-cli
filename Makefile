@@ -114,7 +114,7 @@ build-image: build ## Build container image with ec-cli
 
 .PHONY: push-image
 push-image: build-image ## Push ec-cli container image to default location
-	@podman push $(IMAGE_REPO):$(IMAGE_TAG)
+	@podman push $(PODMAN_OPTS) $(IMAGE_REPO):$(IMAGE_TAG)
 
 .PHONY: build-snapshot-image
 build-snapshot-image: push-image ## Build the ec-cli image and tag it with "snapshot"
@@ -122,7 +122,7 @@ build-snapshot-image: push-image ## Build the ec-cli image and tag it with "snap
 
 .PHONY: push-snapshot-image
 push-snapshot-image: build-snapshot-image ## Push the ec-cli image with the "snapshot" tag
-	@podman push $(IMAGE_REPO):snapshot
+	@podman push $(PODMAN_OPTS) $(IMAGE_REPO):snapshot
 
 TASK_TAG ?= latest
 TASK_REPO ?= quay.io/hacbs-contract/ec-task-bundle
