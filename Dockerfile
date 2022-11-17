@@ -16,8 +16,7 @@
 
 FROM registry.access.redhat.com/ubi9/ubi
 
-RUN dnf -y install git && dnf clean all
+RUN dnf -y install git-core && dnf clean all
 
 COPY dist/ec_linux_amd64 /usr/bin/ec
 RUN chmod +x /usr/bin/ec && ec version
-
