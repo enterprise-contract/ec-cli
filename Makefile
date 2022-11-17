@@ -74,30 +74,30 @@ acceptance: ## Run acceptance tests
 	@export COVERAGE_FILEPATH="$${ACCEPTANCE_WORKDIR}"
 	@export COVERAGE_FILENAME="-acceptance"
 	@go test -tags=acceptance ./...
-	@go run github.com/wadey/gocovmerge "$${ACCEPTANCE_WORKDIR}"/coverage-acceptance*.out > "$(ROOT_DIR)/coverage-acceptance.out"
+	@go run -modfile internal/tools/go.mod github.com/wadey/gocovmerge "$${ACCEPTANCE_WORKDIR}"/coverage-acceptance*.out > "$(ROOT_DIR)/coverage-acceptance.out"
 
 LICENSE_IGNORE=-ignore 'dist/reference/*.yaml'
 LINT_TO_GITHUB_ANNOTATIONS='map(map(.)[])[][] as $$d | $$d.posn | split(":") as $$posn | "::warning file=\($$posn[0]),line=\($$posn[1]),col=\($$posn[2])::\($$d.message)"'
 .PHONY: lint
 lint: ## Run linter
 # addlicense doesn't give us a nice explanation so we prefix it with one
-	@go run github.com/google/addlicense -c $(COPY) -s -check $(LICENSE_IGNORE) . | sed 's/^/Missing license header in: /g'
+	@go run -modfile internal/tools/go.mod github.com/google/addlicense -c $(COPY) -s -check $(LICENSE_IGNORE) . | sed 's/^/Missing license header in: /g'
 # piping to sed above looses the exit code, luckily addlicense is fast so we invoke it for the second time to exit 1 in case of issues
-	@go run github.com/google/addlicense -c $(COPY) -s -check $(LICENSE_IGNORE) . >/dev/null 2>&1
-	@go run github.com/golangci/golangci-lint/cmd/golangci-lint run --sort-results $(if $(GITHUB_ACTIONS), --out-format=github-actions --timeout=5m0s)
+	@go run -modfile internal/tools/go.mod github.com/google/addlicense -c $(COPY) -s -check $(LICENSE_IGNORE) . >/dev/null 2>&1
+	@go run -modfile internal/tools/go.mod github.com/golangci/golangci-lint/cmd/golangci-lint run --sort-results $(if $(GITHUB_ACTIONS), --out-format=github-actions --timeout=5m0s)
 # We don't fail on the internal (error handling) linter, we just report the
 # issues for now.
 # TODO: resolve the error handling issues and enable the linter failure
-	@go run ./internal/lint $(if $(GITHUB_ACTIONS), -json) $$(go list ./... | grep -v '/internal/acceptance/') $(if $(GITHUB_ACTIONS), | jq -r $(LINT_TO_GITHUB_ANNOTATIONS))
+	@go run -modfile internal/tools/go.mod ./internal/lint $(if $(GITHUB_ACTIONS), -json) $$(go list ./... | grep -v '/internal/acceptance/') $(if $(GITHUB_ACTIONS), | jq -r $(LINT_TO_GITHUB_ANNOTATIONS))
 
 .PHONY: lint-fix
 lint-fix: ## Fix linting issues automagically
-	@go run github.com/google/addlicense -c $(COPY) -s -ignore 'dist/reference/*.yaml' .
-	@go run github.com/golangci/golangci-lint/cmd/golangci-lint run --fix
+	@go run -modfile internal/tools/go.mod github.com/google/addlicense -c $(COPY) -s -ignore 'dist/reference/*.yaml' .
+	@go run -modfile internal/tools/go.mod github.com/golangci/golangci-lint/cmd/golangci-lint run --fix
 # We don't apply the fixes from the internal (error handling) linter.
 # TODO: fix the outstanding error handling lint issues and enable the fixer
-#	@go run ./internal/lint -fix $$(go list ./... | grep -v '/internal/acceptance/')
-	@go run github.com/daixiang0/gci write -s standard -s default -s "prefix(github.com/hacbs-contract/ec-cli)" .
+#	@go run -modfile internal/tools/go.mod ./internal/lint -fix $$(go list ./... | grep -v '/internal/acceptance/')
+	@go run -modfile internal/tools/go.mod github.com/daixiang0/gci write -s standard -s default -s "prefix(github.com/hacbs-contract/ec-cli)" .
 
 .PHONY: ci
 ci: test lint-fix acceptance ## Run the usual required CI tasks
@@ -117,21 +117,21 @@ push-image: build-image ## Push ec-cli container image to default location
 	@podman push $(IMAGE_REPO):$(IMAGE_TAG)
 
 .PHONY: build-snapshot-image
-build-snapshot-image: push-image # Build the ec-cli image and tag it with "snapshot"
+build-snapshot-image: push-image ## Build the ec-cli image and tag it with "snapshot"
 	@podman tag $(IMAGE_REPO):$(IMAGE_TAG) $(IMAGE_REPO):snapshot
 
 .PHONY: push-snapshot-image
-push-snapshot-image: build-snapshot-image # Push the ec-cli image with the "snapshot" tag
+push-snapshot-image: build-snapshot-image ## Push the ec-cli image with the "snapshot" tag
 	@podman push $(IMAGE_REPO):snapshot
 
 TASK_TAG ?= latest
 TASK_REPO ?= quay.io/hacbs-contract/ec-task-bundle
 TASK_VERSION ?= 0.1
 TASK ?= task/$(TASK_VERSION)/verify-enterprise-contract.yaml
-.PHONY: task-bundle # Push task bundle to repo
-task-bundle:
-	@tkn bundle push $(TASK_REPO):$(TASK_TAG) -f $(TASK)
+.PHONY: task-bundle
+task-bundle: ## Push the Tekton Task bundle an image repository
+	@go run -modfile internal/tools/go.mod github.com/tektoncd/cli/cmd/tkn bundle push $(TASK_REPO):$(TASK_TAG) -f $(TASK)
 
 .PHONY: task-bundle-snapshot
-task-bundle-snapshot: task-bundle # Push task bundle and then tag with "snapshot"
+task-bundle-snapshot: task-bundle ## Push task bundle and then tag with "snapshot"
 	@skopeo copy "docker://$(TASK_REPO):$(TASK_TAG)" "docker://$(TASK_REPO):snapshot"

@@ -29,3 +29,7 @@ updates:
     directory: "/reference-antora-extension/"
     schedule:
       interval: "daily"
+  - package-ecosystem: "gomod"
+    directory: "/internal/tools/"
+    schedule:
+      interval: "daily"
