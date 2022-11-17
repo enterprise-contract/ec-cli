@@ -521,8 +521,8 @@ github.com/curioswitch/go-reassign v0.2.0 h1:G9UZyOcpk/d7Gd6mqYgd8XYWFMw/znxwGDU
 github.com/curioswitch/go-reassign v0.2.0/go.mod h1:x6OpXuWvgfQaMGks2BZybTngWjT84hqJfKoO8Tt/Roc=
 github.com/cyberphone/json-canonicalization v0.0.0-20210823021906-dc406ceaf94b h1:lMzA7yYThpwx7iYNpTeiQnRH6h5JSfSYMJdz+pxZOW8=
 github.com/cyberphone/json-canonicalization v0.0.0-20210823021906-dc406ceaf94b/go.mod h1:uzvlm1mxhHkdfqitSA92i7Se+S9ksOn3a3qmv/kyOCw=
-github.com/daixiang0/gci v0.8.0 h1:DzWYUm4+bc+taVUtuq1tsIMb/QFMMYgDIiykSoO98ZU=
-github.com/daixiang0/gci v0.8.0/go.mod h1:EpVfrztufwVgQRXjnX4zuNinEpLj5OmMjtu/+MB0V0c=
+github.com/daixiang0/gci v0.8.1 h1:T4xpSC+hmsi4CSyuYfIJdMZAr9o7xZmHpQVygMghGZ4=
+github.com/daixiang0/gci v0.8.1/go.mod h1:EpVfrztufwVgQRXjnX4zuNinEpLj5OmMjtu/+MB0V0c=
 github.com/danieljoos/wincred v1.0.2/go.mod h1:SnuYRW9lp1oJrZX/dXJqr0cPK5gYXqx3EJbmjhLdK9U=
 github.com/davecgh/go-spew v0.0.0-20161028175848-04cdfd42973b/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -851,8 +851,8 @@ github.com/golangci/go-misc v0.0.0-20220329215616-d24fe342adfe h1:6RGUuS7EGotKx6
 github.com/golangci/go-misc v0.0.0-20220329215616-d24fe342adfe/go.mod h1:gjqyPShc/m8pEMpk0a3SeagVb0kaqvhscv+i9jI5ZhQ=
 github.com/golangci/gofmt v0.0.0-20220901101216-f2edd75033f2 h1:amWTbTGqOZ71ruzrdA+Nx5WA3tV1N0goTspwmKCQvBY=
 github.com/golangci/gofmt v0.0.0-20220901101216-f2edd75033f2/go.mod h1:9wOXstvyDRshQ9LggQuzBCGysxs3b6Uo/1MvYCR2NMs=
-github.com/golangci/golangci-lint v1.50.0 h1:+Xmyt8rKLauNLp2gzcxKMN8VNGqGc5Avc2ZLTwIOpEA=
-github.com/golangci/golangci-lint v1.50.0/go.mod h1:UqtDvK24R9OizqRF06foPX8opRMzQB0HQK90uI2JgKc=
+github.com/golangci/golangci-lint v1.50.1 h1:C829clMcZXEORakZlwpk7M4iDw2XiwxxKaG504SZ9zY=
+github.com/golangci/golangci-lint v1.50.1/go.mod h1:AQjHBopYS//oB8xs0y0M/dtxdKHkdhl0RvmjUct0/4w=
 github.com/golangci/lint-1 v0.0.0-20191013205115-297bf364a8e0 h1:MfyDlzVjl1hoaPzPD4Gpb/QgoRfSBR0jdhwGyAWwMSA=
 github.com/golangci/lint-1 v0.0.0-20191013205115-297bf364a8e0/go.mod h1:66R6K6P6VWk9I95jvqGxkqJxVWGFy9XlDwLwVz1RCFg=
 github.com/golangci/maligned v0.0.0-20180506175553-b1d89398deca h1:kNY3/svz5T29MYHubXix4aDDuE3RWHkPvopM/EDv/MA=
