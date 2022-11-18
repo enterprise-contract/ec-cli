@@ -29,10 +29,12 @@ import (
 )
 
 type key int
+type policyKind string
 
 const (
-	PolicyDir             = "policy"
-	downloaderFuncKey key = 0
+	downloaderFuncKey key        = 0
+	PolicyKind        policyKind = "policy"
+	DataKind          policyKind = "data"
 )
 
 type downloaderFunc interface {
@@ -40,20 +42,25 @@ type downloaderFunc interface {
 }
 
 //PolicySource in an interface representing the location a policy source.
-//Must implement the GetPolicies() method.
+//Must implement the GetPolicy() method.
 type PolicySource interface {
 	GetPolicy(ctx context.Context, dest string, showMsg bool) (string, error)
 	PolicyUrl() string
+	Subdir() string
 }
 
-//PolicyUrl is a string containing a go-getter style source url compatible with conftest pull
-type PolicyUrl string
+type PolicyUrl struct {
+	// A string containing a go-getter style source url compatible with conftest pull
+	Url string
+	// Either "data" or "policy"
+	Kind policyKind
+}
 
 // GetPolicies clones the repository for a given PolicyUrl
 func (p *PolicyUrl) GetPolicy(ctx context.Context, workDir string, showMsg bool) (string, error) {
 	sourceUrl := p.PolicyUrl()
 
-	dest := uniquePolicyDestination(workDir, sourceUrl)
+	dest := uniqueDestination(workDir, p.Subdir(), sourceUrl)
 
 	// Checkout policy repo into work directory.
 	log.Debugf("Downloading policy files from source url %s to destination %s", sourceUrl, dest)
@@ -68,11 +75,16 @@ func (p *PolicyUrl) GetPolicy(ctx context.Context, workDir string, showMsg bool)
 }
 
 func (p *PolicyUrl) PolicyUrl() string {
-	return string(*p)
+	return p.Url
 }
 
-func uniquePolicyDestination(workDir string, sourceUrl string) string {
-	return path.Join(workDir, PolicyDir, uniqueDir(sourceUrl))
+func (p *PolicyUrl) Subdir() string {
+	// Be lazy and assume the kind value is the same as the subdirectory we want
+	return string(p.Kind)
+}
+
+func uniqueDestination(rootDir string, subdir string, sourceUrl string) string {
+	return path.Join(rootDir, subdir, uniqueDir(sourceUrl))
 }
 
 // uniqueDir generates a reasonably unique string using an md5 sum with a timestamp appended to

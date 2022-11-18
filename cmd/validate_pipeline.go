@@ -65,7 +65,7 @@ Sepcify a different location for the policies:
 			var outputs output.Outputs
 			for i := range data.FilePaths {
 				fpath := data.FilePaths[i]
-				policySource := source.PolicyUrl(data.PolicyUrl)
+				policySource := source.PolicyUrl{Url: data.PolicyUrl, Kind: source.PolicyKind}
 				ctx := cmd.Context()
 				if o, e := validate(ctx, fs(ctx), fpath, policySource, data.ConftestNamespace); e != nil {
 					err = multierror.Append(err, e)

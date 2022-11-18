@@ -28,7 +28,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 
-	"github.com/hacbs-contract/ec-cli/internal/downloader"
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
 	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
@@ -200,8 +199,10 @@ func createConfigJSON(fs afero.Fs, dataDir string, spec *ecc.EnterpriseContractP
 
 // createHardCodedData downloads the hardcoded data to the data directory
 // TODO remove the need for this
-func createHardCodedData(ctx context.Context, dataDir string) error {
-	return downloader.Download(ctx, dataDir, hardCodedRequiredData, false)
+func createHardCodedData(ctx context.Context, workDir string) error {
+	s := source.PolicyUrl{Url: hardCodedRequiredData, Kind: source.DataKind}
+	_, err := s.GetPolicy(ctx, workDir, false)
+	return err
 }
 
 // createDataDirectory creates the base content in the data directory
@@ -222,7 +223,7 @@ func (c *conftestEvaluator) createDataDirectory(ctx context.Context, fs afero.Fs
 		return err
 	}
 
-	if err := createHardCodedData(ctx, dataDir); err != nil {
+	if err := createHardCodedData(ctx, c.workDir); err != nil {
 		return err
 	}
 
