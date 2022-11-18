@@ -359,8 +359,7 @@ func Test_ReportHACBS(t *testing.T) {
 				"result": "SUCCESS",
 				"successes": 3,
 				"timestamp": "1970-01-01T00:00:00Z",
-				"warnings": 0,
-				"note": "my-public-key"
+				"warnings": 0
 			}`,
 			components: []Component{{Success: true}, {Success: true}, {Success: true}},
 			success:    true,
@@ -374,8 +373,7 @@ func Test_ReportHACBS(t *testing.T) {
 				"result": "WARNING",
 				"successes": 2,
 				"timestamp": "1970-01-01T00:00:00Z",
-				"warnings": 1,
-				"note": "my-public-key"
+				"warnings": 1
 			}`,
 			components: []Component{
 				{Success: true},
@@ -392,8 +390,7 @@ func Test_ReportHACBS(t *testing.T) {
 				"result": "FAILURE",
 				"successes": 1,
 				"timestamp": "1970-01-01T00:00:00Z",
-				"warnings": 0,
-				"note": "my-public-key"
+				"warnings": 0
 			}`,
 			components: []Component{
 				{Success: true},
@@ -410,8 +407,7 @@ func Test_ReportHACBS(t *testing.T) {
 				"result": "FAILURE",
 				"successes": 1,
 				"timestamp": "1970-01-01T00:00:00Z",
-				"warnings": 0,
-				"note": "my-public-key"
+				"warnings": 0
 			}`,
 			components: []Component{{Success: false}, {Success: true}},
 			success:    false,
@@ -425,8 +421,7 @@ func Test_ReportHACBS(t *testing.T) {
 				"result": "FAILURE",
 				"successes": 1,
 				"timestamp": "1970-01-01T00:00:00Z",
-				"warnings": 1,
-				"note": "my-public-key"
+				"warnings": 1
 			}`,
 			components: []Component{
 				{Success: true},
@@ -444,8 +439,7 @@ func Test_ReportHACBS(t *testing.T) {
 				"result": "SKIPPED",
 				"successes": 0,
 				"timestamp": "1970-01-01T00:00:00Z",
-				"warnings": 0,
-				"note": "my-public-key"
+				"warnings": 0
 			}`,
 			components: []Component{},
 			success:    true,

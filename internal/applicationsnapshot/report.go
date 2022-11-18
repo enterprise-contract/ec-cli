@@ -69,7 +69,6 @@ type hacbsReport struct {
 	Failures  int       `json:"failures"`
 	Warnings  int       `json:"warnings"`
 	Result    string    `json:"result"`
-	Note      string    `json:"note"`
 }
 
 // Possible formats the report can be written as.
@@ -184,7 +183,6 @@ func (r *Report) toHACBS() hacbsReport {
 	result := hacbsReport{
 		Namespace: application_snapshot_image.ConftestNamespace,
 		Timestamp: r.created,
-		Note:      r.Key,
 	}
 
 	hasFailures := false
