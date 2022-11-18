@@ -22,6 +22,7 @@ import (
 	"io"
 
 	"github.com/open-policy-agent/conftest/output"
+	"github.com/sigstore/cosign/pkg/cosign"
 )
 
 // VerificationStatus represents the status of a verification check.
@@ -52,6 +53,7 @@ type Output struct {
 	AttestationSyntaxCheck    VerificationStatus   `json:"attestationSyntaxCheck"`
 	PolicyCheck               []output.CheckResult `json:"policyCheck"`
 	ExitCode                  int                  `json:"-"`
+	Signatures                []cosign.Signatures  `json:"signatures,omitempty"`
 }
 
 // SetImageAccessibleCheck sets the passed and result.message fields of the ImageAccessibleCheck to the given values.

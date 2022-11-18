@@ -23,6 +23,7 @@ import (
 	"testing"
 
 	"github.com/open-policy-agent/conftest/output"
+	"github.com/sigstore/cosign/pkg/cosign"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -72,6 +73,9 @@ func Test_PrintExpectedJSON(t *testing.T) {
 					},
 				},
 			},
+		},
+		Signatures: []cosign.Signatures{
+			cosign.Signatures{KeyID: "key-id", Sig: "signature"},
 		},
 		ExitCode: 42,
 	}
@@ -141,7 +145,8 @@ func Test_PrintExpectedJSON(t *testing.T) {
 			  }
 			]
 		  }
-		]
+		],
+		"signatures": [{"keyid": "key-id", "sig": "signature"}]
 	  }`, json.String())
 }
 

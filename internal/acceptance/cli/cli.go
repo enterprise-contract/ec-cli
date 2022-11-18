@@ -38,6 +38,7 @@ import (
 
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/crypto"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/git"
+	"github.com/hacbs-contract/ec-cli/internal/acceptance/image"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/kubernetes"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/log"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/registry"
@@ -106,6 +107,10 @@ func ecCommandIsRunWith(ctx context.Context, parameters string) (context.Context
 	}
 
 	if environment, vars, err = setupKeys(ctx, vars, environment); err != nil {
+		return ctx, err
+	}
+
+	if environment, vars, err = setupSigs(ctx, vars, environment); err != nil {
 		return ctx, err
 	}
 
@@ -181,6 +186,15 @@ func setupKeys(ctx context.Context, vars map[string]string, environment []string
 			return environment, vars, err
 		}
 		vars[name+"_PUBLIC_KEY_JSON"] = string(publicKeyJson)
+	}
+
+	return environment, vars, nil
+}
+
+func setupSigs(ctx context.Context, vars map[string]string, environment []string) ([]string, map[string]string, error) {
+
+	if sigs := image.JSONAttestationSignaturesFrom(ctx); sigs != "" {
+		vars["ATTESTATION_SIGNATURES_JSON"] = sigs
 	}
 
 	return environment, vars, nil

@@ -67,6 +67,7 @@ type ApplicationSnapshotImage struct {
 	reference    name.Reference
 	checkOpts    cosign.CheckOpts
 	attestations []oci.Signature
+	signatures   []cosign.Signatures
 	Evaluator    evaluator.Evaluator
 }
 
@@ -162,6 +163,16 @@ func (a *ApplicationSnapshotImage) ValidateAttestationSignature(ctx context.Cont
 		return err
 	}
 	a.attestations = attestations
+
+	// Extract the signatures from the attestations here in order to also validate that
+	// the signatures do exist in the expected format.
+	for _, att := range attestations {
+		signatures, err := signaturesFrom(ctx, att)
+		if err != nil {
+			return err
+		}
+		a.signatures = append(a.signatures, signatures...)
+	}
 	return nil
 }
 
@@ -226,6 +237,10 @@ func (a ApplicationSnapshotImage) ValidateAttestationSyntax(ctx context.Context)
 // Attestations returns the value of the attestations field of the ApplicationSnapshotImage struct
 func (a *ApplicationSnapshotImage) Attestations() []oci.Signature {
 	return a.attestations
+}
+
+func (a *ApplicationSnapshotImage) Signatures() []cosign.Signatures {
+	return a.signatures
 }
 
 // WriteInputFiles writes the JSON from the attestations to input.json in a random temp dir
@@ -312,4 +327,19 @@ func statementFrom(ctx context.Context, att oci.Signature) ([]byte, *in_toto.Sta
 	}
 
 	return payload, &statement, nil
+}
+
+func signaturesFrom(ctx context.Context, att oci.Signature) ([]cosign.Signatures, error) {
+	rawPayload, err := att.Payload()
+	if err != nil {
+		log.Debug("Problem extracting json payload from attestation!")
+		return nil, err
+	}
+
+	var attestationPayload cosign.AttestationPayload
+	if err := json.Unmarshal(rawPayload, &attestationPayload); err != nil {
+		return nil, err
+	}
+
+	return attestationPayload.Signatures, nil
 }

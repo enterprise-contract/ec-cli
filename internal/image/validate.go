@@ -63,6 +63,7 @@ func ValidateImage(ctx context.Context, fs afero.Fs, imageRef string, p *policy.
 	} else {
 		log.Debug("Image attestation signature check passed")
 		out.SetAttestationSignatureCheck(true, "success")
+		out.Signatures = a.Signatures()
 	}
 	if err = a.ValidateAttestationSyntax(ctx); err != nil {
 		log.Debug("Image attestation syntax check failed")

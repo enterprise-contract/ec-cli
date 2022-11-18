@@ -27,6 +27,7 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/open-policy-agent/conftest/output"
 	appstudioshared "github.com/redhat-appstudio/managed-gitops/appstudio-shared/apis/appstudio.redhat.com/v1alpha1"
+	"github.com/sigstore/cosign/pkg/cosign"
 	"github.com/spf13/afero"
 
 	"github.com/hacbs-contract/ec-cli/internal/evaluation_target/application_snapshot_image"
@@ -34,9 +35,10 @@ import (
 
 type Component struct {
 	appstudioshared.ApplicationSnapshotComponent
-	Violations []output.Result `json:"violations"`
-	Warnings   []output.Result `json:"warnings"`
-	Success    bool            `json:"success"`
+	Violations []output.Result     `json:"violations"`
+	Warnings   []output.Result     `json:"warnings"`
+	Success    bool                `json:"success"`
+	Signatures []cosign.Signatures `json:"signatures,omitempty"`
 }
 
 type Report struct {

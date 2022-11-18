@@ -37,7 +37,8 @@ Feature: evaluate enterprise contract
           "containerImage": "localhost:(\\d+)/acceptance/ec-happy-day",
           "violations": [],
           "warnings": [],
-          "success": true
+          "success": true,
+          "signatures": ${ATTESTATION_SIGNATURES_JSON}
         }
       ]
     }
@@ -72,7 +73,7 @@ Feature: evaluate enterprise contract
           "name": "Unnamed",
           "containerImage": "localhost:(\\d+)/acceptance/invalid-image-signature",
           "violations": [
-            {"msg": "no matching signatures:\nfailed to verify signature"},
+            {"msg": "no matching signatures:\ninvalid signature when validating ASN.1 encoded signature"},
             {"msg": "no matching attestations:\nAccepted signatures do not match threshold, Found: 0, Expected 1"},
             {"msg": "EV001: No attestation data, at github.com/hacbs-contract/ec-cli/internal/evaluation_target/application_snapshot_image/application_snapshot_image.go:47"},
             {"msg": "no attestations available"}
@@ -106,7 +107,8 @@ Feature: evaluate enterprise contract
           "containerImage": "localhost:(\\d+)/acceptance/ec-happy-day",
           "violations": [],
           "warnings": [],
-          "success": true
+          "success": true,
+          "signatures": ${ATTESTATION_SIGNATURES_JSON}
         }
       ]
     }
@@ -157,7 +159,8 @@ Given a git repository named "repository3" with
               "msg": "Has a warning"
             }
           ],
-          "success": false
+          "success": false,
+          "signatures": ${ATTESTATION_SIGNATURES_JSON}
         }
       ]
     }

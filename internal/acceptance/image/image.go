@@ -32,9 +32,11 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/random"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/google/go-containerregistry/pkg/v1/types"
+	"github.com/sigstore/cosign/pkg/cosign"
 	"github.com/sigstore/cosign/pkg/oci/static"
 	cosigntypes "github.com/sigstore/cosign/pkg/types"
 	"github.com/sigstore/sigstore/pkg/signature"
+	"gopkg.in/square/go-jose.v2/json"
 
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/attestation"
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/crypto"
@@ -44,7 +46,10 @@ import (
 
 type key int
 
-const imageStateKey = key(0) // we store the imageState struct under this key in Context and when persisted
+const (
+	imageStateKey                 key = iota // Key to imageState struct within context
+	imageAttestationSignaturesKey            // Key to image attestation signatures within context
+)
 
 type imageState struct {
 	Attestations map[string]string
@@ -192,6 +197,11 @@ func createAndPushAttestation(ctx context.Context, imageName, keyName string) (c
 		return ctx, err
 	}
 	signatureBase64 := base64.StdEncoding.EncodeToString(signedAttestation)
+
+	ctx, err = storeAttestationSignatures(ctx, signedAttestation)
+	if err != nil {
+		return ctx, err
+	}
 
 	attestationLayer, err := static.NewAttestation(signedAttestation)
 	if err != nil {
@@ -350,6 +360,32 @@ func ImageSignatureFrom(ctx context.Context, imageName string) ([]byte, error) {
 	signature := annotations[static.SignatureAnnotationKey]
 
 	return base64.StdEncoding.DecodeString(signature)
+}
+
+// storeAttestationSignatures extracts the signatures from the raw attestation and stores it
+// in the context for later retrieval.
+// TODO: allow support for multiple attestations
+func storeAttestationSignatures(ctx context.Context, rawAttestation []byte) (context.Context, error) {
+	var attestationPayload cosign.AttestationPayload
+	if err := json.Unmarshal(rawAttestation, &attestationPayload); err != nil {
+		return nil, err
+	}
+	signaturesJson, err := json.Marshal(attestationPayload.Signatures)
+	if err != nil {
+		return nil, err
+	}
+
+	return context.WithValue(ctx, imageAttestationSignaturesKey, signaturesJson), nil
+}
+
+// JSONAttestationSignaturesFrom returns the list of attestation signatures found in the context in
+// JSON format. If not found, and empty JSON array is returned.
+func JSONAttestationSignaturesFrom(ctx context.Context) string {
+	sigs, ok := ctx.Value(imageAttestationSignaturesKey).(string)
+	if !ok {
+		return "[]"
+	}
+	return sigs
 }
 
 // AddStepsTo adds Gherkin steps to the godog ScenarioContext
