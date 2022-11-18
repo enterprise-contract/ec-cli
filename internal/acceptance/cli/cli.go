@@ -147,6 +147,9 @@ func ecCommandIsRunWith(ctx context.Context, parameters string) (context.Context
 		logger.Log(err)
 	}
 
+	logger.Logf("Stdout: %v", stdout.String())
+	logger.Logf("Stderr: %v", stderr.String())
+
 	// store the outcome in the Context
 	return context.WithValue(ctx, processStatusKey, &status{Cmd: cmd, vars: vars, err: err, stdout: stdout.String(), stderr: stderr.String()}), nil
 }

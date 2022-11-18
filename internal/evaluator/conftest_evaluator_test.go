@@ -22,6 +22,7 @@ import (
 	"context"
 	"regexp"
 	"testing"
+	"time"
 
 	"github.com/open-policy-agent/conftest/output"
 	"github.com/spf13/afero"
@@ -29,6 +30,7 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	"github.com/hacbs-contract/ec-cli/internal/downloader"
+	"github.com/hacbs-contract/ec-cli/internal/policy"
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
 )
 
@@ -173,7 +175,7 @@ func TestConftestEvaluatorEvaluate(t *testing.T) {
 
 	evaluator, err := NewConftestEvaluator(ctx, afero.NewMemMapFs(), []source.PolicySource{
 		testPolicySource{},
-	}, "release.main", nil)
+	}, "release.main", &policy.Policy{EffectiveTime: time.Now()})
 
 	assert.NoError(t, err)
 	actualResults, err := evaluator.Evaluate(ctx, inputs)

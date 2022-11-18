@@ -114,7 +114,79 @@ Feature: evaluate enterprise contract
     }
     """
 
+  Scenario: future failure is converted to a warning
+    Given a key pair named "known"
+    Given an image named "acceptance/ec-happy-day"
+    Given a valid image signature of "acceptance/ec-happy-day" image signed by the "known" key
+    Given a valid Rekor entry for image signature of "acceptance/ec-happy-day"
+    Given a valid attestation of "acceptance/ec-happy-day" signed by the "known" key
+    Given a valid Rekor entry for attestation of "acceptance/ec-happy-day"
+    Given a git repository named "future-deny-policy" with
+      | main.rego | examples/future_deny.rego |
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy {"sources":["git::http://${GITHOST}/git/future-deny-policy.git"]} --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
+    Then the exit status should be 0
+    Then the standard output should contain
+    """
+    {
+      "success": true,
+      "key": ${known_PUBLIC_KEY_JSON},
+      "components": [
+        {
+          "name": "Unnamed",
+          "containerImage": "localhost:(\\d+)/acceptance/ec-happy-day",
+          "violations": [],
+          "warnings": [
+            {
+              "metadata": {
+                "effective_on": "2099-01-01T00:00:00Z"
+              },
+              "msg": "Fails in 2099"
+            }
+          ],
+          "success": true,
+          "signatures": ${ATTESTATION_SIGNATURES_JSON}
+        }
+      ]
+    }
+    """
+
   @focus
+  Scenario: future failure is a deny when using effective-date flag
+    Given a key pair named "known"
+    Given an image named "acceptance/ec-happy-day"
+    Given a valid image signature of "acceptance/ec-happy-day" image signed by the "known" key
+    Given a valid Rekor entry for image signature of "acceptance/ec-happy-day"
+    Given a valid attestation of "acceptance/ec-happy-day" signed by the "known" key
+    Given a valid Rekor entry for attestation of "acceptance/ec-happy-day"
+    Given a git repository named "future-deny-policy" with
+      | main.rego | examples/future_deny.rego |
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy {"sources":["git::http://${GITHOST}/git/future-deny-policy.git"]} --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --effective-time 2100-01-01T12:00:00Z --strict"
+    Then the exit status should be 1
+    Then the standard output should contain
+    """
+    {
+      "success": false,
+      "key": ${known_PUBLIC_KEY_JSON},
+      "components": [
+        {
+          "name": "Unnamed",
+          "containerImage": "localhost:(\\d+)/acceptance/ec-happy-day",
+          "violations": [
+            {
+              "metadata": {
+                "effective_on": "2099-01-01T00:00:00Z"
+              },
+              "msg": "Fails in 2099"
+            }
+          ],
+          "warnings": [],
+          "success": false,
+          "signatures": ${ATTESTATION_SIGNATURES_JSON}
+        }
+      ]
+    }
+    """
+
   Scenario: multiple policy sources
     Given a key pair named "known"
     Given an image named "acceptance/ec-multiple-sources"
@@ -126,7 +198,7 @@ Feature: evaluate enterprise contract
       | main.rego | examples/happy_day.rego |
     Given a git repository named "repository2" with
       | main.rego | examples/reject.rego |
-Given a git repository named "repository3" with
+    Given a git repository named "repository3" with
       | main.rego | examples/warn.rego |
     Given policy configuration named "ec-policy" with specification
     """

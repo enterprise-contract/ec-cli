@@ -25,6 +25,7 @@ import (
 	"errors"
 	"fmt"
 	"testing"
+	"time"
 
 	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	cosignSig "github.com/sigstore/cosign/pkg/signature"
@@ -55,6 +56,9 @@ func (c *FakeKubernetesClient) FetchEnterpriseContractPolicy(ctx context.Context
 }
 
 func TestNewPolicy(t *testing.T) {
+	timeNowStr := "2022-11-23T16:30:00Z"
+	timeNow, _ := time.Parse(time.RFC3339, timeNowStr)
+
 	cases := []struct {
 		name        string
 		policyRef   string
@@ -67,34 +71,34 @@ func TestNewPolicy(t *testing.T) {
 			name:      "simple inline",
 			policyRef: toJson(&ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey}),
 			expected: &Policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: testPublicKey}},
+				PublicKey: testPublicKey}, EffectiveTime: timeNow},
 		},
 		{
 			name:      "inline with public key overwrite",
 			policyRef: toJson(&ecc.EnterpriseContractPolicySpec{PublicKey: "ignored"}),
 			publicKey: testPublicKey,
 			expected: &Policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: testPublicKey}},
+				PublicKey: testPublicKey}, EffectiveTime: timeNow},
 		},
 		{
 			name:      "inline with rekor URL",
 			policyRef: toJson(&ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey, RekorUrl: testRekorUrl}),
 			expected: &Policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: testPublicKey, RekorUrl: testRekorUrl}},
+				PublicKey: testPublicKey, RekorUrl: testRekorUrl}, EffectiveTime: timeNow},
 		},
 		{
 			name:      "inline with rekor URL overwrite",
 			policyRef: toJson(&ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey, RekorUrl: "ignored"}),
 			rekorUrl:  testRekorUrl,
 			expected: &Policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: testPublicKey, RekorUrl: testRekorUrl}},
+				PublicKey: testPublicKey, RekorUrl: testRekorUrl}, EffectiveTime: timeNow},
 		},
 		{
 			name:        "simple k8sPath",
 			policyRef:   "ec-policy",
 			k8sResource: &ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey},
 			expected: &Policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: testPublicKey}},
+				PublicKey: testPublicKey}, EffectiveTime: timeNow},
 		},
 		{
 			name:        "k8sPath with public key overwrite",
@@ -102,14 +106,14 @@ func TestNewPolicy(t *testing.T) {
 			k8sResource: &ecc.EnterpriseContractPolicySpec{PublicKey: "ignored"},
 			publicKey:   testPublicKey,
 			expected: &Policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: testPublicKey}},
+				PublicKey: testPublicKey}, EffectiveTime: timeNow},
 		},
 		{
 			name:        "k8sPath with rekor URL",
 			policyRef:   "ec-policy",
 			k8sResource: &ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey, RekorUrl: testRekorUrl},
 			expected: &Policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: testPublicKey, RekorUrl: testRekorUrl}},
+				PublicKey: testPublicKey, RekorUrl: testRekorUrl}, EffectiveTime: timeNow},
 		},
 		{
 			name:        "k8sPath with rekor overwrite",
@@ -117,13 +121,13 @@ func TestNewPolicy(t *testing.T) {
 			k8sResource: &ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey},
 			rekorUrl:    testRekorUrl,
 			expected: &Policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: testPublicKey, RekorUrl: testRekorUrl}},
+				PublicKey: testPublicKey, RekorUrl: testRekorUrl}, EffectiveTime: timeNow},
 		},
 		{
 			name:      "default empty policy",
 			publicKey: testPublicKey,
 			expected: &Policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: testPublicKey}},
+				PublicKey: testPublicKey}, EffectiveTime: timeNow},
 		},
 	}
 
@@ -134,7 +138,7 @@ func TestNewPolicy(t *testing.T) {
 			if c.k8sResource != nil {
 				ctx = kubernetes.WithClient(ctx, &FakeKubernetesClient{policy: *c.k8sResource})
 			}
-			got, err := NewPolicy(ctx, c.policyRef, c.rekorUrl, c.publicKey)
+			got, err := NewPolicy(ctx, c.policyRef, c.rekorUrl, c.publicKey, timeNowStr)
 			assert.NoError(t, err)
 			// CheckOpts is more thoroughly checked in TestCheckOpts.
 			got.CheckOpts = nil
@@ -171,7 +175,7 @@ func TestNewPolicyFailures(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			ctx := context.Background()
 			ctx = kubernetes.WithClient(ctx, &FakeKubernetesClient{fetchError: c.k8sError})
-			got, err := NewPolicy(ctx, c.policyRef, "", "")
+			got, err := NewPolicy(ctx, c.policyRef, "", "", "")
 			assert.Nil(t, got)
 			assert.ErrorContains(t, err, c.errorCause)
 		})
@@ -214,7 +218,7 @@ func TestCheckOpts(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			ctx := context.Background()
 			ctx = withSignatureClient(ctx, &FakeCosignClient{publicKey: c.remotePublicKey})
-			p, err := NewPolicy(ctx, "", c.rekorUrl, c.publicKey)
+			p, err := NewPolicy(ctx, "", c.rekorUrl, c.publicKey, "")
 			if c.err != "" {
 				assert.Empty(t, p)
 				assert.ErrorContains(t, err, c.err)

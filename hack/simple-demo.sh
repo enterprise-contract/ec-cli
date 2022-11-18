@@ -28,7 +28,7 @@ POLICY='{
     "github.com/hacbs-contract/ec-policies//policy"
   ],
   "configuration": {
-    "excludeRules": [
+    "exclude": [
       "not_useful"
     ]
   }

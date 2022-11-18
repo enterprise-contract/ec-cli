@@ -49,6 +49,7 @@ type conftestEvaluator struct {
 	outputFormat  string
 	workDir       string
 	dataDir       string
+	effectiveTime time.Time
 }
 
 // NewConftestEvaluator returns initialized conftestEvaluator implementing
@@ -58,6 +59,7 @@ func NewConftestEvaluator(ctx context.Context, fs afero.Fs, policySources []sour
 		policySources: policySources,
 		namespace:     namespace,
 		outputFormat:  "json",
+		effectiveTime: p.EffectiveTime,
 	}
 
 	dir, err := utils.CreateWorkDir(fs)
@@ -104,7 +106,8 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) ([]out
 			// TODO do we want to evaluate further policies instead of erroring out?
 			return nil, err
 		}
-		now := time.Now()
+
+		now := c.effectiveTime
 		for i, result := range runResults {
 			failures := []output.Result{}
 			for _, failure := range result.Failures {
@@ -143,34 +146,39 @@ func createConfigJSON(fs afero.Fs, dataDir string, p *policy.Policy) error {
 		Exclude     *[]string `json:"exclude,omitempty"`
 		Include     *[]string `json:"include,omitempty"`
 		Collections *[]string `json:"collections,omitempty"`
+		WhenNs      int64     `json:"when_ns"`
 	}
 	pc := &policyConfig{}
 
 	// TODO: Once the NonBlocking field has been removed, update to dump the spec.Config into an updated policyConfig struct
 	if p.Exceptions != nil {
-		log.Debug("Non-blocking exceptions found. These will be written to file", dataDir)
+		log.Debug("Non-blocking exceptions found. These will be written to file ", dataDir)
 		pc.NonBlocking = &p.Exceptions.NonBlocking
 	}
 	if p.Configuration != nil {
-		log.Debug("Include rules found. These will be written to file", dataDir)
+		log.Debug("Include rules found. These will be written to file ", dataDir)
 		if p.Configuration.Include != nil {
 			pc.Include = &p.Configuration.Include
 		}
-		log.Debug("Exclude rules found. These will be written to file", dataDir)
+		log.Debug("Exclude rules found. These will be written to file ", dataDir)
 		if p.Configuration.Exclude != nil {
 			pc.Exclude = &p.Configuration.Exclude
 		}
-		log.Debug("Collections found. These will be written to file", dataDir)
+		log.Debug("Collections found. These will be written to file ", dataDir)
 		if p.Configuration.Collections != nil {
 			pc.Collections = &p.Configuration.Collections
 		}
 	}
-	// Check to see that we've actually added any values to the policyConfig struct.
-	// If so, we'll update the config map. Otherwise, this is skipped.
-	if (policyConfig{} != *pc) {
-		config["config"] = map[string]interface{}{
-			"policy": pc,
-		}
+
+	// Now that the future deny logic is handled in the ec-cli and not in rego,
+	// this field is used only for the checking the effective times in the
+	// acceptable bundles list. Always set it, even when we are using the current
+	// time, so that a consistent current time is used everywhere.
+	pc.WhenNs = p.EffectiveTime.UnixNano()
+
+	// Add the policy config we just prepared
+	config["config"] = map[string]interface{}{
+		"policy": pc,
 	}
 
 	configJSON, err := json.MarshalIndent(config, "", "    ")
