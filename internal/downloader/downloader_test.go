@@ -75,28 +75,3 @@ func TestDownloader_Download(t *testing.T) {
 	}
 
 }
-
-func TestDownloader_ProbablyGoGetterFormat(t *testing.T) {
-	falseUrls := []string{
-		"https://github.com/hacbs-contract/ec-policies",
-		"github.com/hacbs-contract/ec-policies",
-		"github.com/hacbs-contract/ec-policies.git",
-		"https://github.com/hacbs-contract/ec-policies/policy",
-	}
-	for _, u := range falseUrls {
-		t.Run(u, func(t *testing.T) {
-			assert.False(t, ProbablyGoGetterFormat(u))
-		})
-	}
-
-	trueUrls := []string{
-		"github.com/hacbs-contract/ec-policies//policy",
-		"github.com/hacbs-contract/ec-policies?ref=main",
-		"git::github.com/hacbs-contract/ec-policies",
-	}
-	for _, u := range trueUrls {
-		t.Run(u, func(t *testing.T) {
-			assert.True(t, ProbablyGoGetterFormat(u))
-		})
-	}
-}

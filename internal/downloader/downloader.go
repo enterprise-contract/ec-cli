@@ -21,7 +21,6 @@ package downloader
 import (
 	"context"
 	"fmt"
-	"regexp"
 
 	"github.com/open-policy-agent/conftest/downloader"
 	log "github.com/sirupsen/logrus"
@@ -62,36 +61,4 @@ func Download(ctx context.Context, destDir string, sourceUrl string, showMsg boo
 	}
 
 	return
-}
-
-// Try to guess if the source url is a go-getter format url or not.
-//
-// This is not robust but it's hopefully good enough for our requirements.
-// The idea is to provide a way to start using the getter format urls now
-// but make sure the non-getter urls keep working.
-func ProbablyGoGetterFormat(sourceUrl string) bool {
-	matchers := []string{
-		// Go-getter uses // to delimit a subdirectory in a git repo, so if we see
-		// that then assume it's go-getter format
-		`/.*//`,
-
-		// Go-getter allows forcing protocol with prefixes such as "git::" so
-		// if we see a protocol prefix..
-		`^[a-z0-9]+::`,
-
-		// Go-getter uses url style params for git options. Look for these
-		// two common options
-		`\?.*(ref|sshkey)=`,
-	}
-
-	for _, m := range matchers {
-		match, err := regexp.MatchString(m, sourceUrl)
-		if err != nil {
-			panic(err)
-		}
-		if match {
-			return true
-		}
-	}
-	return false
 }
