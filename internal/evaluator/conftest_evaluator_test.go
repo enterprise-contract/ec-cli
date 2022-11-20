@@ -56,6 +56,10 @@ func (t testPolicySource) PolicyUrl() string {
 	return "test-url"
 }
 
+func (t testPolicySource) Subdir() string {
+	return "policy"
+}
+
 type mockDownloader struct {
 	mock.Mock
 }

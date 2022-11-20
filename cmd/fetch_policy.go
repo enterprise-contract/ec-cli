@@ -89,7 +89,7 @@ Notes:
 
 			for _, s := range sourceUrls {
 				// Do everything the same way that it would be done when an image validation happens
-				policyUrl := source.PolicyUrl(s)
+				policyUrl := source.PolicyUrl{Url: s, Kind: source.PolicyKind}
 				policySource := &policyUrl
 				_, err := policySource.GetPolicy(cmd.Context(), destDir, true)
 				if err != nil {

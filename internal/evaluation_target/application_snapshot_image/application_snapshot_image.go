@@ -135,7 +135,7 @@ func NewApplicationSnapshotImage(ctx context.Context, fs afero.Fs, image string,
 func fetchPolicySources(spec *ecc.EnterpriseContractPolicySpec) ([]source.PolicySource, error) {
 	policySources := make([]source.PolicySource, 0, len(spec.Sources))
 	for _, sourceUrl := range spec.Sources {
-		url := source.PolicyUrl(sourceUrl)
+		url := source.PolicyUrl{Url: sourceUrl, Kind: source.PolicyKind}
 		policySources = append(policySources, &url)
 	}
 	return policySources, nil
