@@ -18,7 +18,6 @@
 apiVersion: appstudio.redhat.com/v1alpha1
 kind: EnterpriseContractPolicy
 metadata:
-  creationTimestamp: null
   name: ec-policy
 spec:
   description: My custom enterprise contract policy configuration
