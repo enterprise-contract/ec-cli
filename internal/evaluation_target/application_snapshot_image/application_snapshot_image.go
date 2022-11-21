@@ -26,7 +26,6 @@ import (
 
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
-	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/in-toto/in-toto-golang/in_toto"
 	"github.com/qri-io/jsonschema"
 	"github.com/sigstore/cosign/pkg/cosign"
@@ -72,7 +71,7 @@ type ApplicationSnapshotImage struct {
 }
 
 // NewApplicationSnapshotImage returns an ApplicationSnapshotImage struct with reference, checkOpts, and evaluator ready to use.
-func NewApplicationSnapshotImage(ctx context.Context, fs afero.Fs, image string, ecp *ecc.EnterpriseContractPolicySpec) (*ApplicationSnapshotImage, error) {
+func NewApplicationSnapshotImage(ctx context.Context, fs afero.Fs, image string, p *policy.Policy) (*ApplicationSnapshotImage, error) {
 	ref, err := name.ParseReference(image)
 	if err != nil {
 		log.Debugf("Failed to parse reference %s", image)
@@ -80,12 +79,7 @@ func NewApplicationSnapshotImage(ctx context.Context, fs afero.Fs, image string,
 	}
 	log.Debugf("Parsed reference %s", ref)
 
-	checkOpts, err := policy.CheckOpts(ctx, ecp)
-	if err != nil {
-		return nil, err
-	}
-
-	if checkOpts.RekorClient != nil {
+	if p.CheckOpts.RekorClient != nil {
 		// By using Cosign directly the log entries are validated against the
 		// Rekor public key, the public key for Rekor can be supplied via three
 		// different means:
@@ -106,10 +100,10 @@ func NewApplicationSnapshotImage(ctx context.Context, fs afero.Fs, image string,
 
 	a := &ApplicationSnapshotImage{
 		reference: ref,
-		checkOpts: *checkOpts,
+		checkOpts: *p.CheckOpts,
 	}
 
-	policySources, err := fetchPolicySources(ecp)
+	policySources, err := fetchPolicySources(p)
 	if err != nil {
 		log.Debug("Failed to fetch the policy sources from the ECP!")
 		return nil, err
@@ -121,7 +115,7 @@ func NewApplicationSnapshotImage(ctx context.Context, fs afero.Fs, image string,
 		log.Debugf("policySourceJson: %s", policySourceJson)
 	}
 
-	c, err := newConftestEvaluator(ctx, fs, policySources, ConftestNamespace, ecp)
+	c, err := newConftestEvaluator(ctx, fs, policySources, ConftestNamespace, p)
 	if err != nil {
 		log.Debug("Failed to initialize the conftest evaluator!")
 		return nil, err
@@ -132,7 +126,7 @@ func NewApplicationSnapshotImage(ctx context.Context, fs afero.Fs, image string,
 }
 
 // fetchPolicySources returns an array of policy sources
-func fetchPolicySources(spec *ecc.EnterpriseContractPolicySpec) ([]source.PolicySource, error) {
+func fetchPolicySources(spec *policy.Policy) ([]source.PolicySource, error) {
 	policySources := make([]source.PolicySource, 0, len(spec.Sources))
 	for _, sourceUrl := range spec.Sources {
 		url := source.PolicyUrl{Url: sourceUrl, Kind: source.PolicyKind}

@@ -22,12 +22,12 @@ import (
 	"path/filepath"
 	"time"
 
-	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/open-policy-agent/conftest/output"
 	"github.com/open-policy-agent/conftest/runner"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 
+	"github.com/hacbs-contract/ec-cli/internal/policy"
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
 	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
@@ -53,7 +53,7 @@ type conftestEvaluator struct {
 
 // NewConftestEvaluator returns initialized conftestEvaluator implementing
 // Evaluator interface
-func NewConftestEvaluator(ctx context.Context, fs afero.Fs, policySources []source.PolicySource, namespace string, ecpSpec *ecc.EnterpriseContractPolicySpec) (Evaluator, error) {
+func NewConftestEvaluator(ctx context.Context, fs afero.Fs, policySources []source.PolicySource, namespace string, p *policy.Policy) (Evaluator, error) {
 	c := conftestEvaluator{
 		policySources: policySources,
 		namespace:     namespace,
@@ -68,7 +68,7 @@ func NewConftestEvaluator(ctx context.Context, fs afero.Fs, policySources []sour
 	c.workDir = dir
 	log.Debugf("Created work dir %s", dir)
 
-	if err := c.createDataDirectory(ctx, fs, ecpSpec); err != nil {
+	if err := c.createDataDirectory(ctx, fs, p); err != nil {
 		return nil, err
 	}
 
@@ -82,7 +82,7 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) ([]out
 		var r testRunner
 		var ok bool
 		if r, ok = ctx.Value(runnerKey).(testRunner); r == nil || !ok {
-			policy, err := s.GetPolicy(ctx, c.workDir, false)
+			p, err := s.GetPolicy(ctx, c.workDir, false)
 			if err != nil {
 				// TODO do we want to evaluate further policies instead of erroring out?
 				return nil, err
@@ -90,7 +90,7 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) ([]out
 
 			r = &runner.TestRunner{
 				Data:      []string{c.dataDir},
-				Policy:    []string{policy},
+				Policy:    []string{p},
 				Namespace: []string{c.namespace},
 				NoFail:    true,
 				Output:    c.outputFormat,
@@ -127,8 +127,8 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) ([]out
 
 // createConfigJSON creates the config.json file with the provided configuration
 // in the data directory
-func createConfigJSON(fs afero.Fs, dataDir string, spec *ecc.EnterpriseContractPolicySpec) error {
-	if spec == nil {
+func createConfigJSON(fs afero.Fs, dataDir string, p *policy.Policy) error {
+	if p == nil {
 		return nil
 	}
 
@@ -147,22 +147,22 @@ func createConfigJSON(fs afero.Fs, dataDir string, spec *ecc.EnterpriseContractP
 	pc := &policyConfig{}
 
 	// TODO: Once the NonBlocking field has been removed, update to dump the spec.Config into an updated policyConfig struct
-	if spec.Exceptions != nil {
+	if p.Exceptions != nil {
 		log.Debug("Non-blocking exceptions found. These will be written to file", dataDir)
-		pc.NonBlocking = &spec.Exceptions.NonBlocking
+		pc.NonBlocking = &p.Exceptions.NonBlocking
 	}
-	if spec.Configuration != nil {
+	if p.Configuration != nil {
 		log.Debug("Include rules found. These will be written to file", dataDir)
-		if spec.Configuration.IncludeRules != nil {
-			pc.IncludeRules = &spec.Configuration.IncludeRules
+		if p.Configuration.IncludeRules != nil {
+			pc.IncludeRules = &p.Configuration.IncludeRules
 		}
 		log.Debug("Exclude rules found. These will be written to file", dataDir)
-		if spec.Configuration.ExcludeRules != nil {
-			pc.ExcludeRules = &spec.Configuration.ExcludeRules
+		if p.Configuration.ExcludeRules != nil {
+			pc.ExcludeRules = &p.Configuration.ExcludeRules
 		}
 		log.Debug("Collections found. These will be written to file", dataDir)
-		if spec.Configuration.Collections != nil {
-			pc.Collections = &spec.Configuration.Collections
+		if p.Configuration.Collections != nil {
+			pc.Collections = &p.Configuration.Collections
 		}
 	}
 	// Check to see that we've actually added any values to the policyConfig struct.
@@ -206,7 +206,7 @@ func createHardCodedData(ctx context.Context, workDir string) error {
 }
 
 // createDataDirectory creates the base content in the data directory
-func (c *conftestEvaluator) createDataDirectory(ctx context.Context, fs afero.Fs, spec *ecc.EnterpriseContractPolicySpec) error {
+func (c *conftestEvaluator) createDataDirectory(ctx context.Context, fs afero.Fs, p *policy.Policy) error {
 	dataDir := filepath.Join(c.workDir, "data")
 	exists, err := afero.DirExists(fs, dataDir)
 	if err != nil {
@@ -219,7 +219,7 @@ func (c *conftestEvaluator) createDataDirectory(ctx context.Context, fs afero.Fs
 
 	c.dataDir = dataDir
 
-	if err := createConfigJSON(fs, dataDir, spec); err != nil {
+	if err := createConfigJSON(fs, dataDir, p); err != nil {
 		return err
 	}
 

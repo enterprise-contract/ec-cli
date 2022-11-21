@@ -26,10 +26,12 @@ import (
 
 	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/hacbs-contract/ec-cli/internal/policy"
 )
 
-func mockFetchECSource(ctx context.Context, resource string) (*ecc.EnterpriseContractPolicySpec, error) {
-	return &ecc.EnterpriseContractPolicySpec{
+func mockFetchECSource(ctx context.Context, resource string) (*policy.Policy, error) {
+	return &policy.Policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
 		Description: "very descriptive",
 		Authorization: &ecc.Authorization{
 			Components: []ecc.AuthorizedComponent{
@@ -40,7 +42,7 @@ func mockFetchECSource(ctx context.Context, resource string) (*ecc.EnterpriseCon
 				},
 			},
 		},
-	}, nil
+	}}, nil
 }
 
 func mockPolicyConfigurationString() string {
