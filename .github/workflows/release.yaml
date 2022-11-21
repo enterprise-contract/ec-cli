@@ -28,6 +28,11 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
 
+    env:
+      IMAGE_REPO: quay.io/hacbs-contract/ec-cli
+      TAG: ${{ github.sha }}
+      TASK: task/0.1/verify-enterprise-contract.yaml
+
     steps:
       - uses: actions/checkout@v3
 
@@ -82,7 +87,7 @@ jobs:
         run: podman login -u ${{ secrets.BUNDLE_PUSH_USER  }} -p ${{ secrets.BUNDLE_PUSH_PASS }} quay.io
 
       - name: Create image from snapshot
-        run: make push-snapshot-image IMAGE_TAG=${{ github.sha }}
+        run: make push-snapshot-image IMAGE_TAG=$TAG IMAGE_REPO=$IMAGE_REPO
 
       - name: Create and push the tekton bundle
-        run: make task-bundle-snapshot TASK_TAG=${{ github.sha }}
+        run: make task-bundle-snapshot TASK_TAG=$TAG TASK=<( yq e '.spec.steps[].image? = "$IMAGE_REPO:$TAG"' $TASK)
