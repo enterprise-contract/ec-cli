@@ -39,7 +39,9 @@ jobs:
           cache-dependency-path: '**/go.sum'
 
       - name: Download go dependencies
-        run: go mod download
+        run: |
+          go mod download
+          go mod download -modfile internal/tools/go.mod
 
       - name: Build distribution
         run: make dist

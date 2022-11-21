@@ -41,7 +41,9 @@ jobs:
           cache-dependency-path: '**/go.sum'
 
       - name: Download go dependencies
-        run: go mod download
+        run: |
+          go mod download
+          go mod download -modfile internal/tools/go.mod
 
       - name: Test
         run: make test
@@ -88,7 +90,9 @@ jobs:
           cache-dependency-path: '**/go.sum'
 
       - name: Download go dependencies
-        run: go mod download
+        run: |
+          go mod download
+          go mod download -modfile internal/tools/go.mod
 
       - name: Setup Tekton environment
         run: hack/setup-environment.sh
