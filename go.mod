@@ -15,7 +15,7 @@ require (
 	github.com/go-openapi/strfmt v0.21.3
 	github.com/google/go-containerregistry v0.12.1
 	github.com/google/go-github/v45 v45.2.0
-	github.com/hacbs-contract/enterprise-contract-controller/api v0.0.0-20221020122434-4e8a9ca8266f
+	github.com/hacbs-contract/enterprise-contract-controller/api v0.0.0-20221122140036-dfd646ad4f07
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/in-toto/in-toto-golang v0.3.4-0.20220709202702-fa494aaa0add
 	github.com/leanovate/gopter v0.2.9
