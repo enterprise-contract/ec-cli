@@ -131,7 +131,3 @@ TASK ?= task/$(TASK_VERSION)/verify-enterprise-contract.yaml
 .PHONY: task-bundle
 task-bundle: ## Push the Tekton Task bundle an image repository
 	@go run -modfile internal/tools/go.mod github.com/tektoncd/cli/cmd/tkn bundle push $(TASK_REPO):$(TASK_TAG) -f $(TASK)
-
-.PHONY: task-bundle-snapshot
-task-bundle-snapshot: task-bundle ## Push task bundle and then tag with "snapshot"
-	@skopeo copy "docker://$(TASK_REPO):$(TASK_TAG)" "docker://$(TASK_REPO):snapshot"

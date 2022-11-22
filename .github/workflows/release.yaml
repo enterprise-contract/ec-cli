@@ -89,5 +89,8 @@ jobs:
       - name: Create image from snapshot
         run: make push-snapshot-image IMAGE_TAG=$TAG IMAGE_REPO=$IMAGE_REPO
 
-      - name: Create and push the tekton bundle
-        run: make task-bundle-snapshot TASK_TAG=$TAG TASK=<( yq e '.spec.steps[].image? = "$IMAGE_REPO:$TAG"' $TASK)
+      - name: Create and push the tekton bundle tagged with sha
+        run: make task-bundle TASK_TAG=$TAG TASK=<( yq e '.spec.steps[].image? = "$IMAGE_REPO:$TAG"' $TASK)
+
+      - name: Create and push the tekton bundle tagged with snapshot
+        run: make task-bundle TASK_TAG=snapshot TASK=<( yq e '.spec.steps[].image? = "$IMAGE_REPO:snapshot"' $TASK)
