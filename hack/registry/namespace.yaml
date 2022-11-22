@@ -15,15 +15,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 ---
-apiVersion: appstudio.redhat.com/v1alpha1
-kind: EnterpriseContractPolicy
+apiVersion: v1
+kind: Namespace
 metadata:
-  name: ec-policy
-spec:
-  description: My custom enterprise contract policy configuration
-  sources:
-    - git::https://github.com/hacbs-contract/ec-policies.git
-  exceptions:
-    nonBlocking:
-      - not_useful
-      - test:conftest-clair
+  name: image-registry

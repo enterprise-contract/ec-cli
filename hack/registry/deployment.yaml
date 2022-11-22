@@ -15,15 +15,26 @@
 # SPDX-License-Identifier: Apache-2.0
 
 ---
-apiVersion: appstudio.redhat.com/v1alpha1
-kind: EnterpriseContractPolicy
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: ec-policy
+  name: registry
+  namespace: image-registry
+  labels:
+    app.kubernetes.io/name: registry
 spec:
-  description: My custom enterprise contract policy configuration
-  sources:
-    - git::https://github.com/hacbs-contract/ec-policies.git
-  exceptions:
-    nonBlocking:
-      - not_useful
-      - test:conftest-clair
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: registry
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: registry
+    spec:
+      containers:
+        - name: tekton-pipelines-controller
+          image: docker.io/registry:2.8.1
+          ports:
+            - name: registry
+              containerPort: 5000

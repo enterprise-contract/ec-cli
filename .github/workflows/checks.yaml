@@ -26,7 +26,7 @@ name: Checks
       - main
 
 jobs:
-  Checks:
+  CLI:
 
     runs-on: ubuntu-latest
 
@@ -41,7 +41,9 @@ jobs:
           cache-dependency-path: '**/go.sum'
 
       - name: Download go dependencies
-        run: go mod download
+        run: |
+          go mod download
+          go mod download -modfile internal/tools/go.mod
 
       - name: Test
         run: make test
@@ -72,3 +74,30 @@ jobs:
         with:
           files: ./coverage-acceptance.out
           flags: acceptance
+
+  Task:
+    runs-on: ubuntu-latest
+    env:
+      TASK_BUNDLE_REF: registry.image-registry.svc.cluster.local:5000/ec-task-bundle
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Go environment
+        uses: actions/setup-go@v3
+        with:
+          cache: true
+          go-version-file: go.mod
+          cache-dependency-path: '**/go.sum'
+
+      - name: Download go dependencies
+        run: |
+          go mod download
+          go mod download -modfile internal/tools/go.mod
+
+      - name: Setup Tekton environment
+        run: hack/setup-environment.sh
+
+      - name: Testing ec task
+        env:
+          TASK_VERSION: 0.1
+        run: task/tests/run.sh

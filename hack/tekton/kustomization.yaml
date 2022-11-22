@@ -15,15 +15,20 @@
 # SPDX-License-Identifier: Apache-2.0
 
 ---
-apiVersion: appstudio.redhat.com/v1alpha1
-kind: EnterpriseContractPolicy
-metadata:
-  name: ec-policy
-spec:
-  description: My custom enterprise contract policy configuration
-  sources:
-    - git::https://github.com/hacbs-contract/ec-policies.git
-  exceptions:
-    nonBlocking:
-      - not_useful
-      - test:conftest-clair
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  # Must use envsubst or similar to replace the "${TKN_VERSION}" with a concrete value
+  - https://storage.googleapis.com/tekton-releases/pipeline/previous/${TKN_VERSION}/release.yaml
+
+patches:
+  # Enable Tekton bundles
+  - patch: |-
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: feature-flags
+        namespace: tekton-pipelines
+      data:
+        enable-tekton-oci-bundles: true

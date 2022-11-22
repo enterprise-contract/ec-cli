@@ -17,18 +17,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: TaskRun
 metadata:
-  annotations:
-    pipeline.tekton.dev/release: 9221ac3-dirty
-    tekton.dev/displayName: Verify Enterprise Contract V2
-    tekton.dev/pipelines.minVersion: "0.19"
-    tekton.dev/tags: ec, chains, signature, conftest
-  creationTimestamp: null
   generateName: verify-enterprise-contract-run-
-  generation: 1
-  labels:
-    app.kubernetes.io/managed-by: tekton-pipelines
-    app.kubernetes.io/version: "0.2"
-    tekton.dev/task: verify-enterprise-contract
 spec:
   params:
   - name: HOMEDIR
@@ -51,6 +40,12 @@ spec:
   resources: {}
   serviceAccountName: default
   taskRef:
-    kind: Task
-    name: verify-enterprise-contract
-  timeout: 1h0m0s
+    resolver: bundles
+    params:
+    - name: bundle
+      value: ${TASK_BUNDLE_REF}
+    - name: name
+      value: verify-enterprise-contract
+    - name: kind
+      value: task
+  timeout: 10m

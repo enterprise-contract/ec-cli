@@ -15,15 +15,15 @@
 # SPDX-License-Identifier: Apache-2.0
 
 ---
-apiVersion: appstudio.redhat.com/v1alpha1
-kind: EnterpriseContractPolicy
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
 metadata:
-  name: ec-policy
-spec:
-  description: My custom enterprise contract policy configuration
-  sources:
-    - git::https://github.com/hacbs-contract/ec-policies.git
-  exceptions:
-    nonBlocking:
-      - not_useful
-      - test:conftest-clair
+  name: ecp-reader
+rules:
+- apiGroups:
+  - appstudio.redhat.com
+  resources:
+  - enterprisecontractpolicies
+  verbs:
+  - get
+  - list
