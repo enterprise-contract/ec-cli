@@ -45,8 +45,8 @@ metadata:
   name: ec-demo
 spec:
   description: Demo Enterprise Contract policy configuration
-  exceptions:
-    nonBlocking:
+  configuration:
+    exclude:
     - not_useful
     - test:conftest-clair
   sources:

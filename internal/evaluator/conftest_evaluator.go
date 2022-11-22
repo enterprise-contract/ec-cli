@@ -139,10 +139,10 @@ func createConfigJSON(fs afero.Fs, dataDir string, p *policy.Policy) error {
 	}
 
 	type policyConfig struct {
-		NonBlocking  *[]string `json:"non_blocking_checks,omitempty"`
-		ExcludeRules *[]string `json:"exclude_rules,omitempty"`
-		IncludeRules *[]string `json:"include_rules,omitempty"`
-		Collections  *[]string `json:"collections,omitempty"`
+		NonBlocking *[]string `json:"non_blocking_checks,omitempty"` // TODO deprecated, to be removed
+		Exclude     *[]string `json:"exclude,omitempty"`
+		Include     *[]string `json:"include,omitempty"`
+		Collections *[]string `json:"collections,omitempty"`
 	}
 	pc := &policyConfig{}
 
@@ -153,12 +153,12 @@ func createConfigJSON(fs afero.Fs, dataDir string, p *policy.Policy) error {
 	}
 	if p.Configuration != nil {
 		log.Debug("Include rules found. These will be written to file", dataDir)
-		if p.Configuration.IncludeRules != nil {
-			pc.IncludeRules = &p.Configuration.IncludeRules
+		if p.Configuration.Include != nil {
+			pc.Include = &p.Configuration.Include
 		}
 		log.Debug("Exclude rules found. These will be written to file", dataDir)
-		if p.Configuration.ExcludeRules != nil {
-			pc.ExcludeRules = &p.Configuration.ExcludeRules
+		if p.Configuration.Exclude != nil {
+			pc.Exclude = &p.Configuration.Exclude
 		}
 		log.Debug("Collections found. These will be written to file", dataDir)
 		if p.Configuration.Collections != nil {

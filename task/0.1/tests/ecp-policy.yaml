@@ -23,7 +23,7 @@ spec:
   description: My custom enterprise contract policy configuration
   sources:
     - git::https://github.com/hacbs-contract/ec-policies.git
-  exceptions:
-    nonBlocking:
+  configuration:
+    exclude:
       - not_useful
       - test:conftest-clair
