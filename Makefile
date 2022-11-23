@@ -1,6 +1,12 @@
 MAKEFLAGS+=-j --no-print-directory
 VERSION:=$$(git log -1 --format='%H')
+# a list of "dist/ec_{platform}_{arch}" that we support
 ALL_SUPPORTED_OS_ARCH:=$(shell go tool dist list -json|jq -r '.[] | select((.FirstClass == true or .GOARCH == "ppc64le") and .GOARCH != "386") | "dist/ec_\(.GOOS)_\(.GOARCH)"')
+# a list of image_* targets that we do not support
+UNSUPPORTED_OS_ARCH_IMG:=image_windows_amd64 image_darwin_amd64 image_darwin_arm64 image_linux_arm
+# a list of image_* targets that we do support generated from
+# ALL_SUPPORTED_OS_ARCH by replacing "dist/ec_" with "image_"
+ALL_SUPPORTED_IMG_OS_ARCH:=$(filter-out $(UNSUPPORTED_OS_ARCH_IMG),$(subst dist/ec_,image_,$(ALL_SUPPORTED_OS_ARCH)))
 SHELL=bash
 ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 COPY:="Red Hat, Inc."
@@ -33,8 +39,8 @@ help: ## Display this help.
 
 .PHONY: $(ALL_SUPPORTED_OS_ARCH)
 $(ALL_SUPPORTED_OS_ARCH): ## Build binaries for specific platform/architecture, e.g. make dist/ec_linux_amd64
-	@GOOS=$$(echo $(notdir $@) |cut -d'_' -f2); \
-	GOARCH=$$(echo $(notdir $@) |cut -d'_' -f3); \
+	@GOOS=$(word 2,$(subst _, ,$(notdir $@))); \
+	GOARCH=$(word 3,$(subst _, ,$(notdir $@))); \
 	GOOS=$${GOOS} GOARCH=$${GOARCH} go build -trimpath -ldflags="-s -w -X github.com/hacbs-contract/ec-cli/cmd.Version=$(VERSION)" -o dist/ec_$${GOOS}_$${GOARCH}; \
 	sha256sum -b dist/ec_$${GOOS}_$${GOARCH} > dist/ec_$${GOOS}_$${GOARCH}.sha256
 
@@ -109,12 +115,10 @@ clean: ## Delete build output
 IMAGE_TAG ?= latest
 IMAGE_REPO ?= quay.io/hacbs-contract/ec-cli
 .PHONY: build-image
-build-image: build ## Build container image with ec-cli
-	@podman build -t $(IMAGE_REPO):$(IMAGE_TAG) -f Dockerfile
+build-image: image_$(shell go env GOOS)_$(shell go env GOARCH) ## Build container image with ec-cli
 
 .PHONY: push-image
-push-image: build-image ## Push ec-cli container image to default location
-	@podman push $(PODMAN_OPTS) $(IMAGE_REPO):$(IMAGE_TAG)
+push-image: push_image_$(shell go env GOOS)_$(shell go env GOARCH) ## Push ec-cli container image to default location
 
 .PHONY: build-snapshot-image
 build-snapshot-image: push-image ## Build the ec-cli image and tag it with "snapshot"
@@ -123,6 +127,49 @@ build-snapshot-image: push-image ## Build the ec-cli image and tag it with "snap
 .PHONY: push-snapshot-image
 push-snapshot-image: build-snapshot-image ## Push the ec-cli image with the "snapshot" tag
 	@podman push $(PODMAN_OPTS) $(IMAGE_REPO):snapshot
+
+.PHONY: $(ALL_SUPPORTED_IMG_OS_ARCH)
+# Ref: https://www.gnu.org/software/make/manual/make.html#Secondary-Expansion
+.SECONDEXPANSION:
+# Targets are in the form of "image_{platform}_{arch}", we set
+# TARGETOS={platform}, and TARGETARCH={arch}. This target depends on the
+# "dist/ec_{platform}_{arch}" target
+$(ALL_SUPPORTED_IMG_OS_ARCH): TARGETOS=$(word 2,$(subst _, ,$@))
+$(ALL_SUPPORTED_IMG_OS_ARCH): TARGETARCH=$(word 3,$(subst _, ,$@))
+$(ALL_SUPPORTED_IMG_OS_ARCH): $$(subst image_,dist/ec_,$$@)
+	@podman build -t $(IMAGE_REPO):$(IMAGE_TAG)-$(TARGETOS)-$(TARGETARCH) -f Dockerfile --platform $(TARGETOS)/$(TARGETARCH)
+
+.PHONY: $(subst image_,push_image_,$(ALL_SUPPORTED_IMG_OS_ARCH))
+# Ref: https://www.gnu.org/software/make/manual/make.html#Secondary-Expansion
+.SECONDEXPANSION:
+# Targets are in the form of "push_image_{platform}_{arch}", we set
+# TARGETOS={platform}, and TARGETARCH={arch}. This target depends on the
+# "image_{platform}_{arch}" target
+$(subst image_,push_image_,$(ALL_SUPPORTED_IMG_OS_ARCH)): TARGETOS=$(word 3,$(subst _, ,$@))
+$(subst image_,push_image_,$(ALL_SUPPORTED_IMG_OS_ARCH)): TARGETARCH=$(word 4,$(subst _, ,$@))
+$(subst image_,push_image_,$(ALL_SUPPORTED_IMG_OS_ARCH)): image_$$(TARGETOS)_$$(TARGETARCH)
+	@podman push $(PODMAN_OPTS) $(IMAGE_REPO):$(IMAGE_TAG)-$(TARGETOS)-$(TARGETARCH)
+
+.PHONY: dist-image
+# Depends on targets in the form of "image_{platform}_{arch}"
+dist-image: $(ALL_SUPPORTED_IMG_OS_ARCH) ## Build images for all supported platforms/architectures
+
+.PHONY: dist-image-push
+# Generates a list of image references in the form of
+# "$(IMAGE_REPO):$(IMAGE_TAG)-{platform}-{arch}" generated from a list of "image_{platform}_{arch}"
+ALL_IMAGE_REFS=$(subst image-,$(IMAGE_REPO):$(IMAGE_TAG)-,$(subst _,-,$(ALL_SUPPORTED_IMG_OS_ARCH)))
+# Depends on "push_image_{platform}_{arch}" targets
+dist-image-push: dist-image  $(subst image_,push_image_,$(ALL_SUPPORTED_IMG_OS_ARCH)) ## Push images and image manifest for all supported platforms
+# Push all built images from the "image_{platform}_{arch}" target
+	@for img in $(ALL_IMAGE_REFS); do podman push $(PODMAN_OPTS) $$img; done
+# If the manifest with the same tag exists we need to remove it first, otherwise
+# podman manifest create fails
+	@2>/dev/null 1>/dev/null podman manifest rm $(IMAGE_REPO):$(IMAGE_TAG) || true
+	@podman manifest create $(IMAGE_REPO):$(IMAGE_TAG)
+# We set the TARGETOS and TARGETARCH from the image reference, given the
+# convention of having the image reference be tagged with "{tag}-{platform}-{arch}"
+	@for img in $(ALL_IMAGE_REFS); do TARGETOS=$$(echo $$img | sed -e 's/.*:[^-]\+-\([^-]\+\).*/\1/'); TARGETARCH=$${img/*-}; podman manifest add $(IMAGE_REPO):$(IMAGE_TAG) $(PODMAN_OPTS) $$img --os $${TARGETOS} --arch $${TARGETARCH}; done
+	@podman manifest push $(IMAGE_REPO):$(IMAGE_TAG) $(IMAGE_REPO):$(IMAGE_TAG)
 
 TASK_TAG ?= latest
 TASK_REPO ?= quay.io/hacbs-contract/ec-task-bundle
