@@ -15,7 +15,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 ---
-name: Release ec CLI
+name: Release
 
 "on":
   push:
@@ -23,7 +23,7 @@ name: Release ec CLI
       - main
 
 jobs:
-  release-ec:
+  release:
 
     name: Release
     runs-on: ubuntu-latest
@@ -86,8 +86,11 @@ jobs:
       - name: Registry login
         run: podman login -u ${{ secrets.BUNDLE_PUSH_USER  }} -p ${{ secrets.BUNDLE_PUSH_PASS }} quay.io
 
-      - name: Create image from snapshot
-        run: make push-snapshot-image IMAGE_TAG=$TAG IMAGE_REPO=$IMAGE_REPO
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Create and push image
+        run: make dist-image-push IMAGE_TAG=$TAG IMAGE_REPO=$IMAGE_REPO
 
       - name: Create and push the tekton bundle
         run: make task-bundle-snapshot TASK_TAG=$TAG TASK=<( yq e ".spec.steps[].image? = \"$IMAGE_REPO:$TAG\"" $TASK)
