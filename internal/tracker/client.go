@@ -50,8 +50,9 @@ func NewClient(ctx context.Context) Client {
 
 type exoClient struct{}
 
-func (c exoClient) GetTektonObject(ctx context.Context, bundle, kind, name string) (runtime.Object, error) {
-	return oci.NewResolver(bundle, nil).Get(ctx, kind, name)
+func (c exoClient) GetTektonObject(ctx context.Context, bundle, kind, name string) (o runtime.Object, err error) {
+	o, _, err = oci.NewResolver(bundle, nil).Get(ctx, kind, name)
+	return
 }
 
 func (c exoClient) GetImage(ctx context.Context, ref name.Reference) (v1.Image, error) {
