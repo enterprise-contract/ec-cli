@@ -20,6 +20,7 @@ import (
 	"context"
 	"log"
 
+	hd "github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 
 	"github.com/hacbs-contract/ec-cli/internal/image"
@@ -32,19 +33,25 @@ func k8sResourceAuthorizationCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "k8s-resource",
 		Short: "Fetch authorizations from a kubernetes resource",
-		Long: `Fetch authorizations from a kubernetes resource
 
-Authorizations are defined within the EnterpriseContractPolicy
-custom resource.
+		Long: hd.Doc(`
+			Fetch authorizations from a kubernetes resource
 
-NOTE: All authorizations are fetched from the kubernetes resource.`,
-		Example: `Fetch authorizations using named resource:
+			Authorizations are defined within the EnterpriseContractPolicy
+			custom resource.
 
-  ec fetch k8s-resource --policy <namespace>/<resource>
+			NOTE: All authorizations are fetched from the kubernetes resource.
+		`),
 
-Fetch authorizations from a local EnterpriseContractPolicy spec:
+		Example: hd.Doc(`
+			Fetch authorizations using named resource:
 
-  ec fetch k8s-resource --policy "$(cat /path/to/ecp.json)"`,
+			  ec fetch k8s-resource --policy <namespace>/<resource>
+
+			Fetch authorizations from a local EnterpriseContractPolicy spec:
+
+			  ec fetch k8s-resource --policy "$(cat /path/to/ecp.json)"
+		`),
 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			err := printK8sAuthorization(

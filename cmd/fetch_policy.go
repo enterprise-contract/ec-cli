@@ -18,6 +18,7 @@
 package cmd
 
 import (
+	hd "github.com/MakeNowJust/heredoc"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
@@ -37,52 +38,57 @@ func fetchPolicyCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "policy --source <source-url> --data-source <source-url>",
 		Short: "Fetch policy rules from a git repository or other source",
-		Long: `Fetch policy rules (rego files) from a git repository or other source.
 
-Each policy source will be downloaded into a separate unique directory inside
-the "policy" directory under the destination directory specified. The
-destination directory is either an automatically generated temporary work dir
-if --work-dir is set, the directory specified with the --dest flag, or the
-current directory if neither flag is specified.
+		Long: hd.Doc(`
+			Fetch policy rules (rego files) from a git repository or other source.
 
-This command is based on 'conftest pull' so you can refer to the conftest pull
-documentation for more usage examples and for details on the different types of
-supported source URLs.
+			Each policy source will be downloaded into a separate unique directory inside
+			the "policy" directory under the destination directory specified. The
+			destination directory is either an automatically generated temporary work dir
+			if --work-dir is set, the directory specified with the --dest flag, or the
+			current directory if neither flag is specified.
 
-Note that this command is not typically required to verify the Enterprise
-Contract. It has been made available for troubleshooting and debugging
-purposes.`,
+			This command is based on 'conftest pull' so you can refer to the conftest pull
+			documentation for more usage examples and for details on the different types of
+			supported source URLs.
 
-		Example: `Fetching policies from multiple sources to a specific directory:
+			Note that this command is not typically required to verify the Enterprise
+			Contract. It has been made available for troubleshooting and debugging
+			purposes.
+		`),
 
-  ec fetch policy --dest fetched-policies \
-    --source github.com/hacbs-contract/ec-policies//policy/lib \
-    --source github.com/hacbs-contract/ec-policies//policy/release
+		Example: hd.Doc(`
+			Fetching policies from multiple sources to a specific directory:
 
-Fetching policies and data from multiple sources to the current directory:
+			  ec fetch policy --dest fetched-policies \
+				--source github.com/hacbs-contract/ec-policies//policy/lib \
+				--source github.com/hacbs-contract/ec-policies//policy/release
 
-  ec fetch policy \
-    --source github.com/hacbs-contract/ec-policies//policy/lib \
-    --source github.com/hacbs-contract/ec-policies//policy/release \
-    --data-source github.com/hacbs-contract/ec-policies//data
+			Fetching policies and data from multiple sources to the current directory:
 
-Fetching policies from multiple sources to an automatically generated temporary
-work directory:
+			  ec fetch policy \
+				--source github.com/hacbs-contract/ec-policies//policy/lib \
+				--source github.com/hacbs-contract/ec-policies//policy/release \
+				--data-source github.com/hacbs-contract/ec-policies//data
 
-  ec fetch policy --work-dir \
-    --source github.com/hacbs-contract/ec-policies//policy/lib \
-    --source github.com/hacbs-contract/ec-policies//policy/release
+			Fetching policies from multiple sources to an automatically generated temporary
+			work directory:
 
-Different style url formats are supported. In this example "policy" is treated as
-a subdirectory even without the go-getter style // delimiter:
+			  ec fetch policy --work-dir \
+				--source github.com/hacbs-contract/ec-policies//policy/lib \
+				--source github.com/hacbs-contract/ec-policies//policy/release
 
-  ec fetch policy --source https://github.com/hacbs-contract/ec-policies/policy
+			Different style url formats are supported. In this example "policy" is treated as
+			a subdirectory even without the go-getter style // delimiter:
 
-Notes:
+			  ec fetch policy --source https://github.com/hacbs-contract/ec-policies/policy
 
-- The --dest flag will be ignored if --work-dir is set
-- Adding a protocol prefix such as 'git::' to the source url forces it to be treated
-  as a go-getter style url.`,
+			Notes:
+
+			- The --dest flag will be ignored if --work-dir is set
+			- Adding a protocol prefix such as 'git::' to the source url forces it to be treated
+			  as a go-getter style url.
+		`),
 
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {

@@ -17,6 +17,7 @@
 package cmd
 
 import (
+	hd "github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 
 	"github.com/hacbs-contract/ec-cli/internal/ecgit"
@@ -38,29 +39,40 @@ func createPR() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "create-pr",
 		Short: "Create a GitHub pull request based on source and target branches",
-		Long: `Create a GitHub pull request based on source and target branches
 
-The following steps are performed to create a pull request:
-  - Clone the provided remote repository (--repo)
-  - Create a branch with specified name (--branch-name)
-  - Apply the given patch file (--patch)
-  - Add and commit any files changes
-  - Push newly created branch to the remote repository
-  - Create a pull request for the target branch (--desitination-branch)
+		Long: hd.Doc(`
+			Create a GitHub pull request based on source and target branches
 
-The environment variables GITHUB_USERNAME and GITHUB_TOKEN must be set accordingly.`,
-		Example: `  ec-cli create-pr --repo https://github.com/example/repo --branch-name <new branch name> --patch <path/to/patch/file>`,
+			The following steps are performed to create a pull request:
+			  - Clone the provided remote repository (--repo)
+			  - Create a branch with specified name (--branch-name)
+			  - Apply the given patch file (--patch)
+			  - Add and commit any files changes
+			  - Push newly created branch to the remote repository
+			  - Create a pull request for the target branch (--desitination-branch)
+
+			The environment variables GITHUB_USERNAME and GITHUB_TOKEN must be set accordingly.
+		`),
+
+		Example: hd.Doc(`
+			Create a PR from a patch file:
+
+			  ec-cli create-pr --repo https://github.com/example/repo --branch-name <new branch name> --patch <path/to/patch/file>
+		`),
+
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			return ecgit.CreateAutomatedPR(ctx, fs(ctx), data.componentRepoURL, data.patchFilePath, data.destinationBranch, data.prBranchName, data.prTitle, data.prBody)
 		},
 	}
+
 	cmd.Flags().StringVar(&data.componentRepoURL, "repo", data.componentRepoURL, "repo URL")
 	cmd.Flags().StringVar(&data.destinationBranch, "destination-branch", data.destinationBranch, "target branch for PR")
 	cmd.Flags().StringVar(&data.prBranchName, "branch-name", data.prBranchName, "branch to create with patch changes")
 	cmd.Flags().StringVar(&data.prTitle, "title", data.prTitle, "title of the PR")
 	cmd.Flags().StringVar(&data.prBody, "body", data.prBody, "body of the PR")
 	cmd.Flags().StringVar(&data.patchFilePath, "patch", data.patchFilePath, "path to the patch file")
+
 	return cmd
 }
 

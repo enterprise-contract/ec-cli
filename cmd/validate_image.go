@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"sync"
 
+	hd "github.com/MakeNowJust/heredoc"
 	"github.com/hashicorp/go-multierror"
 	appstudioshared "github.com/redhat-appstudio/managed-gitops/appstudio-shared/apis/appstudio.redhat.com/v1alpha1"
 	"github.com/spf13/afero"
@@ -55,67 +56,74 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "image",
 		Short: "Validate conformance of container images with the Enterprise Contract",
-		Long: `Validate conformance of container images with the Enterprise Contract
 
-For each image, validation is performed in stages to determine if the image
-conforms to the Enterprise Contract.
+		Long: hd.Doc(`
+			Validate conformance of container images with the Enterprise Contract
 
-The first validation stage determines if an image has been signed, and the
-signature matches the provided public key. This is akin to the "cosign verify"
-command.
+			For each image, validation is performed in stages to determine if the image
+			conforms to the Enterprise Contract.
 
-The second validation stage determines if one or more attestations exist, and
-those attestations have been signed matching the provided public key, similarly
-to the "cosign verify-attestation" command. This stage temporarily stores the
-attestations for usage in the next stage.
+			The first validation stage determines if an image has been signed, and the
+			signature matches the provided public key. This is akin to the "cosign verify"
+			command.
 
-The final stage verifies the attestations conform to rego policies defined in
-the EnterpriseContractPolicy.
+			The second validation stage determines if one or more attestations exist, and
+			those attestations have been signed matching the provided public key, similarly
+			to the "cosign verify-attestation" command. This stage temporarily stores the
+			attestations for usage in the next stage.
 
-Validation advances each stage as much as possible for each image in order to
-capture all issues in a single execution.`,
-		Example: `Validate single image with the default policy defined in the
-EnterpriseContractPolicy custom resource named "ec-policy" in the current
-Kubernetes namespace:
+			The final stage verifies the attestations conform to rego policies defined in
+			the EnterpriseContractPolicy.
 
-  ec validate image --image registry/name:tag
+			Validation advances each stage as much as possible for each image in order to
+			capture all issues in a single execution.
+		`),
 
-Validate multiple images from an ApplicationSnapshot Spec file:
+		Example: hd.Doc(`
+			Validate single image with the default policy defined in the
+			EnterpriseContractPolicy custom resource named "ec-policy" in the current
+			Kubernetes namespace:
 
-  ec validate image --file-path my-app.yaml
+			  ec validate image --image registry/name:tag
 
-Validate attestation of images from an inline ApplicationSnapshot Spec:
+			Validate multiple images from an ApplicationSnapshot Spec file:
 
-  ec validate image --json-input '{"components":[{"containerImage":"<image url>"}]}'
+			  ec validate image --file-path my-app.yaml
 
-Use a different public key than the one from the EnterpriseContractPolicy resource:
+			Validate attestation of images from an inline ApplicationSnapshot Spec:
 
-  ec validate image --image registry/name:tag --public-key <path/to/public/key>
+			  ec validate image --json-input '{"components":[{"containerImage":"<image url>"}]}'
 
-Use a different Rekor URL than the one from the EnterpriseContractPolicy resource:
+			Use a different public key than the one from the EnterpriseContractPolicy resource:
 
-  ec validate image --image registry/name:tag --rekor-url https://rekor.example.org
+			  ec validate image --image registry/name:tag --public-key <path/to/public/key>
 
-Return a non-zero status code on validation failure:
+			Use a different Rekor URL than the one from the EnterpriseContractPolicy resource:
 
-  ec validate image --image registry/name:tag --strict
+			  ec validate image --image registry/name:tag --rekor-url https://rekor.example.org
 
-Use an EnterpriseContractPolicy resource from the currently active kubernetes context:
+			Return a non-zero status code on validation failure:
 
-  ec validate image --image registry/name:tag --policy my-policy
+			  ec validate image --image registry/name:tag --strict
 
-Use an EnterpriseContractPolicy resource from a different namespace:
+			Use an EnterpriseContractPolicy resource from the currently active kubernetes context:
 
-  ec validate image --image registry/name:tag --policy my-namespace/my-policy
+			  ec validate image --image registry/name:tag --policy my-policy
 
-Use an inline EnterpriseContractPolicy spec
-  ec validate image --image registry/name:tag --policy '{"publicKey": "<path/to/public/key>"}'
+			Use an EnterpriseContractPolicy resource from a different namespace:
 
-Write output in JSON format to a file
-  ec validate image --image registry/name:tag --output json=<path>
+			  ec validate image --image registry/name:tag --policy my-namespace/my-policy
 
-Write output in YAML format to stdout and in HACBS format to a file
-  ec validate image --image registry/name:tag --output yaml --output hacbs=<path>`,
+			Use an inline EnterpriseContractPolicy spec
+			  ec validate image --image registry/name:tag --policy '{"publicKey": "<path/to/public/key>"}'
+
+			Write output in JSON format to a file
+			  ec validate image --image registry/name:tag --output json=<path>
+
+			Write output in YAML format to stdout and in HACBS format to a file
+			  ec validate image --image registry/name:tag --output yaml --output hacbs=<path>
+		`),
+
 		PreRunE: func(cmd *cobra.Command, args []string) (allErrors error) {
 			ctx := cmd.Context()
 			if s, err := applicationsnapshot.DetermineInputSpec(
@@ -136,6 +144,7 @@ Write output in YAML format to stdout and in HACBS format to a file
 
 			return
 		},
+
 		RunE: func(cmd *cobra.Command, args []string) error {
 			type result struct {
 				err       error
@@ -216,34 +225,46 @@ Write output in YAML format to stdout and in HACBS format to a file
 			return nil
 		},
 	}
+
 	cmd.Flags().StringVarP(&data.policyConfiguration, "policy", "p", data.policyConfiguration,
 		"EntepriseContractPolicy reference [<namespace>/]<name>")
+
 	cmd.Flags().StringVarP(&data.imageRef, "image", "i", data.imageRef, "OCI image reference")
+
 	cmd.Flags().StringVarP(&data.publicKey, "public-key", "k", data.publicKey,
 		"path to the public key. Overrides publicKey from EnterpriseContractPolicy")
+
 	cmd.Flags().StringVarP(&data.rekorURL, "rekor-url", "r", data.rekorURL,
 		"Rekor URL. Overrides rekorURL from EnterpriseContractPolicy")
+
 	cmd.Flags().StringVarP(&data.filePath, "file-path", "f", data.filePath,
 		"path to ApplicationSnapshot Spec JSON file")
+
 	cmd.Flags().StringVarP(&data.input, "json-input", "j", data.input,
 		"JSON represenation of an ApplicationSnapshot Spec")
-	cmd.Flags().StringSliceVar(&data.output, "output", data.output,
-		`write output to a file in a specific format. Use empty string path for stdout.
-May be used multiple times. Possible formats are json, yaml, hacbs, and summary`)
+
+	cmd.Flags().StringSliceVar(&data.output, "output", data.output, hd.Doc(`
+		write output to a file in a specific format. Use empty string path for stdout.
+		May be used multiple times. Possible formats are json, yaml, hacbs, and summary
+	`))
+
 	cmd.Flags().StringVarP(&data.outputFile, "output-file", "o", data.outputFile,
 		"[DEPRECATED] write output to a file. Use empty string for stdout, default behavior")
+
 	cmd.Flags().BoolVarP(&data.strict, "strict", "s", data.strict,
 		"return non-zero status on non-successful validation")
 
-	cmd.Flags().StringVar(&data.effectiveTime, "effective-time", data.effectiveTime,
-		`Run policy checks as though the current time was this instead of the actual
-current time. Useful for testing rules with effective dates in the future
-The value should be in RFC3339 format, e.g. 2022-11-18T00:00:00Z`)
+	cmd.Flags().StringVar(&data.effectiveTime, "effective-time", data.effectiveTime, hd.Doc(`
+		Run policy checks as though the current time was this instead of the actual
+		current time. Useful for testing rules with effective dates in the future
+		The value should be in RFC3339 format, e.g. 2022-11-18T00:00:00Z
+	`))
 
 	if len(data.input) > 0 || len(data.filePath) > 0 {
 		if err := cmd.MarkFlagRequired("image"); err != nil {
 			panic(err)
 		}
 	}
+
 	return cmd
 }
