@@ -1,3 +1,4 @@
+#!/bin/env bash
 # Copyright 2022 Red Hat, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,13 +15,12 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
----
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
+# Fetches the Tekton YAML descriptors for the version we depend on
 
-resources:
-  - namespace.yaml
-  - permissions.yaml
+set -o errexit
+set -o pipefail
+set -o nounset
 
-generators:
-  - secrets.yaml
+CHAINS_VERSION="${CHAINS_VERSION:-$(cd "$(git rev-parse --show-toplevel)/internal/tools" && go list -f '{{.Version}}' -m github.com/tektoncd/chains)}"
+
+curl -sSL "https://storage.googleapis.com/tekton-releases/chains/previous/${CHAINS_VERSION}/release.yaml"

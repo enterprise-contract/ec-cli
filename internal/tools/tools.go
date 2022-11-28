@@ -24,6 +24,7 @@ import (
 	_ "github.com/daixiang0/gci"
 	_ "github.com/golangci/golangci-lint/cmd/golangci-lint"
 	_ "github.com/google/addlicense"
+	_ "github.com/tektoncd/chains/pkg/chains"
 	_ "github.com/tektoncd/cli/cmd/tkn"
 	_ "github.com/wadey/gocovmerge"
 	_ "sigs.k8s.io/kustomize/kustomize/v4"

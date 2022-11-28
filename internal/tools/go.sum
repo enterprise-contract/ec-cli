@@ -93,8 +93,8 @@ cloud.google.com/go/storage v1.14.0/go.mod h1:GrKmX003DSIwi9o29oFT7YDnHYwZoctc3f
 cloud.google.com/go/storage v1.15.0/go.mod h1:mjjQMoxxyGH7Jr8K5qrx6N2O0AHsczI61sMNn03GIZI=
 cloud.google.com/go/storage v1.21.0/go.mod h1:XmRlxkgPjlBONznT2dDUU/5XlpU2OjMnKuqnZI01LAA=
 cloud.google.com/go/storage v1.22.1/go.mod h1:S8N1cAStu7BOeFfE8KAQzmyyLkK8p/vmRq6kuBTW58Y=
-cloud.google.com/go/storage v1.24.0 h1:a4N0gIkx83uoVFGz8B2eAV3OhN90QoWF5OZWLKl39ig=
-cloud.google.com/go/storage v1.24.0/go.mod h1:3xrJEFMXBsQLgxwThyjuD3aYlroL0TMRec1ypGUQ0KE=
+cloud.google.com/go/storage v1.27.0 h1:YOO045NZI9RKfCj1c5A/ZtuuENUc8OAW+gHdGnDgyMQ=
+cloud.google.com/go/storage v1.27.0/go.mod h1:x9DOL8TK/ygDUMieqwfhdpQryTeEkhGKMi80i/iqR2s=
 cloud.google.com/go/trace v1.0.0/go.mod h1:4iErSByzxkyHWzzlAj63/Gmjz0NH1ASqhJguHpGcr6A=
 cloud.google.com/go/trace v1.2.0/go.mod h1:Wc8y/uYyOhPy12KEnXG9XGrvfMz5F5SrYecQlbW1rwM=
 code.gitea.io/sdk/gitea v0.11.3/go.mod h1:z3uwDV/b9Ls47NGukYM9XhnHtqPh/J+t40lsUrR6JDY=
@@ -1789,8 +1789,8 @@ github.com/syndtr/goleveldb v1.0.1-0.20220721030215-126854af5e6d h1:vfofYNRScrDd
 github.com/syndtr/goleveldb v1.0.1-0.20220721030215-126854af5e6d/go.mod h1:RRCYJbIwD5jmqPI9XoAFR0OcDxqUctll6zUj/+B4S48=
 github.com/tdakkota/asciicheck v0.1.1 h1:PKzG7JUTUmVspQTDqtkX9eSiLGossXTybutHwTXuO0A=
 github.com/tdakkota/asciicheck v0.1.1/go.mod h1:yHp0ai0Z9gUljN3o0xMhYJnH/IcvkdTBOX2fmJ93JEM=
-github.com/tektoncd/chains v0.12.1-0.20220920205308-b34353430a40 h1:6DckQq9Bt9NreKtcNwsRkqaoKWwXKbStSO87oFXS+nc=
-github.com/tektoncd/chains v0.12.1-0.20220920205308-b34353430a40/go.mod h1:V4a9i6bkpuZbYvqJy7sKiyYYfFqenH3QlWhkgpLZRFY=
+github.com/tektoncd/chains v0.13.0 h1:sS1AN/LBHkg3/XC9blFAvvkssyJx9I+WXOR7NRdZwYU=
+github.com/tektoncd/chains v0.13.0/go.mod h1:h8/jCr1JA12/kuOMRCmNclURrFZERPaXCsklrBA4dLE=
 github.com/tektoncd/cli v0.27.0 h1:XBMLQOXR6KOkG485r1QORx2/p8nDiQKhTAkqWd3Nf2s=
 github.com/tektoncd/cli v0.27.0/go.mod h1:2LScIlGikg4tU0QDs4VTLQIhD9RMNnU3wFN4kcGetBY=
 github.com/tektoncd/hub v1.10.0 h1:P1cxesKQ20eNjfO+CqTfvqrJ6WykrTcJvz0A6HH2nbY=

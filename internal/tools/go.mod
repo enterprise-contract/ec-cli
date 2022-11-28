@@ -6,6 +6,7 @@ require (
 	github.com/daixiang0/gci v0.9.0
 	github.com/golangci/golangci-lint v1.50.1
 	github.com/google/addlicense v1.1.0
+	github.com/tektoncd/chains v0.13.0
 	github.com/tektoncd/cli v0.27.0
 	github.com/wadey/gocovmerge v0.0.0-20160331181800-b5bfa59ec0ad
 	sigs.k8s.io/kustomize/kustomize/v4 v4.5.7
@@ -19,7 +20,7 @@ require (
 	cloud.google.com/go/firestore v1.6.1 // indirect
 	cloud.google.com/go/iam v0.5.0 // indirect
 	cloud.google.com/go/kms v1.4.0 // indirect
-	cloud.google.com/go/storage v1.24.0 // indirect
+	cloud.google.com/go/storage v1.27.0 // indirect
 	contrib.go.opencensus.io/exporter/ocagent v0.7.1-0.20200907061046-05415f1de66d // indirect
 	contrib.go.opencensus.io/exporter/prometheus v0.4.0 // indirect
 	github.com/Abirdcfly/dupword v0.0.7 // indirect
@@ -372,7 +373,6 @@ require (
 	github.com/subosito/gotenv v1.4.1 // indirect
 	github.com/syndtr/goleveldb v1.0.1-0.20220721030215-126854af5e6d // indirect
 	github.com/tdakkota/asciicheck v0.1.1 // indirect
-	github.com/tektoncd/chains v0.12.1-0.20220920205308-b34353430a40 // indirect
 	github.com/tektoncd/hub v1.10.0 // indirect
 	github.com/tektoncd/pipeline v0.41.0 // indirect
 	github.com/tektoncd/triggers v0.21.0 // indirect
