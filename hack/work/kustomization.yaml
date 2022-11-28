@@ -21,3 +21,12 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - permissions.yaml
+
+secretGenerator:
+  - name: cosign-public-key
+    type: Opaque
+    namespace: work
+    options:
+      disableNameSuffixHash: true
+    files:
+    - cosign.pub=cosign.pub

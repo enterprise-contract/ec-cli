@@ -94,8 +94,8 @@ jobs:
           go mod download
           go mod download -modfile internal/tools/go.mod
 
-      - name: Setup Tekton environment
-        run: hack/setup-environment.sh
+      - name: Setup Tekton Test environment
+        run: hack/setup-test-environment.sh
 
       - name: Testing ec task
         env:

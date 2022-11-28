@@ -19,6 +19,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  # Must use envsubst or similar to replace the "${ECC_VERSION}" with a concrete value
-  - https://github.com/hacbs-contract/enterprise-contract-controller/config/crd?ref=${ECC_VERSION}
   - permissions.yaml
+
+generators:
+  - ecc.yaml
