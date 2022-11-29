@@ -29,11 +29,13 @@ import (
 	"github.com/hacbs-contract/ec-cli/internal/policy"
 )
 
-// ValidateImage executes the required method calls to evaluate a given policy against a given imageRef
-func ValidateImage(ctx context.Context, fs afero.Fs, imageRef string, p *policy.Policy) (*output.Output, error) {
-	log.Debugf("Validating image %s", imageRef)
-	out := &output.Output{}
-	a, err := application_snapshot_image.NewApplicationSnapshotImage(ctx, fs, imageRef, p)
+// ValidateImage executes the required method calls to evaluate a given policy
+// against a given image url.
+func ValidateImage(ctx context.Context, fs afero.Fs, url string, p *policy.Policy) (*output.Output, error) {
+	log.Debugf("Validating image %s", url)
+
+	out := &output.Output{ImageURL: url}
+	a, err := application_snapshot_image.NewApplicationSnapshotImage(ctx, fs, url, p)
 	if err != nil {
 		log.Debug("Failed to create application snapshot image!")
 		return nil, err
@@ -49,7 +51,23 @@ func ValidateImage(ctx context.Context, fs afero.Fs, imageRef string, p *policy.
 	} else {
 		log.Debug("Image access check passed")
 		out.SetImageAccessibleCheck(true, "success")
+
+		// Ensure image URL contains a digest to avoid ambiguity in the next
+		// validation steps
+		ref, err := ParseAndResolve(url)
+		if err != nil {
+			log.Debugf("Failed to parse image url %s", url)
+			return nil, err
+		}
+		resolved := ref.String()
+		log.Debugf("Resolved image to %s", resolved)
+		if err := a.SetImageURL(resolved); err != nil {
+			log.Debugf("Failed to set resolved image url %s", resolved)
+			return nil, err
+		}
+		out.ImageURL = resolved
 	}
+
 	if err = a.ValidateImageSignature(ctx); err != nil {
 		log.Debug("Image signature check failed")
 		out.SetImageSignatureCheck(false, err.Error())

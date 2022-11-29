@@ -20,6 +20,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/google/go-containerregistry/pkg/name"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/hacbs-contract/ec-cli/internal/image"
@@ -84,7 +85,7 @@ var imageParseAndResolve = image.ParseAndResolve
 func (r *catalogImageReplacer) replace(line []byte) []byte {
 	match := string(r.regex.Find(line))
 
-	sourceRef, err := image.NewImageReference(match)
+	sourceRef, err := image.NewImageReference(match, name.StrictValidation)
 	if err != nil {
 		log.Warnf("unable to parse and resolve source ref: %s", err)
 		return line

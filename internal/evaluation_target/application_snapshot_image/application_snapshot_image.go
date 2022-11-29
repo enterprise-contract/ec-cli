@@ -72,13 +72,14 @@ type ApplicationSnapshotImage struct {
 }
 
 // NewApplicationSnapshotImage returns an ApplicationSnapshotImage struct with reference, checkOpts, and evaluator ready to use.
-func NewApplicationSnapshotImage(ctx context.Context, fs afero.Fs, image string, p *policy.Policy) (*ApplicationSnapshotImage, error) {
-	ref, err := name.ParseReference(image)
-	if err != nil {
-		log.Debugf("Failed to parse reference %s", image)
+func NewApplicationSnapshotImage(ctx context.Context, fs afero.Fs, url string, p *policy.Policy) (*ApplicationSnapshotImage, error) {
+	a := &ApplicationSnapshotImage{
+		checkOpts: *p.CheckOpts,
+	}
+
+	if err := a.SetImageURL(url); err != nil {
 		return nil, err
 	}
-	log.Debugf("Parsed reference %s", ref)
 
 	if p.CheckOpts.RekorClient != nil {
 		// By using Cosign directly the log entries are validated against the
@@ -97,11 +98,6 @@ func NewApplicationSnapshotImage(ctx context.Context, fs afero.Fs, image string,
 		// the Rekor public key in addition to having TUF setup which makes it
 		// easier to rotate keys
 		os.Setenv("SIGSTORE_TRUST_REKOR_API_PUBLIC_KEY", "1")
-	}
-
-	a := &ApplicationSnapshotImage{
-		reference: ref,
-		checkOpts: *p.CheckOpts,
 	}
 
 	policySources, err := fetchPolicySources(p)
@@ -148,6 +144,22 @@ func (a *ApplicationSnapshotImage) ValidateImageAccess(ctx context.Context) erro
 	log.Debugf("Resp: %+v", resp)
 	return nil
 
+}
+
+func (a *ApplicationSnapshotImage) SetImageURL(url string) error {
+	ref, err := name.ParseReference(url)
+	if err != nil {
+		log.Debugf("Failed to parse image url %s", url)
+		return err
+	}
+	log.Debugf("Parsed image url %s", ref)
+	a.reference = ref
+
+	// Reset internal state relevant to the image
+	a.attestations = []oci.Signature{}
+	a.signatures = []cosign.Signatures{}
+
+	return nil
 }
 
 // ValidateImageSignature executes the cosign.VerifyImageSignature method on the ApplicationSnapshotImage image ref.

@@ -40,6 +40,7 @@ func TestParseAndResolveAll(t *testing.T) {
 		refs       []ImageReference
 		err        string
 		headDigest v1.Hash
+		opts       []name.Option
 	}{
 		{
 			name: "url contains tag and digest",
@@ -77,7 +78,7 @@ func TestParseAndResolveAll(t *testing.T) {
 				{
 					Repository: "registry.com/repo",
 					Digest:     testHash.String(),
-					Tag:        "",
+					Tag:        "latest",
 				},
 			},
 		},
@@ -93,7 +94,8 @@ func TestParseAndResolveAll(t *testing.T) {
 				// But this one should cause no errors
 				"registry.com/repo:good@" + testHash.String(),
 			},
-			err: "3 errors occurred",
+			opts: []name.Option{name.StrictValidation},
+			err:  "3 errors occurred",
 		},
 	}
 	for _, tt := range tests {
@@ -104,7 +106,7 @@ func TestParseAndResolveAll(t *testing.T) {
 				assert.NotEmpty(t, tt.headDigest)
 				return &v1.Descriptor{Digest: tt.headDigest}, nil
 			}
-			refs, err := ParseAndResolveAll(tt.urls)
+			refs, err := ParseAndResolveAll(tt.urls, tt.opts...)
 			if tt.err != "" {
 				assert.ErrorContains(t, err, tt.err)
 				return
