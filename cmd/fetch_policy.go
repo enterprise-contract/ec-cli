@@ -28,13 +28,14 @@ import (
 
 func fetchPolicyCmd() *cobra.Command {
 	var (
-		sourceUrls []string
-		destDir    string
-		useWorkDir bool
+		sourceUrls     []string
+		dataSourceUrls []string
+		destDir        string
+		useWorkDir     bool
 	)
 
 	cmd := &cobra.Command{
-		Use:   "policy --source <source-url>",
+		Use:   "policy --source <source-url> --data-source <source-url>",
 		Short: "Fetch policy rules from a git repository or other source",
 		Long: `Fetch policy rules (rego files) from a git repository or other source.
 
@@ -57,6 +58,13 @@ purposes.`,
   ec fetch policy --dest fetched-policies \
     --source github.com/hacbs-contract/ec-policies//policy/lib \
     --source github.com/hacbs-contract/ec-policies//policy/release
+
+Fetching policies and data from multiple sources to the current directory:
+
+  ec fetch policy \
+    --source github.com/hacbs-contract/ec-policies//policy/lib \
+    --source github.com/hacbs-contract/ec-policies//policy/release \
+    --data-source github.com/hacbs-contract/ec-policies//data
 
 Fetching policies from multiple sources to an automatically generated temporary
 work directory:
@@ -87,11 +95,18 @@ Notes:
 				destDir = workDir
 			}
 
-			for _, s := range sourceUrls {
-				// Do everything the same way that it would be done when an image validation happens
-				policyUrl := source.PolicyUrl{Url: s, Kind: source.PolicyKind}
-				policySource := &policyUrl
-				_, err := policySource.GetPolicy(cmd.Context(), destDir, true)
+			sources := make([]*source.PolicyUrl, 0, len(sourceUrls)+len(dataSourceUrls))
+
+			for _, url := range sourceUrls {
+				sources = append(sources, &source.PolicyUrl{Url: url, Kind: source.PolicyKind})
+			}
+
+			for _, url := range dataSourceUrls {
+				sources = append(sources, &source.PolicyUrl{Url: url, Kind: source.DataKind})
+			}
+
+			for _, s := range sources {
+				_, err := s.GetPolicy(cmd.Context(), destDir, true)
 				if err != nil {
 					return err
 				}
@@ -101,7 +116,8 @@ Notes:
 		},
 	}
 
-	cmd.Flags().StringArrayVarP(&sourceUrls, "source", "s", []string{}, "source url. multiple values are allowed")
+	cmd.Flags().StringArrayVarP(&sourceUrls, "source", "s", []string{}, "policy source url. multiple values are allowed")
+	cmd.Flags().StringArrayVar(&dataSourceUrls, "data-source", []string{}, "data source url. multiple values are allowed")
 	cmd.Flags().StringVarP(&destDir, "dest", "d", ".", "use the specified download destination directory. ignored if --work-dir is set")
 	cmd.Flags().BoolVarP(&useWorkDir, "work-dir", "w", false, "use a temporary work dir as the download destination directory")
 
