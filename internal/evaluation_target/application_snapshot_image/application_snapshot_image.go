@@ -246,6 +246,40 @@ func (a ApplicationSnapshotImage) ValidateAttestationSyntax(ctx context.Context)
 	return EV003.CausedBy(errors.New(msg))
 }
 
+// FilterMatchingAttestations ignores attestations that do not have a matching subject.
+func (a *ApplicationSnapshotImage) FilterMatchingAttestations(ctx context.Context) {
+	filteredAttestations := make([]oci.Signature, 0, len(a.attestations))
+	for _, attestation := range a.attestations {
+		_, statement, err := statementFrom(ctx, attestation)
+		if err != nil {
+			log.Debugf("Unable to extract statement from attestation: %v", err)
+			continue
+		}
+		identifier := a.reference.Identifier()
+		if matchDigest(statement.Subject, identifier) {
+			filteredAttestations = append(filteredAttestations, attestation)
+		} else {
+			log.Warnf(
+				"Ignoring attestation, none of its subjects (%v) match the image identifier %q",
+				statement.Subject, identifier)
+		}
+	}
+	a.attestations = filteredAttestations
+}
+
+// matchDigest returns true if any of the subjects match the given digest.
+func matchDigest(subjects []in_toto.Subject, digest string) bool {
+	for _, subject := range subjects {
+		for algo, value := range subject.Digest {
+			subjectIdentifier := fmt.Sprintf("%s:%s", algo, value)
+			if digest == subjectIdentifier {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // Attestations returns the value of the attestations field of the ApplicationSnapshotImage struct
 func (a *ApplicationSnapshotImage) Attestations() []oci.Signature {
 	return a.attestations

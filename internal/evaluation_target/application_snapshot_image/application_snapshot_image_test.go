@@ -499,3 +499,53 @@ func TestSignaturesFrom(t *testing.T) {
 		})
 	}
 }
+
+func TestFilterMatchingAttestations(t *testing.T) {
+	knownDigest := "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+	unknownDigest := "284e3029cce3ae5ee0b05866100e300046359f53ae4c77fe6b34c05aa7a72cee"
+
+	singleSubject := createSimpleAttestation(&in_toto.Statement{
+		StatementHeader: in_toto.StatementHeader{
+			Type:          in_toto.StatementInTotoV01,
+			PredicateType: v02.PredicateSLSAProvenance,
+			Subject: []in_toto.Subject{
+				{Digest: v02.DigestSet{"sha256": knownDigest}},
+			},
+		},
+	})
+
+	multipleSubjects := createSimpleAttestation(&in_toto.Statement{
+		StatementHeader: in_toto.StatementHeader{
+			Type:          in_toto.StatementInTotoV01,
+			PredicateType: v02.PredicateSLSAProvenance,
+			Subject: []in_toto.Subject{
+				{Digest: v02.DigestSet{"sha256": unknownDigest}},
+				{Digest: v02.DigestSet{"sha256": knownDigest}},
+			},
+		},
+	})
+
+	unknownSubject := createSimpleAttestation(&in_toto.Statement{
+		StatementHeader: in_toto.StatementHeader{
+			Type:          in_toto.StatementInTotoV01,
+			PredicateType: v02.PredicateSLSAProvenance,
+			Subject: []in_toto.Subject{
+				{Digest: v02.DigestSet{"sha256": unknownDigest}},
+			},
+		},
+	})
+
+	// nil is used here to easily simulate an invalid attestation
+	var invalidAttestation oci.Signature = nil
+
+	reference, err := name.ParseReference("registry/image:tag@sha256:" + knownDigest)
+	assert.NoError(t, err)
+
+	a := ApplicationSnapshotImage{
+		attestations: []oci.Signature{singleSubject, unknownSubject, invalidAttestation, multipleSubjects},
+		reference:    reference,
+	}
+	a.FilterMatchingAttestations(context.Background())
+	expected := []oci.Signature{singleSubject, multipleSubjects}
+	assert.Equal(t, expected, a.attestations)
+}
