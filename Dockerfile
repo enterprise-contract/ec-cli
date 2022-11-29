@@ -14,9 +14,13 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-FROM registry.access.redhat.com/ubi9/ubi
+FROM registry.access.redhat.com/ubi9/ubi-minimal
 
-RUN dnf -y install git-core && dnf clean all
+ARG TARGETOS
+ARG TARGETARCH
 
-COPY dist/ec_linux_amd64 /usr/bin/ec
-RUN chmod +x /usr/bin/ec && ec version
+RUN microdnf -y install git-core && microdnf clean all
+
+COPY "dist/ec_"$TARGETOS"_"$TARGETARCH /usr/bin/ec
+
+ENTRYPOINT ["/usr/bin/ec"]
