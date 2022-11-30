@@ -58,10 +58,10 @@ EOF
 while read -r IMG
 do
   printf "\n\n🩺 Evaluating policy for %s\n\n" "${IMG}"
-  echo "💲 ${EC}" validate image --image "${IMG}" --public-key "${HACK_DIR}/cosign.pub" --policy demo/ec-demo ${DEBUG_OPT:-}
-  "${EC}" validate image --image "${IMG}" --public-key "${HACK_DIR}/cosign.pub" --policy demo/ec-demo ${DEBUG_OPT:-} | jq
+  echo "💲 ${EC}" validate image --image "${IMG}" --public-key "${HACK_DIR}/work/cosign.pub" --policy demo/ec-demo ${DEBUG_OPT:-}
+  "${EC}" validate image --image "${IMG}" --public-key "${HACK_DIR}/work/cosign.pub" --policy demo/ec-demo ${DEBUG_OPT:-} | jq
 done < "${HACK_DIR}/images.txt"
 
 printf "\n\n🩺 Evaluating application snapshot:\n%s\n\n" "${SNAPSHOT}"
-echo "💲 ${EC}" validate image --file-path "${HACK_DIR}/application_snapshot.json" --public-key "${HACK_DIR}/cosign.pub" --policy demo/ec-demo ${DEBUG_OPT:-}
-"${EC}" validate image --file-path "${HACK_DIR}/application_snapshot.json" --public-key "${HACK_DIR}/cosign.pub" --policy demo/ec-demo ${DEBUG_OPT:-} | jq
+echo "💲 ${EC}" validate image --file-path "${HACK_DIR}/application_snapshot.json" --public-key "${HACK_DIR}/work/cosign.pub" --policy demo/ec-demo ${DEBUG_OPT:-}
+"${EC}" validate image --file-path "${HACK_DIR}/application_snapshot.json" --public-key "${HACK_DIR}/work/cosign.pub" --policy demo/ec-demo ${DEBUG_OPT:-} | jq

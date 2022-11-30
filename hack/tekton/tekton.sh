@@ -1,3 +1,4 @@
+#!/bin/env bash
 # Copyright 2022 Red Hat, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,20 +15,12 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
----
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
+# Fetches the Tekton YAML descriptors for the version we depend on
 
-patches:
-  # Enable Tekton bundles
-  - patch: |-
-      apiVersion: v1
-      kind: ConfigMap
-      metadata:
-        name: feature-flags
-        namespace: tekton-pipelines
-      data:
-        enable-tekton-oci-bundles: true
+set -o errexit
+set -o pipefail
+set -o nounset
 
-generators:
-  - tekton.yaml
+TKN_VERSION="${TKN_VERSION:-$(cd "$(git rev-parse --show-toplevel)" && go list -f '{{.Version}}' -m github.com/tektoncd/pipeline)}"
+
+curl -sSL "https://storage.googleapis.com/tekton-releases/pipeline/previous/${TKN_VERSION}/release.yaml"

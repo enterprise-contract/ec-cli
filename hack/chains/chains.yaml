@@ -14,20 +14,11 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
----
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-
-patches:
-  # Enable Tekton bundles
-  - patch: |-
-      apiVersion: v1
-      kind: ConfigMap
-      metadata:
-        name: feature-flags
-        namespace: tekton-pipelines
-      data:
-        enable-tekton-oci-bundles: true
-
-generators:
-  - tekton.yaml
+apiVersion: v1
+kind: TektonResourcePlugin
+metadata:
+  name: tekton
+  annotations:
+    config.kubernetes.io/function: |
+      exec:
+        path: ./chains.sh

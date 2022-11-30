@@ -1,0 +1,22 @@
+# Tekton CLI (tkn) initializes the Kubernetes Client and at that point requires
+# a valid Kubeconfig, this provides a fake one so that the tkn can initialize
+# and run without erroring out when the configuration is not available
+# TODO remove once https://github.com/tektoncd/cli/pull/1807 is merged and released
+---
+apiVersion: v1
+kind: Config
+clusters:
+- cluster:
+    server: https://fake:6443
+  name: fake
+contexts:
+- context:
+    cluster: fake
+    namespace: fake
+    user: fake
+  name: fake
+preferences: {}
+users:
+- name: fake
+  user: {}
+current-context: fake

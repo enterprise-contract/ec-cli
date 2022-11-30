@@ -171,13 +171,25 @@ dist-image-push: dist-image  $(subst image_,push_image_,$(ALL_SUPPORTED_IMG_OS_A
 	@for img in $(ALL_IMAGE_REFS); do TARGETOS=$$(echo $$img | sed -e 's/.*:[^-]\+-\([^-]\+\).*/\1/'); TARGETARCH=$${img/*-}; podman manifest add $(IMAGE_REPO):$(IMAGE_TAG) $(PODMAN_OPTS) $$img --os $${TARGETOS} --arch $${TARGETARCH}; done
 	@podman manifest push $(IMAGE_REPO):$(IMAGE_TAG) $(IMAGE_REPO):$(IMAGE_TAG)
 
+.PHONY: dev
+dev: IMAGE_REPO=localhost:5000/ec
+dev: PODMAN_OPTS=--tls-verify=false
+dev: TASK_REPO=localhost:5000/ec-task-bundle
+dev: TASK:=$(shell T=$$(mktemp) && yq e ".spec.steps[].image? = \"127.0.0.1:5000/ec\"" task/*/verify-enterprise-contract.yaml > "$${T}" && echo "$${T}")
+dev: push-image task-bundle ## Push the ec-cli and v-e-c Task Bundle to the kind cluster setup via hack/setup-dev-environment.sh
+	@rm "$(TASK)"
+
 TASK_TAG ?= latest
 TASK_REPO ?= quay.io/hacbs-contract/ec-task-bundle
 TASK_VERSION ?= 0.1
 TASK ?= task/$(TASK_VERSION)/verify-enterprise-contract.yaml
 .PHONY: task-bundle
 task-bundle: ## Push the Tekton Task bundle an image repository
-	@go run -modfile internal/tools/go.mod github.com/tektoncd/cli/cmd/tkn bundle push $(TASK_REPO):$(TASK_TAG) -f $(TASK)
+# TODO using .fake-kube-config as `tkn bundle push` initializes the k8s client
+# and that requires a valid Kubernetes config file, we're providing a fake one
+# as connecting to a cluster is not required, only a valid config file is
+# See https://github.com/tektoncd/cli/pull/1807
+	@KUBECONFIG=$(dir $(abspath $(lastword $(MAKEFILE_LIST))))/.fake-kube-config go run -modfile internal/tools/go.mod github.com/tektoncd/cli/cmd/tkn bundle push $(TASK_REPO):$(TASK_TAG) -f $(TASK)
 
 .PHONY: task-bundle-snapshot
 task-bundle-snapshot: task-bundle ## Push task bundle and then tag with "snapshot"

@@ -18,16 +18,6 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-patches:
-  # Enable Tekton bundles
-  - patch: |-
-      apiVersion: v1
-      kind: ConfigMap
-      metadata:
-        name: feature-flags
-        namespace: tekton-pipelines
-      data:
-        enable-tekton-oci-bundles: true
-
-generators:
-  - tekton.yaml
+resources:
+  - ../test
+  - ../chains

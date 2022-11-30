@@ -13,7 +13,7 @@
                 "--image",
                 "quay.io/hacbs-contract-demo/single-nodejs-app:abcbdfd92a75f7bba3ab97538b1324bf4677c1fb3eb82ca59cbd8970b3759b7e",
                 "--public-key",
-                "${workspaceFolder}/hack/cosign.pub",
+                "${workspaceFolder}/hack/work/cosign.pub",
                 "--policy",
                 "demo/ec-demo"
             ]
