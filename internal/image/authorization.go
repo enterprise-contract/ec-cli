@@ -117,7 +117,7 @@ func GetK8sResource(ecp *ecc.EnterpriseContractPolicySpec) (authorizationGetter,
 }
 
 func fetchECSource(ctx context.Context, policyConfiguration string) (*policy.Policy, error) {
-	p, err := policy.NewPolicy(ctx, policyConfiguration, "", "")
+	p, err := policy.NewPolicy(ctx, policyConfiguration, "", "", "")
 	if err != nil {
 		log.Debug("Failed to fetch the enterprise contract policy from the cluster!")
 		return nil, err

@@ -47,7 +47,9 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		output              []string
 		spec                *appstudioshared.ApplicationSnapshotSpec
 		policy              *policy.Policy
+		effectiveTime       string
 	}{
+
 		policyConfiguration: "ec-policy",
 	}
 	cmd := &cobra.Command{
@@ -125,7 +127,7 @@ Write output in YAML format to stdout and in HACBS format to a file
 			}
 
 			if p, err := policy.NewPolicy(
-				cmd.Context(), data.policyConfiguration, data.rekorURL, data.publicKey,
+				cmd.Context(), data.policyConfiguration, data.rekorURL, data.publicKey, data.effectiveTime,
 			); err != nil {
 				allErrors = multierror.Append(allErrors, err)
 			} else {
@@ -226,11 +228,17 @@ Write output in YAML format to stdout and in HACBS format to a file
 	cmd.Flags().StringVarP(&data.input, "json-input", "j", data.input,
 		"JSON represenation of an ApplicationSnapshot Spec")
 	cmd.Flags().StringSliceVar(&data.output, "output", data.output,
-		"write output to a file in a specific format. Use empty string path for stdout. May be used multiple times. Possible formats are json, yaml, hacbs, and summary")
+		`write output to a file in a specific format. Use empty string path for stdout.
+May be used multiple times. Possible formats are json, yaml, hacbs, and summary`)
 	cmd.Flags().StringVarP(&data.outputFile, "output-file", "o", data.outputFile,
 		"[DEPRECATED] write output to a file. Use empty string for stdout, default behavior")
 	cmd.Flags().BoolVarP(&data.strict, "strict", "s", data.strict,
 		"return non-zero status on non-successful validation")
+
+	cmd.Flags().StringVar(&data.effectiveTime, "effective-time", data.effectiveTime,
+		`Run policy checks as though the current time was this instead of the actual
+current time. Useful for testing rules with effective dates in the future
+The value should be in RFC3339 format, e.g. 2022-11-18T00:00:00Z`)
 
 	if len(data.input) > 0 || len(data.filePath) > 0 {
 		if err := cmd.MarkFlagRequired("image"); err != nil {

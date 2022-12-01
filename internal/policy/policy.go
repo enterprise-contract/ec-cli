@@ -23,6 +23,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/sigstore/cosign/cmd/cosign/cli/rekor"
@@ -37,7 +38,8 @@ import (
 
 type Policy struct {
 	ecc.EnterpriseContractPolicySpec
-	CheckOpts *cosign.CheckOpts
+	CheckOpts     *cosign.CheckOpts
+	EffectiveTime time.Time
 }
 
 // PublicKeyPEM returns the PublicKey in PEM format.
@@ -62,7 +64,7 @@ func (p *Policy) PublicKeyPEM() ([]byte, error) {
 //
 // The public key is resolved as part of object construction. If the public key is a reference
 // to a kubernetes resource, for example, the cluster will be contacted.
-func NewPolicy(ctx context.Context, policyRef, rekorUrl, publicKey string) (*Policy, error) {
+func NewPolicy(ctx context.Context, policyRef, rekorUrl, publicKey, effectiveTime string) (*Policy, error) {
 	var p *Policy
 
 	if policyRef == "" {
@@ -105,6 +107,19 @@ func NewPolicy(ctx context.Context, policyRef, rekorUrl, publicKey string) (*Pol
 
 	if p.PublicKey == "" {
 		return nil, errors.New("policy must provide a public key")
+	}
+
+	if effectiveTime == "" {
+		p.EffectiveTime = time.Now()
+		log.Debugf("Using current time %s", p.EffectiveTime.Format(time.RFC3339))
+	} else {
+		if when, err := time.Parse(time.RFC3339, effectiveTime); err != nil {
+			log.Debugf("Unable to parse time string %s", effectiveTime)
+			return nil, err
+		} else {
+			p.EffectiveTime = when
+			log.Debugf("Using custom effective time %s", p.EffectiveTime.Format(time.RFC3339))
+		}
 	}
 
 	if opts, err := checkOpts(ctx, p); err != nil {
