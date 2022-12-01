@@ -150,7 +150,6 @@ Feature: evaluate enterprise contract
     }
     """
 
-  @focus
   Scenario: future failure is a deny when using effective-date flag
     Given a key pair named "known"
     Given an image named "acceptance/ec-happy-day"
