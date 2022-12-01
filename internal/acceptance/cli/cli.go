@@ -32,6 +32,7 @@ import (
 	"unicode"
 
 	"github.com/cucumber/godog"
+	c "github.com/doiit/picocolors"
 	"github.com/pkg/diff"
 	"github.com/yudai/gojsondiff"
 	"github.com/yudai/gojsondiff/formatter"
@@ -50,8 +51,8 @@ type status struct {
 	*exec.Cmd
 	vars   map[string]string
 	err    error
-	stdout string
-	stderr string
+	stdout *bytes.Buffer
+	stderr *bytes.Buffer
 }
 
 type key int
@@ -124,11 +125,6 @@ func ecCommandIsRunWith(ctx context.Context, parameters string) (context.Context
 		return vars[key]
 	})
 
-	logger := log.LoggerFor(ctx)
-	logger.Logf("Command: %s", ec)
-	logger.Logf("Arguments: %v", args)
-	logger.Logf("Environment: %v", environment)
-
 	cmd := exec.Command(ec)
 	// note, argument at 0 is the path to ec command line
 	cmd.Args = append([]string{ec}, strings.Split(args, " ")...)
@@ -139,19 +135,20 @@ func ecCommandIsRunWith(ctx context.Context, parameters string) (context.Context
 	var stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
+
+	sts := status{Cmd: cmd, vars: vars, err: err, stdout: &stdout, stderr: &stderr}
+
 	err = cmd.Run()
 	if err != nil {
 		// we're not asserting here, so let's log the error
 		// depending on how we assert the error might or
 		// might not surface again
+		logger := log.LoggerFor(ctx)
 		logger.Log(err)
 	}
 
-	logger.Logf("Stdout: %v", stdout.String())
-	logger.Logf("Stderr: %v", stderr.String())
-
 	// store the outcome in the Context
-	return context.WithValue(ctx, processStatusKey, &status{Cmd: cmd, vars: vars, err: err, stdout: stdout.String(), stderr: stderr.String()}), nil
+	return context.WithValue(ctx, processStatusKey, &sts), nil
 }
 
 func setupKeys(ctx context.Context, vars map[string]string, environment []string) ([]string, map[string]string, error) {
@@ -298,12 +295,10 @@ func theExitStatusIs(ctx context.Context, expected int) error {
 	// be expected below and not fail here
 	var exitErr *exec.ExitError
 	if status.err != nil && !errors.As(status.err, &exitErr) {
-		logOutput(ctx, status)
 		return fmt.Errorf("failed to invoke the ec command: %#v", status.err)
 	}
 
 	if status.Cmd.ProcessState.ExitCode() != expected {
-		logOutput(ctx, status)
 		return fmt.Errorf("ec exited with %d", status.ProcessState.ExitCode())
 	}
 
@@ -329,24 +324,28 @@ func theStandardOutputShouldContain(ctx context.Context, expected *godog.DocStri
 		return status.vars[key]
 	})
 
+	stdout := status.stdout.String()
+
 	// shortcut, if the output is exactly as expected
-	if status.stdout == expectedStdOut {
+	if stdout == expectedStdOut {
 		return nil
 	}
 
-	if matched, err := regexp.MatchString(expectedStdOut, status.stdout); matched && err == nil {
+	if matched, err := regexp.MatchString(expectedStdOut, stdout); matched && err == nil {
 		return nil
 	}
 
 	// see if the expected value is JSON, i.e. if it starts with either { or [
-	trimmed := strings.TrimLeftFunc(expectedStdOut, unicode.IsSpace)
-	isJSON := trimmed[0] == '{' || trimmed[0] == '['
-	if isJSON {
+	expectedTrimmed := strings.TrimLeftFunc(expectedStdOut, unicode.IsSpace)
+	expectdIsJSON := expectedTrimmed[0] == '{' || expectedTrimmed[0] == '['
+	stdoutTrimmed := strings.TrimLeftFunc(stdout, unicode.IsSpace)
+	stdoutIsJSON := len(stdoutTrimmed) > 0 && (stdoutTrimmed[0] == '{' || stdoutTrimmed[0] == '[')
+	if expectdIsJSON && stdoutIsJSON {
 		expectedBytes := []byte(expectedStdOut)
 
 		// compute the diff between expected and resulting JSON
 		differ := gojsondiff.New()
-		diff, err := differ.Compare(expectedBytes, []byte(status.stdout))
+		diff, err := differ.Compare(expectedBytes, status.stdout.Bytes())
 		if err != nil {
 			return err
 		}
@@ -485,18 +484,38 @@ func ecStatusFrom(ctx context.Context) (*status, error) {
 	return status, nil
 }
 
-// logOutput logs the exit code, PID, stderr, stdout, and offers hits as to
-// how to troubleshoot test failures by using persistent environment
-func logOutput(ctx context.Context, s *status) {
-	logger := log.LoggerFor(ctx)
-
-	output := fmt.Sprintf("\n----- state -----\nExit code: %d\nPid: %d\n----- state -----\n", s.ProcessState.ExitCode(), s.ProcessState.Pid())
-
-	if s.stderr != "" {
-		output += fmt.Sprintf("\n----- stderr -----\n%s----- stderr -----\n", s.stderr)
+// logExecution logs the details of the execution and offers hits as how to
+// troubleshoot test failures by using persistent environment
+func logExecution(ctx context.Context) {
+	noColors := testenv.NoColorOutput(ctx)
+	if c.SUPPORT_COLOR != !noColors {
+		c.SUPPORT_COLOR = !noColors
 	}
-	if s.stdout != "" {
-		output += fmt.Sprintf("\n----- stdout -----\n%s----- stdout -----\n", s.stdout)
+
+	s, err := ecStatusFrom(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	output := &strings.Builder{}
+	outputSegment := func(name string, v any) {
+		output.WriteString("\n\n")
+		output.WriteString(c.Underline(c.Bold(name)))
+		output.WriteString(fmt.Sprintf("\n%v", v))
+	}
+
+	outputSegment("Command", s.Cmd)
+	outputSegment("State", fmt.Sprintf("Exit code: %d\nPid: %d", s.ProcessState.ExitCode(), s.ProcessState.Pid()))
+	outputSegment("Environment", strings.Join(s.Env, "\n"))
+	if s.stdout.Len() == 0 {
+		outputSegment("Stdout", c.Italic("* No standard output"))
+	} else {
+		outputSegment("Stdout", c.Green(s.stdout.String()))
+	}
+	if s.stderr.Len() == 0 {
+		outputSegment("Stdout", c.Italic("* No standard error"))
+	} else {
+		outputSegment("Stderr", c.Red(s.stderr.String()))
 	}
 
 	if testenv.Persisted(ctx) {
@@ -507,14 +526,12 @@ func logOutput(ctx context.Context, s *status) {
 			}
 		}
 
-		output += fmt.Sprintf(`The test environment is persisted, to recreate the failure run:
-%s %s
-`, strings.Join(environment, " "), strings.Join(s.Cmd.Args, " "))
+		output.WriteString("\n" + c.Bold("NOTE") + ": " + fmt.Sprintf("The test environment is persisted, to recreate the failure run:\n%s %s\n\n", strings.Join(environment, " "), strings.Join(s.Cmd.Args, " ")))
 	} else {
-		output += "HINT: To recreate the failure re-run the test with `-args -persist` to persist the stubbed environment\n"
+		output.WriteString("\n" + c.Bold("HINT") + ": To recreate the failure re-run the test with `-args -persist` to persist the stubbed environment\n\n")
 	}
 
-	logger.Logf(output)
+	fmt.Print(output.String())
 }
 
 // AddStepsTo adds Gherkin steps to the godog ScenarioContext
@@ -522,4 +539,9 @@ func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^ec command is run with "(.+)"$`, ecCommandIsRunWith)
 	sc.Step(`^the exit status should be (\d+)$`, theExitStatusIs)
 	sc.Step(`^the standard output should contain$`, theStandardOutputShouldContain)
+	sc.After(func(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
+		logExecution(ctx)
+
+		return ctx, nil
+	})
 }
