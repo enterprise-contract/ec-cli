@@ -57,7 +57,8 @@ func (c *FakeKubernetesClient) FetchEnterpriseContractPolicy(ctx context.Context
 
 func TestNewPolicy(t *testing.T) {
 	timeNowStr := "2022-11-23T16:30:00Z"
-	timeNow, _ := time.Parse(time.RFC3339, timeNowStr)
+	timeNow, err := time.Parse(time.RFC3339, timeNowStr)
+	assert.NoError(t, err)
 
 	cases := []struct {
 		name        string
