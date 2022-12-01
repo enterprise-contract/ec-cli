@@ -21,6 +21,7 @@ package replacer
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -32,6 +33,7 @@ import (
 	"testing"
 
 	"github.com/go-git/go-git/v5"
+	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/hacbs-contract/ec-cli/internal/image"
@@ -325,6 +327,9 @@ func mockHubHttpGet(url string) (resp *http.Response, err error) {
 	urlParts := strings.Split(url, "/")
 	key := strings.Join(urlParts[len(urlParts)-3:], ":")
 	version := mockCatalogVersions[key]
+	if version == "" {
+		return nil, errors.New("not found")
+	}
 	content := []byte(
 		fmt.Sprintf(`{"data": {"latestVersion": {"version": "%s"}}}`, version))
 	body := ioutil.NopCloser(bytes.NewReader([]byte(content)))
@@ -334,10 +339,10 @@ func mockHubHttpGet(url string) (resp *http.Response, err error) {
 	}, nil
 }
 
-func mockImageParseAndResolve(url string) (*image.ImageReference, error) {
+func mockImageParseAndResolve(url string, opts ...name.Option) (*image.ImageReference, error) {
 	// Adding a digest makes it so the real image.ParseAndResolve doesn't make
 	// a network connection.
-	return image.ParseAndResolve(url + "@" + testDigest)
+	return image.ParseAndResolve(url+"@"+testDigest, opts...)
 }
 
 func mockCloneRepo(layout map[string]string, expectedBranch string) func(context.Context, string, bool, *git.CloneOptions) (*git.Repository, error) {

@@ -54,6 +54,7 @@ type Output struct {
 	PolicyCheck               []output.CheckResult `json:"policyCheck"`
 	ExitCode                  int                  `json:"-"`
 	Signatures                []cosign.Signatures  `json:"signatures,omitempty"`
+	ImageURL                  string               `json:"-"`
 }
 
 // SetImageAccessibleCheck sets the passed and result.message fields of the ImageAccessibleCheck to the given values.

@@ -24,6 +24,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/hacbs-contract/ec-cli/internal/image"
@@ -64,7 +65,7 @@ func TestBasicImageReplacer(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			ref, err := image.NewImageReference(c.url)
+			ref, err := image.NewImageReference(c.url, name.StrictValidation)
 			assert.NoError(t, err)
 			replacer, err := newBasicImageReplacer(*ref)
 			assert.NoError(t, err)
@@ -115,7 +116,7 @@ func TestCatalogImageReplacer(t *testing.T) {
 					Body:       body,
 				}, nil
 			}
-			imageParseAndResolve = func(url string) (*image.ImageReference, error) {
+			imageParseAndResolve = func(url string, _ ...name.Option) (*image.ImageReference, error) {
 				// Adding a digest makes it so the real image.ParseAndResolve doesn't make
 				// a network connection.
 				return image.ParseAndResolve(url + "@" + testHash)

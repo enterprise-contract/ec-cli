@@ -170,7 +170,7 @@ Write output in YAML format to stdout and in HACBS format to a file
 						res.component.Violations = out.Violations()
 						res.component.Warnings = out.Warnings()
 						res.component.Signatures = out.Signatures
-
+						res.component.ContainerImage = out.ImageURL
 					}
 					res.component.Success = err == nil && len(res.component.Violations) == 0
 

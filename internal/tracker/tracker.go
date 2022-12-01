@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/ghodss/yaml"
+	"github.com/google/go-containerregistry/pkg/name"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 	"github.com/stuart-warren/yamlfmt"
@@ -143,7 +144,7 @@ func (t Tracker) Output() ([]byte, error) {
 // Each url is expected to reference a valid Tekton bundle. Each bundle may be added
 // to none, 1, or 2 collections depending on the Tekton resource types they include.
 func Track(ctx context.Context, fs afero.Fs, urls []string, input string) ([]byte, error) {
-	refs, err := image.ParseAndResolveAll(urls)
+	refs, err := image.ParseAndResolveAll(urls, name.StrictValidation)
 	if err != nil {
 		return nil, err
 	}

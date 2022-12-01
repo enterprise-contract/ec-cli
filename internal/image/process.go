@@ -27,14 +27,14 @@ import (
 
 // ParseAndResolve parses the url into an ImageReference object. The digest is
 // resolved if needed.
-func ParseAndResolve(url string) (*ImageReference, error) {
-	ref, err := NewImageReference(url)
+func ParseAndResolve(url string, opts ...name.Option) (*ImageReference, error) {
+	ref, err := NewImageReference(url, opts...)
 	if err != nil {
 		return nil, err
 	}
 
 	if ref.Digest == "" {
-		ref, err = ref.resolveDigest()
+		ref, err = ref.resolveDigest(opts...)
 		if err != nil {
 			return nil, err
 		}
@@ -44,12 +44,12 @@ func ParseAndResolve(url string) (*ImageReference, error) {
 }
 
 // ParseAndResolveAll is like ParseAndResolve, but for a list of urls.
-func ParseAndResolveAll(urls []string) ([]ImageReference, error) {
+func ParseAndResolveAll(urls []string, opts ...name.Option) ([]ImageReference, error) {
 	var errs error
 
 	refs := make([]ImageReference, 0, len(urls))
 	for _, url := range urls {
-		ref, err := ParseAndResolve(url)
+		ref, err := ParseAndResolve(url, opts...)
 		if err != nil {
 			errs = multierror.Append(errs, err)
 			continue
@@ -76,12 +76,7 @@ var remoteHead = remote.Head
 
 // resolveDigest queries the image repository to determine the image digest and
 // returns a new instance of ImageReference with the updated digest value.
-func (i ImageReference) resolveDigest() (*ImageReference, error) {
-	if i.Tag == "" {
-		return nil, fmt.Errorf(
-			"image reference %q has no tag, cannot resolve digest", i.ref.String())
-	}
-
+func (i ImageReference) resolveDigest(opts ...name.Option) (*ImageReference, error) {
 	descriptor, err := remoteHead(i.ref)
 	if err != nil {
 		return nil, err
@@ -91,7 +86,7 @@ func (i ImageReference) resolveDigest() (*ImageReference, error) {
 		return nil, fmt.Errorf("digest for image %q is empty", i.ref.String())
 	}
 
-	return NewImageReference(fmt.Sprintf("%s:%s@%s", i.Repository, i.Tag, digest))
+	return NewImageReference(fmt.Sprintf("%s:%s@%s", i.Repository, i.Tag, digest), opts...)
 }
 
 func (i *ImageReference) String() string {
@@ -108,8 +103,8 @@ func (i *ImageReference) String() string {
 }
 
 // NewImageReference returns an ImageReference instance based on the given url.
-func NewImageReference(url string) (*ImageReference, error) {
-	ref, err := name.ParseReference(url, name.StrictValidation)
+func NewImageReference(url string, opts ...name.Option) (*ImageReference, error) {
+	ref, err := name.ParseReference(url, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -119,13 +114,13 @@ func NewImageReference(url string) (*ImageReference, error) {
 	// will drop the tag in favor of the digest. Since we care about the value of the tag,
 	// parse the url without the digest reference to force the library to retain the tag
 	// value in all cases where it is present.
-	tagRef, err := name.NewTag(strings.Split(url, "@")[0], name.StrictValidation)
+	tagRef, err := name.NewTag(strings.Split(url, "@")[0], opts...)
 	if err == nil {
 		imageRef.Tag = tagRef.TagStr()
 		imageRef.Repository = tagRef.Context().Name()
 	}
 
-	digestRef, err := name.NewDigest(url, name.StrictValidation)
+	digestRef, err := name.NewDigest(url, opts...)
 	if err == nil {
 		imageRef.Digest = digestRef.DigestStr()
 		imageRef.Repository = digestRef.Context().Name()
