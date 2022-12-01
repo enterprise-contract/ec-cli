@@ -6,6 +6,7 @@ require (
 	cuelang.org/go v0.4.3
 	github.com/cucumber/godog v0.12.5
 	github.com/cyberphone/json-canonicalization v0.0.0-20210823021906-dc406ceaf94b
+	github.com/doiit/picocolors v1.0.1
 	github.com/evanphx/json-patch v5.6.0+incompatible
 	github.com/ghodss/yaml v1.0.0
 	github.com/gkampitakis/go-snaps v0.4.2
@@ -233,6 +234,7 @@ require (
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/matryer/is v1.4.0 // indirect
+	github.com/mattn/go-isatty v0.0.16 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.2 // indirect
 	github.com/miekg/pkcs11 v1.1.1 // indirect
