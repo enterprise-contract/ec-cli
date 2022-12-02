@@ -130,6 +130,8 @@ func (t *Tracker) addRequiredTasksRecord(record commonTasksRecord) {
 
 // Output serializes the Tracker state as YAML
 func (t Tracker) Output() ([]byte, error) {
+	t.deduplicate()
+
 	out, err := yaml.Marshal(t)
 	if err != nil {
 		return nil, err
@@ -188,4 +190,30 @@ func effectiveOn() time.Time {
 	// Round to the 0 time of the day for consistency. Also, zero out nanoseconds
 	// to avoid RFC3339Nano from being used by MarshalJSON.
 	return time.Now().Add(duration).UTC().Round(day)
+}
+
+func (t *Tracker) deduplicate() {
+	for ref, records := range t.PipelineBundles {
+		t.PipelineBundles[ref] = deduplicate(records)
+	}
+	for ref, records := range t.TaskBundles {
+		t.TaskBundles[ref] = deduplicate(records)
+	}
+}
+
+func deduplicate(records []bundleRecord) []bundleRecord {
+	dedupped := make([]bundleRecord, 0, len(records))
+
+	keys := map[string]bool{}
+	for _, r := range records {
+		key := r.Repository + r.Digest
+		if _, ok := keys[key]; ok {
+			continue
+		}
+
+		keys[key] = true
+		dedupped = append(dedupped, r)
+	}
+
+	return dedupped
 }
