@@ -90,6 +90,9 @@ func ValidateImage(ctx context.Context, fs afero.Fs, url string, p *policy.Polic
 		log.Debug("Image attestation syntax check passed")
 		out.SetAttestationSyntaxCheck(true, "success")
 	}
+
+	a.FilterMatchingAttestations(ctx)
+
 	attCount := len(a.Attestations())
 	log.Debugf("Found %d attestations", attCount)
 	if attCount == 0 {
