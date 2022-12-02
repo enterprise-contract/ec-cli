@@ -62,20 +62,21 @@ func TestTrack(t *testing.T) {
 				"registry.com/repo:two@" + sampleHashTwo.String(),
 				"registry.com/repo:one@" + sampleHashOne.String(),
 			},
-			output: `pipeline-bundles:
+			output: `---
+pipeline-bundles:
   registry.com/repo:
-  - digest: ` + sampleHashOne.String() + `
-    effective_on: "` + expectedEffectiveOn + `"
-    tag: one
-  - digest: ` + sampleHashTwo.String() + `
-    effective_on: "` + expectedEffectiveOn + `"
-    tag: two
+    - digest: ` + sampleHashOne.String() + `
+      effective_on: "` + expectedEffectiveOn + `"
+      tag: one
+    - digest: ` + sampleHashTwo.String() + `
+      effective_on: "` + expectedEffectiveOn + `"
+      tag: two
 required-tasks:
-- effective_on: "` + expectedEffectiveOn + `"
-  tasks:
-  - buildah
-  - git-clone
-  - summary
+  - effective_on: "` + expectedEffectiveOn + `"
+    tasks:
+      - buildah
+      - git-clone
+      - summary
 `,
 		},
 		{
@@ -84,21 +85,22 @@ required-tasks:
 				"registry.com/one:1.0@" + sampleHashOne.String(),
 				"registry.com/two:2.0@" + sampleHashTwo.String(),
 			},
-			output: `pipeline-bundles:
+			output: `---
+pipeline-bundles:
   registry.com/one:
-  - digest: ` + sampleHashOne.String() + `
-    effective_on: "` + expectedEffectiveOn + `"
-    tag: "1.0"
+    - digest: ` + sampleHashOne.String() + `
+      effective_on: "` + expectedEffectiveOn + `"
+      tag: "1.0"
   registry.com/two:
-  - digest: ` + sampleHashTwo.String() + `
-    effective_on: "` + expectedEffectiveOn + `"
-    tag: "2.0"
+    - digest: ` + sampleHashTwo.String() + `
+      effective_on: "` + expectedEffectiveOn + `"
+      tag: "2.0"
 required-tasks:
-- effective_on: "` + expectedEffectiveOn + `"
-  tasks:
-  - buildah
-  - git-clone
-  - summary
+  - effective_on: "` + expectedEffectiveOn + `"
+    tasks:
+      - buildah
+      - git-clone
+      - summary
 `,
 		},
 		{
@@ -106,26 +108,28 @@ required-tasks:
 			urls: []string{
 				"registry.com/repo:two@" + sampleHashTwo.String(),
 			},
-			input: `pipeline-bundles:
+			input: `---
+pipeline-bundles:
   registry.com/repo:
-  - digest: ` + sampleHashOne.String() + `
-    effective_on: "` + expectedEffectiveOn + `"
-    tag: one
+    - digest: ` + sampleHashOne.String() + `
+      effective_on: "` + expectedEffectiveOn + `"
+      tag: one
 `,
-			output: `pipeline-bundles:
+			output: `---
+pipeline-bundles:
   registry.com/repo:
-  - digest: ` + sampleHashTwo.String() + `
-    effective_on: "` + expectedEffectiveOn + `"
-    tag: two
-  - digest: ` + sampleHashOne.String() + `
-    effective_on: "` + expectedEffectiveOn + `"
-    tag: one
+    - digest: ` + sampleHashTwo.String() + `
+      effective_on: "` + expectedEffectiveOn + `"
+      tag: two
+    - digest: ` + sampleHashOne.String() + `
+      effective_on: "` + expectedEffectiveOn + `"
+      tag: one
 required-tasks:
-- effective_on: "` + expectedEffectiveOn + `"
-  tasks:
-  - buildah
-  - git-clone
-  - summary
+  - effective_on: "` + expectedEffectiveOn + `"
+    tasks:
+      - buildah
+      - git-clone
+      - summary
 `,
 		},
 		{
@@ -133,27 +137,29 @@ required-tasks:
 			urls: []string{
 				"registry.com/two:2.0@" + sampleHashTwo.String(),
 			},
-			input: `pipeline-bundles:
+			input: `---
+pipeline-bundles:
   registry.com/one:
-  - digest: ` + sampleHashOne.String() + `
-    effective_on: "` + expectedEffectiveOn + `"
-    tag: "1.0"
+    - digest: ` + sampleHashOne.String() + `
+      effective_on: "` + expectedEffectiveOn + `"
+      tag: "1.0"
 `,
-			output: `pipeline-bundles:
+			output: `---
+pipeline-bundles:
   registry.com/one:
-  - digest: ` + sampleHashOne.String() + `
-    effective_on: "` + expectedEffectiveOn + `"
-    tag: "1.0"
+    - digest: ` + sampleHashOne.String() + `
+      effective_on: "` + expectedEffectiveOn + `"
+      tag: "1.0"
   registry.com/two:
-  - digest: ` + sampleHashTwo.String() + `
-    effective_on: "` + expectedEffectiveOn + `"
-    tag: "2.0"
+    - digest: ` + sampleHashTwo.String() + `
+      effective_on: "` + expectedEffectiveOn + `"
+      tag: "2.0"
 required-tasks:
-- effective_on: "` + expectedEffectiveOn + `"
-  tasks:
-  - buildah
-  - git-clone
-  - summary
+  - effective_on: "` + expectedEffectiveOn + `"
+    tasks:
+      - buildah
+      - git-clone
+      - summary
 `,
 		},
 		{
@@ -163,26 +169,27 @@ required-tasks:
 			},
 			input: `task-bundles:
   registry.com/one:
-  - digest: ` + sampleHashOne.String() + `
-    effective_on: "` + expectedEffectiveOn + `"
-    tag: "1.0"
+    - digest: ` + sampleHashOne.String() + `
+      effective_on: "` + expectedEffectiveOn + `"
+      tag: "1.0"
 `,
-			output: `pipeline-bundles:
+			output: `---
+pipeline-bundles:
   registry.com/two:
-  - digest: ` + sampleHashTwo.String() + `
-    effective_on: "` + expectedEffectiveOn + `"
-    tag: "2.0"
+    - digest: ` + sampleHashTwo.String() + `
+      effective_on: "` + expectedEffectiveOn + `"
+      tag: "2.0"
 required-tasks:
-- effective_on: "` + expectedEffectiveOn + `"
-  tasks:
-  - buildah
-  - git-clone
-  - summary
+  - effective_on: "` + expectedEffectiveOn + `"
+    tasks:
+      - buildah
+      - git-clone
+      - summary
 task-bundles:
   registry.com/one:
-  - digest: ` + sampleHashOne.String() + `
-    effective_on: "` + expectedEffectiveOn + `"
-    tag: "1.0"
+    - digest: ` + sampleHashOne.String() + `
+      effective_on: "` + expectedEffectiveOn + `"
+      tag: "1.0"
 `,
 		},
 		{
@@ -190,22 +197,23 @@ task-bundles:
 			urls: []string{
 				"registry.com/mixed:1.0@" + sampleHashOne.String(),
 			},
-			output: `pipeline-bundles:
+			output: `---
+pipeline-bundles:
   registry.com/mixed:
-  - digest: ` + sampleHashOne.String() + `
-    effective_on: "` + expectedEffectiveOn + `"
-    tag: "1.0"
+    - digest: ` + sampleHashOne.String() + `
+      effective_on: "` + expectedEffectiveOn + `"
+      tag: "1.0"
 required-tasks:
-- effective_on: "` + expectedEffectiveOn + `"
-  tasks:
-  - buildah
-  - git-clone
-  - summary
+  - effective_on: "` + expectedEffectiveOn + `"
+    tasks:
+      - buildah
+      - git-clone
+      - summary
 task-bundles:
   registry.com/mixed:
-  - digest: ` + sampleHashOne.String() + `
-    effective_on: "` + expectedEffectiveOn + `"
-    tag: "1.0"
+    - digest: ` + sampleHashOne.String() + `
+      effective_on: "` + expectedEffectiveOn + `"
+      tag: "1.0"
 `,
 		},
 		{
@@ -213,14 +221,15 @@ task-bundles:
 			urls: []string{
 				"registry.com/empty-pipeline:1.0@" + sampleHashOne.String(),
 			},
-			output: `pipeline-bundles:
+			output: `---
+pipeline-bundles:
   registry.com/empty-pipeline:
-  - digest: ` + sampleHashOne.String() + `
-    effective_on: "` + expectedEffectiveOn + `"
-    tag: "1.0"
+    - digest: ` + sampleHashOne.String() + `
+      effective_on: "` + expectedEffectiveOn + `"
+      tag: "1.0"
 required-tasks:
-- effective_on: "` + expectedEffectiveOn + `"
-  tasks: []
+  - effective_on: "` + expectedEffectiveOn + `"
+    tasks: []
 `,
 		},
 		{
@@ -229,21 +238,22 @@ required-tasks:
 				"registry.com/empty-pipeline:1.0@" + sampleHashOne.String(),
 				"registry.com/one:1.0@" + sampleHashOne.String(),
 			},
-			output: `pipeline-bundles:
+			output: `---
+pipeline-bundles:
   registry.com/empty-pipeline:
-  - digest: ` + sampleHashOne.String() + `
-    effective_on: "` + expectedEffectiveOn + `"
-    tag: "1.0"
+    - digest: ` + sampleHashOne.String() + `
+      effective_on: "` + expectedEffectiveOn + `"
+      tag: "1.0"
   registry.com/one:
-  - digest: ` + sampleHashOne.String() + `
-    effective_on: "` + expectedEffectiveOn + `"
-    tag: "1.0"
+    - digest: ` + sampleHashOne.String() + `
+      effective_on: "` + expectedEffectiveOn + `"
+      tag: "1.0"
 required-tasks:
-- effective_on: "` + expectedEffectiveOn + `"
-  tasks:
-  - buildah
-  - git-clone
-  - summary
+  - effective_on: "` + expectedEffectiveOn + `"
+    tasks:
+      - buildah
+      - git-clone
+      - summary
 `,
 		},
 		{
@@ -252,21 +262,22 @@ required-tasks:
 				"registry.com/one:1.0@" + sampleHashOne.String(),
 				"registry.com/empty-pipeline:1.0@" + sampleHashOne.String(),
 			},
-			output: `pipeline-bundles:
+			output: `---
+pipeline-bundles:
   registry.com/empty-pipeline:
-  - digest: ` + sampleHashOne.String() + `
-    effective_on: "` + expectedEffectiveOn + `"
-    tag: "1.0"
+    - digest: ` + sampleHashOne.String() + `
+      effective_on: "` + expectedEffectiveOn + `"
+      tag: "1.0"
   registry.com/one:
-  - digest: ` + sampleHashOne.String() + `
-    effective_on: "` + expectedEffectiveOn + `"
-    tag: "1.0"
+    - digest: ` + sampleHashOne.String() + `
+      effective_on: "` + expectedEffectiveOn + `"
+      tag: "1.0"
 required-tasks:
-- effective_on: "` + expectedEffectiveOn + `"
-  tasks:
-  - buildah
-  - git-clone
-  - summary
+  - effective_on: "` + expectedEffectiveOn + `"
+    tasks:
+      - buildah
+      - git-clone
+      - summary
 `,
 		},
 		{
@@ -277,23 +288,24 @@ required-tasks:
 			input: `required-tasks:
   - effective_on: "` + expectedEffectiveOn + `"
     tasks:
-    - buildah
-    - git-clone
-    - summary
+      - buildah
+      - git-clone
+      - summary
 `,
-			output: `pipeline-bundles:
+			output: `---
+pipeline-bundles:
   registry.com/empty-pipeline:
-  - digest: ` + sampleHashOne.String() + `
-    effective_on: "` + expectedEffectiveOn + `"
-    tag: "1.0"
+    - digest: ` + sampleHashOne.String() + `
+      effective_on: "` + expectedEffectiveOn + `"
+      tag: "1.0"
 required-tasks:
-- effective_on: "` + expectedEffectiveOn + `"
-  tasks: []
-- effective_on: "` + expectedEffectiveOn + `"
-  tasks:
-  - buildah
-  - git-clone
-  - summary
+  - effective_on: "` + expectedEffectiveOn + `"
+    tasks: []
+  - effective_on: "` + expectedEffectiveOn + `"
+    tasks:
+      - buildah
+      - git-clone
+      - summary
 `,
 		},
 	}

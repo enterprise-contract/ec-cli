@@ -176,11 +176,7 @@ func Track(ctx context.Context, fs afero.Fs, urls []string, input string) ([]byt
 	}
 	t.addRequiredTasksRecord(requiredTasks)
 
-	out, err := yaml.Marshal(t)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
+	return t.Output()
 }
 
 // effectiveOn returns an RFC3339 representation of the beginning of the
