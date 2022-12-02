@@ -30,7 +30,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/dynamic/fake"
-	"k8s.io/client-go/tools/clientcmd"
 )
 
 var fakeClient dynamic.Interface
@@ -129,12 +128,7 @@ func Test_FetchEnterpriseContractPolicy(t *testing.T) {
 }
 
 func Test_FailureToCreateClient(t *testing.T) {
-	t.Setenv("HOME", "/nonexistant")
-	oldRecommendedHomeFile := clientcmd.RecommendedHomeFile
-	t.Cleanup(func() {
-		clientcmd.RecommendedHomeFile = oldRecommendedHomeFile
-	})
-	clientcmd.RecommendedHomeFile = ""
+	t.Setenv("KUBECONFIG", "/nonexistant")
 	_, err := createK8SClient()
 
 	assert.EqualError(t, err, "invalid configuration: no configuration has been provided, try setting KUBERNETES_MASTER environment variable")
