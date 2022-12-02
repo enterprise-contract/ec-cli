@@ -494,7 +494,7 @@ func logExecution(ctx context.Context) {
 
 	s, err := ecStatusFrom(ctx)
 	if err != nil {
-		panic(err)
+		return // the ec wasn't invoked no status was stored
 	}
 
 	output := &strings.Builder{}
