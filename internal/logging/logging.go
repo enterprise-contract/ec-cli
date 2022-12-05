@@ -42,7 +42,6 @@ import (
 // We're expecting only one of the bool params to be set, but if
 // there are multiple set we'll accept it and the more verbose
 // option will take precendence.
-//
 func InitLogging(verbose bool, quiet bool, debug bool) {
 	var level log.Level
 	var v string

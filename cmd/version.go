@@ -22,7 +22,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// Version of the `ec`` CLI, set at builttime to git id
+// Version of the `ec` CLI, set at build time to git id
 var Version = "development"
 
 var version = &cobra.Command{
