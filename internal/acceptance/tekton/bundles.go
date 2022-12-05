@@ -21,7 +21,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"strings"
 
 	"github.com/cucumber/godog"
@@ -62,7 +62,7 @@ func createTektonBundle(ctx context.Context, name string, data *godog.Table) (co
 			return ctx, err
 		}
 
-		layer := stream.NewLayer(ioutil.NopCloser(&data))
+		layer := stream.NewLayer(io.NopCloser(&data))
 
 		var err error
 		img, err = mutate.Append(img, mutate.Addendum{

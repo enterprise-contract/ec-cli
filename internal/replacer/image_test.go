@@ -20,7 +20,7 @@ package replacer
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"testing"
 
@@ -110,7 +110,7 @@ func TestCatalogImageReplacer(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			hubHttpGet = func(url string) (*http.Response, error) {
 				content := `{"data": {"latestVersion": {"version": "` + c.latestVersion + `"}}}`
-				body := ioutil.NopCloser(bytes.NewReader([]byte(content)))
+				body := io.NopCloser(bytes.NewReader([]byte(content)))
 				return &http.Response{
 					StatusCode: 200,
 					Body:       body,

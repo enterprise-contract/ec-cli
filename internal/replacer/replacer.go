@@ -22,7 +22,6 @@ import (
 	"context"
 	"fmt"
 	"io/fs"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -110,7 +109,7 @@ func replaceFile(filename string, replacers []imageReplacer, overwrite bool) ([]
 		if err != nil {
 			return nil, err
 		}
-		if err := ioutil.WriteFile(filename, out, stat.Mode()); err != nil {
+		if err := os.WriteFile(filename, out, stat.Mode()); err != nil {
 			return nil, err
 		}
 	}

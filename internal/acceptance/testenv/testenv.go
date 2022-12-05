@@ -22,7 +22,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -42,8 +41,8 @@ const (
 	persistedFile = ".persisted"
 )
 
-var loader = ioutil.ReadFile
-var persister = ioutil.WriteFile
+var loader = os.ReadFile
+var persister = os.WriteFile
 
 // Persist persists the environment stored in context in a ".persisted" file as JSON
 func Persist(ctx context.Context) (bool, error) {

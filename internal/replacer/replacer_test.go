@@ -23,7 +23,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"path"
@@ -143,7 +143,7 @@ bundle-o-landia: registry.com/other/repo:2.9@` + testDigest + `
 			imageParseAndResolve = mockImageParseAndResolve
 
 			sourceFile := path.Join(t.TempDir(), "source.yaml")
-			err := ioutil.WriteFile(sourceFile, []byte(c.sourceFile), 0777)
+			err := os.WriteFile(sourceFile, []byte(c.sourceFile), 0777)
 			assert.NoError(t, err)
 			opts := &CatalogOptions{
 				CatalogName: mockCatalogName,
@@ -160,7 +160,7 @@ bundle-o-landia: registry.com/other/repo:2.9@` + testDigest + `
 			assert.NoError(t, err)
 			assert.Equal(t, c.expected, string(got))
 
-			sourceFileContents, err := ioutil.ReadFile(sourceFile)
+			sourceFileContents, err := os.ReadFile(sourceFile)
 			assert.NoError(t, err)
 			var expectedSourceFileContents string
 			if c.overwrite {
@@ -332,7 +332,7 @@ func mockHubHttpGet(url string) (resp *http.Response, err error) {
 	}
 	content := []byte(
 		fmt.Sprintf(`{"data": {"latestVersion": {"version": "%s"}}}`, version))
-	body := ioutil.NopCloser(bytes.NewReader([]byte(content)))
+	body := io.NopCloser(bytes.NewReader([]byte(content)))
 	return &http.Response{
 		StatusCode: 200,
 		Body:       body,
@@ -371,7 +371,7 @@ func mockCloneRepo(layout map[string]string, expectedBranch string) func(context
 			if err := os.MkdirAll(dir, 0777); err != nil {
 				return nil, err
 			}
-			if err := ioutil.WriteFile(fullPath, []byte(content), 0777); err != nil {
+			if err := os.WriteFile(fullPath, []byte(content), 0777); err != nil {
 				return nil, err
 			}
 			if _, err := worktree.Add(relativePath); err != nil {
@@ -385,7 +385,7 @@ func mockCloneRepo(layout map[string]string, expectedBranch string) func(context
     name = EC CLI
     email = ec-cli@redhat.com
 `)
-		if err := ioutil.WriteFile(path.Join(dir, ".git", "config"), gitConfig, 0777); err != nil {
+		if err := os.WriteFile(path.Join(dir, ".git", "config"), gitConfig, 0777); err != nil {
 			return nil, err
 		}
 

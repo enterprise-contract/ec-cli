@@ -41,7 +41,6 @@ import (
 	"go/printer"
 	"go/token"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"strconv"
@@ -181,7 +180,7 @@ func getFilesInPackage(packageName string) (p *Package, err error) {
 // instrumentFileInPackage runs `go tool cover` on all the go source files in
 // the named package
 func instrumentFilesInPackage(packageName string) (cInfo *coverInfo, err error) {
-	tdir, err := ioutil.TempDir("", "instrumentFiles")
+	tdir, err := os.MkdirTemp("", "instrumentFiles")
 	if err != nil {
 		return nil, err
 	}
@@ -418,7 +417,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"testing"
 	"os"
 
@@ -466,7 +464,7 @@ func coverRegisterFile(fileName string, counter []uint32, pos []uint32, numStmts
 }
 
 func coverReport() {
-	reportFile, err := ioutil.TempFile(os.Getenv("COVERAGE_FILEPATH"), "coverage" + os.Getenv("COVERAGE_FILENAME") + "*.out")
+	reportFile, err := os.CreateTemp(os.Getenv("COVERAGE_FILEPATH"), "coverage" + os.Getenv("COVERAGE_FILENAME") + "*.out")
 	if err != nil {
 		return
 	}
