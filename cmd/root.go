@@ -21,6 +21,7 @@ import (
 	"os"
 	"time"
 
+	hd "github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 
 	"github.com/hacbs-contract/ec-cli/internal/kubernetes"
@@ -31,9 +32,13 @@ import (
 var RootCmd = &cobra.Command{
 	Use:   "ec",
 	Short: "Enterprise Contract CLI",
-	Long: `Enterprise Contract CLI
 
-Set of commands to help validate resources with the Enterprise Contract.`,
+	Long: hd.Doc(`
+		Enterprise Contract CLI
+
+		Set of commands to help validate resources with the Enterprise Contract.
+	`),
+
 	SilenceUsage: true,
 
 	PersistentPreRun: func(cmd *cobra.Command, _ []string) {

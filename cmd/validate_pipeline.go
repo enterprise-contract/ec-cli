@@ -19,6 +19,7 @@ package cmd
 import (
 	"context"
 
+	hd "github.com/MakeNowJust/heredoc"
 	"github.com/hashicorp/go-multierror"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
@@ -44,22 +45,29 @@ func validatePipelineCmd(validate pipelineValidationFn) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "pipeline",
 		Short: "Validate Pipeline conformance with the Enterprise Contract",
-		Long: `Validate Pipeline conformance with the Enterprise Contract
 
-Validate Tekton Pipeline definition files conforms to the rego policies
-defined in the given policy repository.`,
-		Example: `Validate multiple Pipeline definition files via comma-separated value:
+		Long: hd.Doc(`
+			Validate Pipeline conformance with the Enterprise Contract
 
-  ec validate pipeline --pipeline-file </path/to/pipeline/file>,</path/to/other/pipeline/file>
+			Validate Tekton Pipeline definition files conforms to the rego policies
+			defined in the given policy repository.
+		`),
 
-Validate multiple Pipeline definition files by repeating --pipeline-file:
+		Example: hd.Doc(`
+			Validate multiple Pipeline definition files via comma-separated value:
 
-  ec validate pipeline --pipeline-file </path/to/pipeline/file> --pipeline-file /path/to/other-pipeline.file
+			  ec validate pipeline --pipeline-file </path/to/pipeline/file>,</path/to/other/pipeline/file>
 
-Sepcify a different location for the policies:
+			Validate multiple Pipeline definition files by repeating --pipeline-file:
 
-  ec validate pipeline --pipeline-file </path/to/pipeline/file> \
-    --policy git::https://example.com/user/repo.git//policy?ref=main --namespace pipeline.basic`,
+			  ec validate pipeline --pipeline-file </path/to/pipeline/file> --pipeline-file /path/to/other-pipeline.file
+
+			Specify a different location for the policies:
+
+			  ec validate pipeline --pipeline-file </path/to/pipeline/file> \
+				--policy git::https://example.com/user/repo.git//policy?ref=main --namespace pipeline.basic
+		`),
+
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 			var outputs output.Outputs
@@ -80,15 +88,19 @@ Sepcify a different location for the policies:
 			return nil
 		},
 	}
+
 	cmd.Flags().StringSliceVarP(&data.FilePaths, "pipeline-file", "p", data.FilePaths,
 		"path to pipeline definition YAML/JSON file (required)")
+
 	cmd.Flags().StringVar(&data.PolicyUrl, "policy", data.PolicyUrl,
 		"git repo containing policies")
+
 	cmd.Flags().StringVar(&data.ConftestNamespace, "namespace", data.ConftestNamespace,
 		"rego namespace within policy repo")
 
 	if err := cmd.MarkFlagRequired("pipeline-file"); err != nil {
 		panic(err)
 	}
+
 	return cmd
 }

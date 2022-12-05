@@ -41,8 +41,8 @@ type downloaderFunc interface {
 	Download(context.Context, string, string, bool) error
 }
 
-//PolicySource in an interface representing the location a policy source.
-//Must implement the GetPolicy() method.
+// PolicySource in an interface representing the location a policy source.
+// Must implement the GetPolicy() method.
 type PolicySource interface {
 	GetPolicy(ctx context.Context, dest string, showMsg bool) (string, error)
 	PolicyUrl() string

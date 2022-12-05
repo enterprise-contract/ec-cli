@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	cuelang.org/go v0.4.3
+	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/cucumber/godog v0.12.5
 	github.com/cyberphone/json-canonicalization v0.0.0-20210823021906-dc406ceaf94b
 	github.com/doiit/picocolors v1.0.1
