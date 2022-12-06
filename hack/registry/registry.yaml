@@ -14,27 +14,11 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
----
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: v1
+kind: RegistryPortPlugin
 metadata:
-  name: registry
-  namespace: image-registry
-  labels:
-    app.kubernetes.io/name: registry
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: registry
-  template:
-    metadata:
-      labels:
-        app.kubernetes.io/name: registry
-    spec:
-      containers:
-        - name: tekton-pipelines-controller
-          image: docker.io/registry:2.8.1
-          ports:
-            - name: registry
-              containerPort: 5000
+  name: registry-plugin
+  annotations:
+    config.kubernetes.io/function: |
+      exec:
+        path: ./registry.sh

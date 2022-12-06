@@ -49,10 +49,10 @@ nodes:
     kind: ClusterConfiguration
     apiServer:
       extraArgs:
-        "service-node-port-range": "1-32767"
+        "service-node-port-range": "1-65535"
   extraPortMappings:
-  - containerPort: 5000
-    hostPort: 5000
+  - containerPort: ${REGISTRY_PORT:-5000}
+    hostPort: ${REGISTRY_PORT:-5000}
     protocol: TCP
 EOF
 else
@@ -82,7 +82,7 @@ kubectl config set-context --current --namespace=work
 
 echo -e '✨ \033[1mDone\033[0m'
 echo -e "The \033[1mwork\033[0m namespace is set as current and prepared to run the verify-enterprise-contract Tekton Task."
-echo -e "The verify-enterprise-contract Tekton Task can be pulled from \033[1mregistry.image-registry.svc.cluster.local:5000/ec-task-bundle\033[0m"
-echo -e "Image push can be performed from the host machine to image registry at \033[1mlocalhost:5000\033[0m"
+echo -e "The verify-enterprise-contract Tekton Task can be pulled from \033[1mregistry.image-registry.svc.cluster.local:${REGISTRY_PORT:-5000}/ec-task-bundle\033[0m"
+echo -e "Image push can be performed from the host machine to image registry at \033[1mlocalhost:${REGISTRY_PORT:-5000}\033[0m"
 # Build and push the images to the local image registry
-echo -e "Push the ec-cli and the Task bundle images by running \033[1mmake dev\033[0m"
+echo -e "Push the ec-cli and the Task bundle images by running \033[1mmake dev$([[ -n "${REGISTRY_PORT:-}" ]] && echo ' 'REGISTRY_PORT="${REGISTRY_PORT}")\033[0m"

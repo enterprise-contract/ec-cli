@@ -49,10 +49,10 @@ nodes:
     kind: ClusterConfiguration
     apiServer:
       extraArgs:
-        "service-node-port-range": "1-32767"
+        "service-node-port-range": "1-65535"
   extraPortMappings:
-  - containerPort: 5000
-    hostPort: 5000
+  - containerPort: ${REGISTRY_PORT:-5000}
+    hostPort: ${REGISTRY_PORT:-5000}
     protocol: TCP
 EOF
 else
@@ -71,8 +71,8 @@ kubectl -n image-registry wait deployment -l "app.kubernetes.io/name=registry" -
 
 # Build and push the images to the local image registry
 echo -e '✨ \033[1mBuilding images\033[0m'
-make --no-print-directory -C "${ROOT}" push-image IMAGE_REPO=localhost:5000/ec PODMAN_OPTS=--tls-verify=false
-make --no-print-directory -C "${ROOT}" task-bundle "TASK_REPO=localhost:5000/ec-task-bundle" TASK=<(yq e ".spec.steps[].image? = \"127.0.0.1:5000/ec:latest-$(go env GOOS)-$(go env GOARCH)\"" "${ROOT}"/task/*/verify-enterprise-contract.yaml)
+make --no-print-directory -C "${ROOT}" push-image IMAGE_REPO="localhost:${REGISTRY_PORT:-5000}/ec" PODMAN_OPTS=--tls-verify=false
+make --no-print-directory -C "${ROOT}" task-bundle "TASK_REPO=localhost:${REGISTRY_PORT:-5000}/ec-task-bundle" TASK=<(yq e ".spec.steps[].image? = \"127.0.0.1:${REGISTRY_PORT:-5000}/ec:latest-$(go env GOOS)-$(go env GOARCH)\"" "${ROOT}"/task/*/verify-enterprise-contract.yaml)
 
 # Wait for Tekton Pipelines & Webhook controllers to be ready, we do this after
 # installing Tekton and building the images to let some time pass and we don't
@@ -85,5 +85,5 @@ kubectl config set-context --current --namespace=work
 
 echo -e '✨ \033[1mDone\033[0m'
 echo -e "The \033[1mwork\033[0m namespace is set as current and prepared to run the verify-enterprise-contract Tekton Task."
-echo -e "The verify-enterprise-contract Tekton Task can be pulled from \033[1mregistry.image-registry.svc.cluster.local:5000/ec-task-bundle\033[0m"
-echo -e "Image push can be performed from the host machine to image registry at \033[1mlocalhost:5000\033[0m"
+echo -e "The verify-enterprise-contract Tekton Task can be pulled from \033[1mregistry.image-registry.svc.cluster.local:${REGISTRY_PORT:-5000}/ec-task-bundle\033[0m"
+echo -e "Image push can be performed from the host machine to image registry at \033[1mlocalhost:${REGISTRY_PORT:-5000}\033[0m"

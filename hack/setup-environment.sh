@@ -46,7 +46,7 @@ nodes:
     kind: ClusterConfiguration
     apiServer:
       extraArgs:
-        "service-node-port-range": "1-32767"
+        "service-node-port-range": "1-65535"
   extraPortMappings:
   - containerPort: 5000
     hostPort: 5000

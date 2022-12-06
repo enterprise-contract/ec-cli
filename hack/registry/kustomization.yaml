@@ -20,5 +20,28 @@ kind: Kustomization
 
 resources:
   - namespace.yaml
-  - deployment.yaml
-  - service.yaml
+
+generators:
+  - registry.yaml
+
+replacements:
+- source:
+    kind: ConfigMap
+    namespace: image-registry
+    name: registry-port-number
+    fieldPath: data.PORT
+  targets:
+  - select:
+      kind: Deployment
+      namespace: image-registry
+      name: registry
+    fieldPaths:
+    - spec.template.spec.containers.[name=registry].ports.[name=registry].containerPort
+  - select:
+      kind: Service
+      namespace: image-registry
+      name: registry
+    fieldPaths:
+    - spec.ports.[name=registry].nodePort
+    - spec.ports.[name=registry].port
+    - spec.ports.[name=registry].targetPort
