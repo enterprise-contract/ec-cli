@@ -22,7 +22,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"testing"
 
@@ -76,7 +76,7 @@ func TestLatestVersion(t *testing.T) {
 					"https://api.example.com/v1/resource/%s/%s/%s",
 					c.catalogName, c.resourceKind, c.resourceName)
 				assert.Equal(t, expectedUrl, url)
-				body := ioutil.NopCloser(bytes.NewReader([]byte(c.responseContent)))
+				body := io.NopCloser(bytes.NewReader([]byte(c.responseContent)))
 				return &http.Response{
 					StatusCode: c.responseStatus,
 					Body:       body,

@@ -22,7 +22,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"mime"
 	"net/http"
 	"os"
@@ -161,7 +161,7 @@ func (c *client) UnmatchedRequests() ([]unmatchedRequest, error) {
 	}
 	defer res.Body.Close()
 
-	bodyBytes, err := ioutil.ReadAll(res.Body)
+	bodyBytes, err := io.ReadAll(res.Body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch unmatched requests via `%s`: failed to read the response, error: %s", unmatchedUrl, err.Error())
 	}

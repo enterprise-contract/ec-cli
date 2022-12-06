@@ -22,7 +22,6 @@ package git
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"time"
@@ -150,12 +149,12 @@ func createGitRepository(ctx context.Context, repositoryName string, files *godo
 		dest := path.Join(repositoryDir, file)
 		source := row.Cells[1].Value
 
-		b, err := ioutil.ReadFile(source)
+		b, err := os.ReadFile(source)
 		if err != nil {
 			return err
 		}
 
-		err = ioutil.WriteFile(dest, b, 0644)
+		err = os.WriteFile(dest, b, 0644)
 		if err != nil {
 			return err
 		}

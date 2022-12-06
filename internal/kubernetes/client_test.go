@@ -20,7 +20,7 @@ package kubernetes
 
 import (
 	"context"
-	"io/ioutil"
+	"os"
 	"path"
 	"testing"
 
@@ -106,7 +106,7 @@ func Test_FetchEnterpriseContractPolicy(t *testing.T) {
 			}
 
 			kubeconfigFile := path.Join(t.TempDir(), "KUBECONFIG")
-			err := ioutil.WriteFile(kubeconfigFile, testKubeconfig, 0777)
+			err := os.WriteFile(kubeconfigFile, testKubeconfig, 0777)
 			assert.NoError(t, err)
 			t.Setenv("KUBECONFIG", kubeconfigFile)
 
