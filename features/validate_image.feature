@@ -2,7 +2,7 @@ Feature: evaluate enterprise contract
   The ec command line should evaluate enterprise contract
 
   Background:
-    Given stub apiserver running
+    Given a stub cluster running
     Given stub rekord running
     Given stub registry running
     Given stub git daemon running
