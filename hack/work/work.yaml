@@ -14,8 +14,11 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
----
 apiVersion: v1
-kind: Namespace
+kind: WorkPlugin
 metadata:
-  name: work
+  name: work-plugin
+  annotations:
+    config.kubernetes.io/function: |
+      exec:
+        path: ./work.sh
