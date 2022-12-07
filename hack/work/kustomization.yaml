@@ -19,8 +19,60 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - namespace.yaml
   - permissions.yaml
 
 generators:
+  - work.yaml
   - secrets.yaml
+
+replacements:
+  - source:
+      kind: ConfigMap
+      namespace: work
+      name: work-namespace-name
+      fieldPath: data.NAMESPACE
+    targets:
+    - select:
+        kind: ServiceAccount
+        namespace: work
+        name: default
+      fieldPaths:
+      - metadata.namespace
+    - select:
+        kind: RoleBinding
+        namespace: work
+        name: ecp-reader-binding
+      fieldPaths:
+      - metadata.namespace
+      - subjects.[name=default].namespace
+    - select:
+        kind: Role
+        namespace: work
+        name: access-secrets
+      fieldPaths:
+      - metadata.namespace
+    - select:
+        kind: RoleBinding
+        namespace: work
+        name: access-secrets-binding
+      fieldPaths:
+      - metadata.namespace
+      - subjects.[name=default].namespace
+    - select:
+        kind: Secret
+        namespace: work
+        name: cosign-public-key
+      fieldPaths:
+      - metadata.namespace
+    - select:
+        kind: Secret
+        namespace: work
+        name: docker-registry
+      fieldPaths:
+      - metadata.namespace
+    - select:
+        kind: ConfigMap
+        namespace: work
+        name: work-namespace-name
+      fieldPaths:
+      - metadata.namespace
