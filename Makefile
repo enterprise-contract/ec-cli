@@ -172,10 +172,11 @@ dist-image-push: dist-image  $(subst image_,push_image_,$(ALL_SUPPORTED_IMG_OS_A
 	@podman manifest push $(IMAGE_REPO):$(IMAGE_TAG) $(IMAGE_REPO):$(IMAGE_TAG)
 
 .PHONY: dev
-dev: IMAGE_REPO=localhost:5000/ec
+dev: REGISTRY_PORT=5000
+dev: IMAGE_REPO=localhost:$(REGISTRY_PORT)/ec
 dev: PODMAN_OPTS=--tls-verify=false
-dev: TASK_REPO=localhost:5000/ec-task-bundle
-dev: TASK:=$(shell T=$$(mktemp) && yq e ".spec.steps[].image? = \"127.0.0.1:5000/ec\"" task/*/verify-enterprise-contract.yaml > "$${T}" && echo "$${T}")
+dev: TASK_REPO=localhost:$(REGISTRY_PORT)/ec-task-bundle
+dev: TASK:=$(shell T=$$(mktemp) && yq e ".spec.steps[].image? = \"127.0.0.1:$(REGISTRY_PORT)/ec\"" task/*/verify-enterprise-contract.yaml > "$${T}" && echo "$${T}")
 dev: push-image task-bundle ## Push the ec-cli and v-e-c Task Bundle to the kind cluster setup via hack/setup-dev-environment.sh
 	@rm "$(TASK)"
 
