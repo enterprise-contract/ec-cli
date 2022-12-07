@@ -240,7 +240,13 @@ func setupRegistry(ctx context.Context, vars map[string]string, environment []st
 }
 
 func setupKubernetes(ctx context.Context, vars map[string]string, environment []string) ([]string, map[string]string, error) {
-	if !kubernetes.IsRunning(ctx) {
+	if !testenv.HasState[kubernetes.ClusterState](ctx) {
+		return environment, vars, nil
+	}
+
+	c := testenv.FetchState[kubernetes.ClusterState](ctx)
+
+	if !c.Up(ctx) {
 		return environment, vars, nil
 	}
 
@@ -255,7 +261,7 @@ func setupKubernetes(ctx context.Context, vars map[string]string, environment []
 		}
 	})
 
-	cfg, err := kubernetes.KubeConfig(ctx)
+	cfg, err := c.KubeConfig(ctx)
 	if err != nil {
 		return environment, vars, err
 	}
