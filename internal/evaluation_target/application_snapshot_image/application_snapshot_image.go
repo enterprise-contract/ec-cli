@@ -24,6 +24,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/in-toto/in-toto-golang/in_toto"
@@ -134,7 +135,12 @@ func fetchPolicySources(spec *policy.Policy) ([]source.PolicySource, error) {
 
 // ValidateImageAccess executes the remote.Head method on the ApplicationSnapshotImage image ref
 func (a *ApplicationSnapshotImage) ValidateImageAccess(ctx context.Context) error {
-	resp, err := remote.Head(a.reference, imageRefTransport, remote.WithContext(ctx))
+	opts := []remote.Option{
+		imageRefTransport,
+		remote.WithContext(ctx),
+		remote.WithAuthFromKeychain(authn.DefaultKeychain),
+	}
+	resp, err := remote.Head(a.reference, opts...)
 	if err != nil {
 		return err
 	}
