@@ -49,12 +49,12 @@ type commonTasksRecord struct {
 	EffectiveOn time.Time `json:"effective_on"`
 }
 
-func (r *commonTasksRecord) updateTasksIntersection(newTasks sets.String) {
+func (r *commonTasksRecord) updateTasksIntersection(newTasks sets.Set[string]) {
 	if len(r.Tasks) == 0 {
-		r.Tasks = newTasks.List()
+		r.Tasks = sets.List(newTasks)
 	} else if newTasks.Len() > 0 {
-		existingTasks := sets.NewString(r.Tasks...)
-		r.Tasks = existingTasks.Intersection(newTasks).List()
+		existingTasks := sets.New[string](r.Tasks...)
+		r.Tasks = sets.List(existingTasks.Intersection(newTasks))
 	}
 }
 
@@ -164,7 +164,7 @@ func Track(ctx context.Context, fs afero.Fs, urls []string, input string) ([]byt
 			return nil, err
 		}
 
-		for _, collection := range info.collections.List() {
+		for _, collection := range sets.List(info.collections) {
 			t.addBundleRecord(bundleRecord{
 				Digest:      ref.Digest,
 				Tag:         ref.Tag,

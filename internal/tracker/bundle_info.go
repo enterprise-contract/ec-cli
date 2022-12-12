@@ -33,13 +33,13 @@ type bundleInfo struct {
 	// Set of common Tasks found across Pipelines definitions in the bundle.
 	commonPipelineTasks commonTasksRecord
 	// Set of collection where the bundle should be tracked under.
-	collections sets.String
+	collections sets.Set[string]
 }
 
 // newBundleInfo returns information about the bundle, such as which collections it should
 // be added to, and which common tasks are found within its pipeline definitions.
 func newBundleInfo(ctx context.Context, ref image.ImageReference, tasks commonTasksRecord) (*bundleInfo, error) {
-	info := bundleInfo{ref: ref, collections: sets.String{}, commonPipelineTasks: tasks}
+	info := bundleInfo{ref: ref, collections: sets.New[string](), commonPipelineTasks: tasks}
 
 	client := NewClient(ctx)
 	img, err := client.GetImage(ctx, info.ref.Ref())
@@ -97,8 +97,8 @@ func (info *bundleInfo) updateCommonTasks(ctx context.Context, pipelineName stri
 }
 
 // getTaskNames returns a set of task names found in the pipeline spec.
-func getTaskNames(pipelineSpec v1beta1.PipelineSpec) sets.String {
-	names := sets.String{}
+func getTaskNames(pipelineSpec v1beta1.PipelineSpec) sets.Set[string] {
+	names := sets.New[string]()
 	tasks := append(pipelineSpec.Tasks, pipelineSpec.Finally...)
 	for _, task := range tasks {
 		name := getTaskName(task.TaskRef)
