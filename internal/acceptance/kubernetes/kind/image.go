@@ -31,6 +31,11 @@ import (
 	"github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 )
 
+// buildCliImage runs `make push-image` to build and push the image to the Kind
+// cluster. The image is pushed to
+// `localhost:<registry-port>/ec-cli:latest-<architecture>-<os>`, see push-image
+// Makefile target for details. The registry is running without TLS, so we need
+// `--tls-verify=false` here.
 func (k *kindCluster) buildCliImage(ctx context.Context) error {
 	cmd := exec.CommandContext(ctx, "make", "--no-print-directory", "-C", path.Join("..", ".."), "push-image", fmt.Sprintf("IMAGE_REPO=localhost:%d/ec-cli", k.registryPort), "PODMAN_OPTS=--tls-verify=false")
 
@@ -42,6 +47,12 @@ func (k *kindCluster) buildCliImage(ctx context.Context) error {
 	return nil
 }
 
+// buildTaskBundleImage runs `make task-bundle` for each version of the Task in
+// the `$REPOSITORY_ROOT/task` directory to push the Tekton Task bundle to the
+// registry runing on the Kind cluster. The image is pushed to image reference:
+// `localhost:<registry-port>/ec-task-bundle:<version>`, so each bundle contains
+// only the task of a particular version. The image reference to the ec-cli
+// image is replaced with the image reference from buildCliImage.
 func (k *kindCluster) buildTaskBundleImage(ctx context.Context) error {
 	versions, err := filepath.Glob(path.Join("..", "..", "task", "*.*"))
 	if err != nil {
@@ -55,6 +66,8 @@ func (k *kindCluster) buildTaskBundleImage(ctx context.Context) error {
 			continue
 		}
 
+		// we expect a file called `verify-enterprise-contract.yaml` in each
+		// version containing the Tekton Task definition
 		taskFile := path.Join(version, "verify-enterprise-contract.yaml")
 
 		if info, err := os.Stat(taskFile); err != nil {
@@ -103,6 +116,8 @@ func (k *kindCluster) buildTaskBundleImage(ctx context.Context) error {
 			return err
 		}
 
+		// given a path like task/0.1 is `0.1` which gives us the version of the
+		// Task by the directory layout convention for the Tekton/Artifact Hub
 		ver := path.Base(version)
 
 		cmd := exec.CommandContext(ctx, "make", "--no-print-directory", "-C", path.Join("..", ".."), "task-bundle", fmt.Sprintf("TASK_REPO=localhost:%d/ec-task-bundle", k.registryPort), fmt.Sprintf("TASK=%s", task.Name()), fmt.Sprintf("TASK_TAG=%s", ver))

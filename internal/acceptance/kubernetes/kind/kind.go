@@ -70,8 +70,12 @@ func (n testState) Key() any {
 const clusterConfiguration = `kind: ClusterConfiguration
 apiServer:
   extraArgs:
-    "service-node-port-range": "1-65535"`
+    "service-node-port-range": "1-65535"` // the extra port range for accessing the image registry at the random port
 
+// We pass the registry port to Kustomize via an environment variable, we spawn
+// Kustomize from the process runnning the test, to prevent concurrency issues
+// with many tests running more than one kustomization when we modify the
+// environment we use this mutex
 var envMutex = sync.Mutex{}
 
 type kindCluster struct {
@@ -99,6 +103,10 @@ func (k *kindCluster) Up(_ context.Context) bool {
 	return len(nodes) > 0 && err == nil
 }
 
+// Start creates a new randomly named Kind cluster and provisions it for use;
+// meaning: the hack/test kustomization will applied to the cluster, the ec-cli
+// and the Tekton Task bundle images will be pushed to the registry running in
+// the cluster.
 func Start(ctx context.Context) (context.Context, types.Cluster, error) {
 	configDir, err := os.MkdirTemp("", "ec-acceptance.*")
 	if err != nil {
@@ -130,6 +138,7 @@ func Start(ctx context.Context) (context.Context, types.Cluster, error) {
 					KubeadmConfigPatches: []string{
 						clusterConfiguration,
 					},
+					// exposes the registry port to the host OS
 					ExtraPortMappings: []v1alpha4.PortMapping{
 						{
 							ContainerPort: kCluster.registryPort,
@@ -191,6 +200,10 @@ func Start(ctx context.Context) (context.Context, types.Cluster, error) {
 
 	return ctx, &kCluster, nil
 }
+
+// renderTestConfiguration renders the hack/test Kustomize directory into a
+// multi-document YAML. The port for the cluster registry, needed to configure
+// the k8s Service for it is passed via REGISTRY_PORT environment variable
 func renderTestConfiguration(k *kindCluster) (yaml []byte, err error) {
 	envMutex.Lock()
 	if err := os.Setenv("REGISTRY_PORT", fmt.Sprint(k.registryPort)); err != nil {
@@ -205,6 +218,8 @@ func renderTestConfiguration(k *kindCluster) (yaml []byte, err error) {
 	return kustomize.Render(path.Join("hack", "test"))
 }
 
+// applyConfiguration runs equivalent of kubectl apply for each document in the
+// definitions YAML
 func applyConfiguration(ctx context.Context, k *kindCluster, definitions []byte) (err error) {
 	reader := util.NewYAMLReader(bufio.NewReader(bytes.NewReader(definitions)))
 	for {
@@ -243,6 +258,8 @@ func applyConfiguration(ctx context.Context, k *kindCluster, definitions []byte)
 	return
 }
 
+// waitForAvailableDeploymentsIn makes sure that all deployments in the provided
+// namespaces are available
 func waitForAvailableDeploymentsIn(ctx context.Context, k *kindCluster, namespaces ...string) (err error) {
 	for _, namespace := range namespaces {
 		watcher := cache.NewListWatchFromClient(k.client.AppsV1().RESTClient(), "deployments", namespace, fields.Everything())
@@ -254,16 +271,22 @@ func waitForAvailableDeploymentsIn(ctx context.Context, k *kindCluster, namespac
 	return
 }
 
+// keeps track of what deployment is available, the available map is keyed by
+// <namespace>/<name>, the value is either true - available, or false - not
+// available
+type avail struct {
+	available map[string]bool
+}
+
 func newAvail() avail {
 	return avail{
 		available: map[string]bool{},
 	}
 }
 
-type avail struct {
-	available map[string]bool
-}
-
+// allAvailable is invoked by the watcher for each change to the object, the
+// object's availablity is tracked and if all objects are available true is
+// returned, stopping the watcher
 func (a *avail) allAvailable(event watch.Event) (bool, error) {
 	deployment := event.Object.(*appsv1.Deployment)
 

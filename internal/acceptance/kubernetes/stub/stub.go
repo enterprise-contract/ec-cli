@@ -81,7 +81,7 @@ func (s stubCluster) RunTask(_ context.Context, _ string, _ map[string]string) e
 	return errors.New("can't run tasks when using the stub Kubernetes")
 }
 
-func (s stubCluster) AwaitUntilTaskIsSuccessful(context.Context) (bool, error) {
+func (s stubCluster) AwaitUntilTaskIsDone(context.Context) (bool, error) {
 	return false, errors.New("can't run tasks when using the stub Kubernetes")
 }
 

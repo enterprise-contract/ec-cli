@@ -37,6 +37,7 @@ type key int
 
 const clusterStateKey = key(0) // we store the ClusterState struct under this key in Context and when persisted
 
+// ClusterState holds the Cluster used in the current Context
 type ClusterState struct {
 	cluster types.Cluster
 }
@@ -46,6 +47,8 @@ func (c ClusterState) Key() any {
 }
 
 func (c ClusterState) Up(ctx context.Context) bool {
+	// if the cluster implementation has been initialized and it claims the
+	// cluster to be up
 	return c.cluster != nil && c.cluster.Up(ctx)
 }
 
@@ -59,6 +62,9 @@ func (c ClusterState) KubeConfig(ctx context.Context) (string, error) {
 
 type startFunc func(context.Context) (context.Context, types.Cluster, error)
 
+// startAndSetupState starts the cluster via the provided startFunc. The
+// crosscutting concern of setting up the ClusterState in the Context and making
+// sure we don't start the cluster multiple times per Context is handled here
 func startAndSetupState(start startFunc) func(context.Context) (context.Context, error) {
 	return func(ctx context.Context) (context.Context, error) {
 		var c = &ClusterState{}
@@ -77,6 +83,8 @@ func startAndSetupState(start startFunc) func(context.Context) (context.Context,
 	}
 }
 
+// mustBeUp makes sure that the cluster is up, used by functions that require
+// the cluster to be up
 func mustBeUp(ctx context.Context, c ClusterState) error {
 	if !c.Up(ctx) {
 		return errors.New("cluster has not been started, use `Given a <stub?> cluster running")
@@ -137,7 +145,7 @@ func theTaskShouldSucceed(ctx context.Context) error {
 		return err
 	}
 
-	successful, err := c.cluster.AwaitUntilTaskIsSuccessful(ctx)
+	successful, err := c.cluster.AwaitUntilTaskIsDone(ctx)
 	if err != nil {
 		return err
 	}
@@ -193,6 +201,12 @@ func logTaskOutput(ctx context.Context, c ClusterState) error {
 		outputSegment(fmt.Sprintf("Step \"%s\"", clr.Bold(step.Name)), fmt.Sprintf("%s  %s\n----- Logs -----\n%s\n----- /Logs -----", clr.Bold("Status"), step.Status, step.Logs))
 	}
 	w.Flush()
+
+	// TODO, when the task fails and test state is persisted add some debugging
+	// lines here to help debug, e.g. `export
+	// KUBECONFIG=$TMPDIR/ec-acceptance.../kubeconfig`, set the current
+	// namespace with: `kubectl config set-context --current --namespace
+	// acceptance-...`
 
 	fmt.Println(output)
 	return nil

@@ -39,28 +39,32 @@ import (
 	"github.com/hacbs-contract/ec-cli/internal/acceptance/testenv"
 )
 
-func (k *kindCluster) CreateNamedPolicy(ctx context.Context, name string, specification string) error {
+// createPolicyObject creates the EnterpriseContractPolicy object with the given
+// Spec from the specification expected as a JSON string
+func (k *kindCluster) createPolicyObject(ctx context.Context, specification string) (*ecc.EnterpriseContractPolicy, error) {
 	t := testenv.FetchState[testState](ctx)
-
-	t.policy = name
 
 	policySpec := ecc.EnterpriseContractPolicySpec{}
 	if err := json.Unmarshal([]byte(specification), &policySpec); err != nil {
-		return err
+		return nil, err
 	}
 
-	policy := ecc.EnterpriseContractPolicy{
+	return &ecc.EnterpriseContractPolicy{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: ecc.GroupVersion.String(),
 			Kind:       "EnterpriseContractPolicy",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
 			Namespace: t.namespace,
 		},
 		Spec: policySpec,
-	}
+	}, nil
 
+}
+
+// createPolicy creates the EnterpriseContractPolicy custom resource in the test
+// context namespace
+func (k *kindCluster) createPolicy(ctx context.Context, policy *ecc.EnterpriseContractPolicy) error {
 	policyMap, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&policy)
 	if err != nil {
 		return err
@@ -69,46 +73,45 @@ func (k *kindCluster) CreateNamedPolicy(ctx context.Context, name string, specif
 	unstructuredPolicy := unstructured.Unstructured{}
 	unstructuredPolicy.SetUnstructuredContent(policyMap)
 
-	_, err = k.dynamic.Resource(ecc.GroupVersion.WithResource("enterprisecontractpolicies")).Namespace(t.namespace).Create(ctx, &unstructuredPolicy, metav1.CreateOptions{})
-
-	return err
-}
-
-func (k *kindCluster) CreatePolicy(ctx context.Context, specification string) error {
 	t := testenv.FetchState[testState](ctx)
-
-	policySpec := ecc.EnterpriseContractPolicySpec{}
-	if err := json.Unmarshal([]byte(specification), &policySpec); err != nil {
-		return err
-	}
-
-	policy := ecc.EnterpriseContractPolicy{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: ecc.GroupVersion.String(),
-			Kind:       "EnterpriseContractPolicy",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			GenerateName: "acceptance-policy-",
-			Namespace:    t.namespace,
-		},
-		Spec: policySpec,
-	}
-
-	policyMap, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&policy)
+	created, err := k.dynamic.Resource(ecc.GroupVersion.WithResource("enterprisecontractpolicies")).Namespace(t.namespace).Create(ctx, &unstructuredPolicy, metav1.CreateOptions{})
 	if err != nil {
 		return err
 	}
 
-	unstructuredPolicy := unstructured.Unstructured{}
-	unstructuredPolicy.SetUnstructuredContent(policyMap)
+	// remember the created policy in the test context
+	t.policy = created.GetName()
 
-	p, err := k.dynamic.Resource(ecc.GroupVersion.WithResource("enterprisecontractpolicies")).Namespace(t.namespace).Create(ctx, &unstructuredPolicy, metav1.CreateOptions{})
-
-	t.policy = p.GetName()
-
-	return err
+	return nil
 }
 
+// CreateNamedPolicy creates a EnterpriseContractPolicy custom resource with the
+// given name and specification in the test context namespace
+func (k *kindCluster) CreateNamedPolicy(ctx context.Context, name string, specification string) error {
+	policy, err := k.createPolicyObject(ctx, specification)
+	if err != nil {
+		return err
+	}
+
+	policy.ObjectMeta.Name = name
+
+	return k.createPolicy(ctx, policy)
+}
+
+// CreatePolicy creates an EnterpriseContractPolicy with a random name and the
+// provided specification in the test context namespace
+func (k *kindCluster) CreatePolicy(ctx context.Context, specification string) error {
+	policy, err := k.createPolicyObject(ctx, specification)
+	if err != nil {
+		return err
+	}
+	policy.ObjectMeta.GenerateName = "acceptance-policy-"
+
+	return k.createPolicy(ctx, policy)
+}
+
+// CreateNamespace creates a randomly-named namespace for the test to execute in
+// and stores it in the test context
 func (k *kindCluster) CreateNamespace(ctx context.Context) (context.Context, error) {
 	t := &testState{}
 	ctx, err := testenv.SetupState(ctx, &t)
@@ -132,6 +135,7 @@ func (k *kindCluster) CreateNamespace(ctx context.Context) (context.Context, err
 
 	t.namespace = namespace.GetName()
 
+	// to prevent concurrency issues we lock/unlock the environment mutex here
 	render := func() ([]byte, error) {
 		envMutex.Lock()
 		if err := os.Setenv("WORK_NAMESPACE", fmt.Sprint(t.namespace)); err != nil {
@@ -154,6 +158,8 @@ func (k *kindCluster) CreateNamespace(ctx context.Context) (context.Context, err
 	return ctx, applyConfiguration(ctx, k, yaml)
 }
 
+// stringParam generates a Tekton Parameter optionally expanding the
+// `${NAMESPACE}` and `${POLICY_NAME}` variables
 func stringParam(name, value string, t *testState) tknv1beta1.Param {
 	v := os.Expand(value, func(variable string) string {
 		switch variable {
@@ -175,6 +181,8 @@ func stringParam(name, value string, t *testState) tknv1beta1.Param {
 	}
 }
 
+// RunTask creates a TaskRun with a random name running the Task from the Tekton
+// Bundle of a specific version with the provided parameters
 func (k *kindCluster) RunTask(ctx context.Context, version string, params map[string]string) error {
 	t := testenv.FetchState[testState](ctx)
 
@@ -219,12 +227,15 @@ func (k *kindCluster) RunTask(ctx context.Context, version string, params map[st
 		return err
 	}
 
+	// store the TaskRun name in the test context
 	t.taskRun = tr.GetName()
 
 	return nil
 }
 
-func (k *kindCluster) AwaitUntilTaskIsSuccessful(ctx context.Context) (bool, error) {
+// AwaitUntilTaskIsDone waits for the TaskRun whose name is stored in the test
+// context is done and reports if it was successful
+func (k *kindCluster) AwaitUntilTaskIsDone(ctx context.Context) (bool, error) {
 	t := testenv.FetchState[testState](ctx)
 
 	tkn, err := tekton.NewForConfig(k.config)
@@ -253,6 +264,8 @@ func (k *kindCluster) AwaitUntilTaskIsSuccessful(ctx context.Context) (bool, err
 	return false, nil
 }
 
+// TaskInfo provides information on the TaskRun, invoked after the TaskRun is
+// done for most complete information
 func (k *kindCluster) TaskInfo(ctx context.Context) (*types.TaskInfo, error) {
 	t := testenv.FetchState[testState](ctx)
 

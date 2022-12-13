@@ -28,7 +28,7 @@ type Cluster interface {
 	CreateNamedPolicy(context.Context, string, string) error
 	CreatePolicy(context.Context, string) error
 	RunTask(context.Context, string, map[string]string) error
-	AwaitUntilTaskIsSuccessful(context.Context) (bool, error)
+	AwaitUntilTaskIsDone(context.Context) (bool, error)
 	TaskInfo(context.Context) (*TaskInfo, error)
 }
 

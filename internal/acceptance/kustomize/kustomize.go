@@ -28,9 +28,9 @@ var hackDir = path.Join("..", "..")
 
 func Render(dir string) ([]byte, error) {
 	options := krusty.MakeDefaultOptions()
-	options.DoLegacyResourceSort = true
-	options.PluginConfig = types.EnabledPluginConfig(types.BploUseStaticallyLinked)
-	options.PluginConfig.FnpLoadingOptions.EnableExec = true
+	options.DoLegacyResourceSort = true                                             // otherwise Namespace object might appear after an object that needs it
+	options.PluginConfig = types.EnabledPluginConfig(types.BploUseStaticallyLinked) // enable plugins
+	options.PluginConfig.FnpLoadingOptions.EnableExec = true                        // we allow KEP exec plugins
 
 	kustomize := krusty.MakeKustomizer(options)
 	result, err := kustomize.Run(filesys.MakeFsOnDisk(), path.Join(hackDir, dir))
