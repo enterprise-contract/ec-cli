@@ -33,6 +33,7 @@ func Test_TrackBundleCommand(t *testing.T) {
 		args         []string
 		outputFile   string
 		expectUrls   []string
+		expectPrune  bool
 		expectInput  string
 		expectStdout bool
 	}{
@@ -42,6 +43,7 @@ func Test_TrackBundleCommand(t *testing.T) {
 				"--bundle",
 				"registry/image:tag",
 			},
+			expectPrune:  true,
 			expectUrls:   []string{"registry/image:tag"},
 			expectStdout: true,
 		},
@@ -55,6 +57,7 @@ func Test_TrackBundleCommand(t *testing.T) {
 			},
 			outputFile:   "output-1.json",
 			expectUrls:   []string{"registry/image:tag"},
+			expectPrune:  true,
 			expectStdout: false,
 		},
 		{
@@ -66,6 +69,7 @@ func Test_TrackBundleCommand(t *testing.T) {
 				"input-3.json",
 			},
 			expectUrls:   []string{"registry/image:tag"},
+			expectPrune:  true,
 			expectInput:  "input-3.json",
 			expectStdout: true,
 		},
@@ -80,6 +84,7 @@ func Test_TrackBundleCommand(t *testing.T) {
 			},
 			outputFile:   "tracker-3.json",
 			expectUrls:   []string{"registry/image:tag"},
+			expectPrune:  true,
 			expectInput:  "tracker-3.json",
 			expectStdout: true,
 		},
@@ -95,8 +100,31 @@ func Test_TrackBundleCommand(t *testing.T) {
 			},
 			outputFile:   "output-4.json",
 			expectUrls:   []string{"registry/image:tag"},
+			expectPrune:  true,
 			expectInput:  "input-4.json",
 			expectStdout: false,
+		},
+		{
+			name: "with explicit prune",
+			args: []string{
+				"--bundle",
+				"registry/image:tag",
+				"--prune",
+			},
+			expectUrls:   []string{"registry/image:tag"},
+			expectPrune:  true,
+			expectStdout: true,
+		},
+		{
+			name: "without prune",
+			args: []string{
+				"--bundle",
+				"registry/image:tag",
+				"--prune=false",
+			},
+			expectUrls:   []string{"registry/image:tag"},
+			expectPrune:  false,
+			expectStdout: true,
 		},
 	}
 
@@ -110,9 +138,10 @@ func Test_TrackBundleCommand(t *testing.T) {
 				assert.NoError(t, err)
 			}
 			testOutput := `{"test": true}`
-			track := func(ctx context.Context, fs afero.Fs, urls []string, input string) ([]byte, error) {
+			track := func(ctx context.Context, fs afero.Fs, urls []string, input string, prune bool) ([]byte, error) {
 				assert.Equal(t, c.expectUrls, urls)
 				assert.Equal(t, c.expectInput, input)
+				assert.Equal(t, c.expectPrune, prune)
 				return []byte(testOutput), nil
 			}
 			cmd := trackBundleCmd(track)

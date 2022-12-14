@@ -130,8 +130,6 @@ func (t *Tracker) addRequiredTasksRecord(record commonTasksRecord) {
 
 // Output serializes the Tracker state as YAML
 func (t Tracker) Output() ([]byte, error) {
-	t.deduplicate()
-
 	out, err := yaml.Marshal(t)
 	if err != nil {
 		return nil, err
@@ -145,7 +143,7 @@ func (t Tracker) Output() ([]byte, error) {
 // records to one of its collections.
 // Each url is expected to reference a valid Tekton bundle. Each bundle may be added
 // to none, 1, or 2 collections depending on the Tekton resource types they include.
-func Track(ctx context.Context, fs afero.Fs, urls []string, input string) ([]byte, error) {
+func Track(ctx context.Context, fs afero.Fs, urls []string, input string, prune bool) ([]byte, error) {
 	refs, err := image.ParseAndResolveAll(urls, name.StrictValidation)
 	if err != nil {
 		return nil, err
@@ -178,6 +176,9 @@ func Track(ctx context.Context, fs afero.Fs, urls []string, input string) ([]byt
 	}
 	t.addRequiredTasksRecord(requiredTasks)
 
+	t.filterBundles(prune)
+	t.filterRequiredTasks(prune)
+
 	return t.Output()
 }
 
@@ -192,18 +193,25 @@ func effectiveOn() time.Time {
 	return time.Now().Add(duration).UTC().Round(day)
 }
 
-func (t *Tracker) deduplicate() {
+// filterBundles applies filterRecords to PipelienBundles and TaskBundles.
+func (t *Tracker) filterBundles(prune bool) {
 	for ref, records := range t.PipelineBundles {
-		t.PipelineBundles[ref] = deduplicate(records)
+		t.PipelineBundles[ref] = filterRecords(records, prune)
 	}
 	for ref, records := range t.TaskBundles {
-		t.TaskBundles[ref] = deduplicate(records)
+		t.TaskBundles[ref] = filterRecords(records, prune)
 	}
 }
 
-func deduplicate(records []bundleRecord) []bundleRecord {
-	dedupped := make([]bundleRecord, 0, len(records))
+// filterRecords reduces the list of records by removing superfulous entries.
+// It removes records that have the same Repository and Digest. If prune is
+// true, it skips any record that is no longer acceptable. Any record with an
+// EffectiveOn date in the future, and the record with the most recent
+// EffectiveOn date *not* in the future are considered acceptable.
+func filterRecords(records []bundleRecord, prune bool) []bundleRecord {
+	now := time.Now().UTC()
 
+	filtered := make([]bundleRecord, 0, len(records))
 	keys := map[string]bool{}
 	for _, r := range records {
 		key := r.Repository + r.Digest
@@ -212,8 +220,32 @@ func deduplicate(records []bundleRecord) []bundleRecord {
 		}
 
 		keys[key] = true
-		dedupped = append(dedupped, r)
+		filtered = append(filtered, r)
+
+		if prune && now.After(r.EffectiveOn) {
+			break
+		}
 	}
 
-	return dedupped
+	return filtered
+}
+
+// filterRecords reduces the list of required tasks by removing superfulous
+// entries. If prune is true, it skips any entry that is no longer acceptable.
+// Any entry with an EffectiveOn date in the future, and the entry with the most
+// recent EffectiveOn date *not* in the future are considered acceptable.
+func (t *Tracker) filterRequiredTasks(prune bool) {
+	if !prune {
+		return
+	}
+	now := time.Now().UTC()
+
+	filtered := make([]commonTasksRecord, 0, len(t.RequiredTasks))
+	for _, r := range t.RequiredTasks {
+		filtered = append(filtered, r)
+		if now.After(r.EffectiveOn) {
+			break
+		}
+	}
+	t.RequiredTasks = filtered
 }

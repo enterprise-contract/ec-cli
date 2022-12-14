@@ -324,7 +324,7 @@ required-tasks:
 			client := fakeClient{objects: testObjects, images: testImages}
 			ctx = WithClient(ctx, client)
 
-			output, err := Track(ctx, fs, tt.urls, inputFile)
+			output, err := Track(ctx, fs, tt.urls, inputFile, false)
 			assert.NoError(t, err)
 			assert.Equal(t, tt.output, string(output))
 		})
@@ -481,127 +481,272 @@ func mustCreateFakeEmptyPipelineObject() runtime.Object {
 	return &pipeline
 }
 
-func TestDeduplicate(t *testing.T) {
-	date, err := time.Parse(time.RFC3339, "2022-12-31T00:00:00Z")
-	assert.NoError(t, err)
+func TestFilterBundles(t *testing.T) {
+	date := time.Now().UTC().Add(time.Second * -1)
+	future := date.Add(time.Hour * 24 * 30)
 
 	repository := "registry.io/repository/image"
 
-	existing := Tracker{
-		PipelineBundles: map[string][]bundleRecord{
-			repository: {
-				{
-					Repository:  repository,
-					Tag:         "tag0",
-					Digest:      "sha256:digest0",
-					EffectiveOn: date,
-					Collection:  pipelineCollection,
-				},
-				{
-					Repository:  repository,
-					Tag:         "tag1",
-					Digest:      "sha256:digest1",
-					EffectiveOn: date,
-					Collection:  pipelineCollection,
-				},
-				{
-					Repository:  repository,
-					Tag:         "tag2",
-					Digest:      "sha256:digest0",
-					EffectiveOn: date,
-					Collection:  pipelineCollection,
-				},
-				{
-					Repository:  repository,
-					Tag:         "tag3",
-					Digest:      "sha256:digest0",
-					EffectiveOn: date,
-					Collection:  pipelineCollection,
-				},
+	pipelineBundles := map[string][]bundleRecord{
+		repository: {
+			{
+				Repository:  repository,
+				Tag:         "tag0",
+				Digest:      "sha256:digest0",
+				EffectiveOn: date,
+				Collection:  pipelineCollection,
 			},
-		},
-		TaskBundles: map[string][]bundleRecord{
-			repository: {
-				{
-					Repository:  repository,
-					Tag:         "tag0",
-					Digest:      "sha256:digest0",
-					EffectiveOn: date,
-					Collection:  taskCollection,
-				},
-				{
-					Repository:  repository,
-					Tag:         "tag1",
-					Digest:      "sha256:digest1",
-					EffectiveOn: date,
-					Collection:  taskCollection,
-				},
-				{
-					Repository:  repository,
-					Tag:         "tag2",
-					Digest:      "sha256:digest0",
-					EffectiveOn: date,
-					Collection:  taskCollection,
-				},
-				{
-					Repository:  repository,
-					Tag:         "tag3",
-					Digest:      "sha256:digest0",
-					EffectiveOn: date,
-					Collection:  taskCollection,
-				},
+			{
+				Repository:  repository,
+				Tag:         "tag1",
+				Digest:      "sha256:digest1",
+				EffectiveOn: date,
+				Collection:  pipelineCollection,
+			},
+			{
+				Repository:  repository,
+				Tag:         "tag2",
+				Digest:      "sha256:digest0",
+				EffectiveOn: date,
+				Collection:  pipelineCollection,
+			},
+			{
+				Repository:  repository,
+				Tag:         "tag3",
+				Digest:      "sha256:digest0",
+				EffectiveOn: date,
+				Collection:  pipelineCollection,
+			},
+			{
+				Repository:  repository,
+				Tag:         "tag4",
+				Digest:      "sha256:digest2",
+				EffectiveOn: date,
+				Collection:  pipelineCollection,
 			},
 		},
 	}
 
-	existing.addBundleRecord(bundleRecord{
-		Repository:  repository,
-		Tag:         "tag4",
-		Digest:      "sha256:digest1",
-		EffectiveOn: date,
-		Collection:  pipelineCollection,
-	})
-
-	existing.deduplicate()
-
-	expected := Tracker{
-		PipelineBundles: map[string][]bundleRecord{
-			"registry.io/repository/image": {
-				{
-					Repository:  repository,
-					Tag:         "tag4",
-					Digest:      "sha256:digest1",
-					EffectiveOn: date,
-					Collection:  pipelineCollection,
-				},
-				{
-					Repository:  repository,
-					Tag:         "tag0",
-					Digest:      "sha256:digest0",
-					EffectiveOn: date,
-					Collection:  pipelineCollection,
-				},
+	taskBundles := map[string][]bundleRecord{
+		repository: {
+			{
+				Repository:  repository,
+				Tag:         "tag0",
+				Digest:      "sha256:digest0",
+				EffectiveOn: date,
+				Collection:  taskCollection,
 			},
-		},
-		TaskBundles: map[string][]bundleRecord{
-			"registry.io/repository/image": {
-				{
-					Repository:  repository,
-					Tag:         "tag0",
-					Digest:      "sha256:digest0",
-					EffectiveOn: date,
-					Collection:  taskCollection,
-				},
-				{
-					Repository:  repository,
-					Tag:         "tag1",
-					Digest:      "sha256:digest1",
-					EffectiveOn: date,
-					Collection:  taskCollection,
-				},
+			{
+				Repository:  repository,
+				Tag:         "tag1",
+				Digest:      "sha256:digest1",
+				EffectiveOn: date,
+				Collection:  taskCollection,
+			},
+			{
+				Repository:  repository,
+				Tag:         "tag2",
+				Digest:      "sha256:digest0",
+				EffectiveOn: date,
+				Collection:  taskCollection,
+			},
+			{
+				Repository:  repository,
+				Tag:         "tag3",
+				Digest:      "sha256:digest0",
+				EffectiveOn: date,
+				Collection:  taskCollection,
+			},
+			{
+				Repository:  repository,
+				Tag:         "tag4",
+				Digest:      "sha256:digest2",
+				EffectiveOn: date,
+				Collection:  taskCollection,
 			},
 		},
 	}
 
-	assert.Equal(t, expected, existing)
+	for _, c := range []struct {
+		name     string
+		expected Tracker
+		prune    bool
+	}{
+		{
+			name: "deduplicate",
+			expected: Tracker{
+				PipelineBundles: map[string][]bundleRecord{
+					"registry.io/repository/image": {
+						{
+							Repository:  repository,
+							Tag:         "tag5",
+							Digest:      "sha256:digest1",
+							EffectiveOn: future,
+							Collection:  pipelineCollection,
+						},
+						{
+							Repository:  repository,
+							Tag:         "tag0",
+							Digest:      "sha256:digest0",
+							EffectiveOn: date,
+							Collection:  pipelineCollection,
+						},
+						{
+							Repository:  repository,
+							Tag:         "tag4",
+							Digest:      "sha256:digest2",
+							EffectiveOn: date,
+							Collection:  pipelineCollection,
+						},
+					},
+				},
+				TaskBundles: map[string][]bundleRecord{
+					"registry.io/repository/image": {
+						{
+							Repository:  repository,
+							Tag:         "tag5",
+							Digest:      "sha256:digest1",
+							EffectiveOn: future,
+							Collection:  taskCollection,
+						},
+						{
+							Repository:  repository,
+							Tag:         "tag0",
+							Digest:      "sha256:digest0",
+							EffectiveOn: date,
+							Collection:  taskCollection,
+						},
+						{
+							Repository:  repository,
+							Tag:         "tag4",
+							Digest:      "sha256:digest2",
+							EffectiveOn: date,
+							Collection:  taskCollection,
+						},
+					},
+				},
+			},
+			prune: false,
+		},
+		{
+			name: "deduplicate and prune",
+			expected: Tracker{
+				PipelineBundles: map[string][]bundleRecord{
+					"registry.io/repository/image": {
+						{
+							Repository:  repository,
+							Tag:         "tag5",
+							Digest:      "sha256:digest1",
+							EffectiveOn: future,
+							Collection:  pipelineCollection,
+						},
+						{
+							Repository:  repository,
+							Tag:         "tag0",
+							Digest:      "sha256:digest0",
+							EffectiveOn: date,
+							Collection:  pipelineCollection,
+						},
+					},
+				},
+				TaskBundles: map[string][]bundleRecord{
+					"registry.io/repository/image": {
+						{
+							Repository:  repository,
+							Tag:         "tag5",
+							Digest:      "sha256:digest1",
+							EffectiveOn: future,
+							Collection:  taskCollection,
+						},
+						{
+							Repository:  repository,
+							Tag:         "tag0",
+							Digest:      "sha256:digest0",
+							EffectiveOn: date,
+							Collection:  taskCollection,
+						},
+					},
+				},
+			},
+			prune: true,
+		},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			existing := Tracker{
+				PipelineBundles: pipelineBundles,
+				TaskBundles:     taskBundles,
+			}
+
+			existing.addBundleRecord(bundleRecord{
+				Repository:  repository,
+				Tag:         "tag5",
+				Digest:      "sha256:digest1",
+				EffectiveOn: future,
+				Collection:  pipelineCollection,
+			})
+
+			existing.addBundleRecord(bundleRecord{
+				Repository:  repository,
+				Tag:         "tag5",
+				Digest:      "sha256:digest1",
+				EffectiveOn: future,
+				Collection:  taskCollection,
+			})
+
+			existing.filterBundles(c.prune)
+			assert.Equal(t, c.expected, existing)
+		})
+	}
+}
+
+func TestFilterRequiredTasks(t *testing.T) {
+	date := time.Now().UTC().Add(time.Second * -1)
+	future := date.Add(time.Hour * 24 * 30)
+
+	requiredTasks := []commonTasksRecord{
+		{EffectiveOn: date, Tasks: []string{"git-clone", "buildah"}},
+		{EffectiveOn: date, Tasks: []string{"git-clone"}},
+	}
+
+	for _, c := range []struct {
+		name     string
+		expected Tracker
+		prune    bool
+	}{
+		{
+			name: "without prune",
+			expected: Tracker{
+				RequiredTasks: []commonTasksRecord{
+					{EffectiveOn: future, Tasks: []string{"git-clone", "buildah", "clair-scan"}},
+					{EffectiveOn: date, Tasks: []string{"git-clone", "buildah"}},
+					{EffectiveOn: date, Tasks: []string{"git-clone"}},
+				},
+			},
+			prune: false,
+		},
+		{
+			name: "with prune",
+			expected: Tracker{
+				RequiredTasks: []commonTasksRecord{
+					{EffectiveOn: future, Tasks: []string{"git-clone", "buildah", "clair-scan"}},
+					{EffectiveOn: date, Tasks: []string{"git-clone", "buildah"}},
+				},
+			},
+			prune: true,
+		},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			existing := Tracker{
+				RequiredTasks: requiredTasks,
+			}
+
+			existing.addRequiredTasksRecord(commonTasksRecord{
+				EffectiveOn: future,
+				Tasks:       []string{"git-clone", "buildah", "clair-scan"},
+			})
+
+			existing.filterRequiredTasks(c.prune)
+			assert.Equal(t, c.expected, existing)
+		})
+	}
 }

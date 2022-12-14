@@ -25,15 +25,18 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type trackBundleFn func(context.Context, afero.Fs, []string, string) ([]byte, error)
+type trackBundleFn func(context.Context, afero.Fs, []string, string, bool) ([]byte, error)
 
 func trackBundleCmd(track trackBundleFn) *cobra.Command {
 	var data = struct {
 		bundles    []string
 		input      string
+		prune      bool
 		replace    bool
 		outputFile string
-	}{}
+	}{
+		prune: true,
+	}
 
 	cmd := &cobra.Command{
 		Use:   "bundle",
@@ -60,6 +63,11 @@ func trackBundleCmd(track trackBundleFn) *cobra.Command {
 			Pipeline definitions are deemed required and displayed as such. An
 			"important" Pipeline definition is defined as one that does NOT include
 			the label "skip-hacbs-test" set to the value "true".
+
+			If --prune is set, on by default, non-acceptable entries are removed.
+			Any entry with an effective_on date in the future, and the entry with
+			the most recent effective_on date *not* in the future are considered
+			acceptable. This applies to bundles and to required tasks.
 		`),
 
 		Example: hd.Doc(`
@@ -78,13 +86,17 @@ func trackBundleCmd(track trackBundleFn) *cobra.Command {
 			Extend an existing tracking file with a new bundle and save changes:
 
 			  ec track bundle --bundle <IMAGE1> --input <path/to/input/file> --replace
+
+			Skip pruning for unacceptable entries:
+
+			  ec track bundle --bundle <IMAGE1> --input <path/to/input/file> --prune=false
 		`),
 
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			fs := fs(cmd.Context())
 
-			out, err := track(cmd.Context(), fs, data.bundles, data.input)
+			out, err := track(cmd.Context(), fs, data.bundles, data.input, data.prune)
 			if err != nil {
 				return err
 			}
@@ -118,6 +130,9 @@ func trackBundleCmd(track trackBundleFn) *cobra.Command {
 
 	cmd.Flags().StringSliceVarP(&data.bundles, "bundle", "b", data.bundles,
 		"bundle image reference to track - may be used multiple times (required)")
+
+	cmd.Flags().BoolVarP(&data.prune, "prune", "p", data.prune,
+		"remove entries that are no longer acceptable, i.e. a newer entry already effective exists")
 
 	cmd.Flags().BoolVarP(&data.replace, "replace", "r", data.replace, "write changes to input file")
 
