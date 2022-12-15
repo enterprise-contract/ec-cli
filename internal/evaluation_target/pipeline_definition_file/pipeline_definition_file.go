@@ -23,6 +23,7 @@ import (
 	"github.com/spf13/afero"
 
 	"github.com/hacbs-contract/ec-cli/internal/evaluator"
+	"github.com/hacbs-contract/ec-cli/internal/policy"
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
 )
 
@@ -46,7 +47,7 @@ func NewPipelineDefinitionFile(ctx context.Context, fs afero.Fs, fpath string, p
 	p := &DefinitionFile{
 		Fpath: fpath,
 	}
-	c, err := newConftestEvaluator(ctx, fs, []source.PolicySource{&policyUrl}, namespace, nil)
+	c, err := newConftestEvaluator(ctx, fs, []source.PolicySource{&policyUrl}, namespace, &policy.Policy{})
 	if err != nil {
 		return nil, err
 	}
