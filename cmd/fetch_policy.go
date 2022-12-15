@@ -83,6 +83,10 @@ func fetchPolicyCmd() *cobra.Command {
 
 			  ec fetch policy --source https://github.com/hacbs-contract/ec-policies/policy
 
+			Fetching policies from an OPA bundle (OCI image):
+
+			  ec fetch policy --source quay.io/hacbs-contract/ec-release-policy:latest
+
 			Notes:
 
 			- The --dest flag will be ignored if --work-dir is set
