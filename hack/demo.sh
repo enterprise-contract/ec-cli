@@ -50,9 +50,7 @@ spec:
     - not_useful
     - test:conftest-clair
   sources:
-  - git:
-      repository: https://github.com/hacbs-contract/ec-policies/policy
-      revision: main
+  - quay.io/hacbs-contract/ec-release-policy:latest
 EOF
 
 while read -r IMG

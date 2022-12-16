@@ -22,7 +22,7 @@ metadata:
 spec:
   description: My custom enterprise contract policy configuration
   sources:
-    - git::https://github.com/hacbs-contract/ec-policies.git
+    - quay.io/hacbs-contract/ec-release-policy:latest
   configuration:
     exclude:
       - not_useful
