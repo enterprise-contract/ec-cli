@@ -214,7 +214,11 @@ func filterRecords(records []bundleRecord, prune bool) []bundleRecord {
 	filtered := make([]bundleRecord, 0, len(records))
 	keys := map[string]bool{}
 	for _, r := range records {
-		key := r.Repository + r.Digest
+		// NOTE: Newly added records will have a repository, but existing ones
+		// will not. This is expected because the output does not persist the
+		// repository for each record. Instead, the repository is the attribute
+		// which references the list of records.
+		key := r.Digest
 		if _, ok := keys[key]; ok {
 			continue
 		}
@@ -230,7 +234,7 @@ func filterRecords(records []bundleRecord, prune bool) []bundleRecord {
 	return filtered
 }
 
-// filterRecords reduces the list of required tasks by removing superfulous
+// filterRequiredTasks reduces the list of required tasks by removing superfulous
 // entries. If prune is true, it skips any entry that is no longer acceptable.
 // Any entry with an EffectiveOn date in the future, and the entry with the most
 // recent EffectiveOn date *not* in the future are considered acceptable.
