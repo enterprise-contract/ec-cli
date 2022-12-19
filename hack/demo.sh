@@ -50,7 +50,9 @@ spec:
     - not_useful
     - test:conftest-clair
   sources:
-  - quay.io/hacbs-contract/ec-release-policy:latest
+    - name: Default EC policy
+      policy:
+      - quay.io/hacbs-contract/ec-release-policy:latest
 EOF
 
 while read -r IMG

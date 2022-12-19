@@ -25,7 +25,16 @@ EAg+paWtlme2KNcostCsmIbwz+bc2aFV+AxCOpRjRpp3vYrbS5KhkmgC1Q==
 POLICY='{
   "publicKey": "'${PUBLIC_KEY//$'\n'/\\n}'",
   "sources": [
-    "github.com/hacbs-contract/ec-policies//policy"
+    {
+      "name": "EC Policies",
+      "policy": [
+        "github.com/hacbs-contract/ec-policies//policy/lib",
+        "github.com/hacbs-contract/ec-policies//policy/release"
+      ],
+      "data": [
+        "github.com/hacbs-contract/ec-policies//data"
+      ]
+    }
   ],
   "configuration": {
     "exclude": [

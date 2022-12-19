@@ -11,7 +11,11 @@ Feature: Verify Enterprise Contract Tekton Task
       {
         "publicKey": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAERhr8Zj4dZW67zucg8fDr11M4lmRp\nzN6SIcIjkvH39siYg1DkCoa2h2xMUZ10ecbM3/ECqvBV55YwQ2rcIEa7XQ==\n-----END PUBLIC KEY-----",
         "sources": [
-          "github.com/hacbs-contract/ec-policies//policy"
+          {
+            "policy": [
+              "github.com/hacbs-contract/ec-policies//policy"
+            ]
+          }
         ],
         "configuration": {
           "include": [

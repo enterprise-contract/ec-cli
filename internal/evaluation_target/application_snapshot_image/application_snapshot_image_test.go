@@ -103,7 +103,7 @@ func TestApplicationSnapshotImage_ValidateImageAccess(t *testing.T) {
 				reference:    tt.fields.reference,
 				checkOpts:    tt.fields.checkOpts,
 				attestations: tt.fields.attestations,
-				Evaluator:    tt.fields.Evaluator,
+				Evaluators:   []evaluator.Evaluator{tt.fields.Evaluator},
 			}
 			if err := a.ValidateImageAccess(tt.args.ctx); (err != nil) != tt.wantErr {
 				t.Errorf("ValidateImageAccess() error = %v, wantErr %v", err, tt.wantErr)

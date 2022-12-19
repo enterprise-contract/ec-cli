@@ -20,7 +20,6 @@ package evaluator
 
 import (
 	"context"
-	"regexp"
 	"testing"
 	"time"
 
@@ -168,10 +167,6 @@ func TestConftestEvaluatorEvaluate(t *testing.T) {
 	ctx := downloader.WithDownloadImpl(withTestRunner(context.Background(), &r), &dl)
 
 	r.On("Run", ctx, inputs).Return(results, nil)
-
-	workDirData := regexp.MustCompile(`/tmp/ec-work-\d+/data`)
-	// download of hardcoded data
-	dl.On("Download", ctx, mock.MatchedBy(workDirData.MatchString), []string{hardCodedRequiredData}).Return(nil)
 
 	evaluator, err := NewConftestEvaluator(ctx, afero.NewMemMapFs(), []source.PolicySource{
 		testPolicySource{},

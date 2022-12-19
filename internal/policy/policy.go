@@ -128,7 +128,7 @@ func NewPolicy(ctx context.Context, policyRef, rekorUrl, publicKey, effectiveTim
 		p.CheckOpts = opts
 	}
 
-	// log.Debugf("policy: %#v", policy)
+	// log.Debugf("policy: %#v", p)
 	return p, nil
 }
 
