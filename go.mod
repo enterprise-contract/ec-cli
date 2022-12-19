@@ -39,7 +39,7 @@ require (
 	github.com/testcontainers/testcontainers-go v0.15.0
 	github.com/theupdateframework/go-tuf v0.5.2-0.20220930112810-3890c1e7ace4
 	github.com/transparency-dev/merkle v0.0.1
-	github.com/walkerus/go-wiremock v1.3.0
+	github.com/walkerus/go-wiremock v1.4.0
 	github.com/whilp/git-urls v1.0.0
 	github.com/yudai/gojsondiff v1.0.0
 	golang.org/x/oauth2 v0.3.0
