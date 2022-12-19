@@ -16,11 +16,32 @@
 
 package types
 
-import "context"
+import (
+	"context"
+)
 
 type Cluster interface {
 	Up(context.Context) bool
 	Stop(context.Context) error
 	KubeConfig(context.Context) (string, error)
-	CreateNamedPolicy(ctx context.Context, name string, specification string) error
+	CreateNamespace(context.Context) (context.Context, error)
+	CreateNamedPolicy(context.Context, string, string) error
+	CreatePolicy(context.Context, string) error
+	RunTask(context.Context, string, map[string]string) error
+	AwaitUntilTaskIsSuccessful(context.Context) (bool, error)
+	TaskInfo(context.Context) (*TaskInfo, error)
+}
+
+type TaskInfo struct {
+	Namespace string
+	Name      string
+	Status    string
+	Params    map[string]any
+	Steps     []Step
+}
+
+type Step struct {
+	Name   string
+	Status string
+	Logs   string
 }

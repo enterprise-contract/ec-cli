@@ -18,6 +18,7 @@ package stub
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 
@@ -37,6 +38,11 @@ func Start(ctx context.Context) (context.Context, types.Cluster, error) {
 	ctx, err := wiremock.StartWiremock(ctx)
 
 	return ctx, stubCluster{}, err
+}
+
+func (s stubCluster) CreateNamespace(ctx context.Context) (context.Context, error) {
+	// no-op, we can record or stub any namespace API calls if/when needed
+	return ctx, nil
 }
 
 // stubPolicy stubs a response from the apiserver to fetch a EnterpriseContractPolicy
@@ -67,9 +73,20 @@ func (s stubCluster) CreateNamedPolicy(ctx context.Context, name string, specifi
 		))
 }
 
-func (s stubCluster) CreateNamespace(ctx context.Context) (context.Context, error) {
-	// no-op, we can record or stub any namespace API calls if/when needed
-	return ctx, nil
+func (s stubCluster) CreatePolicy(_ context.Context, _ string) error {
+	return errors.New("use `Given policy configuration named \"<name>\" with specification` when using the stub Kubernetes")
+}
+
+func (s stubCluster) RunTask(_ context.Context, _ string, _ map[string]string) error {
+	return errors.New("can't run tasks when using the stub Kubernetes")
+}
+
+func (s stubCluster) AwaitUntilTaskIsSuccessful(context.Context) (bool, error) {
+	return false, errors.New("can't run tasks when using the stub Kubernetes")
+}
+
+func (s stubCluster) TaskInfo(context.Context) (*types.TaskInfo, error) {
+	return nil, errors.New("can't run tasks when using the stub Kubernetes")
 }
 
 // KubeConfig returns a valid kubeconfig configuration file in YAML format that

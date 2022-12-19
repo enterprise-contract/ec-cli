@@ -1,0 +1,304 @@
+// Copyright 2022 Red Hat, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+// SPDX-License-Identifier: Apache-2.0
+
+package kind
+
+import (
+	"bufio"
+	"bytes"
+	"context"
+	"fmt"
+	"io"
+	"math/rand"
+	"os"
+	"path"
+	"sync"
+	"time"
+
+	"github.com/phayes/freeport"
+	appsv1 "k8s.io/api/apps/v1"
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/fields"
+	util "k8s.io/apimachinery/pkg/util/yaml"
+	"k8s.io/apimachinery/pkg/watch"
+	"k8s.io/client-go/discovery"
+	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/restmapper"
+	"k8s.io/client-go/tools/cache"
+	"k8s.io/client-go/tools/clientcmd"
+	w "k8s.io/client-go/tools/watch"
+	"sigs.k8s.io/kind/pkg/apis/config/v1alpha4"
+	k "sigs.k8s.io/kind/pkg/cluster"
+	"sigs.k8s.io/yaml"
+
+	"github.com/hacbs-contract/ec-cli/internal/acceptance/kubernetes/types"
+	"github.com/hacbs-contract/ec-cli/internal/acceptance/kustomize"
+)
+
+type key int
+
+const testStateKey = key(0)
+
+type testState struct {
+	namespace string
+	policy    string
+	taskRun   string
+}
+
+func (n testState) Key() any {
+	return testStateKey
+}
+
+const clusterConfiguration = `kind: ClusterConfiguration
+apiServer:
+  extraArgs:
+    "service-node-port-range": "1-65535"`
+
+var envMutex = sync.Mutex{}
+
+type kindCluster struct {
+	name           string
+	kubeconfigPath string
+	registryPort   int32
+	provider       *k.Provider
+	config         *rest.Config
+	client         *kubernetes.Clientset
+	dynamic        dynamic.Interface
+	mapper         meta.RESTMapper
+}
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
+
+func (k *kindCluster) Up(_ context.Context) bool {
+	if k.provider == nil || k.name == "" {
+		return false
+	}
+
+	nodes, err := k.provider.ListNodes(k.name)
+
+	return len(nodes) > 0 && err == nil
+}
+
+func Start(ctx context.Context) (context.Context, types.Cluster, error) {
+	configDir, err := os.MkdirTemp("", "ec-acceptance.*")
+	if err != nil {
+		return ctx, nil, err
+	}
+
+	kCluster := kindCluster{
+		name:     fmt.Sprintf("acceptance-%d", rand.Uint64()),
+		provider: k.NewProvider(),
+	}
+
+	if port, err := freeport.GetFreePort(); err != nil {
+		return ctx, nil, err
+	} else {
+		kCluster.registryPort = int32(port)
+	}
+
+	kCluster.kubeconfigPath = path.Join(configDir, "kubeconfig")
+
+	if err := kCluster.provider.Create(kCluster.name,
+		k.CreateWithV1Alpha4Config(&v1alpha4.Cluster{
+			TypeMeta: v1alpha4.TypeMeta{
+				Kind:       "Cluster",
+				APIVersion: "kind.x-k8s.io/v1alpha4",
+			},
+			Nodes: []v1alpha4.Node{
+				{
+					Role: v1alpha4.ControlPlaneRole,
+					KubeadmConfigPatches: []string{
+						clusterConfiguration,
+					},
+					ExtraPortMappings: []v1alpha4.PortMapping{
+						{
+							ContainerPort: kCluster.registryPort,
+							HostPort:      kCluster.registryPort,
+							Protocol:      v1alpha4.PortMappingProtocolTCP,
+						},
+					},
+				},
+			},
+		}),
+		k.CreateWithKubeconfigPath(kCluster.kubeconfigPath)); err != nil {
+		return ctx, &kCluster, err
+	}
+
+	rules := clientcmd.NewDefaultClientConfigLoadingRules()
+	rules.ExplicitPath = kCluster.kubeconfigPath
+
+	clientConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(rules, nil)
+
+	if kCluster.config, err = clientConfig.ClientConfig(); err != nil {
+		return ctx, &kCluster, err
+	}
+
+	if kCluster.dynamic, err = dynamic.NewForConfig(kCluster.config); err != nil {
+		return ctx, &kCluster, err
+	}
+
+	if kCluster.client, err = kubernetes.NewForConfig(kCluster.config); err != nil {
+		return ctx, &kCluster, err
+	}
+
+	discovery := discovery.NewDiscoveryClientForConfigOrDie(kCluster.config)
+
+	if resources, err := restmapper.GetAPIGroupResources(discovery); err != nil {
+		return ctx, &kCluster, err
+	} else {
+		kCluster.mapper = restmapper.NewDiscoveryRESTMapper(resources)
+	}
+
+	yaml, err := renderTestConfiguration(&kCluster)
+	if err != nil {
+		return ctx, &kCluster, err
+	}
+
+	err = applyConfiguration(ctx, &kCluster, yaml)
+	if err != nil {
+		return ctx, &kCluster, err
+	}
+
+	err = kCluster.buildCliImage(ctx)
+	if err != nil {
+		return ctx, &kCluster, err
+	}
+
+	err = kCluster.buildTaskBundleImage(ctx)
+	if err != nil {
+		return ctx, &kCluster, err
+	}
+
+	return ctx, &kCluster, nil
+}
+func renderTestConfiguration(k *kindCluster) (yaml []byte, err error) {
+	envMutex.Lock()
+	if err := os.Setenv("REGISTRY_PORT", fmt.Sprint(k.registryPort)); err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		_ = os.Unsetenv("REGISTRY_PORT") // ignore errors
+		envMutex.Unlock()
+	}()
+
+	return kustomize.Render(path.Join("hack", "test"))
+}
+
+func applyConfiguration(ctx context.Context, k *kindCluster, definitions []byte) (err error) {
+	reader := util.NewYAMLReader(bufio.NewReader(bytes.NewReader(definitions)))
+	for {
+		var definition []byte
+		definition, err = reader.Read()
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			return
+		}
+
+		var obj unstructured.Unstructured
+		if err = yaml.Unmarshal(definition, &obj); err != nil {
+			return
+		}
+
+		var mapping *meta.RESTMapping
+		if mapping, err = k.mapper.RESTMapping(obj.GroupVersionKind().GroupKind()); err != nil {
+			return
+		}
+
+		var c dynamic.ResourceInterface = k.dynamic.Resource(mapping.Resource)
+		if mapping.Scope.Name() == meta.RESTScopeNameNamespace {
+			c = c.(dynamic.NamespaceableResourceInterface).Namespace(obj.GetNamespace())
+		}
+
+		_, err = c.Apply(ctx, obj.GetName(), &obj, metav1.ApplyOptions{FieldManager: "application/apply-patch"})
+		if err != nil {
+			return
+		}
+	}
+
+	err = waitForAvailableDeploymentsIn(ctx, k, "tekton-pipelines", "image-registry")
+
+	return
+}
+
+func waitForAvailableDeploymentsIn(ctx context.Context, k *kindCluster, namespaces ...string) (err error) {
+	for _, namespace := range namespaces {
+		watcher := cache.NewListWatchFromClient(k.client.AppsV1().RESTClient(), "deployments", namespace, fields.Everything())
+
+		a := newAvail()
+		_, err = w.UntilWithSync(ctx, watcher, &appsv1.Deployment{}, nil, (&a).allAvailable)
+	}
+
+	return
+}
+
+func newAvail() avail {
+	return avail{
+		available: map[string]bool{},
+	}
+}
+
+type avail struct {
+	available map[string]bool
+}
+
+func (a *avail) allAvailable(event watch.Event) (bool, error) {
+	deployment := event.Object.(*appsv1.Deployment)
+
+	for _, condition := range deployment.Status.Conditions {
+		namespace := deployment.GetNamespace()
+		name := deployment.GetName()
+
+		if condition.Type == appsv1.DeploymentAvailable {
+			a.available[namespace+"/"+name] = condition.Status == v1.ConditionTrue
+			break
+		}
+	}
+
+	for _, available := range a.available {
+		if !available {
+			return false, nil
+		}
+	}
+
+	return true, nil
+}
+
+func (k *kindCluster) KubeConfig(ctx context.Context) (string, error) {
+	if bytes, err := os.ReadFile(k.kubeconfigPath); err != nil {
+		return "", err
+	} else {
+		return string(bytes), err
+	}
+}
+
+func (k *kindCluster) Stop(ctx context.Context) error {
+	defer func() {
+		kindDir := path.Join(k.kubeconfigPath, "..")
+		_ = os.RemoveAll(kindDir) // ignore errors
+	}()
+
+	return k.provider.Delete(k.name, k.kubeconfigPath)
+}
