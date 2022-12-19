@@ -211,26 +211,34 @@ func (t *Tracker) filterBundles(prune bool) {
 func filterRecords(records []bundleRecord, prune bool) []bundleRecord {
 	now := time.Now().UTC()
 
-	filtered := make([]bundleRecord, 0, len(records))
+	unique := make([]bundleRecord, 0, len(records))
 	keys := map[string]bool{}
-	for _, r := range records {
-		key := r.Repository + r.Digest
+	for i := len(records) - 1; i >= 0; i-- {
+		r := records[i]
+		// NOTE: Newly added records will have a repository, but existing ones
+		// will not. This is expected because the output does not persist the
+		// repository for each record. Instead, the repository is the attribute
+		// which references the list of records.
+		key := r.Digest
 		if _, ok := keys[key]; ok {
 			continue
 		}
-
 		keys[key] = true
-		filtered = append(filtered, r)
+		unique = append([]bundleRecord{r}, unique...)
+	}
 
+	relevant := make([]bundleRecord, 0, len(unique))
+	for _, r := range unique {
+		relevant = append(relevant, r)
 		if prune && now.After(r.EffectiveOn) {
 			break
 		}
 	}
 
-	return filtered
+	return relevant
 }
 
-// filterRecords reduces the list of required tasks by removing superfulous
+// filterRequiredTasks reduces the list of required tasks by removing superfulous
 // entries. If prune is true, it skips any entry that is no longer acceptable.
 // Any entry with an EffectiveOn date in the future, and the entry with the most
 // recent EffectiveOn date *not* in the future are considered acceptable.

@@ -47,12 +47,20 @@ var sampleHashTwo = v1.Hash{
 	Hex:       "a2c1615816029636903a8172775682e8bbb84c6fde8d74b6de1e198f19f95c72",
 }
 
+var sampleHashThree = v1.Hash{
+	Algorithm: "sha256",
+	Hex:       "284e3029cce3ae5ee0b05866100e300046359f53ae4c77fe6b34c05aa7a72cee",
+}
+
 var expectedEffectiveOn = effectiveOn().Format(time.RFC3339)
+
+var yesterday = time.Now().Add(time.Hour * 24 * -1).UTC().Format(time.RFC3339)
 
 func TestTrack(t *testing.T) {
 	tests := []struct {
 		name   string
 		urls   []string
+		prune  bool
 		output string
 		input  string
 	}{
@@ -308,6 +316,81 @@ required-tasks:
       - summary
 `,
 		},
+		{
+			name: "prefer older entries with same digest",
+			urls: []string{
+				"registry.com/one:1.0@" + sampleHashOne.String(),
+			},
+			input: `---
+pipeline-bundles:
+  registry.com/one:
+    - digest: ` + sampleHashOne.String() + `
+      effective_on: "` + expectedEffectiveOn + `"
+      tag: "0.9"
+`,
+			output: `---
+pipeline-bundles:
+  registry.com/one:
+    - digest: ` + sampleHashOne.String() + `
+      effective_on: "` + expectedEffectiveOn + `"
+      tag: "0.9"
+required-tasks:
+  - effective_on: "` + expectedEffectiveOn + `"
+    tasks:
+      - buildah
+      - git-clone
+      - summary
+`,
+		},
+		{
+			name: "prune older entries",
+			urls: []string{
+				"registry.com/mixed:1.0@" + sampleHashOne.String(),
+			},
+			prune: true,
+			input: `---
+pipeline-bundles:
+  registry.com/mixed:
+    - digest: ` + sampleHashThree.String() + `
+      effective_on: "` + yesterday + `"
+      tag: "0.3"
+    - digest: ` + sampleHashTwo.String() + `
+      effective_on: "` + yesterday + `"
+      tag: "0.2"
+task-bundles:
+  registry.com/mixed:
+    - digest: ` + sampleHashThree.String() + `
+      effective_on: "` + yesterday + `"
+      tag: "0.3"
+    - digest: ` + sampleHashTwo.String() + `
+      effective_on: "` + yesterday + `"
+      tag: "0.2"
+`,
+			output: `---
+pipeline-bundles:
+  registry.com/mixed:
+    - digest: ` + sampleHashOne.String() + `
+      effective_on: "` + expectedEffectiveOn + `"
+      tag: "1.0"
+    - digest: ` + sampleHashThree.String() + `
+      effective_on: "` + yesterday + `"
+      tag: "0.3"
+required-tasks:
+  - effective_on: "` + expectedEffectiveOn + `"
+    tasks:
+      - buildah
+      - git-clone
+      - summary
+task-bundles:
+  registry.com/mixed:
+    - digest: ` + sampleHashOne.String() + `
+      effective_on: "` + expectedEffectiveOn + `"
+      tag: "1.0"
+    - digest: ` + sampleHashThree.String() + `
+      effective_on: "` + yesterday + `"
+      tag: "0.3"
+`,
+		},
 	}
 
 	for _, tt := range tests {
@@ -324,7 +407,7 @@ required-tasks:
 			client := fakeClient{objects: testObjects, images: testImages}
 			ctx = WithClient(ctx, client)
 
-			output, err := Track(ctx, fs, tt.urls, inputFile, false)
+			output, err := Track(ctx, fs, tt.urls, inputFile, tt.prune)
 			assert.NoError(t, err)
 			assert.Equal(t, tt.output, string(output))
 		})
@@ -479,224 +562,6 @@ func mustCreateFakeEmptyPipelineObject() runtime.Object {
 	pipeline := v1beta1.Pipeline{}
 	pipeline.SetDefaults(context.Background())
 	return &pipeline
-}
-
-func TestFilterBundles(t *testing.T) {
-	date := time.Now().UTC().Add(time.Second * -1)
-	future := date.Add(time.Hour * 24 * 30)
-
-	repository := "registry.io/repository/image"
-
-	pipelineBundles := map[string][]bundleRecord{
-		repository: {
-			{
-				Repository:  repository,
-				Tag:         "tag0",
-				Digest:      "sha256:digest0",
-				EffectiveOn: date,
-				Collection:  pipelineCollection,
-			},
-			{
-				Repository:  repository,
-				Tag:         "tag1",
-				Digest:      "sha256:digest1",
-				EffectiveOn: date,
-				Collection:  pipelineCollection,
-			},
-			{
-				Repository:  repository,
-				Tag:         "tag2",
-				Digest:      "sha256:digest0",
-				EffectiveOn: date,
-				Collection:  pipelineCollection,
-			},
-			{
-				Repository:  repository,
-				Tag:         "tag3",
-				Digest:      "sha256:digest0",
-				EffectiveOn: date,
-				Collection:  pipelineCollection,
-			},
-			{
-				Repository:  repository,
-				Tag:         "tag4",
-				Digest:      "sha256:digest2",
-				EffectiveOn: date,
-				Collection:  pipelineCollection,
-			},
-		},
-	}
-
-	taskBundles := map[string][]bundleRecord{
-		repository: {
-			{
-				Repository:  repository,
-				Tag:         "tag0",
-				Digest:      "sha256:digest0",
-				EffectiveOn: date,
-				Collection:  taskCollection,
-			},
-			{
-				Repository:  repository,
-				Tag:         "tag1",
-				Digest:      "sha256:digest1",
-				EffectiveOn: date,
-				Collection:  taskCollection,
-			},
-			{
-				Repository:  repository,
-				Tag:         "tag2",
-				Digest:      "sha256:digest0",
-				EffectiveOn: date,
-				Collection:  taskCollection,
-			},
-			{
-				Repository:  repository,
-				Tag:         "tag3",
-				Digest:      "sha256:digest0",
-				EffectiveOn: date,
-				Collection:  taskCollection,
-			},
-			{
-				Repository:  repository,
-				Tag:         "tag4",
-				Digest:      "sha256:digest2",
-				EffectiveOn: date,
-				Collection:  taskCollection,
-			},
-		},
-	}
-
-	for _, c := range []struct {
-		name     string
-		expected Tracker
-		prune    bool
-	}{
-		{
-			name: "deduplicate",
-			expected: Tracker{
-				PipelineBundles: map[string][]bundleRecord{
-					"registry.io/repository/image": {
-						{
-							Repository:  repository,
-							Tag:         "tag5",
-							Digest:      "sha256:digest1",
-							EffectiveOn: future,
-							Collection:  pipelineCollection,
-						},
-						{
-							Repository:  repository,
-							Tag:         "tag0",
-							Digest:      "sha256:digest0",
-							EffectiveOn: date,
-							Collection:  pipelineCollection,
-						},
-						{
-							Repository:  repository,
-							Tag:         "tag4",
-							Digest:      "sha256:digest2",
-							EffectiveOn: date,
-							Collection:  pipelineCollection,
-						},
-					},
-				},
-				TaskBundles: map[string][]bundleRecord{
-					"registry.io/repository/image": {
-						{
-							Repository:  repository,
-							Tag:         "tag5",
-							Digest:      "sha256:digest1",
-							EffectiveOn: future,
-							Collection:  taskCollection,
-						},
-						{
-							Repository:  repository,
-							Tag:         "tag0",
-							Digest:      "sha256:digest0",
-							EffectiveOn: date,
-							Collection:  taskCollection,
-						},
-						{
-							Repository:  repository,
-							Tag:         "tag4",
-							Digest:      "sha256:digest2",
-							EffectiveOn: date,
-							Collection:  taskCollection,
-						},
-					},
-				},
-			},
-			prune: false,
-		},
-		{
-			name: "deduplicate and prune",
-			expected: Tracker{
-				PipelineBundles: map[string][]bundleRecord{
-					"registry.io/repository/image": {
-						{
-							Repository:  repository,
-							Tag:         "tag5",
-							Digest:      "sha256:digest1",
-							EffectiveOn: future,
-							Collection:  pipelineCollection,
-						},
-						{
-							Repository:  repository,
-							Tag:         "tag0",
-							Digest:      "sha256:digest0",
-							EffectiveOn: date,
-							Collection:  pipelineCollection,
-						},
-					},
-				},
-				TaskBundles: map[string][]bundleRecord{
-					"registry.io/repository/image": {
-						{
-							Repository:  repository,
-							Tag:         "tag5",
-							Digest:      "sha256:digest1",
-							EffectiveOn: future,
-							Collection:  taskCollection,
-						},
-						{
-							Repository:  repository,
-							Tag:         "tag0",
-							Digest:      "sha256:digest0",
-							EffectiveOn: date,
-							Collection:  taskCollection,
-						},
-					},
-				},
-			},
-			prune: true,
-		},
-	} {
-		t.Run(c.name, func(t *testing.T) {
-			existing := Tracker{
-				PipelineBundles: pipelineBundles,
-				TaskBundles:     taskBundles,
-			}
-
-			existing.addBundleRecord(bundleRecord{
-				Repository:  repository,
-				Tag:         "tag5",
-				Digest:      "sha256:digest1",
-				EffectiveOn: future,
-				Collection:  pipelineCollection,
-			})
-
-			existing.addBundleRecord(bundleRecord{
-				Repository:  repository,
-				Tag:         "tag5",
-				Digest:      "sha256:digest1",
-				EffectiveOn: future,
-				Collection:  taskCollection,
-			})
-
-			existing.filterBundles(c.prune)
-			assert.Equal(t, c.expected, existing)
-		})
-	}
 }
 
 func TestFilterRequiredTasks(t *testing.T) {
