@@ -15,16 +15,5 @@
 # SPDX-License-Identifier: Apache-2.0
 
 ---
-apiVersion: appstudio.redhat.com/v1alpha1
-kind: EnterpriseContractPolicy
-metadata:
-  name: ec-policy
-spec:
-  description: My custom enterprise contract policy configuration
-  sources:
-    - policy:
-      - quay.io/hacbs-contract/ec-release-policy:latest
-  configuration:
-    exclude:
-      - not_useful
-      - test:conftest-clair
+rule_data:
+  banana_fail_reason: spider attack

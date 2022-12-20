@@ -32,8 +32,6 @@ import (
 	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
 
-const hardCodedRequiredData = "git::https://github.com/hacbs-contract/ec-policies//data"
-
 type contextKey string
 
 const runnerKey contextKey = "ec.evaluator.runner"
@@ -49,6 +47,7 @@ type conftestEvaluator struct {
 	outputFormat  string
 	workDir       string
 	dataDir       string
+	policyDir     string
 	effectiveTime time.Time
 }
 
@@ -68,6 +67,10 @@ func NewConftestEvaluator(ctx context.Context, fs afero.Fs, policySources []sour
 		return nil, err
 	}
 	c.workDir = dir
+
+	c.policyDir = filepath.Join(c.workDir, "policy")
+	c.dataDir = filepath.Join(c.workDir, "data")
+
 	log.Debugf("Created work dir %s", dir)
 
 	if err := c.createDataDirectory(ctx, fs, p); err != nil {
@@ -80,50 +83,54 @@ func NewConftestEvaluator(ctx context.Context, fs afero.Fs, policySources []sour
 
 func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) ([]output.CheckResult, error) {
 	results := make([]output.CheckResult, 0, 10)
+
+	// Download all sources
 	for _, s := range c.policySources {
-		var r testRunner
-		var ok bool
-		if r, ok = ctx.Value(runnerKey).(testRunner); r == nil || !ok {
-			p, err := s.GetPolicy(ctx, c.workDir, false)
-			if err != nil {
-				// TODO do we want to evaluate further policies instead of erroring out?
-				return nil, err
-			}
-
-			r = &runner.TestRunner{
-				Data:      []string{c.dataDir},
-				Policy:    []string{p},
-				Namespace: []string{c.namespace},
-				NoFail:    true,
-				Output:    c.outputFormat,
-			}
-		}
-
-		log.Debugf("runner: %#v", r)
-		log.Debugf("inputs: %#v", inputs)
-		runResults, err := r.Run(ctx, inputs)
+		_, err := s.GetPolicy(ctx, c.workDir, false)
 		if err != nil {
-			// TODO do we want to evaluate further policies instead of erroring out?
+			log.Debugf("Unable to download source from %s!", s.PolicyUrl())
+			// TODO do we want to download other policies instead of erroring out?
 			return nil, err
 		}
-
-		now := c.effectiveTime
-		for i, result := range runResults {
-			failures := []output.Result{}
-			for _, failure := range result.Failures {
-				if !isResultEffective(failure, now) {
-					// TODO: Instead of moving to warnings, create new attribute: "futureViolations"
-					result.Warnings = append(result.Warnings, failure)
-				} else {
-					failures = append(failures, failure)
-				}
-			}
-			result.Failures = failures
-			runResults[i] = result
-		}
-
-		results = append(results, runResults...)
 	}
+
+	var r testRunner
+	var ok bool
+	if r, ok = ctx.Value(runnerKey).(testRunner); r == nil || !ok {
+
+		r = &runner.TestRunner{
+			Data:      []string{c.dataDir},
+			Policy:    []string{c.policyDir},
+			Namespace: []string{c.namespace},
+			NoFail:    true,
+			Output:    c.outputFormat,
+		}
+	}
+
+	log.Debugf("runner: %#v", r)
+	log.Debugf("inputs: %#v", inputs)
+	runResults, err := r.Run(ctx, inputs)
+	if err != nil {
+		// TODO do we want to evaluate further policies instead of erroring out?
+		return nil, err
+	}
+
+	now := c.effectiveTime
+	for i, result := range runResults {
+		failures := []output.Result{}
+		for _, failure := range result.Failures {
+			if !isResultEffective(failure, now) {
+				// TODO: Instead of moving to warnings, create new attribute: "futureViolations"
+				result.Warnings = append(result.Warnings, failure)
+			} else {
+				failures = append(failures, failure)
+			}
+		}
+		result.Failures = failures
+		runResults[i] = result
+	}
+
+	results = append(results, runResults...)
 
 	return results, nil
 }
@@ -205,17 +212,9 @@ func createConfigJSON(fs afero.Fs, dataDir string, p *policy.Policy) error {
 	return nil
 }
 
-// createHardCodedData downloads the hardcoded data to the data directory
-// TODO remove the need for this
-func createHardCodedData(ctx context.Context, workDir string) error {
-	s := source.PolicyUrl{Url: hardCodedRequiredData, Kind: source.DataKind}
-	_, err := s.GetPolicy(ctx, workDir, false)
-	return err
-}
-
 // createDataDirectory creates the base content in the data directory
 func (c *conftestEvaluator) createDataDirectory(ctx context.Context, fs afero.Fs, p *policy.Policy) error {
-	dataDir := filepath.Join(c.workDir, "data")
+	dataDir := c.dataDir
 	exists, err := afero.DirExists(fs, dataDir)
 	if err != nil {
 		return err
@@ -225,13 +224,7 @@ func (c *conftestEvaluator) createDataDirectory(ctx context.Context, fs afero.Fs
 		_ = fs.MkdirAll(dataDir, 0755)
 	}
 
-	c.dataDir = dataDir
-
 	if err := createConfigJSON(fs, dataDir, p); err != nil {
-		return err
-	}
-
-	if err := createHardCodedData(ctx, c.workDir); err != nil {
 		return err
 	}
 

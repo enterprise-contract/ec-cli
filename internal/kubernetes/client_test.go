@@ -44,8 +44,10 @@ var testECP = ecc.EnterpriseContractPolicy{
 		Namespace: "test",
 	},
 	Spec: ecc.EnterpriseContractPolicySpec{
-		Sources: []string{
-			"test_policies",
+		Sources: []ecc.Source{
+			{
+				Policy: []string{"test_policies"},
+			},
 		},
 	},
 }

@@ -27,6 +27,7 @@ import (
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
+	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/in-toto/in-toto-golang/in_toto"
 	"github.com/qri-io/jsonschema"
 	"github.com/sigstore/cosign/pkg/cosign"
@@ -69,7 +70,7 @@ type ApplicationSnapshotImage struct {
 	checkOpts    cosign.CheckOpts
 	attestations []oci.Signature
 	signatures   []cosign.Signatures
-	Evaluator    evaluator.Evaluator
+	Evaluators   []evaluator.Evaluator
 }
 
 // NewApplicationSnapshotImage returns an ApplicationSnapshotImage struct with reference, checkOpts, and evaluator ready to use.
@@ -101,33 +102,44 @@ func NewApplicationSnapshotImage(ctx context.Context, fs afero.Fs, url string, p
 		os.Setenv("SIGSTORE_TRUST_REKOR_API_PUBLIC_KEY", "1")
 	}
 
-	policySources, err := fetchPolicySources(p)
-	if err != nil {
-		log.Debug("Failed to fetch the policy sources from the ECP!")
-		return nil, err
-	}
+	// Return an evaluator for each of these
+	for _, sourceGroup := range p.EnterpriseContractPolicySpec.Sources {
+		// Todo: Make each fetch run concurrently
+		log.Debugf("Fetching policy source group '%s'", sourceGroup.Name)
+		policySources, err := fetchPolicySources(&sourceGroup)
+		if err != nil {
+			log.Debugf("Failed to fetch policy source group '%s'!", sourceGroup.Name)
+			return nil, err
+		}
 
-	log.Debug("Policy source definitions fetched")
-	for _, policySource := range policySources {
-		policySourceJson, _ := json.Marshal(policySource)
-		log.Debugf("policySourceJson: %s", policySourceJson)
-	}
+		for _, policySource := range policySources {
+			policySourceJson, _ := json.Marshal(policySource)
+			log.Debugf("policySourceJson: %s", policySourceJson)
+		}
 
-	c, err := newConftestEvaluator(ctx, fs, policySources, ConftestNamespace, p)
-	if err != nil {
-		log.Debug("Failed to initialize the conftest evaluator!")
-		return nil, err
+		c, err := newConftestEvaluator(ctx, fs, policySources, ConftestNamespace, p)
+		if err != nil {
+			log.Debug("Failed to initialize the conftest evaluator!")
+			return nil, err
+		}
+
+		log.Debug("Conftest evaluator initialized")
+		a.Evaluators = append(a.Evaluators, c)
 	}
-	log.Debug("Conftest evaluator initialized")
-	a.Evaluator = c
 	return a, nil
 }
 
 // fetchPolicySources returns an array of policy sources
-func fetchPolicySources(spec *policy.Policy) ([]source.PolicySource, error) {
-	policySources := make([]source.PolicySource, 0, len(spec.Sources))
-	for _, sourceUrl := range spec.Sources {
-		url := source.PolicyUrl{Url: sourceUrl, Kind: source.PolicyKind}
+func fetchPolicySources(s *ecc.Source) ([]source.PolicySource, error) {
+	policySources := make([]source.PolicySource, 0, len(s.Policy)+len(s.Data))
+
+	for _, policySourceUrl := range s.Policy {
+		url := source.PolicyUrl{Url: policySourceUrl, Kind: "policy"}
+		policySources = append(policySources, &url)
+	}
+
+	for _, dataSourceUrl := range s.Data {
+		url := source.PolicyUrl{Url: dataSourceUrl, Kind: "data"}
 		policySources = append(policySources, &url)
 	}
 	return policySources, nil
