@@ -113,8 +113,7 @@ func NewApplicationSnapshotImage(ctx context.Context, fs afero.Fs, url string, p
 		}
 
 		for _, policySource := range policySources {
-			policySourceJson, _ := json.Marshal(policySource)
-			log.Debugf("policySourceJson: %s", policySourceJson)
+			log.Debugf("policySource: %#v", policySource)
 		}
 
 		c, err := newConftestEvaluator(ctx, fs, policySources, ConftestNamespace, p)
