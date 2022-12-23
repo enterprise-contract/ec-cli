@@ -37,14 +37,14 @@ import (
 	"github.com/yudai/gojsondiff"
 	"github.com/yudai/gojsondiff/formatter"
 
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/crypto"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/git"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/image"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/kubernetes"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/log"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/registry"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/rekor"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/testenv"
+	"github.com/hacbs-contract/ec-cli/acceptance/crypto"
+	"github.com/hacbs-contract/ec-cli/acceptance/git"
+	"github.com/hacbs-contract/ec-cli/acceptance/image"
+	"github.com/hacbs-contract/ec-cli/acceptance/kubernetes"
+	"github.com/hacbs-contract/ec-cli/acceptance/log"
+	"github.com/hacbs-contract/ec-cli/acceptance/registry"
+	"github.com/hacbs-contract/ec-cli/acceptance/rekor"
+	"github.com/hacbs-contract/ec-cli/acceptance/testenv"
 )
 
 type status struct {
@@ -67,7 +67,7 @@ const (
 func ecCommandIsRunWith(ctx context.Context, parameters string) (context.Context, error) {
 	// path to the ec* binary given specific operating system and archive as built by
 	// make build
-	ec := path.Join("..", "..", "dist", fmt.Sprintf("ec_%s_%s", runtime.GOOS, runtime.GOARCH))
+	ec := path.Join("dist", fmt.Sprintf("ec_%s_%s", runtime.GOOS, runtime.GOARCH))
 	info, err := os.Stat(ec)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {

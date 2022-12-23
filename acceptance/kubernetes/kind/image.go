@@ -37,7 +37,7 @@ import (
 // Makefile target for details. The registry is running without TLS, so we need
 // `--tls-verify=false` here.
 func (k *kindCluster) buildCliImage(ctx context.Context) error {
-	cmd := exec.CommandContext(ctx, "make", "--no-print-directory", "-C", path.Join("..", ".."), "push-image", fmt.Sprintf("IMAGE_REPO=localhost:%d/ec-cli", k.registryPort), "PODMAN_OPTS=--tls-verify=false")
+	cmd := exec.CommandContext(ctx, "make", "push-image", fmt.Sprintf("IMAGE_REPO=localhost:%d/ec-cli", k.registryPort), "PODMAN_OPTS=--tls-verify=false")
 
 	if out, err := cmd.CombinedOutput(); err != nil {
 		fmt.Print(string(out))
@@ -54,7 +54,7 @@ func (k *kindCluster) buildCliImage(ctx context.Context) error {
 // only the task of a particular version. The image reference to the ec-cli
 // image is replaced with the image reference from buildCliImage.
 func (k *kindCluster) buildTaskBundleImage(ctx context.Context) error {
-	versions, err := filepath.Glob(path.Join("..", "..", "task", "*.*"))
+	versions, err := filepath.Glob(path.Join("task", "*.*"))
 	if err != nil {
 		return err
 	}
@@ -120,7 +120,7 @@ func (k *kindCluster) buildTaskBundleImage(ctx context.Context) error {
 		// Task by the directory layout convention for the Tekton/Artifact Hub
 		ver := path.Base(version)
 
-		cmd := exec.CommandContext(ctx, "make", "--no-print-directory", "-C", path.Join("..", ".."), "task-bundle", fmt.Sprintf("TASK_REPO=localhost:%d/ec-task-bundle", k.registryPort), fmt.Sprintf("TASK=%s", task.Name()), fmt.Sprintf("TASK_TAG=%s", ver))
+		cmd := exec.CommandContext(ctx, "make", "task-bundle", fmt.Sprintf("TASK_REPO=localhost:%d/ec-task-bundle", k.registryPort), fmt.Sprintf("TASK=%s", task.Name()), fmt.Sprintf("TASK_TAG=%s", ver))
 
 		if out, err := cmd.CombinedOutput(); err != nil {
 			fmt.Print(string(out))

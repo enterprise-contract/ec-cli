@@ -14,29 +14,28 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-//go:build acceptance
-
 package acceptance
 
 import (
 	"context"
 	"flag"
+	"os"
 	"path/filepath"
 	"runtime"
 	"testing"
 
 	"github.com/cucumber/godog"
 
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/cli"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/crypto"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/git"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/image"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/kubernetes"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/registry"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/rekor"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/tekton"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/testenv"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/wiremock"
+	"github.com/hacbs-contract/ec-cli/acceptance/cli"
+	"github.com/hacbs-contract/ec-cli/acceptance/crypto"
+	"github.com/hacbs-contract/ec-cli/acceptance/git"
+	"github.com/hacbs-contract/ec-cli/acceptance/image"
+	"github.com/hacbs-contract/ec-cli/acceptance/kubernetes"
+	"github.com/hacbs-contract/ec-cli/acceptance/registry"
+	"github.com/hacbs-contract/ec-cli/acceptance/rekor"
+	"github.com/hacbs-contract/ec-cli/acceptance/tekton"
+	"github.com/hacbs-contract/ec-cli/acceptance/testenv"
+	"github.com/hacbs-contract/ec-cli/acceptance/wiremock"
 )
 
 // NOTE: flags need to be initialized with the package in order to be recognized
@@ -85,7 +84,12 @@ func setupContext(t *testing.T) context.Context {
 // in random order in parallel threads equal to the number of available
 // cores
 func TestFeatures(t *testing.T) {
-	featuresDir, err := filepath.Abs("../../features")
+	// change the directory to repository root, makes for easier paths
+	if err := os.Chdir(".."); err != nil {
+		t.Error(err)
+	}
+
+	featuresDir, err := filepath.Abs("features")
 	if err != nil {
 		t.Error(err)
 	}

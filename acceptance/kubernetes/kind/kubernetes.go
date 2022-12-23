@@ -34,9 +34,9 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/kubernetes/types"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/kustomize"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/testenv"
+	"github.com/hacbs-contract/ec-cli/acceptance/kubernetes/types"
+	"github.com/hacbs-contract/ec-cli/acceptance/kustomize"
+	"github.com/hacbs-contract/ec-cli/acceptance/testenv"
 )
 
 // createPolicyObject creates the EnterpriseContractPolicy object with the given
@@ -147,7 +147,7 @@ func (k *kindCluster) CreateNamespace(ctx context.Context) (context.Context, err
 			envMutex.Unlock()
 		}()
 
-		return kustomize.Render(path.Join("hack", "work"))
+		return kustomize.Render(path.Join("work"))
 	}
 
 	yaml, err := render()

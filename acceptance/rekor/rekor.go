@@ -40,10 +40,10 @@ import (
 	"github.com/theupdateframework/go-tuf/encrypted"
 	"github.com/transparency-dev/merkle/rfc6962"
 
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/crypto"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/image"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/testenv"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/wiremock"
+	"github.com/hacbs-contract/ec-cli/acceptance/crypto"
+	"github.com/hacbs-contract/ec-cli/acceptance/image"
+	"github.com/hacbs-contract/ec-cli/acceptance/testenv"
+	"github.com/hacbs-contract/ec-cli/acceptance/wiremock"
 )
 
 type key int

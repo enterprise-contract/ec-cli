@@ -35,9 +35,9 @@ import (
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/log"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/testenv"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/wiremock"
+	"github.com/hacbs-contract/ec-cli/acceptance/log"
+	"github.com/hacbs-contract/ec-cli/acceptance/testenv"
+	"github.com/hacbs-contract/ec-cli/acceptance/wiremock"
 )
 
 type key int
@@ -149,7 +149,7 @@ func createGitRepository(ctx context.Context, repositoryName string, files *godo
 		dest := path.Join(repositoryDir, file)
 		source := row.Cells[1].Value
 
-		b, err := os.ReadFile(source)
+		b, err := os.ReadFile(path.Join("acceptance", source))
 		if err != nil {
 			return err
 		}

@@ -32,7 +32,7 @@ function handle_error {
 }
 trap handle_error ERR
 
-KUSTOMIZE="go run -modfile "${ROOT}/internal/tools/go.mod" sigs.k8s.io/kustomize/kustomize/v4 build --enable-exec --enable-alpha-plugins"
+KUSTOMIZE="go run -modfile "${ROOT}/tools/go.mod" sigs.k8s.io/kustomize/kustomize/v4 build --enable-exec --enable-alpha-plugins"
 
 # The name of the Kind cluster
 KIND_CLUSTER_NAME=${KIND_CLUSTER_NAME:-ec}

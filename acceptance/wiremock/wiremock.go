@@ -34,8 +34,8 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 	"github.com/walkerus/go-wiremock"
 
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/log"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/testenv"
+	"github.com/hacbs-contract/ec-cli/acceptance/log"
+	"github.com/hacbs-contract/ec-cli/acceptance/testenv"
 )
 
 type key int
@@ -196,7 +196,7 @@ func StartWiremock(ctx context.Context) (context.Context, error) {
 		return ctx, nil
 	}
 
-	// cwd is the directory where the test is run from i.e. $GITROOT/internal/acceptance
+	// cwd is the directory where the test is run from i.e. $GITROOT
 	cwd, err := os.Getwd()
 	if err != nil {
 		return ctx, err
@@ -206,7 +206,7 @@ func StartWiremock(ctx context.Context) (context.Context, error) {
 		Image:        wireMockImage,
 		ExposedPorts: []string{"8080/tcp", "8443/tcp"},
 		WaitingFor:   wait.ForHTTP("/__admin/mappings").WithPort("8080/tcp"),
-		Binds:        []string{fmt.Sprintf("%s:/recordings:z", path.Join(cwd, "wiremock", "recordings"))}, // relative to the running test, i.e. $GITROOT/internal/acceptance
+		Binds:        []string{fmt.Sprintf("%s:/recordings:z", path.Join(cwd, "acceptance", "wiremock", "recordings"))}, // relative to the running test, i.e. $GITROOT
 		Cmd: []string{
 			"--root-dir=/recordings",
 			"--verbose",

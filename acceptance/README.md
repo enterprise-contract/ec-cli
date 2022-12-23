@@ -37,7 +37,7 @@ following are supported:
 
 These arguments need to be prefixed with `-args` parameter, for example:
 
-    $ go test -tags=acceptance ./internal/acceptance -args -persist -tags=@focus
+    $ go test -tags=acceptance ./acceptance -args -persist -tags=@focus
 
 Notice that there are two arguments called `-tags`. One is for specifying the
 build tag, which is always `acceptance` for acceptance tests. The other is for
@@ -45,7 +45,7 @@ selecting acceptance test scenarios.
 
 Also notice that there are different ways of specifying the path to the
 acceptance tests. `./...` can only be be used if `-args` is NOT used. Use,
-`./internal/acceptance` or `github.com/hacbs-contract/ec-cli/internal/acceptance`
+`./acceptance` or `github.com/hacbs-contract/ec-cli/acceptance`
 in such cases.
 
 Depending on your setup Testcontainer's ryuk container might need to be run as
@@ -66,7 +66,7 @@ reason `make acceptance` builds the binary prior to running the tests.)
 
 To use a debugger, like [delve](https://github.com/go-delve/delve), you must
 determine what part of the code is being debugged. If it's part of the
-acceptance module, `github.com/hacbs-contract/ec-cli/internal/acceptance`, or
+acceptance module, `github.com/hacbs-contract/ec-cli/acceptance`, or
 it is a dependency of the acceptance module, then the debugger can be invoked
 directly. However, if the code to be debugged is in any other module, first
 run the acceptance tests in `-persist` mode. The, scan the test logs for the

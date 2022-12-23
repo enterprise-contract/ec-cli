@@ -38,10 +38,10 @@ import (
 	"github.com/sigstore/sigstore/pkg/signature"
 	"gopkg.in/square/go-jose.v2/json"
 
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/attestation"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/crypto"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/registry"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/testenv"
+	"github.com/hacbs-contract/ec-cli/acceptance/attestation"
+	"github.com/hacbs-contract/ec-cli/acceptance/crypto"
+	"github.com/hacbs-contract/ec-cli/acceptance/registry"
+	"github.com/hacbs-contract/ec-cli/acceptance/testenv"
 )
 
 type key int

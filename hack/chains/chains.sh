@@ -21,6 +21,6 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-CHAINS_VERSION="${CHAINS_VERSION:-$(cd "$(git rev-parse --show-toplevel)/internal/tools" && go list -f '{{.Version}}' -m github.com/tektoncd/chains)}"
+CHAINS_VERSION="${CHAINS_VERSION:-$(cd "$(git rev-parse --show-toplevel)/tools" && go list -f '{{.Version}}' -m github.com/tektoncd/chains)}"
 
 curl -sSL "https://storage.googleapis.com/tekton-releases/chains/previous/${CHAINS_VERSION}/release.yaml"

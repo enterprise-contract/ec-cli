@@ -28,8 +28,8 @@ import (
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/log"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/testenv"
+	"github.com/hacbs-contract/ec-cli/acceptance/log"
+	"github.com/hacbs-contract/ec-cli/acceptance/testenv"
 )
 
 // the image we're using to launch the stub image registry

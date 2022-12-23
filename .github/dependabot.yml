@@ -30,6 +30,10 @@ updates:
     schedule:
       interval: "daily"
   - package-ecosystem: "gomod"
-    directory: "/internal/tools/"
+    directory: "/tools/"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "gomod"
+    directory: "/acceptance/"
     schedule:
       interval: "daily"

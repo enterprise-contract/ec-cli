@@ -21,7 +21,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/testenv"
+	"github.com/hacbs-contract/ec-cli/acceptance/testenv"
 )
 
 type Logger interface {

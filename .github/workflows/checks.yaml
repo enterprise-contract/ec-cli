@@ -43,7 +43,8 @@ jobs:
       - name: Download go dependencies
         run: |
           go mod download
-          go mod download -modfile internal/tools/go.mod
+          go mod download -modfile tools/go.mod
+          go mod download -modfile acceptance/go.mod
 
       - name: Test
         run: make test
@@ -92,7 +93,6 @@ jobs:
       - name: Download go dependencies
         run: |
           go mod download
-          go mod download -modfile internal/tools/go.mod
 
       - name: Setup Tekton Test environment
         run: hack/setup-test-environment.sh

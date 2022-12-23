@@ -46,7 +46,8 @@ jobs:
       - name: Download go dependencies
         run: |
           go mod download
-          go mod download -modfile internal/tools/go.mod
+          go mod download -modfile tools/go.mod
+          go mod download -modfile acceptance/go.mod
 
       - name: Build distribution
         run: make dist

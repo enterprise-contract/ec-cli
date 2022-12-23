@@ -76,35 +76,35 @@ acceptance: ## Run acceptance tests
 	@trap cleanup EXIT
 	@cp -R . "$${ACCEPTANCE_WORKDIR}"
 	@cd "$${ACCEPTANCE_WORKDIR}"
-	@go run internal/acceptance/coverage/coverage.go .
+	@go run acceptance/coverage/coverage.go .
 	@$(MAKE) build
 	@export COVERAGE_FILEPATH="$${ACCEPTANCE_WORKDIR}"
 	@export COVERAGE_FILENAME="-acceptance"
-	@go test -tags=acceptance ./...
-	@go run -modfile internal/tools/go.mod github.com/wadey/gocovmerge "$${ACCEPTANCE_WORKDIR}"/coverage-acceptance*.out > "$(ROOT_DIR)/coverage-acceptance.out"
+	@cd acceptance && go test ./...
+	@go run -modfile "$${ACCEPTANCE_WORKDIR}/tools/go.mod" github.com/wadey/gocovmerge "$${ACCEPTANCE_WORKDIR}"/coverage-acceptance*.out > "$(ROOT_DIR)/coverage-acceptance.out"
 
 LICENSE_IGNORE=-ignore 'dist/reference/*.yaml'
 LINT_TO_GITHUB_ANNOTATIONS='map(map(.)[])[][] as $$d | $$d.posn | split(":") as $$posn | "::warning file=\($$posn[0]),line=\($$posn[1]),col=\($$posn[2])::\($$d.message)"'
 .PHONY: lint
 lint: ## Run linter
 # addlicense doesn't give us a nice explanation so we prefix it with one
-	@go run -modfile internal/tools/go.mod github.com/google/addlicense -c $(COPY) -s -check $(LICENSE_IGNORE) . | sed 's/^/Missing license header in: /g'
+	@go run -modfile tools/go.mod github.com/google/addlicense -c $(COPY) -s -check $(LICENSE_IGNORE) . | sed 's/^/Missing license header in: /g'
 # piping to sed above looses the exit code, luckily addlicense is fast so we invoke it for the second time to exit 1 in case of issues
-	@go run -modfile internal/tools/go.mod github.com/google/addlicense -c $(COPY) -s -check $(LICENSE_IGNORE) . >/dev/null 2>&1
-	@go run -modfile internal/tools/go.mod github.com/golangci/golangci-lint/cmd/golangci-lint run --sort-results $(if $(GITHUB_ACTIONS), --out-format=github-actions --timeout=5m0s)
+	@go run -modfile tools/go.mod github.com/google/addlicense -c $(COPY) -s -check $(LICENSE_IGNORE) . >/dev/null 2>&1
+	@go run -modfile tools/go.mod github.com/golangci/golangci-lint/cmd/golangci-lint run --sort-results $(if $(GITHUB_ACTIONS), --out-format=github-actions --timeout=5m0s)
 # We don't fail on the internal (error handling) linter, we just report the
 # issues for now.
 # TODO: resolve the error handling issues and enable the linter failure
-	@go run -modfile internal/tools/go.mod ./internal/lint $(if $(GITHUB_ACTIONS), -json) $$(go list ./... | grep -v '/internal/acceptance/') $(if $(GITHUB_ACTIONS), | jq -r $(LINT_TO_GITHUB_ANNOTATIONS))
+	@go run -modfile tools/go.mod ./internal/lint $(if $(GITHUB_ACTIONS), -json) $$(go list ./... | grep -v '/acceptance/') $(if $(GITHUB_ACTIONS), | jq -r $(LINT_TO_GITHUB_ANNOTATIONS))
 
 .PHONY: lint-fix
 lint-fix: ## Fix linting issues automagically
-	@go run -modfile internal/tools/go.mod github.com/google/addlicense -c $(COPY) -s -ignore 'dist/reference/*.yaml' .
-	@go run -modfile internal/tools/go.mod github.com/golangci/golangci-lint/cmd/golangci-lint run --fix
+	@go run -modfile tools/go.mod github.com/google/addlicense -c $(COPY) -s -ignore 'dist/reference/*.yaml' .
+	@go run -modfile tools/go.mod github.com/golangci/golangci-lint/cmd/golangci-lint run --fix
 # We don't apply the fixes from the internal (error handling) linter.
 # TODO: fix the outstanding error handling lint issues and enable the fixer
-#	@go run -modfile internal/tools/go.mod ./internal/lint -fix $$(go list ./... | grep -v '/internal/acceptance/')
-	@go run -modfile internal/tools/go.mod github.com/daixiang0/gci write -s standard -s default -s "prefix(github.com/hacbs-contract/ec-cli)" .
+#	@go run -modfile tools/go.mod ./internal/lint -fix $$(go list ./... | grep -v '/acceptance/')
+	@go run -modfile tools/go.mod github.com/daixiang0/gci write -s standard -s default -s "prefix(github.com/hacbs-contract/ec-cli)" .
 
 .PHONY: ci
 ci: test lint-fix acceptance ## Run the usual required CI tasks
@@ -187,7 +187,7 @@ TASK_VERSION ?= 0.1
 TASK ?= task/$(TASK_VERSION)/verify-enterprise-contract.yaml
 .PHONY: task-bundle
 task-bundle: ## Push the Tekton Task bundle an image repository
-	@go run -modfile internal/tools/go.mod github.com/tektoncd/cli/cmd/tkn bundle push $(TASK_REPO):$(TASK_TAG) -f $(TASK)
+	@go run -modfile tools/go.mod github.com/tektoncd/cli/cmd/tkn bundle push $(TASK_REPO):$(TASK_TAG) -f $(TASK)
 
 .PHONY: task-bundle-snapshot
 task-bundle-snapshot: task-bundle ## Push task bundle and then tag with "snapshot"

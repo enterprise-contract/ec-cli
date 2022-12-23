@@ -24,7 +24,7 @@ import (
 	"sigs.k8s.io/kustomize/kyaml/filesys"
 )
 
-var hackDir = path.Join("..", "..")
+var hackDir = "hack"
 
 func Render(dir string) ([]byte, error) {
 	options := krusty.MakeDefaultOptions()

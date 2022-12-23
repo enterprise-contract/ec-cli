@@ -49,8 +49,8 @@ import (
 	k "sigs.k8s.io/kind/pkg/cluster"
 	"sigs.k8s.io/yaml"
 
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/kubernetes/types"
-	"github.com/hacbs-contract/ec-cli/internal/acceptance/kustomize"
+	"github.com/hacbs-contract/ec-cli/acceptance/kubernetes/types"
+	"github.com/hacbs-contract/ec-cli/acceptance/kustomize"
 )
 
 type key int
@@ -215,7 +215,7 @@ func renderTestConfiguration(k *kindCluster) (yaml []byte, err error) {
 		envMutex.Unlock()
 	}()
 
-	return kustomize.Render(path.Join("hack", "test"))
+	return kustomize.Render(path.Join("test"))
 }
 
 // applyConfiguration runs equivalent of kubectl apply for each document in the
