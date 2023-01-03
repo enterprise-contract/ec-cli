@@ -7,7 +7,8 @@ UNSUPPORTED_OS_ARCH_IMG:=image_windows_amd64 image_darwin_amd64 image_darwin_arm
 # a list of image_* targets that we do support generated from
 # ALL_SUPPORTED_OS_ARCH by replacing "dist/ec_" with "image_"
 ALL_SUPPORTED_IMG_OS_ARCH:=$(filter-out $(UNSUPPORTED_OS_ARCH_IMG),$(subst dist/ec_,image_,$(ALL_SUPPORTED_OS_ARCH)))
-SHELL=bash
+_SHELL := bash
+SHELL=$(if $@,$(info ❱ [1m$@[0m))$(_SHELL)
 ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 COPY:="Red Hat, Inc."
 
