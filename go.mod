@@ -36,7 +36,7 @@ require (
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.1
 	github.com/stuart-warren/yamlfmt v0.1.2
-	github.com/tektoncd/cli v0.28.0
+	github.com/tektoncd/cli v0.3.1-0.20221206125835-f9030b6359a0
 	github.com/tektoncd/pipeline v0.42.0
 	github.com/testcontainers/testcontainers-go v0.15.0
 	github.com/theupdateframework/go-tuf v0.5.2-0.20220930112810-3890c1e7ace4
