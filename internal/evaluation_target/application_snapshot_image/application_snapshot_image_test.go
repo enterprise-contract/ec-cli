@@ -139,43 +139,84 @@ func createSimpleAttestation(statement *in_toto.Statement) oci.Signature {
 	return signature
 }
 
-func TestWriteInputFiles(t *testing.T) {
+const simpleAttestationJSONText = `{
+	"_type": "",
+	"predicateType": "https://slsa.dev/provenance/v0.2",
+	"subject": null,
+	"predicate": {
+		"buildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+		"builder": {
+			"id": ""
+		},
+		"invocation": {
+			"configSource": {}
+		}
+	}
+}`
+
+func TestWriteInputFile(t *testing.T) {
+	cases := []struct {
+		name     string
+		snapshot ApplicationSnapshotImage
+		want     string
+	}{
+		{
+			name: "single attestations",
+			snapshot: ApplicationSnapshotImage{
+				attestations: []oci.Signature{createSimpleAttestation(nil)},
+			},
+			want: `{"attestations": [` + simpleAttestationJSONText + `]}`,
+		},
+		{
+			name: "multiple attestations",
+			snapshot: ApplicationSnapshotImage{
+				attestations: []oci.Signature{
+					createSimpleAttestation(nil),
+					createSimpleAttestation(nil),
+				},
+			},
+			want: `{"attestations": [` + simpleAttestationJSONText + "," + simpleAttestationJSONText + `]}`,
+		},
+	}
+
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			fs := afero.NewMemMapFs()
+			input, err := tt.snapshot.WriteInputFile(context.Background(), fs)
+
+			assert.NoError(t, err)
+			assert.NotEmpty(t, input)
+			assert.Regexp(t, `/ecp_input.\d+/input.json`, input)
+			fileExists, err := afero.Exists(fs, input)
+			assert.NoError(t, err)
+			assert.True(t, fileExists)
+
+			bytes, err := afero.ReadFile(fs, input)
+			assert.NoError(t, err)
+			assert.JSONEq(t, tt.want, string(bytes))
+		})
+	}
+}
+
+func TestWriteInputFileMultipleAttestations(t *testing.T) {
 	att := createSimpleAttestation(nil)
 	a := ApplicationSnapshotImage{
 		attestations: []oci.Signature{att},
 	}
 
 	fs := afero.NewMemMapFs()
-	inputs, err := a.WriteInputFiles(context.TODO(), fs)
+	input, err := a.WriteInputFile(context.TODO(), fs)
 
 	assert.NoError(t, err)
-	assert.Len(t, inputs, 1)
-	assert.Regexp(t, `/ecp_input.\d+/input.json`, inputs[0])
-	fileExists, err := afero.Exists(fs, inputs[0])
+	assert.NotEmpty(t, input)
+	assert.Regexp(t, `/ecp_input.\d+/input.json`, input)
+	fileExists, err := afero.Exists(fs, input)
 	assert.NoError(t, err)
 	assert.True(t, fileExists)
 
-	bytes, err := afero.ReadFile(fs, inputs[0])
+	bytes, err := afero.ReadFile(fs, input)
 	assert.NoError(t, err)
-	assert.JSONEq(t, `{
-		"attestations": [
-		  {
-			"_type": "",
-			"predicateType": "https://slsa.dev/provenance/v0.2",
-			"subject": null,
-			"predicate": {
-			  "buildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
-			  "builder": {
-				"id": ""
-			  },
-			  "invocation": {
-				"configSource": {}
-			  }
-			}
-		  }
-		]
-	  }
-	  `, string(bytes))
+	assert.JSONEq(t, `{"attestations": [`+simpleAttestationJSONText+`]}`, string(bytes))
 }
 
 func TestSyntaxValidationWithoutAttestations(t *testing.T) {

@@ -306,54 +306,47 @@ func (a *ApplicationSnapshotImage) Signatures() []cosign.Signatures {
 	return a.signatures
 }
 
-// WriteInputFiles writes the JSON from the attestations to input.json in a random temp dir
-func (a *ApplicationSnapshotImage) WriteInputFiles(ctx context.Context, fs afero.Fs) ([]string, error) {
-	attCount := len(a.attestations)
-	log.Debugf("Attempting to write %d attestations to inputs", attCount)
-	inputs := make([]string, 0, attCount)
+// WriteInputFile writes the JSON from the attestations to input.json in a random temp dir
+func (a *ApplicationSnapshotImage) WriteInputFile(ctx context.Context, fs afero.Fs) (string, error) {
+	log.Debugf("Attempting to write %d attestations to input file", len(a.attestations))
 
+	var statements []in_toto.Statement
 	for _, att := range a.attestations {
 		_, statement, err := statementFrom(ctx, att)
 		if err != nil {
-			return nil, err
+			return "", err
 		}
 		if statement == nil {
 			continue
 		}
+		statements = append(statements, *statement)
+	}
+	attestations := map[string][]in_toto.Statement{"attestations": statements}
 
-		inputDir, err := afero.TempDir(fs, "", "ecp_input.")
-		if err != nil {
-			log.Debug("Problem making temp dir!")
-			return nil, err
-		}
-		log.Debugf("Created dir %s", inputDir)
-		inputJSONPath := path.Join(inputDir, "input.json")
+	inputDir, err := afero.TempDir(fs, "", "ecp_input.")
+	if err != nil {
+		log.Debug("Problem making temp dir!")
+		return "", err
+	}
+	log.Debugf("Created dir %s", inputDir)
+	inputJSONPath := path.Join(inputDir, "input.json")
 
-		f, err := fs.OpenFile(inputJSONPath, os.O_CREATE|os.O_WRONLY|os.O_EXCL, 0644)
-		if err != nil {
-			log.Debugf("Problem creating file in %s", inputDir)
-			return nil, err
-		}
-		defer f.Close()
-		j := json.NewEncoder(f)
+	f, err := fs.OpenFile(inputJSONPath, os.O_CREATE|os.O_WRONLY|os.O_EXCL, 0644)
+	if err != nil {
+		log.Debugf("Problem creating file in %s", inputDir)
+		return "", err
+	}
+	defer f.Close()
 
-		attestations := map[string][]in_toto.Statement{
-			"attestations": {
-				*statement,
-			},
-		}
-
-		err = j.Encode(attestations)
-		if err != nil {
-			log.Debug("Problem encoding attestion JSON!")
-			return nil, err
-		}
-
-		inputs = append(inputs, inputJSONPath)
+	j := json.NewEncoder(f)
+	err = j.Encode(attestations)
+	if err != nil {
+		log.Debug("Problem encoding attestion JSON!")
+		return "", err
 	}
 
-	log.Debugf("Done preparing inputs:\n%s", inputs)
-	return inputs, nil
+	log.Debugf("Done preparing input file:\n%s", inputJSONPath)
+	return inputJSONPath, nil
 }
 
 func statementFrom(ctx context.Context, att oci.Signature) ([]byte, *in_toto.Statement, error) {
