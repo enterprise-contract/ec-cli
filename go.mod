@@ -44,7 +44,7 @@ require (
 	github.com/walkerus/go-wiremock v1.4.0
 	github.com/whilp/git-urls v1.0.0
 	github.com/yudai/gojsondiff v1.0.0
-	golang.org/x/oauth2 v0.3.0
+	golang.org/x/oauth2 v0.4.0
 	golang.org/x/tools v0.5.0
 	gopkg.in/square/go-jose.v2 v2.6.0
 	k8s.io/api v0.26.0
