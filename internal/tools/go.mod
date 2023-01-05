@@ -7,7 +7,7 @@ require (
 	github.com/golangci/golangci-lint v1.50.1
 	github.com/google/addlicense v1.1.0
 	github.com/tektoncd/chains v0.14.0
-	github.com/tektoncd/cli v0.28.0
+	github.com/tektoncd/cli v0.3.1-0.20221206125835-f9030b6359a0
 	github.com/wadey/gocovmerge v0.0.0-20160331181800-b5bfa59ec0ad
 	sigs.k8s.io/kustomize/kustomize/v4 v4.5.7
 )
