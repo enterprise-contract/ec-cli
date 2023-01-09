@@ -22,9 +22,8 @@ metadata:
 spec:
   description: My custom enterprise contract policy configuration
   sources:
-    - policy:
-      - quay.io/hacbs-contract/ec-release-policy:latest
-  configuration:
-    exclude:
-      - not_useful
-      - test:conftest-clair
+  - data:
+    - quay.io/hacbs-contract/ec-policy-data:latest
+    name: ec-policy
+    policy:
+    - quay.io/hacbs-contract/ec-release-policy:latest
