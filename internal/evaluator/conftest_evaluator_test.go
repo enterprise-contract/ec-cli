@@ -23,6 +23,7 @@ import (
 	"testing"
 	"time"
 
+	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/open-policy-agent/conftest/output"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
@@ -176,4 +177,371 @@ func TestConftestEvaluatorEvaluate(t *testing.T) {
 	actualResults, err := evaluator.Evaluate(ctx, inputs)
 	assert.NoError(t, err)
 	assert.Equal(t, expectedResults, actualResults)
+}
+
+func TestConftestEvaluatorIncludeExclude(t *testing.T) {
+	tests := []struct {
+		name    string
+		results []output.CheckResult
+		config  *ecc.EnterpriseContractPolicyConfiguration
+		want    []output.CheckResult
+	}{
+		{
+			name: "exclude by package name",
+			results: []output.CheckResult{
+				{
+					Failures: []output.Result{
+						{Metadata: map[string]interface{}{"code": "breakfast.spam"}},
+						{Metadata: map[string]interface{}{"code": "lunch.spam"}},
+					},
+					Warnings: []output.Result{
+						{Metadata: map[string]interface{}{"code": "breakfast.ham"}},
+						{Metadata: map[string]interface{}{"code": "lunch.ham"}},
+					},
+				},
+			},
+			config: &ecc.EnterpriseContractPolicyConfiguration{Exclude: []string{"breakfast"}},
+			want: []output.CheckResult{
+				{
+					Failures: []output.Result{
+						{Metadata: map[string]interface{}{"code": "lunch.spam"}},
+					},
+					Warnings: []output.Result{
+						{Metadata: map[string]interface{}{"code": "lunch.ham"}},
+					},
+				},
+			},
+		},
+		{
+			name: "exclude by package and rule name",
+			results: []output.CheckResult{
+				{
+					Failures: []output.Result{
+						{Metadata: map[string]interface{}{"code": "breakfast.spam"}},
+						{Metadata: map[string]interface{}{"code": "lunch.spam"}},
+					},
+					Warnings: []output.Result{
+						{Metadata: map[string]interface{}{"code": "breakfast.ham"}},
+						{Metadata: map[string]interface{}{"code": "lunch.ham"}},
+					},
+				},
+			},
+			config: &ecc.EnterpriseContractPolicyConfiguration{
+				Exclude: []string{"breakfast.spam", "lunch.ham"},
+			},
+			want: []output.CheckResult{
+				{
+					Failures: []output.Result{
+						{Metadata: map[string]interface{}{"code": "lunch.spam"}},
+					},
+					Warnings: []output.Result{
+						{Metadata: map[string]interface{}{"code": "breakfast.ham"}},
+					},
+				},
+			},
+		},
+		{
+			name: "include by package",
+			results: []output.CheckResult{
+				{
+					Failures: []output.Result{
+						{Metadata: map[string]interface{}{"code": "breakfast.spam"}},
+						{Metadata: map[string]interface{}{"code": "lunch.spam"}},
+					},
+					Warnings: []output.Result{
+						{Metadata: map[string]interface{}{"code": "breakfast.ham"}},
+						{Metadata: map[string]interface{}{"code": "lunch.ham"}},
+					},
+				},
+			},
+			config: &ecc.EnterpriseContractPolicyConfiguration{Include: []string{"breakfast"}},
+			want: []output.CheckResult{
+				{
+					Failures: []output.Result{
+						{Metadata: map[string]interface{}{"code": "breakfast.spam"}},
+					},
+					Warnings: []output.Result{
+						{Metadata: map[string]interface{}{"code": "breakfast.ham"}},
+					},
+				},
+			},
+		},
+		{
+			name: "include by package and rule name",
+			results: []output.CheckResult{
+				{
+					Failures: []output.Result{
+						{Metadata: map[string]interface{}{"code": "breakfast.spam"}},
+						{Metadata: map[string]interface{}{"code": "lunch.spam"}},
+					},
+					Warnings: []output.Result{
+						{Metadata: map[string]interface{}{"code": "breakfast.ham"}},
+						{Metadata: map[string]interface{}{"code": "lunch.ham"}},
+					},
+				},
+			},
+			config: &ecc.EnterpriseContractPolicyConfiguration{
+				Include: []string{"breakfast.spam", "lunch.ham"},
+			},
+			want: []output.CheckResult{
+				{
+					Failures: []output.Result{
+						{Metadata: map[string]interface{}{"code": "breakfast.spam"}},
+					},
+					Warnings: []output.Result{
+						{Metadata: map[string]interface{}{"code": "lunch.ham"}},
+					},
+				},
+			},
+		},
+		{
+			name: "filter by collection",
+			results: []output.CheckResult{
+				{
+					Failures: []output.Result{
+						{Metadata: map[string]interface{}{
+							"code": "breakfast.spam", "collections": []interface{}{"foo"},
+						}},
+						{Metadata: map[string]interface{}{
+							// Different collection
+							"code": "lunch.spam", "collections": []interface{}{"bar"},
+						}},
+						{Metadata: map[string]interface{}{
+							// No collections at all
+							"code": "dinner.spam",
+						}},
+					},
+					Warnings: []output.Result{
+						{Metadata: map[string]interface{}{
+							"code": "breakfast.ham", "collections": []interface{}{"foo"},
+						}},
+						{Metadata: map[string]interface{}{
+							// Different collection
+							"code": "lunch.ham", "collections": []interface{}{"bar"},
+						}},
+						{Metadata: map[string]interface{}{
+							// No collections at all
+							"code": "dinner.ham",
+						}},
+					},
+				},
+			},
+			config: &ecc.EnterpriseContractPolicyConfiguration{Collections: []string{"foo"}},
+			want: []output.CheckResult{
+				{
+					Failures: []output.Result{
+						{Metadata: map[string]interface{}{
+							"code": "breakfast.spam", "collections": []interface{}{"foo"},
+						}},
+					},
+					Warnings: []output.Result{
+						{Metadata: map[string]interface{}{
+							"code": "breakfast.ham", "collections": []interface{}{"foo"},
+						}},
+					},
+				},
+			},
+		},
+		{
+			name: "filter by collection with include",
+			results: []output.CheckResult{
+				{
+					Failures: []output.Result{
+						{Metadata: map[string]interface{}{
+							"code": "breakfast.spam", "collections": []interface{}{"foo"},
+						}},
+						{Metadata: map[string]interface{}{
+							"code": "lunch.spam", "collections": []interface{}{"foo"},
+						}},
+					},
+					Warnings: []output.Result{
+						{Metadata: map[string]interface{}{
+							"code": "breakfast.ham", "collections": []interface{}{"foo"},
+						}},
+						{Metadata: map[string]interface{}{
+							"code": "lunch.ham", "collections": []interface{}{"foo"},
+						}},
+					},
+				},
+			},
+			config: &ecc.EnterpriseContractPolicyConfiguration{
+				Collections: []string{"foo"},
+				Include:     []string{"breakfast"},
+			},
+			want: []output.CheckResult{
+				{
+					Failures: []output.Result{
+						{Metadata: map[string]interface{}{
+							"code": "breakfast.spam", "collections": []interface{}{"foo"},
+						}},
+					},
+					Warnings: []output.Result{
+						{Metadata: map[string]interface{}{
+							"code": "breakfast.ham", "collections": []interface{}{"foo"},
+						}},
+					},
+				},
+			},
+		},
+		{
+			name: "filter by collection with exclude",
+			results: []output.CheckResult{
+				{
+					Failures: []output.Result{
+						{Metadata: map[string]interface{}{
+							"code": "breakfast.spam", "collections": []interface{}{"foo"},
+						}},
+						{Metadata: map[string]interface{}{
+							"code": "lunch.spam", "collections": []interface{}{"foo"},
+						}},
+					},
+					Warnings: []output.Result{
+						{Metadata: map[string]interface{}{
+							"code": "breakfast.ham", "collections": []interface{}{"foo"},
+						}},
+						{Metadata: map[string]interface{}{
+							"code": "lunch.ham", "collections": []interface{}{"foo"},
+						}},
+					},
+				},
+			},
+			config: &ecc.EnterpriseContractPolicyConfiguration{
+				Collections: []string{"foo"},
+				Exclude:     []string{"lunch"},
+			},
+			want: []output.CheckResult{
+				{
+					Failures: []output.Result{
+						{Metadata: map[string]interface{}{
+							"code": "breakfast.spam", "collections": []interface{}{"foo"},
+						}},
+					},
+					Warnings: []output.Result{
+						{Metadata: map[string]interface{}{
+							"code": "breakfast.ham", "collections": []interface{}{"foo"},
+						}},
+					},
+				},
+			},
+		},
+		{
+			name: "ignore unexpected collection type",
+			results: []output.CheckResult{
+				{
+					Failures: []output.Result{
+						{Metadata: map[string]interface{}{
+							"code": "breakfast.spam", "collections": []interface{}{"foo"},
+						}},
+						{Metadata: map[string]interface{}{
+							"code": "lunch.spam", "collections": 0,
+						}},
+					},
+					Warnings: []output.Result{
+						{Metadata: map[string]interface{}{
+							"code": "breakfast.ham", "collections": []interface{}{"foo"},
+						}},
+						{Metadata: map[string]interface{}{
+							"code": "lunch.ham", "collections": false,
+						}},
+					},
+				},
+			},
+			config: &ecc.EnterpriseContractPolicyConfiguration{},
+			want: []output.CheckResult{
+				{
+					Failures: []output.Result{
+						{Metadata: map[string]interface{}{
+							"code": "breakfast.spam", "collections": []interface{}{"foo"},
+						}},
+						{Metadata: map[string]interface{}{
+							"code": "lunch.spam", "collections": 0,
+						}},
+					},
+					Warnings: []output.Result{
+						{Metadata: map[string]interface{}{
+							"code": "breakfast.ham", "collections": []interface{}{"foo"},
+						}},
+						{Metadata: map[string]interface{}{
+							"code": "lunch.ham", "collections": false,
+						}},
+					},
+				},
+			},
+		},
+		{
+			name: "ignore unexpected code type",
+			results: []output.CheckResult{
+				{
+					Failures: []output.Result{{Metadata: map[string]interface{}{"code": 0}}},
+					Warnings: []output.Result{{Metadata: map[string]interface{}{"code": false}}},
+				},
+			},
+			config: &ecc.EnterpriseContractPolicyConfiguration{},
+			want: []output.CheckResult{
+				{
+					Failures: []output.Result{{Metadata: map[string]interface{}{"code": 0}}},
+					Warnings: []output.Result{{Metadata: map[string]interface{}{"code": false}}},
+				},
+			},
+		},
+		{
+			name: "partial code",
+			results: []output.CheckResult{
+				{
+					Failures: []output.Result{{Metadata: map[string]interface{}{"code": 0}}},
+					Warnings: []output.Result{{Metadata: map[string]interface{}{"code": false}}},
+				},
+			},
+			config: &ecc.EnterpriseContractPolicyConfiguration{},
+			want: []output.CheckResult{
+				{
+					Failures: []output.Result{{Metadata: map[string]interface{}{"code": 0}}},
+					Warnings: []output.Result{{Metadata: map[string]interface{}{"code": false}}},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := mockTestRunner{}
+			dl := mockDownloader{}
+			inputs := []string{"inputs"}
+			ctx := downloader.WithDownloadImpl(withTestRunner(context.Background(), &r), &dl)
+			r.On("Run", ctx, inputs).Return(tt.results, nil)
+
+			p := &policy.Policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
+				Configuration: tt.config,
+			}}
+			evaluator, err := NewConftestEvaluator(ctx, afero.NewMemMapFs(), []source.PolicySource{
+				testPolicySource{},
+			}, "release.main", p)
+
+			assert.NoError(t, err)
+			got, err := evaluator.Evaluate(ctx, inputs)
+			assert.NoError(t, err)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestMakeMatchers(t *testing.T) {
+	cases := []struct {
+		name string
+		code string
+		want []string
+	}{
+		{name: "valid", code: "breakfast.spam", want: []string{"*", "breakfast", "breakfast.spam"}},
+		{name: "incomplete code", code: "spam", want: []string{"*"}},
+		{name: "extra code info ignored", code: "this.is.ignored.breakfast.spam",
+			want: []string{"*", "breakfast", "breakfast.spam"}},
+		{name: "empty code", code: "", want: []string{"*"}},
+	}
+
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, makeMatchers(tt.code))
+
+		})
+	}
 }

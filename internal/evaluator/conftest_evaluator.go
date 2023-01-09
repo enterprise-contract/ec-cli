@@ -19,13 +19,16 @@ package evaluator
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/open-policy-agent/conftest/output"
 	"github.com/open-policy-agent/conftest/runner"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
+	"golang.org/x/exp/slices"
 
 	"github.com/hacbs-contract/ec-cli/internal/policy"
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
@@ -48,7 +51,7 @@ type conftestEvaluator struct {
 	workDir       string
 	dataDir       string
 	policyDir     string
-	effectiveTime time.Time
+	policy        *policy.Policy
 }
 
 // NewConftestEvaluator returns initialized conftestEvaluator implementing
@@ -58,7 +61,7 @@ func NewConftestEvaluator(ctx context.Context, fs afero.Fs, policySources []sour
 		policySources: policySources,
 		namespace:     namespace,
 		outputFormat:  "json",
-		effectiveTime: p.EffectiveTime,
+		policy:        p,
 	}
 
 	dir, err := utils.CreateWorkDir(fs)
@@ -73,7 +76,7 @@ func NewConftestEvaluator(ctx context.Context, fs afero.Fs, policySources []sour
 
 	log.Debugf("Created work dir %s", dir)
 
-	if err := c.createDataDirectory(ctx, fs, p); err != nil {
+	if err := c.createDataDirectory(ctx, fs); err != nil {
 		return nil, err
 	}
 
@@ -115,18 +118,35 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) ([]out
 		return nil, err
 	}
 
-	now := c.effectiveTime
+	now := c.policy.EffectiveTime
 	for i, result := range runResults {
+		warnings := []output.Result{}
 		failures := []output.Result{}
+
+		for _, warning := range result.Warnings {
+			if !c.isResultIncluded(warning) {
+				log.Debugf("Skipping result warning: %#v", warning)
+				continue
+			}
+			warnings = append(warnings, warning)
+		}
+
 		for _, failure := range result.Failures {
+			if !c.isResultIncluded(failure) {
+				log.Debugf("Skipping result failure: %#v", failure)
+				continue
+			}
 			if !isResultEffective(failure, now) {
 				// TODO: Instead of moving to warnings, create new attribute: "futureViolations"
-				result.Warnings = append(result.Warnings, failure)
+				warnings = append(warnings, failure)
 			} else {
 				failures = append(failures, failure)
 			}
 		}
+
+		result.Warnings = warnings
 		result.Failures = failures
+
 		runResults[i] = result
 	}
 
@@ -149,8 +169,14 @@ func createConfigJSON(fs afero.Fs, dataDir string, p *policy.Policy) error {
 	}
 
 	type policyConfig struct {
-		NonBlocking *[]string `json:"non_blocking_checks,omitempty"` // TODO deprecated, to be removed
+		// TODO: NonBlocking and Exclude should eventually not be propagated to the
+		// policy config. However, some policy rules, i.e. release.test, have custom
+		// logic to exclude certain failures. Also, NonBlocking is deprecated and
+		// should be removed soon.
+		NonBlocking *[]string `json:"non_blocking_checks,omitempty"`
 		Exclude     *[]string `json:"exclude,omitempty"`
+		// TODO: Do not propagate Include and Collections once ec-policies start
+		// emitting collections metadata.
 		Include     *[]string `json:"include,omitempty"`
 		Collections *[]string `json:"collections,omitempty"`
 		WhenNs      int64     `json:"when_ns"`
@@ -213,7 +239,7 @@ func createConfigJSON(fs afero.Fs, dataDir string, p *policy.Policy) error {
 }
 
 // createDataDirectory creates the base content in the data directory
-func (c *conftestEvaluator) createDataDirectory(ctx context.Context, fs afero.Fs, p *policy.Policy) error {
+func (c *conftestEvaluator) createDataDirectory(ctx context.Context, fs afero.Fs) error {
 	dataDir := c.dataDir
 	exists, err := afero.DirExists(fs, dataDir)
 	if err != nil {
@@ -224,7 +250,7 @@ func (c *conftestEvaluator) createDataDirectory(ctx context.Context, fs afero.Fs
 		_ = fs.MkdirAll(dataDir, 0755)
 	}
 
-	if err := createConfigJSON(fs, dataDir, p); err != nil {
+	if err := createConfigJSON(fs, dataDir, c.policy); err != nil {
 		return err
 	}
 
@@ -254,4 +280,85 @@ func isResultEffective(failure output.Result, now time.Time) bool {
 		return true
 	}
 	return effectiveOn.Before(now)
+}
+
+// isResultIncluded returns whether or not the result should be included or
+// discarded based on the policy configuration.
+func (c conftestEvaluator) isResultIncluded(result output.Result) bool {
+	matchers := makeMatchers(extractCode(result))
+	includes := []string{"*"}
+	excludes := []string{}
+	if c.policy.Configuration != nil {
+		// If collections is not empty, then only include rules that mention
+		// the collection.
+		if len(c.policy.Configuration.Collections) > 0 {
+			collections := extractCollections(result)
+			if !hasAnyMatch(collections, c.policy.Configuration.Collections) {
+				return false
+			}
+		}
+		if len(c.policy.Configuration.Include) > 0 {
+			includes = c.policy.Configuration.Include
+		}
+		if len(c.policy.Configuration.Exclude) > 0 {
+			excludes = c.policy.Configuration.Exclude
+		}
+	}
+
+	if c.policy.Exceptions != nil {
+		// TODO: NonBlocking is deprecated. Remove it eventually
+		excludes = append(excludes, c.policy.Exceptions.NonBlocking...)
+	}
+	return hasAnyMatch(matchers, includes) && !hasAnyMatch(matchers, excludes)
+}
+
+// hasAnyMatch returns true if the haystack contains any of the needles.
+func hasAnyMatch(needles, haystack []string) bool {
+	for _, needle := range needles {
+		if slices.Contains(haystack, needle) {
+			return true
+		}
+	}
+	return false
+}
+
+// makeMatchers returns the possible matching strings for the code.
+func makeMatchers(code string) []string {
+	parts := strings.Split(code, ".")
+	var pkg string
+	if len(parts) >= 2 {
+		pkg = parts[len(parts)-2]
+	}
+	rule := parts[len(parts)-1]
+
+	matchers := []string{"*"}
+	if pkg != "" {
+		matchers = append(matchers, pkg, fmt.Sprintf("%s.%s", pkg, rule))
+	}
+	return matchers
+}
+
+// extractCollections returns the collections encoded in the result metadata.
+func extractCollections(result output.Result) []string {
+	var collections []string
+	if maybeInterfaces, exists := result.Metadata["collections"]; exists {
+		if interfaces, ok := maybeInterfaces.([]interface{}); ok {
+			for _, maybeCollection := range interfaces {
+				if collection, ok := maybeCollection.(string); ok {
+					collections = append(collections, collection)
+				}
+			}
+		}
+	}
+	return collections
+}
+
+// extractCode returns the code encoded in the result metadata.
+func extractCode(result output.Result) string {
+	if maybeCode, exists := result.Metadata["code"]; exists {
+		if code, ok := maybeCode.(string); ok {
+			return code
+		}
+	}
+	return ""
 }
