@@ -171,4 +171,4 @@ tags
 [._]*.un~
 
 # Last persisted acceptance test run information
-internal/acceptance/.persisted
+acceptance/.persisted

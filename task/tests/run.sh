@@ -43,7 +43,7 @@ if [[ "$status" == "False" ]]; then
   echo
   echo -e "💣 \033[31;1mTask ${TASK_RUN_NAME} failed\033[0m"
   echo -e '\033[4;1mTekton TaskRun description\033[0m'
-  go run -modfile internal/tools/go.mod github.com/tektoncd/cli/cmd/tkn tr describe "${TASK_RUN_NAME#*/}"
+  go run -modfile tools/go.mod github.com/tektoncd/cli/cmd/tkn tr describe "${TASK_RUN_NAME#*/}"
   echo -e '\033[4;1mPod logs\033[0m'
   POD_NAME=$(kubectl get "${TASK_RUN_NAME}" -o jsonpath='{.status.podName}')
   kubectl logs "${POD_NAME}" --all-containers=true
