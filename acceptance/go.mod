@@ -21,7 +21,7 @@ require (
 	github.com/sigstore/rekor v0.12.1-0.20220915152154-4bb6f441c1b2
 	github.com/sigstore/sigstore v1.5.0
 	github.com/stretchr/testify v1.8.1
-	github.com/tektoncd/cli v0.28.0
+	github.com/tektoncd/cli v0.29.0
 	github.com/tektoncd/pipeline v0.42.0
 	github.com/testcontainers/testcontainers-go v0.15.0
 	github.com/theupdateframework/go-tuf v0.5.2-0.20220930112810-3890c1e7ace4
@@ -67,12 +67,12 @@ require (
 	github.com/containerd/containerd v1.6.12 // indirect
 	github.com/containerd/stargz-snapshotter/estargz v0.12.1 // indirect
 	github.com/coreos/go-semver v0.3.0 // indirect
-	github.com/coreos/go-systemd/v22 v22.3.2 // indirect
+	github.com/coreos/go-systemd/v22 v22.3.3-0.20220203105225-a9a7ef127534 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/cucumber/gherkin-go/v19 v19.0.3 // indirect
 	github.com/cucumber/messages-go/v16 v16.0.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/docker/cli v20.10.21+incompatible // indirect
+	github.com/docker/cli v20.10.22+incompatible // indirect
 	github.com/docker/distribution v2.8.1+incompatible // indirect
 	github.com/docker/docker v20.10.22+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.7.0 // indirect
@@ -234,9 +234,9 @@ require (
 	go.opentelemetry.io/proto/otlp v0.19.0 // indirect
 	go.starlark.net v0.0.0-20200306205701-8dd3e2ee1dd5 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
-	go.uber.org/multierr v1.8.0 // indirect
+	go.uber.org/multierr v1.9.0 // indirect
 	go.uber.org/zap v1.24.0 // indirect
-	golang.org/x/crypto v0.4.0 // indirect
+	golang.org/x/crypto v0.5.0 // indirect
 	golang.org/x/exp v0.0.0-20220823124025-807a23277127 // indirect
 	golang.org/x/mod v0.7.0 // indirect
 	golang.org/x/net v0.5.0 // indirect
