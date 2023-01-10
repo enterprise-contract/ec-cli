@@ -45,14 +45,12 @@ metadata:
   name: ec-demo
 spec:
   description: Demo Enterprise Contract policy configuration
-  configuration:
-    exclude:
-    - not_useful
-    - test:conftest-clair
   sources:
-    - name: Default EC policy
-      policy:
-      - quay.io/hacbs-contract/ec-release-policy:latest
+  - data:
+    - quay.io/hacbs-contract/ec-policy-data:latest
+    name: Default EC policy
+    policy:
+    - quay.io/hacbs-contract/ec-release-policy:latest
 EOF
 
 while read -r IMG
