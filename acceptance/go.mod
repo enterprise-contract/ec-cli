@@ -22,7 +22,7 @@ require (
 	github.com/sigstore/sigstore v1.5.0
 	github.com/stretchr/testify v1.8.1
 	github.com/tektoncd/cli v0.29.0
-	github.com/tektoncd/pipeline v0.42.0
+	github.com/tektoncd/pipeline v0.43.2
 	github.com/testcontainers/testcontainers-go v0.15.0
 	github.com/theupdateframework/go-tuf v0.5.2-0.20220930112810-3890c1e7ace4
 	github.com/transparency-dev/merkle v0.0.1
@@ -47,7 +47,7 @@ require (
 	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
 	github.com/BurntSushi/toml v1.2.1 // indirect
 	github.com/Microsoft/go-winio v0.6.0 // indirect
-	github.com/Microsoft/hcsshim v0.9.5 // indirect
+	github.com/Microsoft/hcsshim v0.9.6 // indirect
 	github.com/ProtonMail/go-crypto v0.0.0-20210428141323-04723f9f07d7 // indirect
 	github.com/acomagu/bufpipe v1.0.3 // indirect
 	github.com/alessio/shellescape v1.4.1 // indirect
@@ -64,7 +64,7 @@ require (
 	github.com/cncf/xds/go v0.0.0-20220314180256-7f1daf1720fc // indirect
 	github.com/cockroachdb/apd/v2 v2.0.1 // indirect
 	github.com/containerd/cgroups v1.0.4 // indirect
-	github.com/containerd/containerd v1.6.12 // indirect
+	github.com/containerd/containerd v1.6.14 // indirect
 	github.com/containerd/stargz-snapshotter/estargz v0.12.1 // indirect
 	github.com/coreos/go-semver v0.3.0 // indirect
 	github.com/coreos/go-systemd/v22 v22.3.3-0.20220203105225-a9a7ef127534 // indirect
