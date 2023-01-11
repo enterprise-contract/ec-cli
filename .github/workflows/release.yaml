@@ -34,14 +34,23 @@ jobs:
       TASK: task/0.1/verify-enterprise-contract.yaml
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: release-${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            release-${{ runner.os }}-go-
 
       - name: Setup Go environment
         uses: actions/setup-go@v3
         with:
-          cache: true
           go-version-file: go.mod
-          cache-dependency-path: '**/go.sum'
 
       - name: Download go dependencies
         run: |
