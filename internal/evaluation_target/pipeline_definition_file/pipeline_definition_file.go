@@ -19,6 +19,7 @@ package pipeline_definition_file
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/spf13/afero"
 
@@ -47,7 +48,7 @@ func NewPipelineDefinitionFile(ctx context.Context, fs afero.Fs, fpath string, s
 	p := &DefinitionFile{
 		Fpath: fpath,
 	}
-	c, err := newConftestEvaluator(ctx, fs, sources, namespace, &policy.Policy{})
+	c, err := newConftestEvaluator(ctx, fs, sources, namespace, &policy.Policy{EffectiveTime: time.Now()})
 	if err != nil {
 		return nil, err
 	}
