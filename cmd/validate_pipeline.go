@@ -38,7 +38,7 @@ func validatePipelineCmd(validate pipelineValidationFn) *cobra.Command {
 		namespace  string
 	}{
 		filePaths:  []string{},
-		policyURLs: []string{"quay.io/hacbs-contract/ec-release-policy:latest"},
+		policyURLs: []string{"oci::quay.io/hacbs-contract/ec-pipeline-policy:latest"},
 		dataURLs:   []string{"git::https://github.com/hacbs-contract/ec-policies.git//data"},
 		namespace:  "pipeline.main",
 	}
