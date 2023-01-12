@@ -29,6 +29,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/hacbs-contract/ec-cli/internal/applicationsnapshot"
+	"github.com/hacbs-contract/ec-cli/internal/format"
 	"github.com/hacbs-contract/ec-cli/internal/output"
 	"github.com/hacbs-contract/ec-cli/internal/policy"
 )
@@ -213,7 +214,8 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 				return err
 			}
 			report := applicationsnapshot.NewReport(components, string(publicKeyPEM))
-			if err := report.WriteAll(data.output, cmd.OutOrStdout(), fs(cmd.Context())); err != nil {
+			p := format.NewTargetParser(applicationsnapshot.JSON, cmd.OutOrStdout(), fs(cmd.Context()))
+			if err := report.WriteAll(data.output, p); err != nil {
 				return err
 			}
 
