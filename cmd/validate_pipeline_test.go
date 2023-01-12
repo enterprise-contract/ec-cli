@@ -32,8 +32,8 @@ import (
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
 )
 
-func Test_ValidatePipelineCommandOutput(t *testing.T) {
-	validate := func(ctx context.Context, fs afero.Fs, fpath string, policyUrl source.PolicyUrl, namespace string) (*output2.Output, error) {
+func TestValidatePipelineCommandOutput(t *testing.T) {
+	validate := func(_ context.Context, _ afero.Fs, fpath string, _ []source.PolicySource, namespace string) (*output2.Output, error) {
 		return &output2.Output{
 			PolicyCheck: []output.CheckResult{
 				{
@@ -105,8 +105,42 @@ func Test_ValidatePipelineCommandOutput(t *testing.T) {
 	  ]`, out.String())
 }
 
-func Test_ValidatePipelineCommandErrors(t *testing.T) {
-	validate := func(ctx context.Context, fs afero.Fs, fpath string, policyUrl source.PolicyUrl, namespace string) (*output2.Output, error) {
+func TestValidatePipelinePolicySources(t *testing.T) {
+	expected := []source.PolicySource{
+		&source.PolicyUrl{Url: "spam-policy-source", Kind: source.PolicyKind},
+		&source.PolicyUrl{Url: "ham-policy-source", Kind: source.PolicyKind},
+		&source.PolicyUrl{Url: "bacon-data-source", Kind: source.DataKind},
+		&source.PolicyUrl{Url: "eggs-data-source", Kind: source.DataKind},
+	}
+	validate := func(_ context.Context, _ afero.Fs, fpath string, sources []source.PolicySource, namespace string) (*output2.Output, error) {
+		assert.Equal(t, expected, sources)
+		return &output2.Output{}, nil
+	}
+
+	cmd := validatePipelineCmd(validate)
+
+	var out bytes.Buffer
+	cmd.SetOut(&out)
+
+	cmd.SetArgs([]string{
+		"--pipeline-file",
+		"/path/file1.yaml",
+		"--policy",
+		"spam-policy-source",
+		"--policy",
+		"ham-policy-source",
+		"--data",
+		"bacon-data-source",
+		"--data",
+		"eggs-data-source",
+	})
+
+	err := cmd.Execute()
+	assert.NoError(t, err)
+}
+
+func TestValidatePipelineCommandErrors(t *testing.T) {
+	validate := func(_ context.Context, _ afero.Fs, fpath string, _ []source.PolicySource, _ string) (*output2.Output, error) {
 		return nil, errors.New(fpath)
 	}
 

@@ -19,6 +19,7 @@ package pipeline_definition_file
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/spf13/afero"
 
@@ -36,7 +37,7 @@ type DefinitionFile struct {
 }
 
 // NewPipelineDefinitionFile returns a DefinitionFile struct with FPath and evaluator ready to use
-func NewPipelineDefinitionFile(ctx context.Context, fs afero.Fs, fpath string, policyUrl source.PolicyUrl, namespace string) (*DefinitionFile, error) {
+func NewPipelineDefinitionFile(ctx context.Context, fs afero.Fs, fpath string, sources []source.PolicySource, namespace string) (*DefinitionFile, error) {
 	exists, err := afero.Exists(fs, fpath)
 	if err != nil {
 		return nil, err
@@ -47,7 +48,7 @@ func NewPipelineDefinitionFile(ctx context.Context, fs afero.Fs, fpath string, p
 	p := &DefinitionFile{
 		Fpath: fpath,
 	}
-	c, err := newConftestEvaluator(ctx, fs, []source.PolicySource{&policyUrl}, namespace, &policy.Policy{})
+	c, err := newConftestEvaluator(ctx, fs, sources, namespace, &policy.Policy{EffectiveTime: time.Now()})
 	if err != nil {
 		return nil, err
 	}

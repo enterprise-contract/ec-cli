@@ -28,19 +28,19 @@ import (
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
 )
 
-type pipelineValidationFn func(context.Context, afero.Fs, string, source.PolicyUrl, string) (*output.Output, error)
+type pipelineValidationFn func(context.Context, afero.Fs, string, []source.PolicySource, string) (*output.Output, error)
 
 func validatePipelineCmd(validate pipelineValidationFn) *cobra.Command {
 	var data = struct {
-		FilePaths         []string
-		PolicyUrl         string
-		Ref               string
-		ConftestNamespace string
+		filePaths  []string
+		policyURLs []string
+		dataURLs   []string
+		namespace  string
 	}{
-		FilePaths:         []string{},
-		PolicyUrl:         "quay.io/hacbs-contract/ec-release-policy:latest",
-		ConftestNamespace: "pipeline.main",
-		Ref:               "main",
+		filePaths:  []string{},
+		policyURLs: []string{"oci::quay.io/hacbs-contract/ec-pipeline-policy:latest"},
+		dataURLs:   []string{"git::https://github.com/hacbs-contract/ec-policies.git//data"},
+		namespace:  "pipeline.main",
 	}
 	cmd := &cobra.Command{
 		Use:   "pipeline",
@@ -62,20 +62,28 @@ func validatePipelineCmd(validate pipelineValidationFn) *cobra.Command {
 
 			  ec validate pipeline --pipeline-file </path/to/pipeline/file> --pipeline-file /path/to/other-pipeline.file
 
-			Specify a different location for the policies:
+			Specify different policy and data sources:
 
 			  ec validate pipeline --pipeline-file </path/to/pipeline/file> \
-				--policy git::https://example.com/user/repo.git//policy?ref=main --namespace pipeline.basic
+				--policy git::https://github.com/hacbs-contract/ec-policies//policy/lib \
+				--policy git::https://github.com/hacbs-contract/ec-policies//policy/pipeline \
+				--data git::https://github.com/hacbs-contract/ec-policies//data
 		`),
 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 			var outputs output.Outputs
-			for i := range data.FilePaths {
-				fpath := data.FilePaths[i]
-				policySource := source.PolicyUrl{Url: data.PolicyUrl, Kind: source.PolicyKind}
+			for i := range data.filePaths {
+				fpath := data.filePaths[i]
+				var sources []source.PolicySource
+				for _, url := range data.policyURLs {
+					sources = append(sources, &source.PolicyUrl{Url: url, Kind: source.PolicyKind})
+				}
+				for _, url := range data.dataURLs {
+					sources = append(sources, &source.PolicyUrl{Url: url, Kind: source.DataKind})
+				}
 				ctx := cmd.Context()
-				if o, e := validate(ctx, fs(ctx), fpath, policySource, data.ConftestNamespace); e != nil {
+				if o, e := validate(ctx, fs(ctx), fpath, sources, data.namespace); e != nil {
 					err = multierror.Append(err, e)
 				} else {
 					outputs = append(outputs, o)
@@ -89,13 +97,16 @@ func validatePipelineCmd(validate pipelineValidationFn) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringSliceVarP(&data.FilePaths, "pipeline-file", "p", data.FilePaths,
+	cmd.Flags().StringSliceVarP(&data.filePaths, "pipeline-file", "p", data.filePaths,
 		"path to pipeline definition YAML/JSON file (required)")
 
-	cmd.Flags().StringVar(&data.PolicyUrl, "policy", data.PolicyUrl,
-		"git repo containing policies")
+	cmd.Flags().StringSliceVar(&data.policyURLs, "policy", data.policyURLs,
+		"url for policies, go-getter style")
 
-	cmd.Flags().StringVar(&data.ConftestNamespace, "namespace", data.ConftestNamespace,
+	cmd.Flags().StringSliceVar(&data.dataURLs, "data", data.dataURLs,
+		"url for policy data, go-getter style")
+
+	cmd.Flags().StringVar(&data.namespace, "namespace", data.namespace,
 		"rego namespace within policy repo")
 
 	if err := cmd.MarkFlagRequired("pipeline-file"); err != nil {
