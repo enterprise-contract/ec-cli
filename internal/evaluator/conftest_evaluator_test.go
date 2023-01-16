@@ -171,7 +171,7 @@ func TestConftestEvaluatorEvaluate(t *testing.T) {
 
 	evaluator, err := NewConftestEvaluator(ctx, afero.NewMemMapFs(), []source.PolicySource{
 		testPolicySource{},
-	}, "release.main", &policy.Policy{EffectiveTime: time.Now()})
+	}, &policy.Policy{EffectiveTime: time.Now()})
 
 	assert.NoError(t, err)
 	actualResults, err := evaluator.Evaluate(ctx, inputs)
@@ -515,7 +515,7 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 			}}
 			evaluator, err := NewConftestEvaluator(ctx, afero.NewMemMapFs(), []source.PolicySource{
 				testPolicySource{},
-			}, "release.main", p)
+			}, p)
 
 			assert.NoError(t, err)
 			got, err := evaluator.Evaluate(ctx, inputs)

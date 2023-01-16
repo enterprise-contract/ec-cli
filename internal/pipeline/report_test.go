@@ -37,18 +37,10 @@ func TestReport(t *testing.T) {
 		{
 			name: "success",
 			output: []output.Output{
-				{
-					PolicyCheck: []cOutput.CheckResult{
-						{
-							FileName:  "/path/to/pipeline.json",
-							Namespace: "pipeline.main",
-						},
-					},
-				},
+				{PolicyCheck: []cOutput.CheckResult{{FileName: "/path/to/pipeline.json"}}},
 			},
 			expect: `[{
 				"filename": "/path/to/pipeline.json",
-				"namespace": "pipeline.main",
 				"violations": [],
 				"warnings": [],
 				"success": true
@@ -60,8 +52,7 @@ func TestReport(t *testing.T) {
 				{
 					PolicyCheck: []cOutput.CheckResult{
 						{
-							FileName:  "/path/to/pipeline.json",
-							Namespace: "pipeline.main",
+							FileName: "/path/to/pipeline.json",
 							Warnings: []cOutput.Result{
 								{Message: "running low in spam"},
 								{Message: "not all like spam"},
@@ -72,7 +63,6 @@ func TestReport(t *testing.T) {
 			},
 			expect: `[{
 				"filename": "/path/to/pipeline.json",
-				"namespace": "pipeline.main",
 				"violations": [],
 				"warnings": [{"msg": "running low in spam"},{"msg": "not all like spam"}],
 				"success": true
@@ -84,8 +74,7 @@ func TestReport(t *testing.T) {
 				{
 					PolicyCheck: []cOutput.CheckResult{
 						{
-							FileName:  "/path/to/pipeline.json",
-							Namespace: "pipeline.main",
+							FileName: "/path/to/pipeline.json",
 							Failures: []cOutput.Result{
 								{Message: "out of spam!"},
 								{Message: "spam 💔"},
@@ -96,7 +85,6 @@ func TestReport(t *testing.T) {
 			},
 			expect: `[{
 				"filename": "/path/to/pipeline.json",
-				"namespace": "pipeline.main",
 				"violations": [{"msg": "out of spam!"},{"msg": "spam 💔"}],
 				"warnings": [],
 				"success": false

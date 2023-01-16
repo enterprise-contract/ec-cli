@@ -27,7 +27,6 @@ import (
 	appstudioshared "github.com/redhat-appstudio/managed-gitops/appstudio-shared/apis/appstudio.redhat.com/v1alpha1"
 	"github.com/sigstore/cosign/pkg/cosign"
 
-	"github.com/hacbs-contract/ec-cli/internal/evaluation_target/application_snapshot_image"
 	"github.com/hacbs-contract/ec-cli/internal/format"
 )
 
@@ -62,6 +61,9 @@ type componentSummary struct {
 }
 
 // hacbsReport represents the standardized HACBS_TEST_OUTPUT format.
+// The `Namespace` attribute is required for the HACBS results API. However,
+// it is always an empty string from the ec-cli as a way to indicate all
+// namespaces were used.
 type hacbsReport struct {
 	Timestamp time.Time `json:"timestamp"`
 	Namespace string    `json:"namespace"`
@@ -182,10 +184,7 @@ func condensedMsg(results []output.Result) map[string][]string {
 // toHACBS returns a version of the report that conforms to the
 // HACBS_TEST_OUTPUT format.
 func (r *Report) toHACBS() hacbsReport {
-	result := hacbsReport{
-		Namespace: application_snapshot_image.ConftestNamespace,
-		Timestamp: r.created,
-	}
+	result := hacbsReport{Timestamp: r.created}
 
 	hasFailures := false
 	for _, component := range r.Components {

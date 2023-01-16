@@ -46,7 +46,6 @@ type testRunner interface {
 // ConftestEvaluator represents a structure which can be used to evaluate targets
 type conftestEvaluator struct {
 	policySources []source.PolicySource
-	namespace     string
 	outputFormat  string
 	workDir       string
 	dataDir       string
@@ -56,10 +55,9 @@ type conftestEvaluator struct {
 
 // NewConftestEvaluator returns initialized conftestEvaluator implementing
 // Evaluator interface
-func NewConftestEvaluator(ctx context.Context, fs afero.Fs, policySources []source.PolicySource, namespace string, p *policy.Policy) (Evaluator, error) {
+func NewConftestEvaluator(ctx context.Context, fs afero.Fs, policySources []source.PolicySource, p *policy.Policy) (Evaluator, error) {
 	c := conftestEvaluator{
 		policySources: policySources,
-		namespace:     namespace,
 		outputFormat:  "json",
 		policy:        p,
 	}
@@ -102,11 +100,11 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) ([]out
 	if r, ok = ctx.Value(runnerKey).(testRunner); r == nil || !ok {
 
 		r = &runner.TestRunner{
-			Data:      []string{c.dataDir},
-			Policy:    []string{c.policyDir},
-			Namespace: []string{c.namespace},
-			NoFail:    true,
-			Output:    c.outputFormat,
+			Data:          []string{c.dataDir},
+			Policy:        []string{c.policyDir},
+			AllNamespaces: true,
+			NoFail:        true,
+			Output:        c.outputFormat,
 		}
 	}
 
