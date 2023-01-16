@@ -29,6 +29,8 @@ import (
 	appstudioshared "github.com/redhat-appstudio/managed-gitops/appstudio-shared/apis/appstudio.redhat.com/v1alpha1"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/hacbs-contract/ec-cli/internal/format"
 )
 
 //go:embed test_snapshot.json
@@ -457,9 +459,9 @@ func Test_ReportHACBS(t *testing.T) {
 			assert.Equal(t, c.success, report.Success)
 
 			report.created = time.Unix(0, 0).UTC()
-			assert.NoError(t,
-				report.WriteAll([]string{"hacbs=report.json", "hacbs"}, defaultWriter, fs),
-			)
+
+			p := format.NewTargetParser(JSON, defaultWriter, fs)
+			assert.NoError(t, report.WriteAll([]string{"hacbs=report.json", "hacbs"}, p))
 
 			reportText, err := afero.ReadFile(fs, "report.json")
 			assert.NoError(t, err)

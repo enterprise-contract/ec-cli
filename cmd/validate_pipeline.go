@@ -24,7 +24,9 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
+	"github.com/hacbs-contract/ec-cli/internal/format"
 	"github.com/hacbs-contract/ec-cli/internal/output"
+	"github.com/hacbs-contract/ec-cli/internal/pipeline"
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
 )
 
@@ -36,11 +38,13 @@ func validatePipelineCmd(validate pipelineValidationFn) *cobra.Command {
 		policyURLs []string
 		dataURLs   []string
 		namespace  string
+		output     []string
 	}{
 		filePaths:  []string{},
 		policyURLs: []string{"oci::quay.io/hacbs-contract/ec-pipeline-policy:latest"},
 		dataURLs:   []string{"git::https://github.com/hacbs-contract/ec-policies.git//data"},
 		namespace:  "pipeline.main",
+		output:     []string{"json"},
 	}
 	cmd := &cobra.Command{
 		Use:   "pipeline",
@@ -71,8 +75,8 @@ func validatePipelineCmd(validate pipelineValidationFn) *cobra.Command {
 		`),
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var err error
-			var outputs output.Outputs
+			var allErrors error
+			report := pipeline.Report{}
 			for i := range data.filePaths {
 				fpath := data.filePaths[i]
 				var sources []source.PolicySource
@@ -83,15 +87,20 @@ func validatePipelineCmd(validate pipelineValidationFn) *cobra.Command {
 					sources = append(sources, &source.PolicyUrl{Url: url, Kind: source.DataKind})
 				}
 				ctx := cmd.Context()
-				if o, e := validate(ctx, fs(ctx), fpath, sources, data.namespace); e != nil {
-					err = multierror.Append(err, e)
+				if o, err := validate(ctx, fs(ctx), fpath, sources, data.namespace); err != nil {
+					allErrors = multierror.Append(allErrors, err)
 				} else {
-					outputs = append(outputs, o)
+					report.Add(*o)
 				}
 			}
-			outputs.Print(cmd.OutOrStdout())
-			if err != nil {
-				return err
+			p := format.NewTargetParser(pipeline.JSONReport, cmd.OutOrStdout(), fs(cmd.Context()))
+			for _, target := range data.output {
+				if err := report.Write(target, p); err != nil {
+					allErrors = multierror.Append(allErrors, err)
+				}
+			}
+			if allErrors != nil {
+				return allErrors
 			}
 			return nil
 		},
@@ -101,13 +110,18 @@ func validatePipelineCmd(validate pipelineValidationFn) *cobra.Command {
 		"path to pipeline definition YAML/JSON file (required)")
 
 	cmd.Flags().StringSliceVar(&data.policyURLs, "policy", data.policyURLs,
-		"url for policies, go-getter style")
+		"url for policies, go-getter style. May be used multiple times")
 
 	cmd.Flags().StringSliceVar(&data.dataURLs, "data", data.dataURLs,
-		"url for policy data, go-getter style")
+		"url for policy data, go-getter style. May be used multiple times")
 
 	cmd.Flags().StringVar(&data.namespace, "namespace", data.namespace,
 		"rego namespace within policy repo")
+
+	cmd.Flags().StringSliceVarP(&data.output, "output", "o", data.output, hd.Doc(`
+		write output to a file in a specific format, e.g. yaml=/tmp/output.yaml. Use empty string
+		path for stdout, e.g. yaml. May be used multiple times. Possible formats are json and yaml
+	`))
 
 	if err := cmd.MarkFlagRequired("pipeline-file"); err != nil {
 		panic(err)
