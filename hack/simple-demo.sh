@@ -24,6 +24,11 @@ MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE+mypw1Z/vERWHHFhdNuhB/FQd1Iu
 LKDQEdGmyiilvgAeMB6XyLcyssIxlfonnXTgU2BP0DV9sSnbRId6+9oAiw==
 -----END PUBLIC KEY-----"}
 
+POLICY_SOURCE="quay.io/hacbs-contract/ec-release-policy:latest"
+DATA_SOURCE="quay.io/hacbs-contract/ec-policy-data:latest"
+
+#POLICY_SOURCE="github.com/hacbs-contract/ec-policies//policy"
+#DATA_SOURCE="github.com/hacbs-contract/ec-policies//data"
 
 POLICY='{
   "publicKey": "'${PUBLIC_KEY//$'\n'/\\n}'",
@@ -31,20 +36,25 @@ POLICY='{
     {
       "name": "EC Policies",
       "policy": [
-        "github.com/hacbs-contract/ec-policies//policy/lib",
-        "github.com/hacbs-contract/ec-policies//policy/release"
+        "'${POLICY_SOURCE}'"
       ],
       "data": [
-        "github.com/hacbs-contract/ec-policies//data"
+        "'${DATA_SOURCE}'"
       ]
     }
   ],
   "configuration": {
     "exclude": [
-      "not_useful"
+    ],
+    "include": [
+      "*"
     ]
   }
 }'
 
+# To show debug output:
+#   hack/simple-demo.sh --debug
+OPTS=${1:-}
+
 MAIN_GO=$(git rev-parse --show-toplevel)/main.go
-go run $MAIN_GO validate image --image $IMAGE --policy "$POLICY" --debug | yq -P
+go run $MAIN_GO validate image --image $IMAGE --policy "$POLICY" $OPTS | yq -P
