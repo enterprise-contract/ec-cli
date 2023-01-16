@@ -41,7 +41,7 @@ func (b badMockEvaluator) Evaluate(ctx context.Context, inputs []string) ([]conf
 	return nil, errors.New("Evaluator error")
 }
 
-func mockNewPipelineDefinitionFile(ctx context.Context, fs afero.Fs, fpath string, sources []source.PolicySource, namespace string) (*pipeline_definition_file.DefinitionFile, error) {
+func mockNewPipelineDefinitionFile(ctx context.Context, fs afero.Fs, fpath string, sources []source.PolicySource) (*pipeline_definition_file.DefinitionFile, error) {
 	if fpath == "good" {
 		return &pipeline_definition_file.DefinitionFile{
 			Evaluator: mockEvaluator{},
@@ -51,7 +51,7 @@ func mockNewPipelineDefinitionFile(ctx context.Context, fs afero.Fs, fpath strin
 	return nil, fmt.Errorf("fpath '%s' does not exist", fpath)
 }
 
-func badMockNewPipelineDefinitionFile(ctx context.Context, fs afero.Fs, fpath string, sources []source.PolicySource, namespace string) (*pipeline_definition_file.DefinitionFile, error) {
+func badMockNewPipelineDefinitionFile(ctx context.Context, fs afero.Fs, fpath string, sources []source.PolicySource) (*pipeline_definition_file.DefinitionFile, error) {
 	return &pipeline_definition_file.DefinitionFile{
 		Evaluator: badMockEvaluator{},
 	}, nil
@@ -63,7 +63,7 @@ func Test_ValidatePipeline(t *testing.T) {
 		fpath   string
 		err     error
 		output  *output.Output
-		defFunc func(ctx context.Context, fs afero.Fs, fpath string, sources []source.PolicySource, namespace string) (*pipeline_definition_file.DefinitionFile, error)
+		defFunc func(ctx context.Context, fs afero.Fs, fpath string, sources []source.PolicySource) (*pipeline_definition_file.DefinitionFile, error)
 	}{
 		{
 			name:    "validation succeeds",
@@ -91,7 +91,7 @@ func Test_ValidatePipeline(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			pipeline_def_file = tt.defFunc
-			output, err := ValidatePipeline(context.TODO(), afero.NewOsFs(), tt.fpath, []source.PolicySource{}, "namespace")
+			output, err := ValidatePipeline(context.TODO(), afero.NewOsFs(), tt.fpath, []source.PolicySource{})
 			assert.Equal(t, tt.err, err)
 			assert.Equal(t, tt.output, output)
 		})
