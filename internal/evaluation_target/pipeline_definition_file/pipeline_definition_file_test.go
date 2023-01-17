@@ -40,8 +40,16 @@ func mockNewConftestEvaluator(ctx context.Context, fs afero.Fs, policySources []
 	return mockEvaluator{}, nil
 }
 
+func mockPathExists(fs afero.Fs, path string) (bool, error) {
+	if path == "/tmp" {
+		return true, nil
+	}
+	return false, nil
+}
+
 func Test_NewPipelineDefinitionFile(t *testing.T) {
 	newConftestEvaluator = mockNewConftestEvaluator
+	pathExists = mockPathExists
 	fs := afero.NewOsFs()
 	evaluated, _ := mockNewConftestEvaluator(context.TODO(), fs, []source.PolicySource{}, &policy.Policy{EffectiveTime: time.Now()})
 	tests := []struct {
