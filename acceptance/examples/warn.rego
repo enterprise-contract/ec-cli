@@ -1,5 +1,5 @@
 # Simplest always-warning policy
-package release.main
+package main
 
 warn[result] {
     result := "Has a warning"

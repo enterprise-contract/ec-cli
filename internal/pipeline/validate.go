@@ -29,8 +29,8 @@ import (
 
 // ValidatePipeline calls NewPipelineEvaluator to obtain an PipelineEvaluator. It then executes the associated TestRunner
 // which tests the associated pipeline file(s) against the associated policies, and displays the output.
-func ValidatePipeline(ctx context.Context, fs afero.Fs, fpath string, sources []source.PolicySource, namespace string) (*output.Output, error) {
-	p, err := pipeline_definition_file.NewPipelineDefinitionFile(ctx, fs, fpath, sources, namespace)
+func ValidatePipeline(ctx context.Context, fs afero.Fs, fpath string, sources []source.PolicySource) (*output.Output, error) {
+	p, err := pipeline_definition_file.NewPipelineDefinitionFile(ctx, fs, fpath, sources)
 	if err != nil {
 		log.Debug("Failed to create pipeline definition file!")
 		return nil, err

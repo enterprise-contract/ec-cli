@@ -1,5 +1,5 @@
 # Simplest always-failing policy
-package release.main
+package main
 
 deny[result] {
     result := "Fails always"

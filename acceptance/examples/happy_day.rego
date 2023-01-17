@@ -1,4 +1,4 @@
 # Simplest never-failing policy
-package release.main
+package main
 
 allow := []

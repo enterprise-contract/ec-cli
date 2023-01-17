@@ -357,7 +357,7 @@ func Test_ReportHACBS(t *testing.T) {
 			expected: `
 			{
 				"failures": 0,
-				"namespace": "release.main",
+				"namespace": "",
 				"result": "SUCCESS",
 				"successes": 3,
 				"timestamp": "1970-01-01T00:00:00Z",
@@ -371,7 +371,7 @@ func Test_ReportHACBS(t *testing.T) {
 			expected: `
 			{
 				"failures": 0,
-				"namespace": "release.main",
+				"namespace": "",
 				"result": "WARNING",
 				"successes": 2,
 				"timestamp": "1970-01-01T00:00:00Z",
@@ -388,7 +388,7 @@ func Test_ReportHACBS(t *testing.T) {
 			expected: `
 			{
 				"failures": 1,
-				"namespace": "release.main",
+				"namespace": "",
 				"result": "FAILURE",
 				"successes": 1,
 				"timestamp": "1970-01-01T00:00:00Z",
@@ -405,7 +405,7 @@ func Test_ReportHACBS(t *testing.T) {
 			expected: `
 			{
 				"failures": 0,
-				"namespace": "release.main",
+				"namespace": "",
 				"result": "FAILURE",
 				"successes": 1,
 				"timestamp": "1970-01-01T00:00:00Z",
@@ -419,7 +419,7 @@ func Test_ReportHACBS(t *testing.T) {
 			expected: `
 			{
 				"failures": 1,
-				"namespace": "release.main",
+				"namespace": "",
 				"result": "FAILURE",
 				"successes": 1,
 				"timestamp": "1970-01-01T00:00:00Z",
@@ -437,7 +437,7 @@ func Test_ReportHACBS(t *testing.T) {
 			expected: `
 			{
 				"failures": 0,
-				"namespace": "release.main",
+				"namespace": "",
 				"result": "SKIPPED",
 				"successes": 0,
 				"timestamp": "1970-01-01T00:00:00Z",

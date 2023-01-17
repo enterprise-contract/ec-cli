@@ -22,6 +22,7 @@ import (
 
 	"github.com/ghodss/yaml"
 	cOutput "github.com/open-policy-agent/conftest/output"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/hacbs-contract/ec-cli/internal/format"
 	"github.com/hacbs-contract/ec-cli/internal/output"
@@ -29,7 +30,6 @@ import (
 
 type ReportItem struct {
 	Filename   string           `json:"filename"`
-	Namespace  string           `json:"namespace"`
 	Violations []cOutput.Result `json:"violations"`
 	Warnings   []cOutput.Result `json:"warnings"`
 	Success    bool             `json:"success"`
@@ -47,20 +47,23 @@ type Report struct {
 }
 
 func (r *Report) Add(o output.Output) {
+	item := ReportItem{
+		// Initialize to an empty slice so if there are no violations/warnings
+		// it shows an empty list instead of null.
+		Violations: []cOutput.Result{},
+		Warnings:   []cOutput.Result{},
+	}
 	for _, check := range o.PolicyCheck {
-		item := ReportItem{
-			Filename:  check.FileName,
-			Namespace: check.Namespace,
-			// Initialize to an empty slice so if there are no violations/warnings
-			// it shows an empty list instead of null.
-			Violations: []cOutput.Result{},
-			Warnings:   []cOutput.Result{},
+		// This should never happen, but just in case it does, make it obvious.
+		if item.Filename != "" && item.Filename != check.FileName {
+			log.Warnf("Expected policy check filename %q, got %q", item.Filename, check.FileName)
 		}
+		item.Filename = check.FileName
 		item.Violations = append(item.Violations, check.Failures...)
 		item.Warnings = append(item.Warnings, check.Warnings...)
-		item.Success = len(item.Violations) == 0
-		r.items = append(r.items, item)
 	}
+	item.Success = len(item.Violations) == 0
+	r.items = append(r.items, item)
 }
 
 func (r *Report) Write(targetName string, p format.TargetParser) error {

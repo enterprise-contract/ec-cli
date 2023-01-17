@@ -1,4 +1,4 @@
-package release.main
+package main
 
 deny[{"msg": result, "effective_on": effective_on}] {
     result := "Fails in 2099"

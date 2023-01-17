@@ -30,20 +30,18 @@ import (
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
 )
 
-type pipelineValidationFn func(context.Context, afero.Fs, string, []source.PolicySource, string) (*output.Output, error)
+type pipelineValidationFn func(context.Context, afero.Fs, string, []source.PolicySource) (*output.Output, error)
 
 func validatePipelineCmd(validate pipelineValidationFn) *cobra.Command {
 	var data = struct {
 		filePaths  []string
 		policyURLs []string
 		dataURLs   []string
-		namespace  string
 		output     []string
 	}{
 		filePaths:  []string{},
 		policyURLs: []string{"oci::quay.io/hacbs-contract/ec-pipeline-policy:latest"},
 		dataURLs:   []string{"git::https://github.com/hacbs-contract/ec-policies.git//data"},
-		namespace:  "pipeline.main",
 		output:     []string{"json"},
 	}
 	cmd := &cobra.Command{
@@ -87,7 +85,7 @@ func validatePipelineCmd(validate pipelineValidationFn) *cobra.Command {
 					sources = append(sources, &source.PolicyUrl{Url: url, Kind: source.DataKind})
 				}
 				ctx := cmd.Context()
-				if o, err := validate(ctx, fs(ctx), fpath, sources, data.namespace); err != nil {
+				if o, err := validate(ctx, fs(ctx), fpath, sources); err != nil {
 					allErrors = multierror.Append(allErrors, err)
 				} else {
 					report.Add(*o)
@@ -114,9 +112,6 @@ func validatePipelineCmd(validate pipelineValidationFn) *cobra.Command {
 
 	cmd.Flags().StringSliceVar(&data.dataURLs, "data", data.dataURLs,
 		"url for policy data, go-getter style. May be used multiple times")
-
-	cmd.Flags().StringVar(&data.namespace, "namespace", data.namespace,
-		"rego namespace within policy repo")
 
 	cmd.Flags().StringSliceVarP(&data.output, "output", "o", data.output, hd.Doc(`
 		write output to a file in a specific format, e.g. yaml=/tmp/output.yaml. Use empty string

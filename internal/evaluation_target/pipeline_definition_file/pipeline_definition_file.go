@@ -37,7 +37,7 @@ type DefinitionFile struct {
 }
 
 // NewPipelineDefinitionFile returns a DefinitionFile struct with FPath and evaluator ready to use
-func NewPipelineDefinitionFile(ctx context.Context, fs afero.Fs, fpath string, sources []source.PolicySource, namespace string) (*DefinitionFile, error) {
+func NewPipelineDefinitionFile(ctx context.Context, fs afero.Fs, fpath string, sources []source.PolicySource) (*DefinitionFile, error) {
 	exists, err := afero.Exists(fs, fpath)
 	if err != nil {
 		return nil, err
@@ -48,7 +48,7 @@ func NewPipelineDefinitionFile(ctx context.Context, fs afero.Fs, fpath string, s
 	p := &DefinitionFile{
 		Fpath: fpath,
 	}
-	c, err := newConftestEvaluator(ctx, fs, sources, namespace, &policy.Policy{EffectiveTime: time.Now()})
+	c, err := newConftestEvaluator(ctx, fs, sources, &policy.Policy{EffectiveTime: time.Now()})
 	if err != nil {
 		return nil, err
 	}

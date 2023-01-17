@@ -1,4 +1,4 @@
-package pipeline.main
+package pipeline
 
 import data.lib
 

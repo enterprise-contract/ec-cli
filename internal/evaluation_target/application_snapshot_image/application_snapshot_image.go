@@ -50,9 +50,6 @@ var (
 	EV003 = ece.NewError("EV003", "Attestation syntax validation failed", ece.ErrorExitStatus)
 )
 
-// ConftestNamespace is the default rego namespace using for policy evaluation
-const ConftestNamespace = "release.main"
-
 var newConftestEvaluator = evaluator.NewConftestEvaluator
 
 // imageRefTransport is used to inject the type of transport to use with the
@@ -116,7 +113,7 @@ func NewApplicationSnapshotImage(ctx context.Context, fs afero.Fs, url string, p
 			log.Debugf("policySource: %#v", policySource)
 		}
 
-		c, err := newConftestEvaluator(ctx, fs, policySources, ConftestNamespace, p)
+		c, err := newConftestEvaluator(ctx, fs, policySources, p)
 		if err != nil {
 			log.Debug("Failed to initialize the conftest evaluator!")
 			return nil, err
