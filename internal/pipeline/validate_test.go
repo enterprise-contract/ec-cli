@@ -22,12 +22,13 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hacbs-contract/ec-cli/internal/evaluation_target/pipeline_definition_file"
-	"github.com/hacbs-contract/ec-cli/internal/output"
-	"github.com/hacbs-contract/ec-cli/internal/policy/source"
 	conftestout "github.com/open-policy-agent/conftest/output"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/hacbs-contract/ec-cli/internal/evaluation_target/pipeline_definition_file"
+	"github.com/hacbs-contract/ec-cli/internal/output"
+	"github.com/hacbs-contract/ec-cli/internal/policy/source"
 )
 
 type mockEvaluator struct{}
