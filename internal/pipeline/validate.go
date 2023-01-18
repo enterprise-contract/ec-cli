@@ -27,10 +27,12 @@ import (
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
 )
 
+var pipeline_def_file = pipeline_definition_file.NewPipelineDefinitionFile
+
 // ValidatePipeline calls NewPipelineEvaluator to obtain an PipelineEvaluator. It then executes the associated TestRunner
 // which tests the associated pipeline file(s) against the associated policies, and displays the output.
 func ValidatePipeline(ctx context.Context, fs afero.Fs, fpath string, sources []source.PolicySource) (*output.Output, error) {
-	p, err := pipeline_definition_file.NewPipelineDefinitionFile(ctx, fs, fpath, sources)
+	p, err := pipeline_def_file(ctx, fs, fpath, sources)
 	if err != nil {
 		log.Debug("Failed to create pipeline definition file!")
 		return nil, err

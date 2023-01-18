@@ -343,15 +343,14 @@ func theStandardOutputShouldContain(ctx context.Context, expected *godog.DocStri
 
 	// see if the expected value is JSON, i.e. if it starts with either { or [
 	expectedTrimmed := strings.TrimLeftFunc(expectedStdOut, unicode.IsSpace)
-	expectdIsJSON := expectedTrimmed[0] == '{' || expectedTrimmed[0] == '['
+	expectdIsJSONMap := expectedTrimmed[0] == '{'
+	expectdIsJSONArray := expectedTrimmed[0] == '['
 	stdoutTrimmed := strings.TrimLeftFunc(stdout, unicode.IsSpace)
 	stdoutIsJSON := len(stdoutTrimmed) > 0 && (stdoutTrimmed[0] == '{' || stdoutTrimmed[0] == '[')
-	if expectdIsJSON && stdoutIsJSON {
+	if (expectdIsJSONMap || expectdIsJSONArray) && stdoutIsJSON {
 		expectedBytes := []byte(expectedStdOut)
 
-		// compute the diff between expected and resulting JSON
-		differ := gojsondiff.New()
-		diff, err := differ.Compare(expectedBytes, status.stdout.Bytes())
+		diff, err := compareJSON(expectedBytes, status.stdout.Bytes(), expectdIsJSONArray)
 		if err != nil {
 			return err
 		}
@@ -362,8 +361,7 @@ func theStandardOutputShouldContain(ctx context.Context, expected *godog.DocStri
 		}
 
 		// we need to unmarshal the expected (left) JSON for output formatting
-		// and to check for any regular expressions in the expected JSON's
-		// values
+		// and to check for any regular expressions in the expected JSON's values
 		var left any
 		err = json.Unmarshal(expectedBytes, &left)
 		if err != nil {
@@ -550,4 +548,30 @@ func AddStepsTo(sc *godog.ScenarioContext) {
 
 		return ctx, nil
 	})
+}
+
+// gojsondiff handles arrays and maps different
+// gojsondiff.Compare unmarshals to map[string]interface{}
+func compareJSON(left []byte, right []byte, isArray bool) (gojsondiff.Diff, error) {
+	differ := gojsondiff.New()
+	var err error
+	var diff gojsondiff.Diff
+	if isArray {
+		var leftObj, rightObj []interface{}
+		err = json.Unmarshal(left, &leftObj)
+		if err != nil {
+			return nil, err
+		}
+		err = json.Unmarshal(right, &rightObj)
+		if err != nil {
+			return nil, err
+		}
+		diff = differ.CompareArrays(leftObj, rightObj)
+	} else {
+		diff, err = differ.Compare(left, right)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return diff, nil
 }
