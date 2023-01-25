@@ -9,7 +9,7 @@ require (
 	github.com/gkampitakis/go-snaps v0.4.2
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/go-logr/logr v1.2.3
-	github.com/google/go-containerregistry v0.12.1
+	github.com/google/go-containerregistry v0.13.0
 	github.com/google/go-github/v45 v45.2.0
 	github.com/hacbs-contract/enterprise-contract-controller/api v0.0.0-20221220151524-ad0f637efacf
 	github.com/hako/durafmt v0.0.0-20210608085754-5c1018a4e16b
