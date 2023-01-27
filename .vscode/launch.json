@@ -23,8 +23,7 @@
             "type": "go",
             "request": "launch",
             "mode": "test",
-            "program": "${workspaceFolder}/internal/acceptance",
-            "buildFlags": "-tags=acceptance",
+            "program": "${workspaceFolder}/acceptance",
             "args": [
                 "-tags=@focus"
             ]
@@ -34,8 +33,7 @@
             "type": "go",
             "request": "launch",
             "mode": "test",
-            "program": "${workspaceFolder}/internal/acceptance",
-            "buildFlags": "-tags=acceptance",
+            "program": "${workspaceFolder}/acceptance",
             "args": [
                 "-persist"
             ]
@@ -45,8 +43,7 @@
             "type": "go",
             "request": "launch",
             "mode": "test",
-            "program": "${workspaceFolder}/internal/acceptance",
-            "buildFlags": "-tags=acceptance",
+            "program": "${workspaceFolder}/acceptance",
             "args": [
                 "-restore"
             ]
