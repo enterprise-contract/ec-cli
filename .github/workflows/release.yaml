@@ -43,9 +43,8 @@ jobs:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: release-${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            release-${{ runner.os }}-go-
+          key: release-${{ hashFiles('**/go.sum') }}
+          restore-keys: release-
 
       - name: Setup Go environment
         uses: actions/setup-go@v3
