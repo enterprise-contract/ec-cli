@@ -20,19 +20,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func fetchCmd() *cobra.Command {
+func inspectCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "fetch",
-		Short: "Fetch policies and authorization data",
+		Use:   "inspect",
+		Short: "Inspect policy rules",
 	}
-
 	return cmd
 }
 
 func init() {
-	fetch := fetchCmd()
-	fetch.AddCommand(commitAuthorizationCmd())
-	fetch.AddCommand(k8sResourceAuthorizationCmd())
-	fetch.AddCommand(fetchPolicyCmd())
-	RootCmd.AddCommand(fetch)
+	inspect := inspectCmd()
+	inspect.AddCommand(inspectPolicyCmd())
+	RootCmd.AddCommand(inspect)
 }
