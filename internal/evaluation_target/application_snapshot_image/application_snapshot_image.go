@@ -148,7 +148,7 @@ func (a *ApplicationSnapshotImage) ValidateImageAccess(ctx context.Context) erro
 		remote.WithContext(ctx),
 		remote.WithAuthFromKeychain(authn.DefaultKeychain),
 	}
-	resp, err := remote.Head(a.reference, opts...)
+	resp, err := NewClient(ctx).Head(a.reference, opts...)
 	if err != nil {
 		return err
 	}
@@ -178,13 +178,13 @@ func (a *ApplicationSnapshotImage) SetImageURL(url string) error {
 
 // ValidateImageSignature executes the cosign.VerifyImageSignature method on the ApplicationSnapshotImage image ref.
 func (a *ApplicationSnapshotImage) ValidateImageSignature(ctx context.Context) error {
-	_, _, err := cosign.VerifyImageSignatures(ctx, a.reference, &a.checkOpts)
+	_, _, err := NewClient(ctx).VerifyImageSignatures(ctx, a.reference, &a.checkOpts)
 	return err
 }
 
 // ValidateAttestationSignature executes the cosign.VerifyImageAttestations method
 func (a *ApplicationSnapshotImage) ValidateAttestationSignature(ctx context.Context) error {
-	attestations, _, err := cosign.VerifyImageAttestations(ctx, a.reference, &a.checkOpts)
+	attestations, _, err := NewClient(ctx).VerifyImageAttestations(ctx, a.reference, &a.checkOpts)
 	if err != nil {
 		return err
 	}
