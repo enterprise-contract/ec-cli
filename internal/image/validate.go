@@ -59,6 +59,13 @@ func ValidateImage(ctx context.Context, fs afero.Fs, url string, p *policy.Polic
 			log.Debugf("Failed to parse image url %s", url)
 			return nil, err
 		}
+		// The original image reference may or may not have had a tag. If it didn't,
+		// the code above will set the tag to "latest". This is expected in some cases,
+		// e.g. image ref also does not include digest. However, in other cases, although
+		// harmless, it may cause confusion to users. The tag is cleared here to prevent
+		// such confusion and to further emphasize that the image is only accessed by digest
+		// from this point forward.
+		ref.Tag = ""
 		resolved := ref.String()
 		log.Debugf("Resolved image to %s", resolved)
 		if err := a.SetImageURL(resolved); err != nil {
