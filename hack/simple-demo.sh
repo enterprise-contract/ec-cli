@@ -20,8 +20,8 @@ IMAGE=${IMAGE:-"quay.io/redhat-appstudio/ec-golden-image:latest"}
 #ec-golden-image is signed with staging public key, to verify, use the below public key
 #(https://raw.githubusercontent.com/redhat-appstudio/infra-deployments/main/components/pipeline-service/public/tekton-chains-signing-secret.pub)
 PUBLIC_KEY=${PUBLIC_KEY:-"-----BEGIN PUBLIC KEY-----
-MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE+mypw1Z/vERWHHFhdNuhB/FQd1Iu
-LKDQEdGmyiilvgAeMB6XyLcyssIxlfonnXTgU2BP0DV9sSnbRId6+9oAiw==
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEODgxyIz09vBqJlXXzjp/X2h17WIt
+jCVQhnDYVWHvXhw6rgqGeg6NTUxIEhRQqQZaF9mcBotHkuYGJfYZbai+FA==
 -----END PUBLIC KEY-----"}
 
 POLICY_SOURCE="quay.io/hacbs-contract/ec-release-policy:latest"
