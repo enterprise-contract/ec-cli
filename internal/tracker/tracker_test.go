@@ -81,6 +81,13 @@ func TestTrack(t *testing.T) {
 				    - digest: ` + sampleHashTwo.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
 				      tag: two
+				pipeline-required-tasks:
+				  docker-build:
+				    effective_on: "` + expectedEffectiveOn + `"
+				    tasks:
+				      - buildah
+				      - git-clone
+				      - summary
 				required-tasks:
 				  - effective_on: "` + expectedEffectiveOn + `"
 				    tasks:
@@ -106,6 +113,13 @@ func TestTrack(t *testing.T) {
 				    - digest: ` + sampleHashTwo.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
 				      tag: "2.0"
+				pipeline-required-tasks:
+				  docker-build:
+				    effective_on: "` + expectedEffectiveOn + `"
+				    tasks:
+				      - buildah
+				      - git-clone
+				      - summary
 				required-tasks:
 				  - effective_on: "` + expectedEffectiveOn + `"
 				    tasks:
@@ -137,6 +151,13 @@ func TestTrack(t *testing.T) {
 				    - digest: ` + sampleHashOne.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
 				      tag: one
+				pipeline-required-tasks:
+				  docker-build:
+				    effective_on: "` + expectedEffectiveOn + `"
+				    tasks:
+				      - buildah
+				      - git-clone
+				      - summary
 				required-tasks:
 				  - effective_on: "` + expectedEffectiveOn + `"
 				    tasks:
@@ -169,6 +190,13 @@ func TestTrack(t *testing.T) {
 				    - digest: ` + sampleHashTwo.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
 				      tag: "2.0"
+				pipeline-required-tasks:
+				  docker-build:
+				    effective_on: "` + expectedEffectiveOn + `"
+				    tasks:
+				      - buildah
+				      - git-clone
+				      - summary
 				required-tasks:
 				  - effective_on: "` + expectedEffectiveOn + `"
 				    tasks:
@@ -196,6 +224,13 @@ func TestTrack(t *testing.T) {
 				    - digest: ` + sampleHashTwo.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
 				      tag: "2.0"
+				pipeline-required-tasks:
+				  docker-build:
+				    effective_on: "` + expectedEffectiveOn + `"
+				    tasks:
+				      - buildah
+				      - git-clone
+				      - summary
 				required-tasks:
 				  - effective_on: "` + expectedEffectiveOn + `"
 				    tasks:
@@ -221,6 +256,13 @@ func TestTrack(t *testing.T) {
 				    - digest: ` + sampleHashOne.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
 				      tag: "1.0"
+				pipeline-required-tasks:
+				  docker-build:
+				    effective_on: "` + expectedEffectiveOn + `"
+				    tasks:
+				      - buildah
+				      - git-clone
+				      - summary
 				required-tasks:
 				  - effective_on: "` + expectedEffectiveOn + `"
 				    tasks:
@@ -268,6 +310,13 @@ func TestTrack(t *testing.T) {
 				    - digest: ` + sampleHashOne.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
 				      tag: "1.0"
+				pipeline-required-tasks:
+				  docker-build:
+				    effective_on: "` + expectedEffectiveOn + `"
+				    tasks:
+				      - buildah
+				      - git-clone
+				      - summary
 				required-tasks:
 				  - effective_on: "` + expectedEffectiveOn + `"
 				    tasks:
@@ -293,6 +342,13 @@ func TestTrack(t *testing.T) {
 				    - digest: ` + sampleHashOne.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
 				      tag: "1.0"
+				pipeline-required-tasks:
+				  docker-build:
+				    effective_on: "` + expectedEffectiveOn + `"
+				    tasks:
+				      - buildah
+				      - git-clone
+				      - summary
 				required-tasks:
 				  - effective_on: "` + expectedEffectiveOn + `"
 				    tasks:
@@ -351,6 +407,13 @@ func TestTrack(t *testing.T) {
 				    - digest: ` + sampleHashOne.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
 				      tag: "0.9"
+				pipeline-required-tasks:
+				  docker-build:
+				    effective_on: "` + expectedEffectiveOn + `"
+				    tasks:
+				      - buildah
+				      - git-clone
+				      - summary
 				required-tasks:
 				  - effective_on: "` + expectedEffectiveOn + `"
 				    tasks:
@@ -394,6 +457,13 @@ func TestTrack(t *testing.T) {
 				    - digest: ` + sampleHashThree.String() + `
 				      effective_on: "` + yesterday + `"
 				      tag: "0.3"
+				pipeline-required-tasks:
+				  docker-build:
+				    effective_on: "` + expectedEffectiveOn + `"
+				    tasks:
+				      - buildah
+				      - git-clone
+				      - summary
 				required-tasks:
 				  - effective_on: "` + expectedEffectiveOn + `"
 				    tasks:
@@ -570,6 +640,7 @@ func mustCreateFakePipelineObject() runtime.Object {
 		},
 	}
 	pipeline := v1beta1.Pipeline{}
+	pipeline.Name = "docker-build"
 	pipeline.SetDefaults(context.Background())
 	pipeline.Spec.Tasks = []v1beta1.PipelineTask{gitCloneTask, buildahTask}
 	pipeline.Spec.Finally = []v1beta1.PipelineTask{summaryTask}

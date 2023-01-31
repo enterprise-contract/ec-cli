@@ -19,6 +19,11 @@ Feature: track bundles
         - digest: ${REGISTRY_acceptance/bundle:tag_HASH}
           effective_on: "[0-9]{4}-[0-9]{2}-[0-9]{2}T00:00:00Z"
           tag: tag
+    pipeline-required-tasks:
+      pipeline1:
+        effective_on: "[0-9]{4}-[0-9]{2}-[0-9]{2}T00:00:00Z"
+        tasks:
+          - git-clone
     required-tasks:
       - effective_on: "[0-9]{4}-[0-9]{2}-[0-9]{2}T00:00:00Z"
         tasks:
