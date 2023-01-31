@@ -137,14 +137,7 @@ func (t *Tracker) addPipelineRequiredTasks(effectiveOn time.Time, pipelineTasks 
 		if name == "" {
 			continue
 		}
-		if t.PipelineRequiredTasks == nil {
-			t.PipelineRequiredTasks = make(map[string]tasksRecord)
-
-		}
-		t.PipelineRequiredTasks[name] = tasksRecord{
-			Tasks:       tasks,
-			EffectiveOn: effectiveOn,
-		}
+		t.PipelineRequiredTasks = map[string]tasksRecord{name: {Tasks: tasks, EffectiveOn: effectiveOn}}
 	}
 }
 
