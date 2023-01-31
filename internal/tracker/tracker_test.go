@@ -658,7 +658,7 @@ func TestFilterRequiredTasks(t *testing.T) {
 	date := time.Now().UTC().Add(time.Second * -1)
 	future := date.Add(time.Hour * 24 * 30)
 
-	requiredTasks := []commonTasksRecord{
+	requiredTasks := []tasksRecord{
 		{EffectiveOn: date, Tasks: []string{"git-clone", "buildah"}},
 		{EffectiveOn: date, Tasks: []string{"git-clone"}},
 	}
@@ -671,7 +671,7 @@ func TestFilterRequiredTasks(t *testing.T) {
 		{
 			name: "without prune",
 			expected: Tracker{
-				RequiredTasks: []commonTasksRecord{
+				RequiredTasks: []tasksRecord{
 					{EffectiveOn: future, Tasks: []string{"git-clone", "buildah", "clair-scan"}},
 					{EffectiveOn: date, Tasks: []string{"git-clone", "buildah"}},
 					{EffectiveOn: date, Tasks: []string{"git-clone"}},
@@ -682,7 +682,7 @@ func TestFilterRequiredTasks(t *testing.T) {
 		{
 			name: "with prune",
 			expected: Tracker{
-				RequiredTasks: []commonTasksRecord{
+				RequiredTasks: []tasksRecord{
 					{EffectiveOn: future, Tasks: []string{"git-clone", "buildah", "clair-scan"}},
 					{EffectiveOn: date, Tasks: []string{"git-clone", "buildah"}},
 				},
@@ -695,7 +695,7 @@ func TestFilterRequiredTasks(t *testing.T) {
 				RequiredTasks: requiredTasks,
 			}
 
-			existing.addRequiredTasksRecord(commonTasksRecord{
+			existing.addRequiredTasksRecord(tasksRecord{
 				EffectiveOn: future,
 				Tasks:       []string{"git-clone", "buildah", "clair-scan"},
 			})
