@@ -20,10 +20,20 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/open-policy-agent/conftest/output"
 	"github.com/sigstore/cosign/pkg/cosign"
+	log "github.com/sirupsen/logrus"
 )
+
+const missingSignatureMessage = "No images signatures found matching the given public key. " +
+	"Verify the correct public key was provided, " +
+	"and a signature was created."
+
+const missingAttestationMessage = "No image attestations found matching the given public key. " +
+	"Verify the correct public key was provided, " +
+	"and one or more attestations were created."
 
 // VerificationStatus represents the status of a verification check.
 type VerificationStatus struct {
@@ -58,26 +68,73 @@ type Output struct {
 }
 
 // SetImageAccessibleCheck sets the passed and result.message fields of the ImageAccessibleCheck to the given values.
-func (o *Output) SetImageAccessibleCheck(passed bool, message string) {
-	o.ImageAccessibleCheck.Passed = passed
+func (o *Output) SetImageAccessibleCheckFromError(err error) {
+	if err == nil {
+		log.Debug("Image access check passed")
+		o.ImageAccessibleCheck.Passed = true
+		return
+	}
+
+	log.Debugf("Image access check failed. Error: %s", err.Error())
+	o.ImageAccessibleCheck.Passed = false
+	message := fmt.Sprintf("Image URL is not accessible: %s", err)
 	o.ImageAccessibleCheck.Result = &output.Result{Message: message}
 }
 
 // SetImageSignatureCheck sets the passed and result.message fields of the ImageSignatureCheck to the given values.
-func (o *Output) SetImageSignatureCheck(passed bool, message string) {
-	o.ImageSignatureCheck.Passed = passed
+func (o *Output) SetImageSignatureCheckFromError(err error) {
+	if err == nil {
+		log.Debug("Image signature check passed")
+		o.ImageSignatureCheck.Passed = true
+		return
+	}
+
+	log.Debug("Image signature check failed")
+	o.ImageSignatureCheck.Passed = false
+
+	var message string
+	if strings.HasPrefix(err.Error(), cosign.ErrNoMatchingSignatures.Error()) {
+		// If the error is due to no matching signatures, use a more user-friendly message.
+		message = missingSignatureMessage
+	} else {
+		message = fmt.Sprintf("Image signature check failed: %s", err)
+	}
+
 	o.ImageSignatureCheck.Result = &output.Result{Message: message}
 }
 
 // SetAttestationSignatureCheck sets the passed and result.message fields of the AttestationSignatureCheck to the given values.
-func (o *Output) SetAttestationSignatureCheck(passed bool, message string) {
-	o.AttestationSignatureCheck.Passed = passed
+func (o *Output) SetAttestationSignatureCheckFromError(err error) {
+	if err == nil {
+		log.Debug("Image signature check passed")
+		o.AttestationSignatureCheck.Passed = true
+		return
+	}
+
+	log.Debug("Image attestation signature check failed")
+	o.AttestationSignatureCheck.Passed = false
+
+	var message string
+	if strings.HasPrefix(err.Error(), cosign.ErrNoMatchingAttestations.Error()) {
+		// If the error is due to no matching attestations, use a more user-friendly message.
+		message = missingAttestationMessage
+	} else {
+		message = fmt.Sprintf("Image attestation check failed: %s", err.Error())
+	}
+
 	o.AttestationSignatureCheck.Result = &output.Result{Message: message}
 }
 
 // SetAttestationSyntaxCheck sets the passed and result.message fields of the AttestationSyntaxCheck to the given values.
-func (o *Output) SetAttestationSyntaxCheck(passed bool, message string) {
-	o.AttestationSyntaxCheck.Passed = passed
+func (o *Output) SetAttestationSyntaxCheckFromError(err error) {
+	if err == nil {
+		log.Debug("Image attestation syntax check passed")
+		o.AttestationSyntaxCheck.Passed = true
+		return
+	}
+
+	o.AttestationSyntaxCheck.Passed = false
+	message := fmt.Sprintf("Attestation syntax check failed: %s", err)
 	o.AttestationSyntaxCheck.Result = &output.Result{Message: message}
 }
 
