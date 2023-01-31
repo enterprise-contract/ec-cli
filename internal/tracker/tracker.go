@@ -59,9 +59,10 @@ func (r *commonTasksRecord) updateTasksIntersection(newTasks sets.Set[string]) {
 }
 
 type Tracker struct {
-	PipelineBundles map[string][]bundleRecord `json:"pipeline-bundles,omitempty"`
-	TaskBundles     map[string][]bundleRecord `json:"task-bundles,omitempty"`
-	RequiredTasks   []commonTasksRecord       `json:"required-tasks,omitempty"`
+	PipelineBundles       map[string][]bundleRecord    `json:"pipeline-bundles,omitempty"`
+	TaskBundles           map[string][]bundleRecord    `json:"task-bundles,omitempty"`
+	RequiredTasks         []commonTasksRecord          `json:"required-tasks,omitempty"`
+	PipelineRequiredTasks map[string]commonTasksRecord `json:"pipeline-required-tasks,omitempty"`
 }
 
 // newTracker returns a new initialized instance of Tracker. If path
@@ -128,6 +129,22 @@ func (t *Tracker) addRequiredTasksRecord(record commonTasksRecord) {
 	t.RequiredTasks = append([]commonTasksRecord{record}, t.RequiredTasks...)
 }
 
+// add required pipeline tasks
+// if there's no pipeline name defined the entry is invalid
+// also apply the effectiveOn date/time
+func (t *Tracker) addPipelineRequiredTasks(effectiveOn time.Time, pipelineTasks map[string][]string) {
+	for name, tasks := range pipelineTasks {
+		if t.PipelineRequiredTasks == nil {
+			t.PipelineRequiredTasks = make(map[string]commonTasksRecord)
+
+		}
+		t.PipelineRequiredTasks[name] = commonTasksRecord{
+			Tasks:       tasks,
+			EffectiveOn: effectiveOn,
+		}
+	}
+}
+
 // Output serializes the Tracker state as YAML
 func (t Tracker) Output() ([]byte, error) {
 	out, err := yaml.Marshal(t)
@@ -155,7 +172,7 @@ func Track(ctx context.Context, fs afero.Fs, urls []string, input string, prune 
 	}
 
 	effective_on := effectiveOn()
-	requiredTasks := commonTasksRecord{EffectiveOn: effective_on}
+	requiredTasks := commonTasksRecord{EffectiveOn: effective_on, Tasks: []string{}}
 	for _, ref := range refs {
 		info, err := newBundleInfo(ctx, ref, requiredTasks)
 		if err != nil {
@@ -172,6 +189,7 @@ func Track(ctx context.Context, fs afero.Fs, urls []string, input string, prune 
 			})
 		}
 		requiredTasks = info.commonPipelineTasks
+		t.addPipelineRequiredTasks(effective_on, info.pipelineTasks)
 
 	}
 	t.addRequiredTasksRecord(requiredTasks)
