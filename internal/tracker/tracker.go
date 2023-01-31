@@ -134,6 +134,9 @@ func (t *Tracker) addRequiredTasksRecord(record commonTasksRecord) {
 // also apply the effectiveOn date/time
 func (t *Tracker) addPipelineRequiredTasks(effectiveOn time.Time, pipelineTasks map[string][]string) {
 	for name, tasks := range pipelineTasks {
+		if name == "" {
+			continue
+		}
 		if t.PipelineRequiredTasks == nil {
 			t.PipelineRequiredTasks = make(map[string]commonTasksRecord)
 
