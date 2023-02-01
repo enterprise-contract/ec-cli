@@ -103,7 +103,7 @@ func (info *bundleInfo) updatePipelineTasks(ctx context.Context, pipelineName st
 	pipelineTaskNames := getTaskNames(pipelineObject.PipelineSpec())
 
 	// set the required pipeline tasks if the proper key is returned
-	if taskKey := getRequiredTaskKey(pipelineObject); taskKey != "" {
+	if taskKey := requiredTaskKeyExists(pipelineObject); taskKey != "" {
 		info.pipelineTasks = map[string][]string{taskKey: sets.List(pipelineTaskNames)}
 	}
 
@@ -112,7 +112,7 @@ func (info *bundleInfo) updatePipelineTasks(ctx context.Context, pipelineName st
 }
 
 // get the key used in "pipeline-required-tasks" from the pipelineObject
-func getRequiredTaskKey(pipelineObject v1beta1.PipelineObject) string {
+func requiredTaskKeyExists(pipelineObject v1beta1.PipelineObject) string {
 	var labelKey string = "pipelines.openshift.io/runtime"
 	if pipelineLabel, labelExists := pipelineObject.PipelineMetadata().Labels[labelKey]; labelExists {
 		return pipelineLabel
