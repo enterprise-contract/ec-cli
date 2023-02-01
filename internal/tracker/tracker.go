@@ -44,12 +44,12 @@ type bundleRecord struct {
 	Collection  string    `json:"-"`
 }
 
-type commonTasksRecord struct {
+type tasksRecord struct {
 	Tasks       []string  `json:"tasks"`
 	EffectiveOn time.Time `json:"effective_on"`
 }
 
-func (r *commonTasksRecord) updateTasksIntersection(newTasks sets.Set[string]) {
+func (r *tasksRecord) updateTasksIntersection(newTasks sets.Set[string]) {
 	if len(r.Tasks) == 0 {
 		r.Tasks = sets.List(newTasks)
 	} else if newTasks.Len() > 0 {
@@ -59,9 +59,10 @@ func (r *commonTasksRecord) updateTasksIntersection(newTasks sets.Set[string]) {
 }
 
 type Tracker struct {
-	PipelineBundles map[string][]bundleRecord `json:"pipeline-bundles,omitempty"`
-	TaskBundles     map[string][]bundleRecord `json:"task-bundles,omitempty"`
-	RequiredTasks   []commonTasksRecord       `json:"required-tasks,omitempty"`
+	PipelineBundles       map[string][]bundleRecord `json:"pipeline-bundles,omitempty"`
+	TaskBundles           map[string][]bundleRecord `json:"task-bundles,omitempty"`
+	RequiredTasks         []tasksRecord             `json:"required-tasks,omitempty"`
+	PipelineRequiredTasks map[string]tasksRecord    `json:"pipeline-required-tasks,omitempty"`
 }
 
 // newTracker returns a new initialized instance of Tracker. If path
@@ -118,14 +119,26 @@ func (t *Tracker) addBundleRecord(record bundleRecord) {
 
 // addRequiredTasksRecord includes the given tasks record to the tracker as required tasks.
 // If the most recent entry contains the same set of tasks, no action is taken.
-func (t *Tracker) addRequiredTasksRecord(record commonTasksRecord) {
+func (t *Tracker) addRequiredTasksRecord(record tasksRecord) {
 	if len(t.RequiredTasks) > 0 {
 		existingTasks := sets.NewString(t.RequiredTasks[0].Tasks...)
 		if existingTasks.Equal(sets.NewString(record.Tasks...)) {
 			return
 		}
 	}
-	t.RequiredTasks = append([]commonTasksRecord{record}, t.RequiredTasks...)
+	t.RequiredTasks = append([]tasksRecord{record}, t.RequiredTasks...)
+}
+
+// add required pipeline tasks
+// if there's no pipeline name defined the entry is invalid
+// also apply the effectiveOn date/time
+func (t *Tracker) addPipelineRequiredTasks(effectiveOn time.Time, pipelineTasks map[string][]string) {
+	for name, tasks := range pipelineTasks {
+		if name == "" {
+			continue
+		}
+		t.PipelineRequiredTasks = map[string]tasksRecord{name: {Tasks: tasks, EffectiveOn: effectiveOn}}
+	}
 }
 
 // Output serializes the Tracker state as YAML
@@ -155,7 +168,7 @@ func Track(ctx context.Context, fs afero.Fs, urls []string, input string, prune 
 	}
 
 	effective_on := effectiveOn()
-	requiredTasks := commonTasksRecord{EffectiveOn: effective_on}
+	requiredTasks := tasksRecord{EffectiveOn: effective_on, Tasks: []string{}}
 	for _, ref := range refs {
 		info, err := newBundleInfo(ctx, ref, requiredTasks)
 		if err != nil {
@@ -172,6 +185,7 @@ func Track(ctx context.Context, fs afero.Fs, urls []string, input string, prune 
 			})
 		}
 		requiredTasks = info.commonPipelineTasks
+		t.addPipelineRequiredTasks(effective_on, info.pipelineTasks)
 
 	}
 	t.addRequiredTasksRecord(requiredTasks)
@@ -248,7 +262,7 @@ func (t *Tracker) filterRequiredTasks(prune bool) {
 	}
 	now := time.Now().UTC()
 
-	filtered := make([]commonTasksRecord, 0, len(t.RequiredTasks))
+	filtered := make([]tasksRecord, 0, len(t.RequiredTasks))
 	for _, r := range t.RequiredTasks {
 		filtered = append(filtered, r)
 		if now.After(r.EffectiveOn) {

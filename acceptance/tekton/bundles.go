@@ -107,6 +107,8 @@ func contentForPipeline(name string) []byte {
 kind: Pipeline
 metadata:
   name: %s
+  labels:
+    pipelines.openshift.io/runtime: pipeline1
 spec:
   tasks:
   - taskRef:

@@ -31,14 +31,15 @@ import (
 type bundleInfo struct {
 	ref image.ImageReference
 	// Set of common Tasks found across Pipelines definitions in the bundle.
-	commonPipelineTasks commonTasksRecord
+	commonPipelineTasks tasksRecord
 	// Set of collection where the bundle should be tracked under.
-	collections sets.Set[string]
+	collections   sets.Set[string]
+	pipelineTasks map[string][]string
 }
 
 // newBundleInfo returns information about the bundle, such as which collections it should
 // be added to, and which common tasks are found within its pipeline definitions.
-func newBundleInfo(ctx context.Context, ref image.ImageReference, tasks commonTasksRecord) (*bundleInfo, error) {
+func newBundleInfo(ctx context.Context, ref image.ImageReference, tasks tasksRecord) (*bundleInfo, error) {
 	info := bundleInfo{ref: ref, collections: sets.New[string](), commonPipelineTasks: tasks}
 
 	client := NewClient(ctx)
@@ -58,7 +59,7 @@ func newBundleInfo(ctx context.Context, ref image.ImageReference, tasks commonTa
 				switch kind {
 				case "pipeline":
 					info.collections.Insert(pipelineCollection)
-					if err := info.updateCommonTasks(ctx, name); err != nil {
+					if err := info.updatePipelineTasks(ctx, name); err != nil {
 						return nil, err
 					}
 				case "task":
@@ -71,29 +72,54 @@ func newBundleInfo(ctx context.Context, ref image.ImageReference, tasks commonTa
 	return &info, nil
 }
 
-// updateCommonTasks updates the commonPipelineTasks attributes with the tasks found
-// in the given pipeline.
-func (info *bundleInfo) updateCommonTasks(ctx context.Context, pipelineName string) error {
+// getBundlePipeline gets a pipeline from a bundle by the pipeline name
+func (info *bundleInfo) getBundlePipeline(ctx context.Context, pipelineName string) (v1beta1.PipelineObject, error) {
 	client := NewClient(ctx)
 	bundle := info.ref.String()
 	runtimeObject, err := client.GetTektonObject(ctx, bundle, "pipeline", pipelineName)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	pipelineObject, ok := runtimeObject.(v1beta1.PipelineObject)
 	if !ok {
-		return fmt.Errorf("pipeline resource, %q, cannot be converted to a PipelineObject", pipelineName)
+		return nil, fmt.Errorf("pipeline resource, %q, cannot be converted to a PipelineObject", pipelineName)
 	}
 	pipelineObject.SetDefaults(ctx)
 
+	return pipelineObject, nil
+}
+
+// updateRequiredTasks updates the required common tasks and required pipeline tasks
+func (info *bundleInfo) updatePipelineTasks(ctx context.Context, pipelineName string) error {
+	pipelineObject, err := info.getBundlePipeline(ctx, pipelineName)
+	if err != nil {
+		return err
+	}
 	// Filter out unwanted pipelines
 	// TODO: Consider making this filter configurable at some point in the future.
 	if val, ok := pipelineObject.PipelineMetadata().Labels["skip-hacbs-test"]; ok && val == "true" {
 		return nil
 	}
+	pipelineTaskNames := getTaskNames(pipelineObject.PipelineSpec())
 
-	info.commonPipelineTasks.updateTasksIntersection(getTaskNames(pipelineObject.PipelineSpec()))
+	// set the required pipeline tasks if the proper key is returned
+	if taskKey := requiredTaskKeyExists(pipelineObject); taskKey != "" {
+		info.pipelineTasks = map[string][]string{taskKey: sets.List(pipelineTaskNames)}
+	}
+
+	info.commonPipelineTasks.updateTasksIntersection(pipelineTaskNames)
 	return nil
+}
+
+// get the key used in "pipeline-required-tasks" from the pipelineObject
+func requiredTaskKeyExists(pipelineObject v1beta1.PipelineObject) string {
+	var labelKey string = "pipelines.openshift.io/runtime"
+	if pipelineLabel, labelExists := pipelineObject.PipelineMetadata().Labels[labelKey]; labelExists {
+		return pipelineLabel
+	}
+	// log something
+	log.Warnf("Label %v does not exist for pipeline %v", labelKey, pipelineObject.PipelineMetadata().Name)
+	return ""
 }
 
 // getTaskNames returns a set of task names found in the pipeline spec.
