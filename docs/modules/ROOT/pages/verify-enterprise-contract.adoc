@@ -1,0 +1,67 @@
+= verify-enterprise-contract task
+
+== Synopsis
+The `verify-enterprise-contract` task is a Tekton based workflow which ensures that the enterprise contract requirements are met for a given set of images.
+
+== Parameters
+[%hardbreaks]
+--IMAGES
+[%hardbreaks]
+* type: string
+* description: Spec section of an ApplicationSnapshot resource. Not all fields of the resource are required. 
++
+A minimal example:
++
+[source,json]
+{
+    "components": [
+        {
+        "containerImage": "quay.io/example/repo:latest" 
+        }
+    ]
+}
++
+Each `containerImage` in the `components` array is validated.
+
+[%hardbreaks]
+--POLICY_CONFIGURATION
+[%hardbreaks]
+* type: string
+* description: Name of the policy configuration (EnterpriseContractPolicy resource) to use. `namespace/name` or `name` syntax supported. If namespace is omitted the namespace where the task runs is used.
+* default: `"$(context.taskRun.namespace)/ec-policy"`
+
+[%hardbreaks]
+--PUBLIC_KEY
+[%hardbreaks]
+* type: string
+* description: Public key used to verify signatures. Must be a valid k8s cosign reference, e.g. `k8s://my-space/my-secret` where my-secret contains the expected cosign.pub attribute.
+* default: `""`
+
+[%hardbreaks]
+--REKOR_HOST
+[%hardbreaks]
+* type: string
+* description: Rekor host for transparency log lookups
+* default: `""`
+
+[%hardbreaks]
+--SSL_CERT_DIR
+[%hardbreaks]
+* type: string
+* description: Path to a directory containing SSL certs to be used when communicating with external services. This is useful when using the integrated registry and a local instance of Rekor on a development cluster which may use certificates issued by a not-commonly trusted root CA. In such cases, `"/var/run/secrets/kubernetes.io/serviceaccount"` is a good value. Multiple paths can be provided by using the `":"` separator.
+* default: `""`
+
+[%hardbreaks]
+--STRICT
+[%hardbreaks]
+* type: string
+* description: Fail the task if policy fails. Set to `"false"` to disable it.
+* default: `"true"`
+
+[%hardbreaks]
+--HOMEDIR
+[%hardbreaks]
+* type: string
+* description: Value for the HOME environment variable.
+* default: /tekton/home
+

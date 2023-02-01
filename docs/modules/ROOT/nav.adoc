@@ -3,3 +3,4 @@
 {{#each reference}}
 *** xref:{{ path }}[{{ name }}]
 {{/each}}
+*** xref:verify-enterprise-contract.adoc[verify-enterprise-contract] task   
