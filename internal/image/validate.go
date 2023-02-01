@@ -44,9 +44,6 @@ func ValidateImage(ctx context.Context, fs afero.Fs, url string, p *policy.Polic
 	if err = a.ValidateImageAccess(ctx); err != nil {
 		log.Debugf("Image access check failed. Error: %s", err.Error())
 		out.SetImageAccessibleCheck(false, fmt.Sprintf("image ref not accessible. %s", err))
-		out.SetImageSignatureCheck(false, "")
-		out.SetAttestationSignatureCheck(false, "")
-		out.SetPolicyCheck(nil)
 		return out, nil
 	} else {
 		log.Debug("Image access check passed")
