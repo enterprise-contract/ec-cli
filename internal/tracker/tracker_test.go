@@ -640,7 +640,7 @@ func mustCreateFakePipelineObject() runtime.Object {
 		},
 	}
 	pipeline := v1beta1.Pipeline{}
-	pipeline.Name = "docker-build"
+	pipeline.SetLabels(map[string]string{"pipelines.openshift.io/runtime": "docker-build"})
 	pipeline.SetDefaults(context.Background())
 	pipeline.Spec.Tasks = []v1beta1.PipelineTask{gitCloneTask, buildahTask}
 	pipeline.Spec.Finally = []v1beta1.PipelineTask{summaryTask}

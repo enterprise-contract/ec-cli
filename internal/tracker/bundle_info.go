@@ -73,25 +73,25 @@ func newBundleInfo(ctx context.Context, ref image.ImageReference, tasks tasksRec
 }
 
 // getBundlePipeline gets a pipeline from a bundle by the pipeline name
-func (info *bundleInfo) getBundlePipeline(ctx context.Context, pipelineName string) (error, v1beta1.PipelineObject) {
+func (info *bundleInfo) getBundlePipeline(ctx context.Context, pipelineName string) (v1beta1.PipelineObject, error) {
 	client := NewClient(ctx)
 	bundle := info.ref.String()
 	runtimeObject, err := client.GetTektonObject(ctx, bundle, "pipeline", pipelineName)
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 	pipelineObject, ok := runtimeObject.(v1beta1.PipelineObject)
 	if !ok {
-		return fmt.Errorf("pipeline resource, %q, cannot be converted to a PipelineObject", pipelineName), nil
+		return nil, fmt.Errorf("pipeline resource, %q, cannot be converted to a PipelineObject", pipelineName)
 	}
 	pipelineObject.SetDefaults(ctx)
 
-	return nil, pipelineObject
+	return pipelineObject, nil
 }
 
 // updateRequiredTasks updates the required common tasks and required pipeline tasks
 func (info *bundleInfo) updatePipelineTasks(ctx context.Context, pipelineName string) error {
-	err, pipelineObject := info.getBundlePipeline(ctx, pipelineName)
+	pipelineObject, err := info.getBundlePipeline(ctx, pipelineName)
 	if err != nil {
 		return err
 	}
@@ -101,11 +101,25 @@ func (info *bundleInfo) updatePipelineTasks(ctx context.Context, pipelineName st
 		return nil
 	}
 	pipelineTaskNames := getTaskNames(pipelineObject.PipelineSpec())
-	info.pipelineTasks = map[string][]string{
-		pipelineObject.PipelineMetadata().Name: sets.List(pipelineTaskNames),
+
+	// set the required pipeline tasks if the proper key is returned
+	if taskKey := getRequiredTaskKey(pipelineObject); taskKey != "" {
+		info.pipelineTasks = map[string][]string{taskKey: sets.List(pipelineTaskNames)}
 	}
+
 	info.commonPipelineTasks.updateTasksIntersection(pipelineTaskNames)
 	return nil
+}
+
+// get the key used in "pipeline-required-tasks" from the pipelineObject
+func getRequiredTaskKey(pipelineObject v1beta1.PipelineObject) string {
+	var labelKey string = "pipelines.openshift.io/runtime"
+	if pipelineLabel, labelExists := pipelineObject.PipelineMetadata().Labels[labelKey]; labelExists {
+		return pipelineLabel
+	}
+	// log something
+	log.Warnf("Label %v does not exist for pipeline %v", labelKey, pipelineObject.PipelineMetadata().Name)
+	return ""
 }
 
 // getTaskNames returns a set of task names found in the pipeline spec.
