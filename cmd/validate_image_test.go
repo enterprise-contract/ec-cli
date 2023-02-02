@@ -159,7 +159,7 @@ func Test_determineInputSpec(t *testing.T) {
 }
 
 func Test_ValidateImageCommand(t *testing.T) {
-	validate := func(_ context.Context, _ afero.Fs, url string, _ *policy.Policy) (*output.Output, error) {
+	validate := func(_ context.Context, _ afero.Fs, url string, _ policy.Policy) (*output.Output, error) {
 		return &output.Output{
 			ImageSignatureCheck: output.VerificationStatus{
 				Passed: true,
@@ -278,7 +278,7 @@ func Test_ValidateErrorCommand(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			validate := func(context.Context, afero.Fs, string, *policy.Policy) (*output.Output, error) {
+			validate := func(context.Context, afero.Fs, string, policy.Policy) (*output.Output, error) {
 				return nil, errors.New("expected")
 			}
 
@@ -301,7 +301,7 @@ func Test_ValidateErrorCommand(t *testing.T) {
 }
 
 func Test_FailureImageAccessibility(t *testing.T) {
-	validate := func(_ context.Context, _ afero.Fs, url string, _ *policy.Policy) (*output.Output, error) {
+	validate := func(_ context.Context, _ afero.Fs, url string, _ policy.Policy) (*output.Output, error) {
 		return &output.Output{
 			ImageSignatureCheck: output.VerificationStatus{
 				Passed: false,
@@ -355,7 +355,7 @@ func Test_FailureImageAccessibility(t *testing.T) {
 }
 
 func Test_FailureOutput(t *testing.T) {
-	validate := func(_ context.Context, _ afero.Fs, url string, _ *policy.Policy) (*output.Output, error) {
+	validate := func(_ context.Context, _ afero.Fs, url string, _ policy.Policy) (*output.Output, error) {
 		return &output.Output{
 			ImageSignatureCheck: output.VerificationStatus{
 				Passed: false,
@@ -407,7 +407,7 @@ func Test_FailureOutput(t *testing.T) {
 }
 
 func Test_WarningOutput(t *testing.T) {
-	validate := func(_ context.Context, _ afero.Fs, url string, _ *policy.Policy) (*output.Output, error) {
+	validate := func(_ context.Context, _ afero.Fs, url string, _ policy.Policy) (*output.Output, error) {
 		return &output.Output{
 			ImageSignatureCheck: output.VerificationStatus{
 				Passed: true,

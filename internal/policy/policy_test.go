@@ -58,6 +58,7 @@ func (c *FakeKubernetesClient) FetchEnterpriseContractPolicy(ctx context.Context
 func TestNewPolicy(t *testing.T) {
 	timeNowStr := "2022-11-23T16:30:00Z"
 	timeNow, err := time.Parse(time.RFC3339, timeNowStr)
+
 	assert.NoError(t, err)
 
 	cases := []struct {
@@ -66,69 +67,69 @@ func TestNewPolicy(t *testing.T) {
 		k8sResource *ecc.EnterpriseContractPolicySpec
 		rekorUrl    string
 		publicKey   string
-		expected    *Policy
+		expected    *policy
 	}{
 		{
 			name:      "simple inline",
 			policyRef: toJson(&ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey}),
-			expected: &Policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: testPublicKey}, EffectiveTime: timeNow},
+			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
+				PublicKey: testPublicKey}, effectiveTime: timeNow},
 		},
 		{
 			name:      "inline with public key overwrite",
 			policyRef: toJson(&ecc.EnterpriseContractPolicySpec{PublicKey: "ignored"}),
 			publicKey: testPublicKey,
-			expected: &Policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: testPublicKey}, EffectiveTime: timeNow},
+			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
+				PublicKey: testPublicKey}, effectiveTime: timeNow},
 		},
 		{
 			name:      "inline with rekor URL",
 			policyRef: toJson(&ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey, RekorUrl: testRekorUrl}),
-			expected: &Policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: testPublicKey, RekorUrl: testRekorUrl}, EffectiveTime: timeNow},
+			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
+				PublicKey: testPublicKey, RekorUrl: testRekorUrl}, effectiveTime: timeNow},
 		},
 		{
 			name:      "inline with rekor URL overwrite",
 			policyRef: toJson(&ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey, RekorUrl: "ignored"}),
 			rekorUrl:  testRekorUrl,
-			expected: &Policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: testPublicKey, RekorUrl: testRekorUrl}, EffectiveTime: timeNow},
+			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
+				PublicKey: testPublicKey, RekorUrl: testRekorUrl}, effectiveTime: timeNow},
 		},
 		{
 			name:        "simple k8sPath",
 			policyRef:   "ec-policy",
 			k8sResource: &ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey},
-			expected: &Policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: testPublicKey}, EffectiveTime: timeNow},
+			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
+				PublicKey: testPublicKey}, effectiveTime: timeNow},
 		},
 		{
 			name:        "k8sPath with public key overwrite",
 			policyRef:   "ec-policy",
 			k8sResource: &ecc.EnterpriseContractPolicySpec{PublicKey: "ignored"},
 			publicKey:   testPublicKey,
-			expected: &Policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: testPublicKey}, EffectiveTime: timeNow},
+			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
+				PublicKey: testPublicKey}, effectiveTime: timeNow},
 		},
 		{
 			name:        "k8sPath with rekor URL",
 			policyRef:   "ec-policy",
 			k8sResource: &ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey, RekorUrl: testRekorUrl},
-			expected: &Policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: testPublicKey, RekorUrl: testRekorUrl}, EffectiveTime: timeNow},
+			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
+				PublicKey: testPublicKey, RekorUrl: testRekorUrl}, effectiveTime: timeNow},
 		},
 		{
 			name:        "k8sPath with rekor overwrite",
 			policyRef:   "ec-policy",
 			k8sResource: &ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey},
 			rekorUrl:    testRekorUrl,
-			expected: &Policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: testPublicKey, RekorUrl: testRekorUrl}, EffectiveTime: timeNow},
+			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
+				PublicKey: testPublicKey, RekorUrl: testRekorUrl}, effectiveTime: timeNow},
 		},
 		{
 			name:      "default empty policy",
 			publicKey: testPublicKey,
-			expected: &Policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: testPublicKey}, EffectiveTime: timeNow},
+			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
+				PublicKey: testPublicKey}, effectiveTime: timeNow},
 		},
 	}
 
@@ -142,7 +143,9 @@ func TestNewPolicy(t *testing.T) {
 			got, err := NewPolicy(ctx, c.policyRef, c.rekorUrl, c.publicKey, timeNowStr)
 			assert.NoError(t, err)
 			// CheckOpts is more thoroughly checked in TestCheckOpts.
-			got.CheckOpts = nil
+			got.(*policy).checkOpts = nil
+			assert.Equal(t, c.expected.EffectiveTime(), got.EffectiveTime())
+
 			assert.Equal(t, c.expected, got)
 		})
 	}
@@ -227,7 +230,9 @@ func TestCheckOpts(t *testing.T) {
 			}
 			assert.NoError(t, err)
 
-			opts := p.CheckOpts
+			opts, err := p.CheckOpts()
+			assert.NoError(t, err)
+
 			if c.rekorUrl != "" {
 				assert.NotNil(t, opts.RekorClient)
 			} else {

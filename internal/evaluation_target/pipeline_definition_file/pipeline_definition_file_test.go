@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"testing"
-	"time"
 
 	"github.com/open-policy-agent/conftest/output"
 	"github.com/spf13/afero"
@@ -40,7 +39,7 @@ func (e mockEvaluator) Evaluate(ctx context.Context, inputs []string) ([]output.
 func (e mockEvaluator) Destroy() {
 }
 
-func mockNewConftestEvaluator(ctx context.Context, fs afero.Fs, policySources []source.PolicySource, p *policy.Policy) (evaluator.Evaluator, error) {
+func mockNewConftestEvaluator(ctx context.Context, fs afero.Fs, policySources []source.PolicySource, p policy.Policy) (evaluator.Evaluator, error) {
 	return mockEvaluator{}, nil
 }
 
@@ -55,7 +54,11 @@ func Test_NewPipelineDefinitionFile(t *testing.T) {
 	newConftestEvaluator = mockNewConftestEvaluator
 	pathExists = mockPathExists
 	fs := afero.NewOsFs()
-	evaluated, _ := mockNewConftestEvaluator(context.TODO(), fs, []source.PolicySource{}, &policy.Policy{EffectiveTime: time.Now()})
+
+	p, err := policy.NewOfflinePolicy(context.TODO(), "")
+	assert.NoError(t, err)
+
+	evaluated, _ := mockNewConftestEvaluator(context.TODO(), fs, []source.PolicySource{}, p)
 	tests := []struct {
 		name    string
 		fpath   string

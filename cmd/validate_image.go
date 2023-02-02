@@ -34,7 +34,7 @@ import (
 	"github.com/hacbs-contract/ec-cli/internal/policy"
 )
 
-type imageValidationFunc func(context.Context, afero.Fs, string, *policy.Policy) (*output.Output, error)
+type imageValidationFunc func(context.Context, afero.Fs, string, policy.Policy) (*output.Output, error)
 
 func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 	var data = struct {
@@ -48,7 +48,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		outputFile          string
 		output              []string
 		spec                *appstudioshared.ApplicationSnapshotSpec
-		policy              *policy.Policy
+		policy              policy.Policy
 		effectiveTime       string
 	}{
 

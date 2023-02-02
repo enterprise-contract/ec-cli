@@ -22,13 +22,11 @@ import (
 	"encoding/json"
 	"errors"
 	"testing"
-	"time"
 
 	"github.com/google/go-containerregistry/pkg/name"
 	gcr "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/google/go-containerregistry/pkg/v1/types"
-	"github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/in-toto/in-toto-golang/in_toto"
 	v02 "github.com/in-toto/in-toto-golang/in_toto/slsa_provenance/v0.2"
 	conftestOutput "github.com/open-policy-agent/conftest/output"
@@ -113,13 +111,10 @@ func TestValidateImage(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			fs := afero.NewMemMapFs()
 
-			p := &policy.Policy{
-				EnterpriseContractPolicySpec: v1alpha1.EnterpriseContractPolicySpec{},
-				CheckOpts:                    &cosign.CheckOpts{},
-				EffectiveTime:                time.Now().UTC(),
-			}
-
 			ctx := context.Background()
+			p, err := policy.NewOfflinePolicy(ctx, "")
+			assert.NoError(t, err)
+
 			ctx = application_snapshot_image.WithClient(ctx, c.client)
 
 			actual, err := ValidateImage(ctx, fs, c.url, p)

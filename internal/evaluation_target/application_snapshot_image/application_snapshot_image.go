@@ -71,16 +71,20 @@ type ApplicationSnapshotImage struct {
 }
 
 // NewApplicationSnapshotImage returns an ApplicationSnapshotImage struct with reference, checkOpts, and evaluator ready to use.
-func NewApplicationSnapshotImage(ctx context.Context, fs afero.Fs, url string, p *policy.Policy) (*ApplicationSnapshotImage, error) {
+func NewApplicationSnapshotImage(ctx context.Context, fs afero.Fs, url string, p policy.Policy) (*ApplicationSnapshotImage, error) {
+	opts, err := p.CheckOpts()
+	if err != nil {
+		return nil, err
+	}
 	a := &ApplicationSnapshotImage{
-		checkOpts: *p.CheckOpts,
+		checkOpts: *opts,
 	}
 
 	if err := a.SetImageURL(url); err != nil {
 		return nil, err
 	}
 
-	if p.CheckOpts.RekorClient != nil {
+	if opts.RekorClient != nil {
 		// By using Cosign directly the log entries are validated against the
 		// Rekor public key, the public key for Rekor can be supplied via three
 		// different means:
@@ -100,7 +104,7 @@ func NewApplicationSnapshotImage(ctx context.Context, fs afero.Fs, url string, p
 	}
 
 	// Return an evaluator for each of these
-	for _, sourceGroup := range p.EnterpriseContractPolicySpec.Sources {
+	for _, sourceGroup := range p.Spec().Sources {
 		// Todo: Make each fetch run concurrently
 		log.Debugf("Fetching policy source group '%s'", sourceGroup.Name)
 		policySources, err := fetchPolicySources(&sourceGroup)

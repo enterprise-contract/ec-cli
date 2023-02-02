@@ -21,7 +21,6 @@ package evaluator
 import (
 	"context"
 	"testing"
-	"time"
 
 	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/open-policy-agent/conftest/output"
@@ -169,9 +168,12 @@ func TestConftestEvaluatorEvaluate(t *testing.T) {
 
 	r.On("Run", ctx, inputs).Return(results, nil)
 
+	p, err := policy.NewOfflinePolicy(ctx, "")
+	assert.NoError(t, err)
+
 	evaluator, err := NewConftestEvaluator(ctx, afero.NewMemMapFs(), []source.PolicySource{
 		testPolicySource{},
-	}, &policy.Policy{EffectiveTime: time.Now()})
+	}, p)
 
 	assert.NoError(t, err)
 	actualResults, err := evaluator.Evaluate(ctx, inputs)
@@ -510,9 +512,13 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 			ctx := downloader.WithDownloadImpl(withTestRunner(context.Background(), &r), &dl)
 			r.On("Run", ctx, inputs).Return(tt.results, nil)
 
-			p := &policy.Policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
+			p, err := policy.NewOfflinePolicy(ctx, "")
+			assert.NoError(t, err)
+
+			p = p.WithSpec(ecc.EnterpriseContractPolicySpec{
 				Configuration: tt.config,
-			}}
+			})
+
 			evaluator, err := NewConftestEvaluator(ctx, afero.NewMemMapFs(), []source.PolicySource{
 				testPolicySource{},
 			}, p)
