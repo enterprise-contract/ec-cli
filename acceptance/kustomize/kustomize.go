@@ -28,7 +28,7 @@ var hackDir = "hack"
 
 func Render(dir string) ([]byte, error) {
 	options := krusty.MakeDefaultOptions()
-	options.DoLegacyResourceSort = true                                             // otherwise Namespace object might appear after an object that needs it
+	options.Reorder = krusty.ReorderOptionLegacy                                    // otherwise Namespace object might appear after an object that needs it
 	options.PluginConfig = types.EnabledPluginConfig(types.BploUseStaticallyLinked) // enable plugins
 	options.PluginConfig.FnpLoadingOptions.EnableExec = true                        // we allow KEP exec plugins
 
