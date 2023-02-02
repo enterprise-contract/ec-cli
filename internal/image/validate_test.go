@@ -21,7 +21,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"regexp"
 	"testing"
 	"time"
 
@@ -77,7 +76,7 @@ func TestValidateImage(t *testing.T) {
 			client: &mockASIClient{},
 			url:    imageRef,
 			expectedViolations: []conftestOutput.Result{
-				{Message: "image ref not accessible. no response received"},
+				{Message: "Image URL is not accessible: no response received"},
 			},
 			expectedWarnings: []conftestOutput.Result{},
 			expectedImageURL: imageRef,
@@ -90,7 +89,7 @@ func TestValidateImage(t *testing.T) {
 			},
 			url: imageRef,
 			expectedViolations: []conftestOutput.Result{
-				{Message: "no image signatures client error"},
+				{Message: "Image signature check failed: no image signatures client error"},
 			},
 			expectedWarnings: []conftestOutput.Result{},
 			expectedImageURL: imageRegistry + "@sha256:" + imageDigest,
@@ -103,9 +102,7 @@ func TestValidateImage(t *testing.T) {
 			},
 			url: imageRef,
 			expectedViolations: []conftestOutput.Result{
-				{Message: "no image attestations client error"},
-				{Message: "EV001: No attestation data, at ..."},
-				{Message: "no attestations available"},
+				{Message: "Image attestation check failed: no image attestations client error"},
 			},
 			expectedWarnings: []conftestOutput.Result{},
 			expectedImageURL: imageRegistry + "@sha256:" + imageDigest,
@@ -129,25 +126,10 @@ func TestValidateImage(t *testing.T) {
 			assert.NoError(t, err)
 
 			assert.Equal(t, c.expectedWarnings, actual.Warnings())
-			actualViolations := removePathFromErrors(actual.Violations())
-			assert.Equal(t, c.expectedViolations, actualViolations)
+			assert.Equal(t, c.expectedViolations, actual.Violations())
 			assert.Equal(t, c.expectedImageURL, actual.ImageURL)
 		})
 	}
-}
-
-var errorPathRegex = regexp.MustCompile(`(.*, at) (.*)$`)
-
-// removePathFromErrors replaces literal code paths with "...". Such paths may appear
-// in certain violation messages. This function normalizes the value to facilitate
-// matching in tests.
-func removePathFromErrors(results []conftestOutput.Result) []conftestOutput.Result {
-	newResults := make([]conftestOutput.Result, 0, len(results))
-	for _, result := range results {
-		result.Message = errorPathRegex.ReplaceAllString(result.Message, "$1 ...")
-		newResults = append(newResults, result)
-	}
-	return newResults
 }
 
 type mockASIClient struct {

@@ -18,7 +18,6 @@ package image
 
 import (
 	"context"
-	"fmt"
 
 	conftestOutput "github.com/open-policy-agent/conftest/output"
 	log "github.com/sirupsen/logrus"
@@ -41,75 +40,39 @@ func ValidateImage(ctx context.Context, fs afero.Fs, url string, p *policy.Polic
 		return nil, err
 	}
 
-	if err = a.ValidateImageAccess(ctx); err != nil {
-		log.Debugf("Image access check failed. Error: %s", err.Error())
-		out.SetImageAccessibleCheck(false, fmt.Sprintf("image ref not accessible. %s", err))
+	out.SetImageAccessibleCheckFromError(a.ValidateImageAccess(ctx))
+	if !out.ImageAccessibleCheck.Passed {
 		return out, nil
-	} else {
-		log.Debug("Image access check passed")
-		out.SetImageAccessibleCheck(true, "success")
+	}
 
-		// Ensure image URL contains a digest to avoid ambiguity in the next
-		// validation steps
-		ref, err := ParseAndResolve(url)
-		if err != nil {
-			log.Debugf("Failed to parse image url %s", url)
-			return nil, err
-		}
-		// The original image reference may or may not have had a tag. If it didn't,
-		// the code above will set the tag to "latest". This is expected in some cases,
-		// e.g. image ref also does not include digest. However, in other cases, although
-		// harmless, it may cause confusion to users. The tag is cleared here to prevent
-		// such confusion and to further emphasize that the image is only accessed by digest
-		// from this point forward.
-		ref.Tag = ""
-		resolved := ref.String()
-		log.Debugf("Resolved image to %s", resolved)
-		if err := a.SetImageURL(resolved); err != nil {
-			log.Debugf("Failed to set resolved image url %s", resolved)
-			return nil, err
-		}
+	if resolved, err := resolveAndSetImageUrl(url, a); err != nil {
+		return nil, err
+	} else {
 		out.ImageURL = resolved
 	}
 
-	if err = a.ValidateImageSignature(ctx); err != nil {
-		log.Debug("Image signature check failed")
-		out.SetImageSignatureCheck(false, err.Error())
-	} else {
-		log.Debug("Image signature check passed")
-		out.SetImageSignatureCheck(true, "success")
+	out.SetImageSignatureCheckFromError(a.ValidateImageSignature(ctx))
+
+	out.SetAttestationSignatureCheckFromError(a.ValidateAttestationSignature(ctx))
+	if !out.AttestationSignatureCheck.Passed {
+		return out, nil
 	}
-	if err = a.ValidateAttestationSignature(ctx); err != nil {
-		log.Debug("Image attestation signature check failed")
-		out.SetAttestationSignatureCheck(false, err.Error())
-	} else {
-		log.Debug("Image attestation signature check passed")
-		out.SetAttestationSignatureCheck(true, "success")
-		out.Signatures = a.Signatures()
-	}
-	if err = a.ValidateAttestationSyntax(ctx); err != nil {
-		log.Debug("Image attestation syntax check failed")
-		out.SetAttestationSyntaxCheck(false, err.Error())
-	} else {
-		log.Debug("Image attestation syntax check passed")
-		out.SetAttestationSyntaxCheck(true, "success")
-	}
+
+	out.Signatures = a.Signatures()
+
+	out.SetAttestationSyntaxCheckFromError(a.ValidateAttestationSyntax(ctx))
 
 	a.FilterMatchingAttestations(ctx)
 
 	attCount := len(a.Attestations())
 	log.Debugf("Found %d attestations", attCount)
 	if attCount == 0 {
-		res := []conftestOutput.CheckResult{
-			{
-				Failures: []conftestOutput.Result{
-					{
-						Message: "no attestations available",
-					},
-				},
-			},
-		}
-		out.SetPolicyCheck(res)
+		// This is very much a corner case.
+		out.SetPolicyCheck([]conftestOutput.CheckResult{
+			{Failures: []conftestOutput.Result{{
+				Message: "No attestations contain a subject that match the given image.",
+			}}},
+		})
 		return out, nil
 	}
 
@@ -127,13 +90,39 @@ func ValidateImage(ctx context.Context, fs afero.Fs, url string, p *policy.Polic
 		if err != nil {
 			log.Debug("Problem running conftest policy check!")
 			return nil, err
-		} else {
-			allResults = append(allResults, results...)
 		}
+		allResults = append(allResults, results...)
+
 	}
 
 	log.Debug("Conftest policy check complete")
 	out.SetPolicyCheck(allResults)
 
 	return out, nil
+}
+
+func resolveAndSetImageUrl(url string, asi *application_snapshot_image.ApplicationSnapshotImage) (string, error) {
+	// Ensure image URL contains a digest to avoid ambiguity in the next
+	// validation steps
+	ref, err := ParseAndResolve(url)
+	if err != nil {
+		log.Debugf("Failed to parse image url %s", url)
+		return "", err
+	}
+	// The original image reference may or may not have had a tag. If it didn't,
+	// the code above will set the tag to "latest". This is expected in some cases,
+	// e.g. image ref also does not include digest. However, in other cases, although
+	// harmless, it may cause confusion to users. The tag is cleared here to prevent
+	// such confusion and to further emphasize that the image is only accessed by digest
+	// from this point forward.
+	ref.Tag = ""
+	resolved := ref.String()
+	log.Debugf("Resolved image to %s", resolved)
+
+	if err := asi.SetImageURL(resolved); err != nil {
+		log.Debugf("Failed to set resolved image url %s", resolved)
+		return "", err
+	}
+
+	return resolved, nil
 }

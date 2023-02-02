@@ -20,6 +20,8 @@ package output
 
 import (
 	"bytes"
+	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/open-policy-agent/conftest/output"
@@ -75,7 +77,7 @@ func Test_PrintExpectedJSON(t *testing.T) {
 			},
 		},
 		Signatures: []cosign.Signatures{
-			cosign.Signatures{KeyID: "key-id", Sig: "signature"},
+			{KeyID: "key-id", Sig: "signature"},
 		},
 		ExitCode: 42,
 	}
@@ -537,6 +539,149 @@ func Test_Warnings(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			assert.Equal(t, c.expected, c.output.Warnings())
+		})
+	}
+}
+
+func TestSetImageAccessibleCheckFromError(t *testing.T) {
+	cases := []struct {
+		name           string
+		err            error
+		expectedPassed bool
+		expectedResult *output.Result
+	}{
+		{
+			name:           "success",
+			expectedPassed: true,
+		},
+		{
+			name:           "failure",
+			expectedPassed: false,
+			err:            errors.New("kaboom!"),
+			expectedResult: &output.Result{
+				Message: "Image URL is not accessible: kaboom!",
+			},
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			o := Output{}
+			o.SetImageAccessibleCheckFromError(c.err)
+
+			assert.Equal(t, c.expectedPassed, o.ImageAccessibleCheck.Passed)
+			assert.Equal(t, c.expectedResult, o.ImageAccessibleCheck.Result)
+		})
+	}
+}
+
+func TestSetImageSignatureCheckFromError(t *testing.T) {
+	cases := []struct {
+		name           string
+		err            error
+		expectedPassed bool
+		expectedResult *output.Result
+	}{
+		{
+			name:           "success",
+			expectedPassed: true,
+		},
+		{
+			name:           "generic failure",
+			expectedPassed: false,
+			err:            errors.New("kaboom!"),
+			expectedResult: &output.Result{
+				Message: "Image signature check failed: kaboom!",
+			},
+		},
+		{
+			name:           "missing signatures failure",
+			expectedPassed: false,
+			err:            fmt.Errorf("%w: kaboom!", cosign.ErrNoMatchingSignatures),
+			expectedResult: &output.Result{
+				Message: missingSignatureMessage,
+			},
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			o := Output{}
+			o.SetImageSignatureCheckFromError(c.err)
+
+			assert.Equal(t, c.expectedPassed, o.ImageSignatureCheck.Passed)
+			assert.Equal(t, c.expectedResult, o.ImageSignatureCheck.Result)
+		})
+	}
+}
+func TestSetAttestationSignatureCheckFromError(t *testing.T) {
+	cases := []struct {
+		name           string
+		err            error
+		expectedPassed bool
+		expectedResult *output.Result
+	}{
+		{
+			name:           "success",
+			expectedPassed: true,
+		},
+		{
+			name:           "generic failure",
+			expectedPassed: false,
+			err:            errors.New("kaboom!"),
+			expectedResult: &output.Result{
+				Message: "Image attestation check failed: kaboom!",
+			},
+		},
+		{
+			name:           "missing attestations failure",
+			expectedPassed: false,
+			err:            fmt.Errorf("%w: kaboom!", cosign.ErrNoMatchingAttestations),
+			expectedResult: &output.Result{
+				Message: missingAttestationMessage,
+			},
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			o := Output{}
+			o.SetAttestationSignatureCheckFromError(c.err)
+
+			assert.Equal(t, c.expectedPassed, o.AttestationSignatureCheck.Passed)
+			assert.Equal(t, c.expectedResult, o.AttestationSignatureCheck.Result)
+		})
+	}
+}
+
+func TestSetAttestationSyntaxCheckFromError(t *testing.T) {
+	cases := []struct {
+		name           string
+		err            error
+		expectedPassed bool
+		expectedResult *output.Result
+	}{
+		{
+			name:           "success",
+			expectedPassed: true,
+		},
+		{
+			name:           "failure",
+			expectedPassed: false,
+			err:            errors.New("kaboom!"),
+			expectedResult: &output.Result{
+				Message: "Attestation syntax check failed: kaboom!",
+			},
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			o := Output{}
+			o.SetAttestationSyntaxCheckFromError(c.err)
+
+			assert.Equal(t, c.expectedPassed, o.AttestationSyntaxCheck.Passed)
+			assert.Equal(t, c.expectedResult, o.AttestationSyntaxCheck.Result)
 		})
 	}
 }
