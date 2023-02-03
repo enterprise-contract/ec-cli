@@ -20,7 +20,9 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"text/template"
 
+	hd "github.com/MakeNowJust/heredoc"
 	"github.com/open-policy-agent/opa/ast"
 )
 
@@ -38,6 +40,41 @@ func getShortName(a *ast.AnnotationsRef) string {
 	return str // yay
 }
 
+type TemplateFields = struct {
+	TrimmedPath string
+	WarnDeny    string
+	Title       string
+	Description string
+	ShortName   string
+}
+
+var templates = map[string]string{
+	"plain": hd.Doc(`
+		{{ .TrimmedPath }}.{{ .ShortName }} ({{ .WarnDeny }})
+		{{ .Title }}
+		{{ .Description }}
+		--
+	`),
+}
+
+// Prepare data for use in the template
+func prepTemplateFields(a *ast.AnnotationsRef) TemplateFields {
+	pathStrings := strings.Split(a.Path.String(), ".")
+	return TemplateFields{
+		TrimmedPath: strings.Join(pathStrings[1:len(pathStrings)-1], "."),
+		WarnDeny:    pathStrings[len(pathStrings)-1],
+		Title:       a.Annotations.Title,
+		Description: a.Annotations.Description,
+		ShortName:   getShortName(a),
+	}
+}
+
+// Render using a template
+func renderAnn(out io.Writer, a *ast.AnnotationsRef, tmplName string) error {
+	t := template.Must(template.New("t").Parse(templates[tmplName]))
+	return t.Execute(out, prepTemplateFields(a))
+}
+
 // This output format is mostly placeholder/poc.
 // Todo:
 // - Group by source and package
@@ -51,13 +88,10 @@ func OutputText(out io.Writer, allData map[string][]*ast.AnnotationsRef) error {
 			pathStrings := strings.Split(ann.Path.String(), ".")
 			if ann.Annotations != nil {
 				if string(ann.Annotations.Scope) == "rule" {
-					// Pretty version
-					fmt.Fprintf(out, "%s.%s (%s)\n%s\n%s\n--\n",
-						strings.Join(pathStrings[1:len(pathStrings)-1], "."),
-						getShortName(ann),
-						pathStrings[len(pathStrings)-1],
-						ann.Annotations.Title,
-						ann.Annotations.Description)
+					err := renderAnn(out, ann, "plain")
+					if err != nil {
+						return err
+					}
 				}
 				// Skip package annotations for now
 			} else {
