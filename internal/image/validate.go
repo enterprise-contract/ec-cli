@@ -86,6 +86,7 @@ func ValidateImage(ctx context.Context, fs afero.Fs, url string, p *policy.Polic
 	for _, e := range a.Evaluators {
 		// Todo maybe: Handle each one concurrently
 		results, err := e.Evaluate(ctx, []string{input})
+		defer e.Destroy()
 
 		if err != nil {
 			log.Debug("Problem running conftest policy check!")
