@@ -83,6 +83,12 @@ acceptance: ## Run acceptance tests
 	@cd acceptance && go test ./...
 	@go run -modfile "$${ACCEPTANCE_WORKDIR}/tools/go.mod" github.com/wadey/gocovmerge "$${ACCEPTANCE_WORKDIR}"/coverage-acceptance*.out > "$(ROOT_DIR)/coverage-acceptance.out"
 
+# Add @focus above the feature you're hacking on to use this
+.PHONY: focus-acceptance
+focus-acceptance: ## Run acceptance tests with @focus tag
+	@$(MAKE) build
+	@cd acceptance && go test -tags=acceptance . -args -tags=@focus
+
 LICENSE_IGNORE=-ignore 'dist/reference/*.yaml'
 LINT_TO_GITHUB_ANNOTATIONS='map(map(.)[])[][] as $$d | $$d.posn | split(":") as $$posn | "::warning file=\($$posn[0]),line=\($$posn[1]),col=\($$posn[2])::\($$d.message)"'
 .PHONY: lint
