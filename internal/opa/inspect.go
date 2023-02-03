@@ -23,6 +23,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/open-policy-agent/opa/ast"
@@ -68,13 +69,23 @@ func inspectMultiple(paths, modules []string) ([]*ast.AnnotationsRef, error) {
 	return results, nil
 }
 
+// Borrowed from conftest
+func isWarning(ruleName string) bool {
+	return regexp.MustCompile("^warn(_[a-zA-Z0-9]+)*$").MatchString(ruleName)
+}
+
+// Borrowed from conftest
+func isFailure(ruleName string) bool {
+	return regexp.MustCompile("^(deny|violation)(_[a-zA-Z0-9]+)*$").MatchString(ruleName)
+}
+
 func isWarnOrDeny(rule *ast.AnnotationsRef) bool {
 	r := rule.GetRule()
 	if r == nil {
 		return false
 	}
 	ruleName := r.Head.Name.String()
-	return ruleName == "deny" || ruleName == "warn"
+	return isWarning(ruleName) || isFailure(ruleName)
 }
 
 func hasAnnotations(rule *ast.AnnotationsRef) bool {
