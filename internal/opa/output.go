@@ -49,16 +49,19 @@ func OutputText(out io.Writer, allData map[string][]*ast.AnnotationsRef) error {
 		fmt.Fprintf(out, "# Source: %s\n\n", src)
 		for _, ann := range annRefs {
 			pathStrings := strings.Split(ann.Path.String(), ".")
-			if ann.Annotations != nil && string(ann.Annotations.Scope) == "rule" {
-				// Pretty version
-				fmt.Fprintf(out, "%s.%s (%s)\n%s\n%s\n--\n",
-					strings.Join(pathStrings[1:len(pathStrings)-1], "."),
-					getShortName(ann),
-					pathStrings[len(pathStrings)-1],
-					ann.Annotations.Title,
-					ann.Annotations.Description)
+			if ann.Annotations != nil {
+				if string(ann.Annotations.Scope) == "rule" {
+					// Pretty version
+					fmt.Fprintf(out, "%s.%s (%s)\n%s\n%s\n--\n",
+						strings.Join(pathStrings[1:len(pathStrings)-1], "."),
+						getShortName(ann),
+						pathStrings[len(pathStrings)-1],
+						ann.Annotations.Title,
+						ann.Annotations.Description)
+				}
+				// Skip package annotations for now
 			} else {
-				// There's no annotations so just show the path
+				// Handle edge case where there's no annotations at all
 				fmt.Fprintf(out, "%s\n%s\n--\n",
 					strings.Join(pathStrings[1:], "."),
 					"(No annotations found)")
