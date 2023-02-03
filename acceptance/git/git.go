@@ -37,7 +37,6 @@ import (
 
 	"github.com/hacbs-contract/ec-cli/acceptance/log"
 	"github.com/hacbs-contract/ec-cli/acceptance/testenv"
-	"github.com/hacbs-contract/ec-cli/acceptance/wiremock"
 )
 
 type key int
@@ -111,7 +110,12 @@ func Host(ctx context.Context) string {
 }
 
 func IsRunning(ctx context.Context) bool {
-	return wiremock.IsRunning(ctx)
+	if !testenv.HasState[gitState](ctx) {
+		return false
+	}
+
+	state := testenv.FetchState[gitState](ctx)
+	return state.Up()
 }
 
 // createGitRepository uses go-git to initialize a git repository on the bound
