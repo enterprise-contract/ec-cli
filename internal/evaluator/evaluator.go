@@ -25,4 +25,7 @@ import (
 type Evaluator interface {
 	// TODO refactor not to expose Conftest type here
 	Evaluate(ctx context.Context, inputs []string) ([]output.CheckResult, error)
+
+	// Destroy performs any cleanup needed
+	Destroy()
 }

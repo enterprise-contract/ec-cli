@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -51,6 +52,7 @@ type conftestEvaluator struct {
 	dataDir       string
 	policyDir     string
 	policy        *policy.Policy
+	fs            afero.Fs
 }
 
 // NewConftestEvaluator returns initialized conftestEvaluator implementing
@@ -60,6 +62,7 @@ func NewConftestEvaluator(ctx context.Context, fs afero.Fs, policySources []sour
 		policySources: policySources,
 		outputFormat:  "json",
 		policy:        p,
+		fs:            fs,
 	}
 
 	dir, err := utils.CreateWorkDir(fs)
@@ -80,6 +83,13 @@ func NewConftestEvaluator(ctx context.Context, fs afero.Fs, policySources []sour
 
 	log.Debug("Conftest test runner created")
 	return c, nil
+}
+
+// Destroy removes the working directory
+func (c conftestEvaluator) Destroy() {
+	if os.Getenv("EC_DEBUG") == "" {
+		_ = c.fs.RemoveAll(c.workDir)
+	}
 }
 
 func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) ([]output.CheckResult, error) {

@@ -38,8 +38,14 @@ func (e mockEvaluator) Evaluate(ctx context.Context, inputs []string) ([]conftes
 	return []conftestout.CheckResult{}, nil
 }
 
+func (e mockEvaluator) Destroy() {
+}
+
 func (b badMockEvaluator) Evaluate(ctx context.Context, inputs []string) ([]conftestout.CheckResult, error) {
 	return nil, errors.New("Evaluator error")
+}
+
+func (e badMockEvaluator) Destroy() {
 }
 
 func mockNewPipelineDefinitionFile(ctx context.Context, fs afero.Fs, fpath string, sources []source.PolicySource) (*pipeline_definition_file.DefinitionFile, error) {

@@ -37,6 +37,9 @@ func (e mockEvaluator) Evaluate(ctx context.Context, inputs []string) ([]output.
 	return []output.CheckResult{}, nil
 }
 
+func (e mockEvaluator) Destroy() {
+}
+
 func mockNewConftestEvaluator(ctx context.Context, fs afero.Fs, policySources []source.PolicySource, p *policy.Policy) (evaluator.Evaluator, error) {
 	return mockEvaluator{}, nil
 }
