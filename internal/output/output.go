@@ -55,6 +55,12 @@ func (v VerificationStatus) addToViolations(violations []output.Result) []output
 	return result
 }
 
+type EntitySignature struct {
+	KeyID     string            `json:"keyid"`
+	Signature string            `json:"sig"`
+	Metadata  map[string]string `json:"metadata,omitempty"`
+}
+
 // Output is a struct representing checks and exit code.
 type Output struct {
 	ImageAccessibleCheck      VerificationStatus   `json:"imageAccessibleCheck"`
@@ -63,7 +69,7 @@ type Output struct {
 	AttestationSyntaxCheck    VerificationStatus   `json:"attestationSyntaxCheck"`
 	PolicyCheck               []output.CheckResult `json:"policyCheck"`
 	ExitCode                  int                  `json:"-"`
-	Signatures                []cosign.Signatures  `json:"signatures,omitempty"`
+	Signatures                []EntitySignature    `json:"signatures,omitempty"`
 	ImageURL                  string               `json:"-"`
 }
 

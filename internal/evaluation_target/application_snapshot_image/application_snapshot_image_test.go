@@ -24,7 +24,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"regexp"
 	"strings"
@@ -482,61 +481,6 @@ func TestStatementFrom(t *testing.T) {
 			}
 			assert.Equal(t, c.statement, statement)
 			assert.Equal(t, c.err, err)
-		})
-	}
-}
-
-func TestSignaturesFrom(t *testing.T) {
-	cases := []struct {
-		name       string
-		signature  *mockSignature
-		setup      func(*mockSignature)
-		signatures []cosign.Signatures
-		err        error
-	}{
-		{
-			name:      "missing signatures",
-			signature: &mockSignature{&mock.Mock{}},
-			setup: func(m *mockSignature) {
-				m.On("Payload").Return([]byte("{}"), nil)
-			},
-		},
-		{
-			name:      "invalid signature JSON",
-			signature: &mockSignature{&mock.Mock{}},
-			setup: func(m *mockSignature) {
-				m.On("Payload").Return([]byte(`{{{{"signatures": []}`), nil)
-			},
-			err: errors.New("invalid character '{' looking for beginning of object key string"),
-		},
-		{
-			name:      "valid",
-			signature: &mockSignature{&mock.Mock{}},
-			setup: func(m *mockSignature) {
-				sig1 := `{"keyid": "key-id-1", "sig": "sig-1"}`
-				sig2 := `{"keyid": "key-id-2", "sig": "sig-2"}`
-				payload := fmt.Sprintf(`{"signatures": [%s, %s]}`, sig1, sig2)
-				m.On("Payload").Return([]byte(payload), nil)
-			},
-			signatures: []cosign.Signatures{
-				{KeyID: "key-id-1", Sig: "sig-1"},
-				{KeyID: "key-id-2", Sig: "sig-2"},
-			},
-		},
-	}
-
-	for _, c := range cases {
-		t.Run(c.name, func(t *testing.T) {
-			if c.setup != nil {
-				c.setup(c.signature)
-			}
-			signatures, err := signaturesFrom(context.TODO(), c.signature)
-			if c.err != nil {
-				assert.Error(t, c.err)
-			} else {
-				assert.NoError(t, err)
-			}
-			assert.Equal(t, c.signatures, signatures)
 		})
 	}
 }
