@@ -51,13 +51,13 @@ type conftestEvaluator struct {
 	workDir       string
 	dataDir       string
 	policyDir     string
-	policy        *policy.Policy
+	policy        policy.Policy
 	fs            afero.Fs
 }
 
 // NewConftestEvaluator returns initialized conftestEvaluator implementing
 // Evaluator interface
-func NewConftestEvaluator(ctx context.Context, fs afero.Fs, policySources []source.PolicySource, p *policy.Policy) (Evaluator, error) {
+func NewConftestEvaluator(ctx context.Context, fs afero.Fs, policySources []source.PolicySource, p policy.Policy) (Evaluator, error) {
 	c := conftestEvaluator{
 		policySources: policySources,
 		outputFormat:  "json",
@@ -126,7 +126,7 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) ([]out
 		return nil, err
 	}
 
-	now := c.policy.EffectiveTime
+	now := c.policy.EffectiveTime()
 	for i, result := range runResults {
 		warnings := []output.Result{}
 		failures := []output.Result{}
@@ -165,7 +165,7 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) ([]out
 
 // createConfigJSON creates the config.json file with the provided configuration
 // in the data directory
-func createConfigJSON(fs afero.Fs, dataDir string, p *policy.Policy) error {
+func createConfigJSON(fs afero.Fs, dataDir string, p policy.Policy) error {
 	if p == nil {
 		return nil
 	}
@@ -192,22 +192,24 @@ func createConfigJSON(fs afero.Fs, dataDir string, p *policy.Policy) error {
 	pc := &policyConfig{}
 
 	// TODO: Once the NonBlocking field has been removed, update to dump the spec.Config into an updated policyConfig struct
-	if p.Exceptions != nil {
+	if p.Spec().Exceptions != nil {
 		log.Debug("Non-blocking exceptions found. These will be written to file ", dataDir)
-		pc.NonBlocking = &p.Exceptions.NonBlocking
+		pc.NonBlocking = &p.Spec().Exceptions.NonBlocking
 	}
-	if p.Configuration != nil {
+
+	cfg := p.Spec().Configuration
+	if cfg != nil {
 		log.Debug("Include rules found. These will be written to file ", dataDir)
-		if p.Configuration.Include != nil {
-			pc.Include = &p.Configuration.Include
+		if p.Spec().Configuration.Include != nil {
+			pc.Include = &cfg.Include
 		}
 		log.Debug("Exclude rules found. These will be written to file ", dataDir)
-		if p.Configuration.Exclude != nil {
-			pc.Exclude = &p.Configuration.Exclude
+		if cfg.Exclude != nil {
+			pc.Exclude = &cfg.Exclude
 		}
 		log.Debug("Collections found. These will be written to file ", dataDir)
-		if p.Configuration.Collections != nil {
-			pc.Collections = &p.Configuration.Collections
+		if cfg.Collections != nil {
+			pc.Collections = &cfg.Collections
 		}
 	}
 
@@ -215,7 +217,7 @@ func createConfigJSON(fs afero.Fs, dataDir string, p *policy.Policy) error {
 	// this field is used only for the checking the effective times in the
 	// acceptable bundles list. Always set it, even when we are using the current
 	// time, so that a consistent current time is used everywhere.
-	pc.WhenNs = p.EffectiveTime.UnixNano()
+	pc.WhenNs = p.EffectiveTime().UnixNano()
 
 	// Add the policy config we just prepared
 	config["config"] = map[string]interface{}{
@@ -296,26 +298,29 @@ func (c conftestEvaluator) isResultIncluded(result output.Result) bool {
 	matchers := makeMatchers(extractCode(result))
 	includes := []string{"*"}
 	excludes := []string{}
-	if c.policy.Configuration != nil {
+
+	spec := c.policy.Spec()
+	cfg := spec.Configuration
+	if cfg != nil {
 		// If collections is not empty, then only include rules that mention
 		// the collection.
-		if len(c.policy.Configuration.Collections) > 0 {
+		if len(cfg.Collections) > 0 {
 			collections := extractCollections(result)
-			if !hasAnyMatch(collections, c.policy.Configuration.Collections) {
+			if !hasAnyMatch(collections, cfg.Collections) {
 				return false
 			}
 		}
-		if len(c.policy.Configuration.Include) > 0 {
-			includes = c.policy.Configuration.Include
+		if len(cfg.Include) > 0 {
+			includes = cfg.Include
 		}
-		if len(c.policy.Configuration.Exclude) > 0 {
-			excludes = c.policy.Configuration.Exclude
+		if len(cfg.Exclude) > 0 {
+			excludes = cfg.Exclude
 		}
 	}
 
-	if c.policy.Exceptions != nil {
+	if spec.Exceptions != nil {
 		// TODO: NonBlocking is deprecated. Remove it eventually
-		excludes = append(excludes, c.policy.Exceptions.NonBlocking...)
+		excludes = append(excludes, spec.Exceptions.NonBlocking...)
 	}
 	return hasAnyMatch(matchers, includes) && !hasAnyMatch(matchers, excludes)
 }

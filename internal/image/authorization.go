@@ -46,7 +46,7 @@ type AuthorizationSource interface {
 // holds config information to get client instance
 type K8sSource struct {
 	policyConfiguration string
-	fetchSource         func(context.Context, string) (*policy.Policy, error)
+	fetchSource         func(context.Context, string) (policy.Policy, error)
 }
 
 // holds config information to get client instance
@@ -106,7 +106,7 @@ func (k *K8sSource) GetSource(ctx context.Context) (authorizationGetter, error) 
 	}
 
 	return &k8sResource{
-		Components: ecp.Authorization.Components,
+		Components: ecp.Spec().Authorization.Components,
 	}, nil
 }
 
@@ -116,7 +116,7 @@ func GetK8sResource(ecp *ecc.EnterpriseContractPolicySpec) (authorizationGetter,
 	}, nil
 }
 
-func fetchECSource(ctx context.Context, policyConfiguration string) (*policy.Policy, error) {
+func fetchECSource(ctx context.Context, policyConfiguration string) (policy.Policy, error) {
 	p, err := policy.NewPolicy(ctx, policyConfiguration, "", "", "")
 	if err != nil {
 		log.Debug("Failed to fetch the enterprise contract policy from the cluster!")

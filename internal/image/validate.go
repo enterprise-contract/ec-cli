@@ -30,7 +30,7 @@ import (
 
 // ValidateImage executes the required method calls to evaluate a given policy
 // against a given image url.
-func ValidateImage(ctx context.Context, fs afero.Fs, url string, p *policy.Policy) (*output.Output, error) {
+func ValidateImage(ctx context.Context, fs afero.Fs, url string, p policy.Policy) (*output.Output, error) {
 	log.Debugf("Validating image %s", url)
 
 	out := &output.Output{ImageURL: url}

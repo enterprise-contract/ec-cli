@@ -30,8 +30,8 @@ import (
 	"github.com/hacbs-contract/ec-cli/internal/policy"
 )
 
-func mockFetchECSource(ctx context.Context, resource string) (*policy.Policy, error) {
-	return &policy.Policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
+func mockFetchECSource(ctx context.Context, resource string) (p policy.Policy, err error) {
+	spec := ecc.EnterpriseContractPolicySpec{
 		Description: "very descriptive",
 		Authorization: &ecc.Authorization{
 			Components: []ecc.AuthorizedComponent{
@@ -42,7 +42,14 @@ func mockFetchECSource(ctx context.Context, resource string) (*policy.Policy, er
 				},
 			},
 		},
-	}}, nil
+	}
+
+	p, err = policy.NewOfflinePolicy(ctx, "")
+	if err != nil {
+		return
+	}
+
+	return p.WithSpec(spec), nil
 }
 
 func mockPolicyConfigurationString() string {
