@@ -22,6 +22,7 @@ import (
 	"encoding/json"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/google/go-containerregistry/pkg/name"
 	gcr "github.com/google/go-containerregistry/pkg/v1"
@@ -112,7 +113,7 @@ func TestValidateImage(t *testing.T) {
 			fs := afero.NewMemMapFs()
 
 			ctx := context.Background()
-			p, err := policy.NewOfflinePolicy(ctx, "")
+			p, err := policy.NewOfflinePolicy(ctx, policy.Now)
 			assert.NoError(t, err)
 
 			ctx = application_snapshot_image.WithClient(ctx, c.client)
@@ -123,6 +124,59 @@ func TestValidateImage(t *testing.T) {
 			assert.Equal(t, c.expectedWarnings, actual.Warnings())
 			assert.Equal(t, c.expectedViolations, actual.Violations())
 			assert.Equal(t, c.expectedImageURL, actual.ImageURL)
+		})
+	}
+}
+
+func TestDetermineAttestationTime(t *testing.T) {
+	time1 := time.Date(2001, 2, 3, 4, 5, 6, 7, time.UTC)
+	time2 := time.Date(2010, 11, 12, 13, 14, 15, 16, time.UTC)
+	att1 := sign(&in_toto.Statement{
+		StatementHeader: in_toto.StatementHeader{
+			PredicateType: v02.PredicateSLSAProvenance,
+		},
+		Predicate: v02.ProvenancePredicate{
+			Metadata: &v02.ProvenanceMetadata{
+				BuildFinishedOn: &time1,
+			},
+		},
+	})
+	att2 := sign(&in_toto.Statement{
+		StatementHeader: in_toto.StatementHeader{
+			PredicateType: v02.PredicateSLSAProvenance,
+		},
+		Predicate: v02.ProvenancePredicate{
+			Metadata: &v02.ProvenanceMetadata{
+				BuildFinishedOn: &time2,
+			},
+		},
+	})
+	att3 := sign(&in_toto.Statement{
+		StatementHeader: in_toto.StatementHeader{
+			PredicateType: v02.PredicateSLSAProvenance,
+		},
+	})
+
+	cases := []struct {
+		name     string
+		att      []oci.Signature
+		expected *time.Time
+	}{
+		{name: "no attestations"},
+		{name: "one attestation", att: []oci.Signature{att1}, expected: &time1},
+		{name: "two attestations", att: []oci.Signature{att1, att2}, expected: &time2},
+		{name: "two attestations and one without time", att: []oci.Signature{att1, att2, att3}, expected: &time2},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			got := determineAttestationTime(context.TODO(), c.att)
+
+			if c.expected == nil {
+				assert.Nil(t, got)
+			} else {
+				assert.Equal(t, c.expected, got)
+			}
 		})
 	}
 }

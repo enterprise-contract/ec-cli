@@ -54,11 +54,10 @@ func Test_NewPipelineDefinitionFile(t *testing.T) {
 	newConftestEvaluator = mockNewConftestEvaluator
 	pathExists = mockPathExists
 	fs := afero.NewOsFs()
-
-	p, err := policy.NewOfflinePolicy(context.TODO(), "")
+	pol, err := policy.NewOfflinePolicy(context.TODO(), policy.Now)
 	assert.NoError(t, err)
 
-	evaluated, _ := mockNewConftestEvaluator(context.TODO(), fs, []source.PolicySource{}, p)
+	evaluated, _ := mockNewConftestEvaluator(context.TODO(), fs, []source.PolicySource{}, pol)
 	tests := []struct {
 		name    string
 		fpath   string

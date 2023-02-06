@@ -49,7 +49,7 @@ func NewPipelineDefinitionFile(ctx context.Context, fs afero.Fs, fpath string, s
 		Fpath: fpath,
 	}
 
-	pol, err := policy.NewOfflinePolicy(ctx, "")
+	pol, err := policy.NewOfflinePolicy(ctx, policy.Now)
 	if err != nil {
 		return nil, err
 	}

@@ -18,8 +18,14 @@ package image
 
 import (
 	"context"
+	"encoding/json"
+	"sort"
+	"time"
 
 	conftestOutput "github.com/open-policy-agent/conftest/output"
+	"github.com/qri-io/jsonpointer"
+	"github.com/sigstore/cosign/pkg/oci"
+	cosignPolicy "github.com/sigstore/cosign/pkg/policy"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 
@@ -63,6 +69,10 @@ func ValidateImage(ctx context.Context, fs afero.Fs, url string, p policy.Policy
 	out.SetAttestationSyntaxCheckFromError(a.ValidateAttestationSyntax(ctx))
 
 	a.FilterMatchingAttestations(ctx)
+
+	if attestationTime := determineAttestationTime(ctx, a.Attestations()); attestationTime != nil {
+		p.AttestationTime(*attestationTime)
+	}
 
 	attCount := len(a.Attestations())
 	log.Debugf("Found %d attestations", attCount)
@@ -126,4 +136,68 @@ func resolveAndSetImageUrl(url string, asi *application_snapshot_image.Applicati
 	}
 
 	return resolved, nil
+}
+
+func determineAttestationTime(ctx context.Context, attestations []oci.Signature) *time.Time {
+	if len(attestations) == 0 {
+		log.Debug("No attestations provided to determine attestation time")
+		return nil
+	}
+
+	pointer, err := jsonpointer.Parse("/predicate/metadata/buildFinishedOn")
+	if err != nil {
+		log.Debugf("Failed to parse the fixed JSON Pointer: %v", err)
+		panic(err)
+	}
+
+	times := make([]time.Time, 0, len(attestations))
+	for i, attestation := range attestations {
+		payload, err := cosignPolicy.AttestationToPayloadJSON(ctx, "slsaprovenance", attestation)
+		if err != nil {
+			log.Debugf("Attestation at %d is not a SLSA Provenance attestation", i)
+			continue
+		}
+
+		data := map[string]any{}
+		if err := json.Unmarshal(payload, &data); err != nil {
+			log.Debugf("Unable to unmarshall SLSA Provenance attestation at %d", i)
+			continue
+		}
+
+		maybeFinishTime, err := pointer.Eval(data)
+		if err != nil {
+			log.Debugf("Failed to evaluate JSON Pointer %s for attestation at %d", pointer, i)
+			continue
+		}
+
+		finishTime, ok := maybeFinishTime.(string)
+		if !ok {
+			log.Debugf("Unexpected buildFinishedOn value for attestation at %d: %v", i, maybeFinishTime)
+			continue
+		}
+
+		time, err := time.Parse(time.RFC3339, finishTime)
+		if err != nil {
+			log.Debugf("Unable to parse buildFinishedOn `%s` as RFC3339 time of attestation at %d", finishTime, i)
+			continue
+		}
+
+		times = append(times, time.UTC())
+	}
+
+	if len(times) == 0 {
+		return nil
+	}
+
+	sort.Slice(times, func(i, j int) bool {
+		return times[i].After(times[j])
+	})
+
+	attestationTime := times[0]
+
+	if log.IsLevelEnabled(log.DebugLevel) {
+		log.Debugf("Determined attestation time: %s", attestationTime.Format(time.RFC3339))
+	}
+
+	return &attestationTime
 }

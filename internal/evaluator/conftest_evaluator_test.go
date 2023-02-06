@@ -168,12 +168,12 @@ func TestConftestEvaluatorEvaluate(t *testing.T) {
 
 	r.On("Run", ctx, inputs).Return(results, nil)
 
-	p, err := policy.NewOfflinePolicy(ctx, "")
+	pol, err := policy.NewOfflinePolicy(ctx, policy.Now)
 	assert.NoError(t, err)
 
 	evaluator, err := NewConftestEvaluator(ctx, afero.NewMemMapFs(), []source.PolicySource{
 		testPolicySource{},
-	}, p)
+	}, pol)
 
 	assert.NoError(t, err)
 	actualResults, err := evaluator.Evaluate(ctx, inputs)
@@ -512,7 +512,7 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 			ctx := downloader.WithDownloadImpl(withTestRunner(context.Background(), &r), &dl)
 			r.On("Run", ctx, inputs).Return(tt.results, nil)
 
-			p, err := policy.NewOfflinePolicy(ctx, "")
+			p, err := policy.NewOfflinePolicy(ctx, policy.Now)
 			assert.NoError(t, err)
 
 			p = p.WithSpec(ecc.EnterpriseContractPolicySpec{

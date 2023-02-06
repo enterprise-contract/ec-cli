@@ -370,3 +370,38 @@ Feature: evaluate enterprise contract
       ]
     }
     """
+
+  Scenario: using attestation time as effective time
+    Given a key pair named "known"
+    Given an image named "acceptance/ec-happy-day"
+    Given a valid image signature of "acceptance/ec-happy-day" image signed by the "known" key
+    Given a valid attestation of "acceptance/ec-happy-day" signed by the "known" key, patched with
+      | [{"op": "add", "path": "/predicate/metadata", "value": {}}, {"op": "add", "path": "/predicate/metadata/buildFinishedOn", "value": "2100-01-01T00:00:00Z"}] |
+    Given a git repository named "future-deny-policy" with
+      | main.rego | examples/future_deny.rego |
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy {"sources":[{"policy":["git::http://${GITHOST}/git/future-deny-policy.git"]}]} --public-key ${known_PUBLIC_KEY} --effective-time attestation --strict"
+    Then the exit status should be 1
+    Then the standard output should contain
+    """
+    {
+      "success": false,
+      "key": ${known_PUBLIC_KEY_JSON},
+      "components": [
+        {
+          "name": "Unnamed",
+          "containerImage": "localhost:(\\d+)/acceptance/ec-happy-day",
+          "violations": [
+            {
+              "metadata": {
+                "effective_on": "2099-01-01T00:00:00Z"
+              },
+              "msg": "Fails in 2099"
+            }
+          ],
+          "warnings": [],
+          "success": false,
+          "signatures": ${ATTESTATION_SIGNATURES_JSON}
+        }
+      ]
+    }
+    """

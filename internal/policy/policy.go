@@ -26,6 +26,7 @@ import (
 	"time"
 
 	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
+	"github.com/hashicorp/go-multierror"
 	"github.com/sigstore/cosign/cmd/cosign/cli/rekor"
 	"github.com/sigstore/cosign/pkg/cosign"
 	cosignSig "github.com/sigstore/cosign/pkg/signature"
@@ -34,7 +35,21 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/hacbs-contract/ec-cli/internal/kubernetes"
+	e "github.com/hacbs-contract/ec-cli/pkg/error"
 )
+
+const (
+	Now           = "now"
+	AtAttestation = "attestation"
+	DateFormat    = "2006-01-02"
+)
+
+var (
+	PO001 = e.NewError("PO001", "Invalid policy time argument", e.ErrorExitStatus)
+)
+
+// allows controlling time in tests
+var now = time.Now
 
 type Policy interface {
 	PublicKeyPEM() ([]byte, error)
@@ -42,12 +57,13 @@ type Policy interface {
 	WithSpec(spec ecc.EnterpriseContractPolicySpec) Policy
 	Spec() ecc.EnterpriseContractPolicySpec
 	EffectiveTime() time.Time
+	AttestationTime(time.Time)
 }
 
 type policy struct {
 	ecc.EnterpriseContractPolicySpec
 	checkOpts     *cosign.CheckOpts
-	effectiveTime time.Time
+	effectiveTime *time.Time
 }
 
 // PublicKeyPEM returns the PublicKey in PEM format.
@@ -76,7 +92,7 @@ func (p *policy) Spec() ecc.EnterpriseContractPolicySpec {
 func NewOfflinePolicy(ctx context.Context, effectiveTime string) (Policy, error) {
 	if efn, err := parseEffectiveTime(effectiveTime); err == nil {
 		return &policy{
-			effectiveTime: *efn,
+			effectiveTime: efn,
 			checkOpts:     &cosign.CheckOpts{},
 		}, nil
 	} else {
@@ -141,10 +157,10 @@ func NewPolicy(ctx context.Context, policyRef, rekorUrl, publicKey, effectiveTim
 		return nil, errors.New("policy must provide a public key")
 	}
 
-	if eft, err := parseEffectiveTime(effectiveTime); err != nil {
+	if efn, err := parseEffectiveTime(effectiveTime); err != nil {
 		return nil, err
 	} else {
-		p.effectiveTime = *eft
+		p.effectiveTime = efn
 	}
 
 	if opts, err := checkOpts(ctx, &p); err != nil {
@@ -162,23 +178,51 @@ func (p *policy) WithSpec(spec ecc.EnterpriseContractPolicySpec) Policy {
 	return p
 }
 
+func (p *policy) AttestationTime(attestationTime time.Time) {
+	p.effectiveTime = &attestationTime
+}
+
 func (p policy) EffectiveTime() time.Time {
-	return p.effectiveTime
+	if p.effectiveTime == nil {
+		now := now().UTC()
+		log.Debugf("No effective time choosen using current time: %s", now.Format(time.RFC3339))
+		p.effectiveTime = &now
+	} else {
+		log.Debugf("Using effective time: %s", p.effectiveTime.Format(time.RFC3339))
+	}
+
+	return *p.effectiveTime
 }
 
 func parseEffectiveTime(effectiveTime string) (*time.Time, error) {
-	if effectiveTime == "" {
-		now := time.Now()
-		log.Debugf("Using current time %s", now.Format(time.RFC3339))
+	switch {
+	case strings.EqualFold(effectiveTime, Now):
+		now := now().UTC()
+		log.Debugf("Chosen to use effective time of `now`, using current time %s", now.Format(time.RFC3339))
 		return &now, nil
-	}
+	case strings.EqualFold(effectiveTime, AtAttestation):
+		log.Debugf("Chosen to use effective time of `attestation`")
+		return nil, nil
+	default:
+		var err error
+		if when, err := time.Parse(time.RFC3339, effectiveTime); err == nil {
+			log.Debugf("Using provided effective time %s", when.Format(time.RFC3339))
+			whenUTC := when.UTC()
+			return &whenUTC, nil
+		}
 
-	if when, err := time.Parse(time.RFC3339, effectiveTime); err != nil {
-		log.Debugf("Unable to parse time string %s", effectiveTime)
-		return nil, err
-	} else {
-		log.Debugf("Using custom effective time %s", when.Format(time.RFC3339))
-		return &when, nil
+		log.Debugf("Unable to parse provided effective time `%s` using RFC3339", effectiveTime)
+		errs := multierror.Append(err)
+
+		if when, err := time.Parse(DateFormat, effectiveTime); err == nil {
+			log.Debugf("Using provided effective time %s", when.Format(time.RFC3339))
+			whenUTC := when.UTC()
+			return &whenUTC, nil
+		}
+		log.Debugf("Unable to provided effective time string `%s` using %s format", effectiveTime, DateFormat)
+		errs = multierror.Append(errs, err)
+
+		return nil, PO001.CausedBy(errs)
 	}
 }
 
@@ -247,7 +291,6 @@ func signatureVerifier(ctx context.Context, p *policy) (sigstoreSig.Verifier, er
 
 	verifier, err := newSignatureClient(ctx).publicKeyFromKeyRef(ctx, publicKey)
 	if err != nil {
-		// log.Debugf("Problem creating signature verifier using public key %q", publicKey)
 		return nil, err
 	}
 	return verifier, nil

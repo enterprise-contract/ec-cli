@@ -256,10 +256,11 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 	cmd.Flags().BoolVarP(&data.strict, "strict", "s", data.strict,
 		"return non-zero status on non-successful validation")
 
-	cmd.Flags().StringVar(&data.effectiveTime, "effective-time", data.effectiveTime, hd.Doc(`
-		Run policy checks as though the current time was this instead of the actual
-		current time. Useful for testing rules with effective dates in the future
-		The value should be in RFC3339 format, e.g. 2022-11-18T00:00:00Z
+	cmd.Flags().StringVar(&data.effectiveTime, "effective-time", policy.Now, hd.Doc(`
+		Run policy checks with the provided time. Useful for testing rules with
+		effective dates in the future. The value can be "now" (default) - for
+		current time, "attestation" - for time from the youngest attestation, or
+		a RFC3339 formatted value, e.g. 2022-11-18T00:00:00Z.
 	`))
 
 	if len(data.input) > 0 || len(data.filePath) > 0 {
