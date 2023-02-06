@@ -81,7 +81,7 @@ Feature: evaluate enterprise contract
           "name": "Unnamed",
           "containerImage": "localhost:(\\d+)/acceptance/invalid-image-signature",
           "violations": [
-            {"msg": "No images signatures found matching the given public key. Verify the correct public key was provided, and a signature was created."},
+            {"msg": "No image signatures found matching the given public key. Verify the correct public key was provided, and a signature was created."},
             {"msg": "No image attestations found matching the given public key. Verify the correct public key was provided, and one or more attestations were created."}
           ],
           "warnings": [],

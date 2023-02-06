@@ -27,7 +27,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const missingSignatureMessage = "No images signatures found matching the given public key. " +
+const missingSignatureMessage = "No image signatures found matching the given public key. " +
 	"Verify the correct public key was provided, " +
 	"and a signature was created."
 
