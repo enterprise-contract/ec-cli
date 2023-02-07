@@ -21,9 +21,9 @@ Feature: track bundles
           tag: tag
     pipeline-required-tasks:
       pipeline1:
-        effective_on: "[0-9]{4}-[0-9]{2}-[0-9]{2}T00:00:00Z"
-        tasks:
-          - git-clone
+        - effective_on: "[0-9]{4}-[0-9]{2}-[0-9]{2}T00:00:00Z"
+          tasks:
+            - git-clone
     required-tasks:
       - effective_on: "[0-9]{4}-[0-9]{2}-[0-9]{2}T00:00:00Z"
         tasks:

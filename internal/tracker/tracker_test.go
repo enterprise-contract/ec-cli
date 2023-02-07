@@ -83,11 +83,11 @@ func TestTrack(t *testing.T) {
 				      tag: two
 				pipeline-required-tasks:
 				  docker-build:
-				    effective_on: "` + expectedEffectiveOn + `"
-				    tasks:
-				      - buildah
-				      - git-clone
-				      - summary
+				    - effective_on: "` + expectedEffectiveOn + `"
+				      tasks:
+				        - buildah
+				        - git-clone
+				        - summary
 				required-tasks:
 				  - effective_on: "` + expectedEffectiveOn + `"
 				    tasks:
@@ -115,11 +115,11 @@ func TestTrack(t *testing.T) {
 				      tag: "2.0"
 				pipeline-required-tasks:
 				  docker-build:
-				    effective_on: "` + expectedEffectiveOn + `"
-				    tasks:
-				      - buildah
-				      - git-clone
-				      - summary
+				    - effective_on: "` + expectedEffectiveOn + `"
+				      tasks:
+				        - buildah
+				        - git-clone
+				        - summary
 				required-tasks:
 				  - effective_on: "` + expectedEffectiveOn + `"
 				    tasks:
@@ -153,11 +153,11 @@ func TestTrack(t *testing.T) {
 				      tag: one
 				pipeline-required-tasks:
 				  docker-build:
-				    effective_on: "` + expectedEffectiveOn + `"
-				    tasks:
-				      - buildah
-				      - git-clone
-				      - summary
+				    - effective_on: "` + expectedEffectiveOn + `"
+				      tasks:
+				        - buildah
+				        - git-clone
+				        - summary
 				required-tasks:
 				  - effective_on: "` + expectedEffectiveOn + `"
 				    tasks:
@@ -192,11 +192,11 @@ func TestTrack(t *testing.T) {
 				      tag: "2.0"
 				pipeline-required-tasks:
 				  docker-build:
-				    effective_on: "` + expectedEffectiveOn + `"
-				    tasks:
-				      - buildah
-				      - git-clone
-				      - summary
+				    - effective_on: "` + expectedEffectiveOn + `"
+				      tasks:
+				        - buildah
+				        - git-clone
+				        - summary
 				required-tasks:
 				  - effective_on: "` + expectedEffectiveOn + `"
 				    tasks:
@@ -226,11 +226,11 @@ func TestTrack(t *testing.T) {
 				      tag: "2.0"
 				pipeline-required-tasks:
 				  docker-build:
-				    effective_on: "` + expectedEffectiveOn + `"
-				    tasks:
-				      - buildah
-				      - git-clone
-				      - summary
+				    - effective_on: "` + expectedEffectiveOn + `"
+				      tasks:
+				        - buildah
+				        - git-clone
+				        - summary
 				required-tasks:
 				  - effective_on: "` + expectedEffectiveOn + `"
 				    tasks:
@@ -258,11 +258,11 @@ func TestTrack(t *testing.T) {
 				      tag: "1.0"
 				pipeline-required-tasks:
 				  docker-build:
-				    effective_on: "` + expectedEffectiveOn + `"
-				    tasks:
-				      - buildah
-				      - git-clone
-				      - summary
+				    - effective_on: "` + expectedEffectiveOn + `"
+				      tasks:
+				        - buildah
+				        - git-clone
+				        - summary
 				required-tasks:
 				  - effective_on: "` + expectedEffectiveOn + `"
 				    tasks:
@@ -312,11 +312,11 @@ func TestTrack(t *testing.T) {
 				      tag: "1.0"
 				pipeline-required-tasks:
 				  docker-build:
-				    effective_on: "` + expectedEffectiveOn + `"
-				    tasks:
-				      - buildah
-				      - git-clone
-				      - summary
+				    - effective_on: "` + expectedEffectiveOn + `"
+				      tasks:
+				        - buildah
+				        - git-clone
+				        - summary
 				required-tasks:
 				  - effective_on: "` + expectedEffectiveOn + `"
 				    tasks:
@@ -344,11 +344,11 @@ func TestTrack(t *testing.T) {
 				      tag: "1.0"
 				pipeline-required-tasks:
 				  docker-build:
-				    effective_on: "` + expectedEffectiveOn + `"
-				    tasks:
-				      - buildah
-				      - git-clone
-				      - summary
+				    - effective_on: "` + expectedEffectiveOn + `"
+				      tasks:
+				        - buildah
+				        - git-clone
+				        - summary
 				required-tasks:
 				  - effective_on: "` + expectedEffectiveOn + `"
 				    tasks:
@@ -409,11 +409,11 @@ func TestTrack(t *testing.T) {
 				      tag: "0.9"
 				pipeline-required-tasks:
 				  docker-build:
-				    effective_on: "` + expectedEffectiveOn + `"
-				    tasks:
-				      - buildah
-				      - git-clone
-				      - summary
+				    - effective_on: "` + expectedEffectiveOn + `"
+				      tasks:
+				        - buildah
+				        - git-clone
+				        - summary
 				required-tasks:
 				  - effective_on: "` + expectedEffectiveOn + `"
 				    tasks:
@@ -459,11 +459,11 @@ func TestTrack(t *testing.T) {
 				      tag: "0.3"
 				pipeline-required-tasks:
 				  docker-build:
-				    effective_on: "` + expectedEffectiveOn + `"
-				    tasks:
-				      - buildah
-				      - git-clone
-				      - summary
+				    - effective_on: "` + expectedEffectiveOn + `"
+				      tasks:
+				        - buildah
+				        - git-clone
+				        - summary
 				required-tasks:
 				  - effective_on: "` + expectedEffectiveOn + `"
 				    tasks:
