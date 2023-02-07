@@ -19,21 +19,24 @@ package cmd
 import (
 	"context"
 	"os"
+	"strings"
 
 	hd "github.com/MakeNowJust/heredoc"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 )
 
-type trackBundleFn func(context.Context, afero.Fs, []string, string, bool) ([]byte, error)
+type trackBundleFn func(context.Context, []string, []byte, bool) ([]byte, error)
+type pullImageFn func(context.Context, string) ([]byte, error)
+type pushImageFn func(context.Context, string, []byte) error
 
-func trackBundleCmd(track trackBundleFn) *cobra.Command {
-	var data = struct {
-		bundles    []string
-		input      string
-		prune      bool
-		replace    bool
-		outputFile string
+func trackBundleCmd(track trackBundleFn, pullImage pullImageFn, pushImage pushImageFn) *cobra.Command {
+	var params = struct {
+		bundles []string
+		input   string
+		prune   bool
+		replace bool
+		output  string
 	}{
 		prune: true,
 	}
@@ -79,6 +82,10 @@ func trackBundleCmd(track trackBundleFn) *cobra.Command {
 
 			  ec track bundle --bundle <IMAGE1> --output <path/to/new/file>
 
+			Save tracking information into an image registry:
+
+			  ec track bundle --bundle <IMAGE1> --output <oci:registry.io/repository/image:tag>
+
 			Extend an existing tracking file with a new bundle:
 
 			  ec track bundle --bundle <IMAGE1> --input <path/to/input/file>
@@ -86,6 +93,10 @@ func trackBundleCmd(track trackBundleFn) *cobra.Command {
 			Extend an existing tracking file with a new bundle and save changes:
 
 			  ec track bundle --bundle <IMAGE1> --input <path/to/input/file> --replace
+
+			Extend an existing tracking image with a new bundle and push to an image registry:
+
+			  ec track bundle --bundle <IMAGE1> --input <oci:registry.io/repository/image:tag> --replace
 
 			Skip pruning for unacceptable entries:
 
@@ -96,47 +107,64 @@ func trackBundleCmd(track trackBundleFn) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			fs := fs(cmd.Context())
 
-			out, err := track(cmd.Context(), fs, data.bundles, data.input, data.prune)
+			var data []byte
+			if strings.HasPrefix(params.input, "oci:") {
+				data, err = pullImage(cmd.Context(), strings.TrimPrefix(params.input, "oci:"))
+			} else if params.input != "" {
+				data, err = afero.ReadFile(fs, params.input)
+			}
 			if err != nil {
 				return err
 			}
 
-			if data.outputFile == "" {
+			out, err := track(cmd.Context(), params.bundles, data, params.prune)
+			if err != nil {
+				return err
+			}
+
+			switch {
+			case params.output == "":
 				_, err = cmd.OutOrStdout().Write(out)
-			} else {
-				err = afero.WriteFile(fs, data.outputFile, out, 0666)
+			case strings.HasPrefix(params.output, "oci:"):
+				err = pushImage(cmd.Context(), strings.TrimPrefix(params.output, "oci:"), out)
+			default:
+				err = afero.WriteFile(fs, params.output, out, 0666)
 			}
 
 			if err != nil {
 				return
 			}
 
-			if data.input != "" && data.replace {
-				var perm os.FileMode
-				if stat, err := fs.Stat(data.input); err != nil {
-					return err
+			if params.replace && params.input != "" {
+				if strings.HasPrefix(params.input, "oci:") {
+					err = pushImage(cmd.Context(), strings.TrimPrefix(params.input, "oci:"), out)
 				} else {
-					perm = stat.Mode()
-				}
+					var perm os.FileMode
+					if stat, err := fs.Stat(params.input); err != nil {
+						return err
+					} else {
+						perm = stat.Mode()
+					}
 
-				err = afero.WriteFile(fs, data.input, out, perm)
+					err = afero.WriteFile(fs, params.input, out, perm)
+				}
 			}
 
 			return
 		},
 	}
 
-	cmd.Flags().StringVarP(&data.input, "input", "i", data.input, "existing tracking file")
+	cmd.Flags().StringVarP(&params.input, "input", "i", params.input, "existing tracking file")
 
-	cmd.Flags().StringSliceVarP(&data.bundles, "bundle", "b", data.bundles,
+	cmd.Flags().StringSliceVarP(&params.bundles, "bundle", "b", params.bundles,
 		"bundle image reference to track - may be used multiple times (required)")
 
-	cmd.Flags().BoolVarP(&data.prune, "prune", "p", data.prune,
+	cmd.Flags().BoolVarP(&params.prune, "prune", "p", params.prune,
 		"remove entries that are no longer acceptable, i.e. a newer entry already effective exists")
 
-	cmd.Flags().BoolVarP(&data.replace, "replace", "r", data.replace, "write changes to input file")
+	cmd.Flags().BoolVarP(&params.replace, "replace", "r", params.replace, "write changes to input file")
 
-	cmd.Flags().StringVarP(&data.outputFile, "output", "o", data.outputFile,
+	cmd.Flags().StringVarP(&params.output, "output", "o", params.output,
 		"write modified tracking file to a file. Use empty string for stdout, default behavior")
 
 	if err := cmd.MarkFlagRequired("bundle"); err != nil {

@@ -21,6 +21,7 @@ package cmd
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/spf13/afero"
@@ -29,13 +30,14 @@ import (
 
 func Test_TrackBundleCommand(t *testing.T) {
 	cases := []struct {
-		name         string
-		args         []string
-		outputFile   string
-		expectUrls   []string
-		expectPrune  bool
-		expectInput  string
-		expectStdout bool
+		name              string
+		args              []string
+		expectOutput      string
+		expectUrls        []string
+		expectPrune       bool
+		expectInput       string
+		expectStdout      bool
+		expectImageOutput bool
 	}{
 		{
 			name: "simple",
@@ -55,7 +57,7 @@ func Test_TrackBundleCommand(t *testing.T) {
 				"--output",
 				"output-1.json",
 			},
-			outputFile:   "output-1.json",
+			expectOutput: "output-1.json",
 			expectUrls:   []string{"registry/image:tag"},
 			expectPrune:  true,
 			expectStdout: false,
@@ -82,7 +84,7 @@ func Test_TrackBundleCommand(t *testing.T) {
 				"tracker-3.json",
 				"--replace",
 			},
-			outputFile:   "tracker-3.json",
+			expectOutput: "tracker-3.json",
 			expectUrls:   []string{"registry/image:tag"},
 			expectPrune:  true,
 			expectInput:  "tracker-3.json",
@@ -98,7 +100,7 @@ func Test_TrackBundleCommand(t *testing.T) {
 				"--output",
 				"output-4.json",
 			},
-			outputFile:   "output-4.json",
+			expectOutput: "output-4.json",
 			expectUrls:   []string{"registry/image:tag"},
 			expectPrune:  true,
 			expectInput:  "input-4.json",
@@ -126,25 +128,85 @@ func Test_TrackBundleCommand(t *testing.T) {
 			expectPrune:  false,
 			expectStdout: true,
 		},
+		{
+			name: "using OCI",
+			args: []string{
+				"--bundle",
+				"registry/image:tag",
+				"--input",
+				"oci:registry.io/repository/image:tag",
+				"--output",
+				"oci:registry.io/repository/image:new_tag",
+			},
+			expectInput:       "registry.io/repository/image:tag",
+			expectOutput:      "registry.io/repository/image:new_tag",
+			expectPrune:       true,
+			expectUrls:        []string{"registry/image:tag"},
+			expectStdout:      false,
+			expectImageOutput: true,
+		},
+		{
+			name: "using OCI for pull",
+			args: []string{
+				"--bundle",
+				"registry/image:tag",
+				"--input",
+				"oci:registry.io/repository/image:tag",
+			},
+			expectInput:       "registry.io/repository/image:tag",
+			expectPrune:       true,
+			expectUrls:        []string{"registry/image:tag"},
+			expectStdout:      true,
+			expectImageOutput: true,
+		},
+		{
+			name: "using OCI for push",
+			args: []string{
+				"--bundle",
+				"registry/image:tag",
+				"--input",
+				"input-5.json",
+				"--output",
+				"oci:registry.io/repository/image:tag",
+			},
+			expectInput:       "input-5.json",
+			expectPrune:       true,
+			expectUrls:        []string{"registry/image:tag"},
+			expectOutput:      "registry.io/repository/image:tag",
+			expectStdout:      false,
+			expectImageOutput: true,
+		},
 	}
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			fs := afero.NewMemMapFs()
 			ctx := withFs(context.TODO(), fs)
+			inputData := []byte(fmt.Sprintf(`{"file": "%s"}`, c.expectInput))
 
 			if c.expectInput != "" {
-				err := afero.WriteFile(fs, c.expectInput, []byte(`{"spam": true}`), 0777)
+				err := afero.WriteFile(fs, c.expectInput, inputData, 0777)
 				assert.NoError(t, err)
 			}
 			testOutput := `{"test": true}`
-			track := func(ctx context.Context, fs afero.Fs, urls []string, input string, prune bool) ([]byte, error) {
+			track := func(_ context.Context, urls []string, input []byte, prune bool) ([]byte, error) {
 				assert.Equal(t, c.expectUrls, urls)
-				assert.Equal(t, c.expectInput, input)
+				if c.expectInput != "" {
+					assert.Equal(t, inputData, input)
+				}
 				assert.Equal(t, c.expectPrune, prune)
 				return []byte(testOutput), nil
 			}
-			cmd := trackBundleCmd(track)
+			pullImage := func(_ context.Context, imageRef string) ([]byte, error) {
+				assert.Equal(t, c.expectInput, imageRef)
+				return inputData, nil
+			}
+			pushImage := func(_ context.Context, imageRef string, data []byte) error {
+				assert.Equal(t, c.expectOutput, imageRef)
+				assert.Equal(t, testOutput, string(data))
+				return nil
+			}
+			cmd := trackBundleCmd(track, pullImage, pushImage)
 			cmd.SetContext(ctx)
 			cmd.SetArgs(c.args)
 			var out bytes.Buffer
@@ -158,8 +220,8 @@ func Test_TrackBundleCommand(t *testing.T) {
 				assert.Empty(t, out.String())
 			}
 
-			if c.outputFile != "" {
-				actualOutput, err := afero.ReadFile(fs, c.outputFile)
+			if !c.expectImageOutput && c.expectOutput != "" {
+				actualOutput, err := afero.ReadFile(fs, c.expectOutput)
 				assert.NoError(t, err)
 				assert.JSONEq(t, testOutput, string(actualOutput))
 			}
