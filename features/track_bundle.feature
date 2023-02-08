@@ -53,9 +53,9 @@ Feature: track bundles
           tag: tag
     pipeline-required-tasks:
       pipeline1:
-        effective_on: "${TODAY_PLUS_30_DAYS}"
-        tasks:
-          - git-clone
+        - effective_on: "${TODAY_PLUS_30_DAYS}"
+          tasks:
+            - git-clone
     required-tasks:
       - effective_on: "${TODAY_PLUS_30_DAYS}"
         tasks:
@@ -93,9 +93,9 @@ Feature: track bundles
           tag: tag
     pipeline-required-tasks:
       pipeline1:
-        effective_on: "${TODAY_PLUS_30_DAYS}"
-        tasks:
-          - git-clone
+        - effective_on: "${TODAY_PLUS_30_DAYS}"
+          tasks:
+            - git-clone
     required-tasks:
       - effective_on: "${TODAY_PLUS_30_DAYS}"
         tasks:
