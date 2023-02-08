@@ -1,10 +1,10 @@
 module github.com/hacbs-contract/ec-cli/tools
 
-go 1.18
+go 1.19
 
 require (
 	github.com/daixiang0/gci v0.9.1
-	github.com/golangci/golangci-lint v1.51.0
+	github.com/golangci/golangci-lint v1.51.1
 	github.com/google/addlicense v1.1.1
 	github.com/tektoncd/chains v0.14.0
 	github.com/tektoncd/cli v0.3.1-0.20221206125835-f9030b6359a0
@@ -170,7 +170,7 @@ require (
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-playground/validator/v10 v10.11.0 // indirect
 	github.com/go-toolsmith/astcast v1.0.0 // indirect
-	github.com/go-toolsmith/astcopy v1.0.2 // indirect
+	github.com/go-toolsmith/astcopy v1.0.3 // indirect
 	github.com/go-toolsmith/astequal v1.0.3 // indirect
 	github.com/go-toolsmith/astfmt v1.0.0 // indirect
 	github.com/go-toolsmith/astp v1.0.0 // indirect
@@ -213,7 +213,7 @@ require (
 	github.com/google/wire v0.5.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.2.0 // indirect
 	github.com/googleapis/gax-go/v2 v2.7.0 // indirect
-	github.com/gordonklaus/ineffassign v0.0.0-20210914165742-4cc7213b9bc8 // indirect
+	github.com/gordonklaus/ineffassign v0.0.0-20230107090616-13ace0543b28 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/gostaticanalysis/analysisutil v0.7.1 // indirect
 	github.com/gostaticanalysis/comment v1.4.2 // indirect
@@ -267,7 +267,7 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/julz/importas v0.1.0 // indirect
-	github.com/junk1tm/musttag v0.4.3 // indirect
+	github.com/junk1tm/musttag v0.4.4 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/kisielk/errcheck v1.6.3 // indirect
 	github.com/kisielk/gotool v1.0.0 // indirect
@@ -316,7 +316,7 @@ require (
 	github.com/nishanths/exhaustive v0.9.5 // indirect
 	github.com/nishanths/predeclared v0.2.2 // indirect
 	github.com/nsf/termbox-go v1.1.1 // indirect
-	github.com/nunnatsa/ginkgolinter v0.7.1 // indirect
+	github.com/nunnatsa/ginkgolinter v0.8.1 // indirect
 	github.com/oklog/run v1.1.0 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
@@ -347,9 +347,9 @@ require (
 	github.com/rivo/uniseg v0.4.2 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/ryancurrah/gomodguard v1.3.0 // indirect
-	github.com/ryanrolds/sqlclosecheck v0.3.0 // indirect
+	github.com/ryanrolds/sqlclosecheck v0.4.0 // indirect
 	github.com/ryanuber/go-glob v1.0.0 // indirect
-	github.com/sanposhiho/wastedassign/v2 v2.0.6 // indirect
+	github.com/sanposhiho/wastedassign/v2 v2.0.7 // indirect
 	github.com/sashamelentyev/interfacebloat v1.1.0 // indirect
 	github.com/sashamelentyev/usestdlibvars v1.21.1 // indirect
 	github.com/sassoftware/relic v0.0.0-20210427151427-dfb082b79b74 // indirect
@@ -369,7 +369,7 @@ require (
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966 // indirect
 	github.com/soheilhy/cmux v0.1.5 // indirect
 	github.com/sonatard/noctx v0.0.1 // indirect
-	github.com/sourcegraph/go-diff v0.6.2-0.20221031073116-7ef5f68ebea1 // indirect
+	github.com/sourcegraph/go-diff v0.7.0 // indirect
 	github.com/spf13/afero v1.9.3 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/spf13/cobra v1.6.1 // indirect
@@ -398,7 +398,7 @@ require (
 	github.com/titanous/rocacheck v0.0.0-20171023193734-afe73141d399 // indirect
 	github.com/tjfoc/gmsm v1.3.2 // indirect
 	github.com/tmc/grpc-websocket-proxy v0.0.0-20201229170055-e5319fda7802 // indirect
-	github.com/tomarrell/wrapcheck/v2 v2.7.0 // indirect
+	github.com/tomarrell/wrapcheck/v2 v2.8.0 // indirect
 	github.com/tommy-muehle/go-mnd/v2 v2.5.1 // indirect
 	github.com/transparency-dev/merkle v0.0.1 // indirect
 	github.com/ultraware/funlen v0.0.3 // indirect
@@ -475,7 +475,7 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gotest.tools v2.2.0+incompatible // indirect
 	gotest.tools/v3 v3.4.0 // indirect
-	honnef.co/go/tools v0.4.0-0.dev.0.20221209223220-58c4d7e4b720 // indirect
+	honnef.co/go/tools v0.4.0 // indirect
 	k8s.io/api v0.26.0 // indirect
 	k8s.io/apiextensions-apiserver v0.26.0 // indirect
 	k8s.io/apimachinery v0.26.0 // indirect

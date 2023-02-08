@@ -1,6 +1,6 @@
 module github.com/hacbs-contract/ec-cli
 
-go 1.18
+go 1.19
 
 require (
 	github.com/MakeNowJust/heredoc v1.0.0
@@ -17,6 +17,7 @@ require (
 	github.com/in-toto/in-toto-golang v0.3.4-0.20220709202702-fa494aaa0add
 	github.com/leanovate/gopter v0.2.9
 	github.com/open-policy-agent/conftest v0.38.0
+	github.com/open-policy-agent/opa v0.48.0
 	github.com/qri-io/jsonpointer v0.1.1
 	github.com/qri-io/jsonschema v0.2.2-0.20210831022256-780655b2ba0e
 	github.com/redhat-appstudio/managed-gitops/appstudio-shared v0.0.0-20220615221006-a71c1aa4b97f
@@ -246,7 +247,6 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
-	github.com/open-policy-agent/opa v0.48.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.0-rc2 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
