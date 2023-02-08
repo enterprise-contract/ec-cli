@@ -35,7 +35,8 @@
             "mode": "test",
             "program": "${workspaceFolder}/acceptance",
             "args": [
-                "-persist"
+                "-persist",
+                "-tags=@focus"
             ]
         },
         {
@@ -70,6 +71,21 @@
             "env": {
                 "KUBECONFIG": "/tmp/200114254.kubeconfig"
             }
+        },
+        {
+            "name": "ec track bundle (against persisted environment - update as needed)",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/main.go",
+            "args": [
+                "track",
+                "bundle",
+                "--bundle",
+                "localhost:33323/acceptance/bundle:tag",
+                "--output",
+                "oci:tracked/bundle:tag",
+            ]
         }
     ]
 }
