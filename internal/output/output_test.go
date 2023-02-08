@@ -76,8 +76,8 @@ func Test_PrintExpectedJSON(t *testing.T) {
 				},
 			},
 		},
-		Signatures: []cosign.Signatures{
-			{KeyID: "key-id", Sig: "signature"},
+		Signatures: []EntitySignature{
+			{KeyID: "key-id", Signature: "signature"},
 		},
 		ExitCode: 42,
 	}

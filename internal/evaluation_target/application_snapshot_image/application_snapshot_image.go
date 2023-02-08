@@ -38,6 +38,7 @@ import (
 	"github.com/spf13/afero"
 
 	"github.com/hacbs-contract/ec-cli/internal/evaluator"
+	"github.com/hacbs-contract/ec-cli/internal/output"
 	"github.com/hacbs-contract/ec-cli/internal/policy"
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
 	ece "github.com/hacbs-contract/ec-cli/pkg/error"
@@ -66,7 +67,7 @@ type ApplicationSnapshotImage struct {
 	reference    name.Reference
 	checkOpts    cosign.CheckOpts
 	attestations []oci.Signature
-	signatures   []cosign.Signatures
+	signatures   []output.EntitySignature
 	Evaluators   []evaluator.Evaluator
 }
 
@@ -175,7 +176,7 @@ func (a *ApplicationSnapshotImage) SetImageURL(url string) error {
 
 	// Reset internal state relevant to the image
 	a.attestations = []oci.Signature{}
-	a.signatures = []cosign.Signatures{}
+	a.signatures = []output.EntitySignature{}
 
 	return nil
 }
@@ -197,7 +198,7 @@ func (a *ApplicationSnapshotImage) ValidateAttestationSignature(ctx context.Cont
 	// Extract the signatures from the attestations here in order to also validate that
 	// the signatures do exist in the expected format.
 	for _, att := range attestations {
-		signatures, err := signaturesFrom(ctx, att)
+		signatures, err := entitySignatureFromAttestation(att)
 		if err != nil {
 			return err
 		}
@@ -303,7 +304,7 @@ func (a *ApplicationSnapshotImage) Attestations() []oci.Signature {
 	return a.attestations
 }
 
-func (a *ApplicationSnapshotImage) Signatures() []cosign.Signatures {
+func (a *ApplicationSnapshotImage) Signatures() []output.EntitySignature {
 	return a.signatures
 }
 
@@ -384,19 +385,4 @@ func statementFrom(ctx context.Context, att oci.Signature) ([]byte, *in_toto.Sta
 	}
 
 	return payload, &statement, nil
-}
-
-func signaturesFrom(ctx context.Context, att oci.Signature) ([]cosign.Signatures, error) {
-	rawPayload, err := att.Payload()
-	if err != nil {
-		log.Debug("Problem extracting json payload from attestation!")
-		return nil, err
-	}
-
-	var attestationPayload cosign.AttestationPayload
-	if err := json.Unmarshal(rawPayload, &attestationPayload); err != nil {
-		return nil, err
-	}
-
-	return attestationPayload.Signatures, nil
 }
