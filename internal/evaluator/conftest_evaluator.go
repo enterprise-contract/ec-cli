@@ -295,7 +295,7 @@ func isResultEffective(failure output.Result, now time.Time) bool {
 // isResultIncluded returns whether or not the result should be included or
 // discarded based on the policy configuration.
 func (c conftestEvaluator) isResultIncluded(result output.Result) bool {
-	matchers := makeMatchers(extractCode(result))
+	matchers := makeMatchers(result)
 	includes := []string{"*"}
 	excludes := []string{}
 
@@ -335,8 +335,10 @@ func hasAnyMatch(needles, haystack []string) bool {
 	return false
 }
 
-// makeMatchers returns the possible matching strings for the code.
-func makeMatchers(code string) []string {
+// makeMatchers returns the possible matching strings for the result.
+func makeMatchers(result output.Result) []string {
+	code := extractStringFromMetadata(result, "code")
+	term := extractStringFromMetadata(result, "term")
 	parts := strings.Split(code, ".")
 	var pkg string
 	if len(parts) >= 2 {
@@ -344,10 +346,21 @@ func makeMatchers(code string) []string {
 	}
 	rule := parts[len(parts)-1]
 
-	matchers := []string{"*"}
+	var matchers []string
+
 	if pkg != "" {
 		matchers = append(matchers, pkg, fmt.Sprintf("%s.%s", pkg, rule))
 	}
+
+	// A term can be applied to any of the package matchers above.
+	if term != "" {
+		for i, l := 0, len(matchers); i < l; i++ {
+			matchers = append(matchers, fmt.Sprintf("%s:%s", matchers[i], term))
+		}
+	}
+
+	matchers = append(matchers, "*")
+
 	return matchers
 }
 
@@ -366,11 +379,11 @@ func extractCollections(result output.Result) []string {
 	return collections
 }
 
-// extractCode returns the code encoded in the result metadata.
-func extractCode(result output.Result) string {
-	if maybeCode, exists := result.Metadata["code"]; exists {
-		if code, ok := maybeCode.(string); ok {
-			return code
+// extractStringFromMetadata returns the string value from the result metadata at the given key.
+func extractStringFromMetadata(result output.Result, key string) string {
+	if maybeValue, exists := result.Metadata[key]; exists {
+		if value, ok := maybeValue.(string); ok {
+			return value
 		}
 	}
 	return ""
