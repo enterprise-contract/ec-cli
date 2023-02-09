@@ -52,7 +52,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		effectiveTime       string
 	}{
 
-		policyConfiguration: "ec-policy",
+		policyConfiguration: "enterprise-contract-service/default",
 	}
 	cmd := &cobra.Command{
 		Use:   "image",
@@ -81,9 +81,9 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		`),
 
 		Example: hd.Doc(`
-			Validate single image with the default policy defined in the
-			EnterpriseContractPolicy custom resource named "ec-policy" in the current
-			Kubernetes namespace:
+			Validate single image with the policy defined in the EnterpriseContractPolicy
+			custom resource named "default" in the enterprise-contract-service Kubernetes
+			namespace:
 
 			  ec validate image --image registry/name:tag
 
