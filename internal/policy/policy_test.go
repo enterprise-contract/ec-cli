@@ -249,7 +249,7 @@ func TestParseEffectiveTime(t *testing.T) {
 	_, err := parseEffectiveTime("")
 	assert.ErrorContains(t, err, "PO001")
 
-	effective, err := parseEffectiveTime("now")
+	effective, err := parseEffectiveTime(Now)
 	assert.NoError(t, err)
 	assert.Equal(t, time.UTC, effective.Location())
 
@@ -261,7 +261,7 @@ func TestParseEffectiveTime(t *testing.T) {
 	epoch := time.Unix(0, 0).UTC()
 	now = func() time.Time { return epoch }
 
-	effective, err = parseEffectiveTime("now")
+	effective, err = parseEffectiveTime(Now)
 	assert.NoError(t, err)
 	assert.NotNil(t, effective)
 	assert.Equal(t, epoch, *effective)
