@@ -1,4 +1,7 @@
 # Simplest never-failing policy
 package main
 
-allow := []
+deny[result] {
+    false
+    result := "Never denies"
+}

@@ -160,6 +160,20 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) ([]out
 
 	results = append(results, runResults...)
 
+	// Evaluate total successes, warnings, and failures. If all are 0, then
+	// we have effectively failed, because no tests were actually ran due to
+	// input error, etc.
+	var total int
+
+	for _, res := range results {
+		total += res.Successes
+		total += len(res.Warnings)
+		total += len(res.Failures)
+	}
+	if total == 0 {
+		log.Error("no successes, warnings, or failures, check input")
+		return nil, fmt.Errorf("no successes, warnings, or failures, check input")
+	}
 	return results, nil
 }
 
