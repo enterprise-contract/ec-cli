@@ -249,6 +249,32 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 			},
 		},
 		{
+			name: "exclude by package name with wild card",
+			results: []output.CheckResult{
+				{
+					Failures: []output.Result{
+						{Metadata: map[string]interface{}{"code": "breakfast.spam"}},
+						{Metadata: map[string]interface{}{"code": "lunch.spam"}},
+					},
+					Warnings: []output.Result{
+						{Metadata: map[string]interface{}{"code": "breakfast.ham"}},
+						{Metadata: map[string]interface{}{"code": "lunch.ham"}},
+					},
+				},
+			},
+			config: &ecc.EnterpriseContractPolicyConfiguration{Exclude: []string{"breakfast.*"}},
+			want: []output.CheckResult{
+				{
+					Failures: []output.Result{
+						{Metadata: map[string]interface{}{"code": "lunch.spam"}},
+					},
+					Warnings: []output.Result{
+						{Metadata: map[string]interface{}{"code": "lunch.ham"}},
+					},
+				},
+			},
+		},
+		{
 			name: "exclude by package and rule name",
 			results: []output.CheckResult{
 				{
@@ -295,6 +321,40 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 				},
 			},
 			config: &ecc.EnterpriseContractPolicyConfiguration{Exclude: []string{"breakfast:eggs"}},
+			want: []output.CheckResult{
+				{
+					Failures: []output.Result{
+						{Metadata: map[string]interface{}{"code": "breakfast.spam", "term": "bacon"}},
+						{Metadata: map[string]interface{}{"code": "breakfast.sausage"}},
+						{Metadata: map[string]interface{}{"code": "not_breakfast.spam", "term": "eggs"}},
+					},
+					Warnings: []output.Result{
+						{Metadata: map[string]interface{}{"code": "breakfast.ham", "term": "bacon"}},
+						{Metadata: map[string]interface{}{"code": "breakfast.hash"}},
+						{Metadata: map[string]interface{}{"code": "not_breakfast.ham", "term": "eggs"}},
+					},
+				},
+			},
+		},
+		{
+			name: "exclude by package name with wildcard and term",
+			results: []output.CheckResult{
+				{
+					Failures: []output.Result{
+						{Metadata: map[string]interface{}{"code": "breakfast.spam", "term": "eggs"}},
+						{Metadata: map[string]interface{}{"code": "breakfast.spam", "term": "bacon"}},
+						{Metadata: map[string]interface{}{"code": "breakfast.sausage"}},
+						{Metadata: map[string]interface{}{"code": "not_breakfast.spam", "term": "eggs"}},
+					},
+					Warnings: []output.Result{
+						{Metadata: map[string]interface{}{"code": "breakfast.ham", "term": "eggs"}},
+						{Metadata: map[string]interface{}{"code": "breakfast.ham", "term": "bacon"}},
+						{Metadata: map[string]interface{}{"code": "breakfast.hash"}},
+						{Metadata: map[string]interface{}{"code": "not_breakfast.ham", "term": "eggs"}},
+					},
+				},
+			},
+			config: &ecc.EnterpriseContractPolicyConfiguration{Exclude: []string{"breakfast.*:eggs"}},
 			want: []output.CheckResult{
 				{
 					Failures: []output.Result{
@@ -369,6 +429,32 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 			},
 		},
 		{
+			name: "include by package with wildcard",
+			results: []output.CheckResult{
+				{
+					Failures: []output.Result{
+						{Metadata: map[string]interface{}{"code": "breakfast.spam"}},
+						{Metadata: map[string]interface{}{"code": "lunch.spam"}},
+					},
+					Warnings: []output.Result{
+						{Metadata: map[string]interface{}{"code": "breakfast.ham"}},
+						{Metadata: map[string]interface{}{"code": "lunch.ham"}},
+					},
+				},
+			},
+			config: &ecc.EnterpriseContractPolicyConfiguration{Include: []string{"breakfast.*"}},
+			want: []output.CheckResult{
+				{
+					Failures: []output.Result{
+						{Metadata: map[string]interface{}{"code": "breakfast.spam"}},
+					},
+					Warnings: []output.Result{
+						{Metadata: map[string]interface{}{"code": "breakfast.ham"}},
+					},
+				},
+			},
+		},
+		{
 			name: "include by package and rule name",
 			results: []output.CheckResult{
 				{
@@ -415,6 +501,36 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 				},
 			},
 			config: &ecc.EnterpriseContractPolicyConfiguration{Include: []string{"breakfast:eggs"}},
+			want: []output.CheckResult{
+				{
+					Failures: []output.Result{
+						{Metadata: map[string]interface{}{"code": "breakfast.spam", "term": "eggs"}},
+					},
+					Warnings: []output.Result{
+						{Metadata: map[string]interface{}{"code": "breakfast.ham", "term": "eggs"}},
+					},
+				},
+			},
+		},
+		{
+			name: "include by package with wildcard and term",
+			results: []output.CheckResult{
+				{
+					Failures: []output.Result{
+						{Metadata: map[string]interface{}{"code": "breakfast.spam", "term": "eggs"}},
+						{Metadata: map[string]interface{}{"code": "breakfast.spam", "term": "bacon"}},
+						{Metadata: map[string]interface{}{"code": "breakfast.sausage"}},
+						{Metadata: map[string]interface{}{"code": "not_breakfast.spam", "term": "eggs"}},
+					},
+					Warnings: []output.Result{
+						{Metadata: map[string]interface{}{"code": "breakfast.ham", "term": "eggs"}},
+						{Metadata: map[string]interface{}{"code": "breakfast.ham", "term": "bacon"}},
+						{Metadata: map[string]interface{}{"code": "breakfast.hash"}},
+						{Metadata: map[string]interface{}{"code": "not_breakfast.ham", "term": "eggs"}},
+					},
+				},
+			},
+			config: &ecc.EnterpriseContractPolicyConfiguration{Include: []string{"breakfast.*:eggs"}},
 			want: []output.CheckResult{
 				{
 					Failures: []output.Result{
@@ -701,13 +817,15 @@ func TestMakeMatchers(t *testing.T) {
 		want []string
 	}{
 		{name: "valid", code: "breakfast.spam", term: "eggs",
-			want: []string{"breakfast", "breakfast.spam", "breakfast:eggs", "breakfast.spam:eggs", "*"}},
+			want: []string{
+				"breakfast", "breakfast.*", "breakfast.spam", "breakfast:eggs", "breakfast.*:eggs",
+				"breakfast.spam:eggs", "*"}},
 		{name: "valid without term", code: "breakfast.spam",
-			want: []string{"breakfast", "breakfast.spam", "*"}},
+			want: []string{"breakfast", "breakfast.*", "breakfast.spam", "*"}},
 		{name: "incomplete code", code: "spam", want: []string{"*"}},
 		{name: "incomplete code with term", code: "spam", term: "eggs", want: []string{"*"}},
 		{name: "extra code info ignored", code: "this.is.ignored.breakfast.spam",
-			want: []string{"breakfast", "breakfast.spam", "*"}},
+			want: []string{"breakfast", "breakfast.*", "breakfast.spam", "*"}},
 		{name: "empty code", code: "", want: []string{"*"}},
 		{name: "empty code with term", code: "", term: "eggs", want: []string{"*"}},
 	}
