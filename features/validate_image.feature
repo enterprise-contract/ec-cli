@@ -306,6 +306,31 @@ Feature: evaluate enterprise contract
     }
     """
 
+  # Demonstrate that a validation with no failures, warnings, or successes constitutes a failure as nothing was actually evaluated.
+  Scenario: no failures, warnings, or successes
+    Given a key pair named "known"
+    Given an image named "acceptance/ec-happy-day"
+    Given a valid image signature of "acceptance/ec-happy-day" image signed by the "known" key
+    Given a valid Rekor entry for image signature of "acceptance/ec-happy-day"
+    Given a valid attestation of "acceptance/ec-happy-day" signed by the "known" key
+    Given a valid Rekor entry for attestation of "acceptance/ec-happy-day"
+    Given a git repository named "happy-day-policy" with
+      | main.rego | examples/allow_all.rego |
+    Given policy configuration named "ec-policy" with specification
+    """
+    {
+      "sources": [
+        {
+          "policy": [
+            "git::http://${GITHOST}/git/happy-day-policy.git"
+          ]
+        }
+      ]
+    }
+    """
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
+    Then the exit status should be 1
+
   # Demonstrate data sources and using the same rules with different data
   Scenario: policy and data sources
     Given a key pair named "known"

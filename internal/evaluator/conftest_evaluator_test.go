@@ -181,6 +181,40 @@ func TestConftestEvaluatorEvaluate(t *testing.T) {
 	assert.Equal(t, expectedResults, actualResults)
 }
 
+func TestConftestEvaluatorEvaluateNoSuccessWarningsOrFailures(t *testing.T) {
+	results := []output.CheckResult{
+		{
+			Failures:  []output.Result(nil),
+			Warnings:  []output.Result(nil),
+			Successes: 0,
+		},
+	}
+
+	expectedResults := []output.CheckResult(nil)
+
+	r := mockTestRunner{}
+
+	dl := mockDownloader{}
+
+	inputs := []string{"inputs"}
+
+	ctx := downloader.WithDownloadImpl(withTestRunner(context.Background(), &r), &dl)
+
+	r.On("Run", ctx, inputs).Return(results, nil)
+
+	p, err := policy.NewOfflinePolicy(ctx, "")
+	assert.NoError(t, err)
+
+	evaluator, err := NewConftestEvaluator(ctx, afero.NewMemMapFs(), []source.PolicySource{
+		testPolicySource{},
+	}, p)
+
+	assert.NoError(t, err)
+	actualResults, err := evaluator.Evaluate(ctx, inputs)
+	assert.ErrorContains(t, err, "no successes, warnings, or failures, check input")
+	assert.Equal(t, expectedResults, actualResults)
+}
+
 func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 	tests := []struct {
 		name    string
