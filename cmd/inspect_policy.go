@@ -19,12 +19,15 @@ package cmd
 
 import (
 	"encoding/json"
+	"fmt"
+	"strings"
 
 	hd "github.com/MakeNowJust/heredoc"
 	"github.com/open-policy-agent/opa/ast"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
+	"golang.org/x/exp/slices"
 
 	"github.com/hacbs-contract/ec-cli/internal/opa"
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
@@ -37,6 +40,8 @@ func inspectPolicyCmd() *cobra.Command {
 		destDir      string
 		outputFormat string
 	)
+
+	validFormats := []string{"json", "text", "names", "short-names"}
 
 	cmd := &cobra.Command{
 		Use:   "policy --source <source-url>",
@@ -69,6 +74,10 @@ func inspectPolicyCmd() *cobra.Command {
 
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if !slices.Contains(validFormats, outputFormat) {
+				return fmt.Errorf("invalid value for --output '%s'. accepted values: %s", outputFormat, strings.Join(validFormats, ", "))
+			}
+
 			if destDir == "" {
 				workDir, err := utils.CreateWorkDir(afero.NewOsFs())
 				if err != nil {
@@ -101,17 +110,15 @@ func inspectPolicyCmd() *cobra.Command {
 			out := cmd.OutOrStdout()
 			if outputFormat == "json" {
 				return json.NewEncoder(out).Encode(allResults)
-			} else if outputFormat == "names" || outputFormat == "short-names" {
-				return opa.OutputText(out, allResults, outputFormat)
 			} else {
-				return opa.OutputText(out, allResults, "text")
+				return opa.OutputText(out, allResults, outputFormat)
 			}
 		},
 	}
 
 	cmd.Flags().StringArrayVarP(&sourceUrls, "source", "s", []string{}, "policy source url. multiple values are allowed")
 	cmd.Flags().StringVarP(&destDir, "dest", "d", "", "use the specified destination directory to download the policy. if not set, a temporary directory will be used")
-	cmd.Flags().StringVarP(&outputFormat, "output", "o", "text", "output format, either json, text, names, or short-names.")
+	cmd.Flags().StringVarP(&outputFormat, "output", "o", "text", fmt.Sprintf("output format. one of: %s", strings.Join(validFormats, ", ")))
 
 	if err := cmd.MarkFlagRequired("source"); err != nil {
 		panic(err)

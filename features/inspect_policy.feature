@@ -29,6 +29,12 @@ Feature: inspect policies
     kitty.purr
     """
 
+  Scenario: invalid output option
+    Given a git repository named "policy" with
+      | main.rego | examples/with_annotations.rego |
+    When ec command is run with "inspect policy --source git::http://${GITHOST}/git/policy.git --output spam"
+    Then the exit status should be 1
+
   Scenario: json output
     Given a git repository named "policy" with
       | main.rego | examples/with_annotations.rego |
