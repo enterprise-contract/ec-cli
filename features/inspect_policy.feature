@@ -14,6 +14,7 @@ Feature: inspect policies
     # Source: git::http://${GITHOST}/git/policy.git
 
     policy.release.kitty.purr \(deny\)
+    https://hacbs-contract.github.io/ec-policies/release_policy.html#kitty__purr
     Kittens
     Fluffy
     --
