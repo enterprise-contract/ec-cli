@@ -364,7 +364,7 @@ func makeMatchers(result output.Result) []string {
 	var matchers []string
 
 	if pkg != "" {
-		matchers = append(matchers, pkg, fmt.Sprintf("%s.%s", pkg, rule))
+		matchers = append(matchers, pkg, fmt.Sprintf("%s.*", pkg), fmt.Sprintf("%s.%s", pkg, rule))
 	}
 
 	// A term can be applied to any of the package matchers above.
