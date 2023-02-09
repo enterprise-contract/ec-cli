@@ -202,7 +202,7 @@ func TestConftestEvaluatorEvaluateNoSuccessWarningsOrFailures(t *testing.T) {
 
 	r.On("Run", ctx, inputs).Return(results, nil)
 
-	p, err := policy.NewOfflinePolicy(ctx, "")
+	p, err := policy.NewOfflinePolicy(ctx, policy.Now)
 	assert.NoError(t, err)
 
 	evaluator, err := NewConftestEvaluator(ctx, afero.NewMemMapFs(), []source.PolicySource{
