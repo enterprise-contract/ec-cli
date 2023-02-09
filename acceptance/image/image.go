@@ -25,6 +25,7 @@ import (
 	"io"
 
 	"github.com/cucumber/godog"
+	jsonpatch "github.com/evanphx/json-patch/v5"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/empty"
@@ -32,6 +33,7 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/random"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/google/go-containerregistry/pkg/v1/types"
+	"github.com/in-toto/in-toto-golang/in_toto"
 	"github.com/sigstore/cosign/pkg/cosign"
 	"github.com/sigstore/cosign/pkg/oci/static"
 	cosigntypes "github.com/sigstore/cosign/pkg/types"
@@ -166,6 +168,15 @@ func createAndPushImageSignature(ctx context.Context, imageName string, keyName 
 // image, same as `cosign attest` or Tekton Chains would, and pushes it to the stub
 // registry as a new tag for that image akin to how cosign and Tekton Chains do it
 func createAndPushAttestation(ctx context.Context, imageName, keyName string) (context.Context, error) {
+	return createAndPushAttestationWithPatches(ctx, imageName, keyName, nil)
+}
+
+// createAndPushAttestation for a named image in the Context creates an attestation
+// image, same as `cosign attest` or Tekton Chains would, and pushes it to the stub
+// registry as a new tag for that image akin to how cosign and Tekton Chains do
+// it; this variant applies additional JSON Patch patches to the SLSA provenance
+// statement as required by the tests
+func createAndPushAttestationWithPatches(ctx context.Context, imageName, keyName string, patches *godog.Table) (context.Context, error) {
 	var state *imageState
 	ctx, err := testenv.SetupState(ctx, &state)
 	if err != nil {
@@ -187,6 +198,11 @@ func createAndPushAttestation(ctx context.Context, imageName, keyName string) (c
 	// need to add more data to the attestation in more elaborate tests so:
 	// TODO: create a hook to add more data to the attestation
 	statement, err := attestation.CreateStatementFor(imageName, image)
+	if err != nil {
+		return ctx, err
+	}
+
+	statement, err = applyPatches(statement, patches)
 	if err != nil {
 		return ctx, err
 	}
@@ -388,9 +404,39 @@ func JSONAttestationSignaturesFrom(ctx context.Context) string {
 	return sigs
 }
 
+func applyPatches(statement *in_toto.ProvenanceStatement, patches *godog.Table) (*in_toto.ProvenanceStatement, error) {
+	if statement == nil || patches == nil || len(patches.Rows) == 0 {
+		return statement, nil
+	}
+
+	stmt, err := json.Marshal(statement)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, patch := range patches.Rows {
+		val := patch.Cells[0].Value
+		jp, err := jsonpatch.DecodePatch([]byte(val))
+		if err != nil {
+			return nil, err
+		}
+
+		stmt, err = jp.Apply(stmt)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	var modified in_toto.ProvenanceStatement
+	json.Unmarshal(stmt, &modified)
+
+	return &modified, nil
+}
+
 // AddStepsTo adds Gherkin steps to the godog ScenarioContext
 func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^an image named "([^"]*)"$`, createAndPushImage)
 	sc.Step(`^a valid image signature of "([^"]*)" image signed by the "([^"]*)" key$`, createAndPushImageSignature)
 	sc.Step(`^a valid attestation of "([^"]*)" signed by the "([^"]*)" key$`, createAndPushAttestation)
+	sc.Step(`^a valid attestation of "([^"]*)" signed by the "([^"]*)" key, patched with$`, createAndPushAttestationWithPatches)
 }

@@ -44,7 +44,7 @@ func mockFetchECSource(ctx context.Context, resource string) (p policy.Policy, e
 		},
 	}
 
-	p, err = policy.NewOfflinePolicy(ctx, "")
+	p, err = policy.NewOfflinePolicy(ctx, policy.Now)
 	if err != nil {
 		return
 	}

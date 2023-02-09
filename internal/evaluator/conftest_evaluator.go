@@ -126,7 +126,8 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) ([]out
 		return nil, err
 	}
 
-	now := c.policy.EffectiveTime()
+	effectiveTime := c.policy.EffectiveTime()
+
 	for i, result := range runResults {
 		warnings := []output.Result{}
 		failures := []output.Result{}
@@ -144,7 +145,7 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) ([]out
 				log.Debugf("Skipping result failure: %#v", failure)
 				continue
 			}
-			if !isResultEffective(failure, now) {
+			if !isResultEffective(failure, effectiveTime) {
 				// TODO: Instead of moving to warnings, create new attribute: "futureViolations"
 				warnings = append(warnings, failure)
 			} else {
@@ -179,7 +180,7 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) ([]out
 
 // createConfigJSON creates the config.json file with the provided configuration
 // in the data directory
-func createConfigJSON(fs afero.Fs, dataDir string, p policy.Policy) error {
+func createConfigJSON(ctx context.Context, fs afero.Fs, dataDir string, p policy.Policy) error {
 	if p == nil {
 		return nil
 	}
@@ -214,7 +215,7 @@ func createConfigJSON(fs afero.Fs, dataDir string, p policy.Policy) error {
 	cfg := p.Spec().Configuration
 	if cfg != nil {
 		log.Debug("Include rules found. These will be written to file ", dataDir)
-		if p.Spec().Configuration.Include != nil {
+		if cfg.Include != nil {
 			pc.Include = &cfg.Include
 		}
 		log.Debug("Exclude rules found. These will be written to file ", dataDir)
@@ -274,7 +275,7 @@ func (c *conftestEvaluator) createDataDirectory(ctx context.Context, fs afero.Fs
 		_ = fs.MkdirAll(dataDir, 0755)
 	}
 
-	if err := createConfigJSON(fs, dataDir, c.policy); err != nil {
+	if err := createConfigJSON(ctx, fs, dataDir, c.policy); err != nil {
 		return err
 	}
 
