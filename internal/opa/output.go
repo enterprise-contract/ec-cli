@@ -42,6 +42,7 @@ func getShortName(a *ast.AnnotationsRef) string {
 
 type TemplateFields = struct {
 	TrimmedPath string
+	ShortPath   string
 	WarnDeny    string
 	Title       string
 	Description string
@@ -49,19 +50,42 @@ type TemplateFields = struct {
 }
 
 var templates = map[string]string{
-	"plain": hd.Doc(`
+	"text": hd.Doc(`
 		{{ .TrimmedPath }}.{{ .ShortName }} ({{ .WarnDeny }})
 		{{ .Title }}
 		{{ .Description }}
 		--
+	`),
+
+	"names": hd.Doc(`
+		{{ .TrimmedPath }}.{{ .ShortName }}
+	`),
+
+	"short-names": hd.Doc(`
+		{{ .ShortPath }}.{{ .ShortName }}
 	`),
 }
 
 // Prepare data for use in the template
 func prepTemplateFields(a *ast.AnnotationsRef) TemplateFields {
 	pathStrings := strings.Split(a.Path.String(), ".")
+
+	// Removes the "data." prefix
+	// Example: "policy.pipeline.required_tasks.missing_required_task"
+	trimmedPath := strings.Join(pathStrings[1:len(pathStrings)-1], ".")
+
+	var shortPath string
+	if len(pathStrings) > 4 && strings.HasPrefix(trimmedPath, "policy.") {
+		// Example "required_tasks.missing_required_task"
+		shortPath = strings.Join(pathStrings[3:len(pathStrings)-1], ".")
+	} else {
+		// Edge case in case the package name doesn't follow our usual
+		// conventions i.e. "package policy.<type>.<name>"
+		shortPath = trimmedPath
+	}
 	return TemplateFields{
-		TrimmedPath: strings.Join(pathStrings[1:len(pathStrings)-1], "."),
+		TrimmedPath: trimmedPath,
+		ShortPath:   shortPath,
 		WarnDeny:    pathStrings[len(pathStrings)-1],
 		Title:       a.Annotations.Title,
 		Description: a.Annotations.Description,
@@ -75,20 +99,21 @@ func renderAnn(out io.Writer, a *ast.AnnotationsRef, tmplName string) error {
 	return t.Execute(out, prepTemplateFields(a))
 }
 
-// This output format is mostly placeholder/poc.
 // Todo:
-// - Group by source and package
-// - Filtering, e.g by collection
-// - Add different formats
-// - Use templates
-func OutputText(out io.Writer, allData map[string][]*ast.AnnotationsRef) error {
+// - Group by package or collection
+// - Filtering by package or collection maybe
+// - More useful formats
+func OutputText(out io.Writer, allData map[string][]*ast.AnnotationsRef, template string) error {
 	for src, annRefs := range allData {
-		fmt.Fprintf(out, "# Source: %s\n\n", src)
+		if template == "text" {
+			// This part could be templated too I guess but let's keep it simple for now
+			fmt.Fprintf(out, "# Source: %s\n\n", src)
+		}
 		for _, ann := range annRefs {
 			pathStrings := strings.Split(ann.Path.String(), ".")
 			if ann.Annotations != nil {
 				if string(ann.Annotations.Scope) == "rule" {
-					err := renderAnn(out, ann, "plain")
+					err := renderAnn(out, ann, template)
 					if err != nil {
 						return err
 					}

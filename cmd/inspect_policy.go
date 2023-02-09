@@ -101,14 +101,17 @@ func inspectPolicyCmd() *cobra.Command {
 			out := cmd.OutOrStdout()
 			if outputFormat == "json" {
 				return json.NewEncoder(out).Encode(allResults)
+			} else if outputFormat == "names" || outputFormat == "short-names" {
+				return opa.OutputText(out, allResults, outputFormat)
+			} else {
+				return opa.OutputText(out, allResults, "text")
 			}
-			return opa.OutputText(out, allResults)
 		},
 	}
 
 	cmd.Flags().StringArrayVarP(&sourceUrls, "source", "s", []string{}, "policy source url. multiple values are allowed")
 	cmd.Flags().StringVarP(&destDir, "dest", "d", "", "use the specified destination directory to download the policy. if not set, a temporary directory will be used")
-	cmd.Flags().StringVarP(&outputFormat, "output", "o", "text", "output format, either json or text.")
+	cmd.Flags().StringVarP(&outputFormat, "output", "o", "text", "output format, either json, text, names, or short-names.")
 
 	if err := cmd.MarkFlagRequired("source"); err != nil {
 		panic(err)
