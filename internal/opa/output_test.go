@@ -27,35 +27,39 @@ import (
 )
 
 func Test_RegoTextOutput(t *testing.T) {
+	fooBarDeny := hd.Doc(`
+		{
+			"path":[
+				{"type":"var","value":"data"},
+				{"type":"string","value":"policy"},
+				{"type":"string","value":"foo"},
+				{"type":"string","value":"bar"},
+				{"type":"string","value":"deny"}
+			],
+			"annotations":{
+				"scope":"rule",
+				"title":"Rule title",
+				"description":"Rule description",
+				"custom":{
+					"short_name":"rule_title"
+				}
+			}
+		}
+	`)
+
 	tests := []struct {
 		name     string
 		source   string
 		annJson  string
+		template string
 		expected string
 		err      error
 	}{
 		{
-			name:   "Smoke test",
-			source: "spam.io/bacon-bundle",
-			annJson: hd.Doc(`
-				{
-					"path":[
-						{"type":"var","value":"data"},
-						{"type":"string","value":"policy"},
-						{"type":"string","value":"foo"},
-						{"type":"string","value":"bar"},
-						{"type":"string","value":"deny"}
-					],
-					"annotations":{
-						"scope":"rule",
-						"title":"Rule title",
-						"description":"Rule description",
-						"custom":{
-							"short_name":"rule_title"
-						}
-					}
-				}
-			`),
+			name:     "Smoke test",
+			source:   "spam.io/bacon-bundle",
+			annJson:  fooBarDeny,
+			template: "text",
 			expected: hd.Doc(`
 				# Source: spam.io/bacon-bundle
 
@@ -65,6 +69,22 @@ func Test_RegoTextOutput(t *testing.T) {
 				--
 			`),
 			err: nil,
+		},
+		{
+			name:     "Smoke test",
+			source:   "spam.io/bacon-bundle",
+			annJson:  fooBarDeny,
+			template: "names",
+			expected: "policy.foo.bar.rule_title\n",
+			err:      nil,
+		},
+		{
+			name:     "Smoke test",
+			source:   "spam.io/bacon-bundle",
+			annJson:  fooBarDeny,
+			template: "short-names",
+			expected: "bar.rule_title\n",
+			err:      nil,
 		},
 		{
 			// Probably not likely to happen any time soon but let's
@@ -87,6 +107,7 @@ func Test_RegoTextOutput(t *testing.T) {
 					}
 				}
 			`),
+			template: "text",
 			expected: hd.Doc(`
 				# Source: spam.io/bacon-bundle
 
@@ -111,6 +132,7 @@ func Test_RegoTextOutput(t *testing.T) {
 					]
 				}
 			`),
+			template: "text",
 			expected: hd.Doc(`
 				# Source: spam.io/bacon-bundle
 
@@ -136,7 +158,7 @@ func Test_RegoTextOutput(t *testing.T) {
 		}
 
 		buf := new(bytes.Buffer)
-		err = OutputText(buf, input)
+		err = OutputText(buf, input, tt.template)
 
 		assert.Equal(t, tt.err, err, tt.name)
 		assert.Equal(t, tt.expected, buf.String(), tt.name)

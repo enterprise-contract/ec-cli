@@ -19,6 +19,22 @@ Feature: inspect policies
     --
     """
 
+  Scenario: short names output
+    Given a git repository named "policy" with
+      | main.rego | examples/with_annotations.rego |
+    When ec command is run with "inspect policy --source git::http://${GITHOST}/git/policy.git --output short-names"
+    Then the exit status should be 0
+    Then the standard output should contain
+    """
+    kitty.purr
+    """
+
+  Scenario: invalid output option
+    Given a git repository named "policy" with
+      | main.rego | examples/with_annotations.rego |
+    When ec command is run with "inspect policy --source git::http://${GITHOST}/git/policy.git --output spam"
+    Then the exit status should be 1
+
   Scenario: json output
     Given a git repository named "policy" with
       | main.rego | examples/with_annotations.rego |
