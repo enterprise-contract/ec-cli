@@ -62,8 +62,10 @@ type Policy interface {
 
 type policy struct {
 	ecc.EnterpriseContractPolicySpec
-	checkOpts     *cosign.CheckOpts
-	effectiveTime *time.Time
+	checkOpts       *cosign.CheckOpts
+	choosenTime     string
+	effectiveTime   *time.Time
+	attestationTime *time.Time
 }
 
 // PublicKeyPEM returns the PublicKey in PEM format.
@@ -93,6 +95,7 @@ func NewOfflinePolicy(ctx context.Context, effectiveTime string) (Policy, error)
 	if efn, err := parseEffectiveTime(effectiveTime); err == nil {
 		return &policy{
 			effectiveTime: efn,
+			choosenTime:   effectiveTime,
 			checkOpts:     &cosign.CheckOpts{},
 		}, nil
 	} else {
@@ -114,7 +117,9 @@ func NewOfflinePolicy(ctx context.Context, effectiveTime string) (Policy, error)
 // The public key is resolved as part of object construction. If the public key is a reference
 // to a kubernetes resource, for example, the cluster will be contacted.
 func NewPolicy(ctx context.Context, policyRef, rekorUrl, publicKey, effectiveTime string) (Policy, error) {
-	var p policy
+	p := policy{
+		choosenTime: effectiveTime,
+	}
 
 	if policyRef == "" {
 		log.Debug("Using an empty EnterpriseContractPolicy")
@@ -179,7 +184,10 @@ func (p *policy) WithSpec(spec ecc.EnterpriseContractPolicySpec) Policy {
 }
 
 func (p *policy) AttestationTime(attestationTime time.Time) {
-	p.effectiveTime = &attestationTime
+	p.attestationTime = &attestationTime
+	if p.choosenTime == AtAttestation {
+		p.effectiveTime = &attestationTime
+	}
 }
 
 func (p policy) EffectiveTime() time.Time {
@@ -194,32 +202,36 @@ func (p policy) EffectiveTime() time.Time {
 	return *p.effectiveTime
 }
 
-func parseEffectiveTime(effectiveTime string) (*time.Time, error) {
+func isNow(choosenTime string) bool {
+	return strings.EqualFold(choosenTime, Now)
+}
+
+func parseEffectiveTime(choosenTime string) (*time.Time, error) {
 	switch {
-	case strings.EqualFold(effectiveTime, Now):
+	case isNow(choosenTime):
 		now := now().UTC()
 		log.Debugf("Chosen to use effective time of `now`, using current time %s", now.Format(time.RFC3339))
 		return &now, nil
-	case strings.EqualFold(effectiveTime, AtAttestation):
+	case strings.EqualFold(choosenTime, AtAttestation):
 		log.Debugf("Chosen to use effective time of `attestation`")
 		return nil, nil
 	default:
 		var err error
-		if when, err := time.Parse(time.RFC3339, effectiveTime); err == nil {
+		if when, err := time.Parse(time.RFC3339, choosenTime); err == nil {
 			log.Debugf("Using provided effective time %s", when.Format(time.RFC3339))
 			whenUTC := when.UTC()
 			return &whenUTC, nil
 		}
 
-		log.Debugf("Unable to parse provided effective time `%s` using RFC3339", effectiveTime)
+		log.Debugf("Unable to parse provided effective time `%s` using RFC3339", choosenTime)
 		errs := multierror.Append(err)
 
-		if when, err := time.Parse(DateFormat, effectiveTime); err == nil {
+		if when, err := time.Parse(DateFormat, choosenTime); err == nil {
 			log.Debugf("Using provided effective time %s", when.Format(time.RFC3339))
 			whenUTC := when.UTC()
 			return &whenUTC, nil
 		}
-		log.Debugf("Unable to provided effective time string `%s` using %s format", effectiveTime, DateFormat)
+		log.Debugf("Unable to provided effective time string `%s` using %s format", choosenTime, DateFormat)
 		errs = multierror.Append(errs, err)
 
 		return nil, PO001.CausedBy(errs)

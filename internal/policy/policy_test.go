@@ -72,34 +72,34 @@ func TestNewPolicy(t *testing.T) {
 			name:      "simple inline",
 			policyRef: toJson(&ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey}),
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: testPublicKey}, effectiveTime: &timeNow},
+				PublicKey: testPublicKey}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 		{
 			name:      "inline with public key overwrite",
 			policyRef: toJson(&ecc.EnterpriseContractPolicySpec{PublicKey: "ignored"}),
 			publicKey: testPublicKey,
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: testPublicKey}, effectiveTime: &timeNow},
+				PublicKey: testPublicKey}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 		{
 			name:      "inline with rekor URL",
 			policyRef: toJson(&ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey, RekorUrl: testRekorUrl}),
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: testPublicKey, RekorUrl: testRekorUrl}, effectiveTime: &timeNow},
+				PublicKey: testPublicKey, RekorUrl: testRekorUrl}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 		{
 			name:      "inline with rekor URL overwrite",
 			policyRef: toJson(&ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey, RekorUrl: "ignored"}),
 			rekorUrl:  testRekorUrl,
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: testPublicKey, RekorUrl: testRekorUrl}, effectiveTime: &timeNow},
+				PublicKey: testPublicKey, RekorUrl: testRekorUrl}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 		{
 			name:        "simple k8sPath",
 			policyRef:   "ec-policy",
 			k8sResource: &ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey},
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: testPublicKey}, effectiveTime: &timeNow},
+				PublicKey: testPublicKey}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 		{
 			name:        "k8sPath with public key overwrite",
@@ -107,14 +107,14 @@ func TestNewPolicy(t *testing.T) {
 			k8sResource: &ecc.EnterpriseContractPolicySpec{PublicKey: "ignored"},
 			publicKey:   testPublicKey,
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: testPublicKey}, effectiveTime: &timeNow},
+				PublicKey: testPublicKey}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 		{
 			name:        "k8sPath with rekor URL",
 			policyRef:   "ec-policy",
 			k8sResource: &ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey, RekorUrl: testRekorUrl},
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: testPublicKey, RekorUrl: testRekorUrl}, effectiveTime: &timeNow},
+				PublicKey: testPublicKey, RekorUrl: testRekorUrl}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 		{
 			name:        "k8sPath with rekor overwrite",
@@ -122,13 +122,13 @@ func TestNewPolicy(t *testing.T) {
 			k8sResource: &ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey},
 			rekorUrl:    testRekorUrl,
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: testPublicKey, RekorUrl: testRekorUrl}, effectiveTime: &timeNow},
+				PublicKey: testPublicKey, RekorUrl: testRekorUrl}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 		{
 			name:      "default empty policy",
 			publicKey: testPublicKey,
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: testPublicKey}, effectiveTime: &timeNow},
+				PublicKey: testPublicKey}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 	}
 
@@ -147,6 +147,7 @@ func TestNewPolicy(t *testing.T) {
 
 			c.expected.effectiveTime = nil
 			got.(*policy).effectiveTime = nil
+
 			assert.Equal(t, c.expected, got)
 		})
 	}
@@ -279,6 +280,59 @@ func TestParseEffectiveTime(t *testing.T) {
 	effective, err = parseEffectiveTime("attestation")
 	assert.NoError(t, err)
 	assert.Nil(t, effective)
+}
+
+func TestEffectiveTimeNowNoMutation(t *testing.T) {
+	then := now
+	t.Cleanup(func() {
+		now = then
+	})
+
+	epoch := time.Unix(0, 0).UTC()
+	now = func() time.Time { return epoch }
+
+	p, err := NewOfflinePolicy(context.Background(), Now)
+	assert.NoError(t, err)
+
+	assert.Equal(t, epoch, p.EffectiveTime())
+
+	p.AttestationTime(time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC))
+
+	assert.Equal(t, epoch, p.EffectiveTime())
+}
+
+func TestEffectiveTimeGivenNoMutation(t *testing.T) {
+	epoch := time.Unix(0, 0).UTC()
+
+	p, err := NewOfflinePolicy(context.Background(), epoch.Format(time.RFC3339))
+	assert.NoError(t, err)
+
+	assert.Equal(t, epoch, p.EffectiveTime())
+
+	p.AttestationTime(time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC))
+
+	assert.Equal(t, epoch, p.EffectiveTime())
+}
+
+func TestEffectiveTimeAttestationAllowMutation(t *testing.T) {
+	then := now
+	t.Cleanup(func() {
+		now = then
+	})
+
+	epoch := time.Unix(0, 0).UTC()
+	now = func() time.Time { return epoch }
+
+	p, err := NewOfflinePolicy(context.Background(), AtAttestation)
+	assert.NoError(t, err)
+
+	// falling back to now, as attestation time hasn't been set
+	assert.Equal(t, epoch, p.EffectiveTime())
+
+	attestation := time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
+	p.AttestationTime(attestation)
+
+	assert.Equal(t, attestation, p.EffectiveTime())
 }
 
 func toJson(policy *ecc.EnterpriseContractPolicySpec) string {
