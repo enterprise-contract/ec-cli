@@ -28,6 +28,13 @@ name: Website
 jobs:
   website_update:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - APP_INSTALL_ID: 29980719
+            REPOSITORY: hacbs-contract/hacbs-contract.github.io
+          - APP_INSTALL_ID: 32872589
+            REPOSITORY: redhat-appstudio/docs.stonesoup.io
     steps:
       - name: Trigger website update
         env:
@@ -41,5 +48,5 @@ jobs:
             echo "${header}.${payload}.${signature}"
           }
 
-          GITHUB_TOKEN=$(curl -s -X POST -H "Authorization: Bearer $(createJWT)" -H "Accept: application/vnd.github+json" https://api.github.com/app/installations/29980719/access_tokens | jq -r .token) \
-          gh api repos/hacbs-contract/hacbs-contract.github.io/dispatches -X POST --input <(echo '{"event_type":"update","client_payload":{}}')
+          GITHUB_TOKEN=$(curl -s -X POST -H "Authorization: Bearer $(createJWT)" -H "Accept: application/vnd.github+json" https://api.github.com/app/installations/${{ matrix.APP_INSTALL_ID }}/access_tokens | jq -r .token) \
+          gh api repos/${{ matrix.REPOSITORY }}/dispatches -X POST --input <(echo '{"event_type":"update","client_payload":{}}')
