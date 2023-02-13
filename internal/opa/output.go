@@ -47,12 +47,14 @@ type TemplateFields = struct {
 	Title       string
 	Description string
 	ShortName   string
+	DocsUrl     string
 }
 
 var templates = map[string]string{
 	"text": hd.Doc(`
 		{{ .TrimmedPath }}.{{ .ShortName }} ({{ .WarnDeny }})
-		{{ .Title }}
+		{{ with .DocsUrl }}{{ . }}
+		{{ end }}{{ .Title }}
 		{{ .Description }}
 		--
 	`),
@@ -83,13 +85,31 @@ func prepTemplateFields(a *ast.AnnotationsRef) TemplateFields {
 		// conventions i.e. "package policy.<type>.<name>"
 		shortPath = trimmedPath
 	}
+
+	shortName := getShortName(a)
+
+	// Notes:
+	// - This makes the assumption that we're looking at our own EC rules with
+	//   docs in the hacbs-contract github pages. That's not likely to be true
+	//   always. A future improvement for this might include a way to extract a
+	//   docs url from a package annotation instead using the hard-coded url here.
+	// - The length test is because we're expecting pathStrings to be like this:
+	//     data.policy.release.some_package_name.deny
+	//   Avoid errors indexing pathStrings and also try to avoid showing a url
+	//   if it's unlikely to be a real link to existing docs.
+	var docsUrl string
+	if len(pathStrings) == 5 && pathStrings[1] == "policy" && shortName != "" {
+		docsUrl = fmt.Sprintf("https://hacbs-contract.github.io/ec-policies/%s_policy.html#%s__%s", pathStrings[2], pathStrings[3], shortName)
+	}
+
 	return TemplateFields{
 		TrimmedPath: trimmedPath,
 		ShortPath:   shortPath,
 		WarnDeny:    pathStrings[len(pathStrings)-1],
 		Title:       a.Annotations.Title,
 		Description: a.Annotations.Description,
-		ShortName:   getShortName(a),
+		ShortName:   shortName,
+		DocsUrl:     docsUrl,
 	}
 }
 
