@@ -27,6 +27,7 @@ import (
 	"github.com/cucumber/godog"
 
 	"github.com/hacbs-contract/ec-cli/acceptance/cli"
+	"github.com/hacbs-contract/ec-cli/acceptance/conftest"
 	"github.com/hacbs-contract/ec-cli/acceptance/crypto"
 	"github.com/hacbs-contract/ec-cli/acceptance/git"
 	"github.com/hacbs-contract/ec-cli/acceptance/image"
@@ -64,6 +65,7 @@ func initializeScenario(sc *godog.ScenarioContext) {
 	tekton.AddStepsTo(sc)
 	wiremock.AddStepsTo(sc)
 	pipeline.AddStepsTo(sc)
+	conftest.AddStepsTo(sc)
 
 	sc.After(func(ctx context.Context, scenario *godog.Scenario, scenarioErr error) (context.Context, error) {
 		_, err := testenv.Persist(ctx)

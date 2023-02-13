@@ -201,9 +201,10 @@ func Test_TrackBundleCommand(t *testing.T) {
 				assert.Equal(t, c.expectInput, imageRef)
 				return inputData, nil
 			}
-			pushImage := func(_ context.Context, imageRef string, data []byte) error {
+			pushImage := func(_ context.Context, imageRef string, data []byte, invocation string) error {
 				assert.Equal(t, c.expectOutput, imageRef)
 				assert.Equal(t, testOutput, string(data))
+				assert.NotEmpty(t, invocation) // in tests this will be the cmd.test in temp directory, counting on os.Args to be correct when ec-cli is invoked
 				return nil
 			}
 			cmd := trackBundleCmd(track, pullImage, pushImage)

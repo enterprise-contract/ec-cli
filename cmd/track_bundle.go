@@ -28,7 +28,7 @@ import (
 
 type trackBundleFn func(context.Context, []string, []byte, bool) ([]byte, error)
 type pullImageFn func(context.Context, string) ([]byte, error)
-type pushImageFn func(context.Context, string, []byte) error
+type pushImageFn func(context.Context, string, []byte, string) error
 
 func trackBundleCmd(track trackBundleFn, pullImage pullImageFn, pushImage pushImageFn) *cobra.Command {
 	var params = struct {
@@ -105,6 +105,9 @@ func trackBundleCmd(track trackBundleFn, pullImage pullImageFn, pushImage pushIm
 
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
+			// capture the command and arguments so we can keep track of what
+			// Tekton bundles were used to getnerate the OPA/Conftest bundle
+			invocation := strings.Join(os.Args, " ")
 			fs := fs(cmd.Context())
 
 			var data []byte
@@ -126,7 +129,7 @@ func trackBundleCmd(track trackBundleFn, pullImage pullImageFn, pushImage pushIm
 			case params.output == "":
 				_, err = cmd.OutOrStdout().Write(out)
 			case strings.HasPrefix(params.output, "oci:"):
-				err = pushImage(cmd.Context(), strings.TrimPrefix(params.output, "oci:"), out)
+				err = pushImage(cmd.Context(), strings.TrimPrefix(params.output, "oci:"), out, invocation)
 			default:
 				err = afero.WriteFile(fs, params.output, out, 0666)
 			}
@@ -137,7 +140,7 @@ func trackBundleCmd(track trackBundleFn, pullImage pullImageFn, pushImage pushIm
 
 			if params.replace && params.input != "" {
 				if strings.HasPrefix(params.input, "oci:") {
-					err = pushImage(cmd.Context(), strings.TrimPrefix(params.input, "oci:"), out)
+					err = pushImage(cmd.Context(), strings.TrimPrefix(params.input, "oci:"), out, invocation)
 				} else {
 					var perm os.FileMode
 					if stat, err := fs.Stat(params.input); err != nil {

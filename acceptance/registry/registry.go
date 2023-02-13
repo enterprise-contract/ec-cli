@@ -132,6 +132,16 @@ func IsRunning(ctx context.Context) bool {
 	return state.Up()
 }
 
+// Url returns the host:port needed to interact with the registry
+func Url(ctx context.Context) (string, error) {
+	if !testenv.HasState[registryState](ctx) {
+		return "", errors.New("no state setup, did you start the registry stub server?")
+	}
+
+	state := testenv.FetchState[registryState](ctx)
+	return state.HostAndPort, nil
+}
+
 // AllHashes returns a map of image hashes keyed by `repository:tag` for all
 // images stored in the registry
 func AllHashes(ctx context.Context) (map[string]string, error) {
