@@ -22,6 +22,7 @@ import (
 
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
+	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/empty"
 	"github.com/google/go-containerregistry/pkg/v1/mutate"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
@@ -36,13 +37,34 @@ const (
 	dataFileTitle       = "data/data/acceptable_tekton_bundles.yml"
 )
 
+type ctxKey int
+
+const registryKey ctxKey = 0
+
+type registry interface {
+	write(name.Reference, v1.Image, ...remote.Option) error
+	read(name.Reference, ...remote.Option) (v1.Image, error)
+}
+
+type containerRegistry struct{}
+
+func (containerRegistry) write(ref name.Reference, image v1.Image, options ...remote.Option) error {
+	return remote.Write(ref, image, options...)
+}
+
+func (containerRegistry) read(ref name.Reference, options ...remote.Option) (v1.Image, error) {
+	return remote.Image(ref, options...)
+}
+
+var defaultRegistry = containerRegistry{}
+
 func PullImage(ctx context.Context, imageRef string) ([]byte, error) {
 	ref, err := name.ParseReference(imageRef)
 	if err != nil {
 		return nil, err
 	}
 
-	img, err := remote.Image(ref, remote.WithAuthFromKeychain(authn.DefaultKeychain))
+	img, err := r(ctx).read(ref, remote.WithAuthFromKeychain(authn.DefaultKeychain))
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +106,7 @@ func PullImage(ctx context.Context, imageRef string) ([]byte, error) {
 	return data, nil
 }
 
-func PushImage(ctx context.Context, imageRef string, data []byte) (err error) {
+func PushImage(ctx context.Context, imageRef string, data []byte, invocation string) (err error) {
 	var ref name.Reference
 	ref, err = name.ParseReference(imageRef)
 	if err != nil {
@@ -94,6 +116,9 @@ func PushImage(ctx context.Context, imageRef string, data []byte) (err error) {
 	bundle := mutate.MediaType(empty.Image, types.OCIManifestSchema1)
 	bundle = mutate.ConfigMediaType(bundle, unknownConfig)
 	if bundle, err = mutate.Append(bundle, mutate.Addendum{
+		History: v1.History{
+			CreatedBy: invocation,
+		},
 		MediaType: openPolicyAgentData,
 		Layer:     static.NewLayer(data, openPolicyAgentData),
 		Annotations: map[string]string{
@@ -103,5 +128,14 @@ func PushImage(ctx context.Context, imageRef string, data []byte) (err error) {
 		return
 	}
 
-	return remote.Write(ref, bundle, remote.WithAuthFromKeychain(authn.DefaultKeychain))
+	return r(ctx).write(ref, bundle, remote.WithAuthFromKeychain(authn.DefaultKeychain))
+}
+
+func r(ctx context.Context) registry {
+	r, ok := ctx.Value(registryKey).(registry)
+	if !ok {
+		r = defaultRegistry
+	}
+
+	return r
 }

@@ -68,7 +68,6 @@ Feature: track bundles
 
     """
 
-  @focus
   Scenario: Replace data bundle in OCI registry
     Given a tekton bundle image named "acceptance/bundle:tag" containing
       | Task     | task1     |
@@ -105,6 +104,36 @@ Feature: track bundles
         - digest: sha256:486981f90bd8cca5586b7d73d5c5ce7e1f29d174f0b5fe027b80730612f37155
           effective_on: "${TODAY_PLUS_30_DAYS}"
           tag: tag
+        - digest: sha256:6ade8b41fd5b07cf785d0f7a202852a55199735057598d6af2a13cc8a839bb78
+          effective_on: "${TODAY_PLUS_30_DAYS}"
+          tag: tag
+
+    """
+
+  Scenario: `ec track bundle` produced OPA bundle can be fetched via `conftest pull`
+    Given a tekton bundle image named "acceptance/bundle:tag" containing
+      | Task     | task1     |
+      | Pipeline | pipeline1 |
+    When ec command is run with "track bundle --bundle ${REGISTRY}/acceptance/bundle:tag --output oci:${REGISTRY}/tracked/bundle:tag"
+    Then running conftest "pull oci://${REGISTRY}/tracked/bundle:tag" produces "policy/data/data/acceptable_tekton_bundles.yml" containing:
+    """
+    ---
+    pipeline-bundles:
+      ${REGISTRY}/acceptance/bundle:
+        - digest: sha256:6ade8b41fd5b07cf785d0f7a202852a55199735057598d6af2a13cc8a839bb78
+          effective_on: "${TODAY_PLUS_30_DAYS}"
+          tag: tag
+    pipeline-required-tasks:
+      pipeline1:
+        - effective_on: "${TODAY_PLUS_30_DAYS}"
+          tasks:
+            - git-clone
+    required-tasks:
+      - effective_on: "${TODAY_PLUS_30_DAYS}"
+        tasks:
+          - git-clone
+    task-bundles:
+      ${REGISTRY}/acceptance/bundle:
         - digest: sha256:6ade8b41fd5b07cf785d0f7a202852a55199735057598d6af2a13cc8a839bb78
           effective_on: "${TODAY_PLUS_30_DAYS}"
           tag: tag
