@@ -310,20 +310,15 @@ func isResultEffective(failure output.Result, now time.Time) bool {
 // isResultIncluded returns whether or not the result should be included or
 // discarded based on the policy configuration.
 func (c conftestEvaluator) isResultIncluded(result output.Result) bool {
-	matchers := makeMatchers(result)
-	includes := []string{"*"}
-	excludes := []string{}
+	ruleMatchers := makeMatchers(result)
+	collectionMatchers := extractCollections(result)
+	var includes, excludes, collections []string
 
 	spec := c.policy.Spec()
 	cfg := spec.Configuration
 	if cfg != nil {
-		// If collections is not empty, then only include rules that mention
-		// the collection.
 		if len(cfg.Collections) > 0 {
-			collections := extractCollections(result)
-			if !hasAnyMatch(collections, cfg.Collections) {
-				return false
-			}
+			collections = cfg.Collections
 		}
 		if len(cfg.Include) > 0 {
 			includes = cfg.Include
@@ -337,7 +332,14 @@ func (c conftestEvaluator) isResultIncluded(result output.Result) bool {
 		// TODO: NonBlocking is deprecated. Remove it eventually
 		excludes = append(excludes, spec.Exceptions.NonBlocking...)
 	}
-	return hasAnyMatch(matchers, includes) && !hasAnyMatch(matchers, excludes)
+
+	if len(includes)+len(collections) == 0 {
+		includes = []string{"*"}
+	}
+
+	isIncluded := hasAnyMatch(collectionMatchers, collections) || hasAnyMatch(ruleMatchers, includes)
+	isExcluded := hasAnyMatch(ruleMatchers, excludes)
+	return isIncluded && !isExcluded
 }
 
 // hasAnyMatch returns true if the haystack contains any of the needles.
