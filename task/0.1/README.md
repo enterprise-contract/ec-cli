@@ -9,9 +9,8 @@ kubectl apply -f https://raw.githubusercontent.com/hacbs-contract/ec-cli/main/ta
 ### Required
 * **IMAGES**: A JSON formatted list of images. 
 ### Optional
-* **POLICY_CONFIGURATION**: Name of the policy configuration (EnterpriseContractPolicy
-        resource) to use. `namespace/name` or `name` syntax supported. If
-        namespace is omitted the namespace where the task runs is used.
+* **POLICY_CONFIGURATION**: Name or inline policy in JSON configuration to use. For name `namespace/name` or `name` syntax supported. If
+        namespace is omitted the namespace where the task runs is used. For inline policy provide the [specification](https://hacbs-contract.github.io/ecc/main/reference.html#k8s-api-github-com-hacbs-contract-enterprise-contract-controller-api-v1alpha1-enterprisecontractpolicyspec) as JSON.
 * **PUBLIC_KEY**: Public key used to verify signatures. Must be a valid k8s cosign
         reference, e.g. k8s://my-space/my-secret where my-secret contains
         the expected cosign.pub attribute.
