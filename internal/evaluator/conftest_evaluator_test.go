@@ -628,18 +628,24 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 				{
 					Failures: []output.Result{
 						{Metadata: map[string]interface{}{
-							"code": "breakfast.spam", "collections": []interface{}{"foo"},
+							"code": "breakfast.spam", "collections": []interface{}{"other"},
 						}},
 						{Metadata: map[string]interface{}{
 							"code": "lunch.spam", "collections": []interface{}{"foo"},
 						}},
+						{Metadata: map[string]interface{}{
+							"code": "dinner.spam",
+						}},
 					},
 					Warnings: []output.Result{
 						{Metadata: map[string]interface{}{
-							"code": "breakfast.ham", "collections": []interface{}{"foo"},
+							"code": "breakfast.ham", "collections": []interface{}{"other"},
 						}},
 						{Metadata: map[string]interface{}{
 							"code": "lunch.ham", "collections": []interface{}{"foo"},
+						}},
+						{Metadata: map[string]interface{}{
+							"code": "dinner.ham",
 						}},
 					},
 				},
@@ -652,12 +658,18 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 				{
 					Failures: []output.Result{
 						{Metadata: map[string]interface{}{
-							"code": "breakfast.spam", "collections": []interface{}{"foo"},
+							"code": "breakfast.spam", "collections": []interface{}{"other"},
+						}},
+						{Metadata: map[string]interface{}{
+							"code": "lunch.spam", "collections": []interface{}{"foo"},
 						}},
 					},
 					Warnings: []output.Result{
 						{Metadata: map[string]interface{}{
-							"code": "breakfast.ham", "collections": []interface{}{"foo"},
+							"code": "breakfast.ham", "collections": []interface{}{"other"},
+						}},
+						{Metadata: map[string]interface{}{
+							"code": "lunch.ham", "collections": []interface{}{"foo"},
 						}},
 					},
 				},
@@ -699,6 +711,54 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 					Warnings: []output.Result{
 						{Metadata: map[string]interface{}{
 							"code": "breakfast.ham", "collections": []interface{}{"foo"},
+						}},
+					},
+				},
+			},
+		},
+		{
+			name: "filter by collection with include and exclude",
+			results: []output.CheckResult{
+				{
+					Failures: []output.Result{
+						{Metadata: map[string]interface{}{
+							"code": "breakfast.spam", "collections": []interface{}{"other"},
+						}},
+						{Metadata: map[string]interface{}{
+							"code": "lunch.spam", "collections": []interface{}{"foo"},
+						}},
+						{Metadata: map[string]interface{}{
+							"code": "dinner.spam",
+						}},
+					},
+					Warnings: []output.Result{
+						{Metadata: map[string]interface{}{
+							"code": "breakfast.ham", "collections": []interface{}{"other"},
+						}},
+						{Metadata: map[string]interface{}{
+							"code": "lunch.ham", "collections": []interface{}{"foo"},
+						}},
+						{Metadata: map[string]interface{}{
+							"code": "dinner.ham",
+						}},
+					},
+				},
+			},
+			config: &ecc.EnterpriseContractPolicyConfiguration{
+				Collections: []string{"foo"},
+				Include:     []string{"breakfast"},
+				Exclude:     []string{"lunch"},
+			},
+			want: []output.CheckResult{
+				{
+					Failures: []output.Result{
+						{Metadata: map[string]interface{}{
+							"code": "breakfast.spam", "collections": []interface{}{"other"},
+						}},
+					},
+					Warnings: []output.Result{
+						{Metadata: map[string]interface{}{
+							"code": "breakfast.ham", "collections": []interface{}{"other"},
 						}},
 					},
 				},
