@@ -183,14 +183,14 @@ dev: REGISTRY_PORT=5000
 dev: IMAGE_REPO=localhost:$(REGISTRY_PORT)/ec
 dev: PODMAN_OPTS=--tls-verify=false
 dev: TASK_REPO=localhost:$(REGISTRY_PORT)/ec-task-bundle
-dev: TASK:=$(shell T=$$(mktemp) && yq e ".spec.steps[].image? = \"127.0.0.1:$(REGISTRY_PORT)/ec\"" task/*/verify-enterprise-contract.yaml > "$${T}" && echo "$${T}")
+dev: TASK:=$(shell T=$$(mktemp) && yq e ".spec.steps[].image? = \"127.0.0.1:$(REGISTRY_PORT)/ec\"" tasks/verify-enterprise-contract/*/verify-enterprise-contract.yaml > "$${T}" && echo "$${T}")
 dev: push-image task-bundle ## Push the ec-cli and v-e-c Task Bundle to the kind cluster setup via hack/setup-dev-environment.sh
 	@rm "$(TASK)"
 
 TASK_TAG ?= latest
 TASK_REPO ?= quay.io/hacbs-contract/ec-task-bundle
 TASK_VERSION ?= 0.1
-TASK ?= task/$(TASK_VERSION)/verify-enterprise-contract.yaml
+TASK ?= tasks/verify-enterprise-contract/$(TASK_VERSION)/verify-enterprise-contract.yaml
 .PHONY: task-bundle
 task-bundle: ## Push the Tekton Task bundle an image repository
 	@go run -modfile tools/go.mod github.com/tektoncd/cli/cmd/tkn bundle push $(TASK_REPO):$(TASK_TAG) -f $(TASK)

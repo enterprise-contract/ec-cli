@@ -118,4 +118,4 @@ jobs:
       - name: Testing ec task
         env:
           TASK_VERSION: 0.1
-        run: task/tests/run.sh
+        run: tasks/verify-enterprise-contract/tests/run.sh
