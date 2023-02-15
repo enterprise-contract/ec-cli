@@ -34,7 +34,7 @@ spec:
     - name: output-image
       value: quay.io/redhat-appstudio/pull-request-builds:task-verify-ec-{{revision}}
     - name: path-context
-      value: "task/0.1,!task/0.1/tests"
+      value: "tasks/verify-enterprise-contract/0.1,!tasks/verify-enterprise-contract/0.1/tests"
   pipelineRef:
     name: tekton-bundle-builder
     bundle: quay.io/redhat-appstudio-tekton-catalog/pipeline-tekton-bundle-builder:e051ad5066a7d6bcdb26a00a00b51daf58d40652@sha256:405b92043f65f0df81a86f41f5d63d8ac86f58442dedeaff959381c0ecb7bdee

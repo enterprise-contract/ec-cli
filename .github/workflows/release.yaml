@@ -31,7 +31,7 @@ jobs:
     env:
       IMAGE_REPO: quay.io/hacbs-contract/ec-cli
       TAG: ${{ github.sha }}
-      TASK: task/0.1/verify-enterprise-contract.yaml
+      TASK: tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml
 
     steps:
       - name: Checkout repository
