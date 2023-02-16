@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/hashicorp/go-multierror"
@@ -77,7 +78,7 @@ var remoteHead = remote.Head
 // resolveDigest queries the image repository to determine the image digest and
 // returns a new instance of ImageReference with the updated digest value.
 func (i ImageReference) resolveDigest(opts ...name.Option) (*ImageReference, error) {
-	descriptor, err := remoteHead(i.ref)
+	descriptor, err := remoteHead(i.ref, remote.WithAuthFromKeychain(authn.DefaultKeychain))
 	if err != nil {
 		return nil, err
 	}
