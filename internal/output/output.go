@@ -187,6 +187,15 @@ func (o Output) Warnings() []output.Result {
 	return warnings
 }
 
+func (o Output) Passed() int {
+	var passes int
+	for _, result := range o.PolicyCheck {
+		passes += result.Successes
+
+	}
+	return passes
+}
+
 // Print prints an Output instance
 func (o *Output) Print(out io.Writer) error {
 	return o.print(out, "")

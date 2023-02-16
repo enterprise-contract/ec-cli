@@ -35,6 +35,7 @@ type Component struct {
 	Violations []conftestOutput.Result  `json:"violations"`
 	Warnings   []conftestOutput.Result  `json:"warnings"`
 	Success    bool                     `json:"success"`
+	Passed     int                      `json:"passed"`
 	Signatures []output.EntitySignature `json:"signatures,omitempty"`
 }
 
