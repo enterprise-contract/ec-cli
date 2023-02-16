@@ -30,9 +30,10 @@ import (
 
 	"github.com/cucumber/godog"
 	c "github.com/doiit/picocolors"
+	"github.com/pkg/diff"
+
 	"github.com/hacbs-contract/ec-cli/acceptance/registry"
 	"github.com/hacbs-contract/ec-cli/acceptance/testenv"
-	"github.com/pkg/diff"
 )
 
 // runConftest runs Conftest via "go run" so that the version of Conftest is
