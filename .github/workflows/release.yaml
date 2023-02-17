@@ -93,10 +93,7 @@ jobs:
         uses: docker/setup-qemu-action@v2
 
       - name: Create and push image
-        run: make dist-image-push IMAGE_TAG=$TAG IMAGE_REPO=$IMAGE_REPO
-
-      - name: Tag image with snapshot
-        run: make build-snapshot-image IMAGE_TAG=snapshot IMAGE_REPO=$IMAGE_REPO
+        run: make dist-image-push IMAGE_TAG=$TAG IMAGE_REPO=$IMAGE_REPO ADD_IMAGE_TAG=snapshot
 
       - name: Create and push the tekton bundle
         run: make task-bundle-snapshot TASK_TAG=$TAG TASK=<( yq e ".spec.steps[].image? = \"$IMAGE_REPO:$TAG\"" $TASK)
