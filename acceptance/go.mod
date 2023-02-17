@@ -39,11 +39,6 @@ require (
 	sigs.k8s.io/yaml v1.3.0
 )
 
-// requred by Testcontainers for go, see
-// https://golang.testcontainers.org/quickstart/#2-install-testcontainers-for-go
-// TODO remove when upgrading to the next release of Testcontainers for go
-replace github.com/docker/docker => github.com/docker/docker v20.10.3-0.20221013203545-33ab36d6b304+incompatible // 22.06 branch
-
 require (
 	bitbucket.org/creachadair/shell v0.0.7 // indirect
 	cloud.google.com/go/compute v1.14.0 // indirect
