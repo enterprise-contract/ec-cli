@@ -16,7 +16,7 @@
 
 //go:build unit
 
-package cmd
+package experimental
 
 import (
 	"bytes"
@@ -29,6 +29,7 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	"github.com/hacbs-contract/ec-cli/internal/replacer"
+	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
 
 type mockReplacer struct {
@@ -82,7 +83,7 @@ func TestReplaceCmd(t *testing.T) {
 			replace := replaceCmd(m.replace)
 
 			fs := afero.NewMemMapFs()
-			ctx := withFs(context.TODO(), fs)
+			ctx := utils.WithFS(context.TODO(), fs)
 			replace.SetContext(ctx)
 
 			replace.SilenceUsage = true

@@ -14,25 +14,21 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package cmd
+package experimental
 
 import (
 	"github.com/spf13/cobra"
+
+	"github.com/hacbs-contract/ec-cli/internal/replacer"
 )
 
-func fetchCmd() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "fetch",
-		Short: "Fetch policies and authorization data",
-	}
-
-	return cmd
-}
+var ExperimentalCmd *cobra.Command
 
 func init() {
-	fetch := fetchCmd()
-	fetch.AddCommand(commitAuthorizationCmd())
-	fetch.AddCommand(k8sResourceAuthorizationCmd())
-	fetch.AddCommand(fetchPolicyCmd())
-	RootCmd.AddCommand(fetch)
+	ExperimentalCmd = &cobra.Command{
+		Use:   "experimental",
+		Short: "Experimental commands; may be removed without notice",
+	}
+	ExperimentalCmd.AddCommand(createPR())
+	ExperimentalCmd.AddCommand(replaceCmd(replacer.Replace))
 }

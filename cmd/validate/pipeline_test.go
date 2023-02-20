@@ -16,7 +16,7 @@
 
 //go:build unit
 
-package cmd
+package validate
 
 import (
 	"bytes"
@@ -31,6 +31,7 @@ import (
 
 	output2 "github.com/hacbs-contract/ec-cli/internal/output"
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
+	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
 
 func TestValidatePipelineCommandOutput(t *testing.T) {
@@ -161,7 +162,7 @@ func TestOutputFormats(t *testing.T) {
 				"/path/file1.yaml",
 			}, c.output...))
 
-			cmd.SetContext(withFs(context.Background(), fs))
+			cmd.SetContext(utils.WithFS(context.Background(), fs))
 
 			err := cmd.Execute()
 			assert.NoError(t, err)

@@ -14,16 +14,20 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-//go:build unit
-
-package cmd
+package track
 
 import (
-	"context"
+	"github.com/spf13/cobra"
 
-	"github.com/spf13/afero"
+	"github.com/hacbs-contract/ec-cli/internal/tracker"
 )
 
-func withFs(ctx context.Context, fs afero.Fs) context.Context {
-	return context.WithValue(ctx, fsKey, fs)
+var TrackCmd *cobra.Command
+
+func init() {
+	TrackCmd = &cobra.Command{
+		Use:   "track",
+		Short: "Record resource references for tracking purposes",
+	}
+	TrackCmd.AddCommand(trackBundleCmd(tracker.Track, tracker.PullImage, tracker.PushImage))
 }

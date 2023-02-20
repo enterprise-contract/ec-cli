@@ -42,7 +42,7 @@ help: ## Display this help.
 $(ALL_SUPPORTED_OS_ARCH): ## Build binaries for specific platform/architecture, e.g. make dist/ec_linux_amd64
 	@GOOS=$(word 2,$(subst _, ,$(notdir $@))); \
 	GOARCH=$(word 3,$(subst _, ,$(notdir $@))); \
-	GOOS=$${GOOS} GOARCH=$${GOARCH} go build -trimpath -ldflags="-s -w -X github.com/hacbs-contract/ec-cli/cmd.Version=$(VERSION)" -o dist/ec_$${GOOS}_$${GOARCH}; \
+	GOOS=$${GOOS} GOARCH=$${GOARCH} go build -trimpath -ldflags="-s -w -X github.com/hacbs-contract/ec-cli/cmd/version.Version=$(VERSION)" -o dist/ec_$${GOOS}_$${GOARCH}; \
 	sha256sum -b dist/ec_$${GOOS}_$${GOARCH} > dist/ec_$${GOOS}_$${GOARCH}.sha256
 
 .PHONY: dist

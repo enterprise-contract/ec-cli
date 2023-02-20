@@ -15,7 +15,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Define the `ec inspect policy` command
-package cmd
+package inspect
 
 import (
 	"encoding/json"

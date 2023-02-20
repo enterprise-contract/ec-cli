@@ -14,13 +14,14 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package cmd
+package experimental
 
 import (
 	hd "github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 
 	"github.com/hacbs-contract/ec-cli/internal/ecgit"
+	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
 
 func createPR() *cobra.Command {
@@ -62,7 +63,7 @@ func createPR() *cobra.Command {
 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
-			return ecgit.CreateAutomatedPR(ctx, fs(ctx), data.componentRepoURL, data.patchFilePath, data.destinationBranch, data.prBranchName, data.prTitle, data.prBody)
+			return ecgit.CreateAutomatedPR(ctx, utils.FS(ctx), data.componentRepoURL, data.patchFilePath, data.destinationBranch, data.prBranchName, data.prTitle, data.prBody)
 		},
 	}
 
@@ -74,9 +75,4 @@ func createPR() *cobra.Command {
 	cmd.Flags().StringVar(&data.patchFilePath, "patch", data.patchFilePath, "path to the patch file")
 
 	return cmd
-}
-
-func init() {
-	create := createPR()
-	RootCmd.AddCommand(create)
 }

@@ -15,7 +15,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Define the `ec fetch policy` command
-package cmd
+package fetch
 
 import (
 	hd "github.com/MakeNowJust/heredoc"

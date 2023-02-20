@@ -14,22 +14,20 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package cmd
+package fetch
 
 import (
 	"github.com/spf13/cobra"
 )
 
-func inspectCmd() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "inspect",
-		Short: "Inspect policy rules",
-	}
-	return cmd
-}
+var FetchCmd *cobra.Command
 
 func init() {
-	inspect := inspectCmd()
-	inspect.AddCommand(inspectPolicyCmd())
-	RootCmd.AddCommand(inspect)
+	FetchCmd = &cobra.Command{
+		Use:   "fetch",
+		Short: "Fetch policies and authorization data",
+	}
+	FetchCmd.AddCommand(commitAuthorizationCmd())
+	FetchCmd.AddCommand(k8sResourceAuthorizationCmd())
+	FetchCmd.AddCommand(fetchPolicyCmd())
 }

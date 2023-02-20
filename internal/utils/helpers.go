@@ -18,6 +18,7 @@ package utils
 
 import (
 	"bytes"
+	"context"
 	"path/filepath"
 	"unicode"
 
@@ -70,4 +71,20 @@ func CreateWorkDir(fs afero.Fs) (string, error) {
 	}
 
 	return workDir, nil
+}
+
+type ioContextKey int
+
+const fsKey ioContextKey = 0
+
+func FS(ctx context.Context) afero.Fs {
+	if fs, ok := ctx.Value(fsKey).(afero.Fs); ok {
+		return fs
+	}
+
+	return afero.NewOsFs()
+}
+
+func WithFS(ctx context.Context, fs afero.Fs) context.Context {
+	return context.WithValue(ctx, fsKey, fs)
 }

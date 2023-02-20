@@ -14,7 +14,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package cmd
+package fetch
 
 import (
 	"context"
@@ -29,6 +29,7 @@ import (
 
 	"github.com/hacbs-contract/ec-cli/internal/applicationsnapshot"
 	"github.com/hacbs-contract/ec-cli/internal/image"
+	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
 
 func commitAuthorizationCmd() *cobra.Command {
@@ -80,7 +81,7 @@ func commitAuthorizationCmd() *cobra.Command {
 
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
-			spec, err := applicationsnapshot.DetermineInputSpec(fs(ctx), data.filePath, data.input, data.imageRef)
+			spec, err := applicationsnapshot.DetermineInputSpec(utils.FS(ctx), data.filePath, data.input, data.imageRef)
 			if err != nil {
 				return err
 			}

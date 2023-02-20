@@ -14,7 +14,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package cmd
+package experimental
 
 import (
 	"context"
@@ -24,6 +24,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/hacbs-contract/ec-cli/internal/replacer"
+	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
 
 const (
@@ -118,7 +119,7 @@ func replaceCmd(replace replaceFn) *cobra.Command {
 			if data.outputFile == "" {
 				_, err = cmd.OutOrStdout().Write(out)
 			} else {
-				err = afero.WriteFile(fs(cmd.Context()), data.outputFile, out, 0666)
+				err = afero.WriteFile(utils.FS(cmd.Context()), data.outputFile, out, 0666)
 			}
 
 			return
@@ -152,7 +153,8 @@ func replaceCmd(replace replaceFn) *cobra.Command {
 	return cmd
 }
 
+var ReplaceCmd *cobra.Command
+
 func init() {
-	r := replaceCmd(replacer.Replace)
-	RootCmd.AddCommand(r)
+	ReplaceCmd = replaceCmd(replacer.Replace)
 }

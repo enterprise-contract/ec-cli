@@ -14,7 +14,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package cmd
+package track
 
 import (
 	"context"
@@ -24,6 +24,8 @@ import (
 	hd "github.com/MakeNowJust/heredoc"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
+
+	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
 
 type trackBundleFn func(context.Context, []string, []byte, bool) ([]byte, error)
@@ -108,7 +110,7 @@ func trackBundleCmd(track trackBundleFn, pullImage pullImageFn, pushImage pushIm
 			// capture the command and arguments so we can keep track of what
 			// Tekton bundles were used to getnerate the OPA/Conftest bundle
 			invocation := strings.Join(os.Args, " ")
-			fs := fs(cmd.Context())
+			fs := utils.FS(cmd.Context())
 
 			var data []byte
 			if strings.HasPrefix(params.input, "oci:") {
