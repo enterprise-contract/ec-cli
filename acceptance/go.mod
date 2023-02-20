@@ -24,7 +24,7 @@ require (
 	github.com/stretchr/testify v1.8.1
 	github.com/tektoncd/cli v0.29.1
 	github.com/tektoncd/pipeline v0.42.0
-	github.com/testcontainers/testcontainers-go v0.17.0
+	github.com/testcontainers/testcontainers-go v0.18.0
 	github.com/theupdateframework/go-tuf v0.5.2-0.20220930112810-3890c1e7ace4
 	github.com/transparency-dev/merkle v0.0.1
 	github.com/walkerus/go-wiremock v1.4.0
@@ -38,11 +38,6 @@ require (
 	sigs.k8s.io/kustomize/kyaml v0.14.0
 	sigs.k8s.io/yaml v1.3.0
 )
-
-// requred by Testcontainers for go, see
-// https://golang.testcontainers.org/quickstart/#2-install-testcontainers-for-go
-// TODO remove when upgrading to the next release of Testcontainers for go
-replace github.com/docker/docker => github.com/docker/docker v20.10.3-0.20221013203545-33ab36d6b304+incompatible // 22.06 branch
 
 require (
 	bitbucket.org/creachadair/shell v0.0.7 // indirect
@@ -79,7 +74,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/docker/cli v20.10.22+incompatible // indirect
 	github.com/docker/distribution v2.8.1+incompatible // indirect
-	github.com/docker/docker v20.10.22+incompatible // indirect
+	github.com/docker/docker v23.0.0+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.7.0 // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
