@@ -51,21 +51,24 @@ func Test_ReportJson(t *testing.T) {
           "containerImage": "quay.io/caf/spam@sha256:123…",
           "violations": [],
           "warnings": null,
-          "success": true
+          "success": true,
+		  "successCount": 0
         },
         {
           "name": "bacon",
           "containerImage": "quay.io/caf/bacon@sha256:234…",
           "violations": [],
           "warnings": null,
-          "success": true
+          "success": true,
+		  "successCount": 0
         },
         {
           "name": "eggs",
           "containerImage": "quay.io/caf/eggs@sha256:345…",
           "violations": [],
           "warnings": null,
-          "success": true
+          "success": true,
+		  "successCount": 0
         }
       ]
     }
@@ -96,28 +99,32 @@ func Test_ReportJson(t *testing.T) {
           "containerImage": "quay.io/caf/spam@sha256:123…",
           "violations": [],
           "warnings": null,
-          "success": true
+          "success": true,
+		  "successCount": 0
         },
         {
           "name": "bacon",
           "containerImage": "quay.io/caf/bacon@sha256:234…",
           "violations": [],
           "warnings": null,
-          "success": true
+          "success": true,
+		  "successCount": 0
         },
         {
           "name": "eggs",
           "containerImage": "quay.io/caf/eggs@sha256:345…",
           "violations": [],
           "warnings": null,
-          "success": true
+          "success": true,
+		  "successCount": 0
         },
         {
           "name": "",
           "containerImage": "",
           "violations": null,
           "warnings": null,
-          "success": false
+          "success": false,
+		  "successCount": 0
         }
       ]
     }
@@ -144,23 +151,27 @@ components:
     violations: []
     warnings: null
     success: true
+    successCount: 5
   - name: bacon
     containerImage: quay.io/caf/bacon@sha256:234…
     violations: []
     warnings: null
     success: true
+    successCount: 5
   - name: eggs
     containerImage: quay.io/caf/eggs@sha256:345…
     violations: []
     warnings: null
     success: true
+    successCount: 5
 `
 
 	var components []Component
 	for _, component := range snapshot.Components {
 		c := Component{
-			Violations: []output.Result{},
-			Success:    true,
+			Violations:   []output.Result{},
+			Success:      true,
+			SuccessCount: 5,
 		}
 		c.Name, c.ContainerImage = component.Name, component.ContainerImage
 		components = append(components, c)
@@ -181,21 +192,25 @@ components:
     violations: []
     warnings: null
     success: true
+    successCount: 5
   - name: bacon
     containerImage: quay.io/caf/bacon@sha256:234…
     violations: []
     warnings: null
     success: true
+    successCount: 5
   - name: eggs
     containerImage: quay.io/caf/eggs@sha256:345…
     violations: []
     warnings: null
     success: true
+    successCount: 5
   - name: ""
     containerImage: ""
     violations: null
     warnings: null
     success: false
+    successCount: 0
 
 `
 	components = append(components, Component{Success: false})
@@ -231,7 +246,8 @@ func Test_ReportSummary(t *testing.T) {
 						},
 					},
 				},
-				Success: false,
+				SuccessCount: 0,
+				Success:      false,
 			},
 			summary{
 				Components: []componentSummary{
@@ -243,6 +259,7 @@ func Test_ReportSummary(t *testing.T) {
 							"short_name": {"short report"},
 						},
 						TotalViolations: 1,
+						TotalSuccesses:  0,
 						TotalWarnings:   1,
 						Success:         false,
 						Name:            "",
@@ -265,7 +282,8 @@ func Test_ReportSummary(t *testing.T) {
 						Message: "short report",
 					},
 				},
-				Success: false,
+				SuccessCount: 0,
+				Success:      false,
 			},
 			summary{
 				Components: []componentSummary{
@@ -275,6 +293,7 @@ func Test_ReportSummary(t *testing.T) {
 						TotalViolations: 1,
 						TotalWarnings:   1,
 						Success:         false,
+						TotalSuccesses:  0,
 						Name:            "",
 					},
 				},
@@ -313,7 +332,8 @@ func Test_ReportSummary(t *testing.T) {
 						},
 					},
 				},
-				Success: false,
+				SuccessCount: 0,
+				Success:      false,
 			},
 			summary{
 				Components: []componentSummary{
@@ -327,6 +347,7 @@ func Test_ReportSummary(t *testing.T) {
 						TotalViolations: 2,
 						TotalWarnings:   2,
 						Success:         false,
+						TotalSuccesses:  0,
 						Name:            "",
 					},
 				},

@@ -543,6 +543,48 @@ func Test_Warnings(t *testing.T) {
 	}
 }
 
+func Test_SuccessCount(t *testing.T) {
+	cases := []struct {
+		name     string
+		output   Output
+		expected int
+	}{
+		{
+			name:     "empty output",
+			output:   Output{},
+			expected: 0,
+		},
+		{
+			name: "single success",
+			output: Output{
+				PolicyCheck: []output.CheckResult{
+					{
+						Successes: 1,
+					},
+				},
+			},
+			expected: 1,
+		},
+		{
+			name: "multiple successes",
+			output: Output{
+				PolicyCheck: []output.CheckResult{
+					{
+						Successes: 2,
+					},
+				},
+			},
+			expected: 2,
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			assert.Equal(t, c.expected, c.output.SuccessCount())
+		})
+	}
+}
+
 func TestSetImageAccessibleCheckFromError(t *testing.T) {
 	cases := []struct {
 		name           string
