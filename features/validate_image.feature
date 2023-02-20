@@ -41,6 +41,7 @@ Feature: evaluate enterprise contract
           "containerImage": "localhost:(\\d+)/acceptance/ec-happy-day",
           "violations": [],
           "warnings": [],
+          "successCount": 1,
           "success": true,
           "signatures": ${ATTESTATION_SIGNATURES_JSON}
         }
@@ -85,6 +86,7 @@ Feature: evaluate enterprise contract
             {"msg": "No image attestations found matching the given public key. Verify the correct public key was provided, and one or more attestations were created."}
           ],
           "warnings": [],
+          "successCount": 0,
           "success": false
         }
       ]
@@ -113,6 +115,7 @@ Feature: evaluate enterprise contract
           "containerImage": "localhost:(\\d+)/acceptance/ec-happy-day",
           "violations": [],
           "warnings": [],
+          "successCount": 1,
           "success": true,
           "signatures": ${ATTESTATION_SIGNATURES_JSON}
         }
@@ -149,6 +152,7 @@ Feature: evaluate enterprise contract
               "msg": "Fails in 2099"
             }
           ],
+          "successCount": 0,
           "success": true,
           "signatures": ${ATTESTATION_SIGNATURES_JSON}
         }
@@ -185,6 +189,7 @@ Feature: evaluate enterprise contract
             }
           ],
           "warnings": [],
+          "successCount": 0,
           "success": false,
           "signatures": ${ATTESTATION_SIGNATURES_JSON}
         }
@@ -237,6 +242,7 @@ Feature: evaluate enterprise contract
             }
           ],
           "success": false,
+          "successCount": 1,
           "signatures": ${ATTESTATION_SIGNATURES_JSON}
         }
       ]
@@ -299,6 +305,7 @@ Feature: evaluate enterprise contract
               "msg": "Has a warning"
             }
           ],
+          "successCount": 1,
           "success": false,
           "signatures": ${ATTESTATION_SIGNATURES_JSON}
         }
@@ -389,6 +396,7 @@ Feature: evaluate enterprise contract
           ],
           "warnings": [
           ],
+          "successCount": 0,
           "success": false,
           "signatures": ${ATTESTATION_SIGNATURES_JSON}
         }
@@ -424,6 +432,7 @@ Feature: evaluate enterprise contract
             }
           ],
           "warnings": [],
+          "successCount": 0,
           "success": false,
           "signatures": ${ATTESTATION_SIGNATURES_JSON}
         }
