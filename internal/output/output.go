@@ -187,7 +187,7 @@ func (o Output) Warnings() []output.Result {
 	return warnings
 }
 
-func (o Output) Passed() int {
+func (o Output) SuccessCount() int {
 	var passes int
 	for _, result := range o.PolicyCheck {
 		passes += result.Successes

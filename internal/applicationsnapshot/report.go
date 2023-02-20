@@ -32,11 +32,11 @@ import (
 
 type Component struct {
 	appstudioshared.ApplicationSnapshotComponent
-	Violations []conftestOutput.Result  `json:"violations"`
-	Warnings   []conftestOutput.Result  `json:"warnings"`
-	Success    bool                     `json:"success"`
-	Passed     int                      `json:"passed"`
-	Signatures []output.EntitySignature `json:"signatures,omitempty"`
+	Violations   []conftestOutput.Result  `json:"violations"`
+	Warnings     []conftestOutput.Result  `json:"warnings"`
+	Success      bool                     `json:"success"`
+	SuccessCount int                      `json:"successCount"`
+	Signatures   []output.EntitySignature `json:"signatures,omitempty"`
 }
 
 type Report struct {
@@ -55,6 +55,7 @@ type summary struct {
 type componentSummary struct {
 	Name            string              `json:"name"`
 	Success         bool                `json:"success"`
+	TotalSuccesses  int                 `json:"total_successes"`
 	Violations      map[string][]string `json:"violations"`
 	Warnings        map[string][]string `json:"warnings"`
 	TotalViolations int                 `json:"total_violations"`
@@ -147,6 +148,7 @@ func (r *Report) toSummary() summary {
 		c := componentSummary{
 			TotalViolations: len(cmp.Violations),
 			TotalWarnings:   len(cmp.Warnings),
+			TotalSuccesses:  cmp.SuccessCount,
 			Success:         cmp.Success,
 			Name:            cmp.Name,
 			Violations:      condensedMsg(cmp.Violations),

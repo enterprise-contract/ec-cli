@@ -210,7 +210,8 @@ func Test_ValidateImageCommand(t *testing.T) {
 			"containerImage": "registry/image:tag",
 			"violations": [],
 			"warnings": [],
-			"success": true
+			"success": true,
+			"successCount": 14
 		  }
 		]
 	  }`, mockPublicKey), out.String())
@@ -348,7 +349,8 @@ func Test_FailureImageAccessibility(t *testing.T) {
 			  {"msg": "skipped due to inaccessible image ref"}
 			],
 			"warnings": [],
-			"success": false
+			"success": false,
+			"successCount": 0
 		  }
 		]
 	  }`, mockPublicKey), out.String())
@@ -400,7 +402,8 @@ func Test_FailureOutput(t *testing.T) {
 			  {"msg": "failed attestation signature check"}
 			],
 			"warnings": [],
-			"success": false
+			"success": false,
+			"successCount": 0
 		  }
 		]
 	  }`, mockPublicKey), out.String())
@@ -458,7 +461,8 @@ func Test_WarningOutput(t *testing.T) {
 				{"msg": "warning for policy check 1"},
 				{"msg": "warning for policy check 2"}
 			],
-			"success": true
+			"success": true,
+			"successCount": 0
 		  }
 		]
 	  }`, mockPublicKey), out.String())
