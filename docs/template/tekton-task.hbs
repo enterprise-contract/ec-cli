@@ -1,0 +1,22 @@
+= {{metadata.name}}
+
+API Version: {{apiVersion}}
+
+== Synopsis
+{{spec.description}}
+
+== Params
+{{#each spec.params}}
+- *{{name}}*:
+{{description}}
+{{#if default }}
++
+*Default*: `{{{ default }}}`
+
+{{/if}}
+{{/each}}
+
+== Results
+{{#each spec.results}}
+- *{{name}}*: {{description}}
+{{/each}}

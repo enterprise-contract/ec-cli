@@ -54,8 +54,8 @@ build: dist/ec_$(shell go env GOOS)_$(shell go env GOARCH) ## Build the ec binar
 
 .PHONY: reference-docs
 reference-docs: ## Generate reference documentation input YAML files
-	@rm -rf dist/reference
-	@go run internal/documentation/documentation.go -yaml dist/reference
+	@rm -rf dist/cli-reference
+	@go run internal/documentation/documentation.go -yaml dist/cli-reference
 
 .PHONY: test
 test: ## Run unit tests
@@ -89,7 +89,7 @@ focus-acceptance: ## Run acceptance tests with @focus tag
 	@$(MAKE) build
 	@cd acceptance && go test -tags=acceptance . -args -tags=@focus
 
-LICENSE_IGNORE=-ignore 'dist/reference/*.yaml'
+LICENSE_IGNORE=-ignore 'dist/cli-reference/*.yaml'
 LINT_TO_GITHUB_ANNOTATIONS='map(map(.)[])[][] as $$d | $$d.posn | split(":") as $$posn | "::warning file=\($$posn[0]),line=\($$posn[1]),col=\($$posn[2])::\($$d.message)"'
 .PHONY: lint
 lint: ## Run linter

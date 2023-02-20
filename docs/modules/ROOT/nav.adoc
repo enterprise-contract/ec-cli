@@ -1,6 +1,3 @@
-* xref:index.adoc[Documentation]
-** xref:reference.adoc[Reference]
-{{#each reference}}
-*** xref:{{ path }}[{{ name }}]
-{{/each}}
-*** xref:verify-enterprise-contract.adoc[verify-enterprise-contract] task   
+include::partial$main_nav.adoc[]
+include::partial$cli_nav.adoc[]
+include::partial$tasks_nav.adoc[]

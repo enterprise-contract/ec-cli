@@ -29,6 +29,10 @@ updates:
     directory: "/reference-antora-extension/"
     schedule:
       interval: "daily"
+  - package-ecosystem: "npm"
+    directory: "/tekton-task-antora-extension/"
+    schedule:
+      interval: "daily"
   - package-ecosystem: "gomod"
     directory: "/tools/"
     schedule:

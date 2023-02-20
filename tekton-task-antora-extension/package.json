@@ -1,0 +1,21 @@
+{
+  "name": "@hacbs-contract/tektontask-antora-extension",
+  "version": "0.0.0",
+  "description": "Antora extension to generate Asciidoc documents from Tekton task YAML metadata",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hacbs-contract/ec-cli.git"
+  },
+  "keywords": [
+    "antora",
+    "golang",
+    "tekton",
+    "task"
+  ],
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://issues.redhat.com/browse/HACBS"
+  },
+  "homepage": "https://github.com/hacbs-contract/ec-cli#readme"
+}
