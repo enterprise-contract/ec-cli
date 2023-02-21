@@ -15,7 +15,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 ---
-name: Release reference-antora-extension
+name: Release Antora extensions
 
 "on":
   push:
@@ -23,11 +23,18 @@ name: Release reference-antora-extension
       - main
     paths:
       - 'reference-antora-extension/**'
-
+      - 'tekton-task-antora-extension/**'
 
 jobs:
   release-antora-extension:
-    name: Release to NPM
+    strategy:
+      matrix:
+        include:
+        - path: 'reference-antora-extension'
+          if: startsWith(github.event.head_commit.modified, "reference-antora-extension/**")
+        - path: 'tekton-task-antora-extension'
+          if: startsWith(github.event.head_commit.modified, "tekton-task-antora-extension/**")
+
     runs-on: ubuntu-latest
 
     steps:
@@ -38,6 +45,6 @@ jobs:
       - run: |
           npm version prerelease --preid $(git rev-parse HEAD)
           npm publish --access=public
-        working-directory: reference-antora-extension
+        working-directory: ${{ matrix.path }}
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -1,0 +1,4 @@
+** xref:tasks.adoc[Tasks]
+{{#each task}}
+*** xref:{{ path }}[{{ name }}]
+{{/each}}

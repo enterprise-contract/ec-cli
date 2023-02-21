@@ -36,7 +36,7 @@ module.exports.register = function () {
         const template = Handlebars.compile(referenceTemplate.contents.toString());
         const referenceDocs = []
 
-        content.files.filter(f => f.src.extname === '.yaml').forEach(f => {
+        content.files.filter(f => f.src.extname === '.yaml' && f.src.scanned != null && f.src.scanned.startsWith('dist/cli-reference')).forEach(f => {
             const data = yaml.load(f.contents)
             const stem = f.src.basename.replace('.yaml', '')
             const basename = `${stem}.adoc`
@@ -62,7 +62,7 @@ module.exports.register = function () {
             })
         })
 
-        const nav = content.files.find(f => f.path.endsWith('nav.adoc'))
+        const nav = content.files.find(f => f.path.endsWith('cli_nav.adoc'))
         const navTemplate = Handlebars.compile(nav.contents.toString());
         nav.contents = Buffer.from(navTemplate({ reference: referenceDocs }))
     })

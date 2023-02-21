@@ -25,4 +25,4 @@ ext:
     run:
       command: make reference-docs
     scan:
-      dir: dist/reference
+      dir: dist/cli-reference
