@@ -40,6 +40,23 @@ func getShortName(a *ast.AnnotationsRef) string {
 	return str // yay
 }
 
+func getCollections(a *ast.AnnotationsRef) []string {
+	var collections []string
+	if a.Annotations == nil || a.Annotations.Custom == nil {
+		return collections
+	}
+
+	if interfaces, ok := a.Annotations.Custom["collections"].([]interface{}); ok {
+		for _, maybeCollection := range interfaces {
+			if collection, ok := maybeCollection.(string); ok {
+				collections = append(collections, collection)
+			}
+		}
+	}
+
+	return collections
+}
+
 type TemplateFields = struct {
 	TrimmedPath string
 	ShortPath   string
@@ -48,6 +65,7 @@ type TemplateFields = struct {
 	Description string
 	ShortName   string
 	DocsUrl     string
+	Collections []string
 }
 
 var templates = map[string]string{
@@ -55,7 +73,8 @@ var templates = map[string]string{
 		{{ .TrimmedPath }}.{{ .ShortName }} ({{ .WarnDeny }})
 		{{ with .DocsUrl }}{{ . }}
 		{{ end }}{{ .Title }}
-		{{ .Description }}
+		{{ .Description }}{{ if .Collections }}
+		{{ .Collections }}{{ end }}
 		--
 	`),
 
@@ -69,7 +88,7 @@ var templates = map[string]string{
 }
 
 // Prepare data for use in the template
-func prepTemplateFields(a *ast.AnnotationsRef) TemplateFields {
+func PrepTemplateFields(a *ast.AnnotationsRef) TemplateFields {
 	pathStrings := strings.Split(a.Path.String(), ".")
 
 	// Removes the "data." prefix
@@ -87,6 +106,7 @@ func prepTemplateFields(a *ast.AnnotationsRef) TemplateFields {
 	}
 
 	shortName := getShortName(a)
+	collections := getCollections(a)
 
 	// Notes:
 	// - This makes the assumption that we're looking at our own EC rules with
@@ -110,13 +130,14 @@ func prepTemplateFields(a *ast.AnnotationsRef) TemplateFields {
 		Description: a.Annotations.Description,
 		ShortName:   shortName,
 		DocsUrl:     docsUrl,
+		Collections: collections,
 	}
 }
 
 // Render using a template
 func renderAnn(out io.Writer, a *ast.AnnotationsRef, tmplName string) error {
 	t := template.Must(template.New("t").Parse(templates[tmplName]))
-	return t.Execute(out, prepTemplateFields(a))
+	return t.Execute(out, PrepTemplateFields(a))
 }
 
 // Todo:

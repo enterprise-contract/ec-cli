@@ -88,6 +88,40 @@ func Test_RegoTextOutput(t *testing.T) {
 			err:      nil,
 		},
 		{
+			name:   "With collections",
+			source: "spam.io/bacon-bundle",
+			annJson: hd.Doc(`
+				{
+					"path":[
+						{"type":"var","value":"data"},
+						{"type":"string","value":"policy"},
+						{"type":"string","value":"foo"},
+						{"type":"string","value":"bar"},
+						{"type":"string","value":"deny"}
+					],
+					"annotations":{
+						"scope":"rule",
+						"title":"Rule title",
+						"description":"Rule description",
+						"custom": {
+							"collections": ["eggs"]
+						}
+					}
+				}
+			`),
+			template: "text",
+			expected: hd.Doc(`
+				# Source: spam.io/bacon-bundle
+
+				policy.foo.bar. (deny)
+				Rule title
+				Rule description
+				[eggs]
+				--
+			`),
+			err: nil,
+		},
+		{
 			// Probably not likely to happen any time soon but let's
 			// make sure it is handled okay and does't crash
 			name:   "No short name",
