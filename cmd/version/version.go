@@ -14,7 +14,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package cmd
+package version
 
 import (
 	"bytes"
@@ -61,11 +61,13 @@ func (v VersionInfo) String() string {
 	return buffy.String()
 }
 
+var VersionCmd *cobra.Command
+
 func init() {
 	var json bool
 	var short bool
 
-	var cmd = cobra.Command{
+	VersionCmd = &cobra.Command{
 		Args:  cobra.NoArgs,
 		Use:   "version",
 		Short: "Print version information",
@@ -90,10 +92,8 @@ func init() {
 		},
 	}
 
-	cmd.Flags().BoolVarP(&json, "json", "j", false, "JSON output")
-	cmd.Flags().BoolVarP(&short, "short", "s", false, "Only output the version")
-
-	RootCmd.AddCommand(&cmd)
+	VersionCmd.Flags().BoolVarP(&json, "json", "j", false, "JSON output")
+	VersionCmd.Flags().BoolVarP(&short, "short", "s", false, "Only output the version")
 }
 
 func computeInfo() (*VersionInfo, error) {

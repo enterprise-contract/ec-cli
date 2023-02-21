@@ -14,7 +14,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package cmd
+package validate
 
 import (
 	"context"
@@ -28,6 +28,7 @@ import (
 	"github.com/hacbs-contract/ec-cli/internal/output"
 	"github.com/hacbs-contract/ec-cli/internal/pipeline"
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
+	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
 
 type pipelineValidationFn func(context.Context, afero.Fs, string, []source.PolicySource) (*output.Output, error)
@@ -85,13 +86,13 @@ func validatePipelineCmd(validate pipelineValidationFn) *cobra.Command {
 					sources = append(sources, &source.PolicyUrl{Url: url, Kind: source.DataKind})
 				}
 				ctx := cmd.Context()
-				if o, err := validate(ctx, fs(ctx), fpath, sources); err != nil {
+				if o, err := validate(ctx, utils.FS(ctx), fpath, sources); err != nil {
 					allErrors = multierror.Append(allErrors, err)
 				} else {
 					report.Add(*o)
 				}
 			}
-			p := format.NewTargetParser(pipeline.JSONReport, cmd.OutOrStdout(), fs(cmd.Context()))
+			p := format.NewTargetParser(pipeline.JSONReport, cmd.OutOrStdout(), utils.FS(cmd.Context()))
 			for _, target := range data.output {
 				if err := report.Write(target, p); err != nil {
 					allErrors = multierror.Append(allErrors, err)

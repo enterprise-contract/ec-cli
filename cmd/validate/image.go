@@ -14,7 +14,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package cmd
+package validate
 
 import (
 	"context"
@@ -32,6 +32,7 @@ import (
 	"github.com/hacbs-contract/ec-cli/internal/format"
 	"github.com/hacbs-contract/ec-cli/internal/output"
 	"github.com/hacbs-contract/ec-cli/internal/policy"
+	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
 
 type imageValidationFunc func(context.Context, afero.Fs, string, policy.Policy) (*output.Output, error)
@@ -128,7 +129,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		PreRunE: func(cmd *cobra.Command, args []string) (allErrors error) {
 			ctx := cmd.Context()
 			if s, err := applicationsnapshot.DetermineInputSpec(
-				fs(ctx), data.filePath, data.input, data.imageRef,
+				utils.FS(ctx), data.filePath, data.input, data.imageRef,
 			); err != nil {
 				allErrors = multierror.Append(allErrors, err)
 			} else {
@@ -163,7 +164,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 					defer lock.Done()
 
 					ctx := cmd.Context()
-					out, err := validate(ctx, fs(ctx), comp.ContainerImage, data.policy)
+					out, err := validate(ctx, utils.FS(ctx), comp.ContainerImage, data.policy)
 					res := result{
 						err: err,
 						component: applicationsnapshot.Component{
@@ -215,7 +216,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 				return err
 			}
 			report := applicationsnapshot.NewReport(components, string(publicKeyPEM))
-			p := format.NewTargetParser(applicationsnapshot.JSON, cmd.OutOrStdout(), fs(cmd.Context()))
+			p := format.NewTargetParser(applicationsnapshot.JSON, cmd.OutOrStdout(), utils.FS(cmd.Context()))
 			if err := report.WriteAll(data.output, p); err != nil {
 				return err
 			}

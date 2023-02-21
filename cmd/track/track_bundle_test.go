@@ -16,7 +16,7 @@
 
 //go:build unit
 
-package cmd
+package track
 
 import (
 	"bytes"
@@ -26,6 +26,8 @@ import (
 
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
 
 func Test_TrackBundleCommand(t *testing.T) {
@@ -181,7 +183,7 @@ func Test_TrackBundleCommand(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			fs := afero.NewMemMapFs()
-			ctx := withFs(context.TODO(), fs)
+			ctx := utils.WithFS(context.TODO(), fs)
 			inputData := []byte(fmt.Sprintf(`{"file": "%s"}`, c.expectInput))
 
 			if c.expectInput != "" {

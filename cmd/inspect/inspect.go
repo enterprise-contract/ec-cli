@@ -14,26 +14,18 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package cmd
+package inspect
 
 import (
 	"github.com/spf13/cobra"
-
-	"github.com/hacbs-contract/ec-cli/internal/image"
-	"github.com/hacbs-contract/ec-cli/internal/pipeline"
 )
 
-func validateCmd() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "validate",
-		Short: "Validate conformance with the Enterprise Contract",
-	}
-	return cmd
-}
+var InspectCmd *cobra.Command
 
 func init() {
-	validate := validateCmd()
-	validate.AddCommand(validatePipelineCmd(pipeline.ValidatePipeline))
-	validate.AddCommand(validateImageCmd(image.ValidateImage))
-	RootCmd.AddCommand(validate)
+	InspectCmd = &cobra.Command{
+		Use:   "inspect",
+		Short: "Inspect policy rules",
+	}
+	InspectCmd.AddCommand(inspectPolicyCmd())
 }

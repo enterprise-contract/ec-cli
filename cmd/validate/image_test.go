@@ -16,7 +16,7 @@
 
 //go:build unit
 
-package cmd
+package validate
 
 import (
 	"bytes"
@@ -33,6 +33,7 @@ import (
 	"github.com/hacbs-contract/ec-cli/internal/applicationsnapshot"
 	"github.com/hacbs-contract/ec-cli/internal/output"
 	"github.com/hacbs-contract/ec-cli/internal/policy"
+	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
 
 const mockPublicKey string = `-----BEGIN PUBLIC KEY-----\n` +
@@ -187,7 +188,7 @@ func Test_ValidateImageCommand(t *testing.T) {
 
 	cmd := validateImageCmd(validate)
 
-	cmd.SetContext(withFs(context.TODO(), afero.NewMemMapFs()))
+	cmd.SetContext(utils.WithFS(context.TODO(), afero.NewMemMapFs()))
 
 	cmd.SetArgs([]string{
 		"--image",
@@ -285,7 +286,7 @@ func Test_ValidateErrorCommand(t *testing.T) {
 
 			cmd := validateImageCmd(validate)
 
-			cmd.SetContext(withFs(context.TODO(), afero.NewMemMapFs()))
+			cmd.SetContext(utils.WithFS(context.TODO(), afero.NewMemMapFs()))
 
 			cmd.SetArgs(c.args)
 
@@ -322,7 +323,7 @@ func Test_FailureImageAccessibility(t *testing.T) {
 
 	cmd := validateImageCmd(validate)
 
-	cmd.SetContext(withFs(context.TODO(), afero.NewMemMapFs()))
+	cmd.SetContext(utils.WithFS(context.TODO(), afero.NewMemMapFs()))
 
 	cmd.SetArgs([]string{
 		"--image",
@@ -376,7 +377,7 @@ func Test_FailureOutput(t *testing.T) {
 
 	cmd := validateImageCmd(validate)
 
-	cmd.SetContext(withFs(context.TODO(), afero.NewMemMapFs()))
+	cmd.SetContext(utils.WithFS(context.TODO(), afero.NewMemMapFs()))
 
 	cmd.SetArgs([]string{
 		"--image",
@@ -435,7 +436,7 @@ func Test_WarningOutput(t *testing.T) {
 
 	cmd := validateImageCmd(validate)
 
-	cmd.SetContext(withFs(context.TODO(), afero.NewMemMapFs()))
+	cmd.SetContext(utils.WithFS(context.TODO(), afero.NewMemMapFs()))
 
 	cmd.SetArgs([]string{
 		"--image",

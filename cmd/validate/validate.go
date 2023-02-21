@@ -14,22 +14,22 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package cmd
+package validate
 
 import (
-	"context"
+	"github.com/spf13/cobra"
 
-	"github.com/spf13/afero"
+	"github.com/hacbs-contract/ec-cli/internal/image"
+	"github.com/hacbs-contract/ec-cli/internal/pipeline"
 )
 
-type ioContextKey int
+var ValidateCmd *cobra.Command
 
-const fsKey ioContextKey = 0
-
-func fs(ctx context.Context) afero.Fs {
-	if fs, ok := ctx.Value(fsKey).(afero.Fs); ok {
-		return fs
+func init() {
+	ValidateCmd = &cobra.Command{
+		Use:   "validate",
+		Short: "Validate conformance with the Enterprise Contract",
 	}
-
-	return afero.NewOsFs()
+	ValidateCmd.AddCommand(validatePipelineCmd(pipeline.ValidatePipeline))
+	ValidateCmd.AddCommand(validateImageCmd(image.ValidateImage))
 }
