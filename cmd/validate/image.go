@@ -25,7 +25,6 @@ import (
 	hd "github.com/MakeNowJust/heredoc"
 	"github.com/hashicorp/go-multierror"
 	appstudioshared "github.com/redhat-appstudio/managed-gitops/appstudio-shared/apis/appstudio.redhat.com/v1alpha1"
-	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
 	"github.com/hacbs-contract/ec-cli/internal/applicationsnapshot"
@@ -35,7 +34,7 @@ import (
 	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
 
-type imageValidationFunc func(context.Context, afero.Fs, string, policy.Policy) (*output.Output, error)
+type imageValidationFunc func(context.Context, string, policy.Policy) (*output.Output, error)
 
 func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 	var data = struct {
@@ -164,7 +163,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 					defer lock.Done()
 
 					ctx := cmd.Context()
-					out, err := validate(ctx, utils.FS(ctx), comp.ContainerImage, data.policy)
+					out, err := validate(ctx, comp.ContainerImage, data.policy)
 					res := result{
 						err: err,
 						component: applicationsnapshot.Component{

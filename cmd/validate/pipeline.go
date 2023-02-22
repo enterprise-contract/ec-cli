@@ -21,7 +21,6 @@ import (
 
 	hd "github.com/MakeNowJust/heredoc"
 	"github.com/hashicorp/go-multierror"
-	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
 	"github.com/hacbs-contract/ec-cli/internal/format"
@@ -31,7 +30,7 @@ import (
 	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
 
-type pipelineValidationFn func(context.Context, afero.Fs, string, []source.PolicySource) (*output.Output, error)
+type pipelineValidationFn func(context.Context, string, []source.PolicySource) (*output.Output, error)
 
 func validatePipelineCmd(validate pipelineValidationFn) *cobra.Command {
 	var data = struct {
@@ -86,7 +85,7 @@ func validatePipelineCmd(validate pipelineValidationFn) *cobra.Command {
 					sources = append(sources, &source.PolicyUrl{Url: url, Kind: source.DataKind})
 				}
 				ctx := cmd.Context()
-				if o, err := validate(ctx, utils.FS(ctx), fpath, sources); err != nil {
+				if o, err := validate(ctx, fpath, sources); err != nil {
 					allErrors = multierror.Append(allErrors, err)
 				} else {
 					report.Add(*o)

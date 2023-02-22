@@ -41,6 +41,7 @@ import (
 	"github.com/hacbs-contract/ec-cli/internal/output"
 	"github.com/hacbs-contract/ec-cli/internal/policy"
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
+	"github.com/hacbs-contract/ec-cli/internal/utils"
 	ece "github.com/hacbs-contract/ec-cli/pkg/error"
 	"github.com/hacbs-contract/ec-cli/pkg/schema"
 )
@@ -72,7 +73,7 @@ type ApplicationSnapshotImage struct {
 }
 
 // NewApplicationSnapshotImage returns an ApplicationSnapshotImage struct with reference, checkOpts, and evaluator ready to use.
-func NewApplicationSnapshotImage(ctx context.Context, fs afero.Fs, url string, p policy.Policy) (*ApplicationSnapshotImage, error) {
+func NewApplicationSnapshotImage(ctx context.Context, url string, p policy.Policy) (*ApplicationSnapshotImage, error) {
 	opts, err := p.CheckOpts()
 	if err != nil {
 		return nil, err
@@ -118,7 +119,7 @@ func NewApplicationSnapshotImage(ctx context.Context, fs afero.Fs, url string, p
 			log.Debugf("policySource: %#v", policySource)
 		}
 
-		c, err := newConftestEvaluator(ctx, fs, policySources, p)
+		c, err := newConftestEvaluator(ctx, policySources, p)
 		if err != nil {
 			log.Debug("Failed to initialize the conftest evaluator!")
 			return nil, err
@@ -309,7 +310,7 @@ func (a *ApplicationSnapshotImage) Signatures() []output.EntitySignature {
 }
 
 // WriteInputFile writes the JSON from the attestations to input.json in a random temp dir
-func (a *ApplicationSnapshotImage) WriteInputFile(ctx context.Context, fs afero.Fs) (string, error) {
+func (a *ApplicationSnapshotImage) WriteInputFile(ctx context.Context) (string, error) {
 	log.Debugf("Attempting to write %d attestations to input file", len(a.attestations))
 
 	var statements []in_toto.Statement
@@ -325,6 +326,7 @@ func (a *ApplicationSnapshotImage) WriteInputFile(ctx context.Context, fs afero.
 	}
 	attestations := map[string][]in_toto.Statement{"attestations": statements}
 
+	fs := utils.FS(ctx)
 	inputDir, err := afero.TempDir(fs, "", "ecp_input.")
 	if err != nil {
 		log.Debug("Problem making temp dir!")

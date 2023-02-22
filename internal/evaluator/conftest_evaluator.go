@@ -57,7 +57,8 @@ type conftestEvaluator struct {
 
 // NewConftestEvaluator returns initialized conftestEvaluator implementing
 // Evaluator interface
-func NewConftestEvaluator(ctx context.Context, fs afero.Fs, policySources []source.PolicySource, p policy.Policy) (Evaluator, error) {
+func NewConftestEvaluator(ctx context.Context, policySources []source.PolicySource, p policy.Policy) (Evaluator, error) {
+	fs := utils.FS(ctx)
 	c := conftestEvaluator{
 		policySources: policySources,
 		outputFormat:  "json",
@@ -77,7 +78,7 @@ func NewConftestEvaluator(ctx context.Context, fs afero.Fs, policySources []sour
 
 	log.Debugf("Created work dir %s", dir)
 
-	if err := c.createDataDirectory(ctx, fs); err != nil {
+	if err := c.createDataDirectory(ctx); err != nil {
 		return nil, err
 	}
 
@@ -180,7 +181,7 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) ([]out
 
 // createConfigJSON creates the config.json file with the provided configuration
 // in the data directory
-func createConfigJSON(ctx context.Context, fs afero.Fs, dataDir string, p policy.Policy) error {
+func createConfigJSON(ctx context.Context, dataDir string, p policy.Policy) error {
 	if p == nil {
 		return nil
 	}
@@ -243,6 +244,8 @@ func createConfigJSON(ctx context.Context, fs afero.Fs, dataDir string, p policy
 	if err != nil {
 		return err
 	}
+
+	fs := utils.FS(ctx)
 	// Check to see if the data.json file exists
 	exists, err := afero.Exists(fs, configFilePath)
 	if err != nil {
@@ -264,7 +267,8 @@ func createConfigJSON(ctx context.Context, fs afero.Fs, dataDir string, p policy
 }
 
 // createDataDirectory creates the base content in the data directory
-func (c *conftestEvaluator) createDataDirectory(ctx context.Context, fs afero.Fs) error {
+func (c *conftestEvaluator) createDataDirectory(ctx context.Context) error {
+	fs := utils.FS(ctx)
 	dataDir := c.dataDir
 	exists, err := afero.DirExists(fs, dataDir)
 	if err != nil {
@@ -275,7 +279,7 @@ func (c *conftestEvaluator) createDataDirectory(ctx context.Context, fs afero.Fs
 		_ = fs.MkdirAll(dataDir, 0755)
 	}
 
-	if err := createConfigJSON(ctx, fs, dataDir, c.policy); err != nil {
+	if err := createConfigJSON(ctx, dataDir, c.policy); err != nil {
 		return err
 	}
 

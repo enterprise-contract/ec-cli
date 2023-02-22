@@ -25,6 +25,7 @@ import (
 	"github.com/hacbs-contract/ec-cli/internal/evaluator"
 	"github.com/hacbs-contract/ec-cli/internal/policy"
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
+	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
 
 var newConftestEvaluator = evaluator.NewConftestEvaluator
@@ -37,7 +38,8 @@ type DefinitionFile struct {
 }
 
 // NewPipelineDefinitionFile returns a DefinitionFile struct with FPath and evaluator ready to use
-func NewPipelineDefinitionFile(ctx context.Context, fs afero.Fs, fpath string, sources []source.PolicySource) (*DefinitionFile, error) {
+func NewPipelineDefinitionFile(ctx context.Context, fpath string, sources []source.PolicySource) (*DefinitionFile, error) {
+	fs := utils.FS(ctx)
 	exists, err := pathExists(fs, fpath)
 	if err != nil {
 		return nil, err
@@ -54,7 +56,7 @@ func NewPipelineDefinitionFile(ctx context.Context, fs afero.Fs, fpath string, s
 		return nil, err
 	}
 
-	c, err := newConftestEvaluator(ctx, fs, sources, pol)
+	c, err := newConftestEvaluator(ctx, sources, pol)
 	if err != nil {
 		return nil, err
 	}

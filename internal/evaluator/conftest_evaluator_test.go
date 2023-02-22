@@ -31,6 +31,7 @@ import (
 	"github.com/hacbs-contract/ec-cli/internal/downloader"
 	"github.com/hacbs-contract/ec-cli/internal/policy"
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
+	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
 
 type mockTestRunner struct {
@@ -164,14 +165,16 @@ func TestConftestEvaluatorEvaluate(t *testing.T) {
 
 	inputs := []string{"inputs"}
 
-	ctx := downloader.WithDownloadImpl(withTestRunner(context.Background(), &r), &dl)
+	ctx := withTestRunner(context.Background(), &r)
+	ctx = downloader.WithDownloadImpl(ctx, &dl)
+	ctx = utils.WithFS(ctx, afero.NewMemMapFs())
 
 	r.On("Run", ctx, inputs).Return(results, nil)
 
 	pol, err := policy.NewOfflinePolicy(ctx, policy.Now)
 	assert.NoError(t, err)
 
-	evaluator, err := NewConftestEvaluator(ctx, afero.NewMemMapFs(), []source.PolicySource{
+	evaluator, err := NewConftestEvaluator(ctx, []source.PolicySource{
 		testPolicySource{},
 	}, pol)
 
@@ -205,7 +208,7 @@ func TestConftestEvaluatorEvaluateNoSuccessWarningsOrFailures(t *testing.T) {
 	p, err := policy.NewOfflinePolicy(ctx, policy.Now)
 	assert.NoError(t, err)
 
-	evaluator, err := NewConftestEvaluator(ctx, afero.NewMemMapFs(), []source.PolicySource{
+	evaluator, err := NewConftestEvaluator(ctx, []source.PolicySource{
 		testPolicySource{},
 	}, p)
 
@@ -857,7 +860,7 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 				Configuration: tt.config,
 			})
 
-			evaluator, err := NewConftestEvaluator(ctx, afero.NewMemMapFs(), []source.PolicySource{
+			evaluator, err := NewConftestEvaluator(ctx, []source.PolicySource{
 				testPolicySource{},
 			}, p)
 

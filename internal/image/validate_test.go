@@ -40,6 +40,7 @@ import (
 
 	"github.com/hacbs-contract/ec-cli/internal/evaluation_target/application_snapshot_image"
 	"github.com/hacbs-contract/ec-cli/internal/policy"
+	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
 
 const (
@@ -112,13 +113,13 @@ func TestValidateImage(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			fs := afero.NewMemMapFs()
 
-			ctx := context.Background()
+			ctx := utils.WithFS(context.Background(), fs)
 			p, err := policy.NewOfflinePolicy(ctx, policy.Now)
 			assert.NoError(t, err)
 
 			ctx = application_snapshot_image.WithClient(ctx, c.client)
 
-			actual, err := ValidateImage(ctx, fs, c.url, p)
+			actual, err := ValidateImage(ctx, c.url, p)
 			assert.NoError(t, err)
 
 			assert.Equal(t, c.expectedWarnings, actual.Warnings())
