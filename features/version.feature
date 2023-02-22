@@ -17,7 +17,7 @@ Feature: ec cli version subcommand
     Sigstore                    v.+
     Rekor                       v.+
     Tekton Pipeline             v.+
-    Kubernetes                  v.+
+    Kubernetes Client           v.+
     """
 
   Scenario: short output
@@ -71,7 +71,7 @@ Feature: ec cli version subcommand
           "Version": "v.+"
         },
         {
-          "Name": "Kubernetes",
+          "Name": "Kubernetes Client",
           "Version": "v.+"
         }
       ]

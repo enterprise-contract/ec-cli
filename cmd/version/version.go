@@ -125,7 +125,7 @@ func computeInfo() (*VersionInfo, error) {
 	info.Components = append(info.Components, dependencyVersion("Sigstore", "github.com/sigstore/sigstore", buildInfo.Deps))
 	info.Components = append(info.Components, dependencyVersion("Rekor", "github.com/sigstore/rekor", buildInfo.Deps))
 	info.Components = append(info.Components, dependencyVersion("Tekton Pipeline", "github.com/tektoncd/pipeline", buildInfo.Deps))
-	info.Components = append(info.Components, dependencyVersion("Kubernetes", "k8s.io/api", buildInfo.Deps))
+	info.Components = append(info.Components, dependencyVersion("Kubernetes Client", "k8s.io/api", buildInfo.Deps))
 
 	return &info, nil
 }

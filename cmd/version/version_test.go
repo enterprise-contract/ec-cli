@@ -88,7 +88,7 @@ func TestComputeInfo(t *testing.T) {
 			{Name: "Sigstore", Version: "v6"},
 			{Name: "Rekor", Version: "v7"},
 			{Name: "Tekton Pipeline", Version: "v8"},
-			{Name: "Kubernetes", Version: "v9"},
+			{Name: "Kubernetes Client", Version: "v9"},
 		},
 	}, vi)
 }
