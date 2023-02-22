@@ -24,6 +24,7 @@ name: Release Antora extensions
     paths:
       - 'reference-antora-extension/**'
       - 'tekton-task-antora-extension/**'
+  workflow_dispatch:
 
 jobs:
   release-antora-extension:
