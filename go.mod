@@ -17,7 +17,7 @@ require (
 	github.com/in-toto/in-toto-golang v0.3.4-0.20220709202702-fa494aaa0add
 	github.com/leanovate/gopter v0.2.9
 	github.com/open-policy-agent/conftest v0.39.0
-	github.com/open-policy-agent/opa v0.49.0
+	github.com/open-policy-agent/opa v0.49.1
 	github.com/qri-io/jsonpointer v0.1.1
 	github.com/qri-io/jsonschema v0.2.2-0.20210831022256-780655b2ba0e
 	github.com/redhat-appstudio/managed-gitops/appstudio-shared v0.0.0-20220615221006-a71c1aa4b97f
