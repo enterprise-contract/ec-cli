@@ -35,7 +35,7 @@ import (
 )
 
 func TestValidatePipelineCommandOutput(t *testing.T) {
-	validate := func(_ context.Context, _ afero.Fs, fpath string, _ []source.PolicySource) (*output2.Output, error) {
+	validate := func(_ context.Context, fpath string, _ []source.PolicySource) (*output2.Output, error) {
 		return &output2.Output{PolicyCheck: []output.CheckResult{{FileName: fpath}}}, nil
 	}
 
@@ -77,7 +77,7 @@ func TestValidatePipelinePolicySources(t *testing.T) {
 		&source.PolicyUrl{Url: "bacon-data-source", Kind: source.DataKind},
 		&source.PolicyUrl{Url: "eggs-data-source", Kind: source.DataKind},
 	}
-	validate := func(_ context.Context, _ afero.Fs, fpath string, sources []source.PolicySource) (*output2.Output, error) {
+	validate := func(_ context.Context, fpath string, sources []source.PolicySource) (*output2.Output, error) {
 		assert.Equal(t, expected, sources)
 		return &output2.Output{}, nil
 	}
@@ -148,7 +148,7 @@ func TestOutputFormats(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			fs := afero.NewMemMapFs()
-			validate := func(_ context.Context, _ afero.Fs, fpath string, sources []source.PolicySource) (*output2.Output, error) {
+			validate := func(_ context.Context, fpath string, sources []source.PolicySource) (*output2.Output, error) {
 				return &output2.Output{PolicyCheck: []output.CheckResult{{FileName: fpath}}}, nil
 			}
 
@@ -178,7 +178,7 @@ func TestOutputFormats(t *testing.T) {
 }
 
 func TestValidatePipelineCommandErrors(t *testing.T) {
-	validate := func(_ context.Context, _ afero.Fs, fpath string, _ []source.PolicySource) (*output2.Output, error) {
+	validate := func(_ context.Context, fpath string, _ []source.PolicySource) (*output2.Output, error) {
 		return nil, errors.New(fpath)
 	}
 

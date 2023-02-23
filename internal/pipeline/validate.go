@@ -20,7 +20,6 @@ import (
 	"context"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/afero"
 
 	"github.com/hacbs-contract/ec-cli/internal/evaluation_target/pipeline_definition_file"
 	"github.com/hacbs-contract/ec-cli/internal/output"
@@ -31,8 +30,8 @@ var pipeline_def_file = pipeline_definition_file.NewPipelineDefinitionFile
 
 // ValidatePipeline calls NewPipelineEvaluator to obtain an PipelineEvaluator. It then executes the associated TestRunner
 // which tests the associated pipeline file(s) against the associated policies, and displays the output.
-func ValidatePipeline(ctx context.Context, fs afero.Fs, fpath string, sources []source.PolicySource) (*output.Output, error) {
-	p, err := pipeline_def_file(ctx, fs, fpath, sources)
+func ValidatePipeline(ctx context.Context, fpath string, sources []source.PolicySource) (*output.Output, error) {
+	p, err := pipeline_def_file(ctx, fpath, sources)
 	if err != nil {
 		log.Debug("Failed to create pipeline definition file!")
 		return nil, err

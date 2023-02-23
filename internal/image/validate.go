@@ -27,7 +27,6 @@ import (
 	"github.com/sigstore/cosign/pkg/oci"
 	cosignPolicy "github.com/sigstore/cosign/pkg/policy"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/afero"
 
 	"github.com/hacbs-contract/ec-cli/internal/evaluation_target/application_snapshot_image"
 	"github.com/hacbs-contract/ec-cli/internal/output"
@@ -36,11 +35,11 @@ import (
 
 // ValidateImage executes the required method calls to evaluate a given policy
 // against a given image url.
-func ValidateImage(ctx context.Context, fs afero.Fs, url string, p policy.Policy) (*output.Output, error) {
+func ValidateImage(ctx context.Context, url string, p policy.Policy) (*output.Output, error) {
 	log.Debugf("Validating image %s", url)
 
 	out := &output.Output{ImageURL: url}
-	a, err := application_snapshot_image.NewApplicationSnapshotImage(ctx, fs, url, p)
+	a, err := application_snapshot_image.NewApplicationSnapshotImage(ctx, url, p)
 	if err != nil {
 		log.Debug("Failed to create application snapshot image!")
 		return nil, err
@@ -86,7 +85,7 @@ func ValidateImage(ctx context.Context, fs afero.Fs, url string, p policy.Policy
 		return out, nil
 	}
 
-	input, err := a.WriteInputFile(ctx, fs)
+	input, err := a.WriteInputFile(ctx)
 	if err != nil {
 		log.Debug("Problem writing input files!")
 		return nil, err

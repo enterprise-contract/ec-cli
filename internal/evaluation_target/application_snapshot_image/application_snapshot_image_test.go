@@ -46,6 +46,7 @@ import (
 
 	"github.com/hacbs-contract/ec-cli/internal/evaluator"
 	"github.com/hacbs-contract/ec-cli/internal/mocks"
+	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
 
 // pipelineRunBuildType is the type of attestation we're interested in evaluating
@@ -181,7 +182,8 @@ func TestWriteInputFile(t *testing.T) {
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
 			fs := afero.NewMemMapFs()
-			input, err := tt.snapshot.WriteInputFile(context.Background(), fs)
+			ctx := utils.WithFS(context.Background(), fs)
+			input, err := tt.snapshot.WriteInputFile(ctx)
 
 			assert.NoError(t, err)
 			assert.NotEmpty(t, input)
@@ -204,7 +206,8 @@ func TestWriteInputFileMultipleAttestations(t *testing.T) {
 	}
 
 	fs := afero.NewMemMapFs()
-	input, err := a.WriteInputFile(context.TODO(), fs)
+	ctx := utils.WithFS(context.Background(), fs)
+	input, err := a.WriteInputFile(ctx)
 
 	assert.NoError(t, err)
 	assert.NotEmpty(t, input)

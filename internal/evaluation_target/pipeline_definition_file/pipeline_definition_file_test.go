@@ -28,6 +28,7 @@ import (
 	"github.com/hacbs-contract/ec-cli/internal/evaluator"
 	"github.com/hacbs-contract/ec-cli/internal/policy"
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
+	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
 
 type mockEvaluator struct{}
@@ -39,7 +40,7 @@ func (e mockEvaluator) Evaluate(ctx context.Context, inputs []string) ([]output.
 func (e mockEvaluator) Destroy() {
 }
 
-func mockNewConftestEvaluator(ctx context.Context, fs afero.Fs, policySources []source.PolicySource, p policy.Policy) (evaluator.Evaluator, error) {
+func mockNewConftestEvaluator(ctx context.Context, policySources []source.PolicySource, p policy.Policy) (evaluator.Evaluator, error) {
 	return mockEvaluator{}, nil
 }
 
@@ -54,10 +55,11 @@ func Test_NewPipelineDefinitionFile(t *testing.T) {
 	newConftestEvaluator = mockNewConftestEvaluator
 	pathExists = mockPathExists
 	fs := afero.NewOsFs()
+	ctx := utils.WithFS(context.Background(), fs)
 	pol, err := policy.NewOfflinePolicy(context.TODO(), policy.Now)
 	assert.NoError(t, err)
 
-	evaluated, _ := mockNewConftestEvaluator(context.TODO(), fs, []source.PolicySource{}, pol)
+	evaluated, _ := mockNewConftestEvaluator(context.TODO(), []source.PolicySource{}, pol)
 	tests := []struct {
 		name    string
 		fpath   string
@@ -83,7 +85,7 @@ func Test_NewPipelineDefinitionFile(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			defFile, err := NewPipelineDefinitionFile(context.TODO(), fs, tt.fpath, []source.PolicySource{})
+			defFile, err := NewPipelineDefinitionFile(ctx, tt.fpath, []source.PolicySource{})
 			assert.Equal(t, tt.err, err)
 			assert.Equal(t, tt.defFile, defFile)
 		})
