@@ -55,6 +55,7 @@ module.exports.register = function () {
           basename,
           stem,
           extname: ".adoc",
+          origin: 'ec-cli'
         },
       };
       content.files.push(page);
