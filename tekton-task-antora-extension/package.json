@@ -3,10 +3,7 @@
   "version": "0.0.0",
   "description": "Antora extension to generate Asciidoc documents from Tekton task YAML metadata",
   "main": "index.js",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/hacbs-contract/ec-cli.git"
-  },
+  "repository": "https://github.com/hacbs-contract/ec-cli",
   "keywords": [
     "antora",
     "golang",
