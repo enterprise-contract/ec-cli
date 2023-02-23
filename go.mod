@@ -24,7 +24,7 @@ require (
 	github.com/sigstore/cosign v1.13.1
 	github.com/sigstore/sigstore v1.5.1
 	github.com/sirupsen/logrus v1.9.0
-	github.com/spf13/afero v1.9.3
+	github.com/spf13/afero v1.9.4
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.1
 	github.com/stuart-warren/yamlfmt v0.1.2
