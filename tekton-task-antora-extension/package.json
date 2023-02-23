@@ -1,5 +1,5 @@
 {
-  "name": "@hacbs-contract/tektontask-antora-extension",
+  "name": "@hacbs-contract/tekton-task-antora-extension",
   "version": "0.0.0",
   "description": "Antora extension to generate Asciidoc documents from Tekton task YAML metadata",
   "main": "index.js",
