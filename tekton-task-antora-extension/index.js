@@ -55,7 +55,6 @@ module.exports.register = function () {
           basename,
           stem,
           extname: ".adoc",
-          origin: "task",
         },
       };
       content.files.push(page);
