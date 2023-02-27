@@ -35,10 +35,10 @@ import (
 
 // ValidateImage executes the required method calls to evaluate a given policy
 // against a given image url.
-func ValidateImage(ctx context.Context, url string, p policy.Policy) (*output.Output, error) {
+func ValidateImage(ctx context.Context, url string, p policy.Policy, detailed bool) (*output.Output, error) {
 	log.Debugf("Validating image %s", url)
 
-	out := &output.Output{ImageURL: url}
+	out := &output.Output{ImageURL: url, Detailed: detailed}
 	a, err := application_snapshot_image.NewApplicationSnapshotImage(ctx, url, p)
 	if err != nil {
 		log.Debug("Failed to create application snapshot image!")

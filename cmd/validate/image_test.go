@@ -160,7 +160,7 @@ func Test_determineInputSpec(t *testing.T) {
 }
 
 func Test_ValidateImageCommand(t *testing.T) {
-	validate := func(_ context.Context, url string, _ policy.Policy) (*output.Output, error) {
+	validate := func(_ context.Context, url string, _ policy.Policy, _ bool) (*output.Output, error) {
 		return &output.Output{
 			ImageSignatureCheck: output.VerificationStatus{
 				Passed: true,
@@ -280,7 +280,7 @@ func Test_ValidateErrorCommand(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			validate := func(context.Context, string, policy.Policy) (*output.Output, error) {
+			validate := func(context.Context, string, policy.Policy, bool) (*output.Output, error) {
 				return nil, errors.New("expected")
 			}
 
@@ -303,7 +303,7 @@ func Test_ValidateErrorCommand(t *testing.T) {
 }
 
 func Test_FailureImageAccessibility(t *testing.T) {
-	validate := func(_ context.Context, url string, _ policy.Policy) (*output.Output, error) {
+	validate := func(_ context.Context, url string, _ policy.Policy, _ bool) (*output.Output, error) {
 		return &output.Output{
 			ImageSignatureCheck: output.VerificationStatus{
 				Passed: false,
@@ -358,7 +358,7 @@ func Test_FailureImageAccessibility(t *testing.T) {
 }
 
 func Test_FailureOutput(t *testing.T) {
-	validate := func(_ context.Context, url string, _ policy.Policy) (*output.Output, error) {
+	validate := func(_ context.Context, url string, _ policy.Policy, _ bool) (*output.Output, error) {
 		return &output.Output{
 			ImageSignatureCheck: output.VerificationStatus{
 				Passed: false,
@@ -411,7 +411,7 @@ func Test_FailureOutput(t *testing.T) {
 }
 
 func Test_WarningOutput(t *testing.T) {
-	validate := func(_ context.Context, url string, _ policy.Policy) (*output.Output, error) {
+	validate := func(_ context.Context, url string, _ policy.Policy, _ bool) (*output.Output, error) {
 		return &output.Output{
 			ImageSignatureCheck: output.VerificationStatus{
 				Passed: true,

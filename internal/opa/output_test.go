@@ -84,7 +84,7 @@ func Test_RegoTextOutput(t *testing.T) {
 			source:   "spam.io/bacon-bundle",
 			annJson:  fooBarDeny,
 			template: "short-names",
-			expected: "bar.rule_title\n",
+			expected: "foo.bar.rule_title\n",
 			err:      nil,
 		},
 		{
@@ -180,22 +180,24 @@ func Test_RegoTextOutput(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		var a ast.AnnotationsRef
-		err := json.Unmarshal([]byte(tt.annJson), &a)
-		if err != nil {
-			panic(err)
-		}
+		t.Run(tt.name, func(t *testing.T) {
+			var a ast.AnnotationsRef
+			err := json.Unmarshal([]byte(tt.annJson), &a)
+			if err != nil {
+				panic(err)
+			}
 
-		input := map[string][]*ast.AnnotationsRef{
-			tt.source: []*ast.AnnotationsRef{
-				&a,
-			},
-		}
+			input := map[string][]*ast.AnnotationsRef{
+				tt.source: {
+					&a,
+				},
+			}
 
-		buf := new(bytes.Buffer)
-		err = OutputText(buf, input, tt.template)
+			buf := new(bytes.Buffer)
+			err = OutputText(buf, input, tt.template)
 
-		assert.Equal(t, tt.err, err, tt.name)
-		assert.Equal(t, tt.expected, buf.String(), tt.name)
+			assert.Equal(t, tt.err, err, tt.name)
+			assert.Equal(t, tt.expected, buf.String(), tt.name)
+		})
 	}
 }

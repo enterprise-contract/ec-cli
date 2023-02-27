@@ -233,7 +233,11 @@ Feature: evaluate enterprise contract
           "containerImage": "localhost:(\\d+)/acceptance/ec-happy-day",
           "violations": [
             {
-              "msg": "Fails always"
+              "msg": "Fails always",
+              "metadata": {
+                "code": "main.rejector",
+                "effective_on": "2022-01-01T00:00:00Z"
+              }
             }
           ],
           "warnings": [
@@ -297,7 +301,11 @@ Feature: evaluate enterprise contract
           "containerImage": "localhost:(\\d+)/acceptance/ec-happy-day",
           "violations": [
             {
-              "msg": "Fails always"
+              "msg": "Fails always",
+              "metadata": {
+                "code": "main.rejector",
+                "effective_on": "2022-01-01T00:00:00Z"
+              }
             }
           ],
           "warnings": [
@@ -437,5 +445,57 @@ Feature: evaluate enterprise contract
           "signatures": ${ATTESTATION_SIGNATURES_JSON}
         }
       ]
+    }
+    """
+
+  Scenario: detailed failures output
+    Given a key pair named "known"
+    Given an image named "acceptance/image"
+    Given a valid image signature of "acceptance/image" image signed by the "known" key
+    Given a valid attestation of "acceptance/image" signed by the "known" key
+    Given a git repository named "happy-day-policy" with
+      | happy_day.rego | examples/happy_day.rego      |
+      | reject.rego    | examples/reject.rego         |
+    Given policy configuration named "ec-policy" with specification
+    """
+    {
+      "sources": [
+        {
+          "policy": [
+            "git::http://${GITHOST}/git/happy-day-policy.git"
+          ]
+        }
+      ]
+    }
+    """
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/image --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --info --strict"
+    Then the exit status should be 1
+    Then the standard output should contain
+    """
+    {
+      "components": [
+        {
+          "containerImage": "localhost:(\\d+)/acceptance/image",
+          "name": "Unnamed",
+          "signatures": ${ATTESTATION_SIGNATURES_JSON},
+          "success": false,
+          "violations": [
+            {
+              "msg": "Fails always",
+              "metadata": {
+                "title": "Reject rule",
+                "description": "This rule will always fail",
+                "code": "main.rejector",
+                "collections": ["A"],
+                "effective_on": "2022-01-01T00:00:00Z"
+              }
+            }
+          ],
+          "warnings": [],
+          "successCount": 1
+        }
+      ],
+      "key": ${known_PUBLIC_KEY_JSON},
+      "success": false
     }
     """
