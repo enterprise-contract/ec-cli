@@ -34,6 +34,7 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/in-toto/in-toto-golang/in_toto"
+	"github.com/in-toto/in-toto-golang/in_toto/slsa_provenance/common"
 	v02 "github.com/in-toto/in-toto-golang/in_toto/slsa_provenance/v0.2"
 	"github.com/sigstore/cosign/pkg/cosign"
 	"github.com/sigstore/cosign/pkg/cosign/bundle"
@@ -238,7 +239,7 @@ func TestSyntaxValidation(t *testing.T) {
 			Subject: []in_toto.Subject{
 				{
 					Name: "hello",
-					Digest: v02.DigestSet{
+					Digest: common.DigestSet{
 						"sha1": "abcdef0123456789",
 					},
 				},
@@ -246,7 +247,7 @@ func TestSyntaxValidation(t *testing.T) {
 		},
 		Predicate: v02.ProvenancePredicate{
 			BuildType: pipelineRunBuildType,
-			Builder: v02.ProvenanceBuilder{
+			Builder: common.ProvenanceBuilder{
 				ID: "scheme:uri",
 			},
 		},
@@ -259,7 +260,7 @@ func TestSyntaxValidation(t *testing.T) {
 			Subject: []in_toto.Subject{
 				{
 					Name: "hello",
-					Digest: v02.DigestSet{
+					Digest: common.DigestSet{
 						"sha1": "abcdef0123456789",
 					},
 				},
@@ -267,7 +268,7 @@ func TestSyntaxValidation(t *testing.T) {
 		},
 		Predicate: v02.ProvenancePredicate{
 			BuildType: pipelineRunBuildType,
-			Builder: v02.ProvenanceBuilder{
+			Builder: common.ProvenanceBuilder{
 				ID: "invalid", // must be in URI syntax
 			},
 		},
@@ -497,7 +498,7 @@ func TestFilterMatchingAttestations(t *testing.T) {
 			Type:          in_toto.StatementInTotoV01,
 			PredicateType: v02.PredicateSLSAProvenance,
 			Subject: []in_toto.Subject{
-				{Digest: v02.DigestSet{"sha256": knownDigest}},
+				{Digest: common.DigestSet{"sha256": knownDigest}},
 			},
 		},
 	})
@@ -507,8 +508,8 @@ func TestFilterMatchingAttestations(t *testing.T) {
 			Type:          in_toto.StatementInTotoV01,
 			PredicateType: v02.PredicateSLSAProvenance,
 			Subject: []in_toto.Subject{
-				{Digest: v02.DigestSet{"sha256": unknownDigest}},
-				{Digest: v02.DigestSet{"sha256": knownDigest}},
+				{Digest: common.DigestSet{"sha256": unknownDigest}},
+				{Digest: common.DigestSet{"sha256": knownDigest}},
 			},
 		},
 	})
@@ -518,7 +519,7 @@ func TestFilterMatchingAttestations(t *testing.T) {
 			Type:          in_toto.StatementInTotoV01,
 			PredicateType: v02.PredicateSLSAProvenance,
 			Subject: []in_toto.Subject{
-				{Digest: v02.DigestSet{"sha256": unknownDigest}},
+				{Digest: common.DigestSet{"sha256": unknownDigest}},
 			},
 		},
 	})

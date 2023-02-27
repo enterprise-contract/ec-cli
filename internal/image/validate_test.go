@@ -29,6 +29,7 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/in-toto/in-toto-golang/in_toto"
+	"github.com/in-toto/in-toto-golang/in_toto/slsa_provenance/common"
 	v02 "github.com/in-toto/in-toto-golang/in_toto/slsa_provenance/v0.2"
 	conftestOutput "github.com/open-policy-agent/conftest/output"
 	"github.com/sigstore/cosign/pkg/cosign"
@@ -228,7 +229,7 @@ var validSignature = sign(&in_toto.Statement{
 		Type:          in_toto.StatementInTotoV01,
 		PredicateType: v02.PredicateSLSAProvenance,
 		Subject: []in_toto.Subject{
-			{Name: imageRegistry, Digest: v02.DigestSet{"sha256": imageDigest}},
+			{Name: imageRegistry, Digest: common.DigestSet{"sha256": imageDigest}},
 		},
 	},
 })
@@ -238,12 +239,12 @@ var validAttestation = sign(&in_toto.Statement{
 		Type:          in_toto.StatementInTotoV01,
 		PredicateType: v02.PredicateSLSAProvenance,
 		Subject: []in_toto.Subject{
-			{Name: imageRegistry, Digest: v02.DigestSet{"sha256": imageDigest}},
+			{Name: imageRegistry, Digest: common.DigestSet{"sha256": imageDigest}},
 		},
 	},
 	Predicate: v02.ProvenancePredicate{
 		BuildType: "https://tekton.dev/attestations/chains/pipelinerun@v2",
-		Builder: v02.ProvenanceBuilder{
+		Builder: common.ProvenanceBuilder{
 			ID: "scheme:uri",
 		},
 	},
