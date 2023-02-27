@@ -21,7 +21,6 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
-	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -133,7 +132,7 @@ func InspectDir(afs afero.Fs, dir string) ([]*ast.AnnotationsRef, error) {
 			return nil
 		}
 
-		contents, err := os.ReadFile(path)
+		contents, err := afero.ReadFile(afs, path)
 		if err != nil {
 			return nil
 		}
