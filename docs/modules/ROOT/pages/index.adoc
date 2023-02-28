@@ -1,5 +1,7 @@
 :pol: https://github.com/hacbs-contract/ec-policies/
 
+= Enterprise Contract CLI
+
 The EC CLI is used to evaluate Enterprise Contract policies for Software Supply Chain.
 Various sub-commands can be used to assert facts about an artifact such as:
 
@@ -7,3 +9,8 @@ Various sub-commands can be used to assert facts about an artifact such as:
 * Validating container image provenance
 * Evaluating Enterprise Contract {pol}[policies] over the container image provenance
 * Fetching artifact authorization
+
+This documentation includes xref:ec.adoc[EC Command Line reference
+documentation], and documentation on the
+xref:verify-enterprise-contract.adoc[Verify Enterprise Contract Task]
+used to run the EC in a Tekton pipeline.
