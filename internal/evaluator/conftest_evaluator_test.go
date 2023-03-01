@@ -22,13 +22,16 @@ import (
 	"context"
 	"testing"
 
+	"github.com/MakeNowJust/heredoc"
 	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/open-policy-agent/conftest/output"
+	"github.com/open-policy-agent/opa/ast"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
 	"github.com/hacbs-contract/ec-cli/internal/downloader"
+	"github.com/hacbs-contract/ec-cli/internal/opa/rule"
 	"github.com/hacbs-contract/ec-cli/internal/policy"
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
 	"github.com/hacbs-contract/ec-cli/internal/utils"
@@ -51,7 +54,7 @@ func withTestRunner(ctx context.Context, clnt testRunner) context.Context {
 type testPolicySource struct{}
 
 func (t testPolicySource) GetPolicy(ctx context.Context, dest string, showMsg bool) (string, error) {
-	return "test-policy-path", nil
+	return "/policy", nil
 }
 
 func (t testPolicySource) PolicyUrl() string {
@@ -165,9 +168,7 @@ func TestConftestEvaluatorEvaluate(t *testing.T) {
 
 	inputs := []string{"inputs"}
 
-	ctx := withTestRunner(context.Background(), &r)
-	ctx = downloader.WithDownloadImpl(ctx, &dl)
-	ctx = utils.WithFS(ctx, afero.NewMemMapFs())
+	ctx := setupTestContext(&r, &dl)
 
 	r.On("Run", ctx, inputs).Return(results, nil)
 
@@ -182,6 +183,27 @@ func TestConftestEvaluatorEvaluate(t *testing.T) {
 	actualResults, err := evaluator.Evaluate(ctx, inputs)
 	assert.NoError(t, err)
 	assert.Equal(t, expectedResults, actualResults)
+}
+
+func setupTestContext(r *mockTestRunner, dl *mockDownloader) context.Context {
+	ctx := withTestRunner(context.Background(), r)
+	ctx = downloader.WithDownloadImpl(ctx, dl)
+	fs := afero.NewMemMapFs()
+	ctx = utils.WithFS(ctx, fs)
+
+	if err := afero.WriteFile(fs, "/policy/example.rego", []byte(heredoc.Doc(`# Simplest always-failing policy
+	package main
+
+	# METADATA
+	# title: Reject rule
+	# description: This rule will always fail
+	deny[result] {
+		result := "Fails always"
+	}`)), 0644); err != nil {
+		panic(err)
+	}
+
+	return ctx
 }
 
 func TestConftestEvaluatorEvaluateNoSuccessWarningsOrFailures(t *testing.T) {
@@ -201,7 +223,7 @@ func TestConftestEvaluatorEvaluateNoSuccessWarningsOrFailures(t *testing.T) {
 
 	inputs := []string{"inputs"}
 
-	ctx := downloader.WithDownloadImpl(withTestRunner(context.Background(), &r), &dl)
+	ctx := setupTestContext(&r, &dl)
 
 	r.On("Run", ctx, inputs).Return(results, nil)
 
@@ -850,7 +872,7 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 			r := mockTestRunner{}
 			dl := mockDownloader{}
 			inputs := []string{"inputs"}
-			ctx := downloader.WithDownloadImpl(withTestRunner(context.Background(), &r), &dl)
+			ctx := setupTestContext(&r, &dl)
 			r.On("Run", ctx, inputs).Return(tt.results, nil)
 
 			p, err := policy.NewOfflinePolicy(ctx, policy.Now)
@@ -906,4 +928,104 @@ func TestMakeMatchers(t *testing.T) {
 
 		})
 	}
+}
+
+func TestCollectAnnotationData(t *testing.T) {
+	module := ast.MustParseModuleWithOpts(heredoc.Doc(`
+		package a.b.c
+		# METADATA
+		# title: Title
+		# description: Description
+		# custom:
+		#   short_name: short
+		#   collections: [A, B, C]
+		deny[msg] {
+			msg := "hi"
+		}`), ast.ParserOptions{
+		ProcessAnnotation: true,
+	})
+
+	rules := policyRules{}
+	rules.collect(ast.NewAnnotationsRef(module.Annotations[0]))
+
+	assert.Equal(t, policyRules{
+		"a.b.c.short": {
+			Code:        "a.b.c.short",
+			CodePackage: "a.b.c",
+			Collections: []string{"A", "B", "C"},
+			Description: "Description",
+			Kind:        rule.Deny,
+			Package:     "a.b.c",
+			ShortName:   "short",
+			Title:       "Title",
+		},
+	}, rules)
+}
+
+func TestAddingMetadata(t *testing.T) {
+	result := output.CheckResult{
+		Warnings: []output.Result{
+			{
+				Metadata: map[string]interface{}{
+					"code": "warning1",
+				},
+			},
+			{
+				Metadata: map[string]interface{}{
+					"code": "warning2",
+				},
+			},
+		},
+		Failures: []output.Result{
+			{
+				Metadata: map[string]interface{}{
+					"code": "failure1",
+				},
+			},
+			{
+				Metadata: map[string]interface{}{
+					"code": "failure2",
+				},
+			},
+		},
+	}
+	addMetadata(&result, policyRules{
+		"warning1": rule.Info{
+			Title: "Warning1",
+		},
+		"failure2": rule.Info{
+			Title:       "Failure2",
+			Description: "Failure 2 description",
+		},
+	})
+
+	assert.Equal(t, output.CheckResult{
+		Warnings: []output.Result{
+			{
+				Metadata: map[string]interface{}{
+					"code":  "warning1",
+					"title": "Warning1",
+				},
+			},
+			{
+				Metadata: map[string]interface{}{
+					"code": "warning2",
+				},
+			},
+		},
+		Failures: []output.Result{
+			{
+				Metadata: map[string]interface{}{
+					"code": "failure1",
+				},
+			},
+			{
+				Metadata: map[string]interface{}{
+					"code":        "failure2",
+					"title":       "Failure2",
+					"description": "Failure 2 description",
+				},
+			},
+		},
+	}, result)
 }

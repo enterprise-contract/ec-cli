@@ -30,6 +30,7 @@ import (
 	"golang.org/x/exp/slices"
 
 	"github.com/hacbs-contract/ec-cli/internal/opa"
+	opaRule "github.com/hacbs-contract/ec-cli/internal/opa/rule"
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
 	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
@@ -147,10 +148,10 @@ func filterResults(results map[string][]*ast.AnnotationsRef, rule, pkg, collecti
 	for source, rules := range results {
 		filteredRules := make([]*ast.AnnotationsRef, 0, len(rules))
 		for _, r := range rules {
-			ruleFields := opa.PrepTemplateFields(r)
-			matches := ((rule != "" && ruleNameMatches(rule, ruleFields)) ||
-				(pkg != "" && packageNameMatches(pkg, ruleFields)) ||
-				(collection != "" && ruleCollectionMatches(collection, ruleFields)))
+			info := opaRule.RuleInfo(r)
+			matches := ((rule != "" && ruleNameMatches(rule, info)) ||
+				(pkg != "" && packageNameMatches(pkg, info)) ||
+				(collection != "" && ruleCollectionMatches(collection, info)))
 			if matches {
 				filteredRules = append(filteredRules, r)
 			}
@@ -160,11 +161,11 @@ func filterResults(results map[string][]*ast.AnnotationsRef, rule, pkg, collecti
 	return filteredResults, nil
 }
 
-func ruleNameMatches(rule string, fields opa.TemplateFields) bool {
+func ruleNameMatches(rule string, info opaRule.Info) bool {
 	for _, name := range []string{
-		fmt.Sprintf("%s.%s", fields.ShortPath, fields.ShortName),
-		fmt.Sprintf("%s.%s", fields.TrimmedPath, fields.ShortName),
-		fields.ShortName,
+		info.Code,
+		fmt.Sprintf("%s.%s", info.Package, info.ShortName),
+		info.ShortName,
 	} {
 		if name == rule {
 			return true
@@ -173,8 +174,8 @@ func ruleNameMatches(rule string, fields opa.TemplateFields) bool {
 	return false
 }
 
-func packageNameMatches(pkg string, fields opa.TemplateFields) bool {
-	for _, name := range []string{fields.ShortPath, fields.TrimmedPath} {
+func packageNameMatches(pkg string, info opaRule.Info) bool {
+	for _, name := range []string{info.CodePackage, info.Package} {
 		if name == pkg {
 			return true
 		}
@@ -182,8 +183,8 @@ func packageNameMatches(pkg string, fields opa.TemplateFields) bool {
 	return false
 }
 
-func ruleCollectionMatches(collection string, fields opa.TemplateFields) bool {
-	for _, c := range fields.Collections {
+func ruleCollectionMatches(collection string, info opaRule.Info) bool {
+	for _, c := range info.Collections {
 		if c == collection {
 			return true
 		}

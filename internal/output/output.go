@@ -71,6 +71,7 @@ type Output struct {
 	ExitCode                  int                  `json:"-"`
 	Signatures                []EntitySignature    `json:"signatures,omitempty"`
 	ImageURL                  string               `json:"-"`
+	Detailed                  bool                 `json:"-"`
 }
 
 // SetImageAccessibleCheck sets the passed and result.message fields of the ImageAccessibleCheck to the given values.
@@ -152,9 +153,28 @@ func (o *Output) SetPolicyCheck(results []output.CheckResult) {
 		}
 
 		results[r].Queries = nil
+
+		if !o.Detailed {
+			keepSomeMetadata(results[r].Exceptions)
+			keepSomeMetadata(results[r].Failures)
+			keepSomeMetadata(results[r].Skipped)
+			keepSomeMetadata(results[r].Warnings)
+		}
 	}
 	o.PolicyCheck = results
 	o.ExitCode = output.ExitCode(results)
+}
+
+func keepSomeMetadata(results []output.Result) {
+	for i := range results {
+		for key := range results[i].Metadata {
+			if key == "code" || key == "effective_on" {
+				continue
+			}
+
+			delete(results[i].Metadata, key)
+		}
+	}
 }
 
 // addCheckResultsToViolations appends the Failures from CheckResult to the violations slice.

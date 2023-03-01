@@ -27,10 +27,13 @@ import (
 
 	"github.com/open-policy-agent/conftest/output"
 	"github.com/open-policy-agent/conftest/runner"
+	"github.com/open-policy-agent/opa/ast"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 	"golang.org/x/exp/slices"
 
+	"github.com/hacbs-contract/ec-cli/internal/opa"
+	"github.com/hacbs-contract/ec-cli/internal/opa/rule"
 	"github.com/hacbs-contract/ec-cli/internal/policy"
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
 	"github.com/hacbs-contract/ec-cli/internal/utils"
@@ -93,16 +96,43 @@ func (c conftestEvaluator) Destroy() {
 	}
 }
 
+type policyRules map[string]rule.Info
+
+func (r *policyRules) collect(a *ast.AnnotationsRef) {
+	if a.Annotations == nil {
+		return
+	}
+
+	info := rule.RuleInfo(a)
+
+	code := info.Code
+	(*r)[code] = info
+}
+
 func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) ([]output.CheckResult, error) {
 	results := make([]output.CheckResult, 0, 10)
 
 	// Download all sources
+	rules := policyRules{}
 	for _, s := range c.policySources {
-		_, err := s.GetPolicy(ctx, c.workDir, false)
+		dir, err := s.GetPolicy(ctx, c.workDir, false)
 		if err != nil {
 			log.Debugf("Unable to download source from %s!", s.PolicyUrl())
 			// TODO do we want to download other policies instead of erroring out?
 			return nil, err
+		}
+
+		fs := utils.FS(ctx)
+		annotations, err := opa.InspectDir(fs, dir)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, a := range annotations {
+			if a.Annotations == nil {
+				continue
+			}
+			rules.collect(a)
 		}
 	}
 
@@ -130,8 +160,11 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) ([]out
 	effectiveTime := c.policy.EffectiveTime()
 
 	for i, result := range runResults {
+		log.Debugf("Evaluation result at %d: %#v", i, result)
 		warnings := []output.Result{}
 		failures := []output.Result{}
+
+		addMetadata(&result, rules)
 
 		for _, warning := range result.Warnings {
 			if !c.isResultIncluded(warning) {
@@ -177,6 +210,42 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) ([]out
 		return nil, fmt.Errorf("no successes, warnings, or failures, check input")
 	}
 	return results, nil
+}
+
+func addMetadata(result *output.CheckResult, rules policyRules) {
+	addMetadataToResults(result.Exceptions, rules)
+	addMetadataToResults(result.Failures, rules)
+	addMetadataToResults(result.Skipped, rules)
+	addMetadataToResults(result.Warnings, rules)
+}
+
+func addMetadataToResults(results []output.Result, rules policyRules) {
+	for i := range results {
+		f := &results[i]
+		if f.Metadata == nil {
+			continue
+		}
+
+		code, ok := f.Metadata["code"].(string)
+		if !ok {
+			continue
+		}
+
+		rule, ok := rules[code]
+		if !ok {
+			continue
+		}
+
+		if rule.Title != "" {
+			f.Metadata["title"] = rule.Title
+		}
+		if rule.Description != "" {
+			f.Metadata["description"] = rule.Description
+		}
+		if len(rule.Collections) > 0 {
+			f.Metadata["collections"] = rule.Collections
+		}
+	}
 }
 
 // createConfigJSON creates the config.json file with the provided configuration

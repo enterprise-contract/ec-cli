@@ -24,54 +24,14 @@ import (
 
 	hd "github.com/MakeNowJust/heredoc"
 	"github.com/open-policy-agent/opa/ast"
+
+	"github.com/hacbs-contract/ec-cli/internal/opa/rule"
 )
-
-func getShortName(a *ast.AnnotationsRef) string {
-	if a.Annotations == nil || a.Annotations.Custom == nil {
-		return ""
-	}
-
-	str, ok := a.Annotations.Custom["short_name"].(string)
-
-	if !ok {
-		return ""
-	}
-
-	return str // yay
-}
-
-func getCollections(a *ast.AnnotationsRef) []string {
-	var collections []string
-	if a.Annotations == nil || a.Annotations.Custom == nil {
-		return collections
-	}
-
-	if interfaces, ok := a.Annotations.Custom["collections"].([]interface{}); ok {
-		for _, maybeCollection := range interfaces {
-			if collection, ok := maybeCollection.(string); ok {
-				collections = append(collections, collection)
-			}
-		}
-	}
-
-	return collections
-}
-
-type TemplateFields = struct {
-	TrimmedPath string
-	ShortPath   string
-	WarnDeny    string
-	Title       string
-	Description string
-	ShortName   string
-	DocsUrl     string
-	Collections []string
-}
 
 var templates = map[string]string{
 	"text": hd.Doc(`
-		{{ .TrimmedPath }}.{{ .ShortName }} ({{ .WarnDeny }})
-		{{ with .DocsUrl }}{{ . }}
+		{{ .Package }}.{{ .ShortName }} ({{ .Kind }})
+		{{ with .DocumentationUrl }}{{ . }}
 		{{ end }}{{ .Title }}
 		{{ .Description }}{{ if .Collections }}
 		{{ .Collections }}{{ end }}
@@ -79,65 +39,18 @@ var templates = map[string]string{
 	`),
 
 	"names": hd.Doc(`
-		{{ .TrimmedPath }}.{{ .ShortName }}
+		{{ .Package }}.{{ .ShortName }}
 	`),
 
 	"short-names": hd.Doc(`
-		{{ .ShortPath }}.{{ .ShortName }}
+		{{ .Code }}
 	`),
-}
-
-// Prepare data for use in the template
-func PrepTemplateFields(a *ast.AnnotationsRef) TemplateFields {
-	pathStrings := strings.Split(a.Path.String(), ".")
-
-	// Removes the "data." prefix
-	// Example: "policy.pipeline.required_tasks.missing_required_task"
-	trimmedPath := strings.Join(pathStrings[1:len(pathStrings)-1], ".")
-
-	var shortPath string
-	if len(pathStrings) > 4 && strings.HasPrefix(trimmedPath, "policy.") {
-		// Example "required_tasks.missing_required_task"
-		shortPath = strings.Join(pathStrings[3:len(pathStrings)-1], ".")
-	} else {
-		// Edge case in case the package name doesn't follow our usual
-		// conventions i.e. "package policy.<type>.<name>"
-		shortPath = trimmedPath
-	}
-
-	shortName := getShortName(a)
-	collections := getCollections(a)
-
-	// Notes:
-	// - This makes the assumption that we're looking at our own EC rules with
-	//   docs in the hacbs-contract github pages. That's not likely to be true
-	//   always. A future improvement for this might include a way to extract a
-	//   docs url from a package annotation instead using the hard-coded url here.
-	// - The length test is because we're expecting pathStrings to be like this:
-	//     data.policy.release.some_package_name.deny
-	//   Avoid errors indexing pathStrings and also try to avoid showing a url
-	//   if it's unlikely to be a real link to existing docs.
-	var docsUrl string
-	if len(pathStrings) == 5 && pathStrings[1] == "policy" && shortName != "" {
-		docsUrl = fmt.Sprintf("https://hacbs-contract.github.io/ec-policies/%s_policy.html#%s__%s", pathStrings[2], pathStrings[3], shortName)
-	}
-
-	return TemplateFields{
-		TrimmedPath: trimmedPath,
-		ShortPath:   shortPath,
-		WarnDeny:    pathStrings[len(pathStrings)-1],
-		Title:       a.Annotations.Title,
-		Description: a.Annotations.Description,
-		ShortName:   shortName,
-		DocsUrl:     docsUrl,
-		Collections: collections,
-	}
 }
 
 // Render using a template
 func renderAnn(out io.Writer, a *ast.AnnotationsRef, tmplName string) error {
 	t := template.Must(template.New("t").Parse(templates[tmplName]))
-	return t.Execute(out, PrepTemplateFields(a))
+	return t.Execute(out, rule.RuleInfo(a))
 }
 
 // Todo:

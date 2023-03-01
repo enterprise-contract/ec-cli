@@ -120,7 +120,7 @@ func TestValidateImage(t *testing.T) {
 
 			ctx = application_snapshot_image.WithClient(ctx, c.client)
 
-			actual, err := ValidateImage(ctx, c.url, p)
+			actual, err := ValidateImage(ctx, c.url, p, false)
 			assert.NoError(t, err)
 
 			assert.Equal(t, c.expectedWarnings, actual.Warnings())

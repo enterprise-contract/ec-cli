@@ -1,0 +1,234 @@
+// Copyright 2022 Red Hat, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//	http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+// SPDX-License-Identifier: Apache-2.0
+
+package rule
+
+import (
+	"fmt"
+	"strings"
+
+	"github.com/open-policy-agent/opa/ast"
+)
+
+func title(a *ast.AnnotationsRef) string {
+	if a == nil || a.Annotations == nil {
+		return ""
+	}
+
+	return a.Annotations.Title
+}
+
+func description(a *ast.AnnotationsRef) string {
+	if a == nil || a.Annotations == nil {
+		return ""
+	}
+
+	return a.Annotations.Description
+}
+
+func lastTerm(a *ast.AnnotationsRef) string {
+	if a == nil || len(a.Path) == 0 {
+		return ""
+	}
+
+	lastTerm := a.Path[len(a.Path)-1]
+
+	return strings.Trim(lastTerm.String(), `"`)
+}
+
+func kind(a *ast.AnnotationsRef) RuleKind {
+	switch lastTerm(a) {
+	case "deny":
+		return Deny
+	case "warn":
+		return Warn
+	default:
+		return Other
+	}
+}
+
+func shortName(a *ast.AnnotationsRef) string {
+	if a == nil || a.Annotations == nil || a.Annotations.Custom == nil {
+		return ""
+	}
+
+	shortName, ok := a.Annotations.Custom["short_name"]
+
+	if !ok {
+		return ""
+	}
+
+	return fmt.Sprint(shortName)
+}
+
+func collections(a *ast.AnnotationsRef) []string {
+	collections := make([]string, 0, 3)
+	if a == nil || a.Annotations == nil || a.Annotations.Custom == nil {
+		return collections
+	}
+
+	if values, ok := a.Annotations.Custom["collections"].([]any); ok {
+		for _, value := range values {
+			if collection, ok := value.(string); ok {
+				collections = append(collections, collection)
+			}
+		}
+	}
+
+	return collections
+}
+
+func packages(a *ast.AnnotationsRef) []string {
+	packages := []string{}
+	if a == nil {
+		return packages
+	}
+
+	pkg := a.GetPackage()
+	var path ast.Ref
+	if pkg == nil {
+		// odd, let's try Paths instead
+		l := len(a.Path)
+		if a.Path == nil || l == 0 {
+			return packages
+		}
+
+		// we're dealing with rule's path so drop the last term which contains
+		// the rule itself
+		path = a.Path[0 : l-1]
+	} else {
+		path = pkg.Path
+	}
+
+	l := len(path)
+	if l == 0 {
+		return packages
+	}
+
+	packages = make([]string, 0, l)
+
+	for _, p := range path {
+		packages = append(packages, strings.Trim(p.Value.String(), `"`))
+	}
+
+	if len(packages) > 0 && packages[0] == "data" {
+		packages = packages[1:]
+	}
+
+	return packages
+}
+
+func packageName(a *ast.AnnotationsRef) string {
+	return strings.Join(packages(a), ".")
+}
+
+var knownRuleCategories = map[string]bool{
+	"release":  true,
+	"pipeline": true,
+}
+
+func codePackage(a *ast.AnnotationsRef) string {
+	if a == nil {
+		return ""
+	}
+
+	packages := packages(a)
+
+	l := len(packages)
+
+	if len(packages) > 0 && packages[0] == "policy" {
+		// remove the policy package
+		packages = packages[1:]
+	}
+
+	if l > 0 && knownRuleCategories[packages[0]] {
+		// remove any known rule categories
+		packages = packages[1:]
+	}
+
+	return strings.Join(packages, ".")
+}
+
+func code(a *ast.AnnotationsRef) string {
+	if a == nil {
+		return ""
+	}
+
+	codePackage := codePackage(a)
+
+	if codePackage == "" {
+		return shortName(a)
+	}
+
+	return fmt.Sprintf("%s.%s", codePackage, shortName(a))
+}
+
+func documentationUrl(a *ast.AnnotationsRef) string {
+	if a == nil {
+		return ""
+	}
+
+	// Notes:
+	// - This makes the assumption that we're looking at our own EC rules with
+	//   docs in the hacbs-contract github pages. That's not likely to be true
+	//   always. A future improvement for this might include a way to extract a
+	//   docs url from a package annotation instead using the hard-coded url here.
+	// - The length test is because we're expecting pathStrings to be like this:
+	//     data.policy.release.some_package_name.deny
+	//   Avoid errors indexing pathStrings and also try to avoid showing a url
+	//   if it's unlikely to be a real link to existing docs.
+	pathStrings := strings.Split(a.Path.String(), ".")
+	shortName := shortName(a)
+	if len(pathStrings) == 5 && pathStrings[1] == "policy" && shortName != "" {
+		return fmt.Sprintf("https://hacbs-contract.github.io/ec-policies/%s_policy.html#%s__%s", pathStrings[2], pathStrings[3], shortName)
+	}
+
+	return ""
+}
+
+type RuleKind string
+
+const (
+	Deny  RuleKind = "deny"
+	Warn  RuleKind = "warn"
+	Other RuleKind = "other"
+)
+
+type Info struct {
+	Code             string
+	CodePackage      string
+	Collections      []string
+	Description      string
+	DocumentationUrl string
+	Kind             RuleKind
+	Package          string
+	ShortName        string
+	Title            string
+}
+
+func RuleInfo(a *ast.AnnotationsRef) Info {
+	return Info{
+		Code:             code(a),
+		CodePackage:      codePackage(a),
+		Collections:      collections(a),
+		Description:      description(a),
+		DocumentationUrl: documentationUrl(a),
+		Kind:             kind(a),
+		Package:          packageName(a),
+		ShortName:        shortName(a),
+		Title:            title(a),
+	}
+}
