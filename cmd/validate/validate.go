@@ -21,7 +21,6 @@ import (
 
 	"github.com/hacbs-contract/ec-cli/internal/definitionfile"
 	"github.com/hacbs-contract/ec-cli/internal/image"
-	"github.com/hacbs-contract/ec-cli/internal/pipeline"
 )
 
 var ValidateCmd *cobra.Command
@@ -31,7 +30,6 @@ func init() {
 		Use:   "validate",
 		Short: "Validate conformance with the Enterprise Contract",
 	}
-	ValidateCmd.AddCommand(validatePipelineCmd(pipeline.ValidatePipeline))
 	ValidateCmd.AddCommand(validateImageCmd(image.ValidateImage))
 	ValidateCmd.AddCommand(validateDefinitionFileCmd(definitionfile.ValidateDefinitionFile))
 }
