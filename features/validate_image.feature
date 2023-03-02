@@ -39,8 +39,6 @@ Feature: evaluate enterprise contract
         {
           "name": "Unnamed",
           "containerImage": "localhost:(\\d+)/acceptance/ec-happy-day",
-          "violations": [],
-          "warnings": [],
           "successes": [
             {
               "msg": "Pass",
@@ -92,8 +90,6 @@ Feature: evaluate enterprise contract
             {"msg": "No image signatures found matching the given public key. Verify the correct public key was provided, and a signature was created."},
             {"msg": "No image attestations found matching the given public key. Verify the correct public key was provided, and one or more attestations were created."}
           ],
-          "warnings": [],
-          "successes": [],
           "success": false
         }
       ]
@@ -120,8 +116,6 @@ Feature: evaluate enterprise contract
         {
           "name": "Unnamed",
           "containerImage": "localhost:(\\d+)/acceptance/ec-happy-day",
-          "violations": [],
-          "warnings": [],
           "successes": [
             {
               "msg": "Pass",
@@ -157,7 +151,6 @@ Feature: evaluate enterprise contract
         {
           "name": "Unnamed",
           "containerImage": "localhost:(\\d+)/acceptance/ec-happy-day",
-          "violations": [],
           "warnings": [
             {
               "metadata": {
@@ -166,7 +159,6 @@ Feature: evaluate enterprise contract
               "msg": "Fails in 2099"
             }
           ],
-          "successes": [],
           "success": true,
           "signatures": ${ATTESTATION_SIGNATURES_JSON}
         }
@@ -202,8 +194,6 @@ Feature: evaluate enterprise contract
               "msg": "Fails in 2099"
             }
           ],
-          "warnings": [],
-          "successes": [],
           "success": false,
           "signatures": ${ATTESTATION_SIGNATURES_JSON}
         }
@@ -430,8 +420,6 @@ Feature: evaluate enterprise contract
               "msg": "Failure due to spider attack"
             }
           ],
-          "warnings": [],
-          "successes": [],
           "success": false,
           "signatures": ${ATTESTATION_SIGNATURES_JSON}
         }
@@ -466,8 +454,6 @@ Feature: evaluate enterprise contract
               "msg": "Fails in 2099"
             }
           ],
-          "warnings": [],
-          "successes": [],
           "success": false,
           "signatures": ${ATTESTATION_SIGNATURES_JSON}
         }
@@ -528,8 +514,7 @@ Feature: evaluate enterprise contract
                 "collections": ["A"]
               }
             }
-          ],
-          "warnings": []
+          ]
         }
       ],
       "key": ${known_PUBLIC_KEY_JSON},

@@ -37,59 +37,11 @@ import (
 var testSnapshot string
 
 func Test_ReportJson(t *testing.T) {
-	var snapshot *appstudioshared.ApplicationSnapshotSpec
+	var snapshot appstudioshared.ApplicationSnapshotSpec
 	err := json.Unmarshal([]byte(testSnapshot), &snapshot)
 	assert.NoError(t, err)
 
 	expected := `
-    {
-      "success": true,
-	  "key": "my-public-key",
-      "components": [
-        {
-          "name": "spam",
-          "containerImage": "quay.io/caf/spam@sha256:123…",
-          "violations": [],
-          "warnings": null,
-		  "successes": null,
-          "success": true
-        },
-        {
-          "name": "bacon",
-          "containerImage": "quay.io/caf/bacon@sha256:234…",
-          "violations": [],
-          "warnings": null,
-		  "successes": null,
-          "success": true
-        },
-        {
-          "name": "eggs",
-          "containerImage": "quay.io/caf/eggs@sha256:345…",
-          "violations": [],
-          "warnings": null,
-		  "successes": null,
-          "success": true
-        }
-      ]
-    }
-  `
-	var components []Component
-	for _, component := range snapshot.Components {
-		c := Component{
-			Violations: []output.Result{},
-			Success:    true,
-		}
-		c.Name, c.ContainerImage = component.Name, component.ContainerImage
-		components = append(components, c)
-	}
-
-	report := NewReport(components, "my-public-key")
-	reportJson, err := report.toFormat(JSON)
-	assert.NoError(t, err)
-	assert.JSONEq(t, expected, string(reportJson))
-	assert.True(t, report.Success)
-
-	expected = `
     {
       "success": false,
 	  "key": "my-public-key",
@@ -97,41 +49,31 @@ func Test_ReportJson(t *testing.T) {
         {
           "name": "spam",
           "containerImage": "quay.io/caf/spam@sha256:123…",
-          "violations": [],
-          "warnings": null,
-		  "successes": null,
-          "success": true
+          "violations": [{"msg": "violation1"}],
+          "warnings": [{"msg": "warning1"}],
+		  "successes": [{"msg": "success1"}],
+          "success": false
         },
         {
           "name": "bacon",
           "containerImage": "quay.io/caf/bacon@sha256:234…",
-          "violations": [],
-          "warnings": null,
-		  "successes": null,
-          "success": true
+          "violations": [{"msg": "violation2"}],
+          "success": false
         },
         {
           "name": "eggs",
           "containerImage": "quay.io/caf/eggs@sha256:345…",
-          "violations": [],
-          "warnings": null,
-		  "successes": null,
+          "successes": [{"msg": "success3"}],
           "success": true
-        },
-        {
-          "name": "",
-          "containerImage": "",
-          "violations": null,
-          "warnings": null,
-		  "successes": null,
-          "success": false
         }
       ]
     }
   `
-	components = append(components, Component{Success: false})
-	report = NewReport(components, "my-public-key")
-	reportJson, err = report.toFormat(JSON)
+
+	components := testComponentsFor(snapshot)
+
+	report := NewReport(components, "my-public-key")
+	reportJson, err := report.toFormat(JSON)
 	assert.NoError(t, err)
 	assert.JSONEq(t, expected, string(reportJson))
 	assert.False(t, report.Success)
@@ -143,77 +85,34 @@ func Test_ReportYaml(t *testing.T) {
 	assert.NoError(t, err)
 
 	expected := `
-success: true
-key: my-public-key
-components:
-  - name: spam
-    containerImage: quay.io/caf/spam@sha256:123…
-    violations: []
-    warnings: null
-    successes: null
-    success: true
-  - name: bacon
-    containerImage: quay.io/caf/bacon@sha256:234…
-    violations: []
-    warnings: null
-    successes: null
-    success: true
-  - name: eggs
-    containerImage: quay.io/caf/eggs@sha256:345…
-    violations: []
-    warnings: null
-    successes: null
-    success: true
-`
-
-	var components []Component
-	for _, component := range snapshot.Components {
-		c := Component{
-			Violations: []output.Result{},
-			Success:    true,
-		}
-		c.Name, c.ContainerImage = component.Name, component.ContainerImage
-		components = append(components, c)
-	}
-
-	report := NewReport(components, "my-public-key")
-	reportYaml, err := report.toFormat(YAML)
-	assert.NoError(t, err)
-	assert.YAMLEq(t, expected, string(reportYaml))
-	assert.True(t, report.Success)
-
-	expected = `
 success: false
 key: my-public-key
 components:
   - name: spam
     containerImage: quay.io/caf/spam@sha256:123…
-    violations: []
-    warnings: null
-    successes: null
-    success: true
+    violations:
+      - msg: violation1
+    warnings:
+      - msg: warning1
+    successes:
+      - msg: success1
+    success: false
   - name: bacon
     containerImage: quay.io/caf/bacon@sha256:234…
-    violations: []
-    warnings: null
-    successes: null
-    success: true
+    violations:
+      - msg: violation2
+    success: false
   - name: eggs
     containerImage: quay.io/caf/eggs@sha256:345…
-    violations: []
-    warnings: null
-    successes: null
+    successes:
+      - msg: success3
     success: true
-  - name: ""
-    containerImage: ""
-    violations: null
-    warnings: null
-    successes: null
-    success: false
 `
-	components = append(components, Component{Success: false})
-	report = NewReport(components, "my-public-key")
-	reportYaml, err = report.toFormat(YAML)
+
+	components := testComponentsFor(*snapshot)
+
+	report := NewReport(components, "my-public-key")
+	reportYaml, err := report.toFormat(YAML)
 	assert.NoError(t, err)
 	assert.YAMLEq(t, expected, string(reportYaml))
 	assert.False(t, report.Success)
@@ -537,4 +436,47 @@ func Test_ReportHACBS(t *testing.T) {
 			assert.JSONEq(t, c.expected, string(defaultReportText))
 		})
 	}
+}
+
+func testComponentsFor(snapshot appstudioshared.ApplicationSnapshotSpec) []Component {
+	components := []Component{
+		{
+			ApplicationSnapshotComponent: snapshot.Components[0],
+			Violations: []output.Result{
+				{
+					Message: "violation1",
+				},
+			},
+			Warnings: []output.Result{
+				{
+					Message: "warning1",
+				},
+			},
+			Successes: []output.Result{
+				{
+					Message: "success1",
+				},
+			},
+			Success: false,
+		},
+		{
+			ApplicationSnapshotComponent: snapshot.Components[1],
+			Violations: []output.Result{
+				{
+					Message: "violation2",
+				},
+			},
+			Success: false,
+		},
+		{
+			ApplicationSnapshotComponent: snapshot.Components[2],
+			Successes: []output.Result{
+				{
+					Message: "success3",
+				},
+			},
+			Success: true,
+		},
+	}
+	return components
 }

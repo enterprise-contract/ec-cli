@@ -32,9 +32,9 @@ import (
 
 type Component struct {
 	appstudioshared.ApplicationSnapshotComponent
-	Violations []conftestOutput.Result  `json:"violations"`
-	Warnings   []conftestOutput.Result  `json:"warnings"`
-	Successes  []conftestOutput.Result  `json:"successes"`
+	Violations []conftestOutput.Result  `json:"violations,omitempty"`
+	Warnings   []conftestOutput.Result  `json:"warnings,omitempty"`
+	Successes  []conftestOutput.Result  `json:"successes,omitempty"`
 	Success    bool                     `json:"success"`
 	Signatures []output.EntitySignature `json:"signatures,omitempty"`
 }
