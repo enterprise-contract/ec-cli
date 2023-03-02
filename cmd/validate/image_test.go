@@ -225,8 +225,11 @@ func Test_ValidateImageCommand(t *testing.T) {
 			],
 			"success": true
 		  }
-		]
-	  }`, mockPublicKey), out.String())
+		],
+		"policy": {
+			"publicKey": "%s"
+		}
+	  }`, mockPublicKey, mockPublicKey), out.String())
 }
 
 func Test_ValidateErrorCommand(t *testing.T) {
@@ -362,8 +365,11 @@ func Test_FailureImageAccessibility(t *testing.T) {
 			],
 			"success": false
 		  }
-		]
-	  }`, mockPublicKey), out.String())
+		],
+		"policy": {
+			"publicKey": "%s"
+		}
+	  }`, mockPublicKey, mockPublicKey), out.String())
 }
 
 func Test_FailureOutput(t *testing.T) {
@@ -413,8 +419,11 @@ func Test_FailureOutput(t *testing.T) {
 			],
 			"success": false
 		  }
-		]
-	  }`, mockPublicKey), out.String())
+		],
+		"policy": {
+			"publicKey": "%s"
+		}
+	  }`, mockPublicKey, mockPublicKey), out.String())
 }
 
 func Test_WarningOutput(t *testing.T) {
@@ -472,6 +481,9 @@ func Test_WarningOutput(t *testing.T) {
 			],
 			"success": true
 		  }
-		]
-	  }`, mockPublicKey), out.String())
+		],
+		"policy": {
+			"publicKey": "%s"
+		}
+	  }`, mockPublicKey, mockPublicKey), out.String())
 }

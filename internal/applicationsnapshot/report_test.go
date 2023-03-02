@@ -19,18 +19,22 @@
 package applicationsnapshot
 
 import (
+	"context"
 	_ "embed"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
+	hd "github.com/MakeNowJust/heredoc"
 	"github.com/open-policy-agent/conftest/output"
 	appstudioshared "github.com/redhat-appstudio/managed-gitops/appstudio-shared/apis/appstudio.redhat.com/v1alpha1"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/hacbs-contract/ec-cli/internal/format"
+	"github.com/hacbs-contract/ec-cli/internal/policy"
 )
 
 //go:embed test_snapshot.json
@@ -41,10 +45,10 @@ func Test_ReportJson(t *testing.T) {
 	err := json.Unmarshal([]byte(testSnapshot), &snapshot)
 	assert.NoError(t, err)
 
-	expected := `
+	expected := fmt.Sprintf(`
     {
       "success": false,
-	  "key": "my-public-key",
+	  "key": "%s",
       "components": [
         {
           "name": "spam",
@@ -61,18 +65,23 @@ func Test_ReportJson(t *testing.T) {
           "success": false
         },
         {
-          "name": "eggs",
-          "containerImage": "quay.io/caf/eggs@sha256:345…",
-          "successes": [{"msg": "success3"}],
-          "success": true
+			"name": "eggs",
+			"containerImage": "quay.io/caf/eggs@sha256:345…",
+			"successes": [{"msg": "success3"}],
+			"success": true
         }
-      ]
+      ],
+	  "policy": {
+		"publicKey": "%s"
+	  }
     }
-  `
+  	`, testPublicKeyCompact, testPublicKeyCompact)
 
 	components := testComponentsFor(snapshot)
 
-	report := NewReport(components, "my-public-key")
+	ctx := context.Background()
+	report, err := NewReport(components, createTestPolicy(t, ctx))
+	assert.NoError(t, err)
 	reportJson, err := report.toFormat(JSON)
 	assert.NoError(t, err)
 	assert.JSONEq(t, expected, string(reportJson))
@@ -84,9 +93,9 @@ func Test_ReportYaml(t *testing.T) {
 	err := json.Unmarshal([]byte(testSnapshot), &snapshot)
 	assert.NoError(t, err)
 
-	expected := `
+	expected := fmt.Sprintf(`
 success: false
-key: my-public-key
+key: "%s"
 components:
   - name: spam
     containerImage: quay.io/caf/spam@sha256:123…
@@ -107,11 +116,15 @@ components:
     successes:
       - msg: success3
     success: true
-`
+policy:
+  publicKey: "%s"
+`, testPublicKeyCompact, testPublicKeyCompact)
 
 	components := testComponentsFor(*snapshot)
 
-	report := NewReport(components, "my-public-key")
+	ctx := context.Background()
+	report, err := NewReport(components, createTestPolicy(t, ctx))
+	assert.NoError(t, err)
 	reportYaml, err := report.toFormat(YAML)
 	assert.NoError(t, err)
 	assert.YAMLEq(t, expected, string(reportYaml))
@@ -163,7 +176,7 @@ func Test_ReportSummary(t *testing.T) {
 					},
 				},
 				Success: false,
-				Key:     "my-public-key",
+				Key:     testPublicKey,
 			},
 		},
 		{
@@ -195,7 +208,7 @@ func Test_ReportSummary(t *testing.T) {
 					},
 				},
 				Success: false,
-				Key:     "my-public-key",
+				Key:     testPublicKey,
 			},
 		},
 		{
@@ -249,7 +262,7 @@ func Test_ReportSummary(t *testing.T) {
 					},
 				},
 				Success: false,
-				Key:     "my-public-key",
+				Key:     testPublicKey,
 			},
 		},
 		{
@@ -295,14 +308,16 @@ func Test_ReportSummary(t *testing.T) {
 					},
 				},
 				Success: false,
-				Key:     "my-public-key",
+				Key:     testPublicKey,
 			},
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("NewReport=%s", tc.name), func(t *testing.T) {
-			report := NewReport([]Component{tc.input}, "my-public-key")
+			ctx := context.Background()
+			report, err := NewReport([]Component{tc.input}, createTestPolicy(t, ctx))
+			assert.NoError(t, err)
 			assert.Equal(t, tc.want, report.toSummary())
 		})
 	}
@@ -418,7 +433,9 @@ func Test_ReportHACBS(t *testing.T) {
 			defaultWriter, err := fs.Create("default")
 			assert.NoError(t, err)
 
-			report := NewReport(c.components, "my-public-key")
+			ctx := context.Background()
+			report, err := NewReport(c.components, createTestPolicy(t, ctx))
+			assert.NoError(t, err)
 			assert.False(t, report.created.IsZero())
 			assert.Equal(t, c.success, report.Success)
 
@@ -479,4 +496,19 @@ func testComponentsFor(snapshot appstudioshared.ApplicationSnapshotSpec) []Compo
 		},
 	}
 	return components
+}
+
+var testPublicKey = hd.Doc(`
+	-----BEGIN PUBLIC KEY-----
+	MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEd1WDOudb86dW6Ume+d0B8SILNdsW
+	vn2vZNA6+5u53oaJRFDi15iOqDPlxMWbvwN1C0r8OpIvIQeOAWEjHqfx/w==
+	-----END PUBLIC KEY-----
+	`)
+
+var testPublicKeyCompact = strings.ReplaceAll(testPublicKey, "\n", "\\n")
+
+func createTestPolicy(t *testing.T, ctx context.Context) policy.Policy {
+	p, err := policy.NewPolicy(ctx, "", "", testPublicKey, policy.Now)
+	assert.NoError(t, err)
+	return p
 }

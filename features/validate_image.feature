@@ -50,7 +50,14 @@ Feature: evaluate enterprise contract
           "success": true,
           "signatures": ${ATTESTATION_SIGNATURES_JSON}
         }
-      ]
+      ],
+      "policy": {
+        "publicKey": ${known_PUBLIC_KEY_JSON},
+        "rekorUrl": "${REKOR}",
+        "sources": [
+          { "policy": ["git::http://${GITHOST}/git/happy-day-policy.git"] }
+        ]
+      }
     }
     """
 
@@ -92,7 +99,14 @@ Feature: evaluate enterprise contract
           ],
           "success": false
         }
-      ]
+      ],
+      "policy": {
+        "publicKey": ${unknown_PUBLIC_KEY_JSON},
+        "rekorUrl": "${REKOR}",
+        "sources": [
+          { "policy": ["git::http://${GITHOST}/git/invalid-image-signature.git"] }
+        ]
+      }
     }
     """
 
@@ -127,7 +141,14 @@ Feature: evaluate enterprise contract
           "success": true,
           "signatures": ${ATTESTATION_SIGNATURES_JSON}
         }
-      ]
+      ],
+      "policy": {
+        "publicKey": ${known_PUBLIC_KEY_JSON},
+        "rekorUrl": "${REKOR}",
+        "sources": [
+          { "policy": ["git::http://${GITHOST}/git/happy-day-policy.git"] }
+        ]
+      }
     }
     """
 
@@ -162,7 +183,14 @@ Feature: evaluate enterprise contract
           "success": true,
           "signatures": ${ATTESTATION_SIGNATURES_JSON}
         }
-      ]
+      ],
+      "policy": {
+        "publicKey": ${known_PUBLIC_KEY_JSON},
+        "rekorUrl": "${REKOR}",
+        "sources": [
+          { "policy": ["git::http://${GITHOST}/git/future-deny-policy.git"] }
+        ]
+      }
     }
     """
 
@@ -197,7 +225,14 @@ Feature: evaluate enterprise contract
           "success": false,
           "signatures": ${ATTESTATION_SIGNATURES_JSON}
         }
-      ]
+      ],
+      "policy": {
+        "publicKey": ${known_PUBLIC_KEY_JSON},
+        "rekorUrl": "${REKOR}",
+        "sources": [
+          { "policy": ["git::http://${GITHOST}/git/future-deny-policy.git"] }
+        ]
+      }
     }
     """
 
@@ -260,7 +295,16 @@ Feature: evaluate enterprise contract
           "success": false,
           "signatures": ${ATTESTATION_SIGNATURES_JSON}
         }
-      ]
+      ],
+      "policy": {
+        "publicKey": ${known_PUBLIC_KEY_JSON},
+        "rekorUrl": "${REKOR}",
+        "sources": [
+          { "policy": ["git::http://${GITHOST}/git/repository1.git"] },
+          { "policy": ["git::http://${GITHOST}/git/repository2.git"] },
+          { "policy": ["git::http://${GITHOST}/git/repository3.git"] }
+        ]
+      }
     }
     """
 
@@ -335,7 +379,18 @@ Feature: evaluate enterprise contract
           "success": false,
           "signatures": ${ATTESTATION_SIGNATURES_JSON}
         }
-      ]
+      ],
+      "policy": {
+        "publicKey": ${known_PUBLIC_KEY_JSON},
+        "rekorUrl": "${REKOR}",
+        "sources": [
+          {"policy": [
+            "git::http://${GITHOST}/git/repository1.git",
+            "git::http://${GITHOST}/git/repository2.git",
+            "git::http://${GITHOST}/git/repository3.git"
+          ]}
+        ]
+      }
     }
     """
 
@@ -423,7 +478,29 @@ Feature: evaluate enterprise contract
           "success": false,
           "signatures": ${ATTESTATION_SIGNATURES_JSON}
         }
-      ]
+      ],
+      "policy": {
+        "publicKey": ${known_PUBLIC_KEY_JSON},
+        "rekorUrl": "${REKOR}",
+        "sources": [
+          {
+            "policy": [
+              "git::http://${GITHOST}/git/banana_check.git"
+            ],
+            "data": [
+              "git::http://${GITHOST}/git/banana_data_1.git"
+            ]
+          },
+          {
+            "policy": [
+              "git::http://${GITHOST}/git/banana_check.git"
+            ],
+            "data": [
+              "git::http://${GITHOST}/git/banana_data_2.git"
+            ]
+          }
+        ]
+      }
     }
     """
 
@@ -457,7 +534,13 @@ Feature: evaluate enterprise contract
           "success": false,
           "signatures": ${ATTESTATION_SIGNATURES_JSON}
         }
-      ]
+      ],
+      "policy": {
+        "publicKey": ${known_PUBLIC_KEY_JSON},
+        "sources": [
+          { "policy": ["git::http://${GITHOST}/git/future-deny-policy.git"] }
+        ]
+      }
     }
     """
 
@@ -517,6 +600,12 @@ Feature: evaluate enterprise contract
           ]
         }
       ],
+      "policy": {
+        "publicKey": ${known_PUBLIC_KEY_JSON},
+        "sources": [
+          { "policy": ["git::http://${GITHOST}/git/happy-day-policy.git"] }
+        ]
+      },
       "key": ${known_PUBLIC_KEY_JSON},
       "success": false
     }
