@@ -32,11 +32,11 @@ import (
 
 type Component struct {
 	appstudioshared.ApplicationSnapshotComponent
-	Violations   []conftestOutput.Result  `json:"violations"`
-	Warnings     []conftestOutput.Result  `json:"warnings"`
-	Success      bool                     `json:"success"`
-	SuccessCount int                      `json:"successCount"`
-	Signatures   []output.EntitySignature `json:"signatures,omitempty"`
+	Violations []conftestOutput.Result  `json:"violations,omitempty"`
+	Warnings   []conftestOutput.Result  `json:"warnings,omitempty"`
+	Successes  []conftestOutput.Result  `json:"successes,omitempty"`
+	Success    bool                     `json:"success"`
+	Signatures []output.EntitySignature `json:"signatures,omitempty"`
 }
 
 type Report struct {
@@ -55,11 +55,12 @@ type summary struct {
 type componentSummary struct {
 	Name            string              `json:"name"`
 	Success         bool                `json:"success"`
-	TotalSuccesses  int                 `json:"total_successes"`
 	Violations      map[string][]string `json:"violations"`
 	Warnings        map[string][]string `json:"warnings"`
+	Successes       map[string][]string `json:"successes"`
 	TotalViolations int                 `json:"total_violations"`
 	TotalWarnings   int                 `json:"total_warnings"`
+	TotalSuccesses  int                 `json:"total_successes"`
 }
 
 // hacbsReport represents the standardized HACBS_TEST_OUTPUT format.
@@ -148,11 +149,12 @@ func (r *Report) toSummary() summary {
 		c := componentSummary{
 			TotalViolations: len(cmp.Violations),
 			TotalWarnings:   len(cmp.Warnings),
-			TotalSuccesses:  cmp.SuccessCount,
+			TotalSuccesses:  len(cmp.Successes),
 			Success:         cmp.Success,
 			Name:            cmp.Name,
 			Violations:      condensedMsg(cmp.Violations),
 			Warnings:        condensedMsg(cmp.Warnings),
+			Successes:       condensedMsg(cmp.Successes),
 		}
 		pr.Components = append(pr.Components, c)
 	}

@@ -27,6 +27,8 @@ import (
 	"github.com/open-policy-agent/conftest/output"
 	"github.com/sigstore/cosign/pkg/cosign"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/hacbs-contract/ec-cli/internal/evaluator"
 )
 
 func Test_PrintExpectedJSON(t *testing.T) {
@@ -47,32 +49,41 @@ func Test_PrintExpectedJSON(t *testing.T) {
 			Passed: false,
 			Result: &output.Result{Message: "message4"},
 		},
-		PolicyCheck: []output.CheckResult{
+		PolicyCheck: evaluator.CheckResults{
 			{
-				FileName:  "file1.json",
-				Namespace: "namespace1",
-				Successes: 123,
-				Skipped: []output.Result{
-					{Message: "result11"},
-					{Message: "result12"},
+				CheckResult: output.CheckResult{
+					FileName:  "file1.json",
+					Namespace: "namespace1",
+					Skipped: []output.Result{
+						{Message: "result11"},
+						{Message: "result12"},
+					},
+					Warnings: []output.Result{
+						{Message: "result13"},
+						{Message: "result14"},
+					},
+					Failures: []output.Result{
+						{Message: "result15"},
+					},
+					Exceptions: []output.Result{},
 				},
-				Warnings: []output.Result{
-					{Message: "result13"},
-					{Message: "result14"},
+				Successes: []output.Result{
+					{Message: "result16"},
+					{Message: "result17"},
 				},
-				Failures: []output.Result{
-					{Message: "result15"},
-				},
-				Exceptions: []output.Result{},
 			},
 			{
-				FileName:  "file2.json",
-				Namespace: "namespace2",
-				Successes: 321,
-				Skipped: []output.Result{
-					{
-						Message: "result21",
+				CheckResult: output.CheckResult{
+					FileName:  "file2.json",
+					Namespace: "namespace2",
+					Skipped: []output.Result{
+						{
+							Message: "result21",
+						},
 					},
+				},
+				Successes: []output.Result{
+					{Message: "result22"},
 				},
 			},
 		},
@@ -114,7 +125,6 @@ func Test_PrintExpectedJSON(t *testing.T) {
 		  {
 			"filename": "file1.json",
 			"namespace": "namespace1",
-			"successes": 123,
 			"skipped": [
 			  {
 				"msg": "result11"
@@ -135,15 +145,27 @@ func Test_PrintExpectedJSON(t *testing.T) {
 			  {
 				"msg": "result15"
 			  }
+			],
+			"successes": [
+			  {
+				"msg": "result16"
+			  },
+			  {
+				"msg": "result17"
+			  }
 			]
 		  },
 		  {
 			"filename": "file2.json",
 			"namespace": "namespace2",
-			"successes": 321,
 			"skipped": [
 			  {
 				"msg": "result21"
+			  }
+			],
+			"successes": [
+			  {
+			    "msg": "result22"
 			  }
 			]
 		  }
@@ -297,11 +319,13 @@ func Test_Violations(t *testing.T) {
 				AttestationSyntaxCheck: VerificationStatus{
 					Passed: true,
 				},
-				PolicyCheck: []output.CheckResult{
+				PolicyCheck: evaluator.CheckResults{
 					{
-						Failures: []output.Result{
-							{
-								Message: "failed policy check",
+						CheckResult: output.CheckResult{
+							Failures: []output.Result{
+								{
+									Message: "failed policy check",
+								},
 							},
 						},
 					},
@@ -324,14 +348,16 @@ func Test_Violations(t *testing.T) {
 				AttestationSyntaxCheck: VerificationStatus{
 					Passed: true,
 				},
-				PolicyCheck: []output.CheckResult{
+				PolicyCheck: evaluator.CheckResults{
 					{
-						Failures: []output.Result{
-							{
-								Message: "failed policy check 1",
-							},
-							{
-								Message: "failed policy check 2",
+						CheckResult: output.CheckResult{
+							Failures: []output.Result{
+								{
+									Message: "failed policy check 1",
+								},
+								{
+									Message: "failed policy check 2",
+								},
 							},
 						},
 					},
@@ -359,14 +385,16 @@ func Test_Violations(t *testing.T) {
 					Passed: false,
 					Result: &output.Result{Message: "invalid attestation syntax"},
 				},
-				PolicyCheck: []output.CheckResult{
+				PolicyCheck: evaluator.CheckResults{
 					{
-						Failures: []output.Result{
-							{
-								Message: "failed policy check 1",
-							},
-							{
-								Message: "failed policy check 2",
+						CheckResult: output.CheckResult{
+							Failures: []output.Result{
+								{
+									Message: "failed policy check 1",
+								},
+								{
+									Message: "failed policy check 2",
+								},
 							},
 						},
 					},
@@ -397,32 +425,44 @@ func Test_Violations(t *testing.T) {
 				AttestationSyntaxCheck: VerificationStatus{
 					Passed: true,
 				},
-				PolicyCheck: []output.CheckResult{
+				PolicyCheck: evaluator.CheckResults{
 					// Result with failures
 					{
-						Failures: []output.Result{
-							{Message: "failure for policy check 1"},
-							{Message: "failure for policy check 2"},
+						CheckResult: output.CheckResult{
+							Failures: []output.Result{
+								{Message: "failure for policy check 1"},
+								{Message: "failure for policy check 2"},
+							},
 						},
 					},
 					// Result with warnings
 					{
-						Warnings: []output.Result{
-							{Message: "warning for policy check 3"},
-							{Message: "warning for policy check 4"},
+						CheckResult: output.CheckResult{
+							Warnings: []output.Result{
+								{Message: "warning for policy check 3"},
+								{Message: "warning for policy check 4"},
+							},
 						},
 					},
 					// Result without any failures nor warnings
 					{},
 					// Resuilt with both failures and warnings
 					{
-						Failures: []output.Result{
-							{Message: "failure for policy check 5"},
-							{Message: "failure for policy check 6"},
+						CheckResult: output.CheckResult{
+							Failures: []output.Result{
+								{Message: "failure for policy check 5"},
+								{Message: "failure for policy check 6"},
+							},
+							Warnings: []output.Result{
+								{Message: "warning for policy check 7"},
+								{Message: "warning for policy check 8"},
+							},
 						},
-						Warnings: []output.Result{
-							{Message: "warning for policy check 7"},
-							{Message: "warning for policy check 8"},
+					},
+					// Result with successes
+					{
+						Successes: []output.Result{
+							{Message: "success for policy check 9"},
 						},
 					},
 				},
@@ -459,10 +499,12 @@ func Test_Warnings(t *testing.T) {
 		{
 			name: "single warning",
 			output: Output{
-				PolicyCheck: []output.CheckResult{
+				PolicyCheck: evaluator.CheckResults{
 					{
-						Warnings: []output.Result{
-							{Message: "warning for policy check 2"},
+						CheckResult: output.CheckResult{
+							Warnings: []output.Result{
+								{Message: "warning for policy check 2"},
+							},
 						},
 					},
 				},
@@ -474,11 +516,13 @@ func Test_Warnings(t *testing.T) {
 		{
 			name: "multiple warnings",
 			output: Output{
-				PolicyCheck: []output.CheckResult{
+				PolicyCheck: evaluator.CheckResults{
 					{
-						Warnings: []output.Result{
-							{Message: "warning for policy check 1"},
-							{Message: "warning for policy check 2"},
+						CheckResult: output.CheckResult{
+							Warnings: []output.Result{
+								{Message: "warning for policy check 1"},
+								{Message: "warning for policy check 2"},
+							},
 						},
 					},
 				},
@@ -497,32 +541,38 @@ func Test_Warnings(t *testing.T) {
 				AttestationSignatureCheck: VerificationStatus{
 					Passed: true,
 				},
-				PolicyCheck: []output.CheckResult{
+				PolicyCheck: evaluator.CheckResults{
 					// Result with failures
 					{
-						Failures: []output.Result{
-							{Message: "failure for policy check 1"},
-							{Message: "failure for policy check 2"},
+						CheckResult: output.CheckResult{
+							Failures: []output.Result{
+								{Message: "failure for policy check 1"},
+								{Message: "failure for policy check 2"},
+							},
 						},
 					},
 					// Result with warnings
 					{
-						Warnings: []output.Result{
-							{Message: "warning for policy check 3"},
-							{Message: "warning for policy check 4"},
+						CheckResult: output.CheckResult{
+							Warnings: []output.Result{
+								{Message: "warning for policy check 3"},
+								{Message: "warning for policy check 4"},
+							},
 						},
 					},
 					// Result without any failures nor warnings
 					{},
 					// Resuilt with both failures and warnings
 					{
-						Failures: []output.Result{
-							{Message: "failure for policy check 5"},
-							{Message: "failure for policy check 6"},
-						},
-						Warnings: []output.Result{
-							{Message: "warning for policy check 7"},
-							{Message: "warning for policy check 8"},
+						CheckResult: output.CheckResult{
+							Failures: []output.Result{
+								{Message: "failure for policy check 5"},
+								{Message: "failure for policy check 6"},
+							},
+							Warnings: []output.Result{
+								{Message: "warning for policy check 7"},
+								{Message: "warning for policy check 8"},
+							},
 						},
 					},
 				},
@@ -539,48 +589,6 @@ func Test_Warnings(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			assert.Equal(t, c.expected, c.output.Warnings())
-		})
-	}
-}
-
-func Test_SuccessCount(t *testing.T) {
-	cases := []struct {
-		name     string
-		output   Output
-		expected int
-	}{
-		{
-			name:     "empty output",
-			output:   Output{},
-			expected: 0,
-		},
-		{
-			name: "single success",
-			output: Output{
-				PolicyCheck: []output.CheckResult{
-					{
-						Successes: 1,
-					},
-				},
-			},
-			expected: 1,
-		},
-		{
-			name: "multiple successes",
-			output: Output{
-				PolicyCheck: []output.CheckResult{
-					{
-						Successes: 2,
-					},
-				},
-			},
-			expected: 2,
-		},
-	}
-
-	for _, c := range cases {
-		t.Run(c.name, func(t *testing.T) {
-			assert.Equal(t, c.expected, c.output.SuccessCount())
 		})
 	}
 }

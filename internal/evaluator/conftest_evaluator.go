@@ -43,6 +43,23 @@ type contextKey string
 
 const runnerKey contextKey = "ec.evaluator.runner"
 
+type CheckResult struct {
+	output.CheckResult
+	Successes []output.Result `json:"successes,omitempty"`
+}
+
+type CheckResults []CheckResult
+
+func (c CheckResults) ToConftestResults() []output.CheckResult {
+	results := make([]output.CheckResult, 0, len(c))
+
+	for _, r := range c {
+		results = append(results, r.CheckResult)
+	}
+
+	return results
+}
+
 type testRunner interface {
 	Run(context.Context, []string) ([]output.CheckResult, error)
 }
@@ -115,12 +132,18 @@ func (r *policyRules) collect(a *ast.AnnotationsRef) {
 
 	info := rule.RuleInfo(a)
 
+	if info.ShortName == "" {
+		// no short name matching with the code from Metadata will not be
+		// deterministic
+		return
+	}
+
 	code := info.Code
 	(*r)[code] = info
 }
 
-func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) ([]output.CheckResult, error) {
-	results := make([]output.CheckResult, 0, 10)
+func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (CheckResults, error) {
+	results := make([]CheckResult, 0, 10)
 
 	// Download all sources
 	rules := policyRules{}
@@ -200,10 +223,40 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) ([]out
 		result.Warnings = warnings
 		result.Failures = failures
 
-		runResults[i] = result
+		results = append(results, CheckResult{CheckResult: result})
 	}
 
-	results = append(results, runResults...)
+	// set successes, these are not provided in the Conftest results, so we
+	// reconstruct these from the parsed rules, any rule that hasn't been
+	// touched by adding metadata must have succeeded
+
+	// TODO see about multiple results, somehow; using results[0] for now
+	if l := len(rules); l > 0 {
+		results[0].Successes = make([]output.Result, 0, l)
+	}
+
+	for code, rule := range rules {
+		result := output.Result{
+			Message: "Pass",
+			Metadata: map[string]interface{}{
+				"code": code,
+			},
+		}
+
+		if rule.Title != "" {
+			result.Metadata["title"] = rule.Title
+		}
+
+		if rule.Description != "" {
+			result.Metadata["description"] = rule.Description
+		}
+
+		if len(rule.Collections) > 0 {
+			result.Metadata["collections"] = rule.Collections
+		}
+
+		results[0].Successes = append(results[0].Successes, result)
+	}
 
 	// Evaluate total successes, warnings, and failures. If all are 0, then
 	// we have effectively failed, because no tests were actually ran due to
@@ -211,7 +264,10 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) ([]out
 	var total int
 
 	for _, res := range results {
-		total += res.Successes
+		// we could use len(res.Successes), but that is not correct as some of
+		// the successes might not follow the conventions used, i.e. have
+		// short_name annotation, so we use the number calculated by Conftest
+		total += res.CheckResult.Successes
 		total += len(res.Warnings)
 		total += len(res.Failures)
 	}
@@ -219,6 +275,7 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) ([]out
 		log.Error("no successes, warnings, or failures, check input")
 		return nil, fmt.Errorf("no successes, warnings, or failures, check input")
 	}
+
 	return results, nil
 }
 
@@ -258,10 +315,11 @@ func addMetadataToResults(results []output.Result, rules policyRules) {
 			continue
 		}
 
-		rule, ok := rules[code]
+		rule, ok := (rules)[code]
 		if !ok {
 			continue
 		}
+		delete((rules), code)
 
 		if rule.Title != "" {
 			r.Metadata[metadataTitle] = rule.Title

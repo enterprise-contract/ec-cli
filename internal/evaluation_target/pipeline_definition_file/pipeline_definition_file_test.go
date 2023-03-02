@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/open-policy-agent/conftest/output"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 
@@ -33,8 +32,8 @@ import (
 
 type mockEvaluator struct{}
 
-func (e mockEvaluator) Evaluate(ctx context.Context, inputs []string) ([]output.CheckResult, error) {
-	return []output.CheckResult{}, nil
+func (e mockEvaluator) Evaluate(ctx context.Context, inputs []string) (evaluator.CheckResults, error) {
+	return evaluator.CheckResults{}, nil
 }
 
 func (e mockEvaluator) Destroy() {

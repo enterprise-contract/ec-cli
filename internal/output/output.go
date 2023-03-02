@@ -25,6 +25,8 @@ import (
 	"github.com/open-policy-agent/conftest/output"
 	"github.com/sigstore/cosign/pkg/cosign"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/hacbs-contract/ec-cli/internal/evaluator"
 )
 
 const missingSignatureMessage = "No image signatures found matching the given public key. " +
@@ -63,15 +65,15 @@ type EntitySignature struct {
 
 // Output is a struct representing checks and exit code.
 type Output struct {
-	ImageAccessibleCheck      VerificationStatus   `json:"imageAccessibleCheck"`
-	ImageSignatureCheck       VerificationStatus   `json:"imageSignatureCheck"`
-	AttestationSignatureCheck VerificationStatus   `json:"attestationSignatureCheck"`
-	AttestationSyntaxCheck    VerificationStatus   `json:"attestationSyntaxCheck"`
-	PolicyCheck               []output.CheckResult `json:"policyCheck"`
-	ExitCode                  int                  `json:"-"`
-	Signatures                []EntitySignature    `json:"signatures,omitempty"`
-	ImageURL                  string               `json:"-"`
-	Detailed                  bool                 `json:"-"`
+	ImageAccessibleCheck      VerificationStatus     `json:"imageAccessibleCheck"`
+	ImageSignatureCheck       VerificationStatus     `json:"imageSignatureCheck"`
+	AttestationSignatureCheck VerificationStatus     `json:"attestationSignatureCheck"`
+	AttestationSyntaxCheck    VerificationStatus     `json:"attestationSyntaxCheck"`
+	PolicyCheck               evaluator.CheckResults `json:"policyCheck"`
+	ExitCode                  int                    `json:"-"`
+	Signatures                []EntitySignature      `json:"signatures,omitempty"`
+	ImageURL                  string                 `json:"-"`
+	Detailed                  bool                   `json:"-"`
 }
 
 // SetImageAccessibleCheck sets the passed and result.message fields of the ImageAccessibleCheck to the given values.
@@ -146,7 +148,7 @@ func (o *Output) SetAttestationSyntaxCheckFromError(err error) {
 }
 
 // SetPolicyCheck sets the PolicyCheck and ExitCode to the results and exit code of the Results
-func (o *Output) SetPolicyCheck(results []output.CheckResult) {
+func (o *Output) SetPolicyCheck(results evaluator.CheckResults) {
 	for r := range results {
 		if results[r].FileName == "-" {
 			results[r].FileName = ""
@@ -157,12 +159,13 @@ func (o *Output) SetPolicyCheck(results []output.CheckResult) {
 		if !o.Detailed {
 			keepSomeMetadata(results[r].Exceptions)
 			keepSomeMetadata(results[r].Failures)
+			keepSomeMetadata(results[r].Successes)
 			keepSomeMetadata(results[r].Skipped)
 			keepSomeMetadata(results[r].Warnings)
 		}
 	}
 	o.PolicyCheck = results
-	o.ExitCode = output.ExitCode(results)
+	o.ExitCode = output.ExitCode(results.ToConftestResults())
 }
 
 func keepSomeMetadata(results []output.Result) {
@@ -207,13 +210,12 @@ func (o Output) Warnings() []output.Result {
 	return warnings
 }
 
-func (o Output) SuccessCount() int {
-	var passes int
+func (o Output) Successes() []output.Result {
+	successes := make([]output.Result, 0, 10)
 	for _, result := range o.PolicyCheck {
-		passes += result.Successes
-
+		successes = append(successes, result.Successes...)
 	}
-	return passes
+	return successes
 }
 
 // Print prints an Output instance

@@ -29,6 +29,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/hacbs-contract/ec-cli/internal/evaluation_target/application_snapshot_image"
+	"github.com/hacbs-contract/ec-cli/internal/evaluator"
 	"github.com/hacbs-contract/ec-cli/internal/output"
 	"github.com/hacbs-contract/ec-cli/internal/policy"
 )
@@ -77,10 +78,15 @@ func ValidateImage(ctx context.Context, url string, p policy.Policy, detailed bo
 	log.Debugf("Found %d attestations", attCount)
 	if attCount == 0 {
 		// This is very much a corner case.
-		out.SetPolicyCheck([]conftestOutput.CheckResult{
-			{Failures: []conftestOutput.Result{{
-				Message: "No attestations contain a subject that match the given image.",
-			}}},
+		out.SetPolicyCheck(evaluator.CheckResults{
+			{
+				CheckResult: conftestOutput.CheckResult{
+					Failures: []conftestOutput.Result{{
+						Message: "No attestations contain a subject that match the given image.",
+					},
+					},
+				},
+			},
 		})
 		return out, nil
 	}
@@ -91,7 +97,7 @@ func ValidateImage(ctx context.Context, url string, p policy.Policy, detailed bo
 		return nil, err
 	}
 
-	var allResults []conftestOutput.CheckResult
+	var allResults evaluator.CheckResults
 	for _, e := range a.Evaluators {
 		// Todo maybe: Handle each one concurrently
 		results, err := e.Evaluate(ctx, []string{input})

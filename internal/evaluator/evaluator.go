@@ -18,13 +18,11 @@ package evaluator
 
 import (
 	"context"
-
-	"github.com/open-policy-agent/conftest/output"
 )
 
 type Evaluator interface {
 	// TODO refactor not to expose Conftest type here
-	Evaluate(ctx context.Context, inputs []string) ([]output.CheckResult, error)
+	Evaluate(ctx context.Context, inputs []string) (CheckResults, error)
 
 	// Destroy performs any cleanup needed
 	Destroy()
