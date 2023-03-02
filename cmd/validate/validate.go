@@ -19,6 +19,7 @@ package validate
 import (
 	"github.com/spf13/cobra"
 
+	"github.com/hacbs-contract/ec-cli/internal/definitionfile"
 	"github.com/hacbs-contract/ec-cli/internal/image"
 	"github.com/hacbs-contract/ec-cli/internal/pipeline"
 )
@@ -32,4 +33,5 @@ func init() {
 	}
 	ValidateCmd.AddCommand(validatePipelineCmd(pipeline.ValidatePipeline))
 	ValidateCmd.AddCommand(validateImageCmd(image.ValidateImage))
+	ValidateCmd.AddCommand(validateDefinitionFileCmd(definitionfile.ValidateDefinitionFile))
 }
