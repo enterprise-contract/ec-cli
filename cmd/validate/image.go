@@ -180,9 +180,9 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 					if err == nil {
 						res.component.Violations = out.Violations()
 						res.component.Warnings = out.Warnings()
+						res.component.Successes = out.Successes()
 						res.component.Signatures = out.Signatures
 						res.component.ContainerImage = out.ImageURL
-						res.component.SuccessCount = out.SuccessCount()
 					}
 					res.component.Success = err == nil && len(res.component.Violations) == 0
 

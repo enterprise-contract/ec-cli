@@ -51,24 +51,24 @@ func Test_ReportJson(t *testing.T) {
           "containerImage": "quay.io/caf/spam@sha256:123…",
           "violations": [],
           "warnings": null,
-          "success": true,
-		  "successCount": 0
+		  "successes": null,
+          "success": true
         },
         {
           "name": "bacon",
           "containerImage": "quay.io/caf/bacon@sha256:234…",
           "violations": [],
           "warnings": null,
-          "success": true,
-		  "successCount": 0
+		  "successes": null,
+          "success": true
         },
         {
           "name": "eggs",
           "containerImage": "quay.io/caf/eggs@sha256:345…",
           "violations": [],
           "warnings": null,
-          "success": true,
-		  "successCount": 0
+		  "successes": null,
+          "success": true
         }
       ]
     }
@@ -99,32 +99,32 @@ func Test_ReportJson(t *testing.T) {
           "containerImage": "quay.io/caf/spam@sha256:123…",
           "violations": [],
           "warnings": null,
-          "success": true,
-		  "successCount": 0
+		  "successes": null,
+          "success": true
         },
         {
           "name": "bacon",
           "containerImage": "quay.io/caf/bacon@sha256:234…",
           "violations": [],
           "warnings": null,
-          "success": true,
-		  "successCount": 0
+		  "successes": null,
+          "success": true
         },
         {
           "name": "eggs",
           "containerImage": "quay.io/caf/eggs@sha256:345…",
           "violations": [],
           "warnings": null,
-          "success": true,
-		  "successCount": 0
+		  "successes": null,
+          "success": true
         },
         {
           "name": "",
           "containerImage": "",
           "violations": null,
           "warnings": null,
-          "success": false,
-		  "successCount": 0
+		  "successes": null,
+          "success": false
         }
       ]
     }
@@ -150,28 +150,27 @@ components:
     containerImage: quay.io/caf/spam@sha256:123…
     violations: []
     warnings: null
+    successes: null
     success: true
-    successCount: 5
   - name: bacon
     containerImage: quay.io/caf/bacon@sha256:234…
     violations: []
     warnings: null
+    successes: null
     success: true
-    successCount: 5
   - name: eggs
     containerImage: quay.io/caf/eggs@sha256:345…
     violations: []
     warnings: null
+    successes: null
     success: true
-    successCount: 5
 `
 
 	var components []Component
 	for _, component := range snapshot.Components {
 		c := Component{
-			Violations:   []output.Result{},
-			Success:      true,
-			SuccessCount: 5,
+			Violations: []output.Result{},
+			Success:    true,
 		}
 		c.Name, c.ContainerImage = component.Name, component.ContainerImage
 		components = append(components, c)
@@ -191,27 +190,26 @@ components:
     containerImage: quay.io/caf/spam@sha256:123…
     violations: []
     warnings: null
+    successes: null
     success: true
-    successCount: 5
   - name: bacon
     containerImage: quay.io/caf/bacon@sha256:234…
     violations: []
     warnings: null
+    successes: null
     success: true
-    successCount: 5
   - name: eggs
     containerImage: quay.io/caf/eggs@sha256:345…
     violations: []
     warnings: null
+    successes: null
     success: true
-    successCount: 5
   - name: ""
     containerImage: ""
     violations: null
     warnings: null
+    successes: null
     success: false
-    successCount: 0
-
 `
 	components = append(components, Component{Success: false})
 	report = NewReport(components, "my-public-key")
@@ -246,8 +244,7 @@ func Test_ReportSummary(t *testing.T) {
 						},
 					},
 				},
-				SuccessCount: 0,
-				Success:      false,
+				Success: false,
 			},
 			summary{
 				Components: []componentSummary{
@@ -258,6 +255,7 @@ func Test_ReportSummary(t *testing.T) {
 						Warnings: map[string][]string{
 							"short_name": {"short report"},
 						},
+						Successes:       map[string][]string{},
 						TotalViolations: 1,
 						TotalSuccesses:  0,
 						TotalWarnings:   1,
@@ -282,14 +280,14 @@ func Test_ReportSummary(t *testing.T) {
 						Message: "short report",
 					},
 				},
-				SuccessCount: 0,
-				Success:      false,
+				Success: false,
 			},
 			summary{
 				Components: []componentSummary{
 					{
 						Violations:      map[string][]string{},
 						Warnings:        map[string][]string{},
+						Successes:       map[string][]string{},
 						TotalViolations: 1,
 						TotalWarnings:   1,
 						Success:         false,
@@ -332,8 +330,7 @@ func Test_ReportSummary(t *testing.T) {
 						},
 					},
 				},
-				SuccessCount: 0,
-				Success:      false,
+				Success: false,
 			},
 			summary{
 				Components: []componentSummary{
@@ -344,10 +341,57 @@ func Test_ReportSummary(t *testing.T) {
 						Warnings: map[string][]string{
 							"short_name": {"short report", "There are 1 more \"short_name\" messages"},
 						},
+						Successes:       map[string][]string{},
 						TotalViolations: 2,
 						TotalWarnings:   2,
 						Success:         false,
 						TotalSuccesses:  0,
+						Name:            "",
+					},
+				},
+				Success: false,
+				Key:     "my-public-key",
+			},
+		},
+		{
+			"with successes",
+			Component{
+				Violations: []output.Result{
+					{
+						Message: "violation",
+						Metadata: map[string]interface{}{
+							"code": "violation",
+						},
+					},
+				},
+				Warnings: []output.Result{
+					{
+						Message: "warning",
+						Metadata: map[string]interface{}{
+							"code": "warning",
+						},
+					},
+				},
+				Successes: []output.Result{
+					{
+						Message: "success",
+						Metadata: map[string]interface{}{
+							"code": "success",
+						},
+					},
+				},
+				Success: false,
+			},
+			summary{
+				Components: []componentSummary{
+					{
+						Violations:      map[string][]string{"violation": {"violation"}},
+						Warnings:        map[string][]string{"warning": {"warning"}},
+						Successes:       map[string][]string{"success": {"success"}},
+						TotalViolations: 1,
+						TotalWarnings:   1,
+						TotalSuccesses:  1,
+						Success:         false,
 						Name:            "",
 					},
 				},

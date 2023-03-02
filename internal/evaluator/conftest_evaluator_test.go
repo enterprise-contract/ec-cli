@@ -119,43 +119,45 @@ func TestConftestEvaluatorEvaluate(t *testing.T) {
 		},
 	}
 
-	expectedResults := []output.CheckResult{
+	expectedResults := CheckResults{
 		{
-			Failures: []output.Result{
-				{
-					Message:  "missing effective date",
-					Metadata: map[string]any{},
-				},
-				{
-					Message: "already effective",
-					Metadata: map[string]any{
-						"effective_on": "2021-01-01T00:00:00Z",
+			CheckResult: output.CheckResult{
+				Failures: []output.Result{
+					{
+						Message:  "missing effective date",
+						Metadata: map[string]any{},
+					},
+					{
+						Message: "already effective",
+						Metadata: map[string]any{
+							"effective_on": "2021-01-01T00:00:00Z",
+						},
+					},
+					{
+						Message: "invalid effective date",
+						Metadata: map[string]any{
+							"effective_on": "hangout-not-a-date",
+						},
+					},
+					{
+						Message: "unexpected effective date type",
+						Metadata: map[string]any{
+							"effective_on": true,
+						},
 					},
 				},
-				{
-					Message: "invalid effective date",
-					Metadata: map[string]any{
-						"effective_on": "hangout-not-a-date",
+				Warnings: []output.Result{
+					{
+						Message: "existing warning",
+						Metadata: map[string]any{
+							"effective_on": "2021-01-01T00:00:00Z",
+						},
 					},
-				},
-				{
-					Message: "unexpected effective date type",
-					Metadata: map[string]any{
-						"effective_on": true,
-					},
-				},
-			},
-			Warnings: []output.Result{
-				{
-					Message: "existing warning",
-					Metadata: map[string]any{
-						"effective_on": "2021-01-01T00:00:00Z",
-					},
-				},
-				{
-					Message: "not yet effective",
-					Metadata: map[string]any{
-						"effective_on": "3021-01-01T00:00:00Z",
+					{
+						Message: "not yet effective",
+						Metadata: map[string]any{
+							"effective_on": "3021-01-01T00:00:00Z",
+						},
 					},
 				},
 			},
@@ -215,7 +217,7 @@ func TestConftestEvaluatorEvaluateNoSuccessWarningsOrFailures(t *testing.T) {
 		},
 	}
 
-	expectedResults := []output.CheckResult(nil)
+	expectedResults := CheckResults(nil)
 
 	r := mockTestRunner{}
 
@@ -245,7 +247,7 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 		name    string
 		results []output.CheckResult
 		config  *ecc.EnterpriseContractPolicyConfiguration
-		want    []output.CheckResult
+		want    CheckResults
 	}{
 		{
 			name: "exclude by package name",
@@ -262,13 +264,15 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 				},
 			},
 			config: &ecc.EnterpriseContractPolicyConfiguration{Exclude: []string{"breakfast"}},
-			want: []output.CheckResult{
+			want: CheckResults{
 				{
-					Failures: []output.Result{
-						{Metadata: map[string]any{"code": "lunch.spam"}},
-					},
-					Warnings: []output.Result{
-						{Metadata: map[string]any{"code": "lunch.ham"}},
+					CheckResult: output.CheckResult{
+						Failures: []output.Result{
+							{Metadata: map[string]any{"code": "lunch.spam"}},
+						},
+						Warnings: []output.Result{
+							{Metadata: map[string]any{"code": "lunch.ham"}},
+						},
 					},
 				},
 			},
@@ -288,13 +292,15 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 				},
 			},
 			config: &ecc.EnterpriseContractPolicyConfiguration{Exclude: []string{"breakfast.*"}},
-			want: []output.CheckResult{
+			want: CheckResults{
 				{
-					Failures: []output.Result{
-						{Metadata: map[string]any{"code": "lunch.spam"}},
-					},
-					Warnings: []output.Result{
-						{Metadata: map[string]any{"code": "lunch.ham"}},
+					CheckResult: output.CheckResult{
+						Failures: []output.Result{
+							{Metadata: map[string]any{"code": "lunch.spam"}},
+						},
+						Warnings: []output.Result{
+							{Metadata: map[string]any{"code": "lunch.ham"}},
+						},
 					},
 				},
 			},
@@ -316,13 +322,15 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 			config: &ecc.EnterpriseContractPolicyConfiguration{
 				Exclude: []string{"breakfast.spam", "lunch.ham"},
 			},
-			want: []output.CheckResult{
+			want: CheckResults{
 				{
-					Failures: []output.Result{
-						{Metadata: map[string]any{"code": "lunch.spam"}},
-					},
-					Warnings: []output.Result{
-						{Metadata: map[string]any{"code": "breakfast.ham"}},
+					CheckResult: output.CheckResult{
+						Failures: []output.Result{
+							{Metadata: map[string]any{"code": "lunch.spam"}},
+						},
+						Warnings: []output.Result{
+							{Metadata: map[string]any{"code": "breakfast.ham"}},
+						},
 					},
 				},
 			},
@@ -346,17 +354,19 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 				},
 			},
 			config: &ecc.EnterpriseContractPolicyConfiguration{Exclude: []string{"breakfast:eggs"}},
-			want: []output.CheckResult{
+			want: CheckResults{
 				{
-					Failures: []output.Result{
-						{Metadata: map[string]any{"code": "breakfast.spam", "term": "bacon"}},
-						{Metadata: map[string]any{"code": "breakfast.sausage"}},
-						{Metadata: map[string]any{"code": "not_breakfast.spam", "term": "eggs"}},
-					},
-					Warnings: []output.Result{
-						{Metadata: map[string]any{"code": "breakfast.ham", "term": "bacon"}},
-						{Metadata: map[string]any{"code": "breakfast.hash"}},
-						{Metadata: map[string]any{"code": "not_breakfast.ham", "term": "eggs"}},
+					CheckResult: output.CheckResult{
+						Failures: []output.Result{
+							{Metadata: map[string]any{"code": "breakfast.spam", "term": "bacon"}},
+							{Metadata: map[string]any{"code": "breakfast.sausage"}},
+							{Metadata: map[string]any{"code": "not_breakfast.spam", "term": "eggs"}},
+						},
+						Warnings: []output.Result{
+							{Metadata: map[string]any{"code": "breakfast.ham", "term": "bacon"}},
+							{Metadata: map[string]any{"code": "breakfast.hash"}},
+							{Metadata: map[string]any{"code": "not_breakfast.ham", "term": "eggs"}},
+						},
 					},
 				},
 			},
@@ -380,17 +390,19 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 				},
 			},
 			config: &ecc.EnterpriseContractPolicyConfiguration{Exclude: []string{"breakfast.*:eggs"}},
-			want: []output.CheckResult{
+			want: CheckResults{
 				{
-					Failures: []output.Result{
-						{Metadata: map[string]any{"code": "breakfast.spam", "term": "bacon"}},
-						{Metadata: map[string]any{"code": "breakfast.sausage"}},
-						{Metadata: map[string]any{"code": "not_breakfast.spam", "term": "eggs"}},
-					},
-					Warnings: []output.Result{
-						{Metadata: map[string]any{"code": "breakfast.ham", "term": "bacon"}},
-						{Metadata: map[string]any{"code": "breakfast.hash"}},
-						{Metadata: map[string]any{"code": "not_breakfast.ham", "term": "eggs"}},
+					CheckResult: output.CheckResult{
+						Failures: []output.Result{
+							{Metadata: map[string]any{"code": "breakfast.spam", "term": "bacon"}},
+							{Metadata: map[string]any{"code": "breakfast.sausage"}},
+							{Metadata: map[string]any{"code": "not_breakfast.spam", "term": "eggs"}},
+						},
+						Warnings: []output.Result{
+							{Metadata: map[string]any{"code": "breakfast.ham", "term": "bacon"}},
+							{Metadata: map[string]any{"code": "breakfast.hash"}},
+							{Metadata: map[string]any{"code": "not_breakfast.ham", "term": "eggs"}},
+						},
 					},
 				},
 			},
@@ -414,15 +426,17 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 			config: &ecc.EnterpriseContractPolicyConfiguration{
 				Exclude: []string{"breakfast.spam:eggs", "breakfast.ham:eggs"},
 			},
-			want: []output.CheckResult{
+			want: CheckResults{
 				{
-					Failures: []output.Result{
-						{Metadata: map[string]any{"code": "breakfast.spam", "term": "bacon"}},
-						{Metadata: map[string]any{"code": "breakfast.sausage"}},
-					},
-					Warnings: []output.Result{
-						{Metadata: map[string]any{"code": "breakfast.ham", "term": "bacon"}},
-						{Metadata: map[string]any{"code": "breakfast.hash"}},
+					CheckResult: output.CheckResult{
+						Failures: []output.Result{
+							{Metadata: map[string]any{"code": "breakfast.spam", "term": "bacon"}},
+							{Metadata: map[string]any{"code": "breakfast.sausage"}},
+						},
+						Warnings: []output.Result{
+							{Metadata: map[string]any{"code": "breakfast.ham", "term": "bacon"}},
+							{Metadata: map[string]any{"code": "breakfast.hash"}},
+						},
 					},
 				},
 			},
@@ -442,13 +456,15 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 				},
 			},
 			config: &ecc.EnterpriseContractPolicyConfiguration{Include: []string{"breakfast"}},
-			want: []output.CheckResult{
+			want: CheckResults{
 				{
-					Failures: []output.Result{
-						{Metadata: map[string]any{"code": "breakfast.spam"}},
-					},
-					Warnings: []output.Result{
-						{Metadata: map[string]any{"code": "breakfast.ham"}},
+					CheckResult: output.CheckResult{
+						Failures: []output.Result{
+							{Metadata: map[string]any{"code": "breakfast.spam"}},
+						},
+						Warnings: []output.Result{
+							{Metadata: map[string]any{"code": "breakfast.ham"}},
+						},
 					},
 				},
 			},
@@ -468,13 +484,15 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 				},
 			},
 			config: &ecc.EnterpriseContractPolicyConfiguration{Include: []string{"breakfast.*"}},
-			want: []output.CheckResult{
+			want: CheckResults{
 				{
-					Failures: []output.Result{
-						{Metadata: map[string]any{"code": "breakfast.spam"}},
-					},
-					Warnings: []output.Result{
-						{Metadata: map[string]any{"code": "breakfast.ham"}},
+					CheckResult: output.CheckResult{
+						Failures: []output.Result{
+							{Metadata: map[string]any{"code": "breakfast.spam"}},
+						},
+						Warnings: []output.Result{
+							{Metadata: map[string]any{"code": "breakfast.ham"}},
+						},
 					},
 				},
 			},
@@ -496,13 +514,15 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 			config: &ecc.EnterpriseContractPolicyConfiguration{
 				Include: []string{"breakfast.spam", "lunch.ham"},
 			},
-			want: []output.CheckResult{
+			want: CheckResults{
 				{
-					Failures: []output.Result{
-						{Metadata: map[string]any{"code": "breakfast.spam"}},
-					},
-					Warnings: []output.Result{
-						{Metadata: map[string]any{"code": "lunch.ham"}},
+					CheckResult: output.CheckResult{
+						Failures: []output.Result{
+							{Metadata: map[string]any{"code": "breakfast.spam"}},
+						},
+						Warnings: []output.Result{
+							{Metadata: map[string]any{"code": "lunch.ham"}},
+						},
 					},
 				},
 			},
@@ -526,13 +546,15 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 				},
 			},
 			config: &ecc.EnterpriseContractPolicyConfiguration{Include: []string{"breakfast:eggs"}},
-			want: []output.CheckResult{
+			want: CheckResults{
 				{
-					Failures: []output.Result{
-						{Metadata: map[string]any{"code": "breakfast.spam", "term": "eggs"}},
-					},
-					Warnings: []output.Result{
-						{Metadata: map[string]any{"code": "breakfast.ham", "term": "eggs"}},
+					CheckResult: output.CheckResult{
+						Failures: []output.Result{
+							{Metadata: map[string]any{"code": "breakfast.spam", "term": "eggs"}},
+						},
+						Warnings: []output.Result{
+							{Metadata: map[string]any{"code": "breakfast.ham", "term": "eggs"}},
+						},
 					},
 				},
 			},
@@ -556,13 +578,15 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 				},
 			},
 			config: &ecc.EnterpriseContractPolicyConfiguration{Include: []string{"breakfast.*:eggs"}},
-			want: []output.CheckResult{
+			want: CheckResults{
 				{
-					Failures: []output.Result{
-						{Metadata: map[string]any{"code": "breakfast.spam", "term": "eggs"}},
-					},
-					Warnings: []output.Result{
-						{Metadata: map[string]any{"code": "breakfast.ham", "term": "eggs"}},
+					CheckResult: output.CheckResult{
+						Failures: []output.Result{
+							{Metadata: map[string]any{"code": "breakfast.spam", "term": "eggs"}},
+						},
+						Warnings: []output.Result{
+							{Metadata: map[string]any{"code": "breakfast.ham", "term": "eggs"}},
+						},
 					},
 				},
 			},
@@ -588,13 +612,15 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 			config: &ecc.EnterpriseContractPolicyConfiguration{
 				Include: []string{"breakfast.spam:eggs", "breakfast.ham:eggs"},
 			},
-			want: []output.CheckResult{
+			want: CheckResults{
 				{
-					Failures: []output.Result{
-						{Metadata: map[string]any{"code": "breakfast.spam", "term": "eggs"}},
-					},
-					Warnings: []output.Result{
-						{Metadata: map[string]any{"code": "breakfast.ham", "term": "eggs"}},
+					CheckResult: output.CheckResult{
+						Failures: []output.Result{
+							{Metadata: map[string]any{"code": "breakfast.spam", "term": "eggs"}},
+						},
+						Warnings: []output.Result{
+							{Metadata: map[string]any{"code": "breakfast.ham", "term": "eggs"}},
+						},
 					},
 				},
 			},
@@ -618,7 +644,7 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 					},
 					Warnings: []output.Result{
 						{Metadata: map[string]any{
-							"code": "breakfast.ham", "collections": []string{"foo"}, // intentional to test normalization to []string
+							"code": "breakfast.ham", "collections": []any{"foo"}, // intentional to test normalization to []string
 						}},
 						{Metadata: map[string]any{
 							// Different collection
@@ -632,17 +658,19 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 				},
 			},
 			config: &ecc.EnterpriseContractPolicyConfiguration{Collections: []string{"foo"}},
-			want: []output.CheckResult{
+			want: CheckResults{
 				{
-					Failures: []output.Result{
-						{Metadata: map[string]any{
-							"code": "breakfast.spam", "collections": []string{"foo"},
-						}},
-					},
-					Warnings: []output.Result{
-						{Metadata: map[string]any{
-							"code": "breakfast.ham", "collections": []string{"foo"},
-						}},
+					CheckResult: output.CheckResult{
+						Failures: []output.Result{
+							{Metadata: map[string]any{
+								"code": "breakfast.spam", "collections": []string{"foo"},
+							}},
+						},
+						Warnings: []output.Result{
+							{Metadata: map[string]any{
+								"code": "breakfast.ham", "collections": []string{"foo"},
+							}},
+						},
 					},
 				},
 			},
@@ -679,23 +707,25 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 				Collections: []string{"foo"},
 				Include:     []string{"breakfast"},
 			},
-			want: []output.CheckResult{
+			want: CheckResults{
 				{
-					Failures: []output.Result{
-						{Metadata: map[string]any{
-							"code": "breakfast.spam", "collections": []string{"other"},
-						}},
-						{Metadata: map[string]any{
-							"code": "lunch.spam", "collections": []string{"foo"},
-						}},
-					},
-					Warnings: []output.Result{
-						{Metadata: map[string]any{
-							"code": "breakfast.ham", "collections": []string{"other"},
-						}},
-						{Metadata: map[string]any{
-							"code": "lunch.ham", "collections": []string{"foo"},
-						}},
+					CheckResult: output.CheckResult{
+						Failures: []output.Result{
+							{Metadata: map[string]any{
+								"code": "breakfast.spam", "collections": []string{"other"},
+							}},
+							{Metadata: map[string]any{
+								"code": "lunch.spam", "collections": []string{"foo"},
+							}},
+						},
+						Warnings: []output.Result{
+							{Metadata: map[string]any{
+								"code": "breakfast.ham", "collections": []string{"other"},
+							}},
+							{Metadata: map[string]any{
+								"code": "lunch.ham", "collections": []string{"foo"},
+							}},
+						},
 					},
 				},
 			},
@@ -726,17 +756,19 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 				Collections: []string{"foo"},
 				Exclude:     []string{"lunch"},
 			},
-			want: []output.CheckResult{
+			want: CheckResults{
 				{
-					Failures: []output.Result{
-						{Metadata: map[string]any{
-							"code": "breakfast.spam", "collections": []string{"foo"},
-						}},
-					},
-					Warnings: []output.Result{
-						{Metadata: map[string]any{
-							"code": "breakfast.ham", "collections": []string{"foo"},
-						}},
+					CheckResult: output.CheckResult{
+						Failures: []output.Result{
+							{Metadata: map[string]any{
+								"code": "breakfast.spam", "collections": []string{"foo"},
+							}},
+						},
+						Warnings: []output.Result{
+							{Metadata: map[string]any{
+								"code": "breakfast.ham", "collections": []string{"foo"},
+							}},
+						},
 					},
 				},
 			},
@@ -774,17 +806,19 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 				Include:     []string{"breakfast"},
 				Exclude:     []string{"lunch"},
 			},
-			want: []output.CheckResult{
+			want: CheckResults{
 				{
-					Failures: []output.Result{
-						{Metadata: map[string]any{
-							"code": "breakfast.spam", "collections": []string{"other"},
-						}},
-					},
-					Warnings: []output.Result{
-						{Metadata: map[string]any{
-							"code": "breakfast.ham", "collections": []string{"other"},
-						}},
+					CheckResult: output.CheckResult{
+						Failures: []output.Result{
+							{Metadata: map[string]any{
+								"code": "breakfast.spam", "collections": []string{"other"},
+							}},
+						},
+						Warnings: []output.Result{
+							{Metadata: map[string]any{
+								"code": "breakfast.ham", "collections": []string{"other"},
+							}},
+						},
 					},
 				},
 			},
@@ -812,23 +846,25 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 				},
 			},
 			config: &ecc.EnterpriseContractPolicyConfiguration{},
-			want: []output.CheckResult{
+			want: CheckResults{
 				{
-					Failures: []output.Result{
-						{Metadata: map[string]any{
-							"code": "breakfast.spam", "collections": []string{"foo"},
-						}},
-						{Metadata: map[string]any{
-							"code": "lunch.spam",
-						}},
-					},
-					Warnings: []output.Result{
-						{Metadata: map[string]any{
-							"code": "breakfast.ham", "collections": []string{"foo"},
-						}},
-						{Metadata: map[string]any{
-							"code": "lunch.ham",
-						}},
+					CheckResult: output.CheckResult{
+						Failures: []output.Result{
+							{Metadata: map[string]any{
+								"code": "breakfast.spam", "collections": []string{"foo"},
+							}},
+							{Metadata: map[string]any{
+								"code": "lunch.spam",
+							}},
+						},
+						Warnings: []output.Result{
+							{Metadata: map[string]any{
+								"code": "breakfast.ham", "collections": []string{"foo"},
+							}},
+							{Metadata: map[string]any{
+								"code": "lunch.ham",
+							}},
+						},
 					},
 				},
 			},
@@ -842,10 +878,12 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 				},
 			},
 			config: &ecc.EnterpriseContractPolicyConfiguration{},
-			want: []output.CheckResult{
+			want: CheckResults{
 				{
-					Failures: []output.Result{{Metadata: map[string]any{"code": 0}}},
-					Warnings: []output.Result{{Metadata: map[string]any{"code": false}}},
+					CheckResult: output.CheckResult{
+						Failures: []output.Result{{Metadata: map[string]any{"code": 0}}},
+						Warnings: []output.Result{{Metadata: map[string]any{"code": false}}},
+					},
 				},
 			},
 		},
@@ -858,10 +896,12 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 				},
 			},
 			config: &ecc.EnterpriseContractPolicyConfiguration{},
-			want: []output.CheckResult{
+			want: CheckResults{
 				{
-					Failures: []output.Result{{Metadata: map[string]any{"code": 0}}},
-					Warnings: []output.Result{{Metadata: map[string]any{"code": false}}},
+					CheckResult: output.CheckResult{
+						Failures: []output.Result{{Metadata: map[string]any{"code": 0}}},
+						Warnings: []output.Result{{Metadata: map[string]any{"code": false}}},
+					},
 				},
 			},
 		},
@@ -967,7 +1007,8 @@ func TestAddingMetadata(t *testing.T) {
 		Warnings: []output.Result{
 			{
 				Metadata: map[string]any{
-					"code": "warning1",
+					"code":        "warning1",
+					"collections": []any{"A"},
 				},
 			},
 			{
@@ -979,7 +1020,8 @@ func TestAddingMetadata(t *testing.T) {
 		Failures: []output.Result{
 			{
 				Metadata: map[string]any{
-					"code": "failure1",
+					"code":        "failure1",
+					"collections": []any{"B"},
 				},
 			},
 			{
@@ -989,7 +1031,7 @@ func TestAddingMetadata(t *testing.T) {
 			},
 		},
 	}
-	addMetadata(&result, policyRules{
+	rules := policyRules{
 		"warning1": rule.Info{
 			Title: "Warning1",
 		},
@@ -997,14 +1039,16 @@ func TestAddingMetadata(t *testing.T) {
 			Title:       "Failure2",
 			Description: "Failure 2 description",
 		},
-	})
+	}
+	addMetadata(&result, rules)
 
 	assert.Equal(t, output.CheckResult{
 		Warnings: []output.Result{
 			{
 				Metadata: map[string]any{
-					"code":  "warning1",
-					"title": "Warning1",
+					"code":        "warning1",
+					"title":       "Warning1",
+					"collections": []string{"A"},
 				},
 			},
 			{
@@ -1016,7 +1060,8 @@ func TestAddingMetadata(t *testing.T) {
 		Failures: []output.Result{
 			{
 				Metadata: map[string]any{
-					"code": "failure1",
+					"code":        "failure1",
+					"collections": []string{"B"},
 				},
 			},
 			{
@@ -1028,4 +1073,6 @@ func TestAddingMetadata(t *testing.T) {
 			},
 		},
 	}, result)
+
+	assert.Empty(t, rules)
 }

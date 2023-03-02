@@ -31,6 +31,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/hacbs-contract/ec-cli/internal/applicationsnapshot"
+	"github.com/hacbs-contract/ec-cli/internal/evaluator"
 	"github.com/hacbs-contract/ec-cli/internal/output"
 	"github.com/hacbs-contract/ec-cli/internal/policy"
 	"github.com/hacbs-contract/ec-cli/internal/utils"
@@ -174,11 +175,21 @@ func Test_ValidateImageCommand(t *testing.T) {
 			AttestationSyntaxCheck: output.VerificationStatus{
 				Passed: true,
 			},
-			PolicyCheck: []conftestOutput.CheckResult{
+			PolicyCheck: evaluator.CheckResults{
 				{
-					FileName:  "test.json",
-					Namespace: "test.main",
-					Successes: 14,
+					CheckResult: conftestOutput.CheckResult{
+						FileName:  "test.json",
+						Namespace: "test.main",
+						Successes: 1,
+					},
+					Successes: []conftestOutput.Result{
+						{
+							Message: "Pass",
+							Metadata: map[string]interface{}{
+								"code": "policy.nice",
+							},
+						},
+					},
 				},
 			},
 			ImageURL: url,
@@ -211,8 +222,10 @@ func Test_ValidateImageCommand(t *testing.T) {
 			"containerImage": "registry/image:tag",
 			"violations": [],
 			"warnings": [],
-			"success": true,
-			"successCount": 14
+			"successes": [
+				{"msg": "Pass", "metadata": {"code": "policy.nice"}}
+			],
+			"success": true
 		  }
 		]
 	  }`, mockPublicKey), out.String())
@@ -350,8 +363,8 @@ func Test_FailureImageAccessibility(t *testing.T) {
 			  {"msg": "skipped due to inaccessible image ref"}
 			],
 			"warnings": [],
-			"success": false,
-			"successCount": 0
+			"successes": [],
+			"success": false
 		  }
 		]
 	  }`, mockPublicKey), out.String())
@@ -403,8 +416,8 @@ func Test_FailureOutput(t *testing.T) {
 			  {"msg": "failed attestation signature check"}
 			],
 			"warnings": [],
-			"success": false,
-			"successCount": 0
+			"successes": [],
+			"success": false
 		  }
 		]
 	  }`, mockPublicKey), out.String())
@@ -422,11 +435,13 @@ func Test_WarningOutput(t *testing.T) {
 			AttestationSignatureCheck: output.VerificationStatus{
 				Passed: true,
 			},
-			PolicyCheck: []conftestOutput.CheckResult{
+			PolicyCheck: evaluator.CheckResults{
 				{
-					Warnings: []conftestOutput.Result{
-						{Message: "warning for policy check 1"},
-						{Message: "warning for policy check 2"},
+					CheckResult: conftestOutput.CheckResult{
+						Warnings: []conftestOutput.Result{
+							{Message: "warning for policy check 1"},
+							{Message: "warning for policy check 2"},
+						},
 					},
 				},
 			},
@@ -462,8 +477,8 @@ func Test_WarningOutput(t *testing.T) {
 				{"msg": "warning for policy check 1"},
 				{"msg": "warning for policy check 2"}
 			],
-			"success": true,
-			"successCount": 0
+			"successes": [],
+			"success": true
 		  }
 		]
 	  }`, mockPublicKey), out.String())
