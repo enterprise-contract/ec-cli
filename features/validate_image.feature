@@ -611,6 +611,7 @@ Feature: evaluate enterprise contract
     }
     """
 
+  @focus
   Scenario: policy rule filtering
     Given a key pair named "known"
     Given an image named "acceptance/ec-happy-day"
@@ -655,6 +656,29 @@ Feature: evaluate enterprise contract
             {"metadata": {"code": "filtering.always_pass"}, "msg": "Pass"}
           ]
         }
-      ]
+      ],
+      "policy": {
+        "configuration": {
+          "collections": [
+            "stamps"
+          ],
+          "exclude": [
+            "filtering.always_fail",
+            "filtering.always_fail_with_collection"
+          ],
+          "include": [
+            "filtering.always_pass"
+          ]
+        },
+        "publicKey": ${known_PUBLIC_KEY_JSON},
+        "rekorUrl": "${REKOR}",
+        "sources": [
+          {
+            "policy": [
+              "git::http://${GITHOST}/git/happy-day-policy.git"
+            ]
+          }
+        ]
+      }
     }
     """
