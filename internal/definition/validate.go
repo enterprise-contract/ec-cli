@@ -19,10 +19,11 @@ package definition
 import (
 	"context"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/hacbs-contract/ec-cli/internal/evaluation_target/definition"
 	"github.com/hacbs-contract/ec-cli/internal/output"
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
-	log "github.com/sirupsen/logrus"
 )
 
 var def_file = definition.NewDefinition
