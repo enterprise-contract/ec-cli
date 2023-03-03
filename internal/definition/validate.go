@@ -14,22 +14,22 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package definitionfile
+package definition
 
 import (
 	"context"
 
-	"github.com/hacbs-contract/ec-cli/internal/evaluation_target/definitionfile"
+	"github.com/hacbs-contract/ec-cli/internal/evaluation_target/definition"
 	"github.com/hacbs-contract/ec-cli/internal/output"
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
 	log "github.com/sirupsen/logrus"
 )
 
-var def_file = definitionfile.NewDefinitionFile
+var def_file = definition.NewDefinition
 
 // ValidatePipeline calls NewPipelineEvaluator to obtain an PipelineEvaluator. It then executes the associated TestRunner
 // which tests the associated pipeline file(s) against the associated policies, and displays the output.
-func ValidateDefinitionFile(ctx context.Context, fpath string, sources []source.PolicySource) (*output.Output, error) {
+func ValidateDefinition(ctx context.Context, fpath string, sources []source.PolicySource) (*output.Output, error) {
 	p, err := def_file(ctx, fpath, sources)
 	if err != nil {
 		log.Debug("Failed to create pipeline definition file!")

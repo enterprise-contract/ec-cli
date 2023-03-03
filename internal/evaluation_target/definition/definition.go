@@ -14,7 +14,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package definitionfile
+package definition
 
 import (
 	"context"
@@ -32,13 +32,13 @@ var newConftestEvaluator = evaluator.NewConftestEvaluator
 var pathExists = afero.Exists
 
 // DefinitionFile represents the structure needed to evaluate a pipeline definition file
-type DefinitionFile struct {
+type Definition struct {
 	Fpath     string
 	Evaluator evaluator.Evaluator
 }
 
 // NewPipelineDefinitionFile returns a DefinitionFile struct with FPath and evaluator ready to use
-func NewDefinitionFile(ctx context.Context, fpath string, sources []source.PolicySource) (*DefinitionFile, error) {
+func NewDefinition(ctx context.Context, fpath string, sources []source.PolicySource) (*Definition, error) {
 	fs := utils.FS(ctx)
 	exists, err := pathExists(fs, fpath)
 	if err != nil {
@@ -47,7 +47,7 @@ func NewDefinitionFile(ctx context.Context, fpath string, sources []source.Polic
 	if !exists {
 		return nil, fmt.Errorf("fpath '%s' does not exist", fpath)
 	}
-	p := &DefinitionFile{
+	p := &Definition{
 		Fpath: fpath,
 	}
 

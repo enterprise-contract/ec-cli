@@ -14,7 +14,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package definitionfile
+package definition
 
 import (
 	"encoding/json"

@@ -23,16 +23,16 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/spf13/cobra"
 
-	"github.com/hacbs-contract/ec-cli/internal/definitionfile"
+	"github.com/hacbs-contract/ec-cli/internal/definition"
 	"github.com/hacbs-contract/ec-cli/internal/format"
 	"github.com/hacbs-contract/ec-cli/internal/output"
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
 	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
 
-type definitionFileValidationFn func(context.Context, string, []source.PolicySource) (*output.Output, error)
+type definitionValidationFn func(context.Context, string, []source.PolicySource) (*output.Output, error)
 
-func validateDefinitionFileCmd(validate definitionFileValidationFn) *cobra.Command {
+func validateDefinitionCmd(validate definitionValidationFn) *cobra.Command {
 	var data = struct {
 		filePaths  []string
 		policyURLs []string
@@ -45,7 +45,7 @@ func validateDefinitionFileCmd(validate definitionFileValidationFn) *cobra.Comma
 		output:     []string{"json"},
 	}
 	cmd := &cobra.Command{
-		Use:   "definition-file",
+		Use:   "definition",
 		Short: "Validate definition file conformance with the Enterprise Contract",
 
 		Long: hd.Doc(`
@@ -58,15 +58,15 @@ func validateDefinitionFileCmd(validate definitionFileValidationFn) *cobra.Comma
 		Example: hd.Doc(`
 			Validate multiple definition files via comma-separated value:
 
-			  ec validate definition-file --file </path/to/file>,</path/to/other/file>
+			  ec validate definition --file </path/to/file>,</path/to/other/file>
 
 			Validate multiple definition files by repeating --file:
 
-			  ec validate definition-file --file </path/to/file> --file /path/to/other.file
+			  ec validate definition --file </path/to/file> --file /path/to/other.file
 
 			Specify different policy and data sources:
 
-			  ec validate definition-file --file </path/to/pipeline/file> \
+			  ec validate definition --file </path/to/pipeline/file> \
 				--policy git::https://github.com/hacbs-contract/ec-policies//policy/lib \
 				--policy git::https://github.com/hacbs-contract/ec-policies//policy/pipeline \
 				--data git::https://github.com/hacbs-contract/ec-policies//data
@@ -74,7 +74,7 @@ func validateDefinitionFileCmd(validate definitionFileValidationFn) *cobra.Comma
 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var allErrors error
-			report := definitionfile.Report{}
+			report := definition.Report{}
 			for i := range data.filePaths {
 				fpath := data.filePaths[i]
 				var sources []source.PolicySource
@@ -91,7 +91,7 @@ func validateDefinitionFileCmd(validate definitionFileValidationFn) *cobra.Comma
 					report.Add(*o)
 				}
 			}
-			p := format.NewTargetParser(definitionfile.JSONReport, cmd.OutOrStdout(), utils.FS(cmd.Context()))
+			p := format.NewTargetParser(definition.JSONReport, cmd.OutOrStdout(), utils.FS(cmd.Context()))
 			for _, target := range data.output {
 				if err := report.Write(target, p); err != nil {
 					allErrors = multierror.Append(allErrors, err)
@@ -104,7 +104,7 @@ func validateDefinitionFileCmd(validate definitionFileValidationFn) *cobra.Comma
 		},
 	}
 
-	cmd.Flags().StringSliceVarP(&data.filePaths, "definition-file", "p", data.filePaths,
+	cmd.Flags().StringSliceVarP(&data.filePaths, "file", "p", data.filePaths,
 		"path to definition YAML/JSON file (required)")
 
 	cmd.Flags().StringSliceVar(&data.policyURLs, "policy", data.policyURLs,
@@ -118,7 +118,7 @@ func validateDefinitionFileCmd(validate definitionFileValidationFn) *cobra.Comma
 		path for stdout, e.g. yaml. May be used multiple times. Possible formats are json and yaml
 	`))
 
-	if err := cmd.MarkFlagRequired("definition-file"); err != nil {
+	if err := cmd.MarkFlagRequired("file"); err != nil {
 		panic(err)
 	}
 

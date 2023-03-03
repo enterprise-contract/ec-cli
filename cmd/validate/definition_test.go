@@ -40,15 +40,15 @@ func TestValidateDefinitionFileCommandOutput(t *testing.T) {
 		return &output2.Output{PolicyCheck: evaluator.CheckResults{{CheckResult: output.CheckResult{FileName: fpath}}}}, nil
 	}
 
-	cmd := validateDefinitionFileCmd(validate)
+	cmd := validateDefinitionCmd(validate)
 
 	var out bytes.Buffer
 	cmd.SetOut(&out)
 
 	cmd.SetArgs([]string{
-		"--pipeline-file",
+		"--file",
 		"/path/file1.yaml",
-		"--pipeline-file",
+		"--file",
 		"/path/file2.yaml",
 	})
 
@@ -83,13 +83,13 @@ func TestValidateDefinitionFilePolicySources(t *testing.T) {
 		return &output2.Output{}, nil
 	}
 
-	cmd := validateDefinitionFileCmd(validate)
+	cmd := validateDefinitionCmd(validate)
 
 	var out bytes.Buffer
 	cmd.SetOut(&out)
 
 	cmd.SetArgs([]string{
-		"--pipeline-file",
+		"--file",
 		"/path/file1.yaml",
 		"--policy",
 		"spam-policy-source",
@@ -153,13 +153,13 @@ func TestDefinitionFileOutputFormats(t *testing.T) {
 				return &output2.Output{PolicyCheck: evaluator.CheckResults{{CheckResult: output.CheckResult{FileName: fpath}}}}, nil
 			}
 
-			cmd := validateDefinitionFileCmd(validate)
+			cmd := validateDefinitionCmd(validate)
 
 			var out bytes.Buffer
 			cmd.SetOut(&out)
 
 			cmd.SetArgs(append([]string{
-				"--pipeline-file",
+				"--file",
 				"/path/file1.yaml",
 			}, c.output...))
 
@@ -183,16 +183,16 @@ func TestValidateDefinitionFileCommandErrors(t *testing.T) {
 		return nil, errors.New(fpath)
 	}
 
-	cmd := validateDefinitionFileCmd(validate)
+	cmd := validateDefinitionCmd(validate)
 
 	var out bytes.Buffer
 	cmd.SetOut(&out)
 	cmd.SilenceUsage = true
 
 	cmd.SetArgs([]string{
-		"--pipeline-file",
+		"--file",
 		"/path/file1.yaml",
-		"--pipeline-file",
+		"--file",
 		"/path/file2.yaml",
 	})
 

@@ -14,7 +14,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package definitionfile
+package definition
 
 import (
 	"context"
@@ -25,7 +25,7 @@ import (
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/hacbs-contract/ec-cli/internal/evaluation_target/definitionfile"
+	"github.com/hacbs-contract/ec-cli/internal/evaluation_target/definition"
 	"github.com/hacbs-contract/ec-cli/internal/evaluator"
 	"github.com/hacbs-contract/ec-cli/internal/output"
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
@@ -49,9 +49,9 @@ func (b badMockEvaluator) Evaluate(ctx context.Context, inputs []string) (evalua
 func (e badMockEvaluator) Destroy() {
 }
 
-func mockNewPipelineDefinitionFile(ctx context.Context, fpath string, sources []source.PolicySource) (*definitionfile.DefinitionFile, error) {
+func mockNewPipelineDefinitionFile(ctx context.Context, fpath string, sources []source.PolicySource) (*definition.Definition, error) {
 	if fpath == "good" {
-		return &definitionfile.DefinitionFile{
+		return &definition.Definition{
 			Evaluator: mockEvaluator{},
 		}, nil
 
@@ -59,8 +59,8 @@ func mockNewPipelineDefinitionFile(ctx context.Context, fpath string, sources []
 	return nil, fmt.Errorf("fpath '%s' does not exist", fpath)
 }
 
-func badMockNewPipelineDefinitionFile(ctx context.Context, fpath string, sources []source.PolicySource) (*definitionfile.DefinitionFile, error) {
-	return &definitionfile.DefinitionFile{
+func badMockNewPipelineDefinitionFile(ctx context.Context, fpath string, sources []source.PolicySource) (*definition.Definition, error) {
+	return &definition.Definition{
 		Evaluator: badMockEvaluator{},
 	}, nil
 }
@@ -71,7 +71,7 @@ func Test_ValidatePipeline(t *testing.T) {
 		fpath   string
 		err     error
 		output  *output.Output
-		defFunc func(ctx context.Context, fpath string, sources []source.PolicySource) (*definitionfile.DefinitionFile, error)
+		defFunc func(ctx context.Context, fpath string, sources []source.PolicySource) (*definition.Definition, error)
 	}{
 		{
 			name:    "validation succeeds",
@@ -101,7 +101,7 @@ func Test_ValidatePipeline(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			def_file = tt.defFunc
-			output, err := ValidateDefinitionFile(ctx, tt.fpath, []source.PolicySource{})
+			output, err := ValidateDefinition(ctx, tt.fpath, []source.PolicySource{})
 			assert.Equal(t, tt.err, err)
 			assert.Equal(t, tt.output, output)
 		})
