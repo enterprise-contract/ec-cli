@@ -521,3 +521,51 @@ Feature: evaluate enterprise contract
       "success": false
     }
     """
+
+  Scenario: policy rule filtering
+    Given a key pair named "known"
+    Given an image named "acceptance/ec-happy-day"
+    Given a valid image signature of "acceptance/ec-happy-day" image signed by the "known" key
+    Given a valid Rekor entry for image signature of "acceptance/ec-happy-day"
+    Given a valid attestation of "acceptance/ec-happy-day" signed by the "known" key
+    Given a valid Rekor entry for attestation of "acceptance/ec-happy-day"
+    Given a git repository named "happy-day-policy" with
+      | filtering.rego | examples/filtering.rego |
+    Given policy configuration named "ec-policy" with specification
+    """
+    {
+      "configuration": {
+        "collections": ["stamps"],
+        "include": ["filtering.always_pass"],
+        "exclude": ["filtering.always_fail", "filtering.always_fail_with_collection"]
+      },
+      "sources": [
+        {
+          "policy": [
+            "git::http://${GITHOST}/git/happy-day-policy.git"
+          ]
+        }
+      ]
+    }
+    """
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
+    Then the exit status should be 0
+    Then the standard output should contain
+    """
+    {
+      "success": true,
+      "key": ${known_PUBLIC_KEY_JSON},
+      "components": [
+        {
+          "name": "Unnamed",
+          "containerImage": "localhost:(\\d+)/acceptance/ec-happy-day",
+          "success": true,
+          "signatures": ${ATTESTATION_SIGNATURES_JSON},
+          "successes": [
+            {"metadata": {"code": "filtering.always_pass_with_collection"}, "msg": "Pass"},
+            {"metadata": {"code": "filtering.always_pass"}, "msg": "Pass"}
+          ]
+        }
+      ]
+    }
+    """
