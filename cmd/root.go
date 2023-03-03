@@ -24,7 +24,6 @@ import (
 	hd "github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 
-	"github.com/hacbs-contract/ec-cli/cmd/experimental"
 	"github.com/hacbs-contract/ec-cli/cmd/fetch"
 	"github.com/hacbs-contract/ec-cli/cmd/inspect"
 	"github.com/hacbs-contract/ec-cli/cmd/track"
@@ -78,7 +77,6 @@ func Execute() {
 }
 
 func init() {
-	RootCmd.AddCommand(experimental.ExperimentalCmd)
 	RootCmd.AddCommand(fetch.FetchCmd)
 	RootCmd.AddCommand(inspect.InspectCmd)
 	RootCmd.AddCommand(track.TrackCmd)

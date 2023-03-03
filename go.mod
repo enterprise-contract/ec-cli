@@ -10,7 +10,6 @@ require (
 	github.com/go-git/go-git/v5 v5.6.0
 	github.com/go-logr/logr v1.2.3
 	github.com/google/go-containerregistry v0.13.0
-	github.com/google/go-github/v45 v45.2.0
 	github.com/hacbs-contract/enterprise-contract-controller/api v0.0.0-20221220151524-ad0f637efacf
 	github.com/hako/durafmt v0.0.0-20210608085754-5c1018a4e16b
 	github.com/hashicorp/go-multierror v1.1.1
@@ -29,9 +28,7 @@ require (
 	github.com/stretchr/testify v1.8.2
 	github.com/stuart-warren/yamlfmt v0.1.2
 	github.com/tektoncd/pipeline v0.42.0
-	github.com/whilp/git-urls v1.0.0
 	golang.org/x/exp v0.0.0-20220823124025-807a23277127
-	golang.org/x/oauth2 v0.5.0
 	golang.org/x/tools v0.6.0
 	k8s.io/apimachinery v0.26.2
 	k8s.io/client-go v0.26.2
@@ -184,6 +181,7 @@ require (
 	github.com/google/certificate-transparency-go v1.1.3 // indirect
 	github.com/google/gnostic v0.6.9 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
+	github.com/google/go-github/v45 v45.2.0 // indirect
 	github.com/google/go-jsonnet v0.18.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
@@ -331,6 +329,7 @@ require (
 	golang.org/x/crypto v0.6.0 // indirect
 	golang.org/x/mod v0.8.0 // indirect
 	golang.org/x/net v0.7.0 // indirect
+	golang.org/x/oauth2 v0.5.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
 	golang.org/x/sys v0.5.0 // indirect
 	golang.org/x/term v0.5.0 // indirect

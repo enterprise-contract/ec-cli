@@ -611,7 +611,6 @@ Feature: evaluate enterprise contract
     }
     """
 
-  @focus
   Scenario: policy rule filtering
     Given a key pair named "known"
     Given an image named "acceptance/ec-happy-day"
