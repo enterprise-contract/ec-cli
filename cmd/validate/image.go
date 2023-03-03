@@ -211,11 +211,10 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 				data.output = append(data.output, fmt.Sprintf("%s=%s", applicationsnapshot.JSON, data.outputFile))
 			}
 
-			publicKeyPEM, err := data.policy.PublicKeyPEM()
+			report, err := applicationsnapshot.NewReport(components, data.policy)
 			if err != nil {
 				return err
 			}
-			report := applicationsnapshot.NewReport(components, string(publicKeyPEM))
 			p := format.NewTargetParser(applicationsnapshot.JSON, cmd.OutOrStdout(), utils.FS(cmd.Context()))
 			if err := report.WriteAll(data.output, p); err != nil {
 				return err

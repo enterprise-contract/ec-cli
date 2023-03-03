@@ -22,12 +22,14 @@ import (
 	"time"
 
 	"github.com/ghodss/yaml"
+	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/hashicorp/go-multierror"
 	conftestOutput "github.com/open-policy-agent/conftest/output"
 	appstudioshared "github.com/redhat-appstudio/managed-gitops/appstudio-shared/apis/appstudio.redhat.com/v1alpha1"
 
 	"github.com/hacbs-contract/ec-cli/internal/format"
 	"github.com/hacbs-contract/ec-cli/internal/output"
+	"github.com/hacbs-contract/ec-cli/internal/policy"
 )
 
 type Component struct {
@@ -42,8 +44,9 @@ type Component struct {
 type Report struct {
 	Success    bool `json:"success"`
 	created    time.Time
-	Components []Component `json:"components"`
-	Key        string      `json:"key"`
+	Components []Component                      `json:"components"`
+	Key        string                           `json:"key"`
+	Policy     ecc.EnterpriseContractPolicySpec `json:"policy"`
 }
 
 type summary struct {
@@ -86,7 +89,7 @@ const (
 
 // WriteReport returns a new instance of Report representing the state of
 // components from the snapshot.
-func NewReport(components []Component, key string) Report {
+func NewReport(components []Component, policy policy.Policy) (Report, error) {
 	success := true
 
 	// Set the report success, remains true if all components are successful
@@ -97,12 +100,18 @@ func NewReport(components []Component, key string) Report {
 		}
 	}
 
+	key, err := policy.PublicKeyPEM()
+	if err != nil {
+		return Report{}, err
+	}
+
 	return Report{
 		Success:    success,
 		Components: components,
 		created:    time.Now().UTC(),
-		Key:        key,
-	}
+		Key:        string(key),
+		Policy:     policy.Spec(),
+	}, nil
 }
 
 // WriteAll writes the report to all the given targets.

@@ -70,9 +70,12 @@ type policy struct {
 
 // PublicKeyPEM returns the PublicKey in PEM format.
 func (p *policy) PublicKeyPEM() ([]byte, error) {
+	if p.checkOpts == nil || p.checkOpts.SigVerifier == nil {
+		return nil, errors.New("no check options or sig verifier configured")
+	}
 	pk, err := p.checkOpts.SigVerifier.PublicKey()
 	if err != nil {
-		return []byte{}, err
+		return nil, err
 	}
 	return cryptoutils.MarshalPublicKeyToPEM(pk)
 }
