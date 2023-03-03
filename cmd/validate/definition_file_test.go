@@ -29,6 +29,7 @@ import (
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/hacbs-contract/ec-cli/internal/evaluator"
 	output2 "github.com/hacbs-contract/ec-cli/internal/output"
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
 	"github.com/hacbs-contract/ec-cli/internal/utils"
@@ -36,7 +37,7 @@ import (
 
 func TestValidateDefinitionFileCommandOutput(t *testing.T) {
 	validate := func(_ context.Context, fpath string, _ []source.PolicySource) (*output2.Output, error) {
-		return &output2.Output{PolicyCheck: []output.CheckResult{{FileName: fpath}}}, nil
+		return &output2.Output{PolicyCheck: evaluator.CheckResults{{CheckResult: output.CheckResult{FileName: fpath}}}}, nil
 	}
 
 	cmd := validateDefinitionFileCmd(validate)
@@ -149,7 +150,7 @@ func TestDefinitionFileOutputFormats(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			fs := afero.NewMemMapFs()
 			validate := func(_ context.Context, fpath string, sources []source.PolicySource) (*output2.Output, error) {
-				return &output2.Output{PolicyCheck: []output.CheckResult{{FileName: fpath}}}, nil
+				return &output2.Output{PolicyCheck: evaluator.CheckResults{{CheckResult: output.CheckResult{FileName: fpath}}}}, nil
 			}
 
 			cmd := validateDefinitionFileCmd(validate)

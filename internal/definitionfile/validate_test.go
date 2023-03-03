@@ -22,11 +22,11 @@ import (
 	"fmt"
 	"testing"
 
-	conftestout "github.com/open-policy-agent/conftest/output"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/hacbs-contract/ec-cli/internal/evaluation_target/definitionfile"
+	"github.com/hacbs-contract/ec-cli/internal/evaluator"
 	"github.com/hacbs-contract/ec-cli/internal/output"
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
 	"github.com/hacbs-contract/ec-cli/internal/utils"
@@ -35,14 +35,14 @@ import (
 type mockEvaluator struct{}
 type badMockEvaluator struct{}
 
-func (e mockEvaluator) Evaluate(ctx context.Context, inputs []string) ([]conftestout.CheckResult, error) {
-	return []conftestout.CheckResult{}, nil
+func (e mockEvaluator) Evaluate(ctx context.Context, inputs []string) (evaluator.CheckResults, error) {
+	return evaluator.CheckResults{}, nil
 }
 
 func (e mockEvaluator) Destroy() {
 }
 
-func (b badMockEvaluator) Evaluate(ctx context.Context, inputs []string) ([]conftestout.CheckResult, error) {
+func (b badMockEvaluator) Evaluate(ctx context.Context, inputs []string) (evaluator.CheckResults, error) {
 	return nil, errors.New("Evaluator error")
 }
 
@@ -77,7 +77,7 @@ func Test_ValidatePipeline(t *testing.T) {
 			name:    "validation succeeds",
 			fpath:   "good",
 			err:     nil,
-			output:  &output.Output{PolicyCheck: []conftestout.CheckResult{}},
+			output:  &output.Output{PolicyCheck: evaluator.CheckResults{}},
 			defFunc: mockNewPipelineDefinitionFile,
 		},
 		{

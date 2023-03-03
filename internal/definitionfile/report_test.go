@@ -19,10 +19,11 @@ package definitionfile
 import (
 	"testing"
 
-	cOutput "github.com/open-policy-agent/conftest/output"
+	conftest "github.com/open-policy-agent/conftest/output"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/hacbs-contract/ec-cli/internal/evaluator"
 	"github.com/hacbs-contract/ec-cli/internal/format"
 	"github.com/hacbs-contract/ec-cli/internal/output"
 )
@@ -37,7 +38,7 @@ func TestReport(t *testing.T) {
 		{
 			name: "success",
 			output: []output.Output{
-				{PolicyCheck: []cOutput.CheckResult{{FileName: "/path/to/pipeline.json"}}},
+				{PolicyCheck: evaluator.CheckResults{{CheckResult: conftest.CheckResult{FileName: "/path/to/pipeline.json"}}}},
 			},
 			expect: `[{
 				"filename": "/path/to/pipeline.json",
@@ -50,12 +51,14 @@ func TestReport(t *testing.T) {
 			name: "warnings",
 			output: []output.Output{
 				{
-					PolicyCheck: []cOutput.CheckResult{
+					PolicyCheck: evaluator.CheckResults{
 						{
-							FileName: "/path/to/pipeline.json",
-							Warnings: []cOutput.Result{
-								{Message: "running low in spam"},
-								{Message: "not all like spam"},
+							CheckResult: conftest.CheckResult{
+								FileName: "/path/to/pipeline.json",
+								Warnings: []conftest.Result{
+									{Message: "running low in spam"},
+									{Message: "not all like spam"},
+								},
 							},
 						},
 					},
@@ -72,12 +75,14 @@ func TestReport(t *testing.T) {
 			name: "violations",
 			output: []output.Output{
 				{
-					PolicyCheck: []cOutput.CheckResult{
+					PolicyCheck: evaluator.CheckResults{
 						{
-							FileName: "/path/to/pipeline.json",
-							Failures: []cOutput.Result{
-								{Message: "out of spam!"},
-								{Message: "spam 💔"},
+							CheckResult: conftest.CheckResult{
+								FileName: "/path/to/pipeline.json",
+								Failures: []conftest.Result{
+									{Message: "out of spam!"},
+									{Message: "spam 💔"},
+								},
 							},
 						},
 					},
