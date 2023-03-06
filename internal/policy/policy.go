@@ -19,19 +19,24 @@ package policy
 import (
 	"context"
 	"crypto"
+	"crypto/sha256"
+	"crypto/x509"
+	"encoding/hex"
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/ghodss/yaml"
 	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/hashicorp/go-multierror"
-	"github.com/sigstore/cosign/cmd/cosign/cli/rekor"
-	"github.com/sigstore/cosign/pkg/cosign"
-	cosignSig "github.com/sigstore/cosign/pkg/signature"
+	"github.com/sigstore/cosign/v2/cmd/cosign/cli/rekor"
+	"github.com/sigstore/cosign/v2/pkg/cosign"
+	cosignSig "github.com/sigstore/cosign/v2/pkg/signature"
 	"github.com/sigstore/sigstore/pkg/cryptoutils"
 	sigstoreSig "github.com/sigstore/sigstore/pkg/signature"
+	"github.com/sigstore/sigstore/pkg/tuf"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/hacbs-contract/ec-cli/internal/kubernetes"
@@ -251,17 +256,43 @@ func checkOpts(ctx context.Context, p *policy) (*cosign.CheckOpts, error) {
 	}
 	opts.SigVerifier = verifier
 
-	rekorUrl := p.RekorUrl
-	if rekorUrl != "" {
-		rekorClient, err := rekor.NewClient(rekorUrl)
+	if p.RekorUrl == "" {
+		opts.IgnoreTlog = true
+	} else {
+		rekorClient, err := rekor.NewClient(p.RekorUrl)
 		if err != nil {
-			log.Debugf("Problem creating a rekor client using url %q", rekorUrl)
+			log.Debugf("Problem creating a rekor client using url %q", p.RekorUrl)
 			return nil, err
 		}
 
 		opts.RekorClient = rekorClient
 		log.Debug("Rekor client created")
+
+		// TODO the Rekor public key and entry id should originate in the policy
+		rekorPublicKeyPEM := os.Getenv("REKOR_PUBLIC_KEY")
+		if rekorPublicKeyPEM != "" {
+			rekorPublicKey, err := cryptoutils.UnmarshalPEMToPublicKey([]byte(rekorPublicKeyPEM))
+			if err != nil {
+				return nil, err
+			}
+			rekorPublicKeyBytes, err := x509.MarshalPKIXPublicKey(rekorPublicKey)
+			if err != nil {
+				return nil, err
+			}
+			digest := sha256.Sum256(rekorPublicKeyBytes)
+			logId := hex.EncodeToString(digest[:])
+
+			opts.RekorPubKeys = &cosign.TrustedTransparencyLogPubKeys{
+				Keys: map[string]cosign.TransparencyLogPubKey{
+					logId: {
+						PubKey: rekorPublicKey,
+						Status: tuf.Active,
+					},
+				},
+			}
+		}
 	}
+
 	return &opts, nil
 }
 

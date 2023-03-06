@@ -22,7 +22,7 @@ import (
 	"fmt"
 
 	"github.com/cucumber/godog"
-	"github.com/sigstore/cosign/pkg/cosign"
+	"github.com/sigstore/cosign/v2/pkg/cosign"
 	"github.com/sigstore/sigstore/pkg/signature"
 
 	"github.com/hacbs-contract/ec-cli/acceptance/testenv"

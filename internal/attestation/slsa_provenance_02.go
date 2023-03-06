@@ -24,8 +24,8 @@ import (
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/in-toto/in-toto-golang/in_toto"
 	v02 "github.com/in-toto/in-toto-golang/in_toto/slsa_provenance/v0.2"
-	"github.com/sigstore/cosign/pkg/cosign"
-	"github.com/sigstore/cosign/pkg/types"
+	"github.com/sigstore/cosign/v2/pkg/cosign"
+	"github.com/sigstore/cosign/v2/pkg/types"
 
 	"github.com/hacbs-contract/ec-cli/internal/output"
 )

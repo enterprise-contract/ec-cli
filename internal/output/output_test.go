@@ -21,11 +21,10 @@ package output
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"testing"
 
 	"github.com/open-policy-agent/conftest/output"
-	"github.com/sigstore/cosign/pkg/cosign"
+	"github.com/sigstore/cosign/v2/pkg/cosign"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/hacbs-contract/ec-cli/internal/evaluator"
@@ -626,6 +625,9 @@ func TestSetImageAccessibleCheckFromError(t *testing.T) {
 }
 
 func TestSetImageSignatureCheckFromError(t *testing.T) {
+	noMatchingSignatures := cosign.NewVerificationError("kaboom!")
+	noMatchingSignatures.(*cosign.VerificationError).SetErrorType(cosign.ErrNoMatchingSignaturesType)
+
 	cases := []struct {
 		name           string
 		err            error
@@ -647,7 +649,7 @@ func TestSetImageSignatureCheckFromError(t *testing.T) {
 		{
 			name:           "missing signatures failure",
 			expectedPassed: false,
-			err:            fmt.Errorf("%w: kaboom!", cosign.ErrNoMatchingSignatures),
+			err:            noMatchingSignatures,
 			expectedResult: &output.Result{
 				Message: missingSignatureMessage,
 			},
@@ -665,6 +667,9 @@ func TestSetImageSignatureCheckFromError(t *testing.T) {
 	}
 }
 func TestSetAttestationSignatureCheckFromError(t *testing.T) {
+	noMatchingAttestations := cosign.NewVerificationError("kaboom!")
+	noMatchingAttestations.(*cosign.VerificationError).SetErrorType(cosign.ErrNoMatchingAttestationsType)
+
 	cases := []struct {
 		name           string
 		err            error
@@ -686,7 +691,7 @@ func TestSetAttestationSignatureCheckFromError(t *testing.T) {
 		{
 			name:           "missing attestations failure",
 			expectedPassed: false,
-			err:            fmt.Errorf("%w: kaboom!", cosign.ErrNoMatchingAttestations),
+			err:            noMatchingAttestations,
 			expectedResult: &output.Result{
 				Message: missingAttestationMessage,
 			},

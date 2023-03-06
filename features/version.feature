@@ -13,7 +13,7 @@ Feature: ec cli version subcommand
     OPA                         v.+
     Conftest                    v.+
     Red Hat AppStudio \(shared\)  v.+
-    Cosign                      v.+
+    Cosign                      (v.+|N\/A)
     Sigstore                    v.+
     Rekor                       v.+
     Tekton Pipeline             v.+
@@ -56,7 +56,7 @@ Feature: ec cli version subcommand
         },
         {
           "Name": "Cosign",
-          "Version": "v.+"
+          "Version": "(v.+|N\/A)"
         },
         {
           "Name": "Sigstore",

@@ -30,7 +30,7 @@ import (
 	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/in-toto/in-toto-golang/in_toto"
 	"github.com/qri-io/jsonschema"
-	"github.com/sigstore/cosign/pkg/cosign"
+	"github.com/sigstore/cosign/v2/pkg/cosign"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 
@@ -82,25 +82,6 @@ func NewApplicationSnapshotImage(ctx context.Context, url string, p policy.Polic
 
 	if err := a.SetImageURL(url); err != nil {
 		return nil, err
-	}
-
-	if opts.RekorClient != nil {
-		// By using Cosign directly the log entries are validated against the
-		// Rekor public key, the public key for Rekor can be supplied via three
-		// different means:
-		// - TUF, which is hardcoded to
-		//   https://sigstore-tuf-root.storage.googleapis.com
-		// - SIGSTORE_REKOR_PUBLIC_KEY environment variable, which emits warning
-		//   to stderr
-		// - SIGSTORE_TRUST_REKOR_API_PUBLIC_KEY to fetch the public key via the
-		//   Rekor API
-		// Here we opt for the last option as we can't influence the first
-		// option and the second option unconditionally prints to standard
-		// error.
-		// TODO: Ideally we would have a --rekor-public-key parameter to pass in
-		// the Rekor public key in addition to having TUF setup which makes it
-		// easier to rotate keys
-		os.Setenv("SIGSTORE_TRUST_REKOR_API_PUBLIC_KEY", "1")
 	}
 
 	// Return an evaluator for each of these

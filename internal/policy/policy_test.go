@@ -30,7 +30,7 @@ import (
 	hd "github.com/MakeNowJust/heredoc"
 	"github.com/ghodss/yaml"
 	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
-	cosignSig "github.com/sigstore/cosign/pkg/signature"
+	cosignSig "github.com/sigstore/cosign/v2/pkg/signature"
 	sigstoreSig "github.com/sigstore/sigstore/pkg/signature"
 	"github.com/stretchr/testify/assert"
 
@@ -237,6 +237,8 @@ func TestCheckOpts(t *testing.T) {
 	cases := []struct {
 		name            string
 		rekorUrl        string
+		rekorPublicKey  string
+		rekorLogId      string
 		publicKey       string
 		remotePublicKey string
 		err             string
@@ -255,12 +257,22 @@ func TestCheckOpts(t *testing.T) {
 			publicKey:       "k8s://test/cosign-public-key",
 			remotePublicKey: testPublicKey,
 		},
+		{
+			name:           "with rekor public key",
+			rekorUrl:       testRekorUrl,
+			rekorLogId:     "5c88613c1a35d9fbf61144a6762502d594d9433c065af8d0b375f4bda16464b8",
+			rekorPublicKey: testPublicKey,
+			publicKey:      testPublicKey,
+		},
 	}
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			ctx := context.Background()
 			ctx = withSignatureClient(ctx, &FakeCosignClient{publicKey: c.remotePublicKey})
+			if c.rekorPublicKey != "" {
+				t.Setenv("REKOR_PUBLIC_KEY", c.rekorPublicKey)
+			}
 			p, err := NewPolicy(ctx, "", c.rekorUrl, c.publicKey, Now)
 			if c.err != "" {
 				assert.Empty(t, p)
@@ -276,6 +288,14 @@ func TestCheckOpts(t *testing.T) {
 				assert.NotNil(t, opts.RekorClient)
 			} else {
 				assert.Nil(t, opts.RekorClient)
+			}
+
+			if c.rekorPublicKey != "" {
+				assert.NotNil(t, opts.RekorPubKeys)
+				_, present := opts.RekorPubKeys.Keys[c.rekorLogId]
+				assert.True(t, present, "Expecting specific log id based on the provided public key")
+			} else {
+				assert.Nil(t, opts.RekorPubKeys)
 			}
 
 			assert.NotEmpty(t, opts.SigVerifier)

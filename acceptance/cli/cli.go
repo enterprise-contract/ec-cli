@@ -211,6 +211,7 @@ func setupRekor(ctx context.Context, vars map[string]string, environment []strin
 	}
 
 	vars["REKOR"] = rekorURL
+	environment = append(environment, fmt.Sprintf("REKOR_PUBLIC_KEY=%s", string(rekor.PublicKey(ctx))))
 
 	return environment, vars, nil
 }
