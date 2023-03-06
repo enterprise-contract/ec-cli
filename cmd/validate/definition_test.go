@@ -35,20 +35,20 @@ import (
 	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
 
-func TestValidatePipelineCommandOutput(t *testing.T) {
+func TestValidateDefinitionFileCommandOutput(t *testing.T) {
 	validate := func(_ context.Context, fpath string, _ []source.PolicySource) (*output2.Output, error) {
 		return &output2.Output{PolicyCheck: evaluator.CheckResults{{CheckResult: output.CheckResult{FileName: fpath}}}}, nil
 	}
 
-	cmd := validatePipelineCmd(validate)
+	cmd := validateDefinitionCmd(validate)
 
 	var out bytes.Buffer
 	cmd.SetOut(&out)
 
 	cmd.SetArgs([]string{
-		"--pipeline-file",
+		"--file",
 		"/path/file1.yaml",
-		"--pipeline-file",
+		"--file",
 		"/path/file2.yaml",
 	})
 
@@ -71,7 +71,7 @@ func TestValidatePipelineCommandOutput(t *testing.T) {
 	  ]`, out.String())
 }
 
-func TestValidatePipelinePolicySources(t *testing.T) {
+func TestValidateDefinitionFilePolicySources(t *testing.T) {
 	expected := []source.PolicySource{
 		&source.PolicyUrl{Url: "spam-policy-source", Kind: source.PolicyKind},
 		&source.PolicyUrl{Url: "ham-policy-source", Kind: source.PolicyKind},
@@ -83,13 +83,13 @@ func TestValidatePipelinePolicySources(t *testing.T) {
 		return &output2.Output{}, nil
 	}
 
-	cmd := validatePipelineCmd(validate)
+	cmd := validateDefinitionCmd(validate)
 
 	var out bytes.Buffer
 	cmd.SetOut(&out)
 
 	cmd.SetArgs([]string{
-		"--pipeline-file",
+		"--file",
 		"/path/file1.yaml",
 		"--policy",
 		"spam-policy-source",
@@ -105,7 +105,7 @@ func TestValidatePipelinePolicySources(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestOutputFormats(t *testing.T) {
+func TestDefinitionFileOutputFormats(t *testing.T) {
 	testJSONText := `[{"filename":"/path/file1.yaml","violations":[],"warnings":[],"success":true}]`
 
 	testYAMLTest := hd.Doc(`
@@ -153,13 +153,13 @@ func TestOutputFormats(t *testing.T) {
 				return &output2.Output{PolicyCheck: evaluator.CheckResults{{CheckResult: output.CheckResult{FileName: fpath}}}}, nil
 			}
 
-			cmd := validatePipelineCmd(validate)
+			cmd := validateDefinitionCmd(validate)
 
 			var out bytes.Buffer
 			cmd.SetOut(&out)
 
 			cmd.SetArgs(append([]string{
-				"--pipeline-file",
+				"--file",
 				"/path/file1.yaml",
 			}, c.output...))
 
@@ -178,21 +178,21 @@ func TestOutputFormats(t *testing.T) {
 	}
 }
 
-func TestValidatePipelineCommandErrors(t *testing.T) {
+func TestValidateDefinitionFileCommandErrors(t *testing.T) {
 	validate := func(_ context.Context, fpath string, _ []source.PolicySource) (*output2.Output, error) {
 		return nil, errors.New(fpath)
 	}
 
-	cmd := validatePipelineCmd(validate)
+	cmd := validateDefinitionCmd(validate)
 
 	var out bytes.Buffer
 	cmd.SetOut(&out)
 	cmd.SilenceUsage = true
 
 	cmd.SetArgs([]string{
-		"--pipeline-file",
+		"--file",
 		"/path/file1.yaml",
-		"--pipeline-file",
+		"--file",
 		"/path/file2.yaml",
 	})
 

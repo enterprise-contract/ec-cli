@@ -14,7 +14,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package pipeline
+package definition
 
 import (
 	"encoding/json"
@@ -86,7 +86,7 @@ func (r *Report) Write(targetName string, p format.TargetParser) error {
 			return err
 		}
 	default:
-		return fmt.Errorf("unexpected pipeline report format: %s", target.Format)
+		return fmt.Errorf("unexpected report format: %s", target.Format)
 	}
 
 	_, err = target.Write(data)

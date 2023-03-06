@@ -23,16 +23,16 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/spf13/cobra"
 
+	"github.com/hacbs-contract/ec-cli/internal/definition"
 	"github.com/hacbs-contract/ec-cli/internal/format"
 	"github.com/hacbs-contract/ec-cli/internal/output"
-	"github.com/hacbs-contract/ec-cli/internal/pipeline"
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
 	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
 
-type pipelineValidationFn func(context.Context, string, []source.PolicySource) (*output.Output, error)
+type definitionValidationFn func(context.Context, string, []source.PolicySource) (*output.Output, error)
 
-func validatePipelineCmd(validate pipelineValidationFn) *cobra.Command {
+func validateDefinitionCmd(validate definitionValidationFn) *cobra.Command {
 	var data = struct {
 		filePaths  []string
 		policyURLs []string
@@ -45,28 +45,28 @@ func validatePipelineCmd(validate pipelineValidationFn) *cobra.Command {
 		output:     []string{"json"},
 	}
 	cmd := &cobra.Command{
-		Use:   "pipeline",
-		Short: "Validate Pipeline conformance with the Enterprise Contract",
+		Use:   "definition",
+		Short: "Validate definition file conformance with the Enterprise Contract",
 
 		Long: hd.Doc(`
-			Validate Pipeline conformance with the Enterprise Contract
+			Validate definition file conformance with the Enterprise Contract
 
-			Validate Tekton Pipeline definition files conforms to the rego policies
+			Validate Kubernetes definition files conforms to the rego policies
 			defined in the given policy repository.
 		`),
 
 		Example: hd.Doc(`
-			Validate multiple Pipeline definition files via comma-separated value:
+			Validate multiple definition files via comma-separated value:
 
-			  ec validate pipeline --pipeline-file </path/to/pipeline/file>,</path/to/other/pipeline/file>
+			  ec validate definition --file </path/to/file>,</path/to/other/file>
 
-			Validate multiple Pipeline definition files by repeating --pipeline-file:
+			Validate multiple definition files by repeating --file:
 
-			  ec validate pipeline --pipeline-file </path/to/pipeline/file> --pipeline-file /path/to/other-pipeline.file
+			  ec validate definition --file </path/to/file> --file /path/to/other.file
 
 			Specify different policy and data sources:
 
-			  ec validate pipeline --pipeline-file </path/to/pipeline/file> \
+			  ec validate definition --file </path/to/pipeline/file> \
 				--policy git::https://github.com/hacbs-contract/ec-policies//policy/lib \
 				--policy git::https://github.com/hacbs-contract/ec-policies//policy/pipeline \
 				--data git::https://github.com/hacbs-contract/ec-policies//data
@@ -74,7 +74,7 @@ func validatePipelineCmd(validate pipelineValidationFn) *cobra.Command {
 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var allErrors error
-			report := pipeline.Report{}
+			report := definition.Report{}
 			for i := range data.filePaths {
 				fpath := data.filePaths[i]
 				var sources []source.PolicySource
@@ -91,7 +91,7 @@ func validatePipelineCmd(validate pipelineValidationFn) *cobra.Command {
 					report.Add(*o)
 				}
 			}
-			p := format.NewTargetParser(pipeline.JSONReport, cmd.OutOrStdout(), utils.FS(cmd.Context()))
+			p := format.NewTargetParser(definition.JSONReport, cmd.OutOrStdout(), utils.FS(cmd.Context()))
 			for _, target := range data.output {
 				if err := report.Write(target, p); err != nil {
 					allErrors = multierror.Append(allErrors, err)
@@ -104,8 +104,8 @@ func validatePipelineCmd(validate pipelineValidationFn) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringSliceVarP(&data.filePaths, "pipeline-file", "p", data.filePaths,
-		"path to pipeline definition YAML/JSON file (required)")
+	cmd.Flags().StringSliceVarP(&data.filePaths, "file", "p", data.filePaths,
+		"path to definition YAML/JSON file (required)")
 
 	cmd.Flags().StringSliceVar(&data.policyURLs, "policy", data.policyURLs,
 		"url for policies, go-getter style. May be used multiple times")
@@ -118,7 +118,7 @@ func validatePipelineCmd(validate pipelineValidationFn) *cobra.Command {
 		path for stdout, e.g. yaml. May be used multiple times. Possible formats are json and yaml
 	`))
 
-	if err := cmd.MarkFlagRequired("pipeline-file"); err != nil {
+	if err := cmd.MarkFlagRequired("file"); err != nil {
 		panic(err)
 	}
 
