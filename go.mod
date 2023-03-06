@@ -21,7 +21,7 @@ require (
 	github.com/qri-io/jsonschema v0.2.2-0.20210831022256-780655b2ba0e
 	github.com/redhat-appstudio/managed-gitops/appstudio-shared v0.0.0-20220615221006-a71c1aa4b97f
 	github.com/sigstore/cosign v1.13.1
-	github.com/sigstore/sigstore v1.5.2
+	github.com/sigstore/sigstore v1.6.0
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/afero v1.9.5
 	github.com/spf13/cobra v1.6.1
@@ -82,10 +82,10 @@ require (
 	github.com/aliyun/credentials-go v1.2.3 // indirect
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d // indirect
-	github.com/aws/aws-sdk-go v1.44.204 // indirect
+	github.com/aws/aws-sdk-go v1.44.209 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.17.5 // indirect
-	github.com/aws/aws-sdk-go-v2/config v1.18.14 // indirect
-	github.com/aws/aws-sdk-go-v2/credentials v1.13.14 // indirect
+	github.com/aws/aws-sdk-go-v2/config v1.18.15 // indirect
+	github.com/aws/aws-sdk-go-v2/credentials v1.13.15 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.12.23 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.29 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.23 // indirect
@@ -93,9 +93,9 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ecr v1.17.18 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ecrpublic v1.13.17 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.9.23 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sso v1.12.3 // indirect
-	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.14.3 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sts v1.18.4 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sso v1.12.4 // indirect
+	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.14.4 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sts v1.18.5 // indirect
 	github.com/aws/smithy-go v1.13.5 // indirect
 	github.com/awslabs/amazon-ecr-credential-helper/ecr-login v0.0.0-20221004211355-a250ad2ca1e3 // indirect
 	github.com/basgys/goxml2json v1.1.0 // indirect
@@ -136,7 +136,7 @@ require (
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/docker/libnetwork v0.8.0-dev.2.0.20221221152147-1f3b98be6833 // indirect
 	github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7 // indirect
-	github.com/dustin/go-humanize v1.0.0 // indirect
+	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/emicklei/go-restful/v3 v3.9.0 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/envoyproxy/go-control-plane v0.10.3 // indirect
@@ -263,7 +263,7 @@ require (
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sassoftware/relic v0.0.0-20210427151427-dfb082b79b74 // indirect
-	github.com/secure-systems-lab/go-securesystemslib v0.4.0 // indirect
+	github.com/secure-systems-lab/go-securesystemslib v0.5.0 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/shibumi/go-pathspec v1.3.0 // indirect
 	github.com/shteou/go-ignore v0.3.1 // indirect
@@ -281,7 +281,7 @@ require (
 	github.com/tchap/go-patricia/v2 v2.3.1 // indirect
 	github.com/tent/canonical-json-go v0.0.0-20130607151641-96e4ba3a7613 // indirect
 	github.com/thales-e-security/pool v0.0.2 // indirect
-	github.com/theupdateframework/go-tuf v0.5.2-0.20220930112810-3890c1e7ace4 // indirect
+	github.com/theupdateframework/go-tuf v0.5.2 // indirect
 	github.com/tidwall/gjson v1.14.3 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect
