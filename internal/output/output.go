@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"sort"
 	"strings"
 
 	"github.com/open-policy-agent/conftest/output"
@@ -198,6 +199,9 @@ func (o Output) Violations() []output.Result {
 	violations = o.AttestationSyntaxCheck.addToViolations(violations)
 	violations = o.addCheckResultsToViolations(violations)
 
+	sort.Slice(violations, func(i, j int) bool {
+		return evaluator.SortResults(i, j, violations)
+	})
 	return violations
 }
 
@@ -207,14 +211,23 @@ func (o Output) Warnings() []output.Result {
 	for _, result := range o.PolicyCheck {
 		warnings = append(warnings, result.Warnings...)
 	}
+
+	sort.Slice(warnings, func(i, j int) bool {
+		return evaluator.SortResults(i, j, warnings)
+	})
 	return warnings
 }
 
+// Successes aggregates and returns all successes.
 func (o Output) Successes() []output.Result {
 	successes := make([]output.Result, 0, 10)
 	for _, result := range o.PolicyCheck {
 		successes = append(successes, result.Successes...)
 	}
+
+	sort.Slice(successes, func(i, j int) bool {
+		return evaluator.SortResults(i, j, successes)
+	})
 	return successes
 }
 

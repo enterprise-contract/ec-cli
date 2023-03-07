@@ -279,6 +279,18 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (Check
 	return results, nil
 }
 
+// Helper function to sort Result lists.
+func SortResults(i, j int, slice []output.Result) bool {
+	// First, sort by shortcode
+	iCode := extractStringFromMetadata(slice[i], "code")
+	jCode := extractStringFromMetadata(slice[j], "code")
+	if iCode == jCode {
+		// If inconclusive, sort by the message
+		return slice[i].Message < slice[j].Message
+	}
+	return iCode < jCode
+}
+
 func addMetadata(result *output.CheckResult, rules policyRules) {
 	addMetadataToResults(result.Exceptions, rules)
 	addMetadataToResults(result.Failures, rules)
