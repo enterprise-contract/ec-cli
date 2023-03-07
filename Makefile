@@ -194,9 +194,17 @@ TASK_TAG ?= latest
 TASK_REPO ?= quay.io/hacbs-contract/ec-task-bundle
 TASK_VERSION ?= 0.1
 TASK ?= tasks/verify-enterprise-contract/$(TASK_VERSION)/verify-enterprise-contract.yaml
+ifneq (,$(findstring localhost:,$(TASK_REPO)))
+SKOPEO_ARGS=--src-tls-verify=false --dest-tls-verify=false
+endif
 .PHONY: task-bundle
 task-bundle: ## Push the Tekton Task bundle an image repository
 	@go run -modfile tools/go.mod github.com/tektoncd/cli/cmd/tkn bundle push $(TASK_REPO):$(TASK_TAG) -f $(TASK)
+# Add OCI annotations to the bundle image
+	tmpdir="$$(mktemp -d --tmpdir)"; \
+	skopeo copy docker://"$(TASK_REPO):$(TASK_TAG)" dir:"$${tmpdir}" $(SKOPEO_ARGS); \
+	echo "$$(jq -c '. += { "annotations": { "org.opencontainers.image.revision": "$(TASK_TAG)" } }' "$${tmpdir}/manifest.json")" > "$${tmpdir}/manifest.json"; \
+	skopeo copy dir:"$${tmpdir}" docker://"$(TASK_REPO):$(TASK_TAG)"  $(SKOPEO_ARGS)
 
 .PHONY: task-bundle-snapshot
 task-bundle-snapshot: task-bundle ## Push task bundle and then tag with "snapshot"
