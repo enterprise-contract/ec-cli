@@ -17,9 +17,10 @@
 package applicationsnapshot
 
 import (
-	"encoding/json"
 	"errors"
+	"fmt"
 
+	"github.com/ghodss/yaml"
 	appstudioshared "github.com/redhat-appstudio/managed-gitops/appstudio-shared/apis/appstudio.redhat.com/v1alpha1"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
@@ -36,10 +37,10 @@ func DetermineInputSpec(fs afero.Fs, filePath string, input string, imageRef str
 			return nil, err
 		}
 
-		err = json.Unmarshal(content, &appSnapshot)
+		err = yaml.Unmarshal(content, &appSnapshot)
 		if err != nil {
 			log.Debugf("Problem parsing application snapshot from file %s", filePath)
-			return nil, err
+			return nil, fmt.Errorf("unable to parse ApplicationSnapshot file at %s: %w", filePath, err)
 		}
 
 		log.Debugf("Read application snapshot from file %s", filePath)
@@ -48,10 +49,10 @@ func DetermineInputSpec(fs afero.Fs, filePath string, input string, imageRef str
 
 	// read ApplicationSnapshot provided as a string
 	if len(input) > 0 {
-		// Unmarshall json into struct, exit on failure
-		if err := json.Unmarshal([]byte(input), &appSnapshot); err != nil {
+		// Unmarshall YAML into struct, exit on failure
+		if err := yaml.Unmarshal([]byte(input), &appSnapshot); err != nil {
 			log.Debugf("Problem parsing application snapshot from input param %s", input)
-			return nil, err
+			return nil, fmt.Errorf("unable to parse ApplicationSnapshot from input: %w", err)
 		}
 
 		log.Debug("Read application snapshot from input param")

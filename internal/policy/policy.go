@@ -19,12 +19,12 @@ package policy
 import (
 	"context"
 	"crypto"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/ghodss/yaml"
 	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/hashicorp/go-multierror"
 	"github.com/sigstore/cosign/cmd/cosign/cli/rekor"
@@ -128,9 +128,9 @@ func NewPolicy(ctx context.Context, policyRef, rekorUrl, publicKey, effectiveTim
 		log.Debug("Using an empty EnterpriseContractPolicy")
 		// Default to an empty policy instead of returning an error because the required
 		// values, e.g. PublicKey, may be provided via other means, e.g. publicKey param.
-	} else if strings.Contains(policyRef, "{") {
-		log.Debug("Read EnterpriseContractPolicy as JSON")
-		if err := json.Unmarshal([]byte(policyRef), &p); err != nil {
+	} else if strings.Contains(policyRef, ":") { // Should detect JSON or YAML objects 🤞
+		log.Debug("Read EnterpriseContractPolicy as YAML")
+		if err := yaml.Unmarshal([]byte(policyRef), &p); err != nil {
 			log.Debugf("Problem parsing EnterpriseContractPolicy Spec from %q", policyRef)
 			return nil, fmt.Errorf("unable to parse EnterpriseContractPolicy Spec: %w", err)
 		}

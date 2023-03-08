@@ -27,6 +27,8 @@ import (
 	"testing"
 	"time"
 
+	hd "github.com/MakeNowJust/heredoc"
+	"github.com/ghodss/yaml"
 	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	cosignSig "github.com/sigstore/cosign/pkg/signature"
 	sigstoreSig "github.com/sigstore/sigstore/pkg/signature"
@@ -69,27 +71,53 @@ func TestNewPolicy(t *testing.T) {
 		expected    *policy
 	}{
 		{
-			name:      "simple inline",
+			name:      "simple JSON inline",
 			policyRef: toJson(&ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey}),
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
 				PublicKey: testPublicKey}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 		{
-			name:      "inline with public key overwrite",
+			name:      "simple YAML inline",
+			policyRef: toYAML(&ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey}),
+			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
+				PublicKey: testPublicKey}, effectiveTime: &timeNow, choosenTime: timeNowStr},
+		},
+		{
+			name:      "JSON inline with public key overwrite",
 			policyRef: toJson(&ecc.EnterpriseContractPolicySpec{PublicKey: "ignored"}),
 			publicKey: testPublicKey,
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
 				PublicKey: testPublicKey}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 		{
-			name:      "inline with rekor URL",
+			name:      "YAML inline with public key overwrite",
+			policyRef: toYAML(&ecc.EnterpriseContractPolicySpec{PublicKey: "ignored"}),
+			publicKey: testPublicKey,
+			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
+				PublicKey: testPublicKey}, effectiveTime: &timeNow, choosenTime: timeNowStr},
+		},
+		{
+			name:      "JSON inline with rekor URL",
 			policyRef: toJson(&ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey, RekorUrl: testRekorUrl}),
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
 				PublicKey: testPublicKey, RekorUrl: testRekorUrl}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 		{
-			name:      "inline with rekor URL overwrite",
+			name:      "YAML inline with rekor URL",
+			policyRef: toYAML(&ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey, RekorUrl: testRekorUrl}),
+			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
+				PublicKey: testPublicKey, RekorUrl: testRekorUrl}, effectiveTime: &timeNow, choosenTime: timeNowStr},
+		},
+		{
+			name:      "JSON inline with rekor URL overwrite",
 			policyRef: toJson(&ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey, RekorUrl: "ignored"}),
+			rekorUrl:  testRekorUrl,
+			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
+				PublicKey: testPublicKey, RekorUrl: testRekorUrl}, effectiveTime: &timeNow, choosenTime: timeNowStr},
+		},
+		{
+			name:      "YAML inline with rekor URL overwrite",
+			policyRef: toYAML(&ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey, RekorUrl: "ignored"}),
 			rekorUrl:  testRekorUrl,
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
 				PublicKey: testPublicKey, RekorUrl: testRekorUrl}, effectiveTime: &timeNow, choosenTime: timeNowStr},
@@ -166,7 +194,16 @@ func TestNewPolicyFailures(t *testing.T) {
 		},
 		{
 			name:       "invalid inline JSON",
-			policyRef:  "{invalid json}",
+			policyRef:  `{"invalid": "json""}`,
+			errorCause: "unable to parse",
+		},
+		{
+			name: "invalid inline YAML",
+			policyRef: hd.Doc(`
+				---
+				invalid: yaml
+				  spam:
+				`),
 			errorCause: "unable to parse",
 		},
 		{
@@ -341,4 +378,12 @@ func toJson(policy *ecc.EnterpriseContractPolicySpec) string {
 		panic(fmt.Errorf("invalid JSON: %w", err))
 	}
 	return string(newInline)
+}
+
+func toYAML(policy *ecc.EnterpriseContractPolicySpec) string {
+	inline, err := yaml.Marshal(policy)
+	if err != nil {
+		panic(fmt.Errorf("invalid YAML: %w", err))
+	}
+	return string(inline)
 }
