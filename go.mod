@@ -21,7 +21,7 @@ require (
 	github.com/qri-io/jsonschema v0.2.2-0.20210831022256-780655b2ba0e
 	github.com/redhat-appstudio/managed-gitops/appstudio-shared v0.0.0-20220615221006-a71c1aa4b97f
 	github.com/sigstore/cosign v1.13.1
-	github.com/sigstore/sigstore v1.6.0
+	github.com/sigstore/sigstore v1.5.2
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/afero v1.9.5
 	github.com/spf13/cobra v1.6.1
@@ -263,7 +263,7 @@ require (
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sassoftware/relic v0.0.0-20210427151427-dfb082b79b74 // indirect
-	github.com/secure-systems-lab/go-securesystemslib v0.5.0 // indirect
+	github.com/secure-systems-lab/go-securesystemslib v0.4.0 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/shibumi/go-pathspec v1.3.0 // indirect
 	github.com/shteou/go-ignore v0.3.1 // indirect
