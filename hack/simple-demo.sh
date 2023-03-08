@@ -26,11 +26,9 @@ IMAGE=${IMAGE:-"quay.io/redhat-appstudio/ec-golden-image:latest"}
 #
 APPLICATION_SNAPSHOT="
 components:
-  - name: Golden Container Latest
+  - name: golden-container
     containerImage: ${IMAGE}
 "
-
-JSON_SNAPSHOT=$(echo "$APPLICATION_SNAPSHOT" | yq -ojson -I0)
 
 # The key defined here should work, but if it doesn't then you can get a fresh one from the cluster:
 #  - Visit https://oauth-openshift.apps.stone-prd-rh01.pg1f.p1.openshiftapps.com/oauth/token/request
@@ -86,12 +84,10 @@ sources:
 ${CONFIG}
 "
 
-JSON_POLICY=$(echo "$POLICY" | yq -ojson -I0)
-
 # To show debug output:
 #   hack/simple-demo.sh --debug
 #
 OPTS=${1:-}
 
 MAIN_GO=$(git rev-parse --show-toplevel)/main.go
-go run $MAIN_GO validate image --json-input "$JSON_SNAPSHOT" --policy "$(echo "$JSON_POLICY")" --info=true $OPTS | yq -P
+go run $MAIN_GO validate image --json-input "${APPLICATION_SNAPSHOT}" --policy "${POLICY}" --info=true $OPTS | yq -P
