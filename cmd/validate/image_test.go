@@ -25,6 +25,7 @@ import (
 	"fmt"
 	"testing"
 
+	hd "github.com/MakeNowJust/heredoc"
 	conftestOutput "github.com/open-policy-agent/conftest/output"
 	appstudioshared "github.com/redhat-appstudio/managed-gitops/appstudio-shared/apis/appstudio.redhat.com/v1alpha1"
 	"github.com/spf13/afero"
@@ -79,12 +80,12 @@ func Test_determineInputSpec(t *testing.T) {
 		{
 			name: "faulty ApplicationSnapshot string",
 			arguments: data{
-				input: "/",
+				input: "{",
 			},
-			err: "invalid character '/' looking for beginning of value",
+			err: "unable to parse ApplicationSnapshot from input: error converting YAML to JSON: yaml: line 1: did not find expected node content",
 		},
 		{
-			name: "ApplicationSnapshot string",
+			name: "ApplicationSnapshot JSON string",
 			arguments: data{
 				input: `{
 					"application": "app1",
@@ -103,6 +104,39 @@ func Test_determineInputSpec(t *testing.T) {
 					  }
 					]
 				  }`,
+			},
+			spec: &appstudioshared.ApplicationSnapshotSpec{
+				Application: "app1",
+				Components: []appstudioshared.ApplicationSnapshotComponent{
+					{
+						Name:           "nodejs",
+						ContainerImage: "quay.io/hacbs-contract-demo/single-nodejs-app:877418e",
+					},
+					{
+						Name:           "petclinic",
+						ContainerImage: "quay.io/hacbs-contract-demo/spring-petclinic:dc80a7f",
+					},
+					{
+						Name:           "single-container-app",
+						ContainerImage: "quay.io/hacbs-contract-demo/single-container-app:62c06bf",
+					},
+				},
+			},
+		},
+		{
+			name: "ApplicationSnapshot YAML string",
+			arguments: data{
+				input: hd.Doc(`
+					---
+					application: app1
+					components:
+					- name: nodejs
+					  containerImage: quay.io/hacbs-contract-demo/single-nodejs-app:877418e
+					- name: petclinic
+					  containerImage: quay.io/hacbs-contract-demo/spring-petclinic:dc80a7f
+					- name: single-container-app
+					  containerImage: quay.io/hacbs-contract-demo/single-container-app:62c06bf
+					`),
 			},
 			spec: &appstudioshared.ApplicationSnapshotSpec{
 				Application: "app1",
@@ -147,13 +181,13 @@ func Test_determineInputSpec(t *testing.T) {
 		},
 	}
 
-	cases = cases[4:5]
-
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			s, err := applicationsnapshot.DetermineInputSpec(afero.NewOsFs(), c.arguments.filePath, c.arguments.input, c.arguments.imageRef)
 			if c.err != "" {
 				assert.EqualError(t, err, c.err)
+			} else {
+				assert.NoError(t, err)
 			}
 			assert.Equal(t, c.spec, s)
 		})
@@ -257,10 +291,10 @@ func Test_ValidateErrorCommand(t *testing.T) {
 				"--image",
 				"registry/image:tag",
 				"--policy",
-				"{invalid JSON}",
+				`{"invalid": "json""}`,
 			},
 			expected: `1 error occurred:
-	* unable to parse EnterpriseContractPolicy Spec: invalid character 'i' looking for beginning of object key string
+	* unable to parse EnterpriseContractPolicy Spec: error converting YAML to JSON: yaml: found unexpected end of stream
 
 `,
 		},
@@ -268,12 +302,12 @@ func Test_ValidateErrorCommand(t *testing.T) {
 			name: "invalid input JSON",
 			args: []string{
 				"--json-input",
-				"{invalid JSON}",
+				`{"invalid": "json""}`,
 				"--policy",
 				fmt.Sprintf(`{"publicKey": "%s"}`, mockPublicKey),
 			},
 			expected: `1 error occurred:
-	* invalid character 'i' looking for beginning of object key string
+	* unable to parse ApplicationSnapshot from input: error converting YAML to JSON: yaml: found unexpected end of stream
 
 `,
 		},
@@ -281,13 +315,13 @@ func Test_ValidateErrorCommand(t *testing.T) {
 			name: "invalid input and policy JSON",
 			args: []string{
 				"--json-input",
-				"{invalid JSON}",
+				`{"invalid": "json""}`,
 				"--policy",
-				"{invalid JSON}",
+				`{"invalid": "json""}`,
 			},
 			expected: `2 errors occurred:
-	* invalid character 'i' looking for beginning of object key string
-	* unable to parse EnterpriseContractPolicy Spec: invalid character 'i' looking for beginning of object key string
+	* unable to parse ApplicationSnapshot from input: error converting YAML to JSON: yaml: found unexpected end of stream
+	* unable to parse EnterpriseContractPolicy Spec: error converting YAML to JSON: yaml: found unexpected end of stream
 
 `,
 		},
