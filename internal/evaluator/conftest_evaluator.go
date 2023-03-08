@@ -346,42 +346,9 @@ func createConfigJSON(ctx context.Context, dataDir string, p policy.Policy) erro
 		"config": map[string]interface{}{},
 	}
 
-	type policyConfig struct {
-		// TODO: NonBlocking and Exclude should eventually not be propagated to the
-		// policy config. However, some policy rules, i.e. release.test, have custom
-		// logic to exclude certain failures. Also, NonBlocking is deprecated and
-		// should be removed soon.
-		NonBlocking *[]string `json:"non_blocking_checks,omitempty"`
-		Exclude     *[]string `json:"exclude,omitempty"`
-		// TODO: Do not propagate Include and Collections once ec-policies start
-		// emitting collections metadata.
-		Include     *[]string `json:"include,omitempty"`
-		Collections *[]string `json:"collections,omitempty"`
-		WhenNs      int64     `json:"when_ns"`
-	}
-	pc := &policyConfig{}
-
-	// TODO: Once the NonBlocking field has been removed, update to dump the spec.Config into an updated policyConfig struct
-	if p.Spec().Exceptions != nil {
-		log.Debug("Non-blocking exceptions found. These will be written to file ", dataDir)
-		pc.NonBlocking = &p.Spec().Exceptions.NonBlocking
-	}
-
-	cfg := p.Spec().Configuration
-	if cfg != nil {
-		log.Debug("Include rules found. These will be written to file ", dataDir)
-		if cfg.Include != nil {
-			pc.Include = &cfg.Include
-		}
-		log.Debug("Exclude rules found. These will be written to file ", dataDir)
-		if cfg.Exclude != nil {
-			pc.Exclude = &cfg.Exclude
-		}
-		log.Debug("Collections found. These will be written to file ", dataDir)
-		if cfg.Collections != nil {
-			pc.Collections = &cfg.Collections
-		}
-	}
+	pc := &struct {
+		WhenNs int64 `json:"when_ns"`
+	}{}
 
 	// Now that the future deny logic is handled in the ec-cli and not in rego,
 	// this field is used only for the checking the effective times in the
