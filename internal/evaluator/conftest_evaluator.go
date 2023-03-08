@@ -279,18 +279,6 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (Check
 	return results, nil
 }
 
-// Helper function to sort Result lists.
-func SortResults(i, j int, slice []output.Result) bool {
-	// First, sort by shortcode
-	iCode := extractStringFromMetadata(slice[i], "code")
-	jCode := extractStringFromMetadata(slice[j], "code")
-	if iCode == jCode {
-		// If inconclusive, sort by the message
-		return slice[i].Message < slice[j].Message
-	}
-	return iCode < jCode
-}
-
 func addMetadata(result *output.CheckResult, rules policyRules) {
 	addMetadataToResults(result.Exceptions, rules)
 	addMetadataToResults(result.Failures, rules)
@@ -519,8 +507,8 @@ func hasAnyMatch(needles, haystack []string) bool {
 
 // makeMatchers returns the possible matching strings for the result.
 func makeMatchers(result output.Result) []string {
-	code := extractStringFromMetadata(result, metadataCode)
-	term := extractStringFromMetadata(result, metadataTerm)
+	code := ExtractStringFromMetadata(result, metadataCode)
+	term := ExtractStringFromMetadata(result, metadataTerm)
 	parts := strings.Split(code, ".")
 	var pkg string
 	if len(parts) >= 2 {
@@ -559,8 +547,8 @@ func extractCollections(result output.Result) []string {
 	return collections
 }
 
-// extractStringFromMetadata returns the string value from the result metadata at the given key.
-func extractStringFromMetadata(result output.Result, key string) string {
+// ExtractStringFromMetadata returns the string value from the result metadata at the given key.
+func ExtractStringFromMetadata(result output.Result, key string) string {
 	if maybeValue, exists := result.Metadata[key]; exists {
 		if value, ok := maybeValue.(string); ok {
 			return value

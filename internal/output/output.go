@@ -199,9 +199,7 @@ func (o Output) Violations() []output.Result {
 	violations = o.AttestationSyntaxCheck.addToViolations(violations)
 	violations = o.addCheckResultsToViolations(violations)
 
-	sort.Slice(violations, func(i, j int) bool {
-		return evaluator.SortResults(i, j, violations)
-	})
+	violations = sortResults(violations)
 	return violations
 }
 
@@ -212,9 +210,7 @@ func (o Output) Warnings() []output.Result {
 		warnings = append(warnings, result.Warnings...)
 	}
 
-	sort.Slice(warnings, func(i, j int) bool {
-		return evaluator.SortResults(i, j, warnings)
-	})
+	warnings = sortResults(warnings)
 	return warnings
 }
 
@@ -225,10 +221,26 @@ func (o Output) Successes() []output.Result {
 		successes = append(successes, result.Successes...)
 	}
 
-	sort.Slice(successes, func(i, j int) bool {
-		return evaluator.SortResults(i, j, successes)
-	})
+	successes = sortResults(successes)
 	return successes
+}
+
+// sortResults sorts Result slices.
+func sortResults(results []output.Result) []output.Result {
+	sort.Slice(results, func(i, j int) bool {
+		iCode := evaluator.ExtractStringFromMetadata(results[i], "code")
+		jCode := evaluator.ExtractStringFromMetadata(results[j], "code")
+		if iCode == jCode {
+			iTerm := evaluator.ExtractStringFromMetadata(results[i], "term")
+			jTerm := evaluator.ExtractStringFromMetadata(results[j], "term")
+			if iTerm == jTerm {
+				return results[i].Message < results[j].Message
+			}
+			return iTerm < jTerm
+		}
+		return iCode < jCode
+	})
+	return results
 }
 
 // Print prints an Output instance
