@@ -74,6 +74,11 @@ spec:
         paths can be provided by using the ":" separator.
       default: ""
 
+    - name: INFO
+      type: string
+      description: Include rule titles and descriptions in the output. Set to "false" to disable it.
+      default: "true"
+
     - name: STRICT
       type: string
       description: Fail the task if policy fails. Set to "false" to disable it.
@@ -114,6 +119,7 @@ spec:
         - "--rekor-url"
         - "$(params.REKOR_HOST)"
         # NOTE: The syntax below is required to negate boolean parameters
+        - "--info=$(params.INFO)"
         - "--strict=$(params.STRICT)"
         - "--output"
         - "yaml"
