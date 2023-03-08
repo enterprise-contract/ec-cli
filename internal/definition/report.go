@@ -47,13 +47,14 @@ type Report struct {
 }
 
 func (r *Report) Add(o output.Output) {
-	item := ReportItem{
-		// Initialize to an empty slice so if there are no violations/warnings
-		// it shows an empty list instead of null.
-		Violations: []cOutput.Result{},
-		Warnings:   []cOutput.Result{},
-	}
+	// adding the filename, failures and warnings to report
 	for _, check := range o.PolicyCheck {
+		item := ReportItem{
+			// Initialize to an empty slice so if there are no violations/warnings
+			// it shows an empty list instead of null.
+			Violations: []cOutput.Result{},
+			Warnings:   []cOutput.Result{},
+		}
 		// This should never happen, but just in case it does, make it obvious.
 		if item.Filename != "" && item.Filename != check.FileName {
 			log.Warnf("Expected policy check filename %q, got %q", item.Filename, check.FileName)
@@ -61,9 +62,9 @@ func (r *Report) Add(o output.Output) {
 		item.Filename = check.FileName
 		item.Violations = append(item.Violations, check.Failures...)
 		item.Warnings = append(item.Warnings, check.Warnings...)
+		item.Success = len(item.Violations) == 0
+		r.items = append(r.items, item)
 	}
-	item.Success = len(item.Violations) == 0
-	r.items = append(r.items, item)
 }
 
 func (r *Report) Write(targetName string, p format.TargetParser) error {

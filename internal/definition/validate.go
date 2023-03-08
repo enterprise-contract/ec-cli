@@ -18,30 +18,82 @@ package definition
 
 import (
 	"context"
+	"fmt"
+	"io/ioutil"
+	"os"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/afero"
 
 	"github.com/hacbs-contract/ec-cli/internal/evaluation_target/definition"
 	"github.com/hacbs-contract/ec-cli/internal/output"
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
+	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
 
 var def_file = definition.NewDefinition
+var pathExists = afero.Exists
 
 // ValidatePipeline calls NewPipelineEvaluator to obtain an PipelineEvaluator. It then executes the associated TestRunner
 // which tests the associated pipeline file(s) against the associated policies, and displays the output.
 func ValidateDefinition(ctx context.Context, fpath string, sources []source.PolicySource) (*output.Output, error) {
-	p, err := def_file(ctx, fpath, sources)
+	defFiles, err := fileDetection(ctx, fpath)
+	if err != nil {
+		return nil, err
+	}
+	p, err := def_file(ctx, defFiles, sources)
 	if err != nil {
 		log.Debug("Failed to create pipeline definition file!")
 		return nil, err
 	}
 
-	results, err := p.Evaluator.Evaluate(ctx, []string{p.Fpath})
+	results, err := p.Evaluator.Evaluate(ctx, defFiles)
 	if err != nil {
 		log.Debug("Problem running conftest policy check!")
 		return nil, err
 	}
 	log.Debug("Conftest policy check complete")
 	return &output.Output{PolicyCheck: results}, nil
+}
+
+func fileDetection(ctx context.Context, fpath string) ([]string, error) {
+	fs := utils.FS(ctx)
+	exists, err := pathExists(fs, fpath)
+	if err != nil {
+		return nil, err
+	}
+	if !exists {
+		return nil, fmt.Errorf("fpath '%s' does not exist", fpath)
+	}
+
+	var defFiles []string
+	file, err := os.Open(fpath)
+	defer file.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	// This returns an *os.FileInfo type
+	fileInfo, err := file.Stat()
+	if err != nil {
+		return nil, err
+	}
+
+	// IsDir is short for fileInfo.Mode().IsDir()
+	if fileInfo.IsDir() {
+		files, err := ioutil.ReadDir(fpath)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		for _, f := range files {
+			defFiles = append(defFiles, fmt.Sprintf("%s/%s", fpath, f.Name()))
+			fmt.Println(f.Name())
+		}
+	} else {
+		defFiles = append(defFiles, fpath)
+
+	}
+
+	return defFiles, nil
 }

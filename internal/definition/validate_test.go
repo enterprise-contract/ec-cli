@@ -49,33 +49,38 @@ func (b badMockEvaluator) Evaluate(ctx context.Context, inputs []string) (evalua
 func (e badMockEvaluator) Destroy() {
 }
 
-func mockNewPipelineDefinitionFile(ctx context.Context, fpath string, sources []source.PolicySource) (*definition.Definition, error) {
-	if fpath == "good" {
-		return &definition.Definition{
-			Evaluator: mockEvaluator{},
-		}, nil
-
-	}
-	return nil, fmt.Errorf("fpath '%s' does not exist", fpath)
+func mockNewPipelineDefinitionFile(ctx context.Context, fpath []string, sources []source.PolicySource) (*definition.Definition, error) {
+	return &definition.Definition{
+		Evaluator: mockEvaluator{},
+	}, nil
 }
 
-func badMockNewPipelineDefinitionFile(ctx context.Context, fpath string, sources []source.PolicySource) (*definition.Definition, error) {
+func badMockNewPipelineDefinitionFile(ctx context.Context, fpath []string, sources []source.PolicySource) (*definition.Definition, error) {
 	return &definition.Definition{
 		Evaluator: badMockEvaluator{},
 	}, nil
+}
+
+func mockPathExists(fs afero.Fs, path string) (bool, error) {
+	if path == "bad" {
+		return false, fmt.Errorf("fpath '%s' does not exist", path)
+	}
+	return true, nil
 }
 
 func Test_ValidatePipeline(t *testing.T) {
 	tests := []struct {
 		name    string
 		fpath   string
+		exists  func(afero.Fs, string) (bool, error)
 		err     error
 		output  *output.Output
-		defFunc func(ctx context.Context, fpath string, sources []source.PolicySource) (*definition.Definition, error)
+		defFunc func(ctx context.Context, fpath []string, sources []source.PolicySource) (*definition.Definition, error)
 	}{
 		{
 			name:    "validation succeeds",
-			fpath:   "good",
+			fpath:   "/tmp",
+			exists:  mockPathExists,
 			err:     nil,
 			output:  &output.Output{PolicyCheck: evaluator.CheckResults{}},
 			defFunc: mockNewPipelineDefinitionFile,
@@ -83,13 +88,15 @@ func Test_ValidatePipeline(t *testing.T) {
 		{
 			name:    "validation fails on bad path",
 			fpath:   "bad",
+			exists:  mockPathExists,
 			err:     fmt.Errorf("fpath '%s' does not exist", "bad"),
 			output:  nil,
 			defFunc: mockNewPipelineDefinitionFile,
 		},
 		{
 			name:    "evaluator fails",
-			fpath:   "good",
+			fpath:   "/tmp",
+			exists:  mockPathExists,
 			err:     errors.New("Evaluator error"),
 			output:  nil,
 			defFunc: badMockNewPipelineDefinitionFile,
@@ -101,6 +108,7 @@ func Test_ValidatePipeline(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			def_file = tt.defFunc
+			pathExists = tt.exists
 			output, err := ValidateDefinition(ctx, tt.fpath, []source.PolicySource{})
 			assert.Equal(t, tt.err, err)
 			assert.Equal(t, tt.output, output)

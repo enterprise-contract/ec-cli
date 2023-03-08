@@ -174,8 +174,9 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (Check
 	if r, ok = ctx.Value(runnerKey).(testRunner); r == nil || !ok {
 
 		r = &runner.TestRunner{
-			Data:          []string{c.dataDir},
-			Policy:        []string{c.policyDir},
+			Data:   []string{c.dataDir},
+			Policy: []string{c.policyDir},
+			//Namespace:     []string{"policy.pipeline.basic"},
 			AllNamespaces: true,
 			NoFail:        true,
 			Output:        c.outputFormat,
@@ -184,6 +185,7 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (Check
 
 	log.Debugf("runner: %#v", r)
 	log.Debugf("inputs: %#v", inputs)
+
 	runResults, err := r.Run(ctx, inputs)
 	if err != nil {
 		// TODO do we want to evaluate further policies instead of erroring out?

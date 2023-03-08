@@ -18,35 +18,22 @@ package definition
 
 import (
 	"context"
-	"fmt"
-
-	"github.com/spf13/afero"
 
 	"github.com/hacbs-contract/ec-cli/internal/evaluator"
 	"github.com/hacbs-contract/ec-cli/internal/policy"
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
-	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
 
 var newConftestEvaluator = evaluator.NewConftestEvaluator
-var pathExists = afero.Exists
 
 // DefinitionFile represents the structure needed to evaluate a pipeline definition file
 type Definition struct {
-	Fpath     string
+	Fpath     []string
 	Evaluator evaluator.Evaluator
 }
 
 // NewPipelineDefinitionFile returns a DefinitionFile struct with FPath and evaluator ready to use
-func NewDefinition(ctx context.Context, fpath string, sources []source.PolicySource) (*Definition, error) {
-	fs := utils.FS(ctx)
-	exists, err := pathExists(fs, fpath)
-	if err != nil {
-		return nil, err
-	}
-	if !exists {
-		return nil, fmt.Errorf("fpath '%s' does not exist", fpath)
-	}
+func NewDefinition(ctx context.Context, fpath []string, sources []source.PolicySource) (*Definition, error) {
 	p := &Definition{
 		Fpath: fpath,
 	}
