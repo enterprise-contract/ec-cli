@@ -720,8 +720,7 @@ Feature: evaluate enterprise contract
           "success": true,
           "signatures": ${ATTESTATION_SIGNATURES_JSON},
           "successes": [
-            {"metadata": {"code": "filtering.always_pass"}, "msg": "Pass"},
-            {"metadata": {"code": "filtering.always_pass_with_collection"}, "msg": "Pass"}
+            {"metadata": {"code": "filtering.always_pass"}, "msg": "Pass"}
           ]
         }
       ],
