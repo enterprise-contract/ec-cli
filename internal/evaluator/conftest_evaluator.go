@@ -83,17 +83,25 @@ type conftestEvaluator struct {
 	policyDir     string
 	policy        policy.Policy
 	fs            afero.Fs
+	namespace     []string
 }
 
 // NewConftestEvaluator returns initialized conftestEvaluator implementing
 // Evaluator interface
 func NewConftestEvaluator(ctx context.Context, policySources []source.PolicySource, p policy.Policy) (Evaluator, error) {
+	return NewConftestEvaluatorWithNamespace(ctx, policySources, p, nil)
+
+}
+
+// set the policy namespace
+func NewConftestEvaluatorWithNamespace(ctx context.Context, policySources []source.PolicySource, p policy.Policy, namespace []string) (Evaluator, error) {
 	fs := utils.FS(ctx)
 	c := conftestEvaluator{
 		policySources: policySources,
 		outputFormat:  "json",
 		policy:        p,
 		fs:            fs,
+		namespace:     namespace,
 	}
 
 	dir, err := utils.CreateWorkDir(fs)
@@ -173,11 +181,18 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (Check
 	var ok bool
 	if r, ok = ctx.Value(runnerKey).(testRunner); r == nil || !ok {
 
+		// should there be a namespace defined or not
+		allNamespaces := true
+
+		if len(c.namespace) > 0 {
+			allNamespaces = false
+		}
+
 		r = &runner.TestRunner{
-			Data:   []string{c.dataDir},
-			Policy: []string{c.policyDir},
-			//Namespace:     []string{"policy.pipeline.basic"},
-			AllNamespaces: true,
+			Data:          []string{c.dataDir},
+			Policy:        []string{c.policyDir},
+			Namespace:     c.namespace,
+			AllNamespaces: allNamespaces,
 			NoFail:        true,
 			Output:        c.outputFormat,
 		}

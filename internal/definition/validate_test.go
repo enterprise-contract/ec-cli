@@ -42,6 +42,15 @@ func (e mockEvaluator) Evaluate(ctx context.Context, inputs []string) (evaluator
 func (e mockEvaluator) Destroy() {
 }
 
+func (e mockEvaluator) WithNamespace(namespace []string) evaluator.Evaluator {
+	return e
+}
+
+func (e badMockEvaluator) WithNamespace(namespace []string) evaluator.Evaluator {
+	return e
+
+}
+
 func (b badMockEvaluator) Evaluate(ctx context.Context, inputs []string) (evaluator.CheckResults, error) {
 	return nil, errors.New("Evaluator error")
 }
@@ -49,13 +58,13 @@ func (b badMockEvaluator) Evaluate(ctx context.Context, inputs []string) (evalua
 func (e badMockEvaluator) Destroy() {
 }
 
-func mockNewPipelineDefinitionFile(ctx context.Context, fpath []string, sources []source.PolicySource) (*definition.Definition, error) {
+func mockNewPipelineDefinitionFile(ctx context.Context, fpath []string, sources []source.PolicySource, namespace []string) (*definition.Definition, error) {
 	return &definition.Definition{
 		Evaluator: mockEvaluator{},
 	}, nil
 }
 
-func badMockNewPipelineDefinitionFile(ctx context.Context, fpath []string, sources []source.PolicySource) (*definition.Definition, error) {
+func badMockNewPipelineDefinitionFile(ctx context.Context, fpath []string, sources []source.PolicySource, namespace []string) (*definition.Definition, error) {
 	return &definition.Definition{
 		Evaluator: badMockEvaluator{},
 	}, nil
@@ -75,7 +84,7 @@ func Test_ValidatePipeline(t *testing.T) {
 		exists  func(afero.Fs, string) (bool, error)
 		err     error
 		output  *output.Output
-		defFunc func(ctx context.Context, fpath []string, sources []source.PolicySource) (*definition.Definition, error)
+		defFunc func(ctx context.Context, fpath []string, sources []source.PolicySource, namespace []string) (*definition.Definition, error)
 	}{
 		{
 			name:    "validation succeeds",
@@ -109,7 +118,7 @@ func Test_ValidatePipeline(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			def_file = tt.defFunc
 			pathExists = tt.exists
-			output, err := ValidateDefinition(ctx, tt.fpath, []source.PolicySource{})
+			output, err := ValidateDefinition(ctx, tt.fpath, []source.PolicySource{}, []string{})
 			assert.Equal(t, tt.err, err)
 			assert.Equal(t, tt.output, output)
 		})

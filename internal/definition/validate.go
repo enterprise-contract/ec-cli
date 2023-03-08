@@ -19,7 +19,6 @@ package definition
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	log "github.com/sirupsen/logrus"
@@ -36,12 +35,12 @@ var pathExists = afero.Exists
 
 // ValidatePipeline calls NewPipelineEvaluator to obtain an PipelineEvaluator. It then executes the associated TestRunner
 // which tests the associated pipeline file(s) against the associated policies, and displays the output.
-func ValidateDefinition(ctx context.Context, fpath string, sources []source.PolicySource) (*output.Output, error) {
+func ValidateDefinition(ctx context.Context, fpath string, sources []source.PolicySource, namespace []string) (*output.Output, error) {
 	defFiles, err := fileDetection(ctx, fpath)
 	if err != nil {
 		return nil, err
 	}
-	p, err := def_file(ctx, defFiles, sources)
+	p, err := def_file(ctx, defFiles, sources, namespace)
 	if err != nil {
 		log.Debug("Failed to create pipeline definition file!")
 		return nil, err
@@ -56,6 +55,7 @@ func ValidateDefinition(ctx context.Context, fpath string, sources []source.Poli
 	return &output.Output{PolicyCheck: results}, nil
 }
 
+// detect if a file or directory was passed. if a directory, gather all files in it
 func fileDetection(ctx context.Context, fpath string) ([]string, error) {
 	fs := utils.FS(ctx)
 	exists, err := pathExists(fs, fpath)
@@ -68,10 +68,10 @@ func fileDetection(ctx context.Context, fpath string) ([]string, error) {
 
 	var defFiles []string
 	file, err := os.Open(fpath)
-	defer file.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer file.Close()
 
 	// This returns an *os.FileInfo type
 	fileInfo, err := file.Stat()
@@ -81,14 +81,13 @@ func fileDetection(ctx context.Context, fpath string) ([]string, error) {
 
 	// IsDir is short for fileInfo.Mode().IsDir()
 	if fileInfo.IsDir() {
-		files, err := ioutil.ReadDir(fpath)
+		files, err := os.ReadDir(fpath)
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		for _, f := range files {
 			defFiles = append(defFiles, fmt.Sprintf("%s/%s", fpath, f.Name()))
-			fmt.Println(f.Name())
 		}
 	} else {
 		defFiles = append(defFiles, fpath)

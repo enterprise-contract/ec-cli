@@ -36,7 +36,7 @@ import (
 )
 
 func TestValidateDefinitionFileCommandOutput(t *testing.T) {
-	validate := func(_ context.Context, fpath string, _ []source.PolicySource) (*output2.Output, error) {
+	validate := func(_ context.Context, fpath string, _ []source.PolicySource, _ []string) (*output2.Output, error) {
 		return &output2.Output{PolicyCheck: evaluator.CheckResults{{CheckResult: output.CheckResult{FileName: fpath}}}}, nil
 	}
 
@@ -78,7 +78,7 @@ func TestValidateDefinitionFilePolicySources(t *testing.T) {
 		&source.PolicyUrl{Url: "bacon-data-source", Kind: source.DataKind},
 		&source.PolicyUrl{Url: "eggs-data-source", Kind: source.DataKind},
 	}
-	validate := func(_ context.Context, fpath string, sources []source.PolicySource) (*output2.Output, error) {
+	validate := func(_ context.Context, fpath string, sources []source.PolicySource, _ []string) (*output2.Output, error) {
 		assert.Equal(t, expected, sources)
 		return &output2.Output{}, nil
 	}
@@ -149,7 +149,7 @@ func TestDefinitionFileOutputFormats(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			fs := afero.NewMemMapFs()
-			validate := func(_ context.Context, fpath string, sources []source.PolicySource) (*output2.Output, error) {
+			validate := func(_ context.Context, fpath string, sources []source.PolicySource, _ []string) (*output2.Output, error) {
 				return &output2.Output{PolicyCheck: evaluator.CheckResults{{CheckResult: output.CheckResult{FileName: fpath}}}}, nil
 			}
 
@@ -179,7 +179,7 @@ func TestDefinitionFileOutputFormats(t *testing.T) {
 }
 
 func TestValidateDefinitionFileCommandErrors(t *testing.T) {
-	validate := func(_ context.Context, fpath string, _ []source.PolicySource) (*output2.Output, error) {
+	validate := func(_ context.Context, fpath string, _ []source.PolicySource, _ []string) (*output2.Output, error) {
 		return nil, errors.New(fpath)
 	}
 

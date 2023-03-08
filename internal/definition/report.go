@@ -33,6 +33,7 @@ type ReportItem struct {
 	Violations []cOutput.Result `json:"violations"`
 	Warnings   []cOutput.Result `json:"warnings"`
 	Success    bool             `json:"success"`
+	Namespace  string           `json:"namespace"`
 }
 
 type ReportFormat string
@@ -59,6 +60,7 @@ func (r *Report) Add(o output.Output) {
 		if item.Filename != "" && item.Filename != check.FileName {
 			log.Warnf("Expected policy check filename %q, got %q", item.Filename, check.FileName)
 		}
+		item.Namespace = check.Namespace
 		item.Filename = check.FileName
 		item.Violations = append(item.Violations, check.Failures...)
 		item.Warnings = append(item.Warnings, check.Warnings...)
