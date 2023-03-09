@@ -42,15 +42,6 @@ func (e mockEvaluator) Evaluate(ctx context.Context, inputs []string) (evaluator
 func (e mockEvaluator) Destroy() {
 }
 
-func (e mockEvaluator) WithNamespace(namespace []string) evaluator.Evaluator {
-	return e
-}
-
-func (e badMockEvaluator) WithNamespace(namespace []string) evaluator.Evaluator {
-	return e
-
-}
-
 func (b badMockEvaluator) Evaluate(ctx context.Context, inputs []string) (evaluator.CheckResults, error) {
 	return nil, errors.New("Evaluator error")
 }
