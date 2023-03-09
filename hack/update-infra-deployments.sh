@@ -29,7 +29,17 @@ cd "${TARGET_DIR}" || exit 1
 
 echo 'Resolving task bundle...'
 TASK_BUNDLE_TAG="${2:-snapshot}"
-TASK_BUNDLE_DIGEST="$(skopeo inspect "docker://quay.io/hacbs-contract/ec-task-bundle:${TASK_BUNDLE_TAG}" | jq -r .Digest)"
+MANIFEST=$(mktemp --tmpdir)
+function cleanup() {
+    rm "${MANIFEST}"
+}
+trap cleanup EXIT
+skopeo inspect "docker://quay.io/hacbs-contract/ec-task-bundle:${TASK_BUNDLE_TAG}" --raw > "${MANIFEST}"
+TASK_BUNDLE_DIGEST="$(skopeo manifest-digest "${MANIFEST}")"
+REVISION="$(jq -r '.annotations["org.opencontainers.image.revision"]' "${MANIFEST}")"
+if [[ -n "${REVISION}" && "${REVISION}" != null ]]; then
+    TASK_BUNDLE_TAG="${REVISION}"
+fi
 TASK_BUNDLE_REF="quay.io/hacbs-contract/ec-task-bundle:${TASK_BUNDLE_TAG}@${TASK_BUNDLE_DIGEST}"
 echo "Resolved bundle is ${TASK_BUNDLE_REF}"
 
