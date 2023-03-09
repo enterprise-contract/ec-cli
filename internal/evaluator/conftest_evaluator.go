@@ -507,8 +507,8 @@ func hasAnyMatch(needles, haystack []string) bool {
 
 // makeMatchers returns the possible matching strings for the result.
 func makeMatchers(result output.Result) []string {
-	code := extractStringFromMetadata(result, metadataCode)
-	term := extractStringFromMetadata(result, metadataTerm)
+	code := ExtractStringFromMetadata(result, metadataCode)
+	term := ExtractStringFromMetadata(result, metadataTerm)
 	parts := strings.Split(code, ".")
 	var pkg string
 	if len(parts) >= 2 {
@@ -547,8 +547,8 @@ func extractCollections(result output.Result) []string {
 	return collections
 }
 
-// extractStringFromMetadata returns the string value from the result metadata at the given key.
-func extractStringFromMetadata(result output.Result, key string) string {
+// ExtractStringFromMetadata returns the string value from the result metadata at the given key.
+func ExtractStringFromMetadata(result output.Result, key string) string {
 	if maybeValue, exists := result.Metadata[key]; exists {
 		if value, ok := maybeValue.(string); ok {
 			return value

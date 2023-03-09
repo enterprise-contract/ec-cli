@@ -393,8 +393,8 @@ func Test_FailureImageAccessibility(t *testing.T) {
 			"name": "Unnamed",
 			"containerImage": "registry/image:tag",
 			"violations": [
-			  {"msg": "skipped due to inaccessible image ref"},
 			  {"msg": "image ref not accessible. HEAD registry/image:tag: unexpected status code 404 Not Found (HEAD responses have no body, use GET for details)"},
+			  {"msg": "skipped due to inaccessible image ref"},
 			  {"msg": "skipped due to inaccessible image ref"}
 			],
 			"success": false
@@ -448,8 +448,8 @@ func Test_FailureOutput(t *testing.T) {
 			"name": "Unnamed",
 			"containerImage": "registry/image:tag",
 			"violations": [
-			  {"msg": "failed image signature check"},
-			  {"msg": "failed attestation signature check"}
+			  {"msg": "failed attestation signature check"},
+			  {"msg": "failed image signature check"}
 			],
 			"success": false
 		  }

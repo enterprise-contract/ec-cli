@@ -284,24 +284,24 @@ func Test_Violations(t *testing.T) {
 		{
 			name: "failing attestation signature",
 			output: Output{
-				ImageSignatureCheck: VerificationStatus{
+				AttestationSignatureCheck: VerificationStatus{
 					Passed: false,
-					Result: &output.Result{Message: "image signature failed"},
+					Result: &output.Result{Message: "attestation signature failed"},
 				},
 				ImageAccessibleCheck: VerificationStatus{
 					Passed: true,
 				},
-				AttestationSignatureCheck: VerificationStatus{
+				ImageSignatureCheck: VerificationStatus{
 					Passed: false,
-					Result: &output.Result{Message: "attestation signature failed"},
+					Result: &output.Result{Message: "image signature failed"},
 				},
 				AttestationSyntaxCheck: VerificationStatus{
 					Passed: true,
 				},
 			},
 			expected: []output.Result{
-				{Message: "image signature failed"},
 				{Message: "attestation signature failed"},
+				{Message: "image signature failed"},
 			},
 		},
 		{
@@ -370,20 +370,12 @@ func Test_Violations(t *testing.T) {
 		{
 			name: "failing everything",
 			output: Output{
-				ImageSignatureCheck: VerificationStatus{
-					Passed: false,
-					Result: &output.Result{Message: "image signature failed"},
-				},
-				ImageAccessibleCheck: VerificationStatus{
-					Passed: true,
-				},
 				AttestationSignatureCheck: VerificationStatus{
 					Passed: false,
 					Result: &output.Result{Message: "attestation signature failed"},
 				},
-				AttestationSyntaxCheck: VerificationStatus{
-					Passed: false,
-					Result: &output.Result{Message: "invalid attestation syntax"},
+				ImageAccessibleCheck: VerificationStatus{
+					Passed: true,
 				},
 				PolicyCheck: evaluator.CheckResults{
 					{
@@ -399,22 +391,26 @@ func Test_Violations(t *testing.T) {
 						},
 					},
 				},
+				ImageSignatureCheck: VerificationStatus{
+					Passed: false,
+					Result: &output.Result{Message: "image signature failed"},
+				},
+				AttestationSyntaxCheck: VerificationStatus{
+					Passed: false,
+					Result: &output.Result{Message: "invalid attestation syntax"},
+				},
 			},
 			expected: []output.Result{
-				{Message: "image signature failed"},
 				{Message: "attestation signature failed"},
-				{Message: "invalid attestation syntax"},
 				{Message: "failed policy check 1"},
 				{Message: "failed policy check 2"},
+				{Message: "image signature failed"},
+				{Message: "invalid attestation syntax"},
 			},
 		},
 		{
 			name: "mixed results",
 			output: Output{
-				ImageSignatureCheck: VerificationStatus{
-					Passed: false,
-					Result: &output.Result{Message: "image signature failed"},
-				},
 				ImageAccessibleCheck: VerificationStatus{
 					Passed: true,
 				},
@@ -466,14 +462,18 @@ func Test_Violations(t *testing.T) {
 						},
 					},
 				},
+				ImageSignatureCheck: VerificationStatus{
+					Passed: false,
+					Result: &output.Result{Message: "image signature failed"},
+				},
 			},
 			expected: []output.Result{
-				{Message: "image signature failed"},
 				{Message: "attestation signature failed"},
 				{Message: "failure for policy check 1"},
 				{Message: "failure for policy check 2"},
 				{Message: "failure for policy check 5"},
 				{Message: "failure for policy check 6"},
+				{Message: "image signature failed"},
 			},
 		},
 	}

@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"sort"
 	"strings"
 
 	"github.com/open-policy-agent/conftest/output"
@@ -198,6 +199,7 @@ func (o Output) Violations() []output.Result {
 	violations = o.AttestationSyntaxCheck.addToViolations(violations)
 	violations = o.addCheckResultsToViolations(violations)
 
+	violations = sortResults(violations)
 	return violations
 }
 
@@ -207,15 +209,38 @@ func (o Output) Warnings() []output.Result {
 	for _, result := range o.PolicyCheck {
 		warnings = append(warnings, result.Warnings...)
 	}
+
+	warnings = sortResults(warnings)
 	return warnings
 }
 
+// Successes aggregates and returns all successes.
 func (o Output) Successes() []output.Result {
 	successes := make([]output.Result, 0, 10)
 	for _, result := range o.PolicyCheck {
 		successes = append(successes, result.Successes...)
 	}
+
+	successes = sortResults(successes)
 	return successes
+}
+
+// sortResults sorts Result slices.
+func sortResults(results []output.Result) []output.Result {
+	sort.Slice(results, func(i, j int) bool {
+		iCode := evaluator.ExtractStringFromMetadata(results[i], "code")
+		jCode := evaluator.ExtractStringFromMetadata(results[j], "code")
+		if iCode == jCode {
+			iTerm := evaluator.ExtractStringFromMetadata(results[i], "term")
+			jTerm := evaluator.ExtractStringFromMetadata(results[j], "term")
+			if iTerm == jTerm {
+				return results[i].Message < results[j].Message
+			}
+			return iTerm < jTerm
+		}
+		return iCode < jCode
+	})
+	return results
 }
 
 // Print prints an Output instance
