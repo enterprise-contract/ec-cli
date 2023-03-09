@@ -681,3 +681,64 @@ Feature: evaluate enterprise contract
       }
     }
     """
+
+  Scenario: policy rule filtering for successes
+    Given a key pair named "known"
+    Given an image named "acceptance/ec-happy-day"
+    Given a valid image signature of "acceptance/ec-happy-day" image signed by the "known" key
+    Given a valid attestation of "acceptance/ec-happy-day" signed by the "known" key
+    Given a git repository named "happy-day-policy" with
+      | filtering.rego | examples/filtering.rego |
+    Given policy configuration named "ec-policy" with specification
+    """
+    {
+      "configuration": {
+        "collections": ["stamps"],
+        "include": ["filtering.always_pass"],
+        "exclude": ["filtering.always_pass_with_collection", "filtering.always_fail_with_collection"]
+      },
+      "sources": [
+        {
+          "policy": [
+            "git::http://${GITHOST}/git/happy-day-policy.git"
+          ]
+        }
+      ]
+    }
+    """
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --strict"
+    Then the exit status should be 0
+    Then the standard output should contain
+    """
+    {
+      "success": true,
+      "key": ${known_PUBLIC_KEY_JSON},
+      "components": [
+        {
+          "name": "Unnamed",
+          "containerImage": "localhost:(\\d+)/acceptance/ec-happy-day",
+          "success": true,
+          "signatures": ${ATTESTATION_SIGNATURES_JSON},
+          "successes": [
+            {"metadata": {"code": "filtering.always_pass"}, "msg": "Pass"},
+            {"metadata": {"code": "filtering.always_pass_with_collection"}, "msg": "Pass"}
+          ]
+        }
+      ],
+      "policy": {
+        "configuration": {
+          "collections": ["stamps"],
+          "include": ["filtering.always_pass"],
+          "exclude": ["filtering.always_pass_with_collection", "filtering.always_fail_with_collection"]
+        },
+        "publicKey": ${known_PUBLIC_KEY_JSON},
+        "sources": [
+          {
+            "policy": [
+              "git::http://${GITHOST}/git/happy-day-policy.git"
+            ]
+          }
+        ]
+      }
+    }
+    """
