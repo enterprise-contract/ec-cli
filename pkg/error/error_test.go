@@ -142,3 +142,47 @@ func TestWithCausedByF(t *testing.T) {
 	e := NewError("CO001", "message", ErrorExitStatus).CausedByF("error: %s %d", "boom", 4)
 	assert.Equal(t, fmt.Sprintf("CO001: message, at %s:%d, caused by: error: boom 4", file, line+2), e.Error())
 }
+
+type testError struct{}
+
+func (t testError) Alike(_ error) bool {
+	return false
+}
+
+func (e testError) CausedBy(_ error) Error {
+	return &e
+}
+
+func (e testError) CausedByF(_ string, _ ...any) Error {
+	return &e
+}
+
+func (e testError) Error() string {
+	return ""
+}
+
+func TestAlike(t *testing.T) {
+
+	cases := []struct {
+		name  string
+		ec    ecError
+		err   Error
+		alike bool
+	}{
+		{name: "empty and nil"},
+		{name: "same code", ec: ecError{code: "A"}, err: NewError("A", "", 0), alike: true},
+		{name: "different code", ec: ecError{code: "A"}, err: NewError("B", "", 0)},
+		{name: "same cause", ec: ecError{code: "A", cause: "X"}, err: NewError("A", "", 0).CausedByF("X"), alike: true},
+		{name: "different cause", ec: ecError{code: "A", cause: "X"}, err: NewError("A", "", 0).CausedByF("Y")},
+		{name: "different type", ec: ecError{}, err: &testError{}},
+	}
+
+	for _, c := range cases[1:] {
+		t.Run(c.name, func(t *testing.T) {
+			assert.Equal(t, c.alike, c.ec.Alike(c.err), "Expecting %v.Alike(%v) == %v", c.ec, c.err, c.alike)
+			if c.err != nil {
+				assert.Equal(t, c.alike, c.err.Alike(c.ec), "Expecting %v.Alike(%v) == %v", c.err, c.ec, c.alike)
+			}
+		})
+	}
+}

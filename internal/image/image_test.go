@@ -23,9 +23,12 @@ import (
 	"testing"
 
 	"github.com/google/go-containerregistry/pkg/name"
+	"github.com/in-toto/in-toto-golang/in_toto"
 	"github.com/sigstore/cosign/pkg/cosign"
 	"github.com/sigstore/cosign/pkg/oci"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/hacbs-contract/ec-cli/internal/attestation"
 )
 
 func Test_ValidateImage(t *testing.T) {
@@ -42,14 +45,13 @@ func Test_ValidateImage(t *testing.T) {
 	validator := &imageValidator{
 		reference:          ref,
 		checkOpts:          cosign.CheckOpts{},
-		attestations:       []oci.Signature{},
 		verifySignatures:   verifySignaturesfunc,
 		verifyAttestations: verifyAttestationsfunc,
 	}
 
 	validated := &validatedImage{
 		Reference:    ref,
-		Attestations: []attestation{},
+		Attestations: []attestation.Attestation[in_toto.ProvenanceStatementSLSA02]{},
 		Signatures:   []oci.Signature{},
 	}
 

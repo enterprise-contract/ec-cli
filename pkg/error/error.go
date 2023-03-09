@@ -25,6 +25,7 @@ type Error interface {
 	error
 	CausedBy(error) Error
 	CausedByF(format string, args ...any) Error
+	Alike(other error) bool
 }
 
 type ecError struct {
@@ -88,6 +89,21 @@ func (e ecError) Error() string {
 		return fmt.Sprintf("%s: %s, at %s:%d", e.code, e.message, e.file, e.line)
 	}
 	return fmt.Sprintf("%s: %s, at %s:%d, caused by: %s", e.code, e.message, e.file, e.line, e.cause)
+}
+
+// Alike returns true if two ecErros share the same code and cause
+func (e ecError) Alike(other error) bool {
+	var cmp ecError
+	switch another := other.(type) {
+	case *ecError:
+		cmp = *another
+	case ecError:
+		cmp = another
+	default:
+		return false
+	}
+
+	return cmp.code == e.code && cmp.cause == e.cause
 }
 
 func callerInfo() (file string, line int) {

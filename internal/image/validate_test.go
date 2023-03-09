@@ -39,6 +39,7 @@ import (
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/hacbs-contract/ec-cli/internal/attestation"
 	"github.com/hacbs-contract/ec-cli/internal/evaluation_target/application_snapshot_image"
 	"github.com/hacbs-contract/ec-cli/internal/policy"
 	"github.com/hacbs-contract/ec-cli/internal/utils"
@@ -133,46 +134,52 @@ func TestValidateImage(t *testing.T) {
 func TestDetermineAttestationTime(t *testing.T) {
 	time1 := time.Date(2001, 2, 3, 4, 5, 6, 7, time.UTC)
 	time2 := time.Date(2010, 11, 12, 13, 14, 15, 16, time.UTC)
-	att1 := sign(&in_toto.Statement{
-		StatementHeader: in_toto.StatementHeader{
-			PredicateType: v02.PredicateSLSAProvenance,
-		},
-		Predicate: v02.ProvenancePredicate{
-			Metadata: &v02.ProvenanceMetadata{
-				BuildFinishedOn: &time1,
+	att1 := fakeAtt{
+		statement: in_toto.ProvenanceStatementSLSA02{
+			StatementHeader: in_toto.StatementHeader{
+				PredicateType: v02.PredicateSLSAProvenance,
+			},
+			Predicate: v02.ProvenancePredicate{
+				Metadata: &v02.ProvenanceMetadata{
+					BuildFinishedOn: &time1,
+				},
 			},
 		},
-	})
-	att2 := sign(&in_toto.Statement{
-		StatementHeader: in_toto.StatementHeader{
-			PredicateType: v02.PredicateSLSAProvenance,
-		},
-		Predicate: v02.ProvenancePredicate{
-			Metadata: &v02.ProvenanceMetadata{
-				BuildFinishedOn: &time2,
+	}
+	att2 := fakeAtt{
+		statement: in_toto.ProvenanceStatementSLSA02{
+			StatementHeader: in_toto.StatementHeader{
+				PredicateType: v02.PredicateSLSAProvenance,
+			},
+			Predicate: v02.ProvenancePredicate{
+				Metadata: &v02.ProvenanceMetadata{
+					BuildFinishedOn: &time2,
+				},
 			},
 		},
-	})
-	att3 := sign(&in_toto.Statement{
-		StatementHeader: in_toto.StatementHeader{
-			PredicateType: v02.PredicateSLSAProvenance,
+	}
+	att3 := fakeAtt{
+		statement: in_toto.ProvenanceStatementSLSA02{
+			StatementHeader: in_toto.StatementHeader{
+				PredicateType: v02.PredicateSLSAProvenance,
+			},
 		},
-	})
+	}
 
 	cases := []struct {
-		name     string
-		att      []oci.Signature
-		expected *time.Time
+		name         string
+		attestations []attestation.Attestation[in_toto.ProvenanceStatementSLSA02]
+		expected     *time.Time
 	}{
 		{name: "no attestations"},
-		{name: "one attestation", att: []oci.Signature{att1}, expected: &time1},
-		{name: "two attestations", att: []oci.Signature{att1, att2}, expected: &time2},
-		{name: "two attestations and one without time", att: []oci.Signature{att1, att2, att3}, expected: &time2},
+		{name: "one attestation", attestations: []attestation.Attestation[in_toto.ProvenanceStatementSLSA02]{att1}, expected: &time1},
+		{name: "two attestations", attestations: []attestation.Attestation[in_toto.ProvenanceStatementSLSA02]{att1, att2}, expected: &time2},
+		{name: "two attestations and one without time", attestations: []attestation.Attestation[in_toto.ProvenanceStatementSLSA02]{att1, att2, att3}, expected: &time2},
 	}
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			got := determineAttestationTime(context.TODO(), c.att)
+			got := determineAttestationTime(context.TODO(), c.attestations)
 
 			if c.expected == nil {
 				assert.Nil(t, got)

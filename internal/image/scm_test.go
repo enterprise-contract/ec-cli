@@ -22,40 +22,43 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/in-toto/in-toto-golang/in_toto"
+	"github.com/in-toto/in-toto-golang/in_toto/slsa_provenance/common"
+	slsa02 "github.com/in-toto/in-toto-golang/in_toto/slsa_provenance/v0.2"
 	"github.com/stretchr/testify/assert"
 )
 
-func paramsInput(input string) attestation {
-	params := materials{}
+func paramsInput(input string) in_toto.ProvenanceStatementSLSA02 {
+	params := common.ProvenanceMaterial{}
 	if input == "good-commit" {
 		params.Digest = map[string]string{
 			"sha1": "6c1f093c0c197add71579d392da8a79a984fcd62",
 		}
-		params.Uri = "https://github.com/joejstuart/ec-cli.git"
+		params.URI = "https://github.com/joejstuart/ec-cli.git"
 	} else if input == "bad-commit" {
-		params.Uri = ""
+		params.URI = ""
 	} else if input == "bad-git" {
-		params.Uri = ""
+		params.URI = ""
 	} else if input == "good-git" {
-		params.Uri = "https://github.com/joejstuart/ec-cli.git"
+		params.URI = "https://github.com/joejstuart/ec-cli.git"
 		params.Digest = map[string]string{
 			"sha1": "6c1f093c0c197add71579d392da8a79a984fcd62",
 		}
 	} else if input == "good-git+" {
-		params.Uri = "git+https://github.com/joejstuart/ec-cli.git"
+		params.URI = "git+https://github.com/joejstuart/ec-cli.git"
 		params.Digest = map[string]string{
 			"sha1": "6c1f093c0c197add71579d392da8a79a984fcd62",
 		}
 	}
 
-	materials := []materials{
+	materials := []common.ProvenanceMaterial{
 		params,
 	}
 
-	pred := predicate{
+	pred := slsa02.ProvenancePredicate{
 		Materials: materials,
 	}
-	att := attestation{
+	att := in_toto.ProvenanceStatementSLSA02{
 		Predicate: pred,
 	}
 
@@ -64,7 +67,7 @@ func paramsInput(input string) attestation {
 
 func Test_NewGitSource(t *testing.T) {
 	tests := []struct {
-		input attestation
+		input in_toto.ProvenanceStatementSLSA02
 		want  *GitSource
 		err   error
 	}{
@@ -86,7 +89,10 @@ func Test_NewGitSource(t *testing.T) {
 
 	for i, tc := range tests {
 		t.Run(fmt.Sprintf("NewGitSource=%d", i), func(t *testing.T) {
-			gitSource, err := tc.input.NewGitSource()
+			att := fakeAtt{
+				statement: tc.input,
+			}
+			gitSource, err := NewGitSource(att)
 			assert.IsType(t, tc.want, gitSource)
 			assert.Equal(t, tc.err, err)
 		})
@@ -95,7 +101,7 @@ func Test_NewGitSource(t *testing.T) {
 
 func Test_GetBuildCommitSha(t *testing.T) {
 	tests := []struct {
-		input attestation
+		input in_toto.ProvenanceStatementSLSA02
 		want  string
 	}{
 		{paramsInput("good-commit"), "6c1f093c0c197add71579d392da8a79a984fcd62"},
@@ -104,7 +110,7 @@ func Test_GetBuildCommitSha(t *testing.T) {
 
 	for i, tc := range tests {
 		t.Run(fmt.Sprintf("GetBuildCommitSha=%d", i), func(t *testing.T) {
-			got := tc.input.getBuildCommitSha()
+			got := getBuildCommitSha(tc.input)
 			assert.Equal(t, tc.want, got)
 		})
 	}
@@ -112,7 +118,7 @@ func Test_GetBuildCommitSha(t *testing.T) {
 
 func Test_GetBuildSCM(t *testing.T) {
 	tests := []struct {
-		input attestation
+		input in_toto.ProvenanceStatementSLSA02
 		want  string
 	}{
 		{paramsInput("good-git"), "https://github.com/joejstuart/ec-cli.git"},
@@ -122,7 +128,7 @@ func Test_GetBuildSCM(t *testing.T) {
 
 	for i, tc := range tests {
 		t.Run(fmt.Sprintf("GetBuildSCM=%d", i), func(t *testing.T) {
-			got := tc.input.getBuildSCM()
+			got := getBuildSCM(tc.input)
 			assert.Equal(t, tc.want, got)
 		})
 	}
