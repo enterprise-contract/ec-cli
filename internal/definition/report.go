@@ -22,7 +22,6 @@ import (
 
 	"github.com/ghodss/yaml"
 	cOutput "github.com/open-policy-agent/conftest/output"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/hacbs-contract/ec-cli/internal/format"
 	"github.com/hacbs-contract/ec-cli/internal/output"
@@ -51,20 +50,13 @@ func (r *Report) Add(o output.Output) {
 	// adding the filename, failures and warnings to report
 	for _, check := range o.PolicyCheck {
 		item := ReportItem{
-			// Initialize to an empty slice so if there are no violations/warnings
-			// it shows an empty list instead of null.
-			Violations: []cOutput.Result{},
-			Warnings:   []cOutput.Result{},
+			Namespace:  check.Namespace,
+			Filename:   check.FileName,
+			Violations: check.Failures,
+			Warnings:   check.Warnings,
+			Success:    len(check.Failures) == 0,
 		}
-		// This should never happen, but just in case it does, make it obvious.
-		if item.Filename != "" && item.Filename != check.FileName {
-			log.Warnf("Expected policy check filename %q, got %q", item.Filename, check.FileName)
-		}
-		item.Namespace = check.Namespace
-		item.Filename = check.FileName
-		item.Violations = append(item.Violations, check.Failures...)
-		item.Warnings = append(item.Warnings, check.Warnings...)
-		item.Success = len(item.Violations) == 0
+
 		r.items = append(r.items, item)
 	}
 }

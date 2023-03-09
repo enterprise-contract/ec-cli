@@ -107,7 +107,7 @@ func Test_ValidatePipeline(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			def_file = tt.defFunc
+			definitionFile = tt.defFunc
 			pathExists = tt.exists
 			output, err := ValidateDefinition(ctx, tt.fpath, []source.PolicySource{}, []string{})
 			assert.Equal(t, tt.err, err)
