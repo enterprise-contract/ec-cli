@@ -112,6 +112,16 @@ lint-fix: ## Fix linting issues automagically
 #	@go run -modfile tools/go.mod ./internal/lint -fix $$(go list ./... | grep -v '/acceptance/')
 	@go run -modfile tools/go.mod github.com/daixiang0/gci write -s standard -s default -s "prefix(github.com/hacbs-contract/ec-cli)" .
 
+.PHONY: tekton-lint
+tekton-lint: ## Run tekton-lint for 'tasks' subdirectory.
+ifeq ($(GITHUB_ACTIONS),) # If not running as a Github action, check if tekton-lint is installed. If not, provide link.
+	@which tekton-lint &> /dev/null || (echo "tekton-lint doesn't seem to be installed. Please see https://github.com/IBM/tekton-lint for installation instructions." && exit 1)
+endif
+# We execute tekton-lint for all yaml files contained within the tasks subdirectory, it's smart enough to ignore non-Tekton yaml files.
+# All warnings are currently considered errors.
+
+	@tekton-lint --max-warnings 0 --format stylish 'tasks/**/*.yaml'
+
 .PHONY: ci
 ci: test lint-fix acceptance ## Run the usual required CI tasks
 
