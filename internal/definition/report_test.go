@@ -45,7 +45,6 @@ func TestReport(t *testing.T) {
 				"violations": [],
 				"warnings": [],
 				"success": true,
-				"namespace": "",
 			}]`,
 		},
 		{
@@ -70,7 +69,6 @@ func TestReport(t *testing.T) {
 				"violations": [],
 				"warnings": [{"msg": "running low in spam"},{"msg": "not all like spam"}],
 				"success": true,
-				"namespace": "",
 			}]`,
 		},
 		{
@@ -95,7 +93,6 @@ func TestReport(t *testing.T) {
 				"violations": [{"msg": "out of spam!"},{"msg": "spam 💔"}],
 				"warnings": [],
 				"success": false,
-				"namespace": "",
 			}]`,
 		},
 		{

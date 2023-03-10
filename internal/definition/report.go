@@ -32,7 +32,6 @@ type ReportItem struct {
 	Violations []cOutput.Result `json:"violations"`
 	Warnings   []cOutput.Result `json:"warnings"`
 	Success    bool             `json:"success"`
-	Namespace  string           `json:"namespace"`
 }
 
 type ReportFormat string
@@ -47,17 +46,28 @@ type Report struct {
 }
 
 func (r *Report) Add(o output.Output) {
-	// adding the filename, failures and warnings to report
-	for _, check := range o.PolicyCheck {
-		item := ReportItem{
-			Namespace:  check.Namespace,
-			Filename:   check.FileName,
-			Violations: check.Failures,
-			Warnings:   check.Warnings,
-			Success:    len(check.Failures) == 0,
-		}
+	// group the results by filename. If multiple files are passed
+	// to the testRunner, conftest evaluates all files against each namespace.
+	itemsByFile := make(map[string]ReportItem)
 
-		r.items = append(r.items, item)
+	// check contains results from each namespace evaluated per definition
+	for _, check := range o.PolicyCheck {
+		if _, ok := itemsByFile[check.FileName]; !ok {
+			itemsByFile[check.FileName] = ReportItem{
+				Violations: []cOutput.Result{},
+				Warnings:   []cOutput.Result{},
+			}
+		}
+		item := itemsByFile[check.FileName]
+		item.Violations = append(item.Violations, check.Failures...)
+		item.Warnings = append(item.Warnings, check.Warnings...)
+		item.Filename = check.FileName
+		itemsByFile[check.FileName] = item
+	}
+
+	for _, value := range itemsByFile {
+		value.Success = len(value.Violations) == 0
+		r.items = append(r.items, value)
 	}
 }
 
