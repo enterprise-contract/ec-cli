@@ -183,7 +183,6 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (Check
 
 		// should there be a namespace defined or not
 		allNamespaces := true
-
 		if len(c.namespace) > 0 {
 			allNamespaces = false
 		}
@@ -346,7 +345,6 @@ func addMetadataToResults(results []output.Result, rules policyRules) {
 		if !ok {
 			continue
 		}
-		delete((rules), code)
 
 		if rule.Title != "" {
 			r.Metadata[metadataTitle] = rule.Title
