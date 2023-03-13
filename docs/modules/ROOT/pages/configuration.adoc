@@ -1,0 +1,252 @@
+= Policy Configuration
+
+When `ec` command line requires configuration, e.g. for `ec validate image`
+command, the configuration can be provided as an inline JSON or YAML string,
+such as in this example:
+
+[,bash]
+----
+ec validate image --policy '{
+    "configuration": {
+        "collections": ["minimal"]
+    }
+    "sources": [
+        {
+            "policy": ["oci::https://quay.io/hacbs-contract/ec-release-policy:latest"],
+            "data": ["oci::https://quay.io/hacbs-contract/ec-policy-data:latest"]
+        }
+    ]
+}' ...
+----
+
+The configuration can be provided as a reference to a
+xref:ecc:ROOT:reference.adoc[EnterpriseContractPolicy] Kubernetes custom
+resource by either name (e.g. "my-policy") in the current namespace, or by
+providing namespace and the name separaded by slash (`/`) character, such as in
+this example:
+
+[,bash]
+----
+ec validate image --policy my-namespace/my-policy
+----
+
+If the explicit policy is not provided via the `--policy` parameter, the default
+policy named `default` is loaded from `enterprise-contract-service` namespace of
+the cluster accessed using the current Kubernetes client configuration.
+
+== Including and excluding rules
+
+By default, all rules are included.
+
+You can modify the defaults by setting `config.policy.include` and
+`config.policy.exclude`. Each of those values should be a list of strings.
+
+The strings in the list should be one of the the following:
+
+A "package name"::
+
+Package names can be found in the policy documentation, for example the
+xref:ec-policies:ROOT:release_policy.adoc#attestation_type_package[Attestation Type] package
+name is `attestation_type`. Specifing a package name by itself in the include
+or exclude list means every rule from that package should be included or
+excluded.
+
+A "rule name"::
+
+A rule name consists of the rule's package name and the rule's "code" separated
+by a dot. Rule codes can be see in the documentation also. For example the
+xref:ec-policies:ROOT:release_policy.adoc#attestation_type__unknown_att_type[Unknown attestation type found] rule
+name is `attestation_type.unknown_att_type`.
+
+A "package name:term"::
+
+Some policy rules process a list of items, "term" allows a particular item to
+be excluded or included. This matcher behaves like "package name" but only
+applies to policy rules in the package that match the "term". For example, the
+xref:ec-policies:ROOT:release_policy.adoc#test_package[Test package] emits results for each
+test case. A particular test case can be ignored without ignoring the remaining
+ones.
+
+A "rule name:term"::
+
+This is similar to "package name:term", but allows finer granularity by only
+applying to a particular policy rule within the package.
+
+"*"::
+
+The `"\*"` acts as a wildcard to match any package. Note that it does not match
+partial names, so you can't specify `"s*"` to match every package starting with
+"s" for example.
+
+You can also specify `"<packagename>.*"` and it works the same as just
+`"<packagename>"` to represent every rule in a package.
+
+== Examples
+
+The examples here are shown as the contents of `config.policy` formatted as
+YAML for brevity and readability.
+
+Note that you can omit fields where the default value is what you need.
+
+=== Excluding rules from particular packages
+
+This would include all rules except for rules from the two specified packages.
+All other rules would be included.
+
+[source,yaml]
+----
+exclude:
+- attestation_task_bundle
+- slsa_build_scripted_build
+----
+
+=== Including only rules from a particular package
+
+This would include just the rules from the specified packages and exclude all
+other rules.
+
+[source,yaml]
+----
+include:
+- test
+- java
+----
+
+=== Excluding just one rule
+
+This would include all rules except for the `unacceptable_task_bundle` rule in
+the `attestation_task_bundle` package. The other rules in the
+`attestation_task_bundle` would be included.
+
+[source,yaml]
+----
+exclude:
+- attestation_task_bundle.unacceptable_task_bundle
+----
+
+=== Specifying that certain tests should be non-blocking
+
+This example shows how to specify that the Enterprise Contract is allowed to
+pass even if certain tests failed or didn't complete.
+
+[source,yaml]
+----
+exclude:
+- test:get-clair-scan
+- test:clamav-scan
+----
+
+=== Including only some rules from a package
+
+You can specify both `include` and `exclude` to pick out just the
+rules you want.
+
+This example specifies that only the `unacceptable_task_bundle` rule from the
+`attestation_task_bundle` package should be included. The other rules in the
+`attestation_task_bundle` would be excluded.
+
+Notice the higher specificity include rule takes precedence over the exclude
+rule in this example.
+
+[source,yaml]
+----
+include:
+- "*"
+- attestation_task_bundle.unacceptable_task_bundle
+exclude:
+- attestation_task_bundle.*
+----
+
+== Specifying a predefined set of rules with `collections`
+
+Rather than specifying the values of `include` and `exclude`
+explicitly, you can also select from a set of predefined configurations by
+setting `"data.config.policy.collections"`. For example, in a `data/config.json`
+file:
+
+[source,json]
+----
+{
+  "config": {
+    "policy": {
+      "collections": ["some_things", "some_other_things"]
+    }
+  }
+}
+----
+
+== Data Sources
+
+Some of the Enterprise Contract policy rules, defined in the ec-policies git
+repository, rely on certain data values when evaluated. For example, a policy
+rule exists to ensure all the parent container images used during the build
+process have been retrieved from an acceptable registry. The list of acceptable
+registries is a data value. This type of data is called Rule Data.
+
+In addition to policy rules, the ec-policies git repository also defines values
+for Rule Data, see
+xref:ec-policies:ROOT:attachment$rule_data.yml[rule_data.yml]
+. As a user, you can provide a custom data source with modified Rule Data
+allowing the same policy rules to be used to best fit your use cases.
+
+There are different ways to create a custom data source. The simplest form is to
+fork the ec-policies git repository and change the values of
+`data/rule_data.yml` in your fork. Then, simply provide your fork as a data
+source. For example:
+
+[source,json]
+----
+{
+  "sources": [
+    {
+      "policy": [
+        "git::https://github.com/hacbs-contract/ec-policies.git//policy"
+      ],
+      "data": [
+        "git::https://github.com/lcarva/ec-policies.git//data"
+      ]
+    }
+  ]
+}
+----
+
+It is also possible to provide an link:https://www.conftest.dev/sharing/[OPA bundle]
+as a data source, for example:
+
+[source,json]
+----
+{
+  "sources": [
+    {
+      "policy": [
+        "git::https://github.com/hacbs-contract/ec-policies.git//policy"
+      ],
+      "data": [
+        "oci::quay.io/lucarval/policy-data:latest"
+      ]
+    }
+  ]
+}
+----
+
+NOTE: If the data source contains policy rules, those will be ignored.
+
+NOTE: If you replace the default data source entirely, you must provide the full set of required data values.
+These are all the values defined in
+xref:ec-policies:ROOT:attachment$rule_data.yml[data/rule_data.yml] and
+xref:ec-policies:ROOT:attachment$acceptable_tekton_bundles.yml[data/acceptable_tekton_bundles.yml].
+
+NOTE: It's also possible to add an additional data source containing rule data
+defined under the `rule_data_custom` top level key. Data under this key will
+take precedence over data defined under the `rule_data` top level key. So, for
+example you could use the default data source and still define your own values
+for `allowed_registry_prefixes` by adding a second data source that includes
+a file such as:
+
+[source,yaml]
+----
+rule_data_custom:
+  allowed_registry_prefixes:
+    - trusted-registry.io/trusted-images/
+    - docker.io/acme-company/
+----
