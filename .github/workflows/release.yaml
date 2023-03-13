@@ -18,15 +18,18 @@
 name: Release
 
 "on":
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows: [Checks]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
 
 jobs:
   release:
 
     name: Release
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event.workflow_dispatch }}
 
     env:
       IMAGE_REPO: quay.io/hacbs-contract/ec-cli
