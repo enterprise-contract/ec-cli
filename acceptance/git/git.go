@@ -76,7 +76,7 @@ func startStubGitServer(ctx context.Context) (context.Context, error) {
 
 	req := testenv.TestContainersRequest(ctx, testcontainers.ContainerRequest{
 		Image:        "docker.io/ynohat/git-http-backend",
-		ExposedPorts: []string{"80/tcp"},
+		ExposedPorts: []string{"0.0.0.0::80/tcp"},
 		WaitingFor:   wait.ForListeningPort("80/tcp"),
 		Binds: []string{
 			fmt.Sprintf("%s:/git:Z", repositories), // :Z is to allow accessing the directory under SELinux

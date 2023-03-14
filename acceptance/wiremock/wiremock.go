@@ -204,7 +204,7 @@ func StartWiremock(ctx context.Context) (context.Context, error) {
 
 	req := testenv.TestContainersRequest(ctx, testcontainers.ContainerRequest{
 		Image:        wireMockImage,
-		ExposedPorts: []string{"8080/tcp", "8443/tcp"},
+		ExposedPorts: []string{"0.0.0.0::8080/tcp", "0.0.0.0::8443/tcp"},
 		WaitingFor:   wait.ForHTTP("/__admin/mappings").WithPort("8080/tcp"),
 		Binds:        []string{fmt.Sprintf("%s:/recordings:z", path.Join(cwd, "acceptance", "wiremock", "recordings"))}, // relative to the running test, i.e. $GITROOT
 		Cmd: []string{
