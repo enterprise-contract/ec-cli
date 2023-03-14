@@ -31,12 +31,10 @@ import (
 	"github.com/in-toto/in-toto-golang/in_toto"
 	"github.com/qri-io/jsonschema"
 	"github.com/sigstore/cosign/pkg/cosign"
-	"github.com/sigstore/cosign/pkg/oci"
-	cosignPolicy "github.com/sigstore/cosign/pkg/policy"
-	cosignTypes "github.com/sigstore/cosign/pkg/types"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 
+	"github.com/hacbs-contract/ec-cli/internal/attestation"
 	"github.com/hacbs-contract/ec-cli/internal/evaluator"
 	"github.com/hacbs-contract/ec-cli/internal/output"
 	"github.com/hacbs-contract/ec-cli/internal/policy"
@@ -67,8 +65,8 @@ var attestationSchemas = map[string]jsonschema.Schema{
 type ApplicationSnapshotImage struct {
 	reference    name.Reference
 	checkOpts    cosign.CheckOpts
-	attestations []oci.Signature
 	signatures   []output.EntitySignature
+	attestations []attestation.Attestation[in_toto.ProvenanceStatementSLSA02]
 	Evaluators   []evaluator.Evaluator
 }
 
@@ -176,7 +174,7 @@ func (a *ApplicationSnapshotImage) SetImageURL(url string) error {
 	a.reference = ref
 
 	// Reset internal state relevant to the image
-	a.attestations = []oci.Signature{}
+	a.attestations = []attestation.Attestation[in_toto.ProvenanceStatementSLSA02]{}
 	a.signatures = []output.EntitySignature{}
 
 	return nil
@@ -190,20 +188,22 @@ func (a *ApplicationSnapshotImage) ValidateImageSignature(ctx context.Context) e
 
 // ValidateAttestationSignature executes the cosign.VerifyImageAttestations method
 func (a *ApplicationSnapshotImage) ValidateAttestationSignature(ctx context.Context) error {
-	attestations, _, err := NewClient(ctx).VerifyImageAttestations(ctx, a.reference, &a.checkOpts)
+	layers, _, err := NewClient(ctx).VerifyImageAttestations(ctx, a.reference, &a.checkOpts)
 	if err != nil {
 		return err
 	}
-	a.attestations = attestations
 
 	// Extract the signatures from the attestations here in order to also validate that
 	// the signatures do exist in the expected format.
-	for _, att := range attestations {
-		signatures, err := entitySignatureFromAttestation(att)
+
+	for _, att := range layers {
+		sp, err := attestation.SLSAProvenanceFromLayer(att)
 		if err != nil {
 			return err
 		}
-		a.signatures = append(a.signatures, signatures...)
+		a.attestations = append(a.attestations, sp)
+
+		a.signatures = append(a.signatures, sp.Signatures()...)
 	}
 	return nil
 }
@@ -219,18 +219,10 @@ func (a ApplicationSnapshotImage) ValidateAttestationSyntax(ctx context.Context)
 	}
 
 	allErrors := map[string][]jsonschema.KeyError{}
-	for _, att := range a.attestations {
-		statementBytes, _, err := statementFrom(ctx, att)
-		if err != nil {
-			return EV002.CausedBy(err)
-		}
-		if statementBytes == nil {
-			return EV002.CausedByF("Unrecognized statement JSON")
-		}
-
+	for _, sp := range a.attestations {
 		// at least one of the schemas needs to pass validation
 		for id, schema := range attestationSchemas {
-			if errs, err := schema.ValidateBytes(ctx, statementBytes); err != nil {
+			if errs, err := schema.ValidateBytes(ctx, sp.Data()); err != nil {
 				return EV002.CausedBy(err)
 			} else {
 				if len(errs) == 0 {
@@ -268,16 +260,15 @@ func (a ApplicationSnapshotImage) ValidateAttestationSyntax(ctx context.Context)
 
 // FilterMatchingAttestations ignores attestations that do not have a matching subject.
 func (a *ApplicationSnapshotImage) FilterMatchingAttestations(ctx context.Context) {
-	filteredAttestations := make([]oci.Signature, 0, len(a.attestations))
-	for _, attestation := range a.attestations {
-		_, statement, err := statementFrom(ctx, attestation)
-		if err != nil {
-			log.Debugf("Unable to extract statement from attestation: %v", err)
+	filteredAttestations := make([]attestation.Attestation[in_toto.ProvenanceStatementSLSA02], 0, len(a.attestations))
+	identifier := a.reference.Identifier()
+	for _, sp := range a.attestations {
+		if sp == nil {
 			continue
 		}
-		identifier := a.reference.Identifier()
+		statement := sp.Statement()
 		if matchDigest(statement.Subject, identifier) {
-			filteredAttestations = append(filteredAttestations, attestation)
+			filteredAttestations = append(filteredAttestations, sp)
 		} else {
 			log.Warnf(
 				"Ignoring attestation, none of its subjects (%v) match the image identifier %q",
@@ -301,7 +292,7 @@ func matchDigest(subjects []in_toto.Subject, digest string) bool {
 }
 
 // Attestations returns the value of the attestations field of the ApplicationSnapshotImage struct
-func (a *ApplicationSnapshotImage) Attestations() []oci.Signature {
+func (a *ApplicationSnapshotImage) Attestations() []attestation.Attestation[in_toto.ProvenanceStatementSLSA02] {
 	return a.attestations
 }
 
@@ -313,18 +304,11 @@ func (a *ApplicationSnapshotImage) Signatures() []output.EntitySignature {
 func (a *ApplicationSnapshotImage) WriteInputFile(ctx context.Context) (string, error) {
 	log.Debugf("Attempting to write %d attestations to input file", len(a.attestations))
 
-	var statements []in_toto.Statement
-	for _, att := range a.attestations {
-		_, statement, err := statementFrom(ctx, att)
-		if err != nil {
-			return "", err
-		}
-		if statement == nil {
-			continue
-		}
-		statements = append(statements, *statement)
+	var statements []in_toto.ProvenanceStatementSLSA02
+	for _, sp := range a.attestations {
+		statements = append(statements, sp.Statement())
 	}
-	attestations := map[string][]in_toto.Statement{"attestations": statements}
+	attestations := map[string][]in_toto.ProvenanceStatementSLSA02{"attestations": statements}
 
 	fs := utils.FS(ctx)
 	inputDir, err := afero.TempDir(fs, "", "ecp_input.")
@@ -351,40 +335,4 @@ func (a *ApplicationSnapshotImage) WriteInputFile(ctx context.Context) (string, 
 
 	log.Debugf("Done preparing input file:\n%s", inputJSONPath)
 	return inputJSONPath, nil
-}
-
-func statementFrom(ctx context.Context, att oci.Signature) ([]byte, *in_toto.Statement, error) {
-	if att == nil {
-		log.Debug("nil oci.Signature provided")
-		return nil, nil, errors.New("no signature provided")
-	}
-	typ, err := att.MediaType()
-	if err != nil {
-		log.Debug("Problem finding media type!")
-		return nil, nil, err
-	}
-
-	if typ != cosignTypes.DssePayloadType {
-		log.Debugf("Skipping unexpected media type %s", typ)
-		return nil, nil, nil
-	}
-	payload, err := cosignPolicy.AttestationToPayloadJSON(ctx, "slsaprovenance", att)
-	if err != nil {
-		log.Debug("Problem extracting json payload from attestation!")
-		return nil, nil, err
-	}
-
-	if len(payload) == 0 {
-		log.Debug("Empty attestation payload json (could be wrong type)!")
-		return nil, nil, nil
-	}
-
-	var statement in_toto.Statement
-	err = json.Unmarshal(payload, &statement)
-	if err != nil {
-		log.Debug("Problem parsing attestation payload json!")
-		return nil, nil, err
-	}
-
-	return payload, &statement, nil
 }

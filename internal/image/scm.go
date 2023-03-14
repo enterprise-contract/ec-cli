@@ -22,39 +22,16 @@ import (
 	"strings"
 
 	"github.com/go-git/go-git/v5/plumbing/object"
+	"github.com/in-toto/in-toto-golang/in_toto"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/hacbs-contract/ec-cli/internal/attestation"
 )
 
-type invocation struct {
-	ConfigSource map[string]interface{} `json:"configSource"`
-	Parameters   map[string]string      `json:"parameters"`
-	Environment  map[string]interface{} `json:"environment"`
-}
-
-type materials struct {
-	Uri    string            `json:"uri"`
-	Digest map[string]string `json:"digest"`
-}
-
-type predicate struct {
-	Invocation  invocation             `json:"invocation"`
-	BuildType   string                 `json:"buildType"`
-	Metadata    map[string]interface{} `json:"metadata"`
-	Builder     map[string]interface{} `json:"builder"`
-	BuildConfig map[string]interface{} `json:"buildConfig"`
-	Materials   []materials            `json:"materials"`
-}
-
-type attestation struct {
-	Predicate     predicate                `json:"predicate"`
-	PredicateType string                   `json:"predicateType"`
-	Subject       []map[string]interface{} `json:"subject"`
-	Type          string                   `json:"_type"`
-}
-
-func (a *attestation) NewGitSource() (*GitSource, error) {
-	repoUrl := a.getBuildSCM()
-	sha := a.getBuildCommitSha()
+func NewGitSource(att attestation.Attestation[in_toto.ProvenanceStatementSLSA02]) (*GitSource, error) {
+	statement := att.Statement()
+	repoUrl := getBuildSCM(statement)
+	sha := getBuildCommitSha(statement)
 
 	if repoUrl != "" && sha != "" {
 		return &GitSource{
@@ -69,21 +46,21 @@ func (a *attestation) NewGitSource() (*GitSource, error) {
 }
 
 // get the last commit used for the component build
-func (a *attestation) getBuildCommitSha() string {
+func getBuildCommitSha(statement in_toto.ProvenanceStatementSLSA02) string {
 	sha := "" //6c1f093c0c197add71579d392da8a79a984fcd62"
-	if len(a.Predicate.Materials) == 1 {
-		sha = a.Predicate.Materials[0].Digest["sha1"]
+	if len(statement.Predicate.Materials) == 1 {
+		sha = statement.Predicate.Materials[0].Digest["sha1"]
 	}
 	log.Debugf("using commit with sha: '%v'", sha)
 	return sha
 }
 
 // the git url used for the component build
-func (a *attestation) getBuildSCM() string {
+func getBuildSCM(statement in_toto.ProvenanceStatementSLSA02) string {
 	uri := "" //https://github.com/joejstuart/ec-cli.git"
-	if len(a.Predicate.Materials) == 1 {
+	if len(statement.Predicate.Materials) == 1 {
 		// If our URI has 'git+https' as the scheme, we will strip the "git+" portion.
-		uri = strings.TrimPrefix(a.Predicate.Materials[0].Uri, "git+")
+		uri = strings.TrimPrefix(statement.Predicate.Materials[0].URI, "git+")
 	}
 	log.Debugf("using repo '%v'", uri)
 	return uri

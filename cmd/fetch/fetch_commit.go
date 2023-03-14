@@ -125,7 +125,7 @@ func validateGitSource(ctx context.Context, imageRef, publicKey string) error {
 
 	var gitSourceFound bool
 	for _, att := range validatedImage.Attestations {
-		gitSource, err := att.NewGitSource()
+		gitSource, err := image.NewGitSource(att)
 		if err != nil {
 			log.Debug("attestation has empty 'predicate.material' entry")
 			continue

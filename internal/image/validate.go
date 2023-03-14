@@ -22,12 +22,12 @@ import (
 	"sort"
 	"time"
 
+	"github.com/in-toto/in-toto-golang/in_toto"
 	conftestOutput "github.com/open-policy-agent/conftest/output"
 	"github.com/qri-io/jsonpointer"
-	"github.com/sigstore/cosign/pkg/oci"
-	cosignPolicy "github.com/sigstore/cosign/pkg/policy"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/hacbs-contract/ec-cli/internal/attestation"
 	"github.com/hacbs-contract/ec-cli/internal/evaluation_target/application_snapshot_image"
 	"github.com/hacbs-contract/ec-cli/internal/evaluator"
 	"github.com/hacbs-contract/ec-cli/internal/output"
@@ -143,7 +143,7 @@ func resolveAndSetImageUrl(url string, asi *application_snapshot_image.Applicati
 	return resolved, nil
 }
 
-func determineAttestationTime(ctx context.Context, attestations []oci.Signature) *time.Time {
+func determineAttestationTime(ctx context.Context, attestations []attestation.Attestation[in_toto.ProvenanceStatementSLSA02]) *time.Time {
 	if len(attestations) == 0 {
 		log.Debug("No attestations provided to determine attestation time")
 		return nil
@@ -157,19 +157,12 @@ func determineAttestationTime(ctx context.Context, attestations []oci.Signature)
 
 	times := make([]time.Time, 0, len(attestations))
 	for i, attestation := range attestations {
-		payload, err := cosignPolicy.AttestationToPayloadJSON(ctx, "slsaprovenance", attestation)
-		if err != nil {
-			log.Debugf("Attestation at %d is not a SLSA Provenance attestation", i)
+		data := attestation.Data()
+		obj := map[string]any{}
+		if err := json.Unmarshal(data, &obj); err != nil {
 			continue
 		}
-
-		data := map[string]any{}
-		if err := json.Unmarshal(payload, &data); err != nil {
-			log.Debugf("Unable to unmarshall SLSA Provenance attestation at %d", i)
-			continue
-		}
-
-		maybeFinishTime, err := pointer.Eval(data)
+		maybeFinishTime, err := pointer.Eval(obj)
 		if err != nil {
 			log.Debugf("Failed to evaluate JSON Pointer %s for attestation at %d", pointer, i)
 			continue

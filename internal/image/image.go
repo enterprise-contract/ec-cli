@@ -18,28 +18,27 @@ package image
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
 
 	"github.com/google/go-containerregistry/pkg/name"
+	"github.com/in-toto/in-toto-golang/in_toto"
 	"github.com/sigstore/cosign/cmd/cosign/cli/rekor"
 	"github.com/sigstore/cosign/pkg/cosign"
 	"github.com/sigstore/cosign/pkg/oci"
-	"github.com/sigstore/cosign/pkg/policy"
 	"github.com/sigstore/cosign/pkg/signature"
+
+	"github.com/hacbs-contract/ec-cli/internal/attestation"
 )
 
 type imageValidator struct {
 	reference          name.Reference
 	checkOpts          cosign.CheckOpts
-	attestations       []oci.Signature
 	verifySignatures   func(context.Context, name.Reference, *cosign.CheckOpts) (checkedAttestations []oci.Signature, bundleVerified bool, err error)
 	verifyAttestations func(context.Context, name.Reference, *cosign.CheckOpts) (checkedAttestations []oci.Signature, bundleVerified bool, err error)
 }
 
 type validatedImage struct {
 	Reference    name.Reference
-	Attestations []attestation
+	Attestations []attestation.Attestation[in_toto.ProvenanceStatementSLSA02]
 	Signatures   []oci.Signature
 }
 
@@ -82,13 +81,17 @@ func (i *imageValidator) ValidateImage(ctx context.Context) (*validatedImage, er
 	}
 
 	attestations, _, err := i.verifyAttestations(ctx, i.reference, &i.checkOpts)
-	attStatements := make([]attestation, 0, len(attestations))
+	if err != nil {
+		return nil, err
+	}
+
+	statements := make([]attestation.Attestation[in_toto.ProvenanceStatementSLSA02], 0, len(attestations))
 	for _, att := range attestations {
-		attStatement, err := signatureToAttestation(ctx, att)
+		sp, err := attestation.SLSAProvenanceFromLayer(att)
 		if err != nil {
 			return nil, err
 		}
-		attStatements = append(attStatements, attStatement)
+		statements = append(statements, sp)
 
 	}
 	if err != nil {
@@ -97,27 +100,8 @@ func (i *imageValidator) ValidateImage(ctx context.Context) (*validatedImage, er
 
 	return &validatedImage{
 		i.reference,
-		attStatements,
+		statements,
 		signatures,
 	}, nil
 
-}
-
-func signatureToAttestation(ctx context.Context, signature oci.Signature) (attestation, error) {
-	var att attestation
-	payload, err := policy.AttestationToPayloadJSON(ctx, "slsaprovenance", signature)
-	if err != nil {
-		return attestation{}, err
-	}
-
-	if len(payload) == 0 {
-		return attestation{}, errors.New("predicate (slsaprovenance) did not match the attestation.")
-	}
-
-	err = json.Unmarshal(payload, &att)
-	if err != nil {
-		return attestation{}, err
-	}
-
-	return att, nil
 }
