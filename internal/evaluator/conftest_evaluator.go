@@ -153,8 +153,9 @@ func (r *policyRules) collect(a *ast.AnnotationsRef) {
 func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (CheckResults, error) {
 	results := make([]CheckResult, 0, 10)
 
-	// Download all sources
+	// hold all rule annotations
 	rules := policyRules{}
+	// Download all sources
 	for _, s := range c.policySources {
 		dir, err := s.GetPolicy(ctx, c.workDir, false)
 		if err != nil {
@@ -208,14 +209,20 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (Check
 
 	effectiveTime := c.policy.EffectiveTime()
 
+	// loop over each policy (namespace) evaluation
+	// effectively replacing the results returned from conftest
+	ruleCollection := make(map[string]bool)
 	for i, result := range runResults {
 		log.Debugf("Evaluation result at %d: %#v", i, result)
 		warnings := []output.Result{}
 		failures := []output.Result{}
-
-		addMetadata(&result, rules)
+		exceptions := []output.Result{}
+		skipped := []output.Result{}
 
 		for _, warning := range result.Warnings {
+			r, ok := addRuleMetadata(&warning, rules)
+			ruleCollection[r] = ok
+
 			if !c.isResultIncluded(warning) {
 				log.Debugf("Skipping result warning: %#v", warning)
 				continue
@@ -224,10 +231,14 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (Check
 		}
 
 		for _, failure := range result.Failures {
+			r, ok := addRuleMetadata(&failure, rules)
+			ruleCollection[r] = ok
+
 			if !c.isResultIncluded(failure) {
 				log.Debugf("Skipping result failure: %#v", failure)
 				continue
 			}
+
 			if !isResultEffective(failure, effectiveTime) {
 				// TODO: Instead of moving to warnings, create new attribute: "futureViolations"
 				warnings = append(warnings, failure)
@@ -236,8 +247,22 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (Check
 			}
 		}
 
+		for _, exception := range result.Exceptions {
+			r, ok := addRuleMetadata(&exception, rules)
+			ruleCollection[r] = ok
+			exceptions = append(exceptions, exception)
+		}
+
+		for _, skip := range result.Skipped {
+			r, ok := addRuleMetadata(&skip, rules)
+			ruleCollection[r] = ok
+			skipped = append(skipped, skip)
+		}
+
 		result.Warnings = warnings
 		result.Failures = failures
+		result.Exceptions = exceptions
+		result.Skipped = skipped
 
 		results = append(results, CheckResult{CheckResult: result})
 	}
@@ -251,7 +276,13 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (Check
 		results[0].Successes = make([]output.Result, 0, l)
 	}
 
+	// any rule left DID NOT get metadata added so it's a success
+	// this depends on the delete in addMetadata
 	for code, rule := range rules {
+		if ruleCode, ok := ruleCollection[code]; ruleCode && ok {
+			continue
+		}
+
 		result := output.Result{
 			Message: "Pass",
 			Metadata: map[string]interface{}{
@@ -305,56 +336,44 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (Check
 	return results, nil
 }
 
-func addMetadata(result *output.CheckResult, rules policyRules) {
-	addMetadataToResults(result.Exceptions, rules)
-	addMetadataToResults(result.Failures, rules)
-	addMetadataToResults(result.Skipped, rules)
-	addMetadataToResults(result.Warnings, rules)
+func addRuleMetadata(result *output.Result, rules policyRules) (string, bool) {
+	code, ok := (*result).Metadata[metadataCode].(string)
+	if ok {
+		addMetadataToResults(result, rules[code])
+		return code, true
+	}
+	return "", false
 }
 
-func addMetadataToResults(results []output.Result, rules policyRules) {
-	for i := range results {
-		r := &results[i]
-		if r.Metadata == nil {
-			continue
-		}
-
-		// normalize collection to []string
-		if v, ok := r.Metadata[metadataCollections]; ok {
-			switch vals := v.(type) {
-			case []any:
-				col := make([]string, 0, len(vals))
-				for _, c := range vals {
-					col = append(col, fmt.Sprint(c))
-				}
-				r.Metadata[metadataCollections] = col
-			case []string:
-				// all good, mainly left for documentation of the normalization
-			default:
-				// remove unsupported collections attribute
-				delete(r.Metadata, metadataCollections)
+func addMetadataToResults(r *output.Result, rule rule.Info) {
+	if r.Metadata == nil {
+		return
+	}
+	// normalize collection to []string
+	if v, ok := r.Metadata[metadataCollections]; ok {
+		switch vals := v.(type) {
+		case []any:
+			col := make([]string, 0, len(vals))
+			for _, c := range vals {
+				col = append(col, fmt.Sprint(c))
 			}
+			r.Metadata[metadataCollections] = col
+		case []string:
+			// all good, mainly left for documentation of the normalization
+		default:
+			// remove unsupported collections attribute
+			delete(r.Metadata, metadataCollections)
 		}
+	}
 
-		code, ok := r.Metadata[metadataCode].(string)
-		if !ok {
-			continue
-		}
-
-		rule, ok := (rules)[code]
-		if !ok {
-			continue
-		}
-
-		if rule.Title != "" {
-			r.Metadata[metadataTitle] = rule.Title
-		}
-		if rule.Description != "" {
-			r.Metadata[metadataDescription] = rule.Description
-		}
-		if len(rule.Collections) > 0 {
-			r.Metadata[metadataCollections] = rule.Collections
-		}
+	if rule.Title != "" {
+		r.Metadata[metadataTitle] = rule.Title
+	}
+	if rule.Description != "" {
+		r.Metadata[metadataDescription] = rule.Description
+	}
+	if len(rule.Collections) > 0 {
+		r.Metadata[metadataCollections] = rule.Collections
 	}
 }
 
