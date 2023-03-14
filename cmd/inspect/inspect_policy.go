@@ -25,7 +25,6 @@ import (
 	hd "github.com/MakeNowJust/heredoc"
 	"github.com/open-policy-agent/opa/ast"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"golang.org/x/exp/slices"
 
@@ -82,13 +81,18 @@ func inspectPolicyCmd() *cobra.Command {
 				return fmt.Errorf("invalid value for --output '%s'. accepted values: %s", outputFormat, strings.Join(validFormats, ", "))
 			}
 
+			ctx := cmd.Context()
+			afs := utils.FS(ctx)
+
 			if destDir == "" {
-				workDir, err := utils.CreateWorkDir(afero.NewOsFs())
+				workDir, err := utils.CreateWorkDir(afs)
 				if err != nil {
 					log.Debug("Failed to create work dir!")
 					return err
 				}
 				destDir = workDir
+
+				defer utils.CleanupWorkDir(afs, workDir)
 			}
 
 			allResults := make(map[string][]*ast.AnnotationsRef)
@@ -96,13 +100,13 @@ func inspectPolicyCmd() *cobra.Command {
 				s := &source.PolicyUrl{Url: url, Kind: source.PolicyKind}
 
 				// Download
-				policyDir, err := s.GetPolicy(cmd.Context(), destDir, false)
+				policyDir, err := s.GetPolicy(ctx, destDir, false)
 				if err != nil {
 					return err
 				}
 
 				// Inspect
-				result, err := opa.InspectDir(afero.NewOsFs(), policyDir)
+				result, err := opa.InspectDir(afs, policyDir)
 				if err != nil {
 					return err
 				}
