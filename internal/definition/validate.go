@@ -19,7 +19,6 @@ package definition
 import (
 	"context"
 	"fmt"
-	"os"
 	"path/filepath"
 
 	log "github.com/sirupsen/logrus"
@@ -32,7 +31,6 @@ import (
 )
 
 var definitionFile = definition.NewDefinition
-var pathExists = afero.Exists
 
 // ValidatePipeline calls NewPipelineEvaluator to obtain an PipelineEvaluator. It then executes the associated TestRunner
 // which tests the associated pipeline file(s) against the associated policies, and displays the output.
@@ -59,7 +57,7 @@ func ValidateDefinition(ctx context.Context, fpath string, sources []source.Poli
 // detect if a file or directory was passed. if a directory, gather all files in it
 func detectFiles(ctx context.Context, fpath string) ([]string, error) {
 	fs := utils.FS(ctx)
-	exists, err := pathExists(fs, fpath)
+	exists, err := afero.Exists(fs, fpath)
 	if err != nil {
 		return nil, err
 	}
@@ -68,20 +66,15 @@ func detectFiles(ctx context.Context, fpath string) ([]string, error) {
 	}
 
 	var defFiles []string
-	file, err := os.Open(fpath)
+	file, err := fs.Open(fpath)
 	if err != nil {
 		return nil, err
 	}
+
 	defer file.Close()
 
-	// This returns an *os.FileInfo type
-	fileInfo, err := file.Stat()
-	if err != nil {
-		return nil, err
-	}
-
-	if fileInfo.IsDir() {
-		files, err := os.ReadDir(fpath)
+	if ok, _ := afero.IsDir(fs, fpath); ok {
+		files, err := afero.ReadDir(fs, fpath)
 		if err != nil {
 			return nil, err
 		}

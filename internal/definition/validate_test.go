@@ -79,7 +79,7 @@ func Test_ValidatePipeline(t *testing.T) {
 	}{
 		{
 			name:    "validation succeeds",
-			fpath:   "/tmp",
+			fpath:   "/blah",
 			exists:  mockPathExists,
 			err:     nil,
 			output:  &output.Output{PolicyCheck: evaluator.CheckResults{}},
@@ -95,7 +95,7 @@ func Test_ValidatePipeline(t *testing.T) {
 		},
 		{
 			name:    "evaluator fails",
-			fpath:   "/tmp",
+			fpath:   "/blah",
 			exists:  mockPathExists,
 			err:     errors.New("Evaluator error"),
 			output:  nil,
@@ -103,12 +103,14 @@ func Test_ValidatePipeline(t *testing.T) {
 		},
 	}
 
-	ctx := utils.WithFS(context.Background(), afero.NewOsFs())
+	appFS := afero.NewMemMapFs()
+	appFS.Mkdir("/blah", 0777)
+	ctx := utils.WithFS(context.Background(), appFS)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			definitionFile = tt.defFunc
-			pathExists = tt.exists
+			//pathExists = tt.exists
 			output, err := ValidateDefinition(ctx, tt.fpath, []source.PolicySource{}, []string{})
 			assert.Equal(t, tt.err, err)
 			assert.Equal(t, tt.output, output)
