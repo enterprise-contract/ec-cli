@@ -21,10 +21,9 @@ import (
 	"fmt"
 	"io"
 	"sort"
-	"strings"
 
 	"github.com/open-policy-agent/conftest/output"
-	"github.com/sigstore/cosign/pkg/cosign"
+	"github.com/sigstore/cosign/v2/pkg/cosign"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/hacbs-contract/ec-cli/internal/evaluator"
@@ -103,7 +102,7 @@ func (o *Output) SetImageSignatureCheckFromError(err error) {
 	o.ImageSignatureCheck.Passed = false
 
 	var message string
-	if strings.HasPrefix(err.Error(), cosign.ErrNoMatchingSignatures.Error()) {
+	if verr, ok := err.(*cosign.VerificationError); ok && verr.ErrorType() == cosign.ErrNoMatchingSignaturesType {
 		// If the error is due to no matching signatures, use a more user-friendly message.
 		message = missingSignatureMessage
 	} else {
@@ -125,7 +124,7 @@ func (o *Output) SetAttestationSignatureCheckFromError(err error) {
 	o.AttestationSignatureCheck.Passed = false
 
 	var message string
-	if strings.HasPrefix(err.Error(), cosign.ErrNoMatchingAttestations.Error()) {
+	if verr, ok := err.(*cosign.VerificationError); ok && verr.ErrorType() == cosign.ErrNoMatchingAttestationsType {
 		// If the error is due to no matching attestations, use a more user-friendly message.
 		message = missingAttestationMessage
 	} else {

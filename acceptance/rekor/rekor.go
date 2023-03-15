@@ -32,8 +32,8 @@ import (
 	"github.com/cucumber/godog"
 	"github.com/cyberphone/json-canonicalization/go/src/webpki.org/jsoncanonicalizer"
 	"github.com/go-openapi/strfmt"
-	"github.com/sigstore/cosign/pkg/cosign"
-	"github.com/sigstore/cosign/pkg/cosign/bundle"
+	"github.com/sigstore/cosign/v2/pkg/cosign"
+	"github.com/sigstore/cosign/v2/pkg/cosign/bundle"
 	"github.com/sigstore/rekor/pkg/generated/models"
 	intoto "github.com/sigstore/rekor/pkg/types/intoto/v0.0.1"
 	"github.com/sigstore/sigstore/pkg/cryptoutils"
@@ -319,7 +319,7 @@ func PublicKey(ctx context.Context) []byte {
 }
 
 func IsRunning(ctx context.Context) bool {
-	return wiremock.IsRunning(ctx)
+	return testenv.HasState[rekorState](ctx)
 }
 
 // AddStepsTo adds Gherkin steps to the godog ScenarioContext
