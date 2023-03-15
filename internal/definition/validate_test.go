@@ -104,7 +104,8 @@ func Test_ValidatePipeline(t *testing.T) {
 	}
 
 	appFS := afero.NewMemMapFs()
-	appFS.Mkdir("/blah", 0777)
+	err := appFS.MkdirAll("/blah", 0777)
+	assert.NoError(t, err)
 	ctx := utils.WithFS(context.Background(), appFS)
 
 	for _, tt := range tests {

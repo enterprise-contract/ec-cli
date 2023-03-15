@@ -73,7 +73,12 @@ func detectFiles(ctx context.Context, fpath string) ([]string, error) {
 
 	defer file.Close()
 
-	if ok, _ := afero.IsDir(fs, fpath); ok {
+	dir, err := afero.IsDir(fs, fpath)
+	if err != nil {
+		return nil, err
+	}
+
+	if dir {
 		files, err := afero.ReadDir(fs, fpath)
 		if err != nil {
 			return nil, err
@@ -84,7 +89,6 @@ func detectFiles(ctx context.Context, fpath string) ([]string, error) {
 		}
 	} else {
 		defFiles = append(defFiles, fpath)
-
 	}
 
 	return defFiles, nil
