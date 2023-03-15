@@ -35,9 +35,6 @@ require (
 	k8s.io/klog/v2 v2.90.1
 )
 
-// WTF?!
-replace github.com/Sirupsen/logrus => github.com/sirupsen/logrus v1.9.0
-
 require (
 	bitbucket.org/creachadair/shell v0.0.7 // indirect
 	cloud.google.com/go v0.107.0 // indirect
