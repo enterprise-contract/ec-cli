@@ -111,6 +111,24 @@ func NewOfflinePolicy(ctx context.Context, effectiveTime string) (Policy, error)
 	}
 }
 
+// NewInertPolicy construct and return a new instance of Policy that doesn't
+// perform strict checks on the consistency of the policy.
+//
+// The policyRef parameter is expected to be either a JSON-encoded instance of
+// EnterpriseContractPolicySpec, or reference to the location of the EnterpriseContractPolicy
+// resource in Kubernetes using the format: [namespace/]name
+//
+// If policyRef is blank, an empty EnterpriseContractPolicySpec is used.
+func NewInertPolicy(ctx context.Context, policyRef string) (Policy, error) {
+	p := policy{}
+
+	if err := p.loadPolicy(ctx, policyRef); err != nil {
+		return nil, err
+	}
+
+	return &p, nil
+}
+
 // NewPolicy construct and return a new instance of Policy.
 //
 // The policyRef parameter is expected to be either a JSON-encoded instance of
@@ -129,31 +147,8 @@ func NewPolicy(ctx context.Context, policyRef, rekorUrl, publicKey, effectiveTim
 		choosenTime: effectiveTime,
 	}
 
-	if policyRef == "" {
-		log.Debug("Using an empty EnterpriseContractPolicy")
-		// Default to an empty policy instead of returning an error because the required
-		// values, e.g. PublicKey, may be provided via other means, e.g. publicKey param.
-	} else if strings.Contains(policyRef, ":") { // Should detect JSON or YAML objects 🤞
-		log.Debug("Read EnterpriseContractPolicy as YAML")
-		if err := yaml.Unmarshal([]byte(policyRef), &p); err != nil {
-			log.Debugf("Problem parsing EnterpriseContractPolicy Spec from %q", policyRef)
-			return nil, fmt.Errorf("unable to parse EnterpriseContractPolicy Spec: %w", err)
-		}
-	} else {
-		log.Debug("Read EnterpriseContractPolicy as k8s resource")
-		k8s, err := kubernetes.NewClient(ctx)
-		if err != nil {
-			log.Debug("Failed to initialize Kubernetes client")
-			return nil, fmt.Errorf("cannot initialize Kubernetes client: %w", err)
-		}
-		log.Debug("Initialized Kubernetes client")
-
-		ecp, err := k8s.FetchEnterpriseContractPolicy(ctx, policyRef)
-		if err != nil {
-			log.Debug("Failed to fetch the enterprise contract policy from the cluster!")
-			return nil, fmt.Errorf("unable to fetch EnterpriseContractPolicy: %w", err)
-		}
-		p.EnterpriseContractPolicySpec = ecp.Spec
+	if err := p.loadPolicy(ctx, policyRef); err != nil {
+		return nil, err
 	}
 
 	if rekorUrl != "" && rekorUrl != p.RekorUrl {
@@ -183,6 +178,41 @@ func NewPolicy(ctx context.Context, policyRef, rekorUrl, publicKey, effectiveTim
 	}
 
 	return &p, nil
+}
+
+func (p *policy) loadPolicy(ctx context.Context, policyRef string) error {
+	if policyRef == "" {
+		log.Debug("Using an empty EnterpriseContractPolicy")
+		// Default to an empty policy instead of returning an error because the required
+		// values, e.g. PublicKey, may be provided via other means, e.g.
+		// publicKey param.
+		return nil
+	}
+
+	if strings.Contains(policyRef, ":") { // Should detect JSON or YAML objects 🤞
+		log.Debug("Read EnterpriseContractPolicy as YAML")
+		if err := yaml.Unmarshal([]byte(policyRef), &p); err != nil {
+			log.Debugf("Problem parsing EnterpriseContractPolicy Spec from %q", policyRef)
+			return fmt.Errorf("unable to parse EnterpriseContractPolicy Spec: %w", err)
+		}
+	} else {
+		log.Debug("Read EnterpriseContractPolicy as k8s resource")
+		k8s, err := kubernetes.NewClient(ctx)
+		if err != nil {
+			log.Debug("Failed to initialize Kubernetes client")
+			return fmt.Errorf("cannot initialize Kubernetes client: %w", err)
+		}
+		log.Debug("Initialized Kubernetes client")
+
+		ecp, err := k8s.FetchEnterpriseContractPolicy(ctx, policyRef)
+		if err != nil {
+			log.Debug("Failed to fetch the enterprise contract policy from the cluster!")
+			return fmt.Errorf("unable to fetch EnterpriseContractPolicy: %w", err)
+		}
+		p.EnterpriseContractPolicySpec = ecp.Spec
+	}
+
+	return nil
 }
 
 func (p *policy) WithSpec(spec ecc.EnterpriseContractPolicySpec) Policy {

@@ -30,6 +30,7 @@ import (
 
 	"github.com/hacbs-contract/ec-cli/internal/opa"
 	opaRule "github.com/hacbs-contract/ec-cli/internal/opa/rule"
+	"github.com/hacbs-contract/ec-cli/internal/policy"
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
 	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
@@ -37,6 +38,7 @@ import (
 func inspectPolicyCmd() *cobra.Command {
 	var (
 		sourceUrls       []string
+		policyRef        string
 		destDir          string
 		outputFormat     string
 		ruleFilter       string
@@ -76,23 +78,42 @@ func inspectPolicyCmd() *cobra.Command {
 		`),
 
 		Args: cobra.NoArgs,
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			if policyRef == "" {
+				return nil
+			}
+
+			p, err := policy.NewInertPolicy(cmd.Context(), policyRef)
+			if err != nil {
+				return err
+			}
+
+			// clear the sourceUrls slice
+			sourceUrls = make([]string, 0, 10)
+
+			for _, s := range p.Spec().Sources {
+				sourceUrls = append(sourceUrls, s.Policy...)
+			}
+
+			return nil
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if !slices.Contains(validFormats, outputFormat) {
 				return fmt.Errorf("invalid value for --output '%s'. accepted values: %s", outputFormat, strings.Join(validFormats, ", "))
 			}
 
 			ctx := cmd.Context()
-			afs := utils.FS(ctx)
+			fs := utils.FS(ctx)
 
 			if destDir == "" {
-				workDir, err := utils.CreateWorkDir(afs)
+				workDir, err := utils.CreateWorkDir(fs)
 				if err != nil {
 					log.Debug("Failed to create work dir!")
 					return err
 				}
 				destDir = workDir
 
-				defer utils.CleanupWorkDir(afs, workDir)
+				defer utils.CleanupWorkDir(fs, workDir)
 			}
 
 			allResults := make(map[string][]*ast.AnnotationsRef)
@@ -106,7 +127,7 @@ func inspectPolicyCmd() *cobra.Command {
 				}
 
 				// Inspect
-				result, err := opa.InspectDir(afs, policyDir)
+				result, err := opa.InspectDir(fs, policyDir)
 				if err != nil {
 					return err
 				}
@@ -130,16 +151,16 @@ func inspectPolicyCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringArrayVarP(&sourceUrls, "source", "s", []string{}, "policy source url. multiple values are allowed")
-	cmd.Flags().StringVarP(&destDir, "dest", "d", "", "use the specified destination directory to download the policy. if not set, a temporary directory will be used")
-	cmd.Flags().StringVarP(&outputFormat, "output", "o", "text", fmt.Sprintf("output format. one of: %s", strings.Join(validFormats, ", ")))
-	cmd.Flags().StringVar(&ruleFilter, "rule", ruleFilter, "display results matching rule name")
-	cmd.Flags().StringVar(&packageFilter, "package", packageFilter, "display results matching package name")
-	cmd.Flags().StringVar(&collectionFilter, "collection", collectionFilter, "display rules included in given collection")
+	flags := cmd.Flags()
+	flags.StringVarP(&policyRef, "policy", "p", "", "reference to the policy configuration, either EnterpriseContractPolicy Kubernetes custom resource reference [<namespace>/]<name>, or inline JSON or YAML of the `spec` part")
+	flags.StringArrayVarP(&sourceUrls, "source", "s", []string{}, "policy source url. multiple values are allowed")
+	flags.StringVarP(&destDir, "dest", "d", "", "use the specified destination directory to download the policy. if not set, a temporary directory will be used")
+	flags.StringVarP(&outputFormat, "output", "o", "text", fmt.Sprintf("output format. one of: %s", strings.Join(validFormats, ", ")))
+	flags.StringVar(&ruleFilter, "rule", ruleFilter, "display results matching rule name")
+	flags.StringVar(&packageFilter, "package", packageFilter, "display results matching package name")
+	flags.StringVar(&collectionFilter, "collection", collectionFilter, "display rules included in given collection")
 
-	if err := cmd.MarkFlagRequired("source"); err != nil {
-		panic(err)
-	}
+	cmd.MarkFlagsMutuallyExclusive("policy", "source")
 
 	return cmd
 }
