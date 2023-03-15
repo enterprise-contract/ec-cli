@@ -18,30 +18,78 @@ package definition
 
 import (
 	"context"
+	"fmt"
+	"path/filepath"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/afero"
 
 	"github.com/hacbs-contract/ec-cli/internal/evaluation_target/definition"
 	"github.com/hacbs-contract/ec-cli/internal/output"
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
+	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
 
-var def_file = definition.NewDefinition
+var definitionFile = definition.NewDefinition
 
 // ValidatePipeline calls NewPipelineEvaluator to obtain an PipelineEvaluator. It then executes the associated TestRunner
 // which tests the associated pipeline file(s) against the associated policies, and displays the output.
-func ValidateDefinition(ctx context.Context, fpath string, sources []source.PolicySource) (*output.Output, error) {
-	p, err := def_file(ctx, fpath, sources)
+func ValidateDefinition(ctx context.Context, fpath string, sources []source.PolicySource, namespace []string) (*output.Output, error) {
+	defFiles, err := detectFiles(ctx, fpath)
 	if err != nil {
-		log.Debug("Failed to create pipeline definition file!")
+		return nil, err
+	}
+	p, err := definitionFile(ctx, defFiles, sources, namespace)
+	if err != nil {
+		log.Debug("Failed to create definition file!")
 		return nil, err
 	}
 
-	results, err := p.Evaluator.Evaluate(ctx, []string{p.Fpath})
+	results, err := p.Evaluator.Evaluate(ctx, defFiles)
 	if err != nil {
 		log.Debug("Problem running conftest policy check!")
 		return nil, err
 	}
 	log.Debug("Conftest policy check complete")
 	return &output.Output{PolicyCheck: results}, nil
+}
+
+// detect if a file or directory was passed. if a directory, gather all files in it
+func detectFiles(ctx context.Context, fpath string) ([]string, error) {
+	fs := utils.FS(ctx)
+	exists, err := afero.Exists(fs, fpath)
+	if err != nil {
+		return nil, err
+	}
+	if !exists {
+		return nil, fmt.Errorf("fpath '%s' does not exist", fpath)
+	}
+
+	var defFiles []string
+	file, err := fs.Open(fpath)
+	if err != nil {
+		return nil, err
+	}
+
+	defer file.Close()
+
+	dir, err := afero.IsDir(fs, fpath)
+	if err != nil {
+		return nil, err
+	}
+
+	if dir {
+		files, err := afero.ReadDir(fs, fpath)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, f := range files {
+			defFiles = append(defFiles, filepath.Join(fpath, f.Name()))
+		}
+	} else {
+		defFiles = append(defFiles, fpath)
+	}
+
+	return defFiles, nil
 }

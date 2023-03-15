@@ -22,7 +22,6 @@ import (
 
 	"github.com/ghodss/yaml"
 	cOutput "github.com/open-policy-agent/conftest/output"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/hacbs-contract/ec-cli/internal/format"
 	"github.com/hacbs-contract/ec-cli/internal/output"
@@ -47,23 +46,29 @@ type Report struct {
 }
 
 func (r *Report) Add(o output.Output) {
-	item := ReportItem{
-		// Initialize to an empty slice so if there are no violations/warnings
-		// it shows an empty list instead of null.
-		Violations: []cOutput.Result{},
-		Warnings:   []cOutput.Result{},
-	}
+	// group the results by filename. If multiple files are passed
+	// to the testRunner, conftest evaluates all files against each namespace.
+	itemsByFile := make(map[string]ReportItem)
+
+	// check contains results from each namespace evaluated per definition
 	for _, check := range o.PolicyCheck {
-		// This should never happen, but just in case it does, make it obvious.
-		if item.Filename != "" && item.Filename != check.FileName {
-			log.Warnf("Expected policy check filename %q, got %q", item.Filename, check.FileName)
+		if _, ok := itemsByFile[check.FileName]; !ok {
+			itemsByFile[check.FileName] = ReportItem{
+				Violations: []cOutput.Result{},
+				Warnings:   []cOutput.Result{},
+			}
 		}
-		item.Filename = check.FileName
+		item := itemsByFile[check.FileName]
 		item.Violations = append(item.Violations, check.Failures...)
 		item.Warnings = append(item.Warnings, check.Warnings...)
+		item.Filename = check.FileName
+		itemsByFile[check.FileName] = item
 	}
-	item.Success = len(item.Violations) == 0
-	r.items = append(r.items, item)
+
+	for _, value := range itemsByFile {
+		value.Success = len(value.Violations) == 0
+		r.items = append(r.items, value)
+	}
 }
 
 func (r *Report) Write(targetName string, p format.TargetParser) error {

@@ -160,6 +160,8 @@ func TestConftestEvaluatorEvaluate(t *testing.T) {
 						},
 					},
 				},
+				Skipped:    []output.Result{},
+				Exceptions: []output.Result{},
 			},
 		},
 	}
@@ -273,6 +275,8 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 						Warnings: []output.Result{
 							{Metadata: map[string]any{"code": "lunch.ham"}},
 						},
+						Skipped:    []output.Result{},
+						Exceptions: []output.Result{},
 					},
 				},
 			},
@@ -301,6 +305,8 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 						Warnings: []output.Result{
 							{Metadata: map[string]any{"code": "lunch.ham"}},
 						},
+						Skipped:    []output.Result{},
+						Exceptions: []output.Result{},
 					},
 				},
 			},
@@ -331,6 +337,8 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 						Warnings: []output.Result{
 							{Metadata: map[string]any{"code": "breakfast.ham"}},
 						},
+						Skipped:    []output.Result{},
+						Exceptions: []output.Result{},
 					},
 				},
 			},
@@ -367,6 +375,8 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 							{Metadata: map[string]any{"code": "breakfast.hash"}},
 							{Metadata: map[string]any{"code": "not_breakfast.ham", "term": "eggs"}},
 						},
+						Skipped:    []output.Result{},
+						Exceptions: []output.Result{},
 					},
 				},
 			},
@@ -403,6 +413,8 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 							{Metadata: map[string]any{"code": "breakfast.hash"}},
 							{Metadata: map[string]any{"code": "not_breakfast.ham", "term": "eggs"}},
 						},
+						Skipped:    []output.Result{},
+						Exceptions: []output.Result{},
 					},
 				},
 			},
@@ -437,6 +449,8 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 							{Metadata: map[string]any{"code": "breakfast.ham", "term": "bacon"}},
 							{Metadata: map[string]any{"code": "breakfast.hash"}},
 						},
+						Skipped:    []output.Result{},
+						Exceptions: []output.Result{},
 					},
 				},
 			},
@@ -465,6 +479,8 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 						Warnings: []output.Result{
 							{Metadata: map[string]any{"code": "breakfast.ham"}},
 						},
+						Skipped:    []output.Result{},
+						Exceptions: []output.Result{},
 					},
 				},
 			},
@@ -493,6 +509,8 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 						Warnings: []output.Result{
 							{Metadata: map[string]any{"code": "breakfast.ham"}},
 						},
+						Skipped:    []output.Result{},
+						Exceptions: []output.Result{},
 					},
 				},
 			},
@@ -523,6 +541,8 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 						Warnings: []output.Result{
 							{Metadata: map[string]any{"code": "lunch.ham"}},
 						},
+						Skipped:    []output.Result{},
+						Exceptions: []output.Result{},
 					},
 				},
 			},
@@ -555,6 +575,8 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 						Warnings: []output.Result{
 							{Metadata: map[string]any{"code": "breakfast.ham", "term": "eggs"}},
 						},
+						Skipped:    []output.Result{},
+						Exceptions: []output.Result{},
 					},
 				},
 			},
@@ -587,6 +609,8 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 						Warnings: []output.Result{
 							{Metadata: map[string]any{"code": "breakfast.ham", "term": "eggs"}},
 						},
+						Skipped:    []output.Result{},
+						Exceptions: []output.Result{},
 					},
 				},
 			},
@@ -621,6 +645,8 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 						Warnings: []output.Result{
 							{Metadata: map[string]any{"code": "breakfast.ham", "term": "eggs"}},
 						},
+						Skipped:    []output.Result{},
+						Exceptions: []output.Result{},
 					},
 				},
 			},
@@ -671,6 +697,8 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 								"code": "breakfast.ham", "collections": []string{"foo"},
 							}},
 						},
+						Skipped:    []output.Result{},
+						Exceptions: []output.Result{},
 					},
 				},
 			},
@@ -726,6 +754,8 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 								"code": "lunch.ham", "collections": []string{"foo"},
 							}},
 						},
+						Skipped:    []output.Result{},
+						Exceptions: []output.Result{},
 					},
 				},
 			},
@@ -769,6 +799,8 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 								"code": "breakfast.ham", "collections": []string{"foo"},
 							}},
 						},
+						Skipped:    []output.Result{},
+						Exceptions: []output.Result{},
 					},
 				},
 			},
@@ -819,6 +851,8 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 								"code": "breakfast.ham", "collections": []string{"other"},
 							}},
 						},
+						Skipped:    []output.Result{},
+						Exceptions: []output.Result{},
 					},
 				},
 			},
@@ -865,6 +899,8 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 								"code": "lunch.ham",
 							}},
 						},
+						Skipped:    []output.Result{},
+						Exceptions: []output.Result{},
 					},
 				},
 			},
@@ -881,8 +917,10 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 			want: CheckResults{
 				{
 					CheckResult: output.CheckResult{
-						Failures: []output.Result{{Metadata: map[string]any{"code": 0}}},
-						Warnings: []output.Result{{Metadata: map[string]any{"code": false}}},
+						Failures:   []output.Result{{Metadata: map[string]any{"code": 0}}},
+						Warnings:   []output.Result{{Metadata: map[string]any{"code": false}}},
+						Skipped:    []output.Result{},
+						Exceptions: []output.Result{},
 					},
 				},
 			},
@@ -899,8 +937,10 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 			want: CheckResults{
 				{
 					CheckResult: output.CheckResult{
-						Failures: []output.Result{{Metadata: map[string]any{"code": 0}}},
-						Warnings: []output.Result{{Metadata: map[string]any{"code": false}}},
+						Failures:   []output.Result{{Metadata: map[string]any{"code": 0}}},
+						Warnings:   []output.Result{{Metadata: map[string]any{"code": false}}},
+						Skipped:    []output.Result{},
+						Exceptions: []output.Result{},
 					},
 				},
 			},
@@ -1002,35 +1042,7 @@ func TestCollectAnnotationData(t *testing.T) {
 	}, rules)
 }
 
-func TestAddingMetadata(t *testing.T) {
-	result := output.CheckResult{
-		Warnings: []output.Result{
-			{
-				Metadata: map[string]any{
-					"code":        "warning1",
-					"collections": []any{"A"},
-				},
-			},
-			{
-				Metadata: map[string]any{
-					"code": "warning2",
-				},
-			},
-		},
-		Failures: []output.Result{
-			{
-				Metadata: map[string]any{
-					"code":        "failure1",
-					"collections": []any{"B"},
-				},
-			},
-			{
-				Metadata: map[string]any{
-					"code": "failure2",
-				},
-			},
-		},
-	}
+func TestRuleMetadata(t *testing.T) {
 	rules := policyRules{
 		"warning1": rule.Info{
 			Title: "Warning1",
@@ -1040,39 +1052,71 @@ func TestAddingMetadata(t *testing.T) {
 			Description: "Failure 2 description",
 		},
 	}
-	addMetadata(&result, rules)
-
-	assert.Equal(t, output.CheckResult{
-		Warnings: []output.Result{
-			{
+	cases := []struct {
+		name   string
+		result output.Result
+		rules  policyRules
+		code   string
+		want   output.Result
+	}{
+		{
+			name: "update title",
+			result: output.Result{
 				Metadata: map[string]any{
 					"code":        "warning1",
-					"title":       "Warning1",
-					"collections": []string{"A"},
+					"collections": []any{"A"},
 				},
 			},
-			{
+			rules: rules,
+			code:  "warning1",
+			want: output.Result{
 				Metadata: map[string]any{
-					"code": "warning2",
+					"code":        "warning1",
+					"collections": []string{"A"},
+					"title":       "Warning1",
 				},
 			},
 		},
-		Failures: []output.Result{
-			{
-				Metadata: map[string]any{
-					"code":        "failure1",
-					"collections": []string{"B"},
-				},
-			},
-			{
+		{
+			name: "update title and description",
+			result: output.Result{
 				Metadata: map[string]any{
 					"code":        "failure2",
-					"title":       "Failure2",
+					"collections": []any{"A"},
+				},
+			},
+			rules: rules,
+			code:  "failure2",
+			want: output.Result{
+				Metadata: map[string]any{
+					"code":        "failure2",
+					"collections": []string{"A"},
 					"description": "Failure 2 description",
+					"title":       "Failure2",
 				},
 			},
 		},
-	}, result)
-
-	assert.Empty(t, rules)
+		{
+			name: "rule not found",
+			result: output.Result{
+				Metadata: map[string]any{
+					"collections": []any{"A"},
+				},
+			},
+			rules: rules,
+			code:  "",
+			want: output.Result{
+				Metadata: map[string]any{
+					"collections": []any{"A"},
+				},
+			},
+		},
+	}
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			rule, _ := addRuleMetadata(&tt.result, tt.rules)
+			assert.Equal(t, rule, tt.code)
+			assert.Equal(t, tt.result, tt.want)
+		})
+	}
 }

@@ -44,7 +44,7 @@ func TestReport(t *testing.T) {
 				"filename": "/path/to/pipeline.json",
 				"violations": [],
 				"warnings": [],
-				"success": true
+				"success": true,
 			}]`,
 		},
 		{
@@ -68,7 +68,7 @@ func TestReport(t *testing.T) {
 				"filename": "/path/to/pipeline.json",
 				"violations": [],
 				"warnings": [{"msg": "running low in spam"},{"msg": "not all like spam"}],
-				"success": true
+				"success": true,
 			}]`,
 		},
 		{
@@ -92,7 +92,7 @@ func TestReport(t *testing.T) {
 				"filename": "/path/to/pipeline.json",
 				"violations": [{"msg": "out of spam!"},{"msg": "spam 💔"}],
 				"warnings": [],
-				"success": false
+				"success": false,
 			}]`,
 		},
 		{
