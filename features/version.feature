@@ -6,18 +6,18 @@ Feature: ec cli version subcommand
     Then the exit status should be 0
     Then the standard output should contain
     """
-    Version                     v\d+.\d+.\d+-[0-9a-f]+
-    Source ID                   [0-9a-f]+
-    Change date                 \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \+0000 UTC \(.* ago\)
-    ECC                         v.+
-    OPA                         v.+
-    Conftest                    v.+
-    Red Hat AppStudio \(shared\)  v.+
-    Cosign                      (v.+|N\/A)
-    Sigstore                    v.+
-    Rekor                       v.+
-    Tekton Pipeline             v.+
-    Kubernetes Client           v.+
+    Version                  v\d+.\d+.\d+-[0-9a-f]+
+    Source ID                [0-9a-f]+
+    Change date              \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \+0000 UTC \(.* ago\)
+    ECC                      v.+
+    OPA                      v.+
+    Conftest                 v.+
+    Red Hat AppStudio \(API\)  v.+
+    Cosign                   (v.+|N\/A)
+    Sigstore                 v.+
+    Rekor                    v.+
+    Tekton Pipeline          v.+
+    Kubernetes Client        v.+
     """
 
   Scenario: short output
@@ -51,7 +51,7 @@ Feature: ec cli version subcommand
           "Version": "v.+"
         },
         {
-          "Name": "Red Hat AppStudio (shared)",
+          "Name": "Red Hat AppStudio (API)",
           "Version": "v.+"
         },
         {

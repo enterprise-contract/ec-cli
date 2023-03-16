@@ -24,7 +24,7 @@ import (
 
 	hd "github.com/MakeNowJust/heredoc"
 	"github.com/hashicorp/go-multierror"
-	appstudioshared "github.com/redhat-appstudio/managed-gitops/appstudio-shared/apis/appstudio.redhat.com/v1alpha1"
+	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 	"github.com/spf13/cobra"
 
 	"github.com/hacbs-contract/ec-cli/internal/applicationsnapshot"
@@ -49,7 +49,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		policyConfiguration string
 		publicKey           string
 		rekorURL            string
-		spec                *appstudioshared.ApplicationSnapshotSpec
+		spec                *app.SnapshotSpec
 		strict              bool
 	}{
 
@@ -160,7 +160,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 			var lock sync.WaitGroup
 			for _, c := range appComponents {
 				lock.Add(1)
-				go func(comp appstudioshared.ApplicationSnapshotComponent) {
+				go func(comp app.SnapshotComponent) {
 					defer lock.Done()
 
 					ctx := cmd.Context()
@@ -168,7 +168,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 					res := result{
 						err: err,
 						component: applicationsnapshot.Component{
-							ApplicationSnapshotComponent: appstudioshared.ApplicationSnapshotComponent{
+							SnapshotComponent: app.SnapshotComponent{
 								Name:           comp.Name,
 								ContainerImage: comp.ContainerImage,
 							},

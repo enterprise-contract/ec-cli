@@ -29,7 +29,7 @@ import (
 
 	hd "github.com/MakeNowJust/heredoc"
 	"github.com/open-policy-agent/conftest/output"
-	appstudioshared "github.com/redhat-appstudio/managed-gitops/appstudio-shared/apis/appstudio.redhat.com/v1alpha1"
+	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 
@@ -41,7 +41,7 @@ import (
 var testSnapshot string
 
 func Test_ReportJson(t *testing.T) {
-	var snapshot appstudioshared.ApplicationSnapshotSpec
+	var snapshot app.SnapshotSpec
 	err := json.Unmarshal([]byte(testSnapshot), &snapshot)
 	assert.NoError(t, err)
 
@@ -89,7 +89,7 @@ func Test_ReportJson(t *testing.T) {
 }
 
 func Test_ReportYaml(t *testing.T) {
-	var snapshot *appstudioshared.ApplicationSnapshotSpec
+	var snapshot *app.SnapshotSpec
 	err := json.Unmarshal([]byte(testSnapshot), &snapshot)
 	assert.NoError(t, err)
 
@@ -455,10 +455,10 @@ func Test_ReportHACBS(t *testing.T) {
 	}
 }
 
-func testComponentsFor(snapshot appstudioshared.ApplicationSnapshotSpec) []Component {
+func testComponentsFor(snapshot app.SnapshotSpec) []Component {
 	components := []Component{
 		{
-			ApplicationSnapshotComponent: snapshot.Components[0],
+			SnapshotComponent: snapshot.Components[0],
 			Violations: []output.Result{
 				{
 					Message: "violation1",
@@ -477,7 +477,7 @@ func testComponentsFor(snapshot appstudioshared.ApplicationSnapshotSpec) []Compo
 			Success: false,
 		},
 		{
-			ApplicationSnapshotComponent: snapshot.Components[1],
+			SnapshotComponent: snapshot.Components[1],
 			Violations: []output.Result{
 				{
 					Message: "violation2",
@@ -486,7 +486,7 @@ func testComponentsFor(snapshot appstudioshared.ApplicationSnapshotSpec) []Compo
 			Success: false,
 		},
 		{
-			ApplicationSnapshotComponent: snapshot.Components[2],
+			SnapshotComponent: snapshot.Components[2],
 			Successes: []output.Result{
 				{
 					Message: "success3",

@@ -741,3 +741,54 @@ Feature: evaluate enterprise contract
       }
     }
     """
+
+  Scenario: inline application snapshot
+    Given a key pair named "known"
+    Given an image named "acceptance/ec-happy-day"
+    Given a valid image signature of "acceptance/ec-happy-day" image signed by the "known" key
+    Given a valid attestation of "acceptance/ec-happy-day" signed by the "known" key
+    Given a git repository named "happy-day-policy" with
+      | main.rego | examples/happy_day.rego |
+    Given policy configuration named "ec-policy" with specification
+    """
+    {
+      "sources": [
+        {
+          "policy": [
+            "git::http://${GITHOST}/git/happy-day-policy.git"
+          ]
+        }
+      ]
+    }
+    """
+    When ec command is run with "validate image --json-input {"components":[{"name":"Happy","containerImage":"${REGISTRY}/acceptance/ec-happy-day"}]} --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --strict"
+    Then the exit status should be 0
+    Then the standard output should contain
+    """
+    {
+      "success": true,
+      "key": ${known_PUBLIC_KEY_JSON},
+      "components": [
+        {
+          "name": "Happy",
+          "containerImage": "localhost:(\\d+)/acceptance/ec-happy-day@sha256:[0-9a-f]{64}",
+          "successes": [
+            {
+              "msg": "Pass",
+              "metadata": {
+                "code": "main.acceptor"
+              }
+            }
+          ],
+          "success": true,
+          "signatures": ${ATTESTATION_SIGNATURES_JSON}
+        }
+      ],
+      "policy": {
+        "publicKey": ${known_PUBLIC_KEY_JSON},
+        "sources": [
+          { "policy": ["git::http://${GITHOST}/git/happy-day-policy.git"] }
+        ]
+      }
+    }
+    """
