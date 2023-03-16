@@ -28,4 +28,5 @@ func init() {
 		Short: "Inspect policy rules",
 	}
 	InspectCmd.AddCommand(inspectPolicyCmd())
+	InspectCmd.AddCommand(inspectPolicyDataCmd())
 }

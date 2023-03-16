@@ -23,6 +23,7 @@ import (
 	"unicode"
 
 	"github.com/ghodss/yaml"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 )
 
@@ -71,6 +72,15 @@ func CreateWorkDir(fs afero.Fs) (string, error) {
 	}
 
 	return workDir, nil
+}
+
+// CleanupWorkDir removes all files in a directory
+// Eat any errors so we can call it from defer
+func CleanupWorkDir(fs afero.Fs, path string) {
+	err := fs.RemoveAll(path)
+	if err != nil {
+		log.Debugf("Ignoring error removing temporary work dir %s: %v", path, err)
+	}
 }
 
 type ioContextKey int

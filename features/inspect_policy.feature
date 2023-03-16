@@ -64,3 +64,31 @@ Feature: inspect policies
         ]
       }
     """
+
+  Scenario: inspecting a data source
+    Given a git repository named "policy-data" with
+      | foo.yaml | examples/rule_data_2.yaml |
+      | bar.json | examples/rule_data_3.json |
+    When ec command is run with "inspect policy-data --source git::http://${GITHOST}/git/policy-data.git -o json"
+    Then the exit status should be 0
+    Then the standard output should contain
+    """
+      {
+        "rule_data": {
+          "banana_fail_reason": "spider attack"
+        },
+        "spam_count": 42
+      }
+    """
+
+  Scenario: inspecting a data source with a merge error
+    Given a git repository named "policy-data" with
+      | foo.yaml | examples/rule_data_1.yaml |
+      | bar.yaml | examples/rule_data_2.yaml |
+    When ec command is run with "inspect policy-data --source git::http://${GITHOST}/git/policy-data.git -o json"
+    Then the exit status should be 1
+    # Todo:
+    #Then the standard error should contain
+    #"""
+    #Error: Merge error. The 'rule_data' key was found more than once!
+    #"""
