@@ -25,6 +25,7 @@ import (
 	"testing"
 
 	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
+	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -52,6 +53,29 @@ var testECP = ecc.EnterpriseContractPolicy{
 	},
 }
 
+var testSnapshot = app.Snapshot{
+	TypeMeta: v1.TypeMeta{
+		Kind:       "Snapshot",
+		APIVersion: "appstudio.redhat.com/v1alpha1",
+	},
+	ObjectMeta: v1.ObjectMeta{
+		Name:      "snapshot",
+		Namespace: "test",
+	},
+	Spec: app.SnapshotSpec{
+		Components: []app.SnapshotComponent{
+			{
+				Name:           "A",
+				ContainerImage: "registry.io/repository/a",
+			},
+			{
+				Name:           "B",
+				ContainerImage: "registry.io/repository/b",
+			},
+		},
+	},
+}
+
 var testKubeconfig = []byte(`
 apiVersion: v1
 kind: Config
@@ -69,12 +93,14 @@ current-context: test-context
 
 func init() {
 	scheme := runtime.NewScheme()
-	err := ecc.AddToScheme(scheme)
-	if err != nil {
+	if err := ecc.AddToScheme(scheme); err != nil {
+		panic(err)
+	}
+	if err := app.AddToScheme(scheme); err != nil {
 		panic(err)
 	}
 
-	fakeClient = fake.NewSimpleDynamicClient(scheme, &testECP)
+	fakeClient = fake.NewSimpleDynamicClient(scheme, &testECP, &testSnapshot)
 }
 
 func Test_FetchEnterpriseContractPolicy(t *testing.T) {
@@ -134,4 +160,56 @@ func Test_FailureToCreateClient(t *testing.T) {
 	_, err := createK8SClient()
 
 	assert.EqualError(t, err, "invalid configuration: no configuration has been provided, try setting KUBERNETES_MASTER environment variable")
+}
+
+func Test_FetchSnapshot(t *testing.T) {
+	testCases := []struct {
+		name         string
+		snapshotName string
+		snapshot     *app.Snapshot
+		err          string
+	}{
+		{
+			name:         "fetch-with-name-and-namespace",
+			snapshotName: "test/snapshot",
+			snapshot:     &testSnapshot,
+		},
+		{
+			name:         "fetch-with-name-only",
+			snapshotName: "snapshot",
+			snapshot:     &testSnapshot,
+		},
+		{
+			name:         "fetch-policy-not-found",
+			snapshotName: "missing/snapshot",
+			err:          `snapshots.appstudio.redhat.com "snapshot" not found`,
+		},
+	}
+
+	for _, c := range testCases {
+		t.Run(c.name, func(t *testing.T) {
+			k := kubernetesClient{
+				client: fakeClient,
+			}
+
+			kubeconfigFile := path.Join(t.TempDir(), "KUBECONFIG")
+			err := os.WriteFile(kubeconfigFile, testKubeconfig, 0777)
+			assert.NoError(t, err)
+			t.Setenv("KUBECONFIG", kubeconfigFile)
+
+			got, err := k.FetchSnapshot(context.TODO(), c.snapshotName)
+
+			if c.err == "" {
+				assert.NoError(t, err)
+			} else {
+				assert.ErrorContains(t, err, c.err)
+			}
+
+			if c.snapshot == nil {
+				assert.Nil(t, got)
+			} else {
+				assert.Equal(t, *c.snapshot, *got, "should return the stubbed Snapshot")
+			}
+		})
+	}
 }

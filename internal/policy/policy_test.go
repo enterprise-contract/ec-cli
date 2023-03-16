@@ -22,7 +22,6 @@ import (
 	"context"
 	"crypto"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"testing"
 	"time"
@@ -44,18 +43,6 @@ CTeemlLBj+GVwnrnTgS1ow2jxgOgNFs0ADh2UfqHQqxeXFmphmsiAxtOxA==
 `
 
 const testRekorUrl = "https://example.com/api"
-
-type FakeKubernetesClient struct {
-	policy     ecc.EnterpriseContractPolicySpec
-	fetchError bool
-}
-
-func (c *FakeKubernetesClient) FetchEnterpriseContractPolicy(ctx context.Context, ref string) (*ecc.EnterpriseContractPolicy, error) {
-	if c.fetchError {
-		return nil, errors.New("no fetching for you")
-	}
-	return &ecc.EnterpriseContractPolicy{Spec: c.policy}, nil
-}
 
 func TestNewPolicy(t *testing.T) {
 	timeNowStr := "2022-11-23T16:30:00Z"
@@ -165,7 +152,7 @@ func TestNewPolicy(t *testing.T) {
 			ctx := context.Background()
 			// Setup an fake client to simulate external connections.
 			if c.k8sResource != nil {
-				ctx = kubernetes.WithClient(ctx, &FakeKubernetesClient{policy: *c.k8sResource})
+				ctx = kubernetes.WithClient(ctx, &FakeKubernetesClient{Policy: *c.k8sResource})
 			}
 			got, err := NewPolicy(ctx, c.policyRef, c.rekorUrl, c.publicKey, timeNowStr)
 			assert.NoError(t, err)
@@ -217,7 +204,7 @@ func TestNewPolicyFailures(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			ctx := context.Background()
-			ctx = kubernetes.WithClient(ctx, &FakeKubernetesClient{fetchError: c.k8sError})
+			ctx = kubernetes.WithClient(ctx, &FakeKubernetesClient{FetchError: c.k8sError})
 			got, err := NewPolicy(ctx, c.policyRef, "", "", "")
 			assert.Nil(t, got)
 			assert.ErrorContains(t, err, c.errorCause)

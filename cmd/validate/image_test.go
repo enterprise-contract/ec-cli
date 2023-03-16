@@ -183,7 +183,7 @@ func Test_determineInputSpec(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			s, err := applicationsnapshot.DetermineInputSpec(afero.NewOsFs(), applicationsnapshot.Input{
+			s, err := applicationsnapshot.DetermineInputSpec(context.Background(), applicationsnapshot.Input{
 				File:  c.arguments.filePath,
 				JSON:  c.arguments.input,
 				Image: c.arguments.imageRef,

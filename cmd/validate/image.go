@@ -49,6 +49,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		policyConfiguration string
 		publicKey           string
 		rekorURL            string
+		snapshot            string
 		spec                *app.SnapshotSpec
 		strict              bool
 	}{
@@ -128,12 +129,12 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 
 		PreRunE: func(cmd *cobra.Command, args []string) (allErrors error) {
 			ctx := cmd.Context()
-			if s, err := applicationsnapshot.DetermineInputSpec(
-				utils.FS(ctx), applicationsnapshot.Input{
-					File:  data.filePath,
-					JSON:  data.input,
-					Image: data.imageRef,
-				}); err != nil {
+			if s, err := applicationsnapshot.DetermineInputSpec(ctx, applicationsnapshot.Input{
+				File:     data.filePath,
+				JSON:     data.input,
+				Image:    data.imageRef,
+				Snapshot: data.snapshot,
+			}); err != nil {
 				allErrors = multierror.Append(allErrors, err)
 			} else {
 				data.spec = s
@@ -266,6 +267,10 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		current time, "attestation" - for time from the youngest attestation, or
 		a RFC3339 formatted value, e.g. 2022-11-18T00:00:00Z.
 	`))
+
+	cmd.Flags().StringVar(&data.snapshot, "snapshot", "", hd.Doc(`
+		Provide the AppStudio Snapshot as a source of the images to validate, as inline
+		JSON of the "spec" or a reference to a Kubernetes object [<namespace>/]<name>`))
 
 	cmd.Flags().BoolVar(&data.info, "info", data.info, hd.Doc(`
 		Include additional information on the failures. For instance for policy

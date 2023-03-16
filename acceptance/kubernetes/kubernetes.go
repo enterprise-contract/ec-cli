@@ -113,6 +113,16 @@ func createNamedPolicy(ctx context.Context, name string, specification *godog.Do
 	return c.cluster.CreateNamedPolicy(ctx, name, specification.Content)
 }
 
+func createNamedSnapshot(ctx context.Context, name string, specification *godog.DocString) error {
+	c := testenv.FetchState[ClusterState](ctx)
+
+	if err := mustBeUp(ctx, *c); err != nil {
+		return err
+	}
+
+	return c.cluster.CreateNamedSnapshot(ctx, name, specification.Content)
+}
+
 func createPolicy(ctx context.Context, specification *godog.DocString) error {
 	c := testenv.FetchState[ClusterState](ctx)
 
@@ -221,7 +231,7 @@ func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^a cluster policy with content:$`, createPolicy)
 	sc.Step(`^version ([\d.]+) of the task is run with parameters:$`, runTask)
 	sc.Step(`^the task should succeed$`, theTaskShouldSucceed)
-
+	sc.Step(`^an Snapshot named "([^"]*)" with specification$`, createNamedSnapshot)
 	// stops the cluster unless the environment is persisted, the cluster state
 	// is nonexistent or the cluster wasn't started
 	sc.After(func(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {

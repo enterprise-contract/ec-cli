@@ -21,6 +21,7 @@ import (
 	"errors"
 
 	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
+	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -37,6 +38,7 @@ const clientContextKey contextKey = "ec.kubernetes.client"
 
 type Client interface {
 	FetchEnterpriseContractPolicy(ctx context.Context, ref string) (*ecc.EnterpriseContractPolicy, error)
+	FetchSnapshot(ctx context.Context, ref string) (*app.Snapshot, error)
 }
 
 type kubernetesClient struct {
@@ -125,4 +127,41 @@ func (k *kubernetesClient) FetchEnterpriseContractPolicy(ctx context.Context, re
 	log.Debugf("Policy successfully fetched from cluster: %#v", policy)
 
 	return &policy, nil
+}
+
+// FetchSnapshot gets the AppStudio Snapshot from the given
+// reference in a Kubernetes cluster.
+//
+// The reference is expected to be in the format [<namespace>/]<name>. If it does not contain
+// a namespace, the current namespace is used.
+func (k *kubernetesClient) FetchSnapshot(ctx context.Context, ref string) (*app.Snapshot, error) {
+	if len(ref) == 0 {
+		return nil, errors.New("snapshot reference cannot be empty")
+	}
+	log.Debugf("Raw snapshot reference: %q", ref)
+
+	name, err := NamespacedName(ref)
+	if err != nil {
+		return nil, err
+	}
+	log.Debugf("Parsed snapshot reference: %v", name)
+	if name.Namespace == "" {
+		return nil, errors.New("unable to determine namespace for snapshot")
+	}
+
+	var unstructuredSnapshot *unstructured.Unstructured
+	if unstructuredSnapshot, err = k.client.Resource(app.GroupVersion.WithResource("snapshots")).Namespace(name.Namespace).Get(ctx, name.Name, v1.GetOptions{}); err != nil {
+		log.Debugf("Failed to fetch the snapshot from cluster: %s", err)
+		return nil, err
+	}
+
+	snapshot := app.Snapshot{}
+	if err := runtime.DefaultUnstructuredConverter.FromUnstructured(unstructuredSnapshot.UnstructuredContent(), &snapshot); err != nil {
+		log.Debugf("Failed to convert unstructured content to concrete snapshot structure: %s", err)
+		return nil, err
+	}
+
+	log.Debugf("Snapshot successfully fetched from cluster: %#v", snapshot)
+
+	return &snapshot, nil
 }

@@ -61,6 +61,7 @@ type testState struct {
 	namespace string
 	policy    string
 	taskRun   string
+	snapshot  string
 }
 
 func (n testState) Key() any {

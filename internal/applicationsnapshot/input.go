@@ -17,6 +17,7 @@
 package applicationsnapshot
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -25,14 +26,18 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 	"golang.org/x/exp/slices"
+
+	"github.com/hacbs-contract/ec-cli/internal/kubernetes"
+	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
 
 const unnamed = "Unnamed"
 
 type Input struct {
-	File  string
-	JSON  string
-	Image string
+	File     string
+	JSON     string
+	Image    string
+	Snapshot string
 }
 
 type snapshot struct {
@@ -72,11 +77,13 @@ func (s *snapshot) merge(snap app.SnapshotSpec) {
 	}
 }
 
-func DetermineInputSpec(fs afero.Fs, input Input) (*app.SnapshotSpec, error) {
+func DetermineInputSpec(ctx context.Context, input Input) (*app.SnapshotSpec, error) {
 	var snapshot snapshot
+	provided := false
 
 	// read Snapshot provided as a file
 	if input.File != "" {
+		fs := utils.FS(ctx)
 		content, err := afero.ReadFile(fs, input.File)
 		if err != nil {
 			log.Debugf("Problem reading application snapshot from file %s", input.File)
@@ -92,6 +99,7 @@ func DetermineInputSpec(fs afero.Fs, input Input) (*app.SnapshotSpec, error) {
 
 		log.Debugf("Read application snapshot from file %s", input.File)
 		snapshot.merge(file)
+		provided = true
 	}
 
 	// read Snapshot provided as a string
@@ -105,6 +113,7 @@ func DetermineInputSpec(fs afero.Fs, input Input) (*app.SnapshotSpec, error) {
 
 		log.Debug("Read application snapshot from input param")
 		snapshot.merge(json)
+		provided = true
 	}
 
 	// create Snapshot with a single image
@@ -118,9 +127,27 @@ func DetermineInputSpec(fs afero.Fs, input Input) (*app.SnapshotSpec, error) {
 				},
 			},
 		})
+		provided = true
 	}
 
-	if len(snapshot.Components) == 0 {
+	if input.Snapshot != "" {
+		client, err := kubernetes.NewClient(ctx)
+		if err != nil {
+			log.Debugf("Unable to initialize Kubernetes Client: %v", err)
+			return nil, err
+		}
+
+		cluster, err := client.FetchSnapshot(ctx, input.Snapshot)
+		if err != nil {
+			log.Debugf("Unable to fetch snapshot %s from Kubernetes cluster: %v", input.Snapshot, err)
+			return nil, err
+		}
+
+		snapshot.merge(cluster.Spec)
+		provided = true
+	}
+
+	if !provided {
 		log.Debug("No application snapshot available")
 		return nil, errors.New("neither Snapshot nor image reference provided to validate")
 	}

@@ -19,12 +19,17 @@
 package applicationsnapshot
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/hacbs-contract/ec-cli/internal/kubernetes"
+	"github.com/hacbs-contract/ec-cli/internal/policy"
+	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
 
 func Test_DetermineInputSpec(t *testing.T) {
@@ -59,24 +64,36 @@ func Test_DetermineInputSpec(t *testing.T) {
 			want:  snapshot,
 		},
 		{
+			name:  "snapshot ref",
+			input: Input{Snapshot: "namespace/name"},
+			want:  snapshot,
+		},
+		{
+			name:  "snapshot ref no namespace",
+			input: Input{Snapshot: "just name"},
+			want:  snapshot,
+		},
+		{
 			name: "nothing",
 			want: nil,
 		},
 		{
 			name: "combined (all same)",
 			input: Input{
-				File:  "/home/list-of-images.json",
-				JSON:  string(testJson),
-				Image: imageRef,
+				File:     "/home/list-of-images.json",
+				JSON:     string(testJson),
+				Image:    imageRef,
+				Snapshot: "namespace/name",
 			},
 			want: snapshot,
 		},
 		{
 			name: "combined (all different)",
 			input: Input{
-				File:  "/home/list-of-images.json",
-				JSON:  `{"components":[{"name": "Named", "containerImage":"registry.io/repository/image:different"}]}`,
-				Image: "registry.io/repository/image:another",
+				File:     "/home/list-of-images.json",
+				JSON:     `{"components":[{"name": "Named", "containerImage":"registry.io/repository/image:different"}]}`,
+				Image:    "registry.io/repository/image:another",
+				Snapshot: "namespace/name",
 			},
 			want: &app.SnapshotSpec{
 				Components: []app.SnapshotComponent{
@@ -115,6 +132,11 @@ func Test_DetermineInputSpec(t *testing.T) {
 	}
 
 	fs := afero.NewMemMapFs()
+	ctx := utils.WithFS(context.Background(), fs)
+
+	ctx = kubernetes.WithClient(ctx, &policy.FakeKubernetesClient{
+		Snapshot: *snapshot,
+	})
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
@@ -124,7 +146,7 @@ func Test_DetermineInputSpec(t *testing.T) {
 				}
 			}
 
-			got, err := DetermineInputSpec(fs, tc.input)
+			got, err := DetermineInputSpec(ctx, tc.input)
 			// expect an error so check for nil
 			if tc.want != nil {
 				assert.NoError(t, err)
