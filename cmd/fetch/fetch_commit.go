@@ -81,7 +81,11 @@ func commitAuthorizationCmd() *cobra.Command {
 
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
-			spec, err := applicationsnapshot.DetermineInputSpec(utils.FS(ctx), data.filePath, data.input, data.imageRef)
+			spec, err := applicationsnapshot.DetermineInputSpec(utils.FS(ctx), applicationsnapshot.Input{
+				File:  data.filePath,
+				JSON:  data.input,
+				Image: data.imageRef,
+			})
 			if err != nil {
 				return err
 			}

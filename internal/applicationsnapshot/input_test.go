@@ -40,34 +40,23 @@ func Test_DetermineInputSpec(t *testing.T) {
 	}
 	testJson, _ := json.Marshal(snapshot)
 	tests := []struct {
-		filePath string
-		input    string
-		imageRef string
-		want     *app.SnapshotSpec
+		input Input
+		want  *app.SnapshotSpec
 	}{
 		{
-			filePath: "/home/list-of-images.json",
-			input:    "",
-			imageRef: "",
-			want:     snapshot,
+			input: Input{File: "/home/list-of-images.json"},
+			want:  snapshot,
 		},
 		{
-			filePath: "",
-			input:    string(testJson),
-			imageRef: "",
-			want:     snapshot,
+			input: Input{JSON: string(testJson)},
+			want:  snapshot,
 		},
 		{
-			filePath: "",
-			input:    "",
-			imageRef: imageRef,
-			want:     snapshot,
+			input: Input{Image: imageRef},
+			want:  snapshot,
 		},
 		{
-			filePath: "",
-			input:    "",
-			imageRef: "",
-			want:     nil,
+			want: nil,
 		},
 	}
 
@@ -75,13 +64,13 @@ func Test_DetermineInputSpec(t *testing.T) {
 
 	for i, tc := range tests {
 		t.Run(fmt.Sprintf("DetermineInputSpec=%d", i), func(t *testing.T) {
-			if tc.filePath != "" {
-				if err := afero.WriteFile(fs, tc.filePath, []byte(testJson), 0400); err != nil {
+			if tc.input.File != "" {
+				if err := afero.WriteFile(fs, tc.input.File, []byte(testJson), 0400); err != nil {
 					panic(err)
 				}
 			}
 
-			got, err := DetermineInputSpec(fs, tc.filePath, tc.input, tc.imageRef)
+			got, err := DetermineInputSpec(fs, tc.input)
 			// expect an error so check for nil
 			if tc.want != nil {
 				assert.NoError(t, err)

@@ -26,52 +26,58 @@ import (
 	"github.com/spf13/afero"
 )
 
-func DetermineInputSpec(fs afero.Fs, filePath string, input string, imageRef string) (*app.SnapshotSpec, error) {
-	var appSnapshot app.SnapshotSpec
+type Input struct {
+	File  string
+	JSON  string
+	Image string
+}
 
-	// read ApplicationSnapshot provided as a file
-	if len(filePath) > 0 {
-		content, err := afero.ReadFile(fs, filePath)
+func DetermineInputSpec(fs afero.Fs, input Input) (*app.SnapshotSpec, error) {
+	var snapshot app.SnapshotSpec
+
+	// read Snapshot provided as a file
+	if len(input.File) > 0 {
+		content, err := afero.ReadFile(fs, input.File)
 		if err != nil {
-			log.Debugf("Problem reading application snapshot from file %s", filePath)
+			log.Debugf("Problem reading application snapshot from file %s", input.File)
 			return nil, err
 		}
 
-		err = yaml.Unmarshal(content, &appSnapshot)
+		err = yaml.Unmarshal(content, &snapshot)
 		if err != nil {
-			log.Debugf("Problem parsing application snapshot from file %s", filePath)
-			return nil, fmt.Errorf("unable to parse ApplicationSnapshot file at %s: %w", filePath, err)
+			log.Debugf("Problem parsing application snapshot from file %s", input.File)
+			return nil, fmt.Errorf("unable to parse Snapshot specification from %s: %w", input.File, err)
 		}
 
-		log.Debugf("Read application snapshot from file %s", filePath)
-		return &appSnapshot, nil
+		log.Debugf("Read application snapshot from file %s", input.File)
+		return &snapshot, nil
 	}
 
-	// read ApplicationSnapshot provided as a string
-	if len(input) > 0 {
+	// read Snapshot provided as a string
+	if len(input.JSON) > 0 {
 		// Unmarshall YAML into struct, exit on failure
-		if err := yaml.Unmarshal([]byte(input), &appSnapshot); err != nil {
-			log.Debugf("Problem parsing application snapshot from input param %s", input)
-			return nil, fmt.Errorf("unable to parse ApplicationSnapshot from input: %w", err)
+		if err := yaml.Unmarshal([]byte(input.JSON), &snapshot); err != nil {
+			log.Debugf("Problem parsing application snapshot from input param %s", input.JSON)
+			return nil, fmt.Errorf("unable to parse Snapshot specification from input: %w", err)
 		}
 
 		log.Debug("Read application snapshot from input param")
-		return &appSnapshot, nil
+		return &snapshot, nil
 	}
 
-	// create ApplicationSnapshot with a single image
-	if len(imageRef) > 0 {
-		log.Debugf("Generating application snapshot from imageRef %s", imageRef)
+	// create Snapshot with a single image
+	if len(input.Image) > 0 {
+		log.Debugf("Generating application snapshot from image reference %s", input.Image)
 		return &app.SnapshotSpec{
 			Components: []app.SnapshotComponent{
 				{
 					Name:           "Unnamed",
-					ContainerImage: imageRef,
+					ContainerImage: input.Image,
 				},
 			},
 		}, nil
 	}
 
 	log.Debug("No application snapshot available")
-	return nil, errors.New("neither ApplicationSnapshot nor image reference provided to validate")
+	return nil, errors.New("neither Snapshot nor image reference provided to validate")
 }

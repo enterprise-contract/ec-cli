@@ -82,7 +82,7 @@ func Test_determineInputSpec(t *testing.T) {
 			arguments: data{
 				input: "{",
 			},
-			err: "unable to parse ApplicationSnapshot from input: error converting YAML to JSON: yaml: line 1: did not find expected node content",
+			err: "unable to parse Snapshot specification from input: error converting YAML to JSON: yaml: line 1: did not find expected node content",
 		},
 		{
 			name: "ApplicationSnapshot JSON string",
@@ -183,7 +183,11 @@ func Test_determineInputSpec(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			s, err := applicationsnapshot.DetermineInputSpec(afero.NewOsFs(), c.arguments.filePath, c.arguments.input, c.arguments.imageRef)
+			s, err := applicationsnapshot.DetermineInputSpec(afero.NewOsFs(), applicationsnapshot.Input{
+				File:  c.arguments.filePath,
+				JSON:  c.arguments.input,
+				Image: c.arguments.imageRef,
+			})
 			if c.err != "" {
 				assert.EqualError(t, err, c.err)
 			} else {
@@ -307,7 +311,7 @@ func Test_ValidateErrorCommand(t *testing.T) {
 				fmt.Sprintf(`{"publicKey": "%s"}`, mockPublicKey),
 			},
 			expected: `1 error occurred:
-	* unable to parse ApplicationSnapshot from input: error converting YAML to JSON: yaml: found unexpected end of stream
+	* unable to parse Snapshot specification from input: error converting YAML to JSON: yaml: found unexpected end of stream
 
 `,
 		},
@@ -320,7 +324,7 @@ func Test_ValidateErrorCommand(t *testing.T) {
 				`{"invalid": "json""}`,
 			},
 			expected: `2 errors occurred:
-	* unable to parse ApplicationSnapshot from input: error converting YAML to JSON: yaml: found unexpected end of stream
+	* unable to parse Snapshot specification from input: error converting YAML to JSON: yaml: found unexpected end of stream
 	* unable to parse EnterpriseContractPolicy Spec: error converting YAML to JSON: yaml: found unexpected end of stream
 
 `,

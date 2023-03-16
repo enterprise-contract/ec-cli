@@ -129,8 +129,11 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		PreRunE: func(cmd *cobra.Command, args []string) (allErrors error) {
 			ctx := cmd.Context()
 			if s, err := applicationsnapshot.DetermineInputSpec(
-				utils.FS(ctx), data.filePath, data.input, data.imageRef,
-			); err != nil {
+				utils.FS(ctx), applicationsnapshot.Input{
+					File:  data.filePath,
+					JSON:  data.input,
+					Image: data.imageRef,
+				}); err != nil {
 				allErrors = multierror.Append(allErrors, err)
 			} else {
 				data.spec = s
