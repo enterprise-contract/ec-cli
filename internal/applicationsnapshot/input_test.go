@@ -20,7 +20,6 @@ package applicationsnapshot
 
 import (
 	"encoding/json"
-	"fmt"
 	"testing"
 
 	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
@@ -29,7 +28,7 @@ import (
 )
 
 func Test_DetermineInputSpec(t *testing.T) {
-	imageRef := "quay.io://redhat-appstudio/ec"
+	imageRef := "registry.io/repository/image:tag"
 	snapshot := &app.SnapshotSpec{
 		Components: []app.SnapshotComponent{
 			{
@@ -40,30 +39,85 @@ func Test_DetermineInputSpec(t *testing.T) {
 	}
 	testJson, _ := json.Marshal(snapshot)
 	tests := []struct {
+		name  string
 		input Input
 		want  *app.SnapshotSpec
 	}{
 		{
+			name:  "file",
 			input: Input{File: "/home/list-of-images.json"},
 			want:  snapshot,
 		},
 		{
+			name:  "inline-json",
 			input: Input{JSON: string(testJson)},
 			want:  snapshot,
 		},
 		{
+			name:  "image",
 			input: Input{Image: imageRef},
 			want:  snapshot,
 		},
 		{
+			name: "nothing",
 			want: nil,
+		},
+		{
+			name: "combined (all same)",
+			input: Input{
+				File:  "/home/list-of-images.json",
+				JSON:  string(testJson),
+				Image: imageRef,
+			},
+			want: snapshot,
+		},
+		{
+			name: "combined (all different)",
+			input: Input{
+				File:  "/home/list-of-images.json",
+				JSON:  `{"components":[{"name": "Named", "containerImage":"registry.io/repository/image:different"}]}`,
+				Image: "registry.io/repository/image:another",
+			},
+			want: &app.SnapshotSpec{
+				Components: []app.SnapshotComponent{
+					snapshot.Components[0],
+					{
+						Name:           "Named",
+						ContainerImage: "registry.io/repository/image:different",
+					},
+					{
+						Name:           "Unnamed",
+						ContainerImage: "registry.io/repository/image:another",
+					},
+				},
+			},
+		},
+		{
+			name: "combined (some different)",
+			input: Input{
+				File:  "/home/list-of-images.json",
+				JSON:  `{"components":[{"name": "Named", "containerImage":"` + imageRef + `"},{"name": "Set name", "containerImage":"registry.io/repository/image:another"}]}`,
+				Image: "registry.io/repository/image:another",
+			},
+			want: &app.SnapshotSpec{
+				Components: []app.SnapshotComponent{
+					{
+						Name:           "Named",
+						ContainerImage: imageRef,
+					},
+					{
+						Name:           "Set name",
+						ContainerImage: "registry.io/repository/image:another",
+					},
+				},
+			},
 		},
 	}
 
 	fs := afero.NewMemMapFs()
 
-	for i, tc := range tests {
-		t.Run(fmt.Sprintf("DetermineInputSpec=%d", i), func(t *testing.T) {
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
 			if tc.input.File != "" {
 				if err := afero.WriteFile(fs, tc.input.File, []byte(testJson), 0400); err != nil {
 					panic(err)
