@@ -39,6 +39,16 @@ func description(a *ast.AnnotationsRef) string {
 	return a.Annotations.Description
 }
 
+func effectiveOn(a *ast.AnnotationsRef) string {
+	if a == nil || a.Annotations == nil || a.Annotations.Custom == nil {
+		return ""
+	}
+	if value, ok := a.Annotations.Custom["effective_on"].(string); ok {
+		return value
+	}
+	return ""
+}
+
 func lastTerm(a *ast.AnnotationsRef) string {
 	if a == nil || len(a.Path) == 0 {
 		return ""
@@ -213,6 +223,7 @@ type Info struct {
 	Collections      []string
 	Description      string
 	DocumentationUrl string
+	EffectiveOn      string
 	Kind             RuleKind
 	Package          string
 	ShortName        string
@@ -226,6 +237,7 @@ func RuleInfo(a *ast.AnnotationsRef) Info {
 		Collections:      collections(a),
 		Description:      description(a),
 		DocumentationUrl: documentationUrl(a),
+		EffectiveOn:      effectiveOn(a),
 		Kind:             kind(a),
 		Package:          packageName(a),
 		ShortName:        shortName(a),
