@@ -215,7 +215,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 				data.output = append(data.output, fmt.Sprintf("%s=%s", applicationsnapshot.JSON, data.outputFile))
 			}
 
-			report, err := applicationsnapshot.NewReport(components, data.policy)
+			report, err := applicationsnapshot.NewReport(data.snapshot, components, data.policy)
 			if err != nil {
 				return err
 			}

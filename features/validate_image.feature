@@ -830,6 +830,7 @@ Feature: evaluate enterprise contract
     {
       "success": true,
       "key": ${known_PUBLIC_KEY_JSON},
+      "snapshot": "acceptance/happy",
       "components": [
         {
           "name": "Happy",
