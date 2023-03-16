@@ -50,7 +50,7 @@ jobs:
             checks-${{ runner.os }}-go-
 
       - name: Setup Go environment
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
           go-version-file: go.mod
 
