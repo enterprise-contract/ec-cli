@@ -23,7 +23,7 @@ import (
 
 	hd "github.com/MakeNowJust/heredoc"
 	"github.com/hashicorp/go-multierror"
-	appstudioshared "github.com/redhat-appstudio/managed-gitops/appstudio-shared/apis/appstudio.redhat.com/v1alpha1"
+	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
@@ -38,7 +38,7 @@ func commitAuthorizationCmd() *cobra.Command {
 		publicKey string
 		filePath  string
 		input     string
-		spec      *appstudioshared.ApplicationSnapshotSpec
+		spec      *app.SnapshotSpec
 	}{
 		imageRef:  "",
 		publicKey: "",

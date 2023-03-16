@@ -25,7 +25,7 @@ import (
 	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/hashicorp/go-multierror"
 	conftestOutput "github.com/open-policy-agent/conftest/output"
-	appstudioshared "github.com/redhat-appstudio/managed-gitops/appstudio-shared/apis/appstudio.redhat.com/v1alpha1"
+	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 
 	"github.com/hacbs-contract/ec-cli/internal/format"
 	"github.com/hacbs-contract/ec-cli/internal/output"
@@ -33,7 +33,7 @@ import (
 )
 
 type Component struct {
-	appstudioshared.ApplicationSnapshotComponent
+	app.SnapshotComponent
 	Violations []conftestOutput.Result  `json:"violations,omitempty"`
 	Warnings   []conftestOutput.Result  `json:"warnings,omitempty"`
 	Successes  []conftestOutput.Result  `json:"successes,omitempty"`

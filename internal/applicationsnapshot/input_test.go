@@ -23,15 +23,15 @@ import (
 	"fmt"
 	"testing"
 
-	appstudioshared "github.com/redhat-appstudio/managed-gitops/appstudio-shared/apis/appstudio.redhat.com/v1alpha1"
+	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 )
 
 func Test_DetermineInputSpec(t *testing.T) {
 	imageRef := "quay.io://redhat-appstudio/ec"
-	snapshot := &appstudioshared.ApplicationSnapshotSpec{
-		Components: []appstudioshared.ApplicationSnapshotComponent{
+	snapshot := &app.SnapshotSpec{
+		Components: []app.SnapshotComponent{
 			{
 				Name:           "Unnamed",
 				ContainerImage: imageRef,
@@ -43,7 +43,7 @@ func Test_DetermineInputSpec(t *testing.T) {
 		filePath string
 		input    string
 		imageRef string
-		want     *appstudioshared.ApplicationSnapshotSpec
+		want     *app.SnapshotSpec
 	}{
 		{
 			filePath: "/home/list-of-images.json",

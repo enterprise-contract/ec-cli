@@ -120,7 +120,7 @@ func computeInfo() (*VersionInfo, error) {
 	info.Components = append(info.Components, dependencyVersion("ECC", "github.com/hacbs-contract/enterprise-contract-controller/api", buildInfo.Deps))
 	info.Components = append(info.Components, dependencyVersion("OPA", "github.com/open-policy-agent/opa", buildInfo.Deps))
 	info.Components = append(info.Components, dependencyVersion("Conftest", "github.com/open-policy-agent/conftest", buildInfo.Deps))
-	info.Components = append(info.Components, dependencyVersion("Red Hat AppStudio (shared)", "github.com/redhat-appstudio/managed-gitops/appstudio-shared", buildInfo.Deps))
+	info.Components = append(info.Components, dependencyVersion("Red Hat AppStudio (API)", "github.com/redhat-appstudio/application-api", buildInfo.Deps))
 	info.Components = append(info.Components, dependencyVersion("Cosign", "github.com/sigstore/cosign", buildInfo.Deps))
 	info.Components = append(info.Components, dependencyVersion("Sigstore", "github.com/sigstore/sigstore", buildInfo.Deps))
 	info.Components = append(info.Components, dependencyVersion("Rekor", "github.com/sigstore/rekor", buildInfo.Deps))

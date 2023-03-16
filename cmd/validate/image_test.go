@@ -27,7 +27,7 @@ import (
 
 	hd "github.com/MakeNowJust/heredoc"
 	conftestOutput "github.com/open-policy-agent/conftest/output"
-	appstudioshared "github.com/redhat-appstudio/managed-gitops/appstudio-shared/apis/appstudio.redhat.com/v1alpha1"
+	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 
@@ -53,7 +53,7 @@ func Test_determineInputSpec(t *testing.T) {
 	cases := []struct {
 		name      string
 		arguments data
-		spec      *appstudioshared.ApplicationSnapshotSpec
+		spec      *app.SnapshotSpec
 		err       string
 	}{
 		{
@@ -61,8 +61,8 @@ func Test_determineInputSpec(t *testing.T) {
 			arguments: data{
 				imageRef: "registry/image:tag",
 			},
-			spec: &appstudioshared.ApplicationSnapshotSpec{
-				Components: []appstudioshared.ApplicationSnapshotComponent{
+			spec: &app.SnapshotSpec{
+				Components: []app.SnapshotComponent{
 					{
 						Name:           "Unnamed",
 						ContainerImage: "registry/image:tag",
@@ -75,7 +75,7 @@ func Test_determineInputSpec(t *testing.T) {
 			arguments: data{
 				input: "{}",
 			},
-			spec: &appstudioshared.ApplicationSnapshotSpec{},
+			spec: &app.SnapshotSpec{},
 		},
 		{
 			name: "faulty ApplicationSnapshot string",
@@ -105,9 +105,9 @@ func Test_determineInputSpec(t *testing.T) {
 					]
 				  }`,
 			},
-			spec: &appstudioshared.ApplicationSnapshotSpec{
+			spec: &app.SnapshotSpec{
 				Application: "app1",
-				Components: []appstudioshared.ApplicationSnapshotComponent{
+				Components: []app.SnapshotComponent{
 					{
 						Name:           "nodejs",
 						ContainerImage: "quay.io/hacbs-contract-demo/single-nodejs-app:877418e",
@@ -138,9 +138,9 @@ func Test_determineInputSpec(t *testing.T) {
 					  containerImage: quay.io/hacbs-contract-demo/single-container-app:62c06bf
 					`),
 			},
-			spec: &appstudioshared.ApplicationSnapshotSpec{
+			spec: &app.SnapshotSpec{
 				Application: "app1",
-				Components: []appstudioshared.ApplicationSnapshotComponent{
+				Components: []app.SnapshotComponent{
 					{
 						Name:           "nodejs",
 						ContainerImage: "quay.io/hacbs-contract-demo/single-nodejs-app:877418e",
@@ -161,9 +161,9 @@ func Test_determineInputSpec(t *testing.T) {
 			arguments: data{
 				filePath: "test_application_snapshot.json",
 			},
-			spec: &appstudioshared.ApplicationSnapshotSpec{
+			spec: &app.SnapshotSpec{
 				Application: "app1",
-				Components: []appstudioshared.ApplicationSnapshotComponent{
+				Components: []app.SnapshotComponent{
 					{
 						Name:           "nodejs",
 						ContainerImage: "quay.io/hacbs-contract-demo/single-nodejs-app:877418e",

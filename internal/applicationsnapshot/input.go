@@ -21,13 +21,13 @@ import (
 	"fmt"
 
 	"github.com/ghodss/yaml"
-	appstudioshared "github.com/redhat-appstudio/managed-gitops/appstudio-shared/apis/appstudio.redhat.com/v1alpha1"
+	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 )
 
-func DetermineInputSpec(fs afero.Fs, filePath string, input string, imageRef string) (*appstudioshared.ApplicationSnapshotSpec, error) {
-	var appSnapshot appstudioshared.ApplicationSnapshotSpec
+func DetermineInputSpec(fs afero.Fs, filePath string, input string, imageRef string) (*app.SnapshotSpec, error) {
+	var appSnapshot app.SnapshotSpec
 
 	// read ApplicationSnapshot provided as a file
 	if len(filePath) > 0 {
@@ -62,8 +62,8 @@ func DetermineInputSpec(fs afero.Fs, filePath string, input string, imageRef str
 	// create ApplicationSnapshot with a single image
 	if len(imageRef) > 0 {
 		log.Debugf("Generating application snapshot from imageRef %s", imageRef)
-		return &appstudioshared.ApplicationSnapshotSpec{
-			Components: []appstudioshared.ApplicationSnapshotComponent{
+		return &app.SnapshotSpec{
+			Components: []app.SnapshotComponent{
 				{
 					Name:           "Unnamed",
 					ContainerImage: imageRef,

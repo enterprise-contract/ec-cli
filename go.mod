@@ -19,7 +19,7 @@ require (
 	github.com/open-policy-agent/opa v0.49.2
 	github.com/qri-io/jsonpointer v0.1.1
 	github.com/qri-io/jsonschema v0.2.2-0.20210831022256-780655b2ba0e
-	github.com/redhat-appstudio/managed-gitops/appstudio-shared v0.0.0-20220615221006-a71c1aa4b97f
+	github.com/redhat-appstudio/application-api v0.0.0-20230309195839-6e0986f52132
 	github.com/sigstore/cosign/v2 v2.0.1-0.20230301174648-781d814b2797 // not using v2.0.0 to include https://github.com/sigstore/cosign/pull/2752
 	github.com/sigstore/sigstore v1.6.0
 	github.com/sirupsen/logrus v1.9.0
@@ -306,6 +306,7 @@ require (
 	gotest.tools/v3 v3.4.0 // indirect
 	k8s.io/api v0.26.2 // indirect
 	k8s.io/apiextensions-apiserver v0.26.0 // indirect
+	k8s.io/component-base v0.26.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20221012153701-172d655c2280 // indirect
 	k8s.io/utils v0.0.0-20230115233650-391b47cb4029 // indirect
 	knative.dev/pkg v0.0.0-20221031202413-2f194914a4b2 // indirect
