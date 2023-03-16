@@ -64,15 +64,10 @@ func trackBundleCmd(track trackBundleFn, pullImage pullImageFn, pushImage pushIm
 			"effective_on" date which is set to 30 days from today. This indicates
 			the Tekton Bundle usage should be updated within that period.
 
-			Additionally, the common set of Tasks referenced by all "important"
-			Pipeline definitions are deemed required and displayed as such. An
-			"important" Pipeline definition is defined as one that does NOT include
-			the label "skip-hacbs-test" set to the value "true".
-
 			If --prune is set, on by default, non-acceptable entries are removed.
 			Any entry with an effective_on date in the future, and the entry with
 			the most recent effective_on date *not* in the future are considered
-			acceptable. This applies to bundles and to required tasks.
+			acceptable.
 		`),
 
 		Example: hd.Doc(`
