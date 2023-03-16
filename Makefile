@@ -64,7 +64,7 @@ clean: ## Delete build output
 ##@ Testing
 
 .PHONY: test
-test: ## Run unit tests
+test: ## Run all unit tests
 	@go test -race -covermode=atomic -coverprofile=coverage-unit.out -timeout 500ms -tags=unit ./...
 	@go test -race -covermode=atomic -coverprofile=coverage-integration.out -timeout 15s -tags=integration ./...
 # Given the nature of generative tests the test timeout is increased from 500ms
@@ -74,7 +74,7 @@ test: ## Run unit tests
 .ONESHELL:
 .SHELLFLAGS=-e -c
 .PHONY: acceptance
-acceptance: ## Run acceptance tests
+acceptance: ## Run all acceptance tests
 	@ACCEPTANCE_WORKDIR="$$(mktemp -d)"
 	@function cleanup() {
 	  rm -rf "$${ACCEPTANCE_WORKDIR}"
@@ -90,10 +90,23 @@ acceptance: ## Run acceptance tests
 	@go run -modfile "$${ACCEPTANCE_WORKDIR}/tools/go.mod" github.com/wadey/gocovmerge "$${ACCEPTANCE_WORKDIR}"/coverage-acceptance*.out > "$(ROOT_DIR)/coverage-acceptance.out"
 
 # Add @focus above the feature you're hacking on to use this
+# (Mainly for use with the feature-% target below)
 .PHONY: focus-acceptance
-focus-acceptance: ## Run acceptance tests with @focus tag
-	@$(MAKE) build
+focus-acceptance: build ## Run acceptance tests with @focus tag
 	@cd acceptance && go test -tags=acceptance . -args -tags=@focus
+
+# Uses sed hackery to insert a @focus tag and then remove it afterwards.
+# (There might be a nicer way to run all scenarios in a single feature.)
+# The `|| true` here is so the @focus tag still gets removed after a failure.
+feature_%: ## Run acceptance tests for a single feature file, e.g. make feature_validate_image
+	@echo "Testing feature '$*'"
+	@sed -i '1i@focus' features/$*.feature
+	@$(MAKE) focus-acceptance || true
+	@sed -i '1d' features/$*.feature
+
+# (Replace spaces with underscores in the scenario name.)
+scenario_%: build ## Run acceptance tests for a single scenario, e.g. make scenario_inline_policy
+	@cd acceptance && go test -test.run 'TestFeatures/$*'
 
 .PHONY: ci
 ci: test lint-fix tekton-lint acceptance ## Run the usual required CI tasks
