@@ -101,6 +101,14 @@ func Test_ValidatePipeline(t *testing.T) {
 			output:  nil,
 			defFunc: badMockNewPipelineDefinitionFile,
 		},
+		{
+			name:    "validation succeeds with json input",
+			fpath:   "{\"json\": 1}",
+			exists:  mockPathExists,
+			err:     nil,
+			output:  &output.Output{PolicyCheck: evaluator.CheckResults{}},
+			defFunc: mockNewPipelineDefinitionFile,
+		},
 	}
 
 	appFS := afero.NewMemMapFs()

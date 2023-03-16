@@ -19,6 +19,8 @@ package utils
 import (
 	"bytes"
 	"context"
+	"crypto/rand"
+	"encoding/base64"
 	"path/filepath"
 	"unicode"
 
@@ -97,4 +99,17 @@ func FS(ctx context.Context) afero.Fs {
 
 func WithFS(ctx context.Context, fs afero.Fs) context.Context {
 	return context.WithValue(ctx, fsKey, fs)
+}
+
+func GenerateRandomString(length int) (string, error) {
+	// Create a byte slice of the specified length
+	bytes := make([]byte, length)
+
+	// Fill the byte slice with random data
+	if _, err := rand.Read(bytes); err != nil {
+		return "", err
+	}
+
+	// Encode the byte slice as a base64 string
+	return base64.StdEncoding.EncodeToString(bytes)[:length], nil
 }

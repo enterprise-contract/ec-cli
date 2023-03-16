@@ -163,3 +163,10 @@ func TestCreateWorkDir(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Regexpf(t, `/tmp/ec-work-\d+`, temp, "Did not expect temp directory at: %s", temp)
 }
+
+func TestGenerateRandomString(t *testing.T) {
+	length := 10
+	result, err := GenerateRandomString(length)
+	assert.NoError(t, err)
+	assert.Equal(t, len(result), 10)
+}
