@@ -233,6 +233,62 @@ func TestShortName(t *testing.T) {
 	}
 }
 
+func TestEffectiveOn(t *testing.T) {
+	cases := []struct {
+		name       string
+		annotation *ast.AnnotationsRef
+		expected   string
+	}{
+		{
+			name:       "empty",
+			annotation: nil,
+			expected:   "",
+		},
+		{
+			name: "no annotations",
+			annotation: annotationRef(heredoc.Doc(`
+				package a
+				deny() { false }`)),
+			expected: "",
+		},
+		{
+			name: "without custom annotations",
+			annotation: annotationRef(heredoc.Doc(`
+				package a
+				# METADATA
+				# title: title
+				deny() { false }`)),
+			expected: "",
+		},
+		{
+			name: "with custom annotation",
+			annotation: annotationRef(heredoc.Doc(`
+				package a
+				# METADATA
+				# custom:
+				#   hmm: 14
+				deny() { false }`)),
+			expected: "",
+		},
+		{
+			name: "with effective_on annotation",
+			annotation: annotationRef(heredoc.Doc(`
+				package a
+				# METADATA
+				# custom:
+				#   effective_on: '2022-01-01T00:00:00Z'
+				deny() { true }`)),
+			expected: "2022-01-01T00:00:00Z",
+		},
+	}
+
+	for i, c := range cases {
+		t.Run(fmt.Sprintf("[%d] - %s", i, c.name), func(t *testing.T) {
+			assert.Equal(t, c.expected, effectiveOn(c.annotation))
+		})
+	}
+}
+
 func TestCollections(t *testing.T) {
 	cases := []struct {
 		name       string
