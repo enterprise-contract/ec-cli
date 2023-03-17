@@ -96,7 +96,7 @@ focus-acceptance: ## Run acceptance tests with @focus tag
 	@cd acceptance && go test -tags=acceptance . -args -tags=@focus
 
 .PHONY: ci
-ci: test lint-fix acceptance ## Run the usual required CI tasks
+ci: test lint-fix tekton-lint acceptance ## Run the usual required CI tasks
 
 ##@ Linters
 
