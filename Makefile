@@ -12,10 +12,10 @@ SHELL=$(if $@,$(info ❱ [1m$@[0m))$(_SHELL)
 ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 COPY:="Red Hat, Inc."
 
-##@ Information targets
+##@ Information
 
 .PHONY: help
-help: ## Display this help.
+help: ## Display this help
 	@awk 'function ww(s) {\
 		if (length(s) < 59) {\
 			return s;\
@@ -36,7 +36,7 @@ help: ## Display this help.
 		}\
 	} BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9%/_-]+:.*?##/ { printf "  \033[36m%-18s\033[0m %s\n", "make " $$1, ww($$2) } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
-##@ Development targets
+##@ Building
 
 .PHONY: $(ALL_SUPPORTED_OS_ARCH)
 $(ALL_SUPPORTED_OS_ARCH): ## Build binaries for specific platform/architecture, e.g. make dist/ec_linux_amd64
@@ -56,6 +56,12 @@ build: dist/ec_$(shell go env GOOS)_$(shell go env GOARCH) ## Build the ec binar
 reference-docs: ## Generate reference documentation input YAML files
 	@rm -rf dist/cli-reference
 	@go run internal/documentation/documentation.go -yaml dist/cli-reference
+
+.PHONY: clean
+clean: ## Delete build output
+	@rm dist/*
+
+##@ Testing
 
 .PHONY: test
 test: ## Run unit tests
@@ -89,6 +95,11 @@ focus-acceptance: ## Run acceptance tests with @focus tag
 	@$(MAKE) build
 	@cd acceptance && go test -tags=acceptance . -args -tags=@focus
 
+.PHONY: ci
+ci: test lint-fix acceptance ## Run the usual required CI tasks
+
+##@ Linters
+
 LICENSE_IGNORE=-ignore 'dist/cli-reference/*.yaml'
 LINT_TO_GITHUB_ANNOTATIONS='map(map(.)[])[][] as $$d | $$d.posn | split(":") as $$posn | "::warning file=\($$posn[0]),line=\($$posn[1]),col=\($$posn[2])::\($$d.message)"'
 .PHONY: lint
@@ -113,7 +124,7 @@ lint-fix: ## Fix linting issues automagically
 	@go run -modfile tools/go.mod github.com/daixiang0/gci write -s standard -s default -s "prefix(github.com/hacbs-contract/ec-cli)" .
 
 .PHONY: tekton-lint
-tekton-lint: ## Run tekton-lint for 'tasks' subdirectory.
+tekton-lint: ## Run tekton-lint for 'tasks' subdirectory
 ifeq ($(GITHUB_ACTIONS),) # If not running as a Github action, check if tekton-lint is installed. If not, provide link.
 	@which tekton-lint &> /dev/null || (echo "tekton-lint doesn't seem to be installed. Please see https://github.com/IBM/tekton-lint for installation instructions." && exit 1)
 endif
@@ -122,12 +133,7 @@ endif
 
 	@tekton-lint --max-warnings 0 --format stylish 'tasks/**/*.yaml'
 
-.PHONY: ci
-ci: test lint-fix acceptance ## Run the usual required CI tasks
-
-.PHONY: clean
-clean: ## Delete build output
-	@rm dist/*
+##@ Pushing images
 
 IMAGE_TAG ?= latest
 IMAGE_REPO ?= quay.io/hacbs-contract/ec-cli
