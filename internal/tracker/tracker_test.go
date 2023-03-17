@@ -80,19 +80,6 @@ func TestTrack(t *testing.T) {
 				    - digest: ` + sampleHashTwo.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
 				      tag: two
-				pipeline-required-tasks:
-				  docker-build:
-				    - effective_on: "` + expectedEffectiveOn + `"
-				      tasks:
-				        - buildah
-				        - git-clone
-				        - summary
-				required-tasks:
-				  - effective_on: "` + expectedEffectiveOn + `"
-				    tasks:
-				      - buildah
-				      - git-clone
-				      - summary
 			`),
 		},
 		{
@@ -112,19 +99,6 @@ func TestTrack(t *testing.T) {
 				    - digest: ` + sampleHashTwo.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
 				      tag: "2.0"
-				pipeline-required-tasks:
-				  docker-build:
-				    - effective_on: "` + expectedEffectiveOn + `"
-				      tasks:
-				        - buildah
-				        - git-clone
-				        - summary
-				required-tasks:
-				  - effective_on: "` + expectedEffectiveOn + `"
-				    tasks:
-				      - buildah
-				      - git-clone
-				      - summary
 			`),
 		},
 		{
@@ -150,19 +124,6 @@ func TestTrack(t *testing.T) {
 				    - digest: ` + sampleHashOne.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
 				      tag: one
-				pipeline-required-tasks:
-				  docker-build:
-				    - effective_on: "` + expectedEffectiveOn + `"
-				      tasks:
-				        - buildah
-				        - git-clone
-				        - summary
-				required-tasks:
-				  - effective_on: "` + expectedEffectiveOn + `"
-				    tasks:
-				      - buildah
-				      - git-clone
-				      - summary
 			`),
 		},
 		{
@@ -189,19 +150,6 @@ func TestTrack(t *testing.T) {
 				    - digest: ` + sampleHashTwo.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
 				      tag: "2.0"
-				pipeline-required-tasks:
-				  docker-build:
-				    - effective_on: "` + expectedEffectiveOn + `"
-				      tasks:
-				        - buildah
-				        - git-clone
-				        - summary
-				required-tasks:
-				  - effective_on: "` + expectedEffectiveOn + `"
-				    tasks:
-				      - buildah
-				      - git-clone
-				      - summary
 			`),
 		},
 		{
@@ -223,19 +171,6 @@ func TestTrack(t *testing.T) {
 				    - digest: ` + sampleHashTwo.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
 				      tag: "2.0"
-				pipeline-required-tasks:
-				  docker-build:
-				    - effective_on: "` + expectedEffectiveOn + `"
-				      tasks:
-				        - buildah
-				        - git-clone
-				        - summary
-				required-tasks:
-				  - effective_on: "` + expectedEffectiveOn + `"
-				    tasks:
-				      - buildah
-				      - git-clone
-				      - summary
 				task-bundles:
 				  registry.com/one:
 				    - digest: ` + sampleHashOne.String() + `
@@ -255,136 +190,12 @@ func TestTrack(t *testing.T) {
 				    - digest: ` + sampleHashOne.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
 				      tag: "1.0"
-				pipeline-required-tasks:
-				  docker-build:
-				    - effective_on: "` + expectedEffectiveOn + `"
-				      tasks:
-				        - buildah
-				        - git-clone
-				        - summary
-				required-tasks:
-				  - effective_on: "` + expectedEffectiveOn + `"
-				    tasks:
-				      - buildah
-				      - git-clone
-				      - summary
 				task-bundles:
 				  registry.com/mixed:
 				    - digest: ` + sampleHashOne.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
 				      tag: "1.0"
 			`),
-		},
-		{
-			name: "pipeline without tasks",
-			urls: []string{
-				"registry.com/empty-pipeline:1.0@" + sampleHashOne.String(),
-			},
-			output: hd.Doc(`
-				---
-				pipeline-bundles:
-				  registry.com/empty-pipeline:
-				    - digest: ` + sampleHashOne.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "1.0"
-				required-tasks:
-				  - effective_on: "` + expectedEffectiveOn + `"
-				    tasks: []
-			`),
-		},
-		{
-			name: "pipeline without tasks and pipeline with tasks",
-			urls: []string{
-				"registry.com/empty-pipeline:1.0@" + sampleHashOne.String(),
-				"registry.com/one:1.0@" + sampleHashOne.String(),
-			},
-			output: hd.Doc(`
-				---
-				pipeline-bundles:
-				  registry.com/empty-pipeline:
-				    - digest: ` + sampleHashOne.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "1.0"
-				  registry.com/one:
-				    - digest: ` + sampleHashOne.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "1.0"
-				pipeline-required-tasks:
-				  docker-build:
-				    - effective_on: "` + expectedEffectiveOn + `"
-				      tasks:
-				        - buildah
-				        - git-clone
-				        - summary
-				required-tasks:
-				  - effective_on: "` + expectedEffectiveOn + `"
-				    tasks:
-				      - buildah
-				      - git-clone
-				      - summary
-			`),
-		},
-		{
-			name: "pipeline with tasks then pipeline without tasks",
-			urls: []string{
-				"registry.com/one:1.0@" + sampleHashOne.String(),
-				"registry.com/empty-pipeline:1.0@" + sampleHashOne.String(),
-			},
-			output: hd.Doc(`
-				---
-				pipeline-bundles:
-				  registry.com/empty-pipeline:
-				    - digest: ` + sampleHashOne.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "1.0"
-				  registry.com/one:
-				    - digest: ` + sampleHashOne.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "1.0"
-				pipeline-required-tasks:
-				  docker-build:
-				    - effective_on: "` + expectedEffectiveOn + `"
-				      tasks:
-				        - buildah
-				        - git-clone
-				        - summary
-				required-tasks:
-				  - effective_on: "` + expectedEffectiveOn + `"
-				    tasks:
-				      - buildah
-				      - git-clone
-				      - summary
-			`),
-		},
-		{
-			name: "required tasks removed",
-			urls: []string{
-				"registry.com/empty-pipeline:1.0@" + sampleHashOne.String(),
-			},
-			input: []byte(hd.Doc(`
-				required-tasks:
-				  - effective_on: "` + expectedEffectiveOn + `"
-				    tasks:
-				      - buildah
-				      - git-clone
-				      - summary
-			`)),
-			output: hd.Doc(`
-				---
-				pipeline-bundles:
-				  registry.com/empty-pipeline:
-				    - digest: ` + sampleHashOne.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "1.0"
-				required-tasks:
-				  - effective_on: "` + expectedEffectiveOn + `"
-				    tasks: []
-				  - effective_on: "` + expectedEffectiveOn + `"
-				    tasks:
-				      - buildah
-				      - git-clone
-				      - summary
-				`),
 		},
 		{
 			name: "prefer older entries with same digest",
@@ -406,19 +217,6 @@ func TestTrack(t *testing.T) {
 				    - digest: ` + sampleHashOne.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
 				      tag: "0.9"
-				pipeline-required-tasks:
-				  docker-build:
-				    - effective_on: "` + expectedEffectiveOn + `"
-				      tasks:
-				        - buildah
-				        - git-clone
-				        - summary
-				required-tasks:
-				  - effective_on: "` + expectedEffectiveOn + `"
-				    tasks:
-				      - buildah
-				      - git-clone
-				      - summary
 			`),
 		},
 		{
@@ -456,19 +254,6 @@ func TestTrack(t *testing.T) {
 				    - digest: ` + sampleHashThree.String() + `
 				      effective_on: "` + yesterday + `"
 				      tag: "0.3"
-				pipeline-required-tasks:
-				  docker-build:
-				    - effective_on: "` + expectedEffectiveOn + `"
-				      tasks:
-				        - buildah
-				        - git-clone
-				        - summary
-				required-tasks:
-				  - effective_on: "` + expectedEffectiveOn + `"
-				    tasks:
-				      - buildah
-				      - git-clone
-				      - summary
 				task-bundles:
 				  registry.com/mixed:
 				    - digest: ` + sampleHashOne.String() + `
@@ -545,24 +330,17 @@ var testObjects = map[string]map[string]map[string]runtime.Object{
 			"pipeline-v1": mustCreateFakePipelineObject(),
 		},
 	},
-	"registry.com/empty-pipeline:1.0@" + sampleHashOne.String(): {
-		"pipeline": {
-			"pipeline-v1": mustCreateFakeEmptyPipelineObject(),
-		},
-	},
 }
 
 var testImages = map[string]v1.Image{
 	"registry.com/one:1.0@" + sampleHashOne.String(): mustCreateFakeBundleImage([]fakeDefinition{
 		{name: "pipeline-v1", kind: "pipeline"},
-		// {name: "task-v1", kind: "task"},
 	}),
 	"registry.com/two:2.0@" + sampleHashTwo.String(): mustCreateFakeBundleImage([]fakeDefinition{
 		{name: "pipeline-v2", kind: "pipeline"},
 	}),
 	"registry.com/repo:one@" + sampleHashOne.String(): mustCreateFakeBundleImage([]fakeDefinition{
 		{name: "pipeline-v1", kind: "pipeline"},
-		// {name: "task-v1", kind: "task"},
 	}),
 	"registry.com/repo:two@" + sampleHashTwo.String(): mustCreateFakeBundleImage([]fakeDefinition{
 		{name: "pipeline-v2", kind: "pipeline"},
@@ -570,9 +348,6 @@ var testImages = map[string]v1.Image{
 	"registry.com/mixed:1.0@" + sampleHashOne.String(): mustCreateFakeBundleImage([]fakeDefinition{
 		{name: "pipeline-v1", kind: "pipeline"},
 		{name: "task-v1", kind: "task"},
-	}),
-	"registry.com/empty-pipeline:1.0@" + sampleHashOne.String(): mustCreateFakeBundleImage([]fakeDefinition{
-		{name: "pipeline-v1", kind: "pipeline"},
 	}),
 }
 
@@ -632,68 +407,9 @@ func mustCreateFakePipelineObject() runtime.Object {
 		},
 	}
 	pipeline := v1beta1.Pipeline{}
-	pipeline.SetLabels(map[string]string{"pipelines.openshift.io/runtime": "docker-build"})
 	pipeline.SetDefaults(context.Background())
 	pipeline.Spec.Tasks = []v1beta1.PipelineTask{gitCloneTask, buildahTask}
 	pipeline.Spec.Finally = []v1beta1.PipelineTask{summaryTask}
 
 	return &pipeline
-}
-
-func mustCreateFakeEmptyPipelineObject() runtime.Object {
-	pipeline := v1beta1.Pipeline{}
-	pipeline.SetDefaults(context.Background())
-	return &pipeline
-}
-
-func TestFilterRequiredTasks(t *testing.T) {
-	date := time.Now().UTC().Add(time.Second * -1)
-	future := date.Add(time.Hour * 24 * 30)
-
-	requiredTasks := []tasksRecord{
-		{EffectiveOn: date, Tasks: []string{"git-clone", "buildah"}},
-		{EffectiveOn: date, Tasks: []string{"git-clone"}},
-	}
-
-	for _, c := range []struct {
-		name     string
-		expected Tracker
-		prune    bool
-	}{
-		{
-			name: "without prune",
-			expected: Tracker{
-				RequiredTasks: []tasksRecord{
-					{EffectiveOn: future, Tasks: []string{"git-clone", "buildah", "clair-scan"}},
-					{EffectiveOn: date, Tasks: []string{"git-clone", "buildah"}},
-					{EffectiveOn: date, Tasks: []string{"git-clone"}},
-				},
-			},
-			prune: false,
-		},
-		{
-			name: "with prune",
-			expected: Tracker{
-				RequiredTasks: []tasksRecord{
-					{EffectiveOn: future, Tasks: []string{"git-clone", "buildah", "clair-scan"}},
-					{EffectiveOn: date, Tasks: []string{"git-clone", "buildah"}},
-				},
-			},
-			prune: true,
-		},
-	} {
-		t.Run(c.name, func(t *testing.T) {
-			existing := Tracker{
-				RequiredTasks: requiredTasks,
-			}
-
-			existing.addRequiredTasksRecord(tasksRecord{
-				EffectiveOn: future,
-				Tasks:       []string{"git-clone", "buildah", "clair-scan"},
-			})
-
-			existing.filterRequiredTasks(c.prune)
-			assert.Equal(t, c.expected, existing)
-		})
-	}
 }
