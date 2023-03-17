@@ -18,7 +18,6 @@ package definition
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"path/filepath"
 
@@ -57,8 +56,8 @@ func ValidateDefinition(ctx context.Context, fpath string, sources []source.Poli
 
 // detect if a file or directory was passed. if a directory, gather all files in it
 func detectFiles(ctx context.Context, fpath string) ([]string, error) {
-	if detectJson(fpath) {
-		return stringToFile(ctx, fpath)
+	if utils.IsJson(fpath) {
+		return definitionFromString(ctx, fpath)
 	}
 
 	fs := utils.FS(ctx)
@@ -99,30 +98,10 @@ func detectFiles(ctx context.Context, fpath string) ([]string, error) {
 	return defFiles, nil
 }
 
-// detect if the string is json
-func detectJson(msg string) bool {
-	var jsMsg json.RawMessage
-	js := json.Unmarshal([]byte(msg), &jsMsg)
-	return js == nil
-}
-
-// create a file in a temp dir with contents of msg
-func stringToFile(ctx context.Context, msg string) ([]string, error) {
-	fs := utils.FS(ctx)
-	tmpDir, err := afero.TempDir(fs, "", "ec-definition")
+func definitionFromString(ctx context.Context, data string) ([]string, error) {
+	data, err := utils.WriteTempFile(ctx, data, "definition-file-")
 	if err != nil {
 		return nil, err
 	}
-
-	fileName, err := utils.GenerateRandomString(10)
-	if err != nil {
-		return nil, err
-	}
-
-	filePath := filepath.Join(tmpDir, fileName)
-	err = afero.WriteFile(fs, filePath, []byte(msg), 0644)
-	if err != nil {
-		return nil, err
-	}
-	return []string{filePath}, nil
+	return []string{data}, nil
 }

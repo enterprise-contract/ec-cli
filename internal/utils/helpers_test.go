@@ -19,6 +19,7 @@
 package utils
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
@@ -164,9 +165,44 @@ func TestCreateWorkDir(t *testing.T) {
 	assert.Regexpf(t, `/tmp/ec-work-\d+`, temp, "Did not expect temp directory at: %s", temp)
 }
 
-func TestGenerateRandomString(t *testing.T) {
-	length := 10
-	result, err := GenerateRandomString(length)
+func TestWriteTempFile(t *testing.T) {
+	fs := afero.NewMemMapFs()
+	data := "file contents"
+	ctx := WithFS(context.Background(), fs)
+	path, err := WriteTempFile(ctx, data, "ec")
 	assert.NoError(t, err)
-	assert.Equal(t, len(result), 10)
+	contents, err := afero.ReadFile(fs, path)
+	assert.NoError(t, err)
+	assert.Equal(t, data, string(contents))
+}
+
+func TestIsJson(t *testing.T) {
+	tests := []struct {
+		name string
+		data string
+		want bool
+	}{
+		{
+			name: "valid JSON",
+			data: `{"name": "ec"}`,
+			want: true,
+		},
+		{
+			name: "invalid JSON",
+			data: `{"name": "ec"`,
+			want: false,
+		},
+		{
+			name: "empty string",
+			data: "",
+			want: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := IsJson(tt.data)
+			assert.Equal(t, tt.want, got)
+		})
+	}
 }

@@ -19,8 +19,8 @@ package utils
 import (
 	"bytes"
 	"context"
-	"crypto/rand"
-	"encoding/base64"
+	"encoding/json"
+	"fmt"
 	"path/filepath"
 	"unicode"
 
@@ -101,15 +101,23 @@ func WithFS(ctx context.Context, fs afero.Fs) context.Context {
 	return context.WithValue(ctx, fsKey, fs)
 }
 
-func GenerateRandomString(length int) (string, error) {
-	// Create a byte slice of the specified length
-	bytes := make([]byte, length)
-
-	// Fill the byte slice with random data
-	if _, err := rand.Read(bytes); err != nil {
+// create a file in a temp dir with contents of data
+func WriteTempFile(ctx context.Context, data, prefix string) (string, error) {
+	fs := FS(ctx)
+	file, err := afero.TempFile(fs, "", fmt.Sprintf("%s*", prefix))
+	if err != nil {
 		return "", err
 	}
+	path := file.Name()
+	if _, err := file.WriteString(data); err != nil {
+		_ = fs.Remove(path)
+		return "", err
+	}
+	return path, nil
+}
 
-	// Encode the byte slice as a base64 string
-	return base64.StdEncoding.EncodeToString(bytes)[:length], nil
+// detect if the string is json
+func IsJson(data string) bool {
+	var jsMsg json.RawMessage
+	return json.Unmarshal([]byte(data), &jsMsg) == nil
 }
