@@ -10,7 +10,7 @@ require (
 	github.com/evanphx/json-patch/v5 v5.6.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-git/go-billy/v5 v5.4.1
-	github.com/go-git/go-git/v5 v5.6.0
+	github.com/go-git/go-git/v5 v5.6.1
 	github.com/go-openapi/strfmt v0.21.3
 	github.com/google/go-containerregistry v0.14.0
 	github.com/hacbs-contract/enterprise-contract-controller/api v0.0.0-20221220151524-ad0f637efacf
@@ -45,8 +45,8 @@ require (
 	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
 	github.com/BurntSushi/toml v1.2.1 // indirect
 	github.com/Microsoft/go-winio v0.6.0 // indirect
-	github.com/ProtonMail/go-crypto v0.0.0-20221026131551-cf6655e29de4 // indirect
-	github.com/acomagu/bufpipe v1.0.3 // indirect
+	github.com/ProtonMail/go-crypto v0.0.0-20230217124315-7d5c6f04bbb8 // indirect
+	github.com/acomagu/bufpipe v1.0.4 // indirect
 	github.com/alessio/shellescape v1.4.1 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
