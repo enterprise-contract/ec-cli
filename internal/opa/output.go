@@ -24,6 +24,7 @@ import (
 
 	hd "github.com/MakeNowJust/heredoc"
 	"github.com/open-policy-agent/opa/ast"
+	"golang.org/x/exp/slices"
 
 	"github.com/hacbs-contract/ec-cli/internal/opa/rule"
 )
@@ -58,7 +59,13 @@ func renderAnn(out io.Writer, a *ast.AnnotationsRef, tmplName string) error {
 // - Filtering by package or collection maybe
 // - More useful formats
 func OutputText(out io.Writer, allData map[string][]*ast.AnnotationsRef, template string) error {
-	for src, annRefs := range allData {
+	sources := make([]string, 0, len(allData))
+	for src := range allData {
+		i, _ := slices.BinarySearch(sources, src)
+		sources = slices.Insert(sources, i, src)
+	}
+	for _, src := range sources {
+		annRefs := allData[src]
 		if template == "text" {
 			// This part could be templated too I guess but let's keep it simple for now
 			fmt.Fprintf(out, "# Source: %s\n\n", src)

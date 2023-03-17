@@ -32,7 +32,7 @@ type key int
 type policyKind string
 
 const (
-	downloaderFuncKey key        = 0
+	DownloaderFuncKey key        = 0
 	PolicyKind        policyKind = "policy"
 	DataKind          policyKind = "data"
 )
@@ -65,7 +65,7 @@ func (p *PolicyUrl) GetPolicy(ctx context.Context, workDir string, showMsg bool)
 	// Checkout policy repo into work directory.
 	log.Debugf("Downloading policy files from source url %s to destination %s", sourceUrl, dest)
 
-	x := ctx.Value(downloaderFuncKey)
+	x := ctx.Value(DownloaderFuncKey)
 
 	if dl, ok := x.(downloaderFunc); ok {
 		return dest, dl.Download(ctx, dest, sourceUrl, showMsg)

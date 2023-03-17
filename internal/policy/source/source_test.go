@@ -29,7 +29,7 @@ import (
 )
 
 func usingDownloader(ctx context.Context, m *mockDownloader) context.Context {
-	return context.WithValue(ctx, downloaderFuncKey, m)
+	return context.WithValue(ctx, DownloaderFuncKey, m)
 }
 
 type mockDownloader struct {

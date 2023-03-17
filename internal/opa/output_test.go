@@ -201,3 +201,18 @@ func Test_RegoTextOutput(t *testing.T) {
 		})
 	}
 }
+
+func TestTextOutputIsSorted(t *testing.T) {
+	ann := ast.AnnotationsRef{}
+	data := map[string][]*ast.AnnotationsRef{
+		"A": {&ann},
+		"C": {&ann},
+		"B": {&ann},
+	}
+
+	buffy := bytes.Buffer{}
+	err := OutputText(&buffy, data, "text")
+
+	assert.NoError(t, err)
+	assert.Equal(t, "# Source: A\n\n\n(No annotations found)\n--\n# Source: B\n\n\n(No annotations found)\n--\n# Source: C\n\n\n(No annotations found)\n--\n", buffy.String())
+}
