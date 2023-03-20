@@ -109,14 +109,14 @@ scenario_%: build ## Run acceptance tests for a single scenario, e.g. make scena
 	@cd acceptance && go test -test.run 'TestFeatures/$*'
 
 .PHONY: ci
-ci: test lint-fix tekton-lint acceptance ## Run the usual required CI tasks
+ci: test lint-fix acceptance ## Run the usual required CI tasks
 
 ##@ Linters
 
-LICENSE_IGNORE=-ignore 'dist/cli-reference/*.yaml'
+LICENSE_IGNORE=-ignore 'dist/cli-reference/*.yaml' -ignore 'node_modules/**'
 LINT_TO_GITHUB_ANNOTATIONS='map(map(.)[])[][] as $$d | $$d.posn | split(":") as $$posn | "::warning file=\($$posn[0]),line=\($$posn[1]),col=\($$posn[2])::\($$d.message)"'
 .PHONY: lint
-lint: ## Run linter
+lint: tekton-lint ## Run linter
 # addlicense doesn't give us a nice explanation so we prefix it with one
 	@go run -modfile tools/go.mod github.com/google/addlicense -c $(COPY) -s -check $(LICENSE_IGNORE) . | sed 's/^/Missing license header in: /g'
 # piping to sed above looses the exit code, luckily addlicense is fast so we invoke it for the second time to exit 1 in case of issues
@@ -136,15 +136,16 @@ lint-fix: ## Fix linting issues automagically
 #	@go run -modfile tools/go.mod ./internal/lint -fix $$(go list ./... | grep -v '/acceptance/')
 	@go run -modfile tools/go.mod github.com/daixiang0/gci write -s standard -s default -s "prefix(github.com/hacbs-contract/ec-cli)" .
 
-.PHONY: tekton-lint
-tekton-lint: ## Run tekton-lint for 'tasks' subdirectory
-ifeq ($(GITHUB_ACTIONS),) # If not running as a Github action, check if tekton-lint is installed. If not, provide link.
-	@which tekton-lint &> /dev/null || (echo "tekton-lint doesn't seem to be installed. Please see https://github.com/IBM/tekton-lint for installation instructions." && exit 1)
-endif
+node_modules: package-lock.json
+	@npm ci
+
+TEKTON_LINT_TO_GITHUB_ANNOTATIONS='.[] | "::error file=\(.path),line=\(.loc.startLine),endLine=\(.loc.endLine),col=\(.loc.startColumn),endColumn=\(.loc.endColumn)::\(.message)"'
+# wildcard matches `tasks/<task_name>/<version>/*.yaml`
+tekton-lint: node_modules $(wildcard tasks/*/*/*.yaml) ## Run tekton-lint for 'tasks' subdirectory.
 # We execute tekton-lint for all yaml files contained within the tasks subdirectory, it's smart enough to ignore non-Tekton yaml files.
 # All warnings are currently considered errors.
-
-	@tekton-lint --max-warnings 0 --format stylish 'tasks/**/*.yaml'
+# When running on GitHub Actions, reformat to annotations
+	@npm exec tekton-lint -- --max-warnings=0 --format=$(if $(GITHUB_ACTIONS),json,stylish) $(filter-out node_modules,$^)$(if $(GITHUB_ACTIONS), | jq -r $(TEKTON_LINT_TO_GITHUB_ANNOTATIONS))
 
 ##@ Pushing images
 

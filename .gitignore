@@ -172,3 +172,5 @@ tags
 
 # Last persisted acceptance test run information
 acceptance/.persisted
+
+node_modules

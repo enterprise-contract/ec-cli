@@ -1,0 +1,15 @@
+{
+  "name": "@hacbs-contract/ec-cli-tools",
+  "version": "0.0.0",
+  "description": "Keeps track of JavaScript tools used in ec-cli development",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "bugs": {
+    "url": "https://issues.redhat.com/browse/HACBS"
+  },
+  "dependencies": {
+    "tekton-lint": "^0.6.0"
+  }
+}
