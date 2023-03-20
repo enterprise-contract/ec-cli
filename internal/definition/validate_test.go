@@ -65,7 +65,6 @@ func Test_ValidatePipeline(t *testing.T) {
 	tests := []struct {
 		name    string
 		fpath   string
-		exists  func(afero.Fs, string) (bool, error)
 		err     error
 		output  *output.Output
 		defFunc func(ctx context.Context, fpath []string, sources []source.PolicySource, namespace []string) (*definition.Definition, error)
@@ -80,12 +79,12 @@ func Test_ValidatePipeline(t *testing.T) {
 		{
 			name:    "validation fails on bad path",
 			fpath:   "bad",
-			err:     fmt.Errorf("fpath '%s' does not exist", "bad"),
+			err:     fmt.Errorf("unable to parse the provided definition file: %v", "bad"),
 			output:  nil,
 			defFunc: mockNewPipelineDefinitionFile,
 		},
 		{
-			name:    "evaluator fails",
+			name:    "valid file, but evaluator fails",
 			fpath:   "/blah",
 			err:     errors.New("Evaluator error"),
 			output:  nil,
@@ -98,10 +97,25 @@ func Test_ValidatePipeline(t *testing.T) {
 			output:  &output.Output{PolicyCheck: evaluator.CheckResults{}},
 			defFunc: mockNewPipelineDefinitionFile,
 		},
+		{
+			name:    "validation succeeds with yaml input",
+			fpath:   "kind: task",
+			err:     nil,
+			output:  &output.Output{PolicyCheck: evaluator.CheckResults{}},
+			defFunc: mockNewPipelineDefinitionFile,
+		},
+		{
+			name:    "validation fails with only an array of strings as yaml",
+			fpath:   "- test1\n- test2",
+			err:     fmt.Errorf("unable to parse the provided definition file: %v", "- test1\n- test2"),
+			output:  nil,
+			defFunc: mockNewPipelineDefinitionFile,
+		},
 	}
 
 	appFS := afero.NewMemMapFs()
-	err := appFS.MkdirAll("/blah", 0777)
+	//err := appFS.MkdirAll("/blah", 0777)
+	err := afero.WriteFile(appFS, "/blah", []byte("data"), 0777)
 	assert.NoError(t, err)
 	ctx := utils.WithFS(context.Background(), appFS)
 

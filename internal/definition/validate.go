@@ -35,7 +35,7 @@ var definitionFile = definition.NewDefinition
 // ValidatePipeline calls NewPipelineEvaluator to obtain an PipelineEvaluator. It then executes the associated TestRunner
 // which tests the associated pipeline file(s) against the associated policies, and displays the output.
 func ValidateDefinition(ctx context.Context, fpath string, sources []source.PolicySource, namespace []string) (*output.Output, error) {
-	defFiles, err := detectFiles(ctx, fpath)
+	defFiles, err := detectInput(ctx, fpath)
 	if err != nil {
 		return nil, err
 	}
@@ -55,44 +55,72 @@ func ValidateDefinition(ctx context.Context, fpath string, sources []source.Poli
 }
 
 // detect if a file or directory was passed. if a directory, gather all files in it
-func detectFiles(ctx context.Context, fpath string) ([]string, error) {
+// the order is file lookup, json lookup then yaml
+func detectInput(ctx context.Context, fpath string) ([]string, error) {
 	if utils.IsJson(fpath) {
+		log.Debug("valid JSON found for definition file")
 		return definitionFromString(ctx, fpath)
 	}
+	log.Debug("unable to detect input as JSON")
 
+	// this is narrowed down to map[string]interface{}
+	// since a provided filename that does not exist could be considered valid yaml
+	if utils.IsYamlMap(fpath) {
+		log.Debug("valid YAML map found for definition file")
+		return definitionFromString(ctx, fpath)
+	}
+	log.Debug("unable to detect input as YAML")
+
+	files, err := fileLookup(ctx, fpath)
+	if len(files) > 0 {
+		log.Debug("valid file path found for definition file")
+		return files, nil
+	}
+	// just log this error. it could be an actual os error or "file not found".
+	// either way, move on
+	if err != nil {
+		log.Debugf("error looking up file: %v", err)
+	}
+
+	return nil, fmt.Errorf("unable to parse the provided definition file: %v", fpath)
+}
+
+// see if a file exists on the filesystem. if it does, return the file
+// if the file is a directory, return the files inside the directory
+func fileLookup(ctx context.Context, path string) ([]string, error) {
 	fs := utils.FS(ctx)
-	exists, err := afero.Exists(fs, fpath)
+	exists, err := afero.Exists(fs, path)
 	if err != nil {
 		return nil, err
 	}
 	if !exists {
-		return nil, fmt.Errorf("fpath '%s' does not exist", fpath)
+		return nil, fmt.Errorf("path '%s', does not exists", path)
 	}
 
 	var defFiles []string
-	file, err := fs.Open(fpath)
+	file, err := fs.Open(path)
 	if err != nil {
 		return nil, err
 	}
 
 	defer file.Close()
 
-	dir, err := afero.IsDir(fs, fpath)
+	dir, err := afero.IsDir(fs, path)
 	if err != nil {
 		return nil, err
 	}
 
 	if dir {
-		files, err := afero.ReadDir(fs, fpath)
+		files, err := afero.ReadDir(fs, path)
 		if err != nil {
 			return nil, err
 		}
 
 		for _, f := range files {
-			defFiles = append(defFiles, filepath.Join(fpath, f.Name()))
+			defFiles = append(defFiles, filepath.Join(path, f.Name()))
 		}
 	} else {
-		defFiles = append(defFiles, fpath)
+		defFiles = append(defFiles, path)
 	}
 
 	return defFiles, nil

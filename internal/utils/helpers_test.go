@@ -206,3 +206,34 @@ func TestIsJson(t *testing.T) {
 		})
 	}
 }
+
+func TestIsYamlMap(t *testing.T) {
+	tests := []struct {
+		name string
+		data string
+		want bool
+	}{
+		{
+			name: "valid YAML",
+			data: `name: ec`,
+			want: true,
+		},
+		{
+			name: "invalid YAML",
+			data: `name: ec\nblah:`,
+			want: false,
+		},
+		{
+			name: "empty string",
+			data: "",
+			want: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := IsYamlMap(tt.data)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}

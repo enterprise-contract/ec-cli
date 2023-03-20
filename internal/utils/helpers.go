@@ -121,3 +121,12 @@ func IsJson(data string) bool {
 	var jsMsg json.RawMessage
 	return json.Unmarshal([]byte(data), &jsMsg) == nil
 }
+
+// detect if the string is yamlMap
+func IsYamlMap(data string) bool {
+	if data == "" {
+		return false
+	}
+	var yamlMap map[string]interface{}
+	return yaml.Unmarshal([]byte(data), &yamlMap) == nil
+}
