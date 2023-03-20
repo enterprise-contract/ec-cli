@@ -237,3 +237,19 @@ func TestIsYamlMap(t *testing.T) {
 		})
 	}
 }
+
+func TestIsFile(t *testing.T) {
+	fs := afero.NewMemMapFs()
+	ctx := WithFS(context.Background(), fs)
+
+	testFilePath := "/test-file.txt"
+	afero.WriteFile(fs, testFilePath, []byte("test"), 0644)
+
+	isFile, err := IsFile(ctx, testFilePath)
+	assert.True(t, isFile)
+	assert.Nil(t, err)
+
+	isFile, err = IsFile(context.Background(), "/non-existent-file.txt")
+	assert.False(t, isFile)
+	assert.Nil(t, err)
+}

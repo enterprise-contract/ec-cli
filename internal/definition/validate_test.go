@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"path/filepath"
 	"testing"
 
 	"github.com/spf13/afero"
@@ -62,6 +63,11 @@ func badMockNewPipelineDefinitionFile(ctx context.Context, fpath []string, sourc
 }
 
 func Test_ValidatePipeline(t *testing.T) {
+	emptyDir := "/empty"
+	nonEmptyDir := "/nonEmpty"
+	validFile := filepath.Join(nonEmptyDir, "file.json")
+	badPath := "bad"
+
 	tests := []struct {
 		name    string
 		fpath   string
@@ -71,21 +77,28 @@ func Test_ValidatePipeline(t *testing.T) {
 	}{
 		{
 			name:    "validation succeeds",
-			fpath:   "/blah",
+			fpath:   validFile,
 			err:     nil,
 			output:  &output.Output{PolicyCheck: evaluator.CheckResults{}},
 			defFunc: mockNewPipelineDefinitionFile,
 		},
 		{
+			name:    "validation fails on empty directory",
+			fpath:   emptyDir,
+			err:     fmt.Errorf("the directory %v contained no files", emptyDir),
+			output:  nil,
+			defFunc: mockNewPipelineDefinitionFile,
+		},
+		{
 			name:    "validation fails on bad path",
-			fpath:   "bad",
-			err:     fmt.Errorf("unable to parse the provided definition file: %v", "bad"),
+			fpath:   badPath,
+			err:     fmt.Errorf("unable to parse the provided definition file: %v", badPath),
 			output:  nil,
 			defFunc: mockNewPipelineDefinitionFile,
 		},
 		{
 			name:    "valid file, but evaluator fails",
-			fpath:   "/blah",
+			fpath:   validFile,
 			err:     errors.New("Evaluator error"),
 			output:  nil,
 			defFunc: badMockNewPipelineDefinitionFile,
@@ -114,9 +127,12 @@ func Test_ValidatePipeline(t *testing.T) {
 	}
 
 	appFS := afero.NewMemMapFs()
-	//err := appFS.MkdirAll("/blah", 0777)
-	err := afero.WriteFile(appFS, "/blah", []byte("data"), 0777)
-	assert.NoError(t, err)
+	errEmptyDir := appFS.MkdirAll(emptyDir, 0777)
+	assert.NoError(t, errEmptyDir)
+	errDir := appFS.MkdirAll(nonEmptyDir, 0777)
+	assert.NoError(t, errDir)
+	errFile := afero.WriteFile(appFS, validFile, []byte("data"), 0777)
+	assert.NoError(t, errFile)
 	ctx := utils.WithFS(context.Background(), appFS)
 
 	for _, tt := range tests {

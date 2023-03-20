@@ -71,33 +71,25 @@ func detectInput(ctx context.Context, fpath string) ([]string, error) {
 	}
 	log.Debug("unable to detect input as YAML")
 
-	files, err := fileLookup(ctx, fpath)
-	if len(files) > 0 {
-		log.Debug("valid file path found for definition file")
-		return files, nil
-	}
-	// just log this error. it could be an actual os error or "file not found".
-	// either way, move on
+	fileExists, err := utils.IsFile(ctx, fpath)
 	if err != nil {
-		log.Debugf("error looking up file: %v", err)
+		return nil, err
 	}
+
+	if fileExists {
+		return fileLookup(ctx, fpath)
+	}
+	log.Debugf("unable to detect a file at path %v", fpath)
 
 	return nil, fmt.Errorf("unable to parse the provided definition file: %v", fpath)
 }
 
-// see if a file exists on the filesystem. if it does, return the file
+// if a single file is provided, return it
 // if the file is a directory, return the files inside the directory
 func fileLookup(ctx context.Context, path string) ([]string, error) {
 	fs := utils.FS(ctx)
-	exists, err := afero.Exists(fs, path)
-	if err != nil {
-		return nil, err
-	}
-	if !exists {
-		return nil, fmt.Errorf("path '%s', does not exists", path)
-	}
-
 	var defFiles []string
+
 	file, err := fs.Open(path)
 	if err != nil {
 		return nil, err
@@ -115,6 +107,10 @@ func fileLookup(ctx context.Context, path string) ([]string, error) {
 		if err != nil {
 			return nil, err
 		}
+		// a directory was provided, but contained no files
+		if len(files) == 0 {
+			return nil, fmt.Errorf("the directory %v contained no files", path)
+		}
 
 		for _, f := range files {
 			defFiles = append(defFiles, filepath.Join(path, f.Name()))
@@ -126,6 +122,7 @@ func fileLookup(ctx context.Context, path string) ([]string, error) {
 	return defFiles, nil
 }
 
+// write the definition file if a json or yaml string is provided
 func definitionFromString(ctx context.Context, data string) ([]string, error) {
 	data, err := utils.WriteTempFile(ctx, data, "definition-file-")
 	if err != nil {

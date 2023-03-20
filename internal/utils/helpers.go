@@ -130,3 +130,8 @@ func IsYamlMap(data string) bool {
 	var yamlMap map[string]interface{}
 	return yaml.Unmarshal([]byte(data), &yamlMap) == nil
 }
+
+func IsFile(ctx context.Context, path string) (bool, error) {
+	fs := FS(ctx)
+	return afero.Exists(fs, path)
+}
