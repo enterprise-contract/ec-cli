@@ -876,6 +876,8 @@ github.com/kr/text v0.2.0 h1:5Nx0Ya0ZqY2ygV366QzturHI13Jq95ApcVaJBhpS+AY=
 github.com/kr/text v0.2.0/go.mod h1:eLer722TekiGuMkidMxC/pM04lWEeraHUUmBw8l2grE=
 github.com/kylelemons/godebug v0.0.0-20170820004349-d65d576e9348/go.mod h1:B69LEHPfb2qLo0BaaOLcbitczOKLWTsrBG9LczfCD4k=
 github.com/kylelemons/godebug v1.1.0 h1:RPNrshWIDI6G2gRW9EHilWtl7Z6Sb1BR0xunSBf0SNc=
+github.com/lcarva/conftest v0.0.0-20230320183721-1c15011a6936 h1:SoZ+sEy1wxETjl+qfN7gsYvOm2CU5LaMKz0VDIlH6ho=
+github.com/lcarva/conftest v0.0.0-20230320183721-1c15011a6936/go.mod h1:V2RNtsAf2BdGaUrwE6AlJMElmfnEt1Hp5H9H5WULYsM=
 github.com/leanovate/gopter v0.2.9 h1:fQjYxZaynp97ozCzfOyOuAGOU4aU/z37zf/tOujFk7c=
 github.com/leanovate/gopter v0.2.9/go.mod h1:U2L/78B+KVFIx2VmW6onHJQzXtFb+p5y3y2Sh+Jxxv8=
 github.com/leodido/go-urn v1.2.1 h1:BqpAaACuzVSgi/VLzGZIobT2z4v53pjosyNd9Yv6n/w=
@@ -974,8 +976,6 @@ github.com/onsi/gomega v1.10.1/go.mod h1:iN09h71vgCQne3DLsj+A5owkum+a2tYe+TOCB1y
 github.com/onsi/gomega v1.17.0/go.mod h1:HnhC7FXeEQY45zxNK3PPoIUhzk/80Xly9PcubAlGdZY=
 github.com/onsi/gomega v1.19.0/go.mod h1:LY+I3pBVzYsTBU1AnDwOSxaYi9WoWiqgwooUqq9yPro=
 github.com/onsi/gomega v1.24.1 h1:KORJXNNTzJXzu4ScJWssJfJMnJ+2QJqhoQSRwNlze9E=
-github.com/open-policy-agent/conftest v0.39.1-0.20230309145322-347708d2fd13 h1:VCSWaVZNFFtwcIUIURQA0wOo3a/GDdsgWNB0MPZ1Mes=
-github.com/open-policy-agent/conftest v0.39.1-0.20230309145322-347708d2fd13/go.mod h1:V2RNtsAf2BdGaUrwE6AlJMElmfnEt1Hp5H9H5WULYsM=
 github.com/open-policy-agent/opa v0.49.2 h1:n8ntRq/yDWy+cmYaqSLrHXmrT3tX8WlK28vjFQdC6W8=
 github.com/open-policy-agent/opa v0.49.2/go.mod h1:7L3lN5qe8xboRmEHxC5lGjo5KsRMdK+CCLiFoOCP7rU=
 github.com/opencontainers/go-digest v1.0.0 h1:apOUWs51W5PlhuyGyz9FCeeBIOUDA/6nW8Oi/yOhh5U=
