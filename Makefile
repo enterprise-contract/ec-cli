@@ -12,10 +12,10 @@ SHELL=$(if $@,$(info ❱ [1m$@[0m))$(_SHELL)
 ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 COPY:="Red Hat, Inc."
 
-##@ Information targets
+##@ Information
 
 .PHONY: help
-help: ## Display this help.
+help: ## Display this help
 	@awk 'function ww(s) {\
 		if (length(s) < 59) {\
 			return s;\
@@ -36,7 +36,7 @@ help: ## Display this help.
 		}\
 	} BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9%/_-]+:.*?##/ { printf "  \033[36m%-18s\033[0m %s\n", "make " $$1, ww($$2) } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
-##@ Development targets
+##@ Building
 
 .PHONY: $(ALL_SUPPORTED_OS_ARCH)
 $(ALL_SUPPORTED_OS_ARCH): ## Build binaries for specific platform/architecture, e.g. make dist/ec_linux_amd64
@@ -57,8 +57,14 @@ reference-docs: ## Generate reference documentation input YAML files
 	@rm -rf dist/cli-reference
 	@go run internal/documentation/documentation.go -yaml dist/cli-reference
 
+.PHONY: clean
+clean: ## Delete build output
+	@rm dist/*
+
+##@ Testing
+
 .PHONY: test
-test: ## Run unit tests
+test: ## Run all unit tests
 	@go test -race -covermode=atomic -coverprofile=coverage-unit.out -timeout 500ms -tags=unit ./...
 	@go test -race -covermode=atomic -coverprofile=coverage-integration.out -timeout 15s -tags=integration ./...
 # Given the nature of generative tests the test timeout is increased from 500ms
@@ -68,7 +74,7 @@ test: ## Run unit tests
 .ONESHELL:
 .SHELLFLAGS=-e -c
 .PHONY: acceptance
-acceptance: ## Run acceptance tests
+acceptance: ## Run all acceptance tests
 	@ACCEPTANCE_WORKDIR="$$(mktemp -d)"
 	@function cleanup() {
 	  rm -rf "$${ACCEPTANCE_WORKDIR}"
@@ -84,10 +90,28 @@ acceptance: ## Run acceptance tests
 	@go run -modfile "$${ACCEPTANCE_WORKDIR}/tools/go.mod" github.com/wadey/gocovmerge "$${ACCEPTANCE_WORKDIR}"/coverage-acceptance*.out > "$(ROOT_DIR)/coverage-acceptance.out"
 
 # Add @focus above the feature you're hacking on to use this
+# (Mainly for use with the feature-% target below)
 .PHONY: focus-acceptance
-focus-acceptance: ## Run acceptance tests with @focus tag
-	@$(MAKE) build
+focus-acceptance: build ## Run acceptance tests with @focus tag
 	@cd acceptance && go test -tags=acceptance . -args -tags=@focus
+
+# Uses sed hackery to insert a @focus tag and then remove it afterwards.
+# (There might be a nicer way to run all scenarios in a single feature.)
+# The `|| true` here is so the @focus tag still gets removed after a failure.
+feature_%: ## Run acceptance tests for a single feature file, e.g. make feature_validate_image
+	@echo "Testing feature '$*'"
+	@sed -i '1i@focus' features/$*.feature
+	@$(MAKE) focus-acceptance || true
+	@sed -i '1d' features/$*.feature
+
+# (Replace spaces with underscores in the scenario name.)
+scenario_%: build ## Run acceptance tests for a single scenario, e.g. make scenario_inline_policy
+	@cd acceptance && go test -test.run 'TestFeatures/$*'
+
+.PHONY: ci
+ci: test lint-fix tekton-lint acceptance ## Run the usual required CI tasks
+
+##@ Linters
 
 LICENSE_IGNORE=-ignore 'dist/cli-reference/*.yaml'
 LINT_TO_GITHUB_ANNOTATIONS='map(map(.)[])[][] as $$d | $$d.posn | split(":") as $$posn | "::warning file=\($$posn[0]),line=\($$posn[1]),col=\($$posn[2])::\($$d.message)"'
@@ -113,7 +137,7 @@ lint-fix: ## Fix linting issues automagically
 	@go run -modfile tools/go.mod github.com/daixiang0/gci write -s standard -s default -s "prefix(github.com/hacbs-contract/ec-cli)" .
 
 .PHONY: tekton-lint
-tekton-lint: ## Run tekton-lint for 'tasks' subdirectory.
+tekton-lint: ## Run tekton-lint for 'tasks' subdirectory
 ifeq ($(GITHUB_ACTIONS),) # If not running as a Github action, check if tekton-lint is installed. If not, provide link.
 	@which tekton-lint &> /dev/null || (echo "tekton-lint doesn't seem to be installed. Please see https://github.com/IBM/tekton-lint for installation instructions." && exit 1)
 endif
@@ -122,12 +146,7 @@ endif
 
 	@tekton-lint --max-warnings 0 --format stylish 'tasks/**/*.yaml'
 
-.PHONY: ci
-ci: test lint-fix acceptance ## Run the usual required CI tasks
-
-.PHONY: clean
-clean: ## Delete build output
-	@rm dist/*
+##@ Pushing images
 
 IMAGE_TAG ?= latest
 IMAGE_REPO ?= quay.io/hacbs-contract/ec-cli
