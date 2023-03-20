@@ -18,6 +18,7 @@ package applicationsnapshot
 
 import (
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"time"
 
@@ -83,10 +84,11 @@ type hacbsReport struct {
 
 // Possible formats the report can be written as.
 const (
-	JSON    string = "json"
-	YAML    string = "yaml"
-	HACBS   string = "hacbs"
-	Summary string = "summary"
+	JSON    = "json"
+	YAML    = "yaml"
+	HACBS   = "hacbs"
+	Summary = "summary"
+	JUNIT   = "junit"
 )
 
 // WriteReport returns a new instance of Report representing the state of
@@ -145,6 +147,8 @@ func (r *Report) toFormat(format string) (data []byte, err error) {
 		data, err = json.Marshal(r.toSummary())
 	case HACBS:
 		data, err = json.Marshal(r.toHACBS())
+	case JUNIT:
+		data, err = xml.Marshal(r.toJUnit())
 	default:
 		return nil, fmt.Errorf("%q is not a valid report format", format)
 	}
