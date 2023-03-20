@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"path/filepath"
 	"testing"
 
 	"github.com/spf13/afero"
@@ -61,57 +62,82 @@ func badMockNewPipelineDefinitionFile(ctx context.Context, fpath []string, sourc
 	}, nil
 }
 
-func mockPathExists(fs afero.Fs, path string) (bool, error) {
-	if path == "bad" {
-		return false, fmt.Errorf("fpath '%s' does not exist", path)
-	}
-	return true, nil
-}
-
 func Test_ValidatePipeline(t *testing.T) {
+	emptyDir := "/empty"
+	nonEmptyDir := "/nonEmpty"
+	validFile := filepath.Join(nonEmptyDir, "file.json")
+	badPath := "bad"
+
 	tests := []struct {
 		name    string
 		fpath   string
-		exists  func(afero.Fs, string) (bool, error)
 		err     error
 		output  *output.Output
 		defFunc func(ctx context.Context, fpath []string, sources []source.PolicySource, namespace []string) (*definition.Definition, error)
 	}{
 		{
 			name:    "validation succeeds",
-			fpath:   "/blah",
-			exists:  mockPathExists,
+			fpath:   validFile,
 			err:     nil,
 			output:  &output.Output{PolicyCheck: evaluator.CheckResults{}},
 			defFunc: mockNewPipelineDefinitionFile,
 		},
 		{
-			name:    "validation fails on bad path",
-			fpath:   "bad",
-			exists:  mockPathExists,
-			err:     fmt.Errorf("fpath '%s' does not exist", "bad"),
+			name:    "validation fails on empty directory",
+			fpath:   emptyDir,
+			err:     fmt.Errorf("the directory %v contained no files", emptyDir),
 			output:  nil,
 			defFunc: mockNewPipelineDefinitionFile,
 		},
 		{
-			name:    "evaluator fails",
-			fpath:   "/blah",
-			exists:  mockPathExists,
+			name:    "validation fails on bad path",
+			fpath:   badPath,
+			err:     fmt.Errorf("unable to parse the provided definition file: %v", badPath),
+			output:  nil,
+			defFunc: mockNewPipelineDefinitionFile,
+		},
+		{
+			name:    "valid file, but evaluator fails",
+			fpath:   validFile,
 			err:     errors.New("Evaluator error"),
 			output:  nil,
 			defFunc: badMockNewPipelineDefinitionFile,
 		},
+		{
+			name:    "validation succeeds with json input",
+			fpath:   "{\"json\": 1}",
+			err:     nil,
+			output:  &output.Output{PolicyCheck: evaluator.CheckResults{}},
+			defFunc: mockNewPipelineDefinitionFile,
+		},
+		{
+			name:    "validation succeeds with yaml input",
+			fpath:   "kind: task",
+			err:     nil,
+			output:  &output.Output{PolicyCheck: evaluator.CheckResults{}},
+			defFunc: mockNewPipelineDefinitionFile,
+		},
+		{
+			name:    "validation fails with only an array of strings as yaml",
+			fpath:   "- test1\n- test2",
+			err:     fmt.Errorf("unable to parse the provided definition file: %v", "- test1\n- test2"),
+			output:  nil,
+			defFunc: mockNewPipelineDefinitionFile,
+		},
 	}
 
 	appFS := afero.NewMemMapFs()
-	err := appFS.MkdirAll("/blah", 0777)
-	assert.NoError(t, err)
+	errEmptyDir := appFS.MkdirAll(emptyDir, 0777)
+	assert.NoError(t, errEmptyDir)
+	errDir := appFS.MkdirAll(nonEmptyDir, 0777)
+	assert.NoError(t, errDir)
+	errFile := afero.WriteFile(appFS, validFile, []byte("data"), 0777)
+	assert.NoError(t, errFile)
 	ctx := utils.WithFS(context.Background(), appFS)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			definitionFile = tt.defFunc
-			//pathExists = tt.exists
 			output, err := ValidateDefinition(ctx, tt.fpath, []source.PolicySource{}, []string{})
 			assert.Equal(t, tt.err, err)
 			assert.Equal(t, tt.output, output)

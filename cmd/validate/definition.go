@@ -66,6 +66,10 @@ func validateDefinitionCmd(validate definitionValidationFn) *cobra.Command {
 
 			  ec validate definition --file </path/to/file> --file /path/to/other.file
 
+			Specify --file as JSON
+
+			  ec validate definition --file '{"Kind": "Task"}'
+
 			Specify different policy and data sources:
 
 			  ec validate definition --file </path/to/pipeline/file> \
@@ -106,7 +110,7 @@ func validateDefinitionCmd(validate definitionValidationFn) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringSliceVarP(&data.filePaths, "file", "p", data.filePaths,
+	cmd.Flags().StringArrayVarP(&data.filePaths, "file", "f", data.filePaths,
 		"path to definition YAML/JSON file (required)")
 
 	cmd.Flags().StringSliceVar(&data.policyURLs, "policy", data.policyURLs,

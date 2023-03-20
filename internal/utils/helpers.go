@@ -19,6 +19,8 @@ package utils
 import (
 	"bytes"
 	"context"
+	"encoding/json"
+	"fmt"
 	"path/filepath"
 	"unicode"
 
@@ -97,4 +99,39 @@ func FS(ctx context.Context) afero.Fs {
 
 func WithFS(ctx context.Context, fs afero.Fs) context.Context {
 	return context.WithValue(ctx, fsKey, fs)
+}
+
+// create a file in a temp dir with contents of data
+func WriteTempFile(ctx context.Context, data, prefix string) (string, error) {
+	fs := FS(ctx)
+	file, err := afero.TempFile(fs, "", fmt.Sprintf("%s*", prefix))
+	if err != nil {
+		return "", err
+	}
+	path := file.Name()
+	if _, err := file.WriteString(data); err != nil {
+		_ = fs.Remove(path)
+		return "", err
+	}
+	return path, nil
+}
+
+// detect if the string is json
+func IsJson(data string) bool {
+	var jsMsg json.RawMessage
+	return json.Unmarshal([]byte(data), &jsMsg) == nil
+}
+
+// detect if the string is yamlMap
+func IsYamlMap(data string) bool {
+	if data == "" {
+		return false
+	}
+	var yamlMap map[string]interface{}
+	return yaml.Unmarshal([]byte(data), &yamlMap) == nil
+}
+
+func IsFile(ctx context.Context, path string) (bool, error) {
+	fs := FS(ctx)
+	return afero.Exists(fs, path)
 }
