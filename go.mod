@@ -307,3 +307,7 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
+
+// This is needed until this is accepted upstream:
+// https://github.com/open-policy-agent/conftest/pull/796
+replace github.com/open-policy-agent/conftest => github.com/lcarva/conftest v0.0.0-20230320183721-1c15011a6936
