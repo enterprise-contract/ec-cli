@@ -243,7 +243,8 @@ func TestIsFile(t *testing.T) {
 	ctx := WithFS(context.Background(), fs)
 
 	testFilePath := "/test-file.txt"
-	afero.WriteFile(fs, testFilePath, []byte("test"), 0644)
+	err := afero.WriteFile(fs, testFilePath, []byte("test"), 0644)
+	assert.NoError(t, err)
 
 	isFile, err := IsFile(ctx, testFilePath)
 	assert.True(t, isFile)
