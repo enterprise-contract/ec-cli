@@ -33,6 +33,8 @@ import (
 	"github.com/hacbs-contract/ec-cli/internal/logging"
 )
 
+var cancel context.CancelFunc
+
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
 	Use:   "ec",
@@ -48,30 +50,37 @@ var RootCmd = &cobra.Command{
 
 	PersistentPreRun: func(cmd *cobra.Command, _ []string) {
 		logging.InitLogging(verbose, quiet, debug)
+
+		// Create a new context now that flags have been parsed so a custom timeout can be used.
+		ctx := cmd.Context()
+		ctx, cancel = context.WithTimeout(ctx, globalTimeout)
+		cmd.SetContext(ctx)
+	},
+
+	PersistentPostRun: func(cmd *cobra.Command, _ []string) {
+		if cancel != nil {
+			cancel()
+		}
 	},
 }
 
 var quiet bool = false
 var verbose bool = false
 var debug bool = false
+var globalTimeout = 5 * time.Minute
 
 func init() {
 	RootCmd.PersistentFlags().BoolVar(&quiet, "quiet", quiet, "less verbose output")
 	RootCmd.PersistentFlags().BoolVar(&verbose, "verbose", verbose, "more verbose output")
 	RootCmd.PersistentFlags().BoolVar(&debug, "debug", debug, "same as verbose but also show function names and line numbers")
+	RootCmd.PersistentFlags().DurationVar(&globalTimeout, "timeout", globalTimeout, "max overall execution duration")
 	kubernetes.AddKubeconfigFlag(RootCmd)
 }
-
-const globalTimeout = 5 * time.Minute
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	ctx, cancel := context.WithTimeout(context.Background(), globalTimeout)
-	defer cancel()
-
-	err := RootCmd.ExecuteContext(ctx)
-	if err != nil {
+	if err := RootCmd.ExecuteContext(context.Background()); err != nil {
 		os.Exit(1)
 	}
 }
