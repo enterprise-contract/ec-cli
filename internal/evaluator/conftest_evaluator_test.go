@@ -1019,6 +1019,7 @@ func TestCollectAnnotationData(t *testing.T) {
 		# custom:
 		#   short_name: short
 		#   collections: [A, B, C]
+		#   effective_on: 2022-01-01T00:00:00Z
 		deny[msg] {
 			msg := "hi"
 		}`), ast.ParserOptions{
@@ -1034,6 +1035,7 @@ func TestCollectAnnotationData(t *testing.T) {
 			CodePackage: "a.b.c",
 			Collections: []string{"A", "B", "C"},
 			Description: "Description",
+			EffectiveOn: "2022-01-01T00:00:00Z",
 			Kind:        rule.Deny,
 			Package:     "a.b.c",
 			ShortName:   "short",

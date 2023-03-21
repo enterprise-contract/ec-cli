@@ -307,6 +307,15 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (Check
 			continue
 		}
 
+		if rule.EffectiveOn != "" {
+			result.Metadata[metadataEffectiveOn] = rule.EffectiveOn
+		}
+
+		if !isResultEffective(result, effectiveTime) {
+			log.Debugf("Skipping result success: %#v", result)
+			continue
+		}
+
 		// Todo maybe: We could also call isResultEffective here for the
 		// success and skip it if the rule is not yet effective. This would
 		// require collecting the effective_on value from the custom annotation
