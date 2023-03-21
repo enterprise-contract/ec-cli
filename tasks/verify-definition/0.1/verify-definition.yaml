@@ -33,16 +33,16 @@ spec:
       description: |
         The definition(s) to validate. This can be a yaml or json file, the files' contents
         or a directory containing the definition files.
-    - name: NAMESPACE
-      type: string
-      description: An optional policy package namespace.
     - name: POLICY_SOURCE
       type: string
       description: The source containing the policy files.
-      default: git::github.com/hacbs-contract/ec-policies//policy/task
+    - name: NAMESPACE
+      type: string
+      description: An optional policy package namespace.
+      default: ""
     - name: POLICY_LIB
       type: string
-      description: The source containing the policy files.
+      description: The source containing the policy files libraries.
       default: git::https://github.com/hacbs-contract/ec-policies//policy/lib
     - name: POLICY_DATA
       type: string

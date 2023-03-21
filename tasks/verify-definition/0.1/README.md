@@ -1,41 +1,52 @@
-# Verify Enterprise Contract Task
+# Verify Definition Task
 
-This task verifies a signature and attestation for an image and then runs a policy against the image's attestation using the ```ec validate image``` command.
+This task is used to verify any valid YAML or JSON
 
 ## Install the task
-kubectl apply -f https://raw.githubusercontent.com/hacbs-contract/ec-cli/main/tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml
+kubectl apply -f https://raw.githubusercontent.com/hacbs-contract/ec-cli/main/tasks/verify-definition/0.1/verify-definition.yaml
 
 ## Parameters
 ### Required
-* **IMAGES**: A JSON formatted list of images. 
+* **DEFINITION**: The definition(s) to validate. This can be a yaml or json file, the files' contents
+        or a directory containing the definition files. 
+* **POLICY_SOURCE**: The source containing the policy files.
 ### Optional
-* **POLICY_CONFIGURATION**: Name or inline policy in JSON configuration to use. For name `namespace/name` or `name` syntax supported. If
-        namespace is omitted the namespace where the task runs is used. For inline policy provide the [specification](https://hacbs-contract.github.io/ecc/main/reference.html#k8s-api-github-com-hacbs-contract-enterprise-contract-controller-api-v1alpha1-enterprisecontractpolicyspec) as JSON.
-* **PUBLIC_KEY**: Public key used to verify signatures. Must be a valid k8s cosign
-        reference, e.g. k8s://my-space/my-secret where my-secret contains
-        the expected cosign.pub attribute.
-* **REKOR_HOST**: Rekor host for transparency log lookups
-* **SSL_CERT_DIR**: Path to a directory containing SSL certs to be used when communicating
-        with external services.
-* **STRICT**: Fail the task if policy fails. Set to "false" to disable it.
+* **NAMESPACE**: An optional policy package namespace.
+* **POLICY_LIB**: The source containing the policy files libraries.
+* **POLICY_DATA**: The source containing the policy files configuration data.
 * **HOMEDIR**: Value for the HOME environment variable.
 
-
 ## Usage
-
-This TaskRun runs the Task to verify an image. This assumes a policy is created and stored on the cluster with hte namespaced name of `enterprise-contract-service/default`. For more information on creating a policy, refer to the Enterprise Contract [documentation](https://hacbs-contract.github.io/ecc/main/index.html).
+This TaskRun runs the Task to verify the JSON string '{"kind": "Task"}'.
 
 ```yaml
+---
 apiVersion: tekton.dev/v1beta1
 kind: TaskRun
 metadata:
-  name: verify-enterprise-contract
+  generateName: verify-definition-run-
 spec:
-  taskRef:
-    name: verify-enterprise-contract
   params:
-  - name: IMAGES
-    value: '{"components": ["containerImage": "quay.io/example/repo:latest"]}'
+  - name: HOMEDIR
+    value: /tekton/home
+  - name: DEFINITION
+    value: '{"kind": "Task"}'
+  - name: NAMESPACE
+    value: policy.task.kind
+  - name: POLICY_SOURCE
+    value: git::github.com/hacbs-contract/ec-policies//policy/task
+  resources: {}
+  serviceAccountName: default
+  taskRef:
+    resolver: bundles
+    params:
+    - name: bundle
+      value: ${TASK_BUNDLE_REF}
+    - name: name
+      value: verify-definition
+    - name: kind
+      value: task
+  timeout: 10m
 ```
 
 

@@ -120,3 +120,8 @@ jobs:
         env:
           TASK_VERSION: 0.1
         run: tasks/verify-enterprise-contract/tests/run.sh
+
+      - name: Testing ec definition task
+        env:
+          TASK_VERSION: 0.1
+        run: tasks/verify-definition/tests/run.sh

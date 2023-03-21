@@ -26,8 +26,17 @@ spec:
     value: '{"kind": "Task"}'
   - name: NAMESPACE
     value: policy.task.kind
+  - name: POLICY_SOURCE
+    value: git::github.com/hacbs-contract/ec-policies//policy/task
   resources: {}
   serviceAccountName: default
   taskRef:
-    name: verify-definition
+    resolver: bundles
+    params:
+    - name: bundle
+      value: ${TASK_BUNDLE_REF}
+    - name: name
+      value: verify-definition
+    - name: kind
+      value: task
   timeout: 10m

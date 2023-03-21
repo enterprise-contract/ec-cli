@@ -33,23 +33,6 @@ TEST_DIR="${TASK_DIR}/tests"
 # run and wait for taskRun
 kubectl apply -f "${TEST_DIR}/ecp-policy.yaml"
 TASK_RUN_NAME=$(TASK_BUNDLE_REF="${TASK_BUNDLE_REF}" envsubst < "${TEST_DIR}/${TASKRUN_FILE}" |kubectl create -o name -f -)
-echo -n Waiting for the task to finish
-while ! kubectl wait "${TASK_RUN_NAME}" -o=jsonpath='{.nonexistant}' --for=condition=Succeeded --timeout=1s 2>/dev/null && ! kubectl wait "${TASK_RUN_NAME}" -o=jsonpath='{.nonexistant}' --for=condition=Succeeded=false --timeout=1s 2>/dev/null; do
-  echo -n .
-done
-status=$(kubectl get "${TASK_RUN_NAME}" -o jsonpath='{.status.conditions[*].status}')
-
-if [[ "$status" == "False" ]]; then
-  echo
-  echo -e "💣 \033[31;1mTask ${TASK_RUN_NAME} failed\033[0m"
-  echo -e '\033[4;1mTekton TaskRun description\033[0m'
-  go run -modfile tools/go.mod github.com/tektoncd/cli/cmd/tkn tr describe "${TASK_RUN_NAME#*/}"
-  echo -e '\033[4;1mPod logs\033[0m'
-  POD_NAME=$(kubectl get "${TASK_RUN_NAME}" -o jsonpath='{.status.podName}')
-  kubectl logs "${POD_NAME}" --all-containers=true
-  echo -e "\033[4;1mkubectl describe ${TASK_RUN_NAME}\033[0m"
-  kubectl describe "${TASK_RUN_NAME}"
-  exit 1
-else
-  echo OK
-fi
+source tasks/helpers.sh
+wait_for_taskrun
+check_taskrun_status
