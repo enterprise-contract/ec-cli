@@ -27,7 +27,6 @@ func init() {
 		Use:   "fetch",
 		Short: "Fetch policies and authorization data",
 	}
-	FetchCmd.AddCommand(commitAuthorizationCmd())
 	FetchCmd.AddCommand(k8sResourceAuthorizationCmd())
 	FetchCmd.AddCommand(fetchPolicyCmd())
 }
