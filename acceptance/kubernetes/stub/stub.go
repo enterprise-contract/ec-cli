@@ -27,6 +27,7 @@ import (
 
 	"github.com/hacbs-contract/ec-cli/acceptance/git"
 	"github.com/hacbs-contract/ec-cli/acceptance/kubernetes/types"
+	"github.com/hacbs-contract/ec-cli/acceptance/registry"
 	"github.com/hacbs-contract/ec-cli/acceptance/wiremock"
 )
 
@@ -45,7 +46,7 @@ func (s stubCluster) CreateNamespace(ctx context.Context) (context.Context, erro
 	return ctx, nil
 }
 
-// stubPolicy stubs a response from the apiserver to fetch a EnterpriseContractPolicy
+// CreateNamedPolicy stubs a response from the apiserver to fetch a EnterpriseContractPolicy
 // custom resource from the `acceptance` namespace with the given name and specification
 // the specification part can be templated using ${...} notation and supports `GITHOST`
 // variable substitution
@@ -64,6 +65,35 @@ func (s stubCluster) CreateNamedPolicy(ctx context.Context, name string, specifi
 			  }`, name, ns, os.Expand(specification, func(key string) string {
 			if key == "GITHOST" {
 				return git.Host(ctx)
+			}
+
+			return ""
+		})),
+			map[string]string{"Content-Type": "application/json"},
+			200,
+		))
+}
+
+// CreateNamedSnapshot stubs a response from the apiserver to fetch a Snapshot
+// custom resource from the `acceptance` namespace with the given name and specification
+func (s stubCluster) CreateNamedSnapshot(ctx context.Context, name string, specification string) error {
+	ns := "acceptance"
+	return wiremock.StubFor(ctx, wiremock.Get(wiremock.URLPathEqualTo(fmt.Sprintf("/apis/appstudio.redhat.com/v1alpha1/namespaces/%s/snapshots/%s", ns, name))).
+		WillReturn(fmt.Sprintf(`{
+				"apiVersion": "appstudio.redhat.com/v1alpha1",
+				"kind": "Snapshot",
+				"metadata": {
+				  "name": "%s",
+				  "namespace": "%s"
+				},
+				"spec": %s
+			  }`, name, ns, os.Expand(specification, func(key string) string {
+			if key == "REGISTRY" {
+				if registryUrl, err := registry.StubRegistry(ctx); err != nil {
+					panic("No stub registry state, did you run the stub?")
+				} else {
+					return registryUrl
+				}
 			}
 
 			return ""

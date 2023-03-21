@@ -44,12 +44,14 @@ type Component struct {
 type Report struct {
 	Success    bool `json:"success"`
 	created    time.Time
+	Snapshot   string                           `json:"snapshot,omitempty"`
 	Components []Component                      `json:"components"`
 	Key        string                           `json:"key"`
 	Policy     ecc.EnterpriseContractPolicySpec `json:"policy"`
 }
 
 type summary struct {
+	Snapshot   string             `json:"snapshot,omitempty"`
 	Components []componentSummary `json:"components"`
 	Success    bool               `json:"success"`
 	Key        string             `json:"key"`
@@ -89,7 +91,7 @@ const (
 
 // WriteReport returns a new instance of Report representing the state of
 // components from the snapshot.
-func NewReport(components []Component, policy policy.Policy) (Report, error) {
+func NewReport(snapshot string, components []Component, policy policy.Policy) (Report, error) {
 	success := true
 
 	// Set the report success, remains true if all components are successful
@@ -106,6 +108,7 @@ func NewReport(components []Component, policy policy.Policy) (Report, error) {
 	}
 
 	return Report{
+		Snapshot:   snapshot,
 		Success:    success,
 		Components: components,
 		created:    time.Now().UTC(),
@@ -150,7 +153,9 @@ func (r *Report) toFormat(format string) (data []byte, err error) {
 
 // toSummary returns a condensed version of the report.
 func (r *Report) toSummary() summary {
-	var pr summary
+	pr := summary{
+		Snapshot: r.Snapshot,
+	}
 	for _, cmp := range r.Components {
 		if !cmp.Success {
 			pr.Success = false

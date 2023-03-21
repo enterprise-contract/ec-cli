@@ -49,6 +49,7 @@ func Test_ReportJson(t *testing.T) {
     {
       "success": false,
 	  "key": "%s",
+	  "snapshot": "snappy",
       "components": [
         {
           "name": "spam",
@@ -80,7 +81,7 @@ func Test_ReportJson(t *testing.T) {
 	components := testComponentsFor(snapshot)
 
 	ctx := context.Background()
-	report, err := NewReport(components, createTestPolicy(t, ctx))
+	report, err := NewReport("snappy", components, createTestPolicy(t, ctx))
 	assert.NoError(t, err)
 	reportJson, err := report.toFormat(JSON)
 	assert.NoError(t, err)
@@ -96,6 +97,7 @@ func Test_ReportYaml(t *testing.T) {
 	expected := fmt.Sprintf(`
 success: false
 key: "%s"
+snapshot: snappy
 components:
   - name: spam
     containerImage: quay.io/caf/spam@sha256:123…
@@ -123,7 +125,7 @@ policy:
 	components := testComponentsFor(*snapshot)
 
 	ctx := context.Background()
-	report, err := NewReport(components, createTestPolicy(t, ctx))
+	report, err := NewReport("snappy", components, createTestPolicy(t, ctx))
 	assert.NoError(t, err)
 	reportYaml, err := report.toFormat(YAML)
 	assert.NoError(t, err)
@@ -133,13 +135,14 @@ policy:
 
 func Test_ReportSummary(t *testing.T) {
 	tests := []struct {
-		name  string
-		input Component
-		want  summary
+		name     string
+		snapshot string
+		input    Component
+		want     summary
 	}{
 		{
-			"testing one violation and warning",
-			Component{
+			name: "testing one violation and warning",
+			input: Component{
 				Violations: []output.Result{
 					{
 						Message: "short report",
@@ -158,7 +161,7 @@ func Test_ReportSummary(t *testing.T) {
 				},
 				Success: false,
 			},
-			summary{
+			want: summary{
 				Components: []componentSummary{
 					{
 						Violations: map[string][]string{
@@ -180,8 +183,8 @@ func Test_ReportSummary(t *testing.T) {
 			},
 		},
 		{
-			"testing no metadata",
-			Component{
+			name: "testing no metadata",
+			input: Component{
 				Violations: []output.Result{
 					{
 						Message: "short report",
@@ -194,7 +197,7 @@ func Test_ReportSummary(t *testing.T) {
 				},
 				Success: false,
 			},
-			summary{
+			want: summary{
 				Components: []componentSummary{
 					{
 						Violations:      map[string][]string{},
@@ -212,8 +215,8 @@ func Test_ReportSummary(t *testing.T) {
 			},
 		},
 		{
-			"testing multiple violations and warnings",
-			Component{
+			name: "testing multiple violations and warnings",
+			input: Component{
 				Violations: []output.Result{
 					{
 						Message: "short report",
@@ -244,7 +247,7 @@ func Test_ReportSummary(t *testing.T) {
 				},
 				Success: false,
 			},
-			summary{
+			want: summary{
 				Components: []componentSummary{
 					{
 						Violations: map[string][]string{
@@ -266,8 +269,8 @@ func Test_ReportSummary(t *testing.T) {
 			},
 		},
 		{
-			"with successes",
-			Component{
+			name: "with successes",
+			input: Component{
 				Violations: []output.Result{
 					{
 						Message: "violation",
@@ -294,7 +297,55 @@ func Test_ReportSummary(t *testing.T) {
 				},
 				Success: false,
 			},
-			summary{
+			want: summary{
+				Components: []componentSummary{
+					{
+						Violations:      map[string][]string{"violation": {"violation"}},
+						Warnings:        map[string][]string{"warning": {"warning"}},
+						Successes:       map[string][]string{"success": {"success"}},
+						TotalViolations: 1,
+						TotalWarnings:   1,
+						TotalSuccesses:  1,
+						Success:         false,
+						Name:            "",
+					},
+				},
+				Success: false,
+				Key:     testPublicKey,
+			},
+		},
+		{
+			name:     "with snapshot",
+			snapshot: "snappy",
+			input: Component{
+				Violations: []output.Result{
+					{
+						Message: "violation",
+						Metadata: map[string]interface{}{
+							"code": "violation",
+						},
+					},
+				},
+				Warnings: []output.Result{
+					{
+						Message: "warning",
+						Metadata: map[string]interface{}{
+							"code": "warning",
+						},
+					},
+				},
+				Successes: []output.Result{
+					{
+						Message: "success",
+						Metadata: map[string]interface{}{
+							"code": "success",
+						},
+					},
+				},
+				Success: false,
+			},
+			want: summary{
+				Snapshot: "snappy",
 				Components: []componentSummary{
 					{
 						Violations:      map[string][]string{"violation": {"violation"}},
@@ -316,7 +367,7 @@ func Test_ReportSummary(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("NewReport=%s", tc.name), func(t *testing.T) {
 			ctx := context.Background()
-			report, err := NewReport([]Component{tc.input}, createTestPolicy(t, ctx))
+			report, err := NewReport(tc.snapshot, []Component{tc.input}, createTestPolicy(t, ctx))
 			assert.NoError(t, err)
 			assert.Equal(t, tc.want, report.toSummary())
 		})
@@ -328,6 +379,7 @@ func Test_ReportHACBS(t *testing.T) {
 	cases := []struct {
 		name       string
 		expected   string
+		snapshot   string
 		components []Component
 		success    bool
 	}{
@@ -425,6 +477,21 @@ func Test_ReportHACBS(t *testing.T) {
 			components: []Component{},
 			success:    true,
 		},
+		{
+			name: "with snapshot",
+			expected: `
+			{
+				"failures": 0,
+				"namespace": "",
+				"result": "SUCCESS",
+				"successes": 3,
+				"timestamp": "1970-01-01T00:00:00Z",
+				"warnings": 0
+			}`,
+			snapshot:   "snappy",
+			components: []Component{{Success: true}, {Success: true}, {Success: true}},
+			success:    true,
+		},
 	}
 
 	for _, c := range cases {
@@ -434,7 +501,7 @@ func Test_ReportHACBS(t *testing.T) {
 			assert.NoError(t, err)
 
 			ctx := context.Background()
-			report, err := NewReport(c.components, createTestPolicy(t, ctx))
+			report, err := NewReport(c.snapshot, c.components, createTestPolicy(t, ctx))
 			assert.NoError(t, err)
 			assert.False(t, report.created.IsZero())
 			assert.Equal(t, c.success, report.Success)

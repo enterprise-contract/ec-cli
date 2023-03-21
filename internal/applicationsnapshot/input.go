@@ -17,6 +17,7 @@
 package applicationsnapshot
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -24,54 +25,132 @@ import (
 	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
+	"golang.org/x/exp/slices"
+
+	"github.com/hacbs-contract/ec-cli/internal/kubernetes"
+	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
 
-func DetermineInputSpec(fs afero.Fs, filePath string, input string, imageRef string) (*app.SnapshotSpec, error) {
-	var appSnapshot app.SnapshotSpec
+const unnamed = "Unnamed"
 
-	// read ApplicationSnapshot provided as a file
-	if len(filePath) > 0 {
-		content, err := afero.ReadFile(fs, filePath)
+type Input struct {
+	File     string
+	JSON     string
+	Image    string
+	Snapshot string
+}
+
+type snapshot struct {
+	app.SnapshotSpec
+}
+
+func (s *snapshot) merge(snap app.SnapshotSpec) {
+	if s.Application == "" {
+		s.Application = snap.Application
+	}
+
+	if s.DisplayName == "" {
+		s.DisplayName = snap.DisplayName
+	}
+
+	if s.DisplayDescription == "" {
+		s.DisplayDescription = snap.DisplayDescription
+	}
+
+	images := map[string]string{}
+	for _, c := range s.Components {
+		images[c.ContainerImage] = c.Name
+	}
+	for _, c := range snap.Components {
+		if name, ok := images[c.ContainerImage]; !ok || name == "" || name == unnamed {
+			if ok {
+				images[c.ContainerImage] = c.Name
+				i := slices.IndexFunc(s.Components, func(x app.SnapshotComponent) bool {
+					return x.ContainerImage == c.ContainerImage
+				})
+				s.Components[i].Name = c.Name
+			} else {
+				images[c.ContainerImage] = c.Name
+				s.Components = append(s.Components, c)
+			}
+		}
+	}
+}
+
+func DetermineInputSpec(ctx context.Context, input Input) (*app.SnapshotSpec, error) {
+	var snapshot snapshot
+	provided := false
+
+	// read Snapshot provided as a file
+	if input.File != "" {
+		fs := utils.FS(ctx)
+		content, err := afero.ReadFile(fs, input.File)
 		if err != nil {
-			log.Debugf("Problem reading application snapshot from file %s", filePath)
+			log.Debugf("Problem reading application snapshot from file %s", input.File)
 			return nil, err
 		}
 
-		err = yaml.Unmarshal(content, &appSnapshot)
+		var file app.SnapshotSpec
+		err = yaml.Unmarshal(content, &file)
 		if err != nil {
-			log.Debugf("Problem parsing application snapshot from file %s", filePath)
-			return nil, fmt.Errorf("unable to parse ApplicationSnapshot file at %s: %w", filePath, err)
+			log.Debugf("Problem parsing application snapshot from file %s", input.File)
+			return nil, fmt.Errorf("unable to parse Snapshot specification from %s: %w", input.File, err)
 		}
 
-		log.Debugf("Read application snapshot from file %s", filePath)
-		return &appSnapshot, nil
+		log.Debugf("Read application snapshot from file %s", input.File)
+		snapshot.merge(file)
+		provided = true
 	}
 
-	// read ApplicationSnapshot provided as a string
-	if len(input) > 0 {
+	// read Snapshot provided as a string
+	if input.JSON != "" {
+		var json app.SnapshotSpec
 		// Unmarshall YAML into struct, exit on failure
-		if err := yaml.Unmarshal([]byte(input), &appSnapshot); err != nil {
-			log.Debugf("Problem parsing application snapshot from input param %s", input)
-			return nil, fmt.Errorf("unable to parse ApplicationSnapshot from input: %w", err)
+		if err := yaml.Unmarshal([]byte(input.JSON), &json); err != nil {
+			log.Debugf("Problem parsing application snapshot from input param %s", input.JSON)
+			return nil, fmt.Errorf("unable to parse Snapshot specification from input: %w", err)
 		}
 
 		log.Debug("Read application snapshot from input param")
-		return &appSnapshot, nil
+		snapshot.merge(json)
+		provided = true
 	}
 
-	// create ApplicationSnapshot with a single image
-	if len(imageRef) > 0 {
-		log.Debugf("Generating application snapshot from imageRef %s", imageRef)
-		return &app.SnapshotSpec{
+	// create Snapshot with a single image
+	if input.Image != "" {
+		log.Debugf("Generating application snapshot from image reference %s", input.Image)
+		snapshot.merge(app.SnapshotSpec{
 			Components: []app.SnapshotComponent{
 				{
-					Name:           "Unnamed",
-					ContainerImage: imageRef,
+					Name:           unnamed,
+					ContainerImage: input.Image,
 				},
 			},
-		}, nil
+		})
+		provided = true
 	}
 
-	log.Debug("No application snapshot available")
-	return nil, errors.New("neither ApplicationSnapshot nor image reference provided to validate")
+	if input.Snapshot != "" {
+		client, err := kubernetes.NewClient(ctx)
+		if err != nil {
+			log.Debugf("Unable to initialize Kubernetes Client: %v", err)
+			return nil, err
+		}
+
+		cluster, err := client.FetchSnapshot(ctx, input.Snapshot)
+		if err != nil {
+			log.Debugf("Unable to fetch snapshot %s from Kubernetes cluster: %v", input.Snapshot, err)
+			return nil, err
+		}
+
+		snapshot.merge(cluster.Spec)
+		provided = true
+	}
+
+	if !provided {
+		log.Debug("No application snapshot available")
+		return nil, errors.New("neither Snapshot nor image reference provided to validate")
+	}
+
+	return &snapshot.SnapshotSpec, nil
 }

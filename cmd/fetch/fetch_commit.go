@@ -29,7 +29,6 @@ import (
 
 	"github.com/hacbs-contract/ec-cli/internal/applicationsnapshot"
 	"github.com/hacbs-contract/ec-cli/internal/image"
-	"github.com/hacbs-contract/ec-cli/internal/utils"
 )
 
 func commitAuthorizationCmd() *cobra.Command {
@@ -81,7 +80,11 @@ func commitAuthorizationCmd() *cobra.Command {
 
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
-			spec, err := applicationsnapshot.DetermineInputSpec(utils.FS(ctx), data.filePath, data.input, data.imageRef)
+			spec, err := applicationsnapshot.DetermineInputSpec(ctx, applicationsnapshot.Input{
+				File:  data.filePath,
+				JSON:  data.input,
+				Image: data.imageRef,
+			})
 			if err != nil {
 				return err
 			}

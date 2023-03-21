@@ -26,6 +26,7 @@ import (
 	"time"
 
 	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
+	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 	"github.com/tektoncd/cli/pkg/formatted"
 	tknv1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	tekton "github.com/tektoncd/pipeline/pkg/client/clientset/versioned/typed/pipeline/v1beta1"
@@ -85,6 +86,52 @@ func (k *kindCluster) createPolicy(ctx context.Context, policy *ecc.EnterpriseCo
 	return nil
 }
 
+// createSnapshotObject creates the Snapshot object with the given
+// Spec from the specification expected as a JSON string
+func (k *kindCluster) createSnapshotObject(ctx context.Context, specification string) (*app.Snapshot, error) {
+	t := testenv.FetchState[testState](ctx)
+
+	snapshotSpec := app.SnapshotSpec{}
+	if err := json.Unmarshal([]byte(specification), &snapshotSpec); err != nil {
+		return nil, err
+	}
+
+	return &app.Snapshot{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: app.GroupVersion.String(),
+			Kind:       "Snapshot",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: t.namespace,
+		},
+		Spec: snapshotSpec,
+	}, nil
+
+}
+
+// createSnapshot creates the Snapshot custom resource in the test
+// context namespace
+func (k *kindCluster) createSnapshot(ctx context.Context, snapshot *app.Snapshot) error {
+	snapshotMap, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&snapshot)
+	if err != nil {
+		return err
+	}
+
+	unstructuredSnapshot := unstructured.Unstructured{}
+	unstructuredSnapshot.SetUnstructuredContent(snapshotMap)
+
+	t := testenv.FetchState[testState](ctx)
+	created, err := k.dynamic.Resource(ecc.GroupVersion.WithResource("snapshots")).Namespace(t.namespace).Create(ctx, &unstructuredSnapshot, metav1.CreateOptions{})
+	if err != nil {
+		return err
+	}
+
+	// remember the created policy in the test context
+	t.snapshot = created.GetName()
+
+	return nil
+}
+
 // CreateNamedPolicy creates a EnterpriseContractPolicy custom resource with the
 // given name and specification in the test context namespace
 func (k *kindCluster) CreateNamedPolicy(ctx context.Context, name string, specification string) error {
@@ -108,6 +155,19 @@ func (k *kindCluster) CreatePolicy(ctx context.Context, specification string) er
 	policy.ObjectMeta.GenerateName = "acceptance-policy-"
 
 	return k.createPolicy(ctx, policy)
+}
+
+// CreateNamedSnapshot creates a EnterpriseContractPolicy custom resource with the
+// given name and specification in the test context namespace
+func (k *kindCluster) CreateNamedSnapshot(ctx context.Context, name string, specification string) error {
+	snapshot, err := k.createSnapshotObject(ctx, specification)
+	if err != nil {
+		return err
+	}
+
+	snapshot.ObjectMeta.Name = name
+
+	return k.createSnapshot(ctx, snapshot)
 }
 
 // CreateNamespace creates a randomly-named namespace for the test to execute in
