@@ -501,11 +501,6 @@ func (c conftestEvaluator) isResultIncluded(result output.Result) bool {
 		}
 	}
 
-	if spec.Exceptions != nil {
-		// TODO: NonBlocking is deprecated. Remove it eventually
-		excludes = append(excludes, spec.Exceptions.NonBlocking...)
-	}
-
 	if len(includes)+len(collections) == 0 {
 		includes = []string{"*"}
 	}
