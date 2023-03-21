@@ -40,6 +40,10 @@ REVISION="$(jq -r '.annotations["org.opencontainers.image.revision"]' "${MANIFES
 if [[ -n "${REVISION}" && "${REVISION}" != null ]]; then
     TASK_BUNDLE_TAG="${REVISION}"
 fi
+# Sanity check
+diff \
+    <(skopeo inspect --raw "docker://quay.io/hacbs-contract/ec-task-bundle:${TASK_BUNDLE_TAG}") \
+    <(skopeo inspect --raw "docker://quay.io/hacbs-contract/ec-task-bundle@${TASK_BUNDLE_DIGEST}")
 TASK_BUNDLE_REF="quay.io/hacbs-contract/ec-task-bundle:${TASK_BUNDLE_TAG}@${TASK_BUNDLE_DIGEST}"
 echo "Resolved bundle is ${TASK_BUNDLE_REF}"
 
