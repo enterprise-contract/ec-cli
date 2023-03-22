@@ -18,6 +18,7 @@ package validate
 
 import (
 	"context"
+	"errors"
 
 	hd "github.com/MakeNowJust/heredoc"
 	"github.com/hashicorp/go-multierror"
@@ -39,6 +40,7 @@ func validateDefinitionCmd(validate definitionValidationFn) *cobra.Command {
 		dataURLs   []string
 		output     []string
 		namespaces []string
+		strict     bool
 	}{
 		filePaths:  []string{},
 		policyURLs: []string{"oci::quay.io/hacbs-contract/ec-pipeline-policy:latest"},
@@ -80,7 +82,7 @@ func validateDefinitionCmd(validate definitionValidationFn) *cobra.Command {
 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var allErrors error
-			report := definition.Report{}
+			report := definition.NewReport()
 			for i := range data.filePaths {
 				fpath := data.filePaths[i]
 				var sources []source.PolicySource
@@ -106,6 +108,9 @@ func validateDefinitionCmd(validate definitionValidationFn) *cobra.Command {
 			if allErrors != nil {
 				return allErrors
 			}
+			if data.strict && !report.Success {
+				return errors.New("success criteria not met")
+			}
 			return nil
 		},
 	}
@@ -125,6 +130,8 @@ func validateDefinitionCmd(validate definitionValidationFn) *cobra.Command {
 	`))
 	cmd.Flags().StringSliceVar(&data.namespaces, "namespace", data.namespaces,
 		"the namespace containing the policy to run. May be used multiple times")
+	cmd.Flags().BoolVarP(&data.strict, "strict", "s", data.strict,
+		"return non-zero status on non-successful validation")
 
 	if err := cmd.MarkFlagRequired("file"); err != nil {
 		panic(err)

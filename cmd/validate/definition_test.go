@@ -55,7 +55,7 @@ func TestValidateDefinitionFileCommandOutput(t *testing.T) {
 	err := cmd.Execute()
 	assert.NoError(t, err)
 
-	assert.JSONEq(t, `[
+	assert.JSONEq(t, `{"definitions": [
 		{
 		  "filename": "/path/file1.yaml",
 		  "success": true,
@@ -68,7 +68,9 @@ func TestValidateDefinitionFileCommandOutput(t *testing.T) {
 		  "violations": [],
 		  "warnings": []
 		}
-	  ]`, out.String())
+	  ],
+	  "success": true
+	  }`, out.String())
 }
 
 func TestValidateDefinitionFilePolicySources(t *testing.T) {
@@ -106,13 +108,15 @@ func TestValidateDefinitionFilePolicySources(t *testing.T) {
 }
 
 func TestDefinitionFileOutputFormats(t *testing.T) {
-	testJSONText := `[{"filename":"/path/file1.yaml","violations":[],"warnings":[],"success":true}]`
+	testJSONText := `{"definitions":[{"filename":"/path/file1.yaml","violations":[],"warnings":[],"success":true}],"success":true}`
 
 	testYAMLTest := hd.Doc(`
+	definitions:
 	- filename: /path/file1.yaml
 	  success: true
 	  violations: []
 	  warnings: []
+	success: true
 	`)
 
 	cases := []struct {
@@ -199,4 +203,51 @@ func TestValidateDefinitionFileCommandErrors(t *testing.T) {
 	err := cmd.Execute()
 	assert.Error(t, err, "2 errors occurred:\n\t* /path/file1.yaml\n\t* /path/file2.yaml\n")
 	assert.Equal(t, "", out.String())
+}
+
+func TestStrictOutput(t *testing.T) {
+	validate := func(_ context.Context, fpath string, _ []source.PolicySource, _ []string) (*output2.Output, error) {
+		failureResult := output.CheckResult{
+			FileName: fpath,
+			Failures: []output.Result{
+				{
+					Message: "failure",
+				},
+			},
+		}
+		return &output2.Output{PolicyCheck: evaluator.CheckResults{{CheckResult: failureResult}}}, nil
+	}
+
+	cases := []struct {
+		name          string
+		args          []string
+		expectedError error
+	}{
+		{
+			name: "hide strict output",
+			args: []string{
+				"--file",
+				"/path/file1.yaml",
+			},
+			expectedError: nil,
+		},
+		{
+			name: "show strict output",
+			args: []string{
+				"--file",
+				"/path/file1.yaml",
+				"--strict",
+			},
+			expectedError: errors.New("success criteria not met"),
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			cmd := validateDefinitionCmd(validate)
+			cmd.SetArgs(c.args)
+			err := cmd.Execute()
+			assert.Equal(t, c.expectedError, err)
+		})
+	}
 }
