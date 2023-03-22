@@ -30,9 +30,10 @@ TASK_VERSION="${TASK_VERSION:-0.1}"
 TASK_DIR="${ROOT}/../${TASK_VERSION}"
 TEST_DIR="${TASK_DIR}/tests"
 
+source ${ROOT}/../../helpers.sh
 # run and wait for taskRun
 kubectl apply -f "${TEST_DIR}/ecp-policy.yaml"
 TASK_RUN_NAME=$(TASK_BUNDLE_REF="${TASK_BUNDLE_REF}" envsubst < "${TEST_DIR}/${TASKRUN_FILE}" |kubectl create -o name -f -)
-source tasks/helpers.sh
+
 wait_for_taskrun
 check_taskrun_status
