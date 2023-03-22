@@ -14,5 +14,8 @@
   "bugs": {
     "url": "https://issues.redhat.com/browse/HACBS"
   },
-  "homepage": "https://github.com/hacbs-contract/ec-cli#readme"
+  "homepage": "https://github.com/hacbs-contract/ec-cli#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  }
 }

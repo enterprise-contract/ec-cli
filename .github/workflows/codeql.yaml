@@ -46,20 +46,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Cache
-        uses: actions/cache@v3
+      - name: Restore Cache
+        uses: actions/cache/restore@v3
         with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: checks-${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            checks-${{ runner.os }}-go-
+          key: main
+          path: '**'
 
       - name: Setup Go environment
         uses: actions/setup-go@v4
         with:
           go-version-file: go.mod
+          cache: false
 
       - name: Download go dependencies
         run: |
