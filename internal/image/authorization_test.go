@@ -89,27 +89,6 @@ func Test_GeKk8sSignOff(t *testing.T) {
 	assert.Equal(t, expected, signOff)
 }
 
-func Test_GetGitSignOff(t *testing.T) {
-	input := &commit{
-		RepoUrl: "my-git-repo",
-		Sha:     "1234",
-		Author:  "ec@redhat.com",
-		Date:    "01-01-2022",
-		Message: "Signed-off-by: ec <ec@redhat.com>",
-	}
-	expected := []authorizationSignature{
-		{
-			RepoUrl:     "my-git-repo",
-			Commit:      "1234",
-			Authorizers: []string{"ec@redhat.com"},
-		},
-	}
-
-	signOff, err := input.GetSignOff()
-	assert.NoError(t, err)
-	assert.Equal(t, expected, signOff)
-}
-
 func Test_GetAuthorization(t *testing.T) {
 	tests := []struct {
 		input AuthorizationSource

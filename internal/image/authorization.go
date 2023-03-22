@@ -20,14 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/mail"
-	"os"
-	"regexp"
-	"strings"
 
-	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing"
-	"github.com/go-git/go-git/v5/plumbing/object"
 	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	log "github.com/sirupsen/logrus"
 
@@ -49,22 +42,6 @@ type K8sSource struct {
 	fetchSource         func(context.Context, string) (policy.Policy, error)
 }
 
-// holds config information to get client instance
-type GitSource struct {
-	repoUrl     string
-	commitSha   string
-	fetchSource func(context.Context, string, string) (*object.Commit, error)
-}
-
-// the object GitSource fetches
-type commit struct {
-	RepoUrl string `json:"repoUrl"`
-	Sha     string `json:"sha"`
-	Author  string `json:"author"`
-	Date    string `json:"date"`
-	Message string `json:"message"`
-}
-
 // the object K8sSource fetches
 type k8sResource struct {
 	Components []ecc.AuthorizedComponent
@@ -80,21 +57,6 @@ func NewK8sSource(policyConfiguration string) (*K8sSource, error) {
 	return &K8sSource{
 		policyConfiguration: policyConfiguration,
 		fetchSource:         fetchECSource,
-	}, nil
-}
-
-func (g *GitSource) GetSource(ctx context.Context) (authorizationGetter, error) {
-	gitCommit, err := g.fetchSource(ctx, g.repoUrl, g.commitSha)
-	if err != nil {
-		return nil, err
-	}
-
-	return &commit{
-		RepoUrl: g.repoUrl,
-		Sha:     gitCommit.Hash.String(),
-		Author:  fmt.Sprintf("%s <%s>", gitCommit.Author.Name, gitCommit.Author.Email),
-		Date:    gitCommit.Author.When.String(),
-		Message: gitCommit.Message,
 	}, nil
 }
 
@@ -125,17 +87,6 @@ func fetchECSource(ctx context.Context, policyConfiguration string) (policy.Poli
 	return p, nil
 }
 
-// returns the signOff signature and body of the source
-func (c *commit) GetSignOff() ([]authorizationSignature, error) {
-	return []authorizationSignature{
-		{
-			RepoUrl:     c.RepoUrl,
-			Commit:      c.Sha,
-			Authorizers: captureCommitSignOff(c.Message),
-		},
-	}, nil
-}
-
 func (k *k8sResource) GetSignOff() ([]authorizationSignature, error) {
 	var k8sAuths []authorizationSignature
 	for _, cmp := range k.Components {
@@ -150,43 +101,6 @@ func (k *k8sResource) GetSignOff() ([]authorizationSignature, error) {
 		)
 	}
 	return k8sAuths, nil
-}
-
-func getRepository(url string) (*git.Repository, error) {
-	dir, err := os.MkdirTemp("", "ec_commit")
-	if err != nil {
-		return nil, err
-	}
-
-	return git.PlainClone(dir, false, &git.CloneOptions{URL: url})
-}
-
-func getCommit(repository *git.Repository, sha string) (*object.Commit, error) {
-	return repository.CommitObject(plumbing.NewHash(sha))
-}
-
-// parse a commit and capture signatures
-func captureCommitSignOff(message string) []string {
-	var capturedSignatures []string
-	signatureHeader := "Signed-off-by:"
-	// loop over each line of the commit message looking for "Signed-off-by:"
-	for _, line := range strings.Split(message, "\n") {
-		regex := fmt.Sprintf("^%s", signatureHeader)
-		match, _ := regexp.MatchString(regex, line)
-		// if there's a match, split on "Signed-off-by:", then capture each signature after
-		if match {
-			results := strings.Split(line, signatureHeader)
-			signatures, err := mail.ParseAddressList(results[len(results)-1])
-			if err != nil {
-				continue
-			}
-			for _, signature := range signatures {
-				capturedSignatures = append(capturedSignatures, signature.Address)
-			}
-		}
-	}
-
-	return capturedSignatures
 }
 
 func GetAuthorization(ctx context.Context, source AuthorizationSource) ([]authorizationSignature, error) {
