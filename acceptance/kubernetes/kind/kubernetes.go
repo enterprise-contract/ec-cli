@@ -243,7 +243,7 @@ func stringParam(name, value string, t *testState) tknv1beta1.Param {
 
 // RunTask creates a TaskRun with a random name running the Task from the Tekton
 // Bundle of a specific version with the provided parameters
-func (k *kindCluster) RunTask(ctx context.Context, version string, params map[string]string) error {
+func (k *kindCluster) RunTask(ctx context.Context, version, name string, params map[string]string) error {
 	t := testenv.FetchState[testState](ctx)
 
 	tkn, err := tekton.NewForConfig(k.config)
@@ -273,7 +273,7 @@ func (k *kindCluster) RunTask(ctx context.Context, version string, params map[st
 					Resolver: "bundles",
 					Params: []tknv1beta1.Param{
 						stringParam("bundle", fmt.Sprintf("registry.image-registry.svc.cluster.local:%d/ec-task-bundle:%s", k.registryPort, version), t),
-						stringParam("name", "verify-enterprise-contract", t),
+						stringParam("name", name, t),
 						stringParam("kind", "task", t),
 					},
 				},

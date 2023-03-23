@@ -133,7 +133,7 @@ func createPolicy(ctx context.Context, specification *godog.DocString) error {
 	return c.cluster.CreatePolicy(ctx, specification.Content)
 }
 
-func runTask(ctx context.Context, version string, params *godog.Table) error {
+func runTask(ctx context.Context, version, name string, params *godog.Table) error {
 	c := testenv.FetchState[ClusterState](ctx)
 
 	if err := mustBeUp(ctx, *c); err != nil {
@@ -145,7 +145,7 @@ func runTask(ctx context.Context, version string, params *godog.Table) error {
 		taskParams[row.Cells[0].Value] = row.Cells[1].Value
 	}
 
-	return c.cluster.RunTask(ctx, version, taskParams)
+	return c.cluster.RunTask(ctx, version, name, taskParams)
 }
 
 func theTaskShouldSucceed(ctx context.Context) error {
@@ -229,7 +229,7 @@ func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^a working namespace$`, createNamespace)
 	sc.Step(`^policy configuration named "([^"]*)" with specification$`, createNamedPolicy)
 	sc.Step(`^a cluster policy with content:$`, createPolicy)
-	sc.Step(`^version ([\d.]+) of the task is run with parameters:$`, runTask)
+	sc.Step(`^version ([\d.]+) of the task named "([^"]*)" is run with parameters:$`, runTask)
 	sc.Step(`^the task should succeed$`, theTaskShouldSucceed)
 	sc.Step(`^an Snapshot named "([^"]*)" with specification$`, createNamedSnapshot)
 	// stops the cluster unless the environment is persisted, the cluster state
