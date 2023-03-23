@@ -42,7 +42,14 @@ const (
 )
 
 type Report struct {
-	items []ReportItem
+	Definitions []ReportItem `json:"definitions"`
+	Success     bool         `json:"success"`
+}
+
+func NewReport() Report {
+	return Report{
+		Success: true,
+	}
 }
 
 func (r *Report) Add(o output.Output) {
@@ -66,13 +73,18 @@ func (r *Report) Add(o output.Output) {
 	}
 
 	for _, value := range itemsByFile {
-		value.Success = len(value.Violations) == 0
-		r.items = append(r.items, value)
+		value.Success = true
+		if len(value.Violations) > 0 {
+			value.Success = false
+			// set Report.Success to false if any violations
+			r.Success = false
+		}
+		r.Definitions = append(r.Definitions, value)
 	}
 }
 
 func (r *Report) Write(targetName string, p format.TargetParser) error {
-	if len(r.items) == 0 {
+	if len(r.Definitions) == 0 {
 		return nil
 	}
 
@@ -83,11 +95,11 @@ func (r *Report) Write(targetName string, p format.TargetParser) error {
 
 	switch target.Format {
 	case JSONReport:
-		if data, err = json.Marshal(r.items); err != nil {
+		if data, err = json.Marshal(r); err != nil {
 			return err
 		}
 	case YAMLReport:
-		if data, err = yaml.Marshal(r.items); err != nil {
+		if data, err = yaml.Marshal(r); err != nil {
 			return err
 		}
 	default:

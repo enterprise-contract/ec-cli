@@ -40,12 +40,14 @@ func TestReport(t *testing.T) {
 			output: []output.Output{
 				{PolicyCheck: evaluator.CheckResults{{CheckResult: conftest.CheckResult{FileName: "/path/to/pipeline.json"}}}},
 			},
-			expect: `[{
+			expect: `{"definitions": [{
 				"filename": "/path/to/pipeline.json",
 				"violations": [],
 				"warnings": [],
 				"success": true,
-			}]`,
+			}],
+			"success": true
+			}`,
 		},
 		{
 			name: "warnings",
@@ -64,12 +66,14 @@ func TestReport(t *testing.T) {
 					},
 				},
 			},
-			expect: `[{
+			expect: `{"definitions": [{
 				"filename": "/path/to/pipeline.json",
 				"violations": [],
 				"warnings": [{"msg": "running low in spam"},{"msg": "not all like spam"}],
 				"success": true,
-			}]`,
+			}],
+			"success": true
+			}`,
 		},
 		{
 			name: "violations",
@@ -88,12 +92,14 @@ func TestReport(t *testing.T) {
 					},
 				},
 			},
-			expect: `[{
+			expect: `{"definitions": [{
 				"filename": "/path/to/pipeline.json",
 				"violations": [{"msg": "out of spam!"},{"msg": "spam 💔"}],
 				"warnings": [],
 				"success": false,
-			}]`,
+			}],
+			"success": false
+			}`,
 		},
 		{
 			name:    "empty output",
@@ -104,7 +110,7 @@ func TestReport(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			r := Report{}
+			r := NewReport()
 			for _, o := range c.output {
 				r.Add(o)
 			}
