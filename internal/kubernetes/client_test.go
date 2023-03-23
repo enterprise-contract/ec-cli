@@ -134,7 +134,7 @@ func Test_FetchEnterpriseContractPolicy(t *testing.T) {
 			}
 
 			kubeconfigFile := path.Join(t.TempDir(), "KUBECONFIG")
-			err := os.WriteFile(kubeconfigFile, testKubeconfig, 0777)
+			err := os.WriteFile(kubeconfigFile, testKubeconfig, 0400)
 			assert.NoError(t, err)
 			t.Setenv("KUBECONFIG", kubeconfigFile)
 
@@ -193,7 +193,7 @@ func Test_FetchSnapshot(t *testing.T) {
 			}
 
 			kubeconfigFile := path.Join(t.TempDir(), "KUBECONFIG")
-			err := os.WriteFile(kubeconfigFile, testKubeconfig, 0777)
+			err := os.WriteFile(kubeconfigFile, testKubeconfig, 0400)
 			assert.NoError(t, err)
 			t.Setenv("KUBECONFIG", kubeconfigFile)
 

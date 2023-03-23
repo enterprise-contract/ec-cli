@@ -219,7 +219,8 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (Check
 		exceptions := []output.Result{}
 		skipped := []output.Result{}
 
-		for _, warning := range result.Warnings {
+		for i := range result.Warnings {
+			warning := result.Warnings[i]
 			r, ok := addRuleMetadata(&warning, rules)
 			ruleCollection[r] = ok
 
@@ -230,7 +231,8 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (Check
 			warnings = append(warnings, warning)
 		}
 
-		for _, failure := range result.Failures {
+		for i := range result.Failures {
+			failure := result.Failures[i]
 			r, ok := addRuleMetadata(&failure, rules)
 			ruleCollection[r] = ok
 
@@ -247,13 +249,15 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (Check
 			}
 		}
 
-		for _, exception := range result.Exceptions {
+		for i := range result.Exceptions {
+			exception := result.Exceptions[i]
 			r, ok := addRuleMetadata(&exception, rules)
 			ruleCollection[r] = ok
 			exceptions = append(exceptions, exception)
 		}
 
-		for _, skip := range result.Skipped {
+		for i := range result.Skipped {
+			skip := result.Skipped[i]
 			r, ok := addRuleMetadata(&skip, rules)
 			ruleCollection[r] = ok
 			skipped = append(skipped, skip)

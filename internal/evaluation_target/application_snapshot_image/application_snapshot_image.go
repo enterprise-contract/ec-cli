@@ -88,7 +88,7 @@ func NewApplicationSnapshotImage(ctx context.Context, url string, p policy.Polic
 	for _, sourceGroup := range p.Spec().Sources {
 		// Todo: Make each fetch run concurrently
 		log.Debugf("Fetching policy source group '%s'", sourceGroup.Name)
-		policySources, err := fetchPolicySources(&sourceGroup)
+		policySources, err := fetchPolicySources(sourceGroup)
 		if err != nil {
 			log.Debugf("Failed to fetch policy source group '%s'!", sourceGroup.Name)
 			return nil, err
@@ -111,7 +111,7 @@ func NewApplicationSnapshotImage(ctx context.Context, url string, p policy.Polic
 }
 
 // fetchPolicySources returns an array of policy sources
-func fetchPolicySources(s *ecc.Source) ([]source.PolicySource, error) {
+func fetchPolicySources(s ecc.Source) ([]source.PolicySource, error) {
 	policySources := make([]source.PolicySource, 0, len(s.Policy)+len(s.Data))
 
 	for _, policySourceUrl := range s.Policy {
