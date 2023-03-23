@@ -27,11 +27,11 @@ import (
 	"time"
 
 	hd "github.com/MakeNowJust/heredoc"
-	"github.com/ghodss/yaml"
 	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	cosignSig "github.com/sigstore/cosign/v2/pkg/signature"
 	sigstoreSig "github.com/sigstore/sigstore/pkg/signature"
 	"github.com/stretchr/testify/assert"
+	"sigs.k8s.io/yaml"
 
 	"github.com/hacbs-contract/ec-cli/internal/kubernetes"
 )
