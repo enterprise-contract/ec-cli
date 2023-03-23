@@ -81,6 +81,22 @@ partial names, so you can't specify `"s*"` to match every package starting with
 You can also specify `"<packagename>.*"` and it works the same as just
 `"<packagename>"` to represent every rule in a package.
 
+A certain rule may match one or more items in the list of includes or excludes. In order
+to determine the precedence between these two lists, and, ultimately, whether a rule should
+be included, a specificity score is calculated for every match on each list. A score over the
+list of includes that is higher than the score over the list of excludes means the rule is
+included. Otherwise, the rule is excluded.
+
+For each name in each of the lists, the guidelines for computing the score are as such:
+
+. Add 1 if the name covers everything, i.e. "*"
+. Add 10 if the name specifies a package name, e.g. "package name", "package name.", "package name.*", or "package name.rule name"
+. Add 100 if a term is used, e.g. "*:term", "package name:term" or "package name.rule name:term"
+. Add 100 if a rule is used, e.g. "package name.rule name", "package name.rule name:term"
+
+The score is cumulative. If a name is covered by multiple items in the guidelines, they
+are added together. For example, "package name.rule name:term" scores at 210.
+
 == Examples
 
 The examples here are shown as the contents of `config.policy` formatted as

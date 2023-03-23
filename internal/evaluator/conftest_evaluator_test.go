@@ -516,6 +516,43 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 			},
 		},
 		{
+			name: "include by package and rule name with exclude wildcard",
+			results: []output.CheckResult{
+				{
+					Failures: []output.Result{
+						{Metadata: map[string]any{"code": "breakfast.spam"}},
+						{Metadata: map[string]any{"code": "breakfast.eggs"}},
+						{Metadata: map[string]any{"code": "lunch.spam"}},
+					},
+					Warnings: []output.Result{
+						{Metadata: map[string]any{"code": "breakfast.ham"}},
+						{Metadata: map[string]any{"code": "breakfast.sausage"}},
+						{Metadata: map[string]any{"code": "lunch.ham"}},
+					},
+				},
+			},
+			config: &ecc.EnterpriseContractPolicyConfiguration{
+				Include: []string{"*", "breakfast.spam", "breakfast.ham"},
+				Exclude: []string{"breakfast.*"},
+			},
+			want: CheckResults{
+				{
+					CheckResult: output.CheckResult{
+						Failures: []output.Result{
+							{Metadata: map[string]any{"code": "breakfast.spam"}},
+							{Metadata: map[string]any{"code": "lunch.spam"}},
+						},
+						Warnings: []output.Result{
+							{Metadata: map[string]any{"code": "breakfast.ham"}},
+							{Metadata: map[string]any{"code": "lunch.ham"}},
+						},
+						Skipped:    []output.Result{},
+						Exceptions: []output.Result{},
+					},
+				},
+			},
+		},
+		{
 			name: "include by package and rule name",
 			results: []output.CheckResult{
 				{
@@ -1119,6 +1156,64 @@ func TestRuleMetadata(t *testing.T) {
 			rule, _ := addRuleMetadata(&tt.result, tt.rules)
 			assert.Equal(t, rule, tt.code)
 			assert.Equal(t, tt.result, tt.want)
+		})
+	}
+}
+
+func TestNameScoring(t *testing.T) {
+	cases := []struct {
+		name  string
+		score int
+	}{
+		{
+			name:  "*",
+			score: 1,
+		},
+		{
+			name:  "*:term", // corner case
+			score: 101,
+		},
+		{
+			name:  "*.rule:term", // corner case
+			score: 201,
+		},
+		{
+			name:  "pkg",
+			score: 10,
+		},
+		{
+			name:  "pkg.",
+			score: 10,
+		},
+		{
+			name:  "pkg.*",
+			score: 10,
+		},
+		{
+			name:  "pkg.rule",
+			score: 110,
+		},
+		{
+			name:  "pkg.:term",
+			score: 110,
+		},
+		{
+			name:  "pkg.*:term",
+			score: 110,
+		},
+		{
+			name:  "pkg:term",
+			score: 110,
+		},
+		{
+			name:  "pkg.rule:term",
+			score: 210,
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			assert.Equal(t, c.score, score(c.name))
 		})
 	}
 }
