@@ -18,7 +18,7 @@ package source
 
 import (
 	"context"
-	"crypto/md5"
+	"crypto/sha256"
 	"fmt"
 	"path"
 	"time"
@@ -87,8 +87,8 @@ func uniqueDestination(rootDir string, subdir string, sourceUrl string) string {
 	return path.Join(rootDir, subdir, uniqueDir(sourceUrl))
 }
 
-// uniqueDir generates a reasonably unique string using an md5 sum with a timestamp appended to
-// the input for some extra randomness
+// uniqueDir generates a reasonably unique string using an SHA224 sum with a
+// timestamp appended to the input for some extra randomness
 func uniqueDir(input string) string {
-	return fmt.Sprintf("%x", md5.Sum([]byte(fmt.Sprintf("%s/%s", input, time.Now()))))[:9]
+	return fmt.Sprintf("%x", sha256.Sum224([]byte(fmt.Sprintf("%s/%s", input, time.Now()))))[:9]
 }
