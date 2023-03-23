@@ -21,11 +21,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ghodss/yaml"
 	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/hashicorp/go-multierror"
 	conftestOutput "github.com/open-policy-agent/conftest/output"
 	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
+	"sigs.k8s.io/yaml"
 
 	"github.com/hacbs-contract/ec-cli/internal/format"
 	"github.com/hacbs-contract/ec-cli/internal/output"

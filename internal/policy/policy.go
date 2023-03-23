@@ -28,7 +28,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ghodss/yaml"
 	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/hashicorp/go-multierror"
 	"github.com/sigstore/cosign/v2/cmd/cosign/cli/rekor"
@@ -38,6 +37,7 @@ import (
 	sigstoreSig "github.com/sigstore/sigstore/pkg/signature"
 	"github.com/sigstore/sigstore/pkg/tuf"
 	log "github.com/sirupsen/logrus"
+	"sigs.k8s.io/yaml"
 
 	"github.com/hacbs-contract/ec-cli/internal/kubernetes"
 	e "github.com/hacbs-contract/ec-cli/pkg/error"

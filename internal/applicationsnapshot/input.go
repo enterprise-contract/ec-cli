@@ -21,11 +21,11 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ghodss/yaml"
 	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 	"golang.org/x/exp/slices"
+	"sigs.k8s.io/yaml"
 
 	"github.com/hacbs-contract/ec-cli/internal/kubernetes"
 	"github.com/hacbs-contract/ec-cli/internal/utils"

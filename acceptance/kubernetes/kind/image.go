@@ -27,8 +27,8 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/ghodss/yaml"
 	"github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
+	"sigs.k8s.io/yaml"
 )
 
 // buildCliImage runs `make push-image` to build and push the image to the Kind

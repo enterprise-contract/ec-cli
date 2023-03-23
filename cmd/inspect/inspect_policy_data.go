@@ -25,11 +25,11 @@ import (
 	"strings"
 
 	hd "github.com/MakeNowJust/heredoc"
-	"github.com/ghodss/yaml"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"golang.org/x/exp/slices"
+	"sigs.k8s.io/yaml"
 
 	"github.com/hacbs-contract/ec-cli/internal/policy/source"
 	"github.com/hacbs-contract/ec-cli/internal/utils"

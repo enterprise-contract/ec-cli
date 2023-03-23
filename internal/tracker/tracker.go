@@ -21,11 +21,11 @@ import (
 	"context"
 	"time"
 
-	"github.com/ghodss/yaml"
 	"github.com/google/go-containerregistry/pkg/name"
 	log "github.com/sirupsen/logrus"
 	"github.com/stuart-warren/yamlfmt"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"sigs.k8s.io/yaml"
 
 	"github.com/hacbs-contract/ec-cli/internal/image"
 )
