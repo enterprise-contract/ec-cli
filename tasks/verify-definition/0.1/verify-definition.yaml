@@ -52,6 +52,8 @@ spec:
       type: string
       description: Value for the HOME environment variable.
       default: /tekton/home
+  workspaces:
+  - name: output
   stepTemplate:
     env:
       - name: HOME
@@ -63,6 +65,7 @@ spec:
       args:
         - version
     - name: validate
+      workingDir: "$(workspaces.output.path)"
       image: quay.io/hacbs-contract/ec-cli:snapshot
       command: [ec]
       args:
