@@ -21,9 +21,17 @@ package downloader
 import (
 	"context"
 	"fmt"
+	"regexp"
+	"strings"
 
 	"github.com/open-policy-agent/conftest/downloader"
 	log "github.com/sirupsen/logrus"
+
+	e "github.com/hacbs-contract/ec-cli/pkg/error"
+)
+
+var (
+	DL001 = e.NewError("DL001", "Attempting to download from unsecure source", e.ErrorExitStatus)
 )
 
 type key int
@@ -44,6 +52,10 @@ func WithDownloadImpl(ctx context.Context, d downloadImpl) context.Context {
 // Note that it handles just one url at a time even though the equivalent
 // Conftest function can take a list of source urls.
 func Download(ctx context.Context, destDir string, sourceUrl string, showMsg bool) (err error) {
+	if !isSecure(sourceUrl) {
+		return DL001.CausedByF(sourceUrl)
+	}
+
 	msg := fmt.Sprintf("Downloading %s to %s", sourceUrl, destDir)
 	log.Debug(msg)
 	if showMsg {
@@ -61,4 +73,22 @@ func Download(ctx context.Context, destDir string, sourceUrl string, showMsg boo
 	}
 
 	return
+}
+
+// matches insecure protocols, such as `git::http://...`
+var insecure = regexp.MustCompile("^[A-Za-z0-9]*::http:")
+
+// isSecure returns true if the provided url is using network transport security
+// if provided to Conftest downloader. The Conftest downloader supports the
+// following protocols:
+//   - file  -- deemed secure as it is not accessing over network
+//   - git   -- deemed secure if plaintext HTTP is not used
+//   - gcs   -- always uses HTTP+TLS
+//   - hg    -- deemed secure if plaintext HTTP is not used
+//   - s3    -- deemed secure if plaintext HTTP is not used
+//   - oci   -- always uses HTTP+TLS
+//   - http  -- not deemed secure
+//   - https -- deemed secure
+func isSecure(url string) bool {
+	return !strings.HasPrefix(url, "http:") && !insecure.MatchString(url)
 }
