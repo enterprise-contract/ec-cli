@@ -27,54 +27,23 @@ name: Checks
 
 jobs:
 
-  Setup:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: checks-${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            checks-${{ runner.os }}-go-
-
-      - name: Setup Go environment
-        uses: actions/setup-go@v4
-        with:
-          go-version-file: go.mod
-
-      - name: Download go dependencies
-        run: |
-          go mod download
-          go mod download -modfile tools/go.mod
-          go mod download -modfile acceptance/go.mod
-
   Test:
     runs-on: ubuntu-latest
-    needs: Setup
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Cache
-        uses: actions/cache@v3
+      - name: Restore Cache
+        uses: actions/cache/restore@v3
         with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: checks-${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            checks-${{ runner.os }}-go-
+          key: main
+          path: '**'
 
       - name: Setup Go environment
         uses: actions/setup-go@v4
         with:
           go-version-file: go.mod
+          cache: false
 
       - name: Test
         run: make test
@@ -99,25 +68,21 @@ jobs:
 
   Acceptance:
     runs-on: ubuntu-latest
-    needs: Setup
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Cache
-        uses: actions/cache@v3
+      - name: Restore Cache
+        uses: actions/cache/restore@v3
         with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: checks-${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            checks-${{ runner.os }}-go-
+          key: main
+          path: '**'
 
       - name: Setup Go environment
         uses: actions/setup-go@v4
         with:
           go-version-file: go.mod
+          cache: false
 
       - name: Acceptance test
         run: make acceptance
@@ -130,27 +95,23 @@ jobs:
 
   Task:
     runs-on: ubuntu-latest
-    needs: Setup
     env:
       TASK_BUNDLE_REF: registry.image-registry.svc.cluster.local:5000/ec-task-bundle
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Cache
-        uses: actions/cache@v3
+      - name: Restore Cache
+        uses: actions/cache/restore@v3
         with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: checks-${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            checks-${{ runner.os }}-go-
+          key: main
+          path: '**'
 
       - name: Setup Go environment
         uses: actions/setup-go@v4
         with:
           go-version-file: go.mod
+          cache: false
 
       - name: Setup Tekton Test environment
         run: hack/setup-test-environment.sh

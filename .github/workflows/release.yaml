@@ -46,19 +46,28 @@ jobs:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: release-${{ hashFiles('**/go.sum') }}
-          restore-keys: release-
+            .npm
+          key: main
 
       - name: Setup Go environment
         uses: actions/setup-go@v4
         with:
           go-version-file: go.mod
+          cache: false
 
       - name: Download go dependencies
         run: |
           go mod download
           go mod download -modfile tools/go.mod
           go mod download -modfile acceptance/go.mod
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: 'package.json'
+
+      - name: Download NPM dependencies
+        run: npm ci
 
       - name: Build distribution
         run: make dist
@@ -83,7 +92,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           prerelease: true
-          name: Rolling release 
+          name: Rolling release
           body: Stable rolling release. Version can be determined by running `ec version`
           tag_name: snapshot
           generate_release_notes: false

@@ -39,31 +39,31 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Cache
-        uses: actions/cache@v3
+      - name: Restore Cache
+        uses: actions/cache/restore@v3
         with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: checks-${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            checks-${{ runner.os }}-go-
+          key: main
+          path: '**'
 
       - name: Setup Go environment
         uses: actions/setup-go@v4
         with:
           go-version-file: go.mod
+          cache: false
 
-      - uses: actions/setup-node@v3
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v3
         with:
           node-version-file: 'package.json'
-          cache: 'npm'
 
       - name: Download go dependencies
         run: |
           go mod download
           go mod download -modfile tools/go.mod
           go mod download -modfile acceptance/go.mod
+
+      - name: Download NPM dependencies
+        run: npm ci
 
       - name: Lint
         run: make lint
