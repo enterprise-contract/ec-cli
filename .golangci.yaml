@@ -23,6 +23,7 @@ linters:
   enable:
     - goimports
     - gci
+    - gosec
 linters-settings:
   gci:
     sections:
