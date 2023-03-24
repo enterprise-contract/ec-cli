@@ -30,7 +30,6 @@ import (
 	"github.com/open-policy-agent/opa/ast"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
-	"golang.org/x/exp/slices"
 
 	"github.com/hacbs-contract/ec-cli/internal/opa"
 	"github.com/hacbs-contract/ec-cli/internal/opa/rule"
@@ -509,19 +508,48 @@ func (c conftestEvaluator) isResultIncluded(result output.Result) bool {
 		includes = []string{"*"}
 	}
 
-	isIncluded := hasAnyMatch(collectionMatchers, collections) || hasAnyMatch(ruleMatchers, includes)
-	isExcluded := hasAnyMatch(ruleMatchers, excludes)
-	return isIncluded && !isExcluded
+	include := scoreMatches(ruleMatchers, includes) + scoreMatches(collectionMatchers, collections)
+	exclude := scoreMatches(ruleMatchers, excludes)
+
+	return include > exclude
 }
 
-// hasAnyMatch returns true if the haystack contains any of the needles.
-func hasAnyMatch(needles, haystack []string) bool {
+// scoreMatches returns the combined score for every match between needles and haystack.
+func scoreMatches(needles, haystack []string) int {
+	var s int
 	for _, needle := range needles {
-		if slices.Contains(haystack, needle) {
-			return true
+		for _, hay := range haystack {
+			if hay == needle {
+				s += score(hay)
+			}
 		}
 	}
-	return false
+	return s
+}
+
+// score computes and returns the specificity of the given name. The scoring guidelines are:
+// 1. Add 1 if the name covers everything, i.e. "*"
+// 2. Add 10 if the name specifies a package name, e.g. "pkg", "pkg.", "pkg.*", or "pkg.rule"
+// 3. Add 100 if a term is used, e.g. "*:term", "pkg:term" or "pkg.rule:term"
+// 4. Add 100 if a rule is used, e.g. "pkg.rule", "pkg.rule:term"
+// The score is cumulative. If a name is covered by multiple items in the guidelines, they
+// are added together. For example, "pkg.rule:term" scores at 210.
+func score(name string) int {
+	var value int
+	shortName, term, _ := strings.Cut(name, ":")
+	if term != "" {
+		value += 100
+	}
+	pkg, rule, _ := strings.Cut(shortName, ".")
+	if pkg == "*" {
+		value += 1
+	} else {
+		value += 10
+	}
+	if rule != "*" && rule != "" {
+		value += 100
+	}
+	return value
 }
 
 // makeMatchers returns the possible matching strings for the result.
