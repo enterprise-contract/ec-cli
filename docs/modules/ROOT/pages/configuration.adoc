@@ -90,12 +90,12 @@ included. Otherwise, the rule is excluded.
 For each name in each of the lists, the guidelines for computing the score are as such:
 
 . Add 1 if the name covers everything, i.e. "*"
-. Add 10 if the name specifies a package name, e.g. "package name", "package name.", "package name.*", or "package name.rule name"
-. Add 100 if a term is used, e.g. "*:term", "package name:term" or "package name.rule name:term"
-. Add 100 if a rule is used, e.g. "package name.rule name", "package name.rule name:term"
+. Add 10 if the name specifies a package name, e.g. "release.test", "release.test.", "release.test.*", or "release.test.test_result_failures"
+. Add 100 if a term is used, e.g. "*:term", "release.test:clamav-scan" or "release.test.test_result_failures:clamav-scan"
+. Add 100 if a rule is used, e.g. "release.test.test_result_failures"
 
 The score is cumulative. If a name is covered by multiple items in the guidelines, they
-are added together. For example, "package name.rule name:term" scores at 210.
+are added together. For example, "release.test.test_result_failures:clamav-scan" scores at 210.
 
 == Examples
 
