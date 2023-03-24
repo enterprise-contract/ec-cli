@@ -27,7 +27,7 @@ type Cluster interface {
 	CreateNamespace(context.Context) (context.Context, error)
 	CreateNamedPolicy(context.Context, string, string) error
 	CreatePolicy(context.Context, string) error
-	RunTask(context.Context, string, string, map[string]string) error
+	RunTask(context.Context, string, string, string, map[string]string) error
 	AwaitUntilTaskIsDone(context.Context) (bool, error)
 	TaskInfo(context.Context) (*TaskInfo, error)
 	CreateNamedSnapshot(context.Context, string, string) error

@@ -243,7 +243,7 @@ func stringParam(name, value string, t *testState) tknv1beta1.Param {
 
 // RunTask creates a TaskRun with a random name running the Task from the Tekton
 // Bundle of a specific version with the provided parameters
-func (k *kindCluster) RunTask(ctx context.Context, version, name string, params map[string]string) error {
+func (k *kindCluster) RunTask(ctx context.Context, version, name, workspace string, params map[string]string) error {
 	t := testenv.FetchState[testState](ctx)
 
 	tkn, err := tekton.NewForConfig(k.config)
@@ -261,11 +261,20 @@ func (k *kindCluster) RunTask(ctx context.Context, version, name string, params 
 		return err
 	}
 
+	var wkspace []tknv1beta1.WorkspaceBinding
+	if workspace != "" {
+		wkspace = append(wkspace, tknv1beta1.WorkspaceBinding{
+			Name:     workspace,
+			EmptyDir: &v1.EmptyDirVolumeSource{},
+		})
+	}
+
 	tr, err := tkn.TaskRuns(t.namespace).Create(ctx, &tknv1beta1.TaskRun{
 		ObjectMeta: metav1.ObjectMeta{
 			GenerateName: "acceptance-taskrun-",
 		},
 		Spec: tknv1beta1.TaskRunSpec{
+			Workspaces:         wkspace,
 			Params:             tknParams,
 			ServiceAccountName: "default",
 			TaskRef: &tknv1beta1.TaskRef{

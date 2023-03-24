@@ -107,7 +107,7 @@ func (s stubCluster) CreatePolicy(_ context.Context, _ string) error {
 	return errors.New("use `Given policy configuration named \"<name>\" with specification` when using the stub Kubernetes")
 }
 
-func (s stubCluster) RunTask(_ context.Context, _, _ string, _ map[string]string) error {
+func (s stubCluster) RunTask(_ context.Context, _, _, _ string, _ map[string]string) error {
 	return errors.New("can't run tasks when using the stub Kubernetes")
 }
 
