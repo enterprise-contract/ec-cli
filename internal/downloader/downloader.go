@@ -31,7 +31,7 @@ import (
 )
 
 var (
-	DL001 = e.NewError("DL001", "Attempting to download from unsecure source", e.ErrorExitStatus)
+	DL001 = e.NewError("DL001", "Attempting to download from insecure source", e.ErrorExitStatus)
 )
 
 type key int
