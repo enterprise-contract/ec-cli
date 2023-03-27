@@ -252,7 +252,8 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 
 	cmd.Flags().StringSliceVar(&data.output, "output", data.output, hd.Doc(`
 		write output to a file in a specific format. Use empty string path for stdout.
-		May be used multiple times. Possible formats are json, yaml, hacbs, and summary
+		May be used multiple times. Possible formats are json, yaml, hacbs, junit, and
+		summary
 	`))
 
 	cmd.Flags().StringVarP(&data.outputFile, "output-file", "o", data.outputFile,
