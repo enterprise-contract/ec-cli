@@ -37,12 +37,17 @@ const (
 	NoColors                              // key to a bool flag telling if the colors should be used in output
 	TestingT                              // key to the *testing.T instance in Context
 	persistedEnv                          // key to a map of persisted environment states
+	RekorImpl                             // key to a implementation of the Rekor interface, used to prevent import cycles
 
 	persistedFile = ".persisted"
 )
 
 var loader = os.ReadFile
 var persister = os.WriteFile
+
+type Rekor interface {
+	StubRekorEntryFor(context.Context, []byte) error
+}
 
 // Persist persists the environment stored in context in a ".persisted" file as JSON
 func Persist(ctx context.Context) (bool, error) {

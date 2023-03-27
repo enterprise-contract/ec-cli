@@ -54,6 +54,14 @@ type rekorState struct {
 	KeyPair *cosign.KeysBytes
 }
 
+type rekorImpl struct{}
+
+func (r rekorImpl) StubRekorEntryFor(ctx context.Context, data []byte) error {
+	return stubRekorEntryFor(ctx, data)
+}
+
+var impl testenv.Rekor = rekorImpl{}
+
 func (r rekorState) Key() any {
 	return rekorStateKey
 }
@@ -90,7 +98,7 @@ func stubRekordRunning(ctx context.Context) (context.Context, error) {
 		return ctx, err
 	}
 
-	return ctx, nil
+	return context.WithValue(ctx, testenv.RekorImpl, impl), nil
 }
 
 // randomHex generates a random hex string of the given length
