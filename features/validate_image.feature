@@ -624,8 +624,7 @@ Feature: evaluate enterprise contract
     """
     {
       "configuration": {
-        "collections": ["stamps"],
-        "include": ["filtering.always_pass"],
+        "include": ["@stamps", "filtering.always_pass"],
         "exclude": ["filtering.always_fail", "filtering.always_fail_with_collection"]
       },
       "sources": [
@@ -658,14 +657,12 @@ Feature: evaluate enterprise contract
       ],
       "policy": {
         "configuration": {
-          "collections": [
-            "stamps"
-          ],
           "exclude": [
             "filtering.always_fail",
             "filtering.always_fail_with_collection"
           ],
           "include": [
+            "@stamps",
             "filtering.always_pass"
           ]
         },
@@ -693,8 +690,7 @@ Feature: evaluate enterprise contract
     """
     {
       "configuration": {
-        "collections": ["stamps"],
-        "include": ["filtering.always_pass"],
+        "include": ["@stamps", "filtering.always_pass"],
         "exclude": ["filtering.always_pass_with_collection", "filtering.always_fail_with_collection"]
       },
       "sources": [
@@ -726,8 +722,7 @@ Feature: evaluate enterprise contract
       ],
       "policy": {
         "configuration": {
-          "collections": ["stamps"],
-          "include": ["filtering.always_pass"],
+          "include": ["@stamps", "filtering.always_pass"],
           "exclude": ["filtering.always_pass_with_collection", "filtering.always_fail_with_collection"]
         },
         "publicKey": ${known_PUBLIC_KEY_JSON},

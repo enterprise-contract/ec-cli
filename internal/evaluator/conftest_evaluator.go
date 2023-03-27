@@ -487,31 +487,27 @@ func isResultEffective(failure output.Result, now time.Time) bool {
 // discarded based on the policy configuration.
 func (c conftestEvaluator) isResultIncluded(result output.Result) bool {
 	ruleMatchers := makeMatchers(result)
-	collectionMatchers := extractCollections(result)
-	var includes, excludes, collections []string
+	var includes, excludes []string
 
 	spec := c.policy.Spec()
 	cfg := spec.Configuration
 	if cfg != nil {
-		if len(cfg.Collections) > 0 {
-			collections = cfg.Collections
+		for _, c := range cfg.Collections {
+			// If the old way of specifying collections are used, convert them.
+			includes = append(includes, "@"+c)
 		}
-		if len(cfg.Include) > 0 {
-			includes = cfg.Include
-		}
-		if len(cfg.Exclude) > 0 {
-			excludes = cfg.Exclude
-		}
+		includes = append(includes, cfg.Include...)
+		excludes = append(excludes, cfg.Exclude...)
 	}
 
-	if len(includes)+len(collections) == 0 {
+	if len(includes) == 0 {
 		includes = []string{"*"}
 	}
 
-	include := scoreMatches(ruleMatchers, includes) + scoreMatches(collectionMatchers, collections)
-	exclude := scoreMatches(ruleMatchers, excludes)
+	includeScore := scoreMatches(ruleMatchers, includes)
+	excludeScore := scoreMatches(ruleMatchers, excludes)
 
-	return include > exclude
+	return includeScore > excludeScore
 }
 
 // scoreMatches returns the combined score for every match between needles and haystack.
@@ -528,13 +524,19 @@ func scoreMatches(needles, haystack []string) int {
 }
 
 // score computes and returns the specificity of the given name. The scoring guidelines are:
-// 1. Add 1 if the name covers everything, i.e. "*"
-// 2. Add 10 if the name specifies a package name, e.g. "pkg", "pkg.", "pkg.*", or "pkg.rule"
-// 3. Add 100 if a term is used, e.g. "*:term", "pkg:term" or "pkg.rule:term"
-// 4. Add 100 if a rule is used, e.g. "pkg.rule", "pkg.rule:term"
+//  1. If the name starts with "@" the returned score is exactly 10, e.g. "@collection". No
+//     further processing is done.
+//  2. Add 1 if the name covers everything, i.e. "*"
+//  3. Add 10 if the name specifies a package name, e.g. "pkg", "pkg.", "pkg.*", or "pkg.rule"
+//  4. Add 100 if a term is used, e.g. "*:term", "pkg:term" or "pkg.rule:term"
+//  5. Add 100 if a rule is used, e.g. "pkg.rule", "pkg.rule:term"
+//
 // The score is cumulative. If a name is covered by multiple items in the guidelines, they
 // are added together. For example, "pkg.rule:term" scores at 210.
 func score(name string) int {
+	if strings.HasPrefix(name, "@") {
+		return 10
+	}
 	var value int
 	shortName, term, _ := strings.Cut(name, ":")
 	if term != "" {
@@ -578,6 +580,8 @@ func makeMatchers(result output.Result) []string {
 
 	matchers = append(matchers, "*")
 
+	matchers = append(matchers, extractCollections(result)...)
+
 	return matchers
 }
 
@@ -586,7 +590,9 @@ func extractCollections(result output.Result) []string {
 	var collections []string
 	if maybeCollections, exists := result.Metadata[metadataCollections]; exists {
 		if ruleCollections, ok := maybeCollections.([]string); ok {
-			collections = append(collections, ruleCollections...)
+			for _, c := range ruleCollections {
+				collections = append(collections, "@"+c)
+			}
 		} else {
 			panic(fmt.Sprintf("Unsupported collections set in Metadata, expecting []string got: %v", maybeCollections))
 		}

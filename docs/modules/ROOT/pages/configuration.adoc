@@ -8,7 +8,7 @@ such as in this example:
 ----
 ec validate image --policy '{
     "configuration": {
-        "collections": ["minimal"]
+        "include": ["@minimal"]
     }
     "sources": [
         {
@@ -72,6 +72,10 @@ A "rule name:term"::
 This is similar to "package name:term", but allows finer granularity by only
 applying to a particular policy rule within the package.
 
+A "@collection name"::
+
+Specify a predefined collection. The collection name must be prefixed with `@`.
+
 "*"::
 
 The `"\*"` acts as a wildcard to match any package. Note that it does not match
@@ -89,13 +93,15 @@ included. Otherwise, the rule is excluded.
 
 For each name in each of the lists, the guidelines for computing the score are as such:
 
+. If the name starts with "@" the returned score is exactly 10, e.g. "@collection". No further processing is done.
 . Add 1 if the name covers everything, i.e. "*"
 . Add 10 if the name specifies a package name, e.g. "release.test", "release.test.", "release.test.*", or "release.test.test_result_failures"
 . Add 100 if a term is used, e.g. "*:term", "release.test:clamav-scan" or "release.test.test_result_failures:clamav-scan"
 . Add 100 if a rule is used, e.g. "release.test.test_result_failures"
 
-The score is cumulative. If a name is covered by multiple items in the guidelines, they
-are added together. For example, "release.test.test_result_failures:clamav-scan" scores at 210.
+Except for collections, the score is cumulative. If a name is covered by multiple items in the
+guidelines, they are added together. For example, "release.test.test_result_failures:clamav-scan"
+scores at 210.
 
 == Examples
 
@@ -171,24 +177,6 @@ include:
 - attestation_task_bundle.unacceptable_task_bundle
 exclude:
 - attestation_task_bundle.*
-----
-
-== Specifying a predefined set of rules with `collections`
-
-Rather than specifying the values of `include` and `exclude`
-explicitly, you can also select from a set of predefined configurations by
-setting `"data.config.policy.collections"`. For example, in a `data/config.json`
-file:
-
-[source,json]
-----
-{
-  "config": {
-    "policy": {
-      "collections": ["some_things", "some_other_things"]
-    }
-  }
-}
 ----
 
 == Data Sources

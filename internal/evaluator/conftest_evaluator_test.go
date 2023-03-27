@@ -456,6 +456,60 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 			},
 		},
 		{
+			name: "exclude by collection",
+			results: []output.CheckResult{
+				{
+					Failures: []output.Result{
+						{Metadata: map[string]any{
+							"code": "breakfast.spam", "collections": []any{"foo"},
+						}},
+						{Metadata: map[string]any{
+							"code": "lunch.spam", "collections": []any{"bar"},
+						}},
+						{Metadata: map[string]any{
+							"code": "dinner.spam",
+						}},
+					},
+					Warnings: []output.Result{
+						{Metadata: map[string]any{
+							"code": "breakfast.ham", "collections": []any{"foo"},
+						}},
+						{Metadata: map[string]any{
+							"code": "lunch.ham", "collections": []any{"bar"},
+						}},
+						{Metadata: map[string]any{
+							"code": "dinner.ham",
+						}},
+					},
+				},
+			},
+			config: &ecc.EnterpriseContractPolicyConfiguration{Exclude: []string{"@foo"}},
+			want: CheckResults{
+				{
+					CheckResult: output.CheckResult{
+						Failures: []output.Result{
+							{Metadata: map[string]any{
+								"code": "lunch.spam", "collections": []string{"bar"},
+							}},
+							{Metadata: map[string]any{
+								"code": "dinner.spam",
+							}},
+						},
+						Warnings: []output.Result{
+							{Metadata: map[string]any{
+								"code": "lunch.ham", "collections": []string{"bar"},
+							}},
+							{Metadata: map[string]any{
+								"code": "dinner.ham",
+							}},
+						},
+						Skipped:    []output.Result{},
+						Exceptions: []output.Result{},
+					},
+				},
+			},
+		},
+		{
 			name: "include by package",
 			results: []output.CheckResult{
 				{
@@ -689,7 +743,55 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 			},
 		},
 		{
-			name: "filter by collection",
+			name: "include by old-style collection",
+			results: []output.CheckResult{
+				{
+					Failures: []output.Result{
+						{Metadata: map[string]any{
+							"code": "breakfast.spam", "collections": []any{"foo"},
+						}},
+						{Metadata: map[string]any{
+							"code": "lunch.spam", "collections": []any{"bar"},
+						}},
+						{Metadata: map[string]any{
+							"code": "dinner.spam",
+						}},
+					},
+					Warnings: []output.Result{
+						{Metadata: map[string]any{
+							"code": "breakfast.ham", "collections": []any{"foo"},
+						}},
+						{Metadata: map[string]any{
+							"code": "lunch.ham", "collections": []any{"bar"},
+						}},
+						{Metadata: map[string]any{
+							"code": "dinner.ham",
+						}},
+					},
+				},
+			},
+			config: &ecc.EnterpriseContractPolicyConfiguration{Collections: []string{"foo"}},
+			want: CheckResults{
+				{
+					CheckResult: output.CheckResult{
+						Failures: []output.Result{
+							{Metadata: map[string]any{
+								"code": "breakfast.spam", "collections": []string{"foo"},
+							}},
+						},
+						Warnings: []output.Result{
+							{Metadata: map[string]any{
+								"code": "breakfast.ham", "collections": []string{"foo"},
+							}},
+						},
+						Skipped:    []output.Result{},
+						Exceptions: []output.Result{},
+					},
+				},
+			},
+		},
+		{
+			name: "include by collection",
 			results: []output.CheckResult{
 				{
 					Failures: []output.Result{
@@ -720,7 +822,7 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 					},
 				},
 			},
-			config: &ecc.EnterpriseContractPolicyConfiguration{Collections: []string{"foo"}},
+			config: &ecc.EnterpriseContractPolicyConfiguration{Include: []string{"@foo"}},
 			want: CheckResults{
 				{
 					CheckResult: output.CheckResult{
@@ -741,7 +843,7 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 			},
 		},
 		{
-			name: "filter by collection with include",
+			name: "include by collection and package",
 			results: []output.CheckResult{
 				{
 					Failures: []output.Result{
@@ -769,8 +871,7 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 				},
 			},
 			config: &ecc.EnterpriseContractPolicyConfiguration{
-				Collections: []string{"foo"},
-				Include:     []string{"breakfast"},
+				Include: []string{"breakfast", "@foo"},
 			},
 			want: CheckResults{
 				{
@@ -798,7 +899,7 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 			},
 		},
 		{
-			name: "filter by collection with exclude",
+			name: "include by collection and exclude by package",
 			results: []output.CheckResult{
 				{
 					Failures: []output.Result{
@@ -820,8 +921,8 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 				},
 			},
 			config: &ecc.EnterpriseContractPolicyConfiguration{
-				Collections: []string{"foo"},
-				Exclude:     []string{"lunch"},
+				Include: []string{"@foo"},
+				Exclude: []string{"lunch"},
 			},
 			want: CheckResults{
 				{
@@ -843,7 +944,7 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 			},
 		},
 		{
-			name: "filter by collection with include and exclude",
+			name: "include by collection and package name, exclude by package name",
 			results: []output.CheckResult{
 				{
 					Failures: []output.Result{
@@ -871,9 +972,8 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 				},
 			},
 			config: &ecc.EnterpriseContractPolicyConfiguration{
-				Collections: []string{"foo"},
-				Include:     []string{"breakfast"},
-				Exclude:     []string{"lunch"},
+				Include: []string{"breakfast", "@foo"},
+				Exclude: []string{"lunch"},
 			},
 			want: CheckResults{
 				{
