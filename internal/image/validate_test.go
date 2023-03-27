@@ -39,10 +39,10 @@ import (
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/hacbs-contract/ec-cli/internal/attestation"
-	"github.com/hacbs-contract/ec-cli/internal/evaluation_target/application_snapshot_image"
-	"github.com/hacbs-contract/ec-cli/internal/policy"
-	"github.com/hacbs-contract/ec-cli/internal/utils"
+	"github.com/enterprise-contract/ec-cli/internal/attestation"
+	"github.com/enterprise-contract/ec-cli/internal/evaluation_target/application_snapshot_image"
+	"github.com/enterprise-contract/ec-cli/internal/policy"
+	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
 const (

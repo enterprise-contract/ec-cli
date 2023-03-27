@@ -19,9 +19,9 @@ package definition
 import (
 	"context"
 
-	"github.com/hacbs-contract/ec-cli/internal/evaluator"
-	"github.com/hacbs-contract/ec-cli/internal/policy"
-	"github.com/hacbs-contract/ec-cli/internal/policy/source"
+	"github.com/enterprise-contract/ec-cli/internal/evaluator"
+	"github.com/enterprise-contract/ec-cli/internal/policy"
+	"github.com/enterprise-contract/ec-cli/internal/policy/source"
 )
 
 var newConftestEvaluator = evaluator.NewConftestEvaluatorWithNamespace

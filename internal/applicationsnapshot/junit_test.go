@@ -25,7 +25,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"k8s.io/kubernetes/test/utils/junit"
 
-	o "github.com/hacbs-contract/ec-cli/internal/output"
+	o "github.com/enterprise-contract/ec-cli/internal/output"
 )
 
 type mapper struct {

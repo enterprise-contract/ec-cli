@@ -58,7 +58,7 @@ func TestComputeInfo(t *testing.T) {
 				},
 			},
 			Deps: []*dbg.Module{
-				{Path: "github.com/hacbs-contract/enterprise-contract-controller/api", Version: "v1"},
+				{Path: "github.com/enterprise-contract/enterprise-contract-controller/api", Version: "v1"},
 				{Path: "github.com/open-policy-agent/opa", Version: "v2"},
 				{Path: "github.com/open-policy-agent/conftest", Version: "v3"},
 				{Path: "github.com/redhat-appstudio/application-api", Version: "v4"},

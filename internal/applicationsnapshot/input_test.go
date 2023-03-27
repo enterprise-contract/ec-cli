@@ -27,9 +27,9 @@ import (
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/hacbs-contract/ec-cli/internal/kubernetes"
-	"github.com/hacbs-contract/ec-cli/internal/policy"
-	"github.com/hacbs-contract/ec-cli/internal/utils"
+	"github.com/enterprise-contract/ec-cli/internal/kubernetes"
+	"github.com/enterprise-contract/ec-cli/internal/policy"
+	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
 func Test_DetermineInputSpec(t *testing.T) {

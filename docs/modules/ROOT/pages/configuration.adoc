@@ -204,7 +204,7 @@ source. For example:
   "sources": [
     {
       "policy": [
-        "git::https://github.com/hacbs-contract/ec-policies.git//policy"
+        "git::https://github.com/enterprise-contract/ec-policies.git//policy"
       ],
       "data": [
         "git::https://github.com/lcarva/ec-policies.git//data"
@@ -223,7 +223,7 @@ as a data source, for example:
   "sources": [
     {
       "policy": [
-        "git::https://github.com/hacbs-contract/ec-policies.git//policy"
+        "git::https://github.com/enterprise-contract/ec-policies.git//policy"
       ],
       "data": [
         "oci::quay.io/lucarval/policy-data:latest"

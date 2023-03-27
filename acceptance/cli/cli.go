@@ -37,14 +37,14 @@ import (
 	"github.com/yudai/gojsondiff"
 	"github.com/yudai/gojsondiff/formatter"
 
-	"github.com/hacbs-contract/ec-cli/acceptance/crypto"
-	"github.com/hacbs-contract/ec-cli/acceptance/git"
-	"github.com/hacbs-contract/ec-cli/acceptance/image"
-	"github.com/hacbs-contract/ec-cli/acceptance/kubernetes"
-	"github.com/hacbs-contract/ec-cli/acceptance/log"
-	"github.com/hacbs-contract/ec-cli/acceptance/registry"
-	"github.com/hacbs-contract/ec-cli/acceptance/rekor"
-	"github.com/hacbs-contract/ec-cli/acceptance/testenv"
+	"github.com/enterprise-contract/ec-cli/acceptance/crypto"
+	"github.com/enterprise-contract/ec-cli/acceptance/git"
+	"github.com/enterprise-contract/ec-cli/acceptance/image"
+	"github.com/enterprise-contract/ec-cli/acceptance/kubernetes"
+	"github.com/enterprise-contract/ec-cli/acceptance/log"
+	"github.com/enterprise-contract/ec-cli/acceptance/registry"
+	"github.com/enterprise-contract/ec-cli/acceptance/rekor"
+	"github.com/enterprise-contract/ec-cli/acceptance/testenv"
 )
 
 type status struct {

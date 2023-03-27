@@ -25,7 +25,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/hacbs-contract/ec-cli/internal/downloader"
+	"github.com/enterprise-contract/ec-cli/internal/downloader"
 )
 
 type key int

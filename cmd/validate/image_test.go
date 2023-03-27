@@ -31,11 +31,11 @@ import (
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/hacbs-contract/ec-cli/internal/applicationsnapshot"
-	"github.com/hacbs-contract/ec-cli/internal/evaluator"
-	"github.com/hacbs-contract/ec-cli/internal/output"
-	"github.com/hacbs-contract/ec-cli/internal/policy"
-	"github.com/hacbs-contract/ec-cli/internal/utils"
+	"github.com/enterprise-contract/ec-cli/internal/applicationsnapshot"
+	"github.com/enterprise-contract/ec-cli/internal/evaluator"
+	"github.com/enterprise-contract/ec-cli/internal/output"
+	"github.com/enterprise-contract/ec-cli/internal/policy"
+	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
 const mockPublicKey string = `-----BEGIN PUBLIC KEY-----\n` +

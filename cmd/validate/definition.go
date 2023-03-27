@@ -24,11 +24,11 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/spf13/cobra"
 
-	"github.com/hacbs-contract/ec-cli/internal/definition"
-	"github.com/hacbs-contract/ec-cli/internal/format"
-	"github.com/hacbs-contract/ec-cli/internal/output"
-	"github.com/hacbs-contract/ec-cli/internal/policy/source"
-	"github.com/hacbs-contract/ec-cli/internal/utils"
+	"github.com/enterprise-contract/ec-cli/internal/definition"
+	"github.com/enterprise-contract/ec-cli/internal/format"
+	"github.com/enterprise-contract/ec-cli/internal/output"
+	"github.com/enterprise-contract/ec-cli/internal/policy/source"
+	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
 type definitionValidationFn func(context.Context, string, []source.PolicySource, []string) (*output.Output, error)
@@ -44,7 +44,7 @@ func validateDefinitionCmd(validate definitionValidationFn) *cobra.Command {
 	}{
 		filePaths:  []string{},
 		policyURLs: []string{"oci::quay.io/hacbs-contract/ec-pipeline-policy:latest"},
-		dataURLs:   []string{"git::https://github.com/hacbs-contract/ec-policies.git//data"},
+		dataURLs:   []string{"git::https://github.com/enterprise-contract/ec-policies.git//data"},
 		output:     []string{"json"},
 		namespaces: []string{},
 	}
@@ -75,9 +75,9 @@ func validateDefinitionCmd(validate definitionValidationFn) *cobra.Command {
 			Specify different policy and data sources:
 
 			  ec validate definition --file </path/to/pipeline/file> \
-				--policy git::https://github.com/hacbs-contract/ec-policies//policy/lib \
-				--policy git::https://github.com/hacbs-contract/ec-policies//policy/pipeline \
-				--data git::https://github.com/hacbs-contract/ec-policies//data
+				--policy git::https://github.com/enterprise-contract/ec-policies//policy/lib \
+				--policy git::https://github.com/enterprise-contract/ec-policies//policy/pipeline \
+				--data git::https://github.com/enterprise-contract/ec-policies//data
 		`),
 
 		RunE: func(cmd *cobra.Command, args []string) error {

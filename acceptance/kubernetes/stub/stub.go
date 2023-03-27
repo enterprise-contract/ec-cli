@@ -25,10 +25,10 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
 
-	"github.com/hacbs-contract/ec-cli/acceptance/git"
-	"github.com/hacbs-contract/ec-cli/acceptance/kubernetes/types"
-	"github.com/hacbs-contract/ec-cli/acceptance/registry"
-	"github.com/hacbs-contract/ec-cli/acceptance/wiremock"
+	"github.com/enterprise-contract/ec-cli/acceptance/git"
+	"github.com/enterprise-contract/ec-cli/acceptance/kubernetes/types"
+	"github.com/enterprise-contract/ec-cli/acceptance/registry"
+	"github.com/enterprise-contract/ec-cli/acceptance/wiremock"
 )
 
 type stubCluster struct {

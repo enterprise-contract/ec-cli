@@ -32,8 +32,8 @@ import (
 	c "github.com/doiit/picocolors"
 	"github.com/pkg/diff"
 
-	"github.com/hacbs-contract/ec-cli/acceptance/registry"
-	"github.com/hacbs-contract/ec-cli/acceptance/testenv"
+	"github.com/enterprise-contract/ec-cli/acceptance/registry"
+	"github.com/enterprise-contract/ec-cli/acceptance/testenv"
 )
 
 // runConftest runs Conftest via "go run" so that the version of Conftest is

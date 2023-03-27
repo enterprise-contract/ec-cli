@@ -193,7 +193,7 @@ func documentationUrl(a *ast.AnnotationsRef) string {
 
 	// Notes:
 	// - This makes the assumption that we're looking at our own EC rules with
-	//   docs in the hacbs-contract github pages. That's not likely to be true
+	//   docs in the enterprise-contract github pages. That's not likely to be true
 	//   always. A future improvement for this might include a way to extract a
 	//   docs url from a package annotation instead using the hard-coded url here.
 	// - The length test is because we're expecting pathStrings to be like this:
@@ -203,7 +203,7 @@ func documentationUrl(a *ast.AnnotationsRef) string {
 	pathStrings := strings.Split(a.Path.String(), ".")
 	shortName := shortName(a)
 	if len(pathStrings) == 5 && pathStrings[1] == "policy" && shortName != "" {
-		return fmt.Sprintf("https://hacbs-contract.github.io/ec-policies/%s_policy.html#%s__%s", pathStrings[2], pathStrings[3], shortName)
+		return fmt.Sprintf("https://enterprise-contract.github.io/ec-policies/%s_policy.html#%s__%s", pathStrings[2], pathStrings[3], shortName)
 	}
 
 	return ""

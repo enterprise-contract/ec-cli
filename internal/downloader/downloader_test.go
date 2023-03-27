@@ -26,7 +26,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	e "github.com/hacbs-contract/ec-cli/pkg/error"
+	e "github.com/enterprise-contract/ec-cli/pkg/error"
 )
 
 type mockDownloader struct {

@@ -26,7 +26,7 @@ import (
 	"github.com/sigstore/cosign/v2/pkg/cosign"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/hacbs-contract/ec-cli/internal/evaluator"
+	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 )
 
 const missingSignatureMessage = "No image signatures found matching the given public key. " +

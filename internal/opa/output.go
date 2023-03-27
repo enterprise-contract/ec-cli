@@ -26,7 +26,7 @@ import (
 	"github.com/open-policy-agent/opa/ast"
 	"golang.org/x/exp/slices"
 
-	"github.com/hacbs-contract/ec-cli/internal/opa/rule"
+	"github.com/enterprise-contract/ec-cli/internal/opa/rule"
 )
 
 var templates = map[string]string{

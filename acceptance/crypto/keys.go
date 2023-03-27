@@ -25,7 +25,7 @@ import (
 	"github.com/sigstore/cosign/v2/pkg/cosign"
 	"github.com/sigstore/sigstore/pkg/signature"
 
-	"github.com/hacbs-contract/ec-cli/acceptance/testenv"
+	"github.com/enterprise-contract/ec-cli/acceptance/testenv"
 )
 
 type keys int

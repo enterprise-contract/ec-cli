@@ -27,10 +27,10 @@ import (
 	"github.com/cucumber/godog"
 	clr "github.com/doiit/picocolors"
 
-	"github.com/hacbs-contract/ec-cli/acceptance/kubernetes/kind"
-	"github.com/hacbs-contract/ec-cli/acceptance/kubernetes/stub"
-	"github.com/hacbs-contract/ec-cli/acceptance/kubernetes/types"
-	"github.com/hacbs-contract/ec-cli/acceptance/testenv"
+	"github.com/enterprise-contract/ec-cli/acceptance/kubernetes/kind"
+	"github.com/enterprise-contract/ec-cli/acceptance/kubernetes/stub"
+	"github.com/enterprise-contract/ec-cli/acceptance/kubernetes/types"
+	"github.com/enterprise-contract/ec-cli/acceptance/testenv"
 )
 
 type key int

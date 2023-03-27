@@ -42,7 +42,7 @@ help: ## Display this help
 $(ALL_SUPPORTED_OS_ARCH): ## Build binaries for specific platform/architecture, e.g. make dist/ec_linux_amd64
 	@GOOS=$(word 2,$(subst _, ,$(notdir $@))); \
 	GOARCH=$(word 3,$(subst _, ,$(notdir $@))); \
-	GOOS=$${GOOS} GOARCH=$${GOARCH} go build -trimpath -ldflags="-s -w -X github.com/hacbs-contract/ec-cli/cmd/version.Version=$(VERSION)" -o dist/ec_$${GOOS}_$${GOARCH}; \
+	GOOS=$${GOOS} GOARCH=$${GOARCH} go build -trimpath -ldflags="-s -w -X github.com/enterprise-contract/ec-cli/cmd/version.Version=$(VERSION)" -o dist/ec_$${GOOS}_$${GOARCH}; \
 	sha256sum -b dist/ec_$${GOOS}_$${GOARCH} > dist/ec_$${GOOS}_$${GOARCH}.sha256
 
 .PHONY: dist
@@ -134,7 +134,7 @@ lint-fix: ## Fix linting issues automagically
 # We don't apply the fixes from the internal (error handling) linter.
 # TODO: fix the outstanding error handling lint issues and enable the fixer
 #	@go run -modfile tools/go.mod ./internal/lint -fix $$(go list ./... | grep -v '/acceptance/')
-	@go run -modfile tools/go.mod github.com/daixiang0/gci write -s standard -s default -s "prefix(github.com/hacbs-contract/ec-cli)" .
+	@go run -modfile tools/go.mod github.com/daixiang0/gci write -s standard -s default -s "prefix(github.com/enterprise-contract/ec-cli)" .
 
 node_modules: package-lock.json
 	@npm ci

@@ -24,10 +24,10 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 
-	"github.com/hacbs-contract/ec-cli/internal/evaluation_target/definition"
-	"github.com/hacbs-contract/ec-cli/internal/output"
-	"github.com/hacbs-contract/ec-cli/internal/policy/source"
-	"github.com/hacbs-contract/ec-cli/internal/utils"
+	"github.com/enterprise-contract/ec-cli/internal/evaluation_target/definition"
+	"github.com/enterprise-contract/ec-cli/internal/output"
+	"github.com/enterprise-contract/ec-cli/internal/policy/source"
+	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
 var definitionFile = definition.NewDefinition

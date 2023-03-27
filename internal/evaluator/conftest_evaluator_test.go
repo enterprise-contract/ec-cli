@@ -23,18 +23,18 @@ import (
 	"testing"
 
 	"github.com/MakeNowJust/heredoc"
-	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
+	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/open-policy-agent/conftest/output"
 	"github.com/open-policy-agent/opa/ast"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/hacbs-contract/ec-cli/internal/downloader"
-	"github.com/hacbs-contract/ec-cli/internal/opa/rule"
-	"github.com/hacbs-contract/ec-cli/internal/policy"
-	"github.com/hacbs-contract/ec-cli/internal/policy/source"
-	"github.com/hacbs-contract/ec-cli/internal/utils"
+	"github.com/enterprise-contract/ec-cli/internal/downloader"
+	"github.com/enterprise-contract/ec-cli/internal/opa/rule"
+	"github.com/enterprise-contract/ec-cli/internal/policy"
+	"github.com/enterprise-contract/ec-cli/internal/policy/source"
+	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
 type mockTestRunner struct {

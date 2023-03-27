@@ -23,7 +23,7 @@ import (
 	hd "github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 
-	"github.com/hacbs-contract/ec-cli/internal/image"
+	"github.com/enterprise-contract/ec-cli/internal/image"
 )
 
 func k8sResourceAuthorizationCmd() *cobra.Command {

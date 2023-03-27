@@ -27,11 +27,11 @@ import (
 	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 	"github.com/spf13/cobra"
 
-	"github.com/hacbs-contract/ec-cli/internal/applicationsnapshot"
-	"github.com/hacbs-contract/ec-cli/internal/format"
-	"github.com/hacbs-contract/ec-cli/internal/output"
-	"github.com/hacbs-contract/ec-cli/internal/policy"
-	"github.com/hacbs-contract/ec-cli/internal/utils"
+	"github.com/enterprise-contract/ec-cli/internal/applicationsnapshot"
+	"github.com/enterprise-contract/ec-cli/internal/format"
+	"github.com/enterprise-contract/ec-cli/internal/output"
+	"github.com/enterprise-contract/ec-cli/internal/policy"
+	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
 type imageValidationFunc func(context.Context, string, policy.Policy, bool) (*output.Output, error)

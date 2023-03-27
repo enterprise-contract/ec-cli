@@ -21,10 +21,10 @@ import (
 	"encoding/json"
 	"fmt"
 
-	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
+	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/hacbs-contract/ec-cli/internal/policy"
+	"github.com/enterprise-contract/ec-cli/internal/policy"
 )
 
 // there can be multiple sign off sources (git commit, tag and jira issues)

@@ -23,9 +23,9 @@ import (
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/hacbs-contract/ec-cli/internal/evaluator"
-	"github.com/hacbs-contract/ec-cli/internal/format"
-	"github.com/hacbs-contract/ec-cli/internal/output"
+	"github.com/enterprise-contract/ec-cli/internal/evaluator"
+	"github.com/enterprise-contract/ec-cli/internal/format"
+	"github.com/enterprise-contract/ec-cli/internal/output"
 )
 
 func TestReport(t *testing.T) {

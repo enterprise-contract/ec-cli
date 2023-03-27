@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "description": "Antora Extension to generate Asciidoc documents from Cobra YAML documentation format",
   "main": "index.js",
-  "repository": "https://github.com/hacbs-contract/ec-cli",
+  "repository": "https://github.com/enterprise-contract/ec-cli",
   "keywords": [
     "antora",
     "golang",
@@ -13,7 +13,7 @@
   "bugs": {
     "url": "https://issues.redhat.com/browse/HACBS"
   },
-  "homepage": "https://github.com/hacbs-contract/ec-cli/tree/main/reference-antora-extension#readme",
+  "homepage": "https://github.com/enterprise-contract/ec-cli/tree/main/reference-antora-extension#readme",
   "engines": {
     "node": ">=18.0.0"
   }

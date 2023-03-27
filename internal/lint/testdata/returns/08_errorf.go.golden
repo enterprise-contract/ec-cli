@@ -18,7 +18,7 @@ package something
 
 import (
 	"fmt"
-	e "github.com/hacbs-contract/ec-cli/pkg/error"
+	e "github.com/enterprise-contract/ec-cli/pkg/error"
 )
 
 var TE005 = e.NewError("TE005", "", e.ErrorExitStatus) // TODO: add message and set the exit status

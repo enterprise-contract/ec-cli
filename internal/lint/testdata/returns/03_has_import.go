@@ -19,7 +19,7 @@ package something
 import (
 	"errors"
 
-	ece "github.com/hacbs-contract/ec-cli/pkg/error"
+	ece "github.com/enterprise-contract/ec-cli/pkg/error"
 )
 
 var (

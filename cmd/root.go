@@ -24,13 +24,13 @@ import (
 	hd "github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 
-	"github.com/hacbs-contract/ec-cli/cmd/fetch"
-	"github.com/hacbs-contract/ec-cli/cmd/inspect"
-	"github.com/hacbs-contract/ec-cli/cmd/track"
-	"github.com/hacbs-contract/ec-cli/cmd/validate"
-	"github.com/hacbs-contract/ec-cli/cmd/version"
-	"github.com/hacbs-contract/ec-cli/internal/kubernetes"
-	"github.com/hacbs-contract/ec-cli/internal/logging"
+	"github.com/enterprise-contract/ec-cli/cmd/fetch"
+	"github.com/enterprise-contract/ec-cli/cmd/inspect"
+	"github.com/enterprise-contract/ec-cli/cmd/track"
+	"github.com/enterprise-contract/ec-cli/cmd/validate"
+	"github.com/enterprise-contract/ec-cli/cmd/version"
+	"github.com/enterprise-contract/ec-cli/internal/kubernetes"
+	"github.com/enterprise-contract/ec-cli/internal/logging"
 )
 
 var cancel context.CancelFunc

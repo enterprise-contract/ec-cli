@@ -28,7 +28,7 @@ import (
 	"strings"
 	"time"
 
-	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
+	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/hashicorp/go-multierror"
 	"github.com/sigstore/cosign/v2/cmd/cosign/cli/rekor"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
@@ -39,8 +39,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"sigs.k8s.io/yaml"
 
-	"github.com/hacbs-contract/ec-cli/internal/kubernetes"
-	e "github.com/hacbs-contract/ec-cli/pkg/error"
+	"github.com/enterprise-contract/ec-cli/internal/kubernetes"
+	e "github.com/enterprise-contract/ec-cli/pkg/error"
 )
 
 const (
