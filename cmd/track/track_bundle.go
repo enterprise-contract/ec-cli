@@ -25,7 +25,7 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
-	"github.com/hacbs-contract/ec-cli/internal/utils"
+	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
 type trackBundleFn func(context.Context, []string, []byte, bool) ([]byte, error)

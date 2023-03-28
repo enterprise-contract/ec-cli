@@ -17,8 +17,8 @@
 package attestation
 
 import (
-	"github.com/hacbs-contract/ec-cli/internal/output"
-	e "github.com/hacbs-contract/ec-cli/pkg/error"
+	"github.com/enterprise-contract/ec-cli/internal/output"
+	e "github.com/enterprise-contract/ec-cli/pkg/error"
 )
 
 var (

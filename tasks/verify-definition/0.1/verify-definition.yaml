@@ -43,11 +43,11 @@ spec:
     - name: POLICY_LIB
       type: string
       description: The source containing the policy files libraries.
-      default: git::https://github.com/hacbs-contract/ec-policies//policy/lib
+      default: git::https://github.com/enterprise-contract/ec-policies//policy/lib
     - name: POLICY_DATA
       type: string
       description: The source containing the policy files.
-      default: git::github.com/hacbs-contract/ec-policies//data
+      default: git::github.com/enterprise-contract/ec-policies//data
     - name: HOMEDIR
       type: string
       description: Value for the HOME environment variable.

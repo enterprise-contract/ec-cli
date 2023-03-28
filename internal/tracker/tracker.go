@@ -27,7 +27,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/yaml"
 
-	"github.com/hacbs-contract/ec-cli/internal/image"
+	"github.com/enterprise-contract/ec-cli/internal/image"
 )
 
 const (

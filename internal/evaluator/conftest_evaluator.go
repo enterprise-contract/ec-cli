@@ -31,11 +31,11 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 
-	"github.com/hacbs-contract/ec-cli/internal/opa"
-	"github.com/hacbs-contract/ec-cli/internal/opa/rule"
-	"github.com/hacbs-contract/ec-cli/internal/policy"
-	"github.com/hacbs-contract/ec-cli/internal/policy/source"
-	"github.com/hacbs-contract/ec-cli/internal/utils"
+	"github.com/enterprise-contract/ec-cli/internal/opa"
+	"github.com/enterprise-contract/ec-cli/internal/opa/rule"
+	"github.com/enterprise-contract/ec-cli/internal/policy"
+	"github.com/enterprise-contract/ec-cli/internal/policy/source"
+	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
 type contextKey string

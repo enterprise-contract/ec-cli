@@ -24,10 +24,10 @@ import (
 	"fmt"
 	"testing"
 
-	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
+	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/hacbs-contract/ec-cli/internal/policy"
+	"github.com/enterprise-contract/ec-cli/internal/policy"
 )
 
 func mockFetchECSource(ctx context.Context, resource string) (p policy.Policy, err error) {

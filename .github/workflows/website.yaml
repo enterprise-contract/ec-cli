@@ -32,7 +32,7 @@ jobs:
       matrix:
         include:
           - APP_INSTALL_ID: 29980719
-            REPOSITORY: hacbs-contract/hacbs-contract.github.io
+            REPOSITORY: enterprise-contract/enterprise-contract.github.io
           - APP_INSTALL_ID: 32872589
             REPOSITORY: redhat-appstudio/docs.stonesoup.io
     steps:

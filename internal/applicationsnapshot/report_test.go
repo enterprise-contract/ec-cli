@@ -33,8 +33,8 @@ import (
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/hacbs-contract/ec-cli/internal/format"
-	"github.com/hacbs-contract/ec-cli/internal/policy"
+	"github.com/enterprise-contract/ec-cli/internal/format"
+	"github.com/enterprise-contract/ec-cli/internal/policy"
 )
 
 //go:embed test_snapshot.json

@@ -40,5 +40,5 @@ The `--debug` parameter enables debug logging. Setting `EC_DEBUG` environment
 variable can be set to prevent deletion of temporary `ec-work-*` directories so
 that the attestations, policy and data files can be examined.
 
-[pol]: https://github.com/hacbs-contract/ec-policies/
-[docs]: https://hacbs-contract.github.io/ec-cli/main/index.html
+[pol]: https://github.com/enterprise-contract/ec-policies/
+[docs]: https://enterprise-contract.github.io/ec-cli/main/index.html

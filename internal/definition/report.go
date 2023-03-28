@@ -23,8 +23,8 @@ import (
 	cOutput "github.com/open-policy-agent/conftest/output"
 	"sigs.k8s.io/yaml"
 
-	"github.com/hacbs-contract/ec-cli/internal/format"
-	"github.com/hacbs-contract/ec-cli/internal/output"
+	"github.com/enterprise-contract/ec-cli/internal/format"
+	"github.com/enterprise-contract/ec-cli/internal/output"
 )
 
 type ReportItem struct {

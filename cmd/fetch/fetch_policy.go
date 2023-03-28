@@ -23,8 +23,8 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
-	"github.com/hacbs-contract/ec-cli/internal/policy/source"
-	"github.com/hacbs-contract/ec-cli/internal/utils"
+	"github.com/enterprise-contract/ec-cli/internal/policy/source"
+	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
 func fetchPolicyCmd() *cobra.Command {
@@ -61,27 +61,27 @@ func fetchPolicyCmd() *cobra.Command {
 			Fetching policies from multiple sources to a specific directory:
 
 			  ec fetch policy --dest fetched-policies \
-				--source github.com/hacbs-contract/ec-policies//policy/lib \
-				--source github.com/hacbs-contract/ec-policies//policy/release
+				--source github.com/enterprise-contract/ec-policies//policy/lib \
+				--source github.com/enterprise-contract/ec-policies//policy/release
 
 			Fetching policies and data from multiple sources to the current directory:
 
 			  ec fetch policy \
-				--source github.com/hacbs-contract/ec-policies//policy/lib \
-				--source github.com/hacbs-contract/ec-policies//policy/release \
-				--data-source github.com/hacbs-contract/ec-policies//data
+				--source github.com/enterprise-contract/ec-policies//policy/lib \
+				--source github.com/enterprise-contract/ec-policies//policy/release \
+				--data-source github.com/enterprise-contract/ec-policies//data
 
 			Fetching policies from multiple sources to an automatically generated temporary
 			work directory:
 
 			  ec fetch policy --work-dir \
-				--source github.com/hacbs-contract/ec-policies//policy/lib \
-				--source github.com/hacbs-contract/ec-policies//policy/release
+				--source github.com/enterprise-contract/ec-policies//policy/lib \
+				--source github.com/enterprise-contract/ec-policies//policy/release
 
 			Different style url formats are supported. In this example "policy" is treated as
 			a subdirectory even without the go-getter style // delimiter:
 
-			  ec fetch policy --source https://github.com/hacbs-contract/ec-policies/policy
+			  ec fetch policy --source https://github.com/enterprise-contract/ec-policies/policy
 
 			Fetching policies from an OPA bundle (OCI image):
 

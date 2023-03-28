@@ -49,8 +49,8 @@ import (
 	k "sigs.k8s.io/kind/pkg/cluster"
 	"sigs.k8s.io/yaml"
 
-	"github.com/hacbs-contract/ec-cli/acceptance/kubernetes/types"
-	"github.com/hacbs-contract/ec-cli/acceptance/kustomize"
+	"github.com/enterprise-contract/ec-cli/acceptance/kubernetes/types"
+	"github.com/enterprise-contract/ec-cli/acceptance/kustomize"
 )
 
 type key int

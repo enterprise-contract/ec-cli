@@ -1,4 +1,4 @@
-:pol: https://github.com/hacbs-contract/ec-policies/
+:pol: https://github.com/enterprise-contract/ec-policies/
 
 = Enterprise Contract CLI
 

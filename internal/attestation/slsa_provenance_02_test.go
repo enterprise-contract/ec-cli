@@ -33,8 +33,8 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/hacbs-contract/ec-cli/internal/output"
-	e "github.com/hacbs-contract/ec-cli/pkg/error"
+	"github.com/enterprise-contract/ec-cli/internal/output"
+	e "github.com/enterprise-contract/ec-cli/pkg/error"
 )
 
 type mockLayer struct {

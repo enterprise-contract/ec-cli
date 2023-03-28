@@ -16,7 +16,7 @@
 
 package something
 
-import e "github.com/hacbs-contract/ec-cli/pkg/error"
+import e "github.com/enterprise-contract/ec-cli/pkg/error"
 
 var (
 	TE001 = e.NewError("TE001", "Test error", e.ErrorExitStatus)

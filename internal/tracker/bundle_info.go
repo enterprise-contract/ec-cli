@@ -22,7 +22,7 @@ import (
 	"github.com/tektoncd/pipeline/pkg/remote/oci"
 	"k8s.io/apimachinery/pkg/util/sets"
 
-	"github.com/hacbs-contract/ec-cli/internal/image"
+	"github.com/enterprise-contract/ec-cli/internal/image"
 )
 
 type bundleInfo struct {

@@ -1,4 +1,4 @@
-module github.com/hacbs-contract/ec-cli/tools
+module github.com/enterprise-contract/ec-cli/tools
 
 go 1.19
 

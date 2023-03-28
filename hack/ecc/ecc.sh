@@ -28,14 +28,14 @@ ROOT=$(git rev-parse --show-toplevel)
 # This can be overriden by specifying the ECC_VERSION environment variable
 # beforehand
 if [ -z "${ECC_VERSION:-}" ]; then
-  SHORT_REV=$(cd "${ROOT}" && go list -f '{{slice .Version 22}}' -m github.com/hacbs-contract/enterprise-contract-controller/api)
+  SHORT_REV=$(cd "${ROOT}" && go list -f '{{slice .Version 22}}' -m github.com/enterprise-contract/enterprise-contract-controller/api)
   ECC_VERSION=$(
     TMP_ECC_GIT=$(mktemp -d)
     trap 'rm -rf "${TMP_ECC_GIT}"' EXIT
     cd "${TMP_ECC_GIT}"
-    git clone -q --bare https://github.com/hacbs-contract/enterprise-contract-controller.git "${TMP_ECC_GIT}"
+    git clone -q --bare https://github.com/enterprise-contract/enterprise-contract-controller.git "${TMP_ECC_GIT}"
     git show -s --pretty=format:%H "${SHORT_REV}"
   )
 fi
 
-go run -modfile "${ROOT}/tools/go.mod" sigs.k8s.io/kustomize/kustomize/v4 build "https://github.com/hacbs-contract/enterprise-contract-controller/config/crd?ref=${ECC_VERSION}"
+go run -modfile "${ROOT}/tools/go.mod" sigs.k8s.io/kustomize/kustomize/v4 build "https://github.com/enterprise-contract/enterprise-contract-controller/config/crd?ref=${ECC_VERSION}"

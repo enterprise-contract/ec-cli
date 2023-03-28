@@ -20,7 +20,7 @@ import (
 	"context"
 	"errors"
 
-	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
+	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 )
 

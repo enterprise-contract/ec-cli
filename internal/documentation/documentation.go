@@ -25,7 +25,7 @@ import (
 
 	"github.com/spf13/cobra/doc"
 
-	cmd "github.com/hacbs-contract/ec-cli/cmd"
+	cmd "github.com/enterprise-contract/ec-cli/cmd"
 )
 
 const DirectoryPermissions = 0755

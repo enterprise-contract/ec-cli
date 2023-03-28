@@ -64,7 +64,7 @@ func Test_RegoTextOutput(t *testing.T) {
 				# Source: spam.io/bacon-bundle
 
 				policy.foo.bar.rule_title (deny)
-				https://hacbs-contract.github.io/ec-policies/foo_policy.html#bar__rule_title
+				https://enterprise-contract.github.io/ec-policies/foo_policy.html#bar__rule_title
 				Rule title
 				Rule description
 				--

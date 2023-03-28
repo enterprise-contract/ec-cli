@@ -26,18 +26,18 @@ import (
 
 	"github.com/cucumber/godog"
 
-	"github.com/hacbs-contract/ec-cli/acceptance/cli"
-	"github.com/hacbs-contract/ec-cli/acceptance/conftest"
-	"github.com/hacbs-contract/ec-cli/acceptance/crypto"
-	"github.com/hacbs-contract/ec-cli/acceptance/git"
-	"github.com/hacbs-contract/ec-cli/acceptance/image"
-	"github.com/hacbs-contract/ec-cli/acceptance/kubernetes"
-	"github.com/hacbs-contract/ec-cli/acceptance/pipeline"
-	"github.com/hacbs-contract/ec-cli/acceptance/registry"
-	"github.com/hacbs-contract/ec-cli/acceptance/rekor"
-	"github.com/hacbs-contract/ec-cli/acceptance/tekton"
-	"github.com/hacbs-contract/ec-cli/acceptance/testenv"
-	"github.com/hacbs-contract/ec-cli/acceptance/wiremock"
+	"github.com/enterprise-contract/ec-cli/acceptance/cli"
+	"github.com/enterprise-contract/ec-cli/acceptance/conftest"
+	"github.com/enterprise-contract/ec-cli/acceptance/crypto"
+	"github.com/enterprise-contract/ec-cli/acceptance/git"
+	"github.com/enterprise-contract/ec-cli/acceptance/image"
+	"github.com/enterprise-contract/ec-cli/acceptance/kubernetes"
+	"github.com/enterprise-contract/ec-cli/acceptance/pipeline"
+	"github.com/enterprise-contract/ec-cli/acceptance/registry"
+	"github.com/enterprise-contract/ec-cli/acceptance/rekor"
+	"github.com/enterprise-contract/ec-cli/acceptance/tekton"
+	"github.com/enterprise-contract/ec-cli/acceptance/testenv"
+	"github.com/enterprise-contract/ec-cli/acceptance/wiremock"
 )
 
 // NOTE: flags need to be initialized with the package in order to be recognized

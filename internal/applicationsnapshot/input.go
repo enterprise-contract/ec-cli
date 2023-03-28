@@ -27,8 +27,8 @@ import (
 	"golang.org/x/exp/slices"
 	"sigs.k8s.io/yaml"
 
-	"github.com/hacbs-contract/ec-cli/internal/kubernetes"
-	"github.com/hacbs-contract/ec-cli/internal/utils"
+	"github.com/enterprise-contract/ec-cli/internal/kubernetes"
+	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
 const unnamed = "Unnamed"

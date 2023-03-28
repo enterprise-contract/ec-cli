@@ -24,24 +24,24 @@ import (
 	"os"
 	"path"
 
+	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
-	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/in-toto/in-toto-golang/in_toto"
 	"github.com/qri-io/jsonschema"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 
-	"github.com/hacbs-contract/ec-cli/internal/attestation"
-	"github.com/hacbs-contract/ec-cli/internal/evaluator"
-	"github.com/hacbs-contract/ec-cli/internal/output"
-	"github.com/hacbs-contract/ec-cli/internal/policy"
-	"github.com/hacbs-contract/ec-cli/internal/policy/source"
-	"github.com/hacbs-contract/ec-cli/internal/utils"
-	ece "github.com/hacbs-contract/ec-cli/pkg/error"
-	"github.com/hacbs-contract/ec-cli/pkg/schema"
+	"github.com/enterprise-contract/ec-cli/internal/attestation"
+	"github.com/enterprise-contract/ec-cli/internal/evaluator"
+	"github.com/enterprise-contract/ec-cli/internal/output"
+	"github.com/enterprise-contract/ec-cli/internal/policy"
+	"github.com/enterprise-contract/ec-cli/internal/policy/source"
+	"github.com/enterprise-contract/ec-cli/internal/utils"
+	ece "github.com/enterprise-contract/ec-cli/pkg/error"
+	"github.com/enterprise-contract/ec-cli/pkg/schema"
 )
 
 var (

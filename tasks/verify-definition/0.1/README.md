@@ -3,12 +3,12 @@
 This task is used to verify any valid YAML or JSON
 
 ## Install the task
-kubectl apply -f https://raw.githubusercontent.com/hacbs-contract/ec-cli/main/tasks/verify-definition/0.1/verify-definition.yaml
+kubectl apply -f https://raw.githubusercontent.com/enterprise-contract/ec-cli/main/tasks/verify-definition/0.1/verify-definition.yaml
 
 ## Parameters
 ### Required
 * **DEFINITION**: The definition(s) to validate. This can be a yaml or json file, the files' contents
-        or a directory containing the definition files. 
+        or a directory containing the definition files.
 * **POLICY_SOURCE**: The source containing the policy files.
 ### Optional
 * **NAMESPACE**: An optional policy package namespace.
@@ -34,7 +34,7 @@ spec:
   - name: NAMESPACE
     value: policy.task.kind
   - name: POLICY_SOURCE
-    value: git::github.com/hacbs-contract/ec-policies//policy/task
+    value: git::github.com/enterprise-contract/ec-policies//policy/task
   resources: {}
   serviceAccountName: default
   taskRef:

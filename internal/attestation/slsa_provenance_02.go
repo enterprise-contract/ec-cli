@@ -27,7 +27,7 @@ import (
 	"github.com/sigstore/cosign/v2/pkg/cosign"
 	"github.com/sigstore/cosign/v2/pkg/types"
 
-	"github.com/hacbs-contract/ec-cli/internal/output"
+	"github.com/enterprise-contract/ec-cli/internal/output"
 )
 
 // SLSAProvenanceFromLayer parses the SLSA Provenance v0.2 from the provided OCI

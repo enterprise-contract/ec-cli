@@ -21,7 +21,7 @@ import (
 
 	"github.com/in-toto/in-toto-golang/in_toto"
 
-	"github.com/hacbs-contract/ec-cli/internal/output"
+	"github.com/enterprise-contract/ec-cli/internal/output"
 )
 
 type fakeAtt struct {

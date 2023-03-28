@@ -19,8 +19,8 @@ package validate
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/hacbs-contract/ec-cli/internal/definition"
-	"github.com/hacbs-contract/ec-cli/internal/image"
+	"github.com/enterprise-contract/ec-cli/internal/definition"
+	"github.com/enterprise-contract/ec-cli/internal/image"
 )
 
 var ValidateCmd *cobra.Command

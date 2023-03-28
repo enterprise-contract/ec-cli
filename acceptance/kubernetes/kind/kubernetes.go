@@ -25,7 +25,7 @@ import (
 	"path"
 	"time"
 
-	ecc "github.com/hacbs-contract/enterprise-contract-controller/api/v1alpha1"
+	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 	"github.com/tektoncd/cli/pkg/formatted"
 	tknv1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
@@ -35,9 +35,9 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/hacbs-contract/ec-cli/acceptance/kubernetes/types"
-	"github.com/hacbs-contract/ec-cli/acceptance/kustomize"
-	"github.com/hacbs-contract/ec-cli/acceptance/testenv"
+	"github.com/enterprise-contract/ec-cli/acceptance/kubernetes/types"
+	"github.com/enterprise-contract/ec-cli/acceptance/kustomize"
+	"github.com/enterprise-contract/ec-cli/acceptance/testenv"
 )
 
 // createPolicyObject creates the EnterpriseContractPolicy object with the given

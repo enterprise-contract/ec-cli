@@ -27,7 +27,7 @@ import (
 	"github.com/sigstore/cosign/v2/pkg/cosign"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/hacbs-contract/ec-cli/internal/evaluator"
+	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 )
 
 func Test_PrintExpectedJSON(t *testing.T) {

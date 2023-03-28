@@ -27,7 +27,7 @@ import (
 	"github.com/open-policy-agent/conftest/downloader"
 	log "github.com/sirupsen/logrus"
 
-	e "github.com/hacbs-contract/ec-cli/pkg/error"
+	e "github.com/enterprise-contract/ec-cli/pkg/error"
 )
 
 var (

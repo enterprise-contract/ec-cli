@@ -16,7 +16,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # This is an image regularly built in Stonesoup for testing purposes.
-# See https://github.com/hacbs-contract/golden-container
+# See https://github.com/enterprise-contract/golden-container
 #
 IMAGE=${IMAGE:-"quay.io/redhat-appstudio/ec-golden-image:latest"}
 
@@ -50,8 +50,8 @@ DATA_SOURCE="quay.io/hacbs-contract/ec-policy-data:latest"
 
 # These should work the same if you want to use git sources
 #
-#POLICY_SOURCE="github.com/hacbs-contract/ec-policies//policy"
-#DATA_SOURCE="github.com/hacbs-contract/ec-policies//data"
+#POLICY_SOURCE="github.com/enterprise-contract/ec-policies//policy"
+#DATA_SOURCE="github.com/enterprise-contract/ec-policies//data"
 
 MINIMAL_CONFIG="
 configuration:

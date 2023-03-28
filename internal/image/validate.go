@@ -27,11 +27,11 @@ import (
 	"github.com/qri-io/jsonpointer"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/hacbs-contract/ec-cli/internal/attestation"
-	"github.com/hacbs-contract/ec-cli/internal/evaluation_target/application_snapshot_image"
-	"github.com/hacbs-contract/ec-cli/internal/evaluator"
-	"github.com/hacbs-contract/ec-cli/internal/output"
-	"github.com/hacbs-contract/ec-cli/internal/policy"
+	"github.com/enterprise-contract/ec-cli/internal/attestation"
+	"github.com/enterprise-contract/ec-cli/internal/evaluation_target/application_snapshot_image"
+	"github.com/enterprise-contract/ec-cli/internal/evaluator"
+	"github.com/enterprise-contract/ec-cli/internal/output"
+	"github.com/enterprise-contract/ec-cli/internal/policy"
 )
 
 // ValidateImage executes the required method calls to evaluate a given policy

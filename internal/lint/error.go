@@ -34,7 +34,7 @@ import (
 )
 
 // The package where ec-cli Error interface is declared
-const errorPackage = "github.com/hacbs-contract/ec-cli/pkg/error"
+const errorPackage = "github.com/enterprise-contract/ec-cli/pkg/error"
 
 // Pattern for the error code: XXNNN
 var errorCode = regexp.MustCompile(`[A-Z]{2}\d{3}`)
