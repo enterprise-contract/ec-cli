@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -54,74 +53,78 @@ func (k *kindCluster) buildCliImage(ctx context.Context) error {
 // only the task of a particular version. The image reference to the ec-cli
 // image is replaced with the image reference from buildCliImage.
 func (k *kindCluster) buildTaskBundleImage(ctx context.Context) error {
-	versions, err := filepath.Glob(path.Join("tasks/verify-enterprise-contract", "*.*"))
+	taskBundles := make(map[string][]string)
+
+	basePath := "tasks/"
+	taskDirs, err := os.ReadDir(basePath)
 	if err != nil {
 		return err
 	}
 
-	for _, version := range versions {
-		if info, err := os.Stat(version); err != nil {
-			return err
-		} else if !info.IsDir() {
+	for _, task := range taskDirs {
+		if !task.IsDir() {
 			continue
 		}
-
-		// we expect a file called `verify-enterprise-contract.yaml` in each
-		// version containing the Tekton Task definition
-		taskFile := path.Join(version, "verify-enterprise-contract.yaml")
-
-		if info, err := os.Stat(taskFile); err != nil {
-			if errors.Is(err, os.ErrNotExist) {
-				continue
-			}
-
-			return err
-		} else if info.IsDir() {
-			continue
-		}
-
-		var bytes []byte
-		if bytes, err = os.ReadFile(taskFile); err != nil {
-			return err
-		}
-
-		var taskDefinition v1beta1.Task
-		if err := yaml.Unmarshal(bytes, &taskDefinition); err != nil {
-			return err
-		}
-
-		// using registry.image-registry.svc.cluster.local instead of 127.0.0.1
-		// leads to "dial tcp: lookup registry.image-registry.svc.cluster.local:
-		// Temporary failure in name resolution" in Tekton Pipeline controller
-		img := fmt.Sprintf("127.0.0.1:%d/ec-cli:latest-%s-%s", k.registryPort, runtime.GOOS, runtime.GOARCH)
-		steps := taskDefinition.Spec.Steps
-		for i, step := range steps {
-			if strings.Contains(step.Image, "/ec-cli:") {
-				steps[i].Image = img
-			}
-		}
-
-		out, err := yaml.Marshal(taskDefinition)
+		// once all the directories under tasks/ are collected, gather all the versions
+		versions, err := filepath.Glob(filepath.Join(basePath, task.Name(), "*.*"))
 		if err != nil {
 			return err
 		}
+		for _, versionPath := range versions {
+			pathSplit := strings.Split(versionPath, "/")
+			// there should only be versions under the task path i.e. tasks/verify-definition/0.1
+			version := pathSplit[len(pathSplit)-1]
+			// assume the task definition file is named the same as the task directory
+			fileName := filepath.Join(versionPath, fmt.Sprintf("%s.yaml", task.Name()))
+			if _, err := os.Stat(fileName); err != nil {
+				if errors.Is(err, os.ErrNotExist) {
+					continue
+				}
+				return err
+			}
+			var bytes []byte
+			if bytes, err = os.ReadFile(fileName); err != nil {
+				return err
+			}
 
-		task, err := os.CreateTemp("", "v-e-c-*.yaml")
-		if err != nil {
-			return err
+			var taskDefinition v1beta1.Task
+			if err := yaml.Unmarshal(bytes, &taskDefinition); err != nil {
+				return err
+			}
+
+			// using registry.image-registry.svc.cluster.local instead of 127.0.0.1
+			// leads to "dial tcp: lookup registry.image-registry.svc.cluster.local:
+			// Temporary failure in name resolution" in Tekton Pipeline controller
+			img := fmt.Sprintf("127.0.0.1:%d/ec-cli:latest-%s-%s", k.registryPort, runtime.GOOS, runtime.GOARCH)
+			steps := taskDefinition.Spec.Steps
+			for i, step := range steps {
+				if strings.Contains(step.Image, "/ec-cli:") {
+					steps[i].Image = img
+				}
+			}
+
+			out, err := yaml.Marshal(taskDefinition)
+			if err != nil {
+				return err
+			}
+
+			task, err := os.CreateTemp("", "v-e-c-*.yaml")
+			if err != nil {
+				return err
+			}
+			defer os.Remove(task.Name())
+
+			if _, err = task.Write(out); err != nil {
+				return err
+			}
+
+			taskBundles[version] = append(taskBundles[version], task.Name())
 		}
-		defer os.Remove(task.Name())
+	}
 
-		if _, err = task.Write(out); err != nil {
-			return err
-		}
-
-		// given a path like task/0.1 is `0.1` which gives us the version of the
-		// Task by the directory layout convention for the Tekton/Artifact Hub
-		ver := path.Base(version)
-
-		cmd := exec.CommandContext(ctx, "make", "task-bundle", fmt.Sprintf("TASK_REPO=localhost:%d/ec-task-bundle", k.registryPort), fmt.Sprintf("TASK=%s", task.Name()), fmt.Sprintf("TASK_TAG=%s", ver))
-
+	for version, tasks := range taskBundles {
+		tasksPath := strings.Join(tasks, ",")
+		cmd := exec.CommandContext(ctx, "make", "task-bundle", fmt.Sprintf("TASK_REPO=localhost:%d/ec-task-bundle", k.registryPort), fmt.Sprintf("TASK=%s", tasksPath), fmt.Sprintf("TASK_TAG=%s", version))
 		if out, err := cmd.CombinedOutput(); err != nil {
 			fmt.Print(string(out))
 			return err

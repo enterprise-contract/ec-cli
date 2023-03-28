@@ -92,31 +92,4 @@ jobs:
         with:
           files: ./coverage-acceptance.out
           flags: acceptance
-
-  Task:
-    runs-on: ubuntu-latest
-    env:
-      TASK_BUNDLE_REF: registry.image-registry.svc.cluster.local:5000/ec-task-bundle
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Restore Cache
-        uses: actions/cache/restore@v3
-        with:
-          key: main
-          path: '**'
-
-      - name: Setup Go environment
-        uses: actions/setup-go@v4
-        with:
-          go-version-file: go.mod
-          cache: false
-
-      - name: Setup Tekton Test environment
-        run: hack/setup-test-environment.sh
-
-      - name: Testing ec task
-        env:
-          TASK_VERSION: 0.1
-        run: tasks/verify-enterprise-contract/tests/run.sh
+          

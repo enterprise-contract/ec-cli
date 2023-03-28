@@ -34,7 +34,6 @@ jobs:
     env:
       IMAGE_REPO: quay.io/hacbs-contract/ec-cli
       TAG: ${{ github.sha }}
-      TASK: tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml
 
     steps:
       - name: Checkout repository
@@ -108,4 +107,6 @@ jobs:
         run: make dist-image-push IMAGE_TAG=$TAG IMAGE_REPO=$IMAGE_REPO ADD_IMAGE_TAG=snapshot
 
       - name: Create and push the tekton bundle
+        env:
+          TASK: "tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml,tasks/verify-definition/0.1/verify-definition.yaml"
         run: make task-bundle-snapshot TASK_TAG=$TAG TASK=<( yq e ".spec.steps[].image? = \"$IMAGE_REPO:$TAG\"" $TASK)

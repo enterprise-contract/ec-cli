@@ -1,4 +1,4 @@
-Feature: Verify Enterprise Contract Tekton Task
+Feature: Verify Enterprise Contract Tekton Tasks
   The Verify Enterprise Contract Tekton task verification against a set of golden images
 
   Background:
@@ -24,7 +24,7 @@ Feature: Verify Enterprise Contract Tekton Task
         }
       }
       ```
-    When version 0.1 of the task is run with parameters:
+    When version 0.1 of the task named "verify-enterprise-contract" is run with parameters:
       | IMAGES               | {"components": [{"containerImage": "quay.io/hacbs-contract-demo/golden-container@sha256:e76a4ae9dd8a52a0d191fd34ca133af5b4f2609536d32200a4a40a09fdc93a0d"}]} |
       | POLICY_CONFIGURATION | ${NAMESPACE}/${POLICY_NAME}                                                                                                                                  |
       | STRICT               | true                                                                                                                                                         |
