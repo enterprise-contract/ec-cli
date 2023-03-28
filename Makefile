@@ -216,14 +216,15 @@ dev: REGISTRY_PORT=5000
 dev: IMAGE_REPO=localhost:$(REGISTRY_PORT)/ec
 dev: PODMAN_OPTS=--tls-verify=false
 dev: TASK_REPO=localhost:$(REGISTRY_PORT)/ec-task-bundle
-dev: TASK:=$(shell T=$$(mktemp) && yq e ".spec.steps[].image? = \"127.0.0.1:$(REGISTRY_PORT)/ec\"" tasks/verify-enterprise-contract/*/verify-enterprise-contract.yaml > "$${T}" && echo "$${T}")
+dev: SKOPEO_ARGS=--src-tls-verify=false --dest-tls-verify=false
+dev: TASK:=$(shell T=$$(mktemp) && yq e ".spec.steps[].image? = \"localhost:$(REGISTRY_PORT)/ec\"" tasks/verify-enterprise-contract/*/verify-enterprise-contract.yaml tasks/verify-definition/*/verify-definition.yaml | yq 'select(. != null)' > "$${T}" && echo "$${T}")
 dev: push-image task-bundle ## Push the ec-cli and v-e-c Task Bundle to the kind cluster setup via hack/setup-dev-environment.sh
 	@rm "$(TASK)"
 
 TASK_TAG ?= latest
 TASK_REPO ?= quay.io/hacbs-contract/ec-task-bundle
 TASK_VERSION ?= 0.1
-TASK ?= tasks/verify-enterprise-contract/$(TASK_VERSION)/verify-enterprise-contract.yaml
+TASK ?= tasks/verify-enterprise-contract/$(TASK_VERSION)/verify-enterprise-contract.yaml tasks/verify-definition/$(TASK_VERSION)/verify-definition.yaml
 ifneq (,$(findstring localhost:,$(TASK_REPO)))
 SKOPEO_ARGS=--src-tls-verify=false --dest-tls-verify=false
 endif
@@ -238,4 +239,4 @@ task-bundle: ## Push the Tekton Task bundle an image repository
 
 .PHONY: task-bundle-snapshot
 task-bundle-snapshot: task-bundle ## Push task bundle and then tag with "snapshot"
-	@skopeo copy "docker://$(TASK_REPO):$(TASK_TAG)" "docker://$(TASK_REPO):snapshot"
+	@skopeo copy "docker://$(TASK_REPO):$(TASK_TAG)" "docker://$(TASK_REPO):snapshot" $(SKOPEO_ARGS)

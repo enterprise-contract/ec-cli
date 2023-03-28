@@ -108,5 +108,5 @@ jobs:
 
       - name: Create and push the tekton bundle
         env:
-          TASK: "tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml,tasks/verify-definition/0.1/verify-definition.yaml"
-        run: make task-bundle-snapshot TASK_TAG=$TAG TASK=<( yq e ".spec.steps[].image? = \"$IMAGE_REPO:$TAG\"" $TASK)
+          TASK: "tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml tasks/verify-definition/0.1/verify-definition.yaml"
+        run: make task-bundle-snapshot TASK_TAG=$TAG TASK=<( yq e ".spec.steps[].image? = \"$IMAGE_REPO:$TAG\"" $TASK | yq 'select(. != null)')
