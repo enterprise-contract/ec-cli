@@ -877,3 +877,62 @@ Feature: evaluate enterprise contract
     """
     <testsuites><testsuite name="Unnamed \(localhost:\d+\/acceptance\/image@sha256:[0-9a-f]{64}\)" tests="2" errors="0" failures="1" time="0" timestamp="\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{8,9}Z" hostname="">(<property name="image" value="localhost:\d+\/acceptance\/image@sha256:[0-9a-f]{64}"><\/property>|<property name="key" value="-----BEGIN PUBLIC KEY-----[^"]+"><\/property>|<property name="success" value="false"><\/property>|<property name="keyId" value=""><\/property>|<property name="signature" value="[a-zA-Z0-9+\/]+={0,2}"><\/property>|<property name="metadata.predicateType" value="https:\/\/slsa.dev\/provenance\/v0.2"><\/property>|<property name="metadata.type" value="https:\/\/in-toto.io\/Statement\/v0.1"><\/property>|<property name="metadata.predicateBuildType" value="https:\/\/tekton.dev\/attestations\/chains\/pipelinerun@v2"><\/property>)+<testcase name="main.acceptor: Pass" classname="main.acceptor: Pass" time="0"><\/testcase><testcase name="main.rejector: Fails always \[effective_on=2022-01-01T00:00:00Z\]" classname="main.rejector: Fails always \[effective_on=2022-01-01T00:00:00Z\]" time="0"><failure message="Fails always" type=""><!\[CDATA\[Fails always\]\]><\/failure><\/testcase><\/testsuite><\/testsuites>
     """
+
+  Scenario: Using OCI bundles
+    Given a key pair named "known"
+    Given an image named "acceptance/my-image"
+    Given a valid image signature of "acceptance/my-image" image signed by the "known" key
+    Given a valid attestation of "acceptance/my-image" signed by the "known" key
+    Given a OCI policy bundle named "acceptance/happy-day-policy:tag" with
+      | main.rego | examples/happy_day.rego |
+    Given a OCI policy bundle named "acceptance/allow-all:latest" with
+      | main.rego | examples/allow_all.rego |
+    Given policy configuration named "ec-policy" with specification
+    """
+    {
+      "sources": [
+        {
+          "policy": [
+            "oci::https://${REGISTRY}/acceptance/happy-day-policy:tag",
+            "oci::${REGISTRY}/acceptance/allow-all:latest"
+          ]
+        }
+      ]
+    }
+    """
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/my-image --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --strict"
+    Then the exit status should be 0
+    Then the standard output should contain
+    """
+    {
+      "success": true,
+      "key": ${known_PUBLIC_KEY_JSON},
+      "components": [
+        {
+          "name": "Unnamed",
+          "containerImage": "localhost:(\\d+)/acceptance/my-image@sha256:[0-9a-f]{64}",
+          "successes": [
+            {
+              "msg": "Pass",
+              "metadata": {
+                "code": "main.acceptor"
+              }
+            }
+          ],
+          "success": true,
+          "signatures": ${ATTESTATION_SIGNATURES_JSON}
+        }
+      ],
+      "policy": {
+        "publicKey": ${known_PUBLIC_KEY_JSON},
+        "sources": [
+          {
+            "policy": [
+              "oci::https://${REGISTRY}/acceptance/happy-day-policy:tag",
+              "oci::${REGISTRY}/acceptance/allow_all:latest"
+            ]
+          }
+        ]
+      }
+    }
+    """

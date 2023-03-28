@@ -48,11 +48,10 @@ func (s stubCluster) CreateNamespace(ctx context.Context) (context.Context, erro
 
 // CreateNamedPolicy stubs a response from the apiserver to fetch a EnterpriseContractPolicy
 // custom resource from the `acceptance` namespace with the given name and specification
-// the specification part can be templated using ${...} notation and supports `GITHOST`
-// variable substitution
-// TODO: namespace support
+// the specification part can be templated using ${...} notation and supports
+// `GITHOST` and `REGISTRY` variable substitution
 func (s stubCluster) CreateNamedPolicy(ctx context.Context, name string, specification string) error {
-	ns := "acceptance"
+	ns := "acceptance" // TODO: namespace support
 	return wiremock.StubFor(ctx, wiremock.Get(wiremock.URLPathEqualTo(fmt.Sprintf("/apis/appstudio.redhat.com/v1alpha1/namespaces/%s/enterprisecontractpolicies/%s", ns, name))).
 		WillReturn(fmt.Sprintf(`{
 				"apiVersion": "appstudio.redhat.com/v1alpha1",
@@ -63,8 +62,15 @@ func (s stubCluster) CreateNamedPolicy(ctx context.Context, name string, specifi
 				},
 				"spec": %s
 			  }`, name, ns, os.Expand(specification, func(key string) string {
-			if key == "GITHOST" {
+			switch key {
+			case "GITHOST":
 				return git.Host(ctx)
+			case "REGISTRY":
+				uri, err := registry.Url(ctx)
+				if err != nil {
+					panic(err)
+				}
+				return uri
 			}
 
 			return ""

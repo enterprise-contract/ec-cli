@@ -844,8 +844,6 @@ github.com/kr/text v0.2.0 h1:5Nx0Ya0ZqY2ygV366QzturHI13Jq95ApcVaJBhpS+AY=
 github.com/kr/text v0.2.0/go.mod h1:eLer722TekiGuMkidMxC/pM04lWEeraHUUmBw8l2grE=
 github.com/kylelemons/godebug v0.0.0-20170820004349-d65d576e9348/go.mod h1:B69LEHPfb2qLo0BaaOLcbitczOKLWTsrBG9LczfCD4k=
 github.com/kylelemons/godebug v1.1.0 h1:RPNrshWIDI6G2gRW9EHilWtl7Z6Sb1BR0xunSBf0SNc=
-github.com/lcarva/conftest v0.0.0-20230320183721-1c15011a6936 h1:SoZ+sEy1wxETjl+qfN7gsYvOm2CU5LaMKz0VDIlH6ho=
-github.com/lcarva/conftest v0.0.0-20230320183721-1c15011a6936/go.mod h1:V2RNtsAf2BdGaUrwE6AlJMElmfnEt1Hp5H9H5WULYsM=
 github.com/leanovate/gopter v0.2.9 h1:fQjYxZaynp97ozCzfOyOuAGOU4aU/z37zf/tOujFk7c=
 github.com/leanovate/gopter v0.2.9/go.mod h1:U2L/78B+KVFIx2VmW6onHJQzXtFb+p5y3y2Sh+Jxxv8=
 github.com/leodido/go-urn v1.2.1 h1:BqpAaACuzVSgi/VLzGZIobT2z4v53pjosyNd9Yv6n/w=
@@ -1184,6 +1182,8 @@ github.com/zclconf/go-cty v1.8.0/go.mod h1:vVKLxnk3puL4qRAv72AO+W99LUD4da90g3uUA
 github.com/zclconf/go-cty v1.10.0 h1:mp9ZXQeIcN8kAwuqorjH+Q+njbJKjLrvB2yIh4q7U+0=
 github.com/zclconf/go-cty v1.10.0/go.mod h1:vVKLxnk3puL4qRAv72AO+W99LUD4da90g3uUAzyuvAk=
 github.com/zclconf/go-cty-debug v0.0.0-20191215020915-b22d67c1ba0b/go.mod h1:ZRKQfBXbGkpdV6QMzT3rU1kSTAnfu1dO8dPKjYprgj8=
+github.com/zregvart/conftest v0.0.0-20230328131211-40a00f729400 h1:L+L+RzQi9kKuQ9/RYSk9fUyNoJgIzSP2ogzmmRRvDPM=
+github.com/zregvart/conftest v0.0.0-20230328131211-40a00f729400/go.mod h1:V2RNtsAf2BdGaUrwE6AlJMElmfnEt1Hp5H9H5WULYsM=
 go.etcd.io/bbolt v1.3.2/go.mod h1:IbVyRI1SCnLcuJnV2u8VeU0CEYM7e686BmAb1XKL+uU=
 go.mongodb.org/mongo-driver v1.7.3/go.mod h1:NqaYOwnXWr5Pm7AOpO5QFxKJ503nbMse/R79oO62zWg=
 go.mongodb.org/mongo-driver v1.7.5/go.mod h1:VXEWRZ6URJIkUq2SCAyapmhH0ZLRBP+FT4xhp5Zvxng=

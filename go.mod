@@ -294,4 +294,4 @@ require (
 
 // This is needed until this is accepted upstream:
 // https://github.com/open-policy-agent/conftest/pull/796
-replace github.com/open-policy-agent/conftest => github.com/lcarva/conftest v0.0.0-20230320183721-1c15011a6936
+replace github.com/open-policy-agent/conftest => github.com/zregvart/conftest v0.0.0-20230328131211-40a00f729400

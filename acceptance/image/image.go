@@ -23,6 +23,8 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+	"os"
+	"path"
 
 	"github.com/cucumber/godog"
 	jsonpatch "github.com/evanphx/json-patch/v5"
@@ -32,6 +34,7 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/mutate"
 	"github.com/google/go-containerregistry/pkg/v1/random"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
+	s "github.com/google/go-containerregistry/pkg/v1/static"
 	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/in-toto/in-toto-golang/in_toto"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
@@ -51,6 +54,12 @@ type key int
 const (
 	imageStateKey                 key = iota // Key to imageState struct within context
 	imageAttestationSignaturesKey            // Key to image attestation signatures within context
+)
+
+const (
+	unknownConfig       = "application/vnd.unknown.config.v1+json"
+	openPolicyAgentData = "application/vnd.cncf.openpolicyagent.data.layer.v1+json"
+	title               = "org.opencontainers.image.title"
 )
 
 type imageState struct {
@@ -304,6 +313,48 @@ func createAndPushImage(ctx context.Context, imageName string) (context.Context,
 	return ctx, nil
 }
 
+// createAndPushPolicyBundle creates a OCI policy bundle with the given files as
+// layers
+func createAndPushPolicyBundle(ctx context.Context, imageName string, files *godog.Table) (context.Context, error) {
+	bundle := mutate.MediaType(empty.Image, types.OCIManifestSchema1)
+	bundle = mutate.ConfigMediaType(bundle, unknownConfig)
+
+	// add each row as a layer to the bundle
+	for _, row := range files.Rows {
+		file := row.Cells[0].Value
+
+		source := row.Cells[1].Value
+
+		bytes, err := os.ReadFile(path.Join("acceptance", source))
+		if err != nil {
+			return ctx, err
+		}
+
+		if bundle, err = mutate.Append(bundle, mutate.Addendum{
+			MediaType: openPolicyAgentData,
+			Layer:     s.NewLayer(bytes, openPolicyAgentData),
+			Annotations: map[string]string{
+				title: file,
+			},
+		}); err != nil {
+			return ctx, err
+		}
+	}
+
+	ref, err := registry.ImageReferenceInStubRegistry(ctx, imageName)
+	if err != nil {
+		return ctx, err
+	}
+
+	// push to the registry
+	err = remote.Write(ref, bundle)
+	if err != nil {
+		return ctx, err
+	}
+
+	return ctx, nil
+}
+
 // AttestationFrom finds the raw attestation created by the createAndPushAttestation
 func AttestationFrom(ctx context.Context, imageName string) ([]byte, error) {
 	state := testenv.FetchState[imageState](ctx)
@@ -439,4 +490,5 @@ func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^a valid image signature of "([^"]*)" image signed by the "([^"]*)" key$`, createAndPushImageSignature)
 	sc.Step(`^a valid attestation of "([^"]*)" signed by the "([^"]*)" key$`, createAndPushAttestation)
 	sc.Step(`^a valid attestation of "([^"]*)" signed by the "([^"]*)" key, patched with$`, createAndPushAttestationWithPatches)
+	sc.Step(`^a OCI policy bundle named "([^"]*)" with$`, createAndPushPolicyBundle)
 }
