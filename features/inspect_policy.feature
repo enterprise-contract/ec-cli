@@ -7,11 +7,11 @@ Feature: inspect policies
   Scenario: default output
     Given a git repository named "policy" with
       | main.rego | examples/with_annotations.rego |
-    When ec command is run with "inspect policy --source git::http://${GITHOST}/git/policy.git"
+    When ec command is run with "inspect policy --source git::https://${GITHOST}/git/policy.git"
     Then the exit status should be 0
     Then the standard output should contain
     """
-    # Source: git::http://${GITHOST}/git/policy.git
+    # Source: git::https://${GITHOST}/git/policy.git
 
     policy.release.kitty.purr \(deny\)
     https://hacbs-contract.github.io/ec-policies/release_policy.html#kitty__purr
@@ -23,7 +23,7 @@ Feature: inspect policies
   Scenario: short names output
     Given a git repository named "policy" with
       | main.rego | examples/with_annotations.rego |
-    When ec command is run with "inspect policy --source git::http://${GITHOST}/git/policy.git --output short-names"
+    When ec command is run with "inspect policy --source git::https://${GITHOST}/git/policy.git --output short-names"
     Then the exit status should be 0
     Then the standard output should contain
     """
@@ -33,18 +33,18 @@ Feature: inspect policies
   Scenario: invalid output option
     Given a git repository named "policy" with
       | main.rego | examples/with_annotations.rego |
-    When ec command is run with "inspect policy --source git::http://${GITHOST}/git/policy.git --output spam"
+    When ec command is run with "inspect policy --source git::https://${GITHOST}/git/policy.git --output spam"
     Then the exit status should be 1
 
   Scenario: json output
     Given a git repository named "policy" with
       | main.rego | examples/with_annotations.rego |
-    When ec command is run with "inspect policy --source git::http://${GITHOST}/git/policy.git -o json"
+    When ec command is run with "inspect policy --source git::https://${GITHOST}/git/policy.git -o json"
     Then the exit status should be 0
     Then the standard output should contain
     """
       {
-        "git::http://${GITHOST}/git/policy.git": [
+        "git::https://${GITHOST}/git/policy.git": [
           {
             "annotations":{
               "custom":{"short_name":"purr"},
@@ -69,7 +69,7 @@ Feature: inspect policies
     Given a git repository named "policy-data" with
       | foo.yaml | examples/rule_data_2.yaml |
       | bar.json | examples/rule_data_3.json |
-    When ec command is run with "inspect policy-data --source git::http://${GITHOST}/git/policy-data.git -o json"
+    When ec command is run with "inspect policy-data --source git::https://${GITHOST}/git/policy-data.git -o json"
     Then the exit status should be 0
     Then the standard output should contain
     """
@@ -85,7 +85,7 @@ Feature: inspect policies
     Given a git repository named "policy-data" with
       | foo.yaml | examples/rule_data_1.yaml |
       | bar.yaml | examples/rule_data_2.yaml |
-    When ec command is run with "inspect policy-data --source git::http://${GITHOST}/git/policy-data.git -o json"
+    When ec command is run with "inspect policy-data --source git::https://${GITHOST}/git/policy-data.git -o json"
     Then the exit status should be 1
     # Todo:
     #Then the standard error should contain
@@ -105,8 +105,8 @@ Feature: inspect policies
       "sources": [
         {
           "policy": [
-            "git::http://${GITHOST}/git/policy1.git",
-            "git::http://${GITHOST}/git/policy2.git"
+            "git::https://${GITHOST}/git/policy1.git",
+            "git::https://${GITHOST}/git/policy2.git"
           ]
         }
       ]
@@ -116,14 +116,14 @@ Feature: inspect policies
     Then the exit status should be 0
     Then the standard output should contain
     """
-    # Source: git::http://${GITHOST}/git/policy1.git
+    # Source: git::https://${GITHOST}/git/policy1.git
 
     policy.release.kitty.purr \(deny\)
     https://hacbs-contract.github.io/ec-policies/release_policy.html#kitty__purr
     Kittens
     Fluffy
     --
-    # Source: git::http://${GITHOST}/git/policy2.git
+    # Source: git::https://${GITHOST}/git/policy2.git
 
     main.rejector \(deny\)
     Reject rule

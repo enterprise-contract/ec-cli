@@ -22,7 +22,7 @@ Feature: validate pipeline definition
           name: init
           version: "0.1"
     """
-    When ec command is run with "validate definition --file pipeline_definition.yaml --policy git::http://${GITHOST}/git/happy-day-policy.git"
+    When ec command is run with "validate definition --file pipeline_definition.yaml --policy git::https://${GITHOST}/git/happy-day-policy.git"
     Then the exit status should be 0
     Then the standard output should contain
     """

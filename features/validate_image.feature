@@ -22,7 +22,7 @@ Feature: evaluate enterprise contract
       "sources": [
         {
           "policy": [
-            "git::http://${GITHOST}/git/happy-day-policy.git"
+            "git::https://${GITHOST}/git/happy-day-policy.git"
           ]
         }
       ]
@@ -55,7 +55,7 @@ Feature: evaluate enterprise contract
         "publicKey": ${known_PUBLIC_KEY_JSON},
         "rekorUrl": "${REKOR}",
         "sources": [
-          { "policy": ["git::http://${GITHOST}/git/happy-day-policy.git"] }
+          { "policy": ["git::https://${GITHOST}/git/happy-day-policy.git"] }
         ]
       }
     }
@@ -76,7 +76,7 @@ Feature: evaluate enterprise contract
       "sources": [
         {
           "policy": [
-            "git::http://${GITHOST}/git/invalid-image-signature.git"
+            "git::https://${GITHOST}/git/invalid-image-signature.git"
           ]
         }
       ]
@@ -104,7 +104,7 @@ Feature: evaluate enterprise contract
         "publicKey": ${unknown_PUBLIC_KEY_JSON},
         "rekorUrl": "${REKOR}",
         "sources": [
-          { "policy": ["git::http://${GITHOST}/git/invalid-image-signature.git"] }
+          { "policy": ["git::https://${GITHOST}/git/invalid-image-signature.git"] }
         ]
       }
     }
@@ -119,7 +119,7 @@ Feature: evaluate enterprise contract
     Given a valid Rekor entry for attestation of "acceptance/ec-happy-day"
     Given a git repository named "happy-day-policy" with
       | main.rego | examples/happy_day.rego |
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy {"sources":[{"policy":["git::http://${GITHOST}/git/happy-day-policy.git"]}]} --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy {"sources":[{"policy":["git::https://${GITHOST}/git/happy-day-policy.git"]}]} --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
     Then the exit status should be 0
     Then the standard output should contain
     """
@@ -146,7 +146,7 @@ Feature: evaluate enterprise contract
         "publicKey": ${known_PUBLIC_KEY_JSON},
         "rekorUrl": "${REKOR}",
         "sources": [
-          { "policy": ["git::http://${GITHOST}/git/happy-day-policy.git"] }
+          { "policy": ["git::https://${GITHOST}/git/happy-day-policy.git"] }
         ]
       }
     }
@@ -161,7 +161,7 @@ Feature: evaluate enterprise contract
     Given a valid Rekor entry for attestation of "acceptance/ec-happy-day"
     Given a git repository named "future-deny-policy" with
       | main.rego | examples/future_deny.rego |
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy {"sources":[{"policy":["git::http://${GITHOST}/git/future-deny-policy.git"]}]} --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy {"sources":[{"policy":["git::https://${GITHOST}/git/future-deny-policy.git"]}]} --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
     Then the exit status should be 0
     Then the standard output should contain
     """
@@ -188,7 +188,7 @@ Feature: evaluate enterprise contract
         "publicKey": ${known_PUBLIC_KEY_JSON},
         "rekorUrl": "${REKOR}",
         "sources": [
-          { "policy": ["git::http://${GITHOST}/git/future-deny-policy.git"] }
+          { "policy": ["git::https://${GITHOST}/git/future-deny-policy.git"] }
         ]
       }
     }
@@ -203,7 +203,7 @@ Feature: evaluate enterprise contract
     Given a valid Rekor entry for attestation of "acceptance/ec-happy-day"
     Given a git repository named "future-deny-policy" with
       | main.rego | examples/future_deny.rego |
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy {"sources":[{"policy":["git::http://${GITHOST}/git/future-deny-policy.git"]}]} --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --effective-time 2100-01-01T12:00:00Z --strict"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy {"sources":[{"policy":["git::https://${GITHOST}/git/future-deny-policy.git"]}]} --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --effective-time 2100-01-01T12:00:00Z --strict"
     Then the exit status should be 1
     Then the standard output should contain
     """
@@ -230,7 +230,7 @@ Feature: evaluate enterprise contract
         "publicKey": ${known_PUBLIC_KEY_JSON},
         "rekorUrl": "${REKOR}",
         "sources": [
-          { "policy": ["git::http://${GITHOST}/git/future-deny-policy.git"] }
+          { "policy": ["git::https://${GITHOST}/git/future-deny-policy.git"] }
         ]
       }
     }
@@ -253,9 +253,9 @@ Feature: evaluate enterprise contract
     """
     {
       "sources": [
-        { "policy": ["git::http://${GITHOST}/git/repository1.git"] },
-        { "policy": ["git::http://${GITHOST}/git/repository2.git"] },
-        { "policy": ["git::http://${GITHOST}/git/repository3.git"] }
+        { "policy": ["git::https://${GITHOST}/git/repository1.git"] },
+        { "policy": ["git::https://${GITHOST}/git/repository2.git"] },
+        { "policy": ["git::https://${GITHOST}/git/repository3.git"] }
       ]
     }
     """
@@ -300,9 +300,9 @@ Feature: evaluate enterprise contract
         "publicKey": ${known_PUBLIC_KEY_JSON},
         "rekorUrl": "${REKOR}",
         "sources": [
-          { "policy": ["git::http://${GITHOST}/git/repository1.git"] },
-          { "policy": ["git::http://${GITHOST}/git/repository2.git"] },
-          { "policy": ["git::http://${GITHOST}/git/repository3.git"] }
+          { "policy": ["git::https://${GITHOST}/git/repository1.git"] },
+          { "policy": ["git::https://${GITHOST}/git/repository2.git"] },
+          { "policy": ["git::https://${GITHOST}/git/repository3.git"] }
         ]
       }
     }
@@ -335,9 +335,9 @@ Feature: evaluate enterprise contract
       "sources": [
         {
           "policy": [
-            "git::http://${GITHOST}/git/repository1.git",
-            "git::http://${GITHOST}/git/repository2.git",
-            "git::http://${GITHOST}/git/repository3.git"
+            "git::https://${GITHOST}/git/repository1.git",
+            "git::https://${GITHOST}/git/repository2.git",
+            "git::https://${GITHOST}/git/repository3.git"
           ]
         }
       ]
@@ -385,9 +385,9 @@ Feature: evaluate enterprise contract
         "rekorUrl": "${REKOR}",
         "sources": [
           {"policy": [
-            "git::http://${GITHOST}/git/repository1.git",
-            "git::http://${GITHOST}/git/repository2.git",
-            "git::http://${GITHOST}/git/repository3.git"
+            "git::https://${GITHOST}/git/repository1.git",
+            "git::https://${GITHOST}/git/repository2.git",
+            "git::https://${GITHOST}/git/repository3.git"
           ]}
         ]
       }
@@ -410,7 +410,7 @@ Feature: evaluate enterprise contract
       "sources": [
         {
           "policy": [
-            "git::http://${GITHOST}/git/happy-day-policy.git"
+            "git::https://${GITHOST}/git/happy-day-policy.git"
           ]
         }
       ]
@@ -439,18 +439,18 @@ Feature: evaluate enterprise contract
       "sources": [
         {
           "policy": [
-            "git::http://${GITHOST}/git/banana_check.git"
+            "git::https://${GITHOST}/git/banana_check.git"
           ],
           "data": [
-            "git::http://${GITHOST}/git/banana_data_1.git"
+            "git::https://${GITHOST}/git/banana_data_1.git"
           ]
         },
         {
           "policy": [
-            "git::http://${GITHOST}/git/banana_check.git"
+            "git::https://${GITHOST}/git/banana_check.git"
           ],
           "data": [
-            "git::http://${GITHOST}/git/banana_data_2.git"
+            "git::https://${GITHOST}/git/banana_data_2.git"
           ]
         }
       ]
@@ -485,18 +485,18 @@ Feature: evaluate enterprise contract
         "sources": [
           {
             "policy": [
-              "git::http://${GITHOST}/git/banana_check.git"
+              "git::https://${GITHOST}/git/banana_check.git"
             ],
             "data": [
-              "git::http://${GITHOST}/git/banana_data_1.git"
+              "git::https://${GITHOST}/git/banana_data_1.git"
             ]
           },
           {
             "policy": [
-              "git::http://${GITHOST}/git/banana_check.git"
+              "git::https://${GITHOST}/git/banana_check.git"
             ],
             "data": [
-              "git::http://${GITHOST}/git/banana_data_2.git"
+              "git::https://${GITHOST}/git/banana_data_2.git"
             ]
           }
         ]
@@ -512,7 +512,7 @@ Feature: evaluate enterprise contract
       | [{"op": "add", "path": "/predicate/metadata", "value": {}}, {"op": "add", "path": "/predicate/metadata/buildFinishedOn", "value": "2100-01-01T00:00:00Z"}] |
     Given a git repository named "future-deny-policy" with
       | main.rego | examples/future_deny.rego |
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy {"sources":[{"policy":["git::http://${GITHOST}/git/future-deny-policy.git"]}]} --public-key ${known_PUBLIC_KEY} --effective-time attestation --strict"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy {"sources":[{"policy":["git::https://${GITHOST}/git/future-deny-policy.git"]}]} --public-key ${known_PUBLIC_KEY} --effective-time attestation --strict"
     Then the exit status should be 1
     Then the standard output should contain
     """
@@ -538,7 +538,7 @@ Feature: evaluate enterprise contract
       "policy": {
         "publicKey": ${known_PUBLIC_KEY_JSON},
         "sources": [
-          { "policy": ["git::http://${GITHOST}/git/future-deny-policy.git"] }
+          { "policy": ["git::https://${GITHOST}/git/future-deny-policy.git"] }
         ]
       }
     }
@@ -558,7 +558,7 @@ Feature: evaluate enterprise contract
       "sources": [
         {
           "policy": [
-            "git::http://${GITHOST}/git/happy-day-policy.git"
+            "git::https://${GITHOST}/git/happy-day-policy.git"
           ]
         }
       ]
@@ -603,7 +603,7 @@ Feature: evaluate enterprise contract
       "policy": {
         "publicKey": ${known_PUBLIC_KEY_JSON},
         "sources": [
-          { "policy": ["git::http://${GITHOST}/git/happy-day-policy.git"] }
+          { "policy": ["git::https://${GITHOST}/git/happy-day-policy.git"] }
         ]
       },
       "key": ${known_PUBLIC_KEY_JSON},
@@ -630,7 +630,7 @@ Feature: evaluate enterprise contract
       "sources": [
         {
           "policy": [
-            "git::http://${GITHOST}/git/happy-day-policy.git"
+            "git::https://${GITHOST}/git/happy-day-policy.git"
           ]
         }
       ]
@@ -671,7 +671,7 @@ Feature: evaluate enterprise contract
         "sources": [
           {
             "policy": [
-              "git::http://${GITHOST}/git/happy-day-policy.git"
+              "git::https://${GITHOST}/git/happy-day-policy.git"
             ]
           }
         ]
@@ -696,7 +696,7 @@ Feature: evaluate enterprise contract
       "sources": [
         {
           "policy": [
-            "git::http://${GITHOST}/git/happy-day-policy.git"
+            "git::https://${GITHOST}/git/happy-day-policy.git"
           ]
         }
       ]
@@ -729,7 +729,7 @@ Feature: evaluate enterprise contract
         "sources": [
           {
             "policy": [
-              "git::http://${GITHOST}/git/happy-day-policy.git"
+              "git::https://${GITHOST}/git/happy-day-policy.git"
             ]
           }
         ]
@@ -750,7 +750,7 @@ Feature: evaluate enterprise contract
       "sources": [
         {
           "policy": [
-            "git::http://${GITHOST}/git/happy-day-policy.git"
+            "git::https://${GITHOST}/git/happy-day-policy.git"
           ]
         }
       ]
@@ -782,12 +782,13 @@ Feature: evaluate enterprise contract
       "policy": {
         "publicKey": ${known_PUBLIC_KEY_JSON},
         "sources": [
-          { "policy": ["git::http://${GITHOST}/git/happy-day-policy.git"] }
+          { "policy": ["git::https://${GITHOST}/git/happy-day-policy.git"] }
         ]
       }
     }
     """
 
+  @focus
   Scenario: application snapshot reference
     Given a key pair named "known"
     Given an image named "acceptance/ec-happy-day"
@@ -812,7 +813,7 @@ Feature: evaluate enterprise contract
       "sources": [
         {
           "policy": [
-            "git::http://${GITHOST}/git/happy-day-policy.git"
+            "git::https://${GITHOST}/git/happy-day-policy.git"
           ]
         }
       ]
@@ -845,7 +846,7 @@ Feature: evaluate enterprise contract
       "policy": {
         "publicKey": ${known_PUBLIC_KEY_JSON},
         "sources": [
-          { "policy": ["git::http://${GITHOST}/git/happy-day-policy.git"] }
+          { "policy": ["git::https://${GITHOST}/git/happy-day-policy.git"] }
         ]
       }
     }
@@ -865,7 +866,7 @@ Feature: evaluate enterprise contract
       "sources": [
         {
           "policy": [
-            "git::http://${GITHOST}/git/my-policy.git"
+            "git::https://${GITHOST}/git/my-policy.git"
           ]
         }
       ]
