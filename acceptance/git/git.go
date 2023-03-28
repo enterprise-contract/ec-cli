@@ -21,7 +21,16 @@ package git
 
 import (
 	"context"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
+	"crypto/x509"
+	"crypto/x509/pkix"
+	_ "embed"
+	"encoding/pem"
 	"fmt"
+	"math"
+	"math/big"
 	"os"
 	"path"
 	"time"
@@ -46,6 +55,7 @@ const gitStateKey = key(0) // we store the gitState struct under this key in Con
 type gitState struct {
 	HostAndPort     string
 	RepositoriesDir string
+	CertificatePath string
 }
 
 func (g gitState) Key() any {
@@ -55,6 +65,9 @@ func (g gitState) Key() any {
 func (g gitState) Up() bool {
 	return g.HostAndPort != "" && g.RepositoriesDir != ""
 }
+
+//go:embed nginx.conf
+var nginxConf []byte
 
 // startStubGitServer launches a stub git server and exposes the port via NAT from the container
 func startStubGitServer(ctx context.Context) (context.Context, error) {
@@ -74,12 +87,73 @@ func startStubGitServer(ctx context.Context) (context.Context, error) {
 		return ctx, err
 	}
 
+	nginxConfDir := path.Join(repositories, "conf")
+	if err = os.Mkdir(nginxConfDir, 0755); err != nil {
+		return ctx, err
+	}
+	if err = os.WriteFile(path.Join(nginxConfDir, "nginx.conf"), nginxConf, 0444); err != nil {
+		return ctx, err
+	}
+
+	tlsDir := path.Join(repositories, "tls")
+	if err = os.Mkdir(tlsDir, 0755); err != nil {
+		return ctx, err
+	}
+
+	if key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader); err != nil {
+		return ctx, err
+	} else if keyBytes, err := x509.MarshalECPrivateKey(key); err != nil {
+		return ctx, err
+	} else {
+		keyPem := pem.EncodeToMemory(&pem.Block{
+			Type:  "EC PRIVATE KEY",
+			Bytes: keyBytes,
+		})
+
+		if err = os.WriteFile(path.Join(tlsDir, "server.key"), keyPem, 0444); err != nil {
+			return ctx, err
+		}
+
+		serial, err := rand.Int(rand.Reader, big.NewInt(math.MaxInt64))
+		if err != nil {
+			return ctx, err
+		}
+
+		templ := x509.Certificate{
+			DNSNames:     []string{"localhost"},
+			Subject:      pkix.Name{CommonName: "localhost"},
+			SerialNumber: serial,
+			NotBefore:    time.Now().Add(-24 * time.Hour),
+			NotAfter:     time.Now().Add(24 * time.Hour),
+			KeyUsage:     x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment,
+			ExtKeyUsage:  []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+		}
+		if cert, err := x509.CreateCertificate(rand.Reader, &templ, &templ, &key.PublicKey, key); err != nil {
+			return ctx, err
+		} else {
+			certificate := path.Join(tlsDir, "server.cer")
+
+			certPEM := pem.EncodeToMemory(&pem.Block{
+				Type:  "TRUSTED CERTIFICATE",
+				Bytes: cert,
+			})
+
+			if err = os.WriteFile(certificate, certPEM, 0444); err != nil {
+				return ctx, err
+			}
+
+			state.CertificatePath = certificate
+		}
+	}
+
 	req := testenv.TestContainersRequest(ctx, testcontainers.ContainerRequest{
 		Image:        "docker.io/ynohat/git-http-backend",
-		ExposedPorts: []string{"0.0.0.0::80/tcp"},
-		WaitingFor:   wait.ForListeningPort("80/tcp"),
+		ExposedPorts: []string{"0.0.0.0::443/tcp"},
+		WaitingFor:   wait.ForListeningPort("443/tcp"),
 		Binds: []string{
 			fmt.Sprintf("%s:/git:Z", repositories), // :Z is to allow accessing the directory under SELinux
+			fmt.Sprintf("%s/nginx.conf:/etc/nginx/nginx.conf:Z", nginxConfDir),
+			fmt.Sprintf("%s:/etc/tls:Z", tlsDir),
 		},
 	})
 
@@ -92,7 +166,7 @@ func startStubGitServer(ctx context.Context) (context.Context, error) {
 		return ctx, err
 	}
 
-	port, err := git.MappedPort(ctx, "80/tcp")
+	port, err := git.MappedPort(ctx, "443/tcp")
 	if err != nil {
 		return ctx, err
 	}
@@ -107,6 +181,12 @@ func startStubGitServer(ctx context.Context) (context.Context, error) {
 // via http://host:port/git/`name`git
 func Host(ctx context.Context) string {
 	return testenv.FetchState[gitState](ctx).HostAndPort
+}
+
+// CertificatePath returns the path to the self-signed certificate used for TLS
+// handshake
+func CertificatePath(ctx context.Context) string {
+	return testenv.FetchState[gitState](ctx).CertificatePath
 }
 
 func IsRunning(ctx context.Context) bool {
