@@ -788,7 +788,6 @@ Feature: evaluate enterprise contract
     }
     """
 
-  @focus
   Scenario: application snapshot reference
     Given a key pair named "known"
     Given an image named "acceptance/ec-happy-day"
