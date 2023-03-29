@@ -391,7 +391,7 @@ func Test_ReportHACBS(t *testing.T) {
 				"namespace": "",
 				"result": "SUCCESS",
 				"successes": 3,
-				"timestamp": "1970-01-01T00:00:00Z",
+				"timestamp": 0,
 				"warnings": 0
 			}`,
 			components: []Component{{Success: true}, {Success: true}, {Success: true}},
@@ -405,7 +405,7 @@ func Test_ReportHACBS(t *testing.T) {
 				"namespace": "",
 				"result": "WARNING",
 				"successes": 2,
-				"timestamp": "1970-01-01T00:00:00Z",
+				"timestamp": 0,
 				"warnings": 1
 			}`,
 			components: []Component{
@@ -422,7 +422,7 @@ func Test_ReportHACBS(t *testing.T) {
 				"namespace": "",
 				"result": "FAILURE",
 				"successes": 1,
-				"timestamp": "1970-01-01T00:00:00Z",
+				"timestamp": 0,
 				"warnings": 0
 			}`,
 			components: []Component{
@@ -439,7 +439,7 @@ func Test_ReportHACBS(t *testing.T) {
 				"namespace": "",
 				"result": "FAILURE",
 				"successes": 1,
-				"timestamp": "1970-01-01T00:00:00Z",
+				"timestamp": 0,
 				"warnings": 0
 			}`,
 			components: []Component{{Success: false}, {Success: true}},
@@ -453,7 +453,7 @@ func Test_ReportHACBS(t *testing.T) {
 				"namespace": "",
 				"result": "FAILURE",
 				"successes": 1,
-				"timestamp": "1970-01-01T00:00:00Z",
+				"timestamp": 0,
 				"warnings": 1
 			}`,
 			components: []Component{
@@ -471,7 +471,7 @@ func Test_ReportHACBS(t *testing.T) {
 				"namespace": "",
 				"result": "SKIPPED",
 				"successes": 0,
-				"timestamp": "1970-01-01T00:00:00Z",
+				"timestamp": 0,
 				"warnings": 0
 			}`,
 			components: []Component{},
@@ -485,7 +485,7 @@ func Test_ReportHACBS(t *testing.T) {
 				"namespace": "",
 				"result": "SUCCESS",
 				"successes": 3,
-				"timestamp": "1970-01-01T00:00:00Z",
+				"timestamp": 0,
 				"warnings": 0
 			}`,
 			snapshot:   "snappy",

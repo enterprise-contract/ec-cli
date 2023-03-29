@@ -74,12 +74,12 @@ type componentSummary struct {
 // it is always an empty string from the ec-cli as a way to indicate all
 // namespaces were used.
 type hacbsReport struct {
-	Timestamp time.Time `json:"timestamp"`
-	Namespace string    `json:"namespace"`
-	Successes int       `json:"successes"`
-	Failures  int       `json:"failures"`
-	Warnings  int       `json:"warnings"`
-	Result    string    `json:"result"`
+	Timestamp int64  `json:"timestamp"`
+	Namespace string `json:"namespace"`
+	Successes int    `json:"successes"`
+	Failures  int    `json:"failures"`
+	Warnings  int    `json:"warnings"`
+	Result    string `json:"result"`
 }
 
 // Possible formats the report can be written as.
@@ -207,7 +207,7 @@ func condensedMsg(results []conftestOutput.Result) map[string][]string {
 // toHACBS returns a version of the report that conforms to the
 // HACBS_TEST_OUTPUT format.
 func (r *Report) toHACBS() hacbsReport {
-	result := hacbsReport{Timestamp: r.created}
+	result := hacbsReport{Timestamp: r.created.UTC().Unix()}
 
 	hasFailures := false
 	for _, component := range r.Components {
