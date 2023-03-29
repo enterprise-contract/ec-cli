@@ -70,6 +70,12 @@ func GenerateKeyPairNamed(ctx context.Context, name string) (context.Context, er
 
 	state.Keys[name] = keyPair
 
+	if rekor, ok := ctx.Value(testenv.RekorImpl).(testenv.Rekor); ok {
+		if err := rekor.StubRekorEntryFor(ctx, keyPair.PublicBytes); err != nil {
+			return ctx, err
+		}
+	}
+
 	return ctx, nil
 }
 
