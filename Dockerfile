@@ -19,7 +19,7 @@ FROM registry.access.redhat.com/ubi9/ubi-minimal
 ARG TARGETOS
 ARG TARGETARCH
 
-RUN microdnf -y install git-core && microdnf clean all
+RUN microdnf -y install git-core jq && microdnf clean all
 
 COPY "dist/ec_"$TARGETOS"_"$TARGETARCH /usr/bin/ec
 
