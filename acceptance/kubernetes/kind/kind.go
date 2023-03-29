@@ -57,6 +57,19 @@ type key int
 
 const testStateKey = key(0)
 
+// we don't want to bootstrap two clusters simultaniously
+var clusterMutex = sync.Mutex{}
+
+// cluster consumers, we wait for every consumer to stop using the cluster
+// before we shutdown the cluster
+var clusterGroup = sync.WaitGroup{}
+
+// make sure we try to destroy the cluster only once
+var destroy = sync.Once{}
+
+// single instance of Kind cluster
+var globalCluster *kindCluster
+
 type testState struct {
 	namespace string
 	policy    string
@@ -109,6 +122,16 @@ func (k *kindCluster) Up(_ context.Context) bool {
 // and the Tekton Task bundle images will be pushed to the registry running in
 // the cluster.
 func Start(ctx context.Context) (context.Context, types.Cluster, error) {
+	clusterMutex.Lock()
+	defer clusterMutex.Unlock()
+
+	// count this cluster consumer
+	clusterGroup.Add(1)
+
+	if globalCluster != nil {
+		return ctx, globalCluster, nil
+	}
+
 	configDir, err := os.MkdirTemp("", "ec-acceptance.*")
 	if err != nil {
 		return ctx, nil, err
@@ -198,6 +221,8 @@ func Start(ctx context.Context) (context.Context, types.Cluster, error) {
 	if err != nil {
 		return ctx, &kCluster, err
 	}
+
+	globalCluster = &kCluster
 
 	return ctx, &kCluster, nil
 }
@@ -319,10 +344,23 @@ func (k *kindCluster) KubeConfig(ctx context.Context) (string, error) {
 }
 
 func (k *kindCluster) Stop(ctx context.Context) error {
+	// release cluster
+	clusterGroup.Done()
+
+	// wait for other cluster consumers to finish
+	clusterGroup.Wait()
+
+	destroy.Do(k.destroyCluster)
+
+	return nil
+}
+
+func (k *kindCluster) destroyCluster() {
 	defer func() {
 		kindDir := path.Join(k.kubeconfigPath, "..")
 		_ = os.RemoveAll(kindDir) // ignore errors
 	}()
 
-	return k.provider.Delete(k.name, k.kubeconfigPath)
+	// ignore error
+	_ = k.provider.Delete(k.name, k.kubeconfigPath)
 }
