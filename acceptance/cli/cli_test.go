@@ -41,7 +41,7 @@ func Test_JSONDiffWithRegex(t *testing.T) {
 		name     string
 		expected []byte
 		right    string
-		matches  bool
+		modified bool
 	}{
 		{
 			name:     "passing",
@@ -55,7 +55,7 @@ func Test_JSONDiffWithRegex(t *testing.T) {
 					]
 				}
 			}`,
-			matches: true,
+			modified: false,
 		},
 		{
 			name:     "failing nested",
@@ -69,7 +69,7 @@ func Test_JSONDiffWithRegex(t *testing.T) {
 					]
 				}
 			}`,
-			matches: false,
+			modified: true,
 		},
 		{
 			name:     "failing",
@@ -84,13 +84,13 @@ func Test_JSONDiffWithRegex(t *testing.T) {
 					]
 				}
 			}`,
-			matches: false,
+			modified: true,
 		},
 		{
 			name:     "literal",
 			expected: expected,
 			right:    string(expected),
-			matches:  true,
+			modified: false,
 		},
 		{
 			name: "similar positions",
@@ -108,7 +108,7 @@ func Test_JSONDiffWithRegex(t *testing.T) {
 					"b": "a"
 				}
 			}`,
-			matches: false,
+			modified: true,
 		},
 		{
 			name: "missed cardinality - excess in expected",
@@ -118,7 +118,7 @@ func Test_JSONDiffWithRegex(t *testing.T) {
 			right: `{
 				"a": [1, 2]
 			}`,
-			matches: false,
+			modified: true,
 		},
 		{
 			name: "missed cardinality - excess in actual",
@@ -128,7 +128,7 @@ func Test_JSONDiffWithRegex(t *testing.T) {
 			right: `{
 				"a": [1, 2, 3]
 			}`,
-			matches: false,
+			modified: true,
 		},
 	}
 
@@ -144,7 +144,8 @@ func Test_JSONDiffWithRegex(t *testing.T) {
 			assert.NoError(t, err)
 
 			if diff.Modified() {
-				assert.Equal(t, c.matches, matchesJSONRegex(left, diff))
+				diff = filterMatchedByRegexp(left, diff)
+				assert.Equal(t, c.modified, diff.Modified())
 			}
 		})
 	}

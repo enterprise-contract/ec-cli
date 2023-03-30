@@ -37,6 +37,7 @@ import (
 	s "github.com/google/go-containerregistry/pkg/v1/static"
 	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/in-toto/in-toto-golang/in_toto"
+	v02 "github.com/in-toto/in-toto-golang/in_toto/slsa_provenance/v0.2"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
 	"github.com/sigstore/cosign/v2/pkg/oci/static"
 	cosigntypes "github.com/sigstore/cosign/v2/pkg/types"
@@ -429,6 +430,14 @@ func ImageSignatureFrom(ctx context.Context, imageName string) ([]byte, error) {
 	return base64.StdEncoding.DecodeString(signature)
 }
 
+// copied from ../../internal/attestation/slsa_provenance_02.go not to create a
+// dependancy on CLI from acceptance tests
+type entitySignature struct {
+	KeyID     string            `json:"keyid"`
+	Signature string            `json:"sig"`
+	Metadata  map[string]string `json:"metadata,omitempty"` // additional metadata added by ec-cli, see internal/attestation/slsa_provenance_02.go.describeStatement
+}
+
 // storeAttestationSignatures extracts the signatures from the raw attestation and stores it
 // in the context for later retrieval.
 // TODO: allow support for multiple attestations
@@ -437,12 +446,25 @@ func storeAttestationSignatures(ctx context.Context, rawAttestation []byte) (con
 	if err := json.Unmarshal(rawAttestation, &attestationPayload); err != nil {
 		return nil, err
 	}
-	signaturesJson, err := json.Marshal(attestationPayload.Signatures)
+
+	signatures := make([]entitySignature, 0, len(attestationPayload.Signatures))
+	for _, signature := range attestationPayload.Signatures {
+		signatures = append(signatures, entitySignature{
+			KeyID:     signature.KeyID,
+			Signature: signature.Sig,
+			Metadata: map[string]string{ // add the metadata we don't have in the signature
+				"predicateBuildType": attestation.PredicateBuilderType,
+				"predicateType":      v02.PredicateSLSAProvenance,
+				"type":               in_toto.StatementInTotoV01,
+			},
+		})
+	}
+	signaturesJson, err := json.Marshal(signatures)
 	if err != nil {
 		return nil, err
 	}
 
-	return context.WithValue(ctx, imageAttestationSignaturesKey, signaturesJson), nil
+	return context.WithValue(ctx, imageAttestationSignaturesKey, string(signaturesJson)), nil
 }
 
 // JSONAttestationSignaturesFrom returns the list of attestation signatures found in the context in
