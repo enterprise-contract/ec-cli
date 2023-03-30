@@ -69,7 +69,8 @@ func TestValidateDefinitionFileCommandOutput(t *testing.T) {
 		  "warnings": []
 		}
 	  ],
-	  "success": true
+	  "success": true,
+	  "ec-version": "development"
 	  }`, out.String())
 }
 
@@ -108,7 +109,7 @@ func TestValidateDefinitionFilePolicySources(t *testing.T) {
 }
 
 func TestDefinitionFileOutputFormats(t *testing.T) {
-	testJSONText := `{"definitions":[{"filename":"/path/file1.yaml","violations":[],"warnings":[],"success":true}],"success":true}`
+	testJSONText := `{"definitions":[{"filename":"/path/file1.yaml","violations":[],"warnings":[],"success":true}],"success":true,"ec-version":"development"}`
 
 	testYAMLTest := hd.Doc(`
 	definitions:
@@ -116,6 +117,7 @@ func TestDefinitionFileOutputFormats(t *testing.T) {
 	  success: true
 	  violations: []
 	  warnings: []
+	ec-version: development
 	success: true
 	`)
 

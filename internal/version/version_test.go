@@ -73,7 +73,7 @@ func TestComputeInfo(t *testing.T) {
 	Version = "v1"
 	t.Cleanup(func() { readBuildInfo = dbg.ReadBuildInfo; Version = "" })
 
-	vi, err := computeInfo()
+	vi, err := ComputeInfo()
 	assert.NoError(t, err)
 	assert.Equal(t, &VersionInfo{
 		Version:   "v1",

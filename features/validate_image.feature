@@ -34,6 +34,7 @@ Feature: evaluate enterprise contract
     """
     {
       "success": true,
+      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
       "key": ${known_PUBLIC_KEY_JSON},
       "components": [
         {
@@ -88,6 +89,7 @@ Feature: evaluate enterprise contract
     """
     {
       "success": false,
+      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
       "key": ${unknown_PUBLIC_KEY_JSON},
       "components": [
         {
@@ -125,6 +127,7 @@ Feature: evaluate enterprise contract
     """
     {
       "success": true,
+      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
       "key": ${known_PUBLIC_KEY_JSON},
       "components": [
         {
@@ -167,6 +170,7 @@ Feature: evaluate enterprise contract
     """
     {
       "success": true,
+      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
       "key": ${known_PUBLIC_KEY_JSON},
       "components": [
         {
@@ -209,6 +213,7 @@ Feature: evaluate enterprise contract
     """
     {
       "success": false,
+      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
       "key": ${known_PUBLIC_KEY_JSON},
       "components": [
         {
@@ -265,6 +270,7 @@ Feature: evaluate enterprise contract
     """
     {
       "success": false,
+      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
       "key": ${known_PUBLIC_KEY_JSON},
       "components": [
         {
@@ -349,6 +355,7 @@ Feature: evaluate enterprise contract
     """
     {
       "success": false,
+      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
       "key": ${known_PUBLIC_KEY_JSON},
       "components": [
         {
@@ -462,6 +469,7 @@ Feature: evaluate enterprise contract
     """
     {
       "success": false,
+      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
       "key": ${known_PUBLIC_KEY_JSON},
       "components": [
         {
@@ -518,6 +526,7 @@ Feature: evaluate enterprise contract
     """
     {
       "success": false,
+      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
       "key": ${known_PUBLIC_KEY_JSON},
       "components": [
         {
@@ -607,7 +616,8 @@ Feature: evaluate enterprise contract
         ]
       },
       "key": ${known_PUBLIC_KEY_JSON},
-      "success": false
+      "success": false,
+      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+"
     }
     """
 
@@ -642,6 +652,7 @@ Feature: evaluate enterprise contract
     """
     {
       "success": true,
+      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
       "key": ${known_PUBLIC_KEY_JSON},
       "components": [
         {
@@ -708,6 +719,7 @@ Feature: evaluate enterprise contract
     """
     {
       "success": true,
+      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
       "key": ${known_PUBLIC_KEY_JSON},
       "components": [
         {
@@ -762,6 +774,7 @@ Feature: evaluate enterprise contract
     """
     {
       "success": true,
+      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
       "key": ${known_PUBLIC_KEY_JSON},
       "components": [
         {
@@ -824,6 +837,7 @@ Feature: evaluate enterprise contract
     """
     {
       "success": true,
+      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
       "key": ${known_PUBLIC_KEY_JSON},
       "snapshot": "acceptance/happy",
       "components": [
@@ -906,6 +920,7 @@ Feature: evaluate enterprise contract
     """
     {
       "success": true,
+      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
       "key": ${known_PUBLIC_KEY_JSON},
       "components": [
         {

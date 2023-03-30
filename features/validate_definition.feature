@@ -26,5 +26,5 @@ Feature: validate pipeline definition
     Then the exit status should be 0
     Then the standard output should contain
     """
-    {"definitions": [{"filename":"pipeline_definition.yaml","violations":[],"warnings":[],"success":true}],"success":true}
+    {"definitions": [{"filename":"pipeline_definition.yaml","violations":[],"warnings":[],"success":true}],"success":true,"ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+"}
     """

@@ -25,6 +25,7 @@ import (
 
 	"github.com/enterprise-contract/ec-cli/internal/format"
 	"github.com/enterprise-contract/ec-cli/internal/output"
+	"github.com/enterprise-contract/ec-cli/internal/version"
 )
 
 type ReportItem struct {
@@ -44,11 +45,14 @@ const (
 type Report struct {
 	Definitions []ReportItem `json:"definitions"`
 	Success     bool         `json:"success"`
+	EcVersion   string       `json:"ec-version"`
 }
 
 func NewReport() Report {
+	info, _ := version.ComputeInfo()
 	return Report{
-		Success: true,
+		Success:   true,
+		EcVersion: info.Version,
 	}
 }
 

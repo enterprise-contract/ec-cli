@@ -253,6 +253,7 @@ func Test_ValidateImageCommand(t *testing.T) {
 	assert.NoError(t, err)
 	assert.JSONEq(t, fmt.Sprintf(`{
 		"success": true,
+		"ec-version": "development",
 		"key": "%s",
 		"components": [
 		  {
@@ -391,6 +392,7 @@ func Test_FailureImageAccessibility(t *testing.T) {
 	assert.NoError(t, err)
 	assert.JSONEq(t, fmt.Sprintf(`{
 		"success": false,
+		"ec-version": "development",
 		"key": "%s",
 		"components": [
 		  {
@@ -446,6 +448,7 @@ func Test_FailureOutput(t *testing.T) {
 	assert.NoError(t, err)
 	assert.JSONEq(t, fmt.Sprintf(`{
 		"success": false,
+		"ec-version": "development",
 		"key": "%s",
 		"components": [
 		  {
@@ -508,6 +511,7 @@ func Test_WarningOutput(t *testing.T) {
 	assert.NoError(t, err)
 	assert.JSONEq(t, fmt.Sprintf(`{
 		"success": true,
+		"ec-version": "development",
 		"key": "%s",
 		"components": [
 		  {

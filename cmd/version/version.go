@@ -17,49 +17,13 @@
 package version
 
 import (
-	"bytes"
 	j "encoding/json"
-	"errors"
 	"fmt"
-	dbg "runtime/debug"
-	"text/tabwriter"
-	"time"
 
-	"github.com/hako/durafmt"
 	"github.com/spf13/cobra"
+
+	"github.com/enterprise-contract/ec-cli/internal/version"
 )
-
-// Version of the `ec` CLI, set at build time to git id
-var Version = "development"
-
-var readBuildInfo = dbg.ReadBuildInfo
-
-type ComponentInfo struct {
-	Name    string
-	Version string
-}
-
-type VersionInfo struct {
-	Version    string
-	Commit     string
-	ChangedOn  time.Time
-	Components []ComponentInfo
-}
-
-func (v VersionInfo) String() string {
-	var buffy bytes.Buffer
-	w := tabwriter.NewWriter(&buffy, 10, 1, 2, ' ', 0)
-	fmt.Fprintf(w, "Version\t%s\n", v.Version)
-	fmt.Fprintf(w, "Source ID\t%s\n", v.Commit)
-	fmt.Fprintf(w, "Change date\t%s (%s ago)\n", v.ChangedOn, durafmt.ParseShort(time.Since(v.ChangedOn)))
-
-	for _, c := range v.Components {
-		fmt.Fprintf(w, "%s\t%s\n", c.Name, c.Version)
-	}
-	w.Flush()
-
-	return buffy.String()
-}
 
 var VersionCmd *cobra.Command
 
@@ -72,9 +36,9 @@ func init() {
 		Use:   "version",
 		Short: "Print version information",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var info *VersionInfo
+			var info *version.VersionInfo
 			var err error
-			if info, err = computeInfo(); err != nil {
+			if info, err = version.ComputeInfo(); err != nil {
 				return err
 			}
 
@@ -94,53 +58,4 @@ func init() {
 
 	VersionCmd.Flags().BoolVarP(&json, "json", "j", false, "JSON output")
 	VersionCmd.Flags().BoolVarP(&short, "short", "s", false, "Only output the version")
-}
-
-func computeInfo() (*VersionInfo, error) {
-	buildInfo, ok := readBuildInfo()
-	if !ok {
-		return nil, errors.New("no build info available")
-	}
-
-	info := VersionInfo{}
-	info.Version = Version
-
-	for _, s := range buildInfo.Settings {
-		switch s.Key {
-		case "vcs.revision":
-			info.Commit = s.Value
-		case "vcs.time":
-			var err error
-			if info.ChangedOn, err = time.Parse(time.RFC3339, s.Value); err != nil {
-				return nil, err
-			}
-		}
-	}
-
-	info.Components = append(info.Components, dependencyVersion("ECC", "github.com/enterprise-contract/enterprise-contract-controller/api", buildInfo.Deps))
-	info.Components = append(info.Components, dependencyVersion("OPA", "github.com/open-policy-agent/opa", buildInfo.Deps))
-	info.Components = append(info.Components, dependencyVersion("Conftest", "github.com/open-policy-agent/conftest", buildInfo.Deps))
-	info.Components = append(info.Components, dependencyVersion("Red Hat AppStudio (API)", "github.com/redhat-appstudio/application-api", buildInfo.Deps))
-	info.Components = append(info.Components, dependencyVersion("Cosign", "github.com/sigstore/cosign", buildInfo.Deps))
-	info.Components = append(info.Components, dependencyVersion("Sigstore", "github.com/sigstore/sigstore", buildInfo.Deps))
-	info.Components = append(info.Components, dependencyVersion("Rekor", "github.com/sigstore/rekor", buildInfo.Deps))
-	info.Components = append(info.Components, dependencyVersion("Tekton Pipeline", "github.com/tektoncd/pipeline", buildInfo.Deps))
-	info.Components = append(info.Components, dependencyVersion("Kubernetes Client", "k8s.io/api", buildInfo.Deps))
-
-	return &info, nil
-}
-
-func dependencyVersion(name string, path string, dependencies []*dbg.Module) ComponentInfo {
-	ci := ComponentInfo{
-		Name:    name,
-		Version: "N/A",
-	}
-	for _, d := range dependencies {
-		if d.Path == path {
-			ci.Version = d.Version
-			break
-		}
-	}
-
-	return ci
 }
