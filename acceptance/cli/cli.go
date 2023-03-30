@@ -28,6 +28,7 @@ import (
 	"path"
 	"regexp"
 	"runtime"
+	"sort"
 	"strings"
 	"unicode"
 
@@ -60,6 +61,16 @@ type key int
 const (
 	processStatusKey key = iota
 )
+
+type diffy []gojsondiff.Delta
+
+func (d diffy) Modified() bool {
+	return len(d) > 0
+}
+
+func (d diffy) Deltas() []gojsondiff.Delta {
+	return d
+}
 
 // ecCommandIsRunWith launches the ec command line with provided parameters.
 // If parameters contain references to variables in ${...} syntax those will
@@ -192,7 +203,6 @@ func setupKeys(ctx context.Context, vars map[string]string, environment []string
 }
 
 func setupSigs(ctx context.Context, vars map[string]string, environment []string) ([]string, map[string]string, error) {
-
 	if sigs := image.JSONAttestationSignaturesFrom(ctx); sigs != "" {
 		vars["ATTESTATION_SIGNATURES_JSON"] = sigs
 	}
@@ -371,7 +381,9 @@ func theStandardOutputShouldContain(ctx context.Context, expected *godog.DocStri
 			return err
 		}
 
-		if matchesJSONRegex(left, diff) {
+		diff = filterMatchedByRegexp(left, diff)
+
+		if !diff.Modified() {
 			// there was a difference, but the values matched regular expression
 			// given in the expected JSON
 			return nil
@@ -398,62 +410,99 @@ func theStandardOutputShouldContain(ctx context.Context, expected *godog.DocStri
 	return fmt.Errorf("expected and actual output differ:\n%s", b.String())
 }
 
-func matchesJSONRegex(obj any, diff gojsondiff.Diff) bool {
+func filterMatchedByRegexp(obj any, diff gojsondiff.Diff) diffy {
 	deltas := diff.Deltas()
 	if v, ok := obj.(map[string]any); ok {
-		return matchesJSONObjectRegex(v, deltas)
+		filterObjectMatchedByRegexp(v, &deltas)
 	} else if v, ok := obj.([]any); ok {
-		return matchesJSONArrayRegex(v, deltas)
+		filterArrayMatchedByRegexp(v, &deltas)
 	}
 
-	return false
+	filterOutEmptyDeltas(&deltas)
+
+	return deltas
 }
 
-func matchesJSONArrayRegex(ary []any, deltas []gojsondiff.Delta) bool {
+func filterOutEmptyDeltas(deltas *[]gojsondiff.Delta) {
+	filtered := make([]gojsondiff.Delta, 0, len(*deltas))
+	for _, delta := range *deltas {
+		switch delta := delta.(type) {
+		case *gojsondiff.Object:
+			filterOutEmptyDeltas(&delta.Deltas)
+
+			if len(delta.Deltas) > 0 {
+				filtered = append(filtered, delta)
+			}
+		case *gojsondiff.Array:
+			filterOutEmptyDeltas(&delta.Deltas)
+
+			if len(delta.Deltas) > 0 {
+				filtered = append(filtered, delta)
+			}
+		default:
+			filtered = append(filtered, delta)
+		}
+	}
+
+	*deltas = filtered
+}
+
+func filterArrayMatchedByRegexp(ary []any, deltas *[]gojsondiff.Delta) {
+	removeIdxs := make([]int, 0, len(*deltas))
 	for i, v := range ary {
 		pos := gojsondiff.Index(i)
-		if matches := matchesJSONDeltaRegex(v, pos, deltas); !matches {
-			return false
+		if idx := filterDeltaRegexp(v, pos, deltas); idx != nil {
+			removeIdxs = append(removeIdxs, *idx)
 		}
 	}
 
-	return true
+	sort.Ints(removeIdxs)
+	for i, removed := range removeIdxs {
+		idx := removed - i
+		*deltas = append((*deltas)[:idx], (*deltas)[idx+1:]...)
+	}
 }
 
-func matchesJSONObjectRegex(obj map[string]any, deltas []gojsondiff.Delta) bool {
+func filterObjectMatchedByRegexp(obj map[string]any, deltas *[]gojsondiff.Delta) {
+	removeIdxs := make([]int, 0, len(*deltas))
 	for k, v := range obj {
 		pos := gojsondiff.Name(k)
-		if matches := matchesJSONDeltaRegex(v, pos, deltas); !matches {
-			return false
+		if idx := filterDeltaRegexp(v, pos, deltas); idx != nil {
+			removeIdxs = append(removeIdxs, *idx)
 		}
 	}
 
-	return true
+	sort.Ints(removeIdxs)
+	for i, removed := range removeIdxs {
+		idx := removed - i
+		*deltas = append((*deltas)[:idx], (*deltas)[idx+1:]...)
+	}
 }
 
-func matchesJSONDeltaRegex(value any, pos gojsondiff.Position, deltas []gojsondiff.Delta) bool {
-	for _, delta := range deltas {
-		switch delta := delta.(type) {
-		case *gojsondiff.Deleted:
-			return false
-		case *gojsondiff.Added:
-			return false
-		case gojsondiff.PostDelta:
-			if delta.PostPosition() == pos {
-				switch delta := delta.(type) {
-				case *gojsondiff.Object:
-					return matchesJSONObjectRegex(value.(map[string]any), delta.Deltas)
-				case *gojsondiff.Array:
-					return matchesJSONArrayRegex(value.([]any), delta.Deltas)
-				case *gojsondiff.Modified:
-					return matchesRegex(delta.OldValue, delta.NewValue)
+func filterDeltaRegexp(value any, pos gojsondiff.Position, deltas *[]gojsondiff.Delta) *int {
+	for i, delta := range *deltas {
+		if delta, ok := delta.(gojsondiff.PostDelta); !ok || delta.PostPosition() != pos {
+			continue
+		}
 
-				}
-			}
+		matched := false
+		switch delta := delta.(type) {
+		case *gojsondiff.Object:
+			filterObjectMatchedByRegexp(value.(map[string]any), &delta.Deltas)
+		case *gojsondiff.Array:
+			filterArrayMatchedByRegexp(value.([]any), &delta.Deltas)
+		case *gojsondiff.Modified:
+			matched = matchesRegex(delta.OldValue, delta.NewValue)
+		case *gojsondiff.TextDiff:
+			matched = matchesRegex(delta.OldValue, delta.NewValue)
+		}
+
+		if matched {
+			return &i
 		}
 	}
 
-	return true
+	return nil
 }
 
 func matchesRegex(regex any, value any) bool {

@@ -52,7 +52,7 @@ Feature: evaluate enterprise contract
         }
       ],
       "policy": {
-        "publicKey": ${known_PUBLIC_KEY_JSON},
+        "publicKey": "${known_PUBLIC_KEY}",
         "rekorUrl": "${REKOR}",
         "sources": [
           { "policy": ["git::https://${GITHOST}/git/happy-day-policy.git"] }
@@ -92,16 +92,16 @@ Feature: evaluate enterprise contract
       "components": [
         {
           "name": "Unnamed",
-          "containerImage": "localhost:(\\d+)/acceptance/invalid-image-signature",
+          "containerImage": "localhost:(\\d+)/acceptance/invalid-image-signature@sha256:[0-9a-f]{64}",
           "violations": [
-            {"msg": "No image signatures found matching the given public key. Verify the correct public key was provided, and a signature was created."},
-            {"msg": "No image attestations found matching the given public key. Verify the correct public key was provided, and one or more attestations were created."}
+            {"msg": "No image attestations found matching the given public key. Verify the correct public key was provided, and one or more attestations were created."},
+            {"msg": "No image signatures found matching the given public key. Verify the correct public key was provided, and a signature was created."}
           ],
           "success": false
         }
       ],
       "policy": {
-        "publicKey": ${unknown_PUBLIC_KEY_JSON},
+        "publicKey": "${unknown_PUBLIC_KEY}",
         "rekorUrl": "${REKOR}",
         "sources": [
           { "policy": ["git::https://${GITHOST}/git/invalid-image-signature.git"] }
@@ -143,7 +143,7 @@ Feature: evaluate enterprise contract
         }
       ],
       "policy": {
-        "publicKey": ${known_PUBLIC_KEY_JSON},
+        "publicKey": "${known_PUBLIC_KEY}",
         "rekorUrl": "${REKOR}",
         "sources": [
           { "policy": ["git::https://${GITHOST}/git/happy-day-policy.git"] }
@@ -185,7 +185,7 @@ Feature: evaluate enterprise contract
         }
       ],
       "policy": {
-        "publicKey": ${known_PUBLIC_KEY_JSON},
+        "publicKey": "${known_PUBLIC_KEY}",
         "rekorUrl": "${REKOR}",
         "sources": [
           { "policy": ["git::https://${GITHOST}/git/future-deny-policy.git"] }
@@ -227,7 +227,7 @@ Feature: evaluate enterprise contract
         }
       ],
       "policy": {
-        "publicKey": ${known_PUBLIC_KEY_JSON},
+        "publicKey": "${known_PUBLIC_KEY}",
         "rekorUrl": "${REKOR}",
         "sources": [
           { "policy": ["git::https://${GITHOST}/git/future-deny-policy.git"] }
@@ -269,7 +269,7 @@ Feature: evaluate enterprise contract
       "components": [
         {
           "name": "Unnamed",
-          "containerImage": "localhost:(\\d+)/acceptance/ec-happy-day",
+          "containerImage": "localhost:(\\d+)/acceptance/ec-multiple-sources@sha256:[0-9a-f]{64}",
           "violations": [
             {
               "msg": "Fails always",
@@ -297,7 +297,7 @@ Feature: evaluate enterprise contract
         }
       ],
       "policy": {
-        "publicKey": ${known_PUBLIC_KEY_JSON},
+        "publicKey": "${known_PUBLIC_KEY}",
         "rekorUrl": "${REKOR}",
         "sources": [
           { "policy": ["git::https://${GITHOST}/git/repository1.git"] },
@@ -353,7 +353,7 @@ Feature: evaluate enterprise contract
       "components": [
         {
           "name": "Unnamed",
-          "containerImage": "localhost:(\\d+)/acceptance/ec-happy-day",
+          "containerImage": "localhost:(\\d+)/acceptance/ec-multiple-sources@sha256:[0-9a-f]{64}",
           "violations": [
             {
               "msg": "Fails always",
@@ -381,7 +381,7 @@ Feature: evaluate enterprise contract
         }
       ],
       "policy": {
-        "publicKey": ${known_PUBLIC_KEY_JSON},
+        "publicKey": "${known_PUBLIC_KEY}",
         "rekorUrl": "${REKOR}",
         "sources": [
           {"policy": [
@@ -480,7 +480,7 @@ Feature: evaluate enterprise contract
         }
       ],
       "policy": {
-        "publicKey": ${known_PUBLIC_KEY_JSON},
+        "publicKey": "${known_PUBLIC_KEY}",
         "rekorUrl": "${REKOR}",
         "sources": [
           {
@@ -536,7 +536,7 @@ Feature: evaluate enterprise contract
         }
       ],
       "policy": {
-        "publicKey": ${known_PUBLIC_KEY_JSON},
+        "publicKey": "${known_PUBLIC_KEY}",
         "sources": [
           { "policy": ["git::https://${GITHOST}/git/future-deny-policy.git"] }
         ]
@@ -601,7 +601,7 @@ Feature: evaluate enterprise contract
         }
       ],
       "policy": {
-        "publicKey": ${known_PUBLIC_KEY_JSON},
+        "publicKey": "${known_PUBLIC_KEY}",
         "sources": [
           { "policy": ["git::https://${GITHOST}/git/happy-day-policy.git"] }
         ]
@@ -650,8 +650,8 @@ Feature: evaluate enterprise contract
           "success": true,
           "signatures": ${ATTESTATION_SIGNATURES_JSON},
           "successes": [
-            {"metadata": {"code": "filtering.always_pass_with_collection"}, "msg": "Pass"},
-            {"metadata": {"code": "filtering.always_pass"}, "msg": "Pass"}
+            {"metadata": {"code": "filtering.always_pass"}, "msg": "Pass"},
+            {"metadata": {"code": "filtering.always_pass_with_collection"}, "msg": "Pass"}
           ]
         }
       ],
@@ -666,7 +666,7 @@ Feature: evaluate enterprise contract
             "filtering.always_pass"
           ]
         },
-        "publicKey": ${known_PUBLIC_KEY_JSON},
+        "publicKey": "${known_PUBLIC_KEY}",
         "rekorUrl": "${REKOR}",
         "sources": [
           {
@@ -725,7 +725,7 @@ Feature: evaluate enterprise contract
           "include": ["@stamps", "filtering.always_pass"],
           "exclude": ["filtering.always_pass_with_collection", "filtering.always_fail_with_collection"]
         },
-        "publicKey": ${known_PUBLIC_KEY_JSON},
+        "publicKey": "${known_PUBLIC_KEY}",
         "sources": [
           {
             "policy": [
@@ -780,7 +780,7 @@ Feature: evaluate enterprise contract
         }
       ],
       "policy": {
-        "publicKey": ${known_PUBLIC_KEY_JSON},
+        "publicKey": "${known_PUBLIC_KEY}",
         "sources": [
           { "policy": ["git::https://${GITHOST}/git/happy-day-policy.git"] }
         ]
@@ -843,7 +843,7 @@ Feature: evaluate enterprise contract
         }
       ],
       "policy": {
-        "publicKey": ${known_PUBLIC_KEY_JSON},
+        "publicKey": "${known_PUBLIC_KEY}",
         "sources": [
           { "policy": ["git::https://${GITHOST}/git/happy-day-policy.git"] }
         ]
@@ -924,12 +924,12 @@ Feature: evaluate enterprise contract
         }
       ],
       "policy": {
-        "publicKey": ${known_PUBLIC_KEY_JSON},
+        "publicKey": "${known_PUBLIC_KEY}",
         "sources": [
           {
             "policy": [
               "oci::https://${REGISTRY}/acceptance/happy-day-policy:tag",
-              "oci::${REGISTRY}/acceptance/allow_all:latest"
+              "oci::${REGISTRY}/acceptance/allow-all:latest"
             ]
           }
         ]

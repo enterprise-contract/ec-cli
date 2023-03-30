@@ -34,9 +34,9 @@ Feature: ec cli version subcommand
     Then the standard output should contain
     """
     {
-      "Version": "v\\d+.\\d+.\\d+-[0-9a-f]+",
+      "Version": "v\\d+\\.\\d+\\.\\d+-[0-9a-f]{7}",
       "Commit": "[0-9a-f]+",
-      "ChangedOn": "\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}Z",
+      "ChangedOn": "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z",
       "Components": [
         {
           "Name": "ECC",
