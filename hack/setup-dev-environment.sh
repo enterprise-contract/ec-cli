@@ -53,6 +53,7 @@ nodes:
   extraPortMappings:
   - containerPort: ${REGISTRY_PORT:-5000}
     hostPort: ${REGISTRY_PORT:-5000}
+    listenAddress: 127.0.0.1
     protocol: TCP
 EOF
 else
