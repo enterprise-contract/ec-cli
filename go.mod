@@ -7,7 +7,7 @@ require (
 	github.com/enterprise-contract/enterprise-contract-controller/api v0.0.0-20230327185456-5befd172d558
 	github.com/evanphx/json-patch v5.6.0+incompatible
 	github.com/gkampitakis/go-snaps v0.4.2
-	github.com/go-logr/logr v1.2.3
+	github.com/go-logr/logr v1.2.4
 	github.com/google/go-containerregistry v0.14.0
 	github.com/hako/durafmt v0.0.0-20210608085754-5c1018a4e16b
 	github.com/hashicorp/go-multierror v1.1.1
@@ -32,7 +32,7 @@ require (
 	k8s.io/apimachinery v0.26.3
 	k8s.io/client-go v0.26.3
 	k8s.io/klog/v2 v2.90.1
-	k8s.io/kubernetes v1.26.3
+	k8s.io/kubernetes v1.15.0-alpha.0
 	sigs.k8s.io/yaml v1.3.0
 )
 
