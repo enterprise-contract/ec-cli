@@ -168,6 +168,7 @@ func Start(ctx context.Context) (context.Context, types.Cluster, error) {
 							ContainerPort: kCluster.registryPort,
 							HostPort:      kCluster.registryPort,
 							Protocol:      v1alpha4.PortMappingProtocolTCP,
+							ListenAddress: "127.0.0.1",
 						},
 					},
 				},
