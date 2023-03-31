@@ -125,8 +125,13 @@ func Start(ctx context.Context) (context.Context, types.Cluster, error) {
 	clusterMutex.Lock()
 	defer clusterMutex.Unlock()
 
-	// count this cluster consumer
-	clusterGroup.Add(1)
+	defer func() {
+		if globalCluster != nil {
+			// we were given or we started the cluster, so count us as a
+			// consumer of the cluster
+			clusterGroup.Add(1)
+		}
+	}()
 
 	if globalCluster != nil {
 		return ctx, globalCluster, nil
@@ -345,6 +350,10 @@ func (k *kindCluster) KubeConfig(ctx context.Context) (string, error) {
 }
 
 func (k *kindCluster) Stop(ctx context.Context) error {
+	if !k.Up(ctx) {
+		return nil
+	}
+
 	// release cluster
 	clusterGroup.Done()
 
