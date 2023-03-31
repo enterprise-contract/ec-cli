@@ -23,6 +23,8 @@ import (
 	"crypto"
 	"encoding/json"
 	"fmt"
+	"os"
+	"path"
 	"testing"
 	"time"
 
@@ -43,6 +45,7 @@ CTeemlLBj+GVwnrnTgS1ow2jxgOgNFs0ADh2UfqHQqxeXFmphmsiAxtOxA==
 `
 
 const testRekorUrl = "https://example.com/api"
+const testRekorURLLogID = "5c88613c1a35d9fbf61144a6762502d594d9433c065af8d0b375f4bda16464b8"
 
 func TestNewPolicy(t *testing.T) {
 	timeNowStr := "2022-11-23T16:30:00Z"
@@ -154,6 +157,7 @@ func TestNewPolicy(t *testing.T) {
 			if c.k8sResource != nil {
 				ctx = kubernetes.WithClient(ctx, &FakeKubernetesClient{Policy: *c.k8sResource})
 			}
+			setupRekorPublicKey(t)
 			got, err := NewPolicy(ctx, c.policyRef, c.rekorUrl, c.publicKey, timeNowStr)
 			assert.NoError(t, err)
 			// CheckOpts is more thoroughly checked in TestCheckOpts.
@@ -224,8 +228,6 @@ func TestCheckOpts(t *testing.T) {
 	cases := []struct {
 		name            string
 		rekorUrl        string
-		rekorPublicKey  string
-		rekorLogId      string
 		publicKey       string
 		remotePublicKey string
 		err             string
@@ -245,11 +247,9 @@ func TestCheckOpts(t *testing.T) {
 			remotePublicKey: testPublicKey,
 		},
 		{
-			name:           "with rekor public key",
-			rekorUrl:       testRekorUrl,
-			rekorLogId:     "5c88613c1a35d9fbf61144a6762502d594d9433c065af8d0b375f4bda16464b8",
-			rekorPublicKey: testPublicKey,
-			publicKey:      testPublicKey,
+			name:      "with rekor public key",
+			rekorUrl:  testRekorUrl,
+			publicKey: testPublicKey,
 		},
 	}
 
@@ -257,9 +257,7 @@ func TestCheckOpts(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			ctx := context.Background()
 			ctx = withSignatureClient(ctx, &FakeCosignClient{publicKey: c.remotePublicKey})
-			if c.rekorPublicKey != "" {
-				t.Setenv("REKOR_PUBLIC_KEY", c.rekorPublicKey)
-			}
+			setupRekorPublicKey(t)
 			p, err := NewPolicy(ctx, "", c.rekorUrl, c.publicKey, Now)
 			if c.err != "" {
 				assert.Empty(t, p)
@@ -277,9 +275,9 @@ func TestCheckOpts(t *testing.T) {
 				assert.Nil(t, opts.RekorClient)
 			}
 
-			if c.rekorPublicKey != "" {
+			if c.rekorUrl != "" {
 				assert.NotNil(t, opts.RekorPubKeys)
-				_, present := opts.RekorPubKeys.Keys[c.rekorLogId]
+				_, present := opts.RekorPubKeys.Keys[testRekorURLLogID]
 				assert.True(t, present, "Expecting specific log id based on the provided public key")
 			} else {
 				assert.Nil(t, opts.RekorPubKeys)
@@ -393,4 +391,15 @@ func toYAML(policy *ecc.EnterpriseContractPolicySpec) string {
 		panic(fmt.Errorf("invalid YAML: %w", err))
 	}
 	return string(inline)
+}
+
+func setupRekorPublicKey(t *testing.T) {
+	// Do not use afero.NewMemMapFs() here because the file is read by cosign
+	// which does not understand the filesystem-from-context pattern
+	f, err := os.Create(path.Join(t.TempDir(), "rekor.log"))
+	assert.NoError(t, err)
+	defer f.Close()
+	_, err = f.Write([]byte(testPublicKey))
+	assert.NoError(t, err)
+	t.Setenv("SIGSTORE_REKOR_PUBLIC_KEY", f.Name())
 }

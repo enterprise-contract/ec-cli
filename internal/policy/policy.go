@@ -19,12 +19,8 @@ package policy
 import (
 	"context"
 	"crypto"
-	"crypto/sha256"
-	"crypto/x509"
-	"encoding/hex"
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
@@ -35,7 +31,6 @@ import (
 	cosignSig "github.com/sigstore/cosign/v2/pkg/signature"
 	"github.com/sigstore/sigstore/pkg/cryptoutils"
 	sigstoreSig "github.com/sigstore/sigstore/pkg/signature"
-	"github.com/sigstore/sigstore/pkg/tuf"
 	log "github.com/sirupsen/logrus"
 	"sigs.k8s.io/yaml"
 
@@ -278,49 +273,27 @@ func parseEffectiveTime(choosenTime string) (*time.Time, error) {
 
 // checkOpts returns an instance based on attributes of the Policy.
 func checkOpts(ctx context.Context, p *policy) (*cosign.CheckOpts, error) {
+	var err error
 	opts := cosign.CheckOpts{}
 
-	verifier, err := signatureVerifier(ctx, p)
+	opts.SigVerifier, err = signatureVerifier(ctx, p)
 	if err != nil {
 		return nil, err
 	}
-	opts.SigVerifier = verifier
 
 	if p.RekorUrl == "" {
 		opts.IgnoreTlog = true
 	} else {
-		rekorClient, err := rekor.NewClient(p.RekorUrl)
-		if err != nil {
+		if opts.RekorClient, err = rekor.NewClient(p.RekorUrl); err != nil {
 			log.Debugf("Problem creating a rekor client using url %q", p.RekorUrl)
 			return nil, err
 		}
-
-		opts.RekorClient = rekorClient
 		log.Debug("Rekor client created")
 
-		// TODO the Rekor public key and entry id should originate in the policy
-		rekorPublicKeyPEM := os.Getenv("REKOR_PUBLIC_KEY")
-		if rekorPublicKeyPEM != "" {
-			rekorPublicKey, err := cryptoutils.UnmarshalPEMToPublicKey([]byte(rekorPublicKeyPEM))
-			if err != nil {
-				return nil, err
-			}
-			rekorPublicKeyBytes, err := x509.MarshalPKIXPublicKey(rekorPublicKey)
-			if err != nil {
-				return nil, err
-			}
-			digest := sha256.Sum256(rekorPublicKeyBytes)
-			logId := hex.EncodeToString(digest[:])
-
-			opts.RekorPubKeys = &cosign.TrustedTransparencyLogPubKeys{
-				Keys: map[string]cosign.TransparencyLogPubKey{
-					logId: {
-						PubKey: rekorPublicKey,
-						Status: tuf.Active,
-					},
-				},
-			}
+		if opts.RekorPubKeys, err = cosign.GetRekorPubs(ctx); err != nil {
+			return nil, err
 		}
+		log.Debug("Retrieved Rekor public keys")
 	}
 
 	return &opts, nil

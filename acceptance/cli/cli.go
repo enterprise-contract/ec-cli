@@ -221,7 +221,16 @@ func setupRekor(ctx context.Context, vars map[string]string, environment []strin
 	}
 
 	vars["REKOR"] = rekorURL
-	environment = append(environment, fmt.Sprintf("REKOR_PUBLIC_KEY=%s", string(rekor.PublicKey(ctx))))
+
+	f, err := os.CreateTemp("", "ec-acceptance-rekor-pub-*")
+	if err != nil {
+		return environment, vars, err
+	}
+	defer f.Close()
+	if _, err := f.Write(rekor.PublicKey(ctx)); err != nil {
+		return environment, vars, err
+	}
+	environment = append(environment, fmt.Sprintf("SIGSTORE_REKOR_PUBLIC_KEY=%s", f.Name()))
 
 	return environment, vars, nil
 }
