@@ -51,6 +51,7 @@ import (
 
 	"github.com/enterprise-contract/ec-cli/acceptance/kubernetes/types"
 	"github.com/enterprise-contract/ec-cli/acceptance/kustomize"
+	"github.com/enterprise-contract/ec-cli/acceptance/log"
 )
 
 type key int
@@ -144,7 +145,7 @@ func Start(ctx context.Context) (context.Context, types.Cluster, error) {
 
 	kCluster := kindCluster{
 		name:     fmt.Sprintf("acceptance-%d", rand.Uint64()),
-		provider: k.NewProvider(),
+		provider: k.NewProvider(k.ProviderWithLogger(log.LoggerFor(ctx))),
 	}
 
 	if port, err := freeport.GetFreePort(); err != nil {
