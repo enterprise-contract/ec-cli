@@ -68,8 +68,6 @@ func ValidateImage(ctx context.Context, url string, p policy.Policy, detailed bo
 
 	out.SetAttestationSyntaxCheckFromError(a.ValidateAttestationSyntax(ctx))
 
-	a.FilterMatchingAttestations(ctx)
-
 	if attestationTime := determineAttestationTime(ctx, a.Attestations()); attestationTime != nil {
 		p.AttestationTime(*attestationTime)
 	}

@@ -163,13 +163,19 @@ func (a *ApplicationSnapshotImage) SetImageURL(url string) error {
 
 // ValidateImageSignature executes the cosign.VerifyImageSignature method on the ApplicationSnapshotImage image ref.
 func (a *ApplicationSnapshotImage) ValidateImageSignature(ctx context.Context) error {
-	_, _, err := NewClient(ctx).VerifyImageSignatures(ctx, a.reference, &a.checkOpts)
+	// Set the ClaimVerifier on a shallow *copy* of CheckOpts to avoid unexpected side-effects
+	opts := a.checkOpts
+	opts.ClaimVerifier = cosign.SimpleClaimVerifier
+	_, _, err := NewClient(ctx).VerifyImageSignatures(ctx, a.reference, &opts)
 	return err
 }
 
 // ValidateAttestationSignature executes the cosign.VerifyImageAttestations method
 func (a *ApplicationSnapshotImage) ValidateAttestationSignature(ctx context.Context) error {
-	layers, _, err := NewClient(ctx).VerifyImageAttestations(ctx, a.reference, &a.checkOpts)
+	// Set the ClaimVerifier on a shallow *copy* of CheckOpts to avoid unexpected side-effects
+	opts := a.checkOpts
+	opts.ClaimVerifier = cosign.IntotoSubjectClaimVerifier
+	layers, _, err := NewClient(ctx).VerifyImageAttestations(ctx, a.reference, &opts)
 	if err != nil {
 		return err
 	}
@@ -237,39 +243,6 @@ func (a ApplicationSnapshotImage) ValidateAttestationSyntax(ctx context.Context)
 		}
 	}
 	return EV003.CausedBy(errors.New(msg))
-}
-
-// FilterMatchingAttestations ignores attestations that do not have a matching subject.
-func (a *ApplicationSnapshotImage) FilterMatchingAttestations(ctx context.Context) {
-	filteredAttestations := make([]attestation.Attestation[in_toto.ProvenanceStatementSLSA02], 0, len(a.attestations))
-	identifier := a.reference.Identifier()
-	for _, sp := range a.attestations {
-		if sp == nil {
-			continue
-		}
-		statement := sp.Statement()
-		if matchDigest(statement.Subject, identifier) {
-			filteredAttestations = append(filteredAttestations, sp)
-		} else {
-			log.Warnf(
-				"Ignoring attestation, none of its subjects (%v) match the image identifier %q",
-				statement.Subject, identifier)
-		}
-	}
-	a.attestations = filteredAttestations
-}
-
-// matchDigest returns true if any of the subjects match the given digest.
-func matchDigest(subjects []in_toto.Subject, digest string) bool {
-	for _, subject := range subjects {
-		for algo, value := range subject.Digest {
-			subjectIdentifier := fmt.Sprintf("%s:%s", algo, value)
-			if digest == subjectIdentifier {
-				return true
-			}
-		}
-	}
-	return false
 }
 
 // Attestations returns the value of the attestations field of the ApplicationSnapshotImage struct
