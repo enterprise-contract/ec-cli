@@ -21,13 +21,23 @@ import (
 	"context"
 	"testing"
 
+	"sigs.k8s.io/kind/pkg/log"
+
 	"github.com/enterprise-contract/ec-cli/acceptance/testenv"
 )
 
 type Logger interface {
-	Log(args ...interface{})
-	Logf(format string, args ...interface{})
-	Printf(format string, v ...interface{})
+	Log(args ...any)
+	Logf(format string, args ...any)
+	Printf(format string, v ...any)
+	Warn(message string)
+	Warnf(format string, args ...any)
+	Error(message string)
+	Errorf(format string, args ...any)
+	V(level log.Level) log.InfoLogger
+	Info(message string)
+	Infof(format string, args ...any)
+	Enabled() bool
 }
 
 type logger struct {
@@ -35,18 +45,50 @@ type logger struct {
 }
 
 // Log logs given arguments
-func (l logger) Log(args ...interface{}) {
+func (l logger) Log(args ...any) {
 	l.t.Log(args...)
 }
 
 // Logf logs using given format and specified arguments
-func (l logger) Logf(format string, args ...interface{}) {
+func (l logger) Logf(format string, args ...any) {
 	l.t.Logf(format, args...)
 }
 
 // Printf logs using given format and specified arguments
-func (l logger) Printf(format string, args ...interface{}) {
+func (l logger) Printf(format string, args ...any) {
 	l.Logf(format, args...)
+}
+
+func (l logger) Warn(message string) {
+	l.Logf("[WARN ] %s", message)
+}
+
+func (l logger) Warnf(format string, args ...any) {
+	l.Logf("[WARN ] "+format, args...)
+}
+
+func (l logger) Error(message string) {
+	l.Logf("[ERROR] %s", message)
+}
+
+func (l logger) Errorf(format string, args ...any) {
+	l.Logf("[ERROR] "+format, args...)
+}
+
+func (l logger) Info(message string) {
+	l.Logf("[INFO ] %s", message)
+}
+
+func (l logger) Infof(format string, args ...any) {
+	l.Logf("[INFO ] "+format, args...)
+}
+
+func (l logger) V(_ log.Level) log.InfoLogger {
+	return l
+}
+
+func (l logger) Enabled() bool {
+	return true
 }
 
 // LoggerFor returns the logger for the provided Context, it is
