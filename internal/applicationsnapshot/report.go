@@ -31,6 +31,7 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/format"
 	"github.com/enterprise-contract/ec-cli/internal/output"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
+	"github.com/enterprise-contract/ec-cli/internal/version"
 )
 
 type Component struct {
@@ -49,6 +50,7 @@ type Report struct {
 	Components []Component                      `json:"components"`
 	Key        string                           `json:"key"`
 	Policy     ecc.EnterpriseContractPolicySpec `json:"policy"`
+	EcVersion  string                           `json:"ec-version"`
 }
 
 type summary struct {
@@ -109,6 +111,8 @@ func NewReport(snapshot string, components []Component, policy policy.Policy) (R
 		return Report{}, err
 	}
 
+	info, _ := version.ComputeInfo()
+
 	return Report{
 		Snapshot:   snapshot,
 		Success:    success,
@@ -116,6 +120,7 @@ func NewReport(snapshot string, components []Component, policy policy.Policy) (R
 		created:    time.Now().UTC(),
 		Key:        string(key),
 		Policy:     policy.Spec(),
+		EcVersion:  info.Version,
 	}, nil
 }
 

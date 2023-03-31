@@ -46,6 +46,7 @@ func TestReport(t *testing.T) {
 				"warnings": [],
 				"success": true,
 			}],
+			"ec-version": "development",
 			"success": true
 			}`,
 		},
@@ -72,6 +73,7 @@ func TestReport(t *testing.T) {
 				"warnings": [{"msg": "running low in spam"},{"msg": "not all like spam"}],
 				"success": true,
 			}],
+			"ec-version": "development",
 			"success": true
 			}`,
 		},
@@ -98,6 +100,7 @@ func TestReport(t *testing.T) {
 				"warnings": [],
 				"success": false,
 			}],
+			"ec-version": "development",
 			"success": false
 			}`,
 		},

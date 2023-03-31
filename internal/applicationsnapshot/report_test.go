@@ -48,6 +48,7 @@ func Test_ReportJson(t *testing.T) {
 	expected := fmt.Sprintf(`
     {
       "success": false,
+	  "ec-version": "development",
 	  "key": "%s",
 	  "snapshot": "snappy",
       "components": [
@@ -97,6 +98,7 @@ func Test_ReportYaml(t *testing.T) {
 	expected := fmt.Sprintf(`
 success: false
 key: "%s"
+ec-version: development
 snapshot: snappy
 components:
   - name: spam
