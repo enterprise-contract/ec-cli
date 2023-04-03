@@ -110,6 +110,7 @@ spec:
       args:
         - validate
         - image
+        - "--verbose"
         - "--json-input"
         - "$(params.IMAGES)"
         - "--policy"
@@ -122,7 +123,7 @@ spec:
         - "--info=$(params.INFO)"
         - "--strict=false"
         - "--output"
-        - "yaml"
+        - "yaml=$(params.HOMEDIR)/report.yaml"
         - "--output"
         - "hacbs=$(results.HACBS_TEST_OUTPUT.path)"
       env:
@@ -135,6 +136,11 @@ spec:
           # value expected by Tekton Pipelines. NOTE: If params.SSL_CERT_DIR is empty, the value
           # will contain a trailing ":" - this is ok.
           value: "/tekton-custom-certs:/etc/ssl/certs:/etc/pki/tls/certs:/system/etc/security/cacerts:$(params.SSL_CERT_DIR)"
+    - name: report
+      image: quay.io/hacbs-contract/ec-cli:snapshot
+      command: [cat]
+      args:
+        - "$(params.HOMEDIR)/report.yaml"
     - name: summary
       image: quay.io/hacbs-contract/ec-cli:snapshot
       command: [jq]
