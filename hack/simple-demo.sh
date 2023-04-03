@@ -56,7 +56,7 @@ DATA_SOURCE="quay.io/hacbs-contract/ec-policy-data:latest"
 MINIMAL_CONFIG="
 configuration:
   include:
-    - @minimal
+    - '@minimal'
 "
 
 EVERYTHING_CONFIG="
