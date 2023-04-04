@@ -65,6 +65,7 @@ type testRunner interface {
 
 const (
 	effectiveOnFormat   = "2006-01-02T15:04:05Z"
+	effectiveOnTimeout  = -90 * 24 * time.Hour // keep effective_on metadata up to 90 days
 	metadataCode        = "code"
 	metadataCollections = "collections"
 	metadataDescription = "description"
@@ -390,6 +391,18 @@ func addMetadataToResults(r *output.Result, rule rule.Info) {
 
 	if rule.Title != "" {
 		r.Metadata[metadataTitle] = rule.Title
+	}
+	if rule.EffectiveOn != "" {
+		effectiveOnTime, err := time.Parse(effectiveOnFormat, rule.EffectiveOn)
+		if err == nil {
+			// If the rule has been effective for a long time, we'll consider
+			// the effective_on date not relevant and not bother including it
+			if effectiveOnTime.After(time.Now().Add(effectiveOnTimeout)) {
+				r.Metadata[metadataEffectiveOn] = rule.EffectiveOn
+			}
+		} else {
+			log.Warnf("Invalid %q value %q", metadataEffectiveOn, rule.EffectiveOn)
+		}
 	}
 	if rule.Description != "" {
 		r.Metadata[metadataDescription] = rule.Description
