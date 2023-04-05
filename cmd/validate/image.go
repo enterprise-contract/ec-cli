@@ -20,11 +20,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"sync"
 
 	hd "github.com/MakeNowJust/heredoc"
 	"github.com/hashicorp/go-multierror"
 	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
+	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
 	"github.com/enterprise-contract/ec-cli/internal/applicationsnapshot"
@@ -140,6 +142,24 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 				data.spec = s
 			}
 
+			// Check if policyConfiguration is a file path, if so, we read it into the var data.policyConfiguration
+			if strings.HasSuffix(data.policyConfiguration, ".yaml") || strings.HasSuffix(data.policyConfiguration, ".yml") || strings.HasSuffix(data.policyConfiguration, ".json") {
+				fs := utils.FS(cmd.Context())
+				policyBytes, err := afero.ReadFile(fs, data.policyConfiguration)
+				if err != nil {
+					allErrors = multierror.Append(allErrors, err)
+					return
+				}
+				// Check for empty file as that would cause a false "success"
+				if len(policyBytes) == 0 {
+					err := fmt.Errorf("file %s is empty", data.policyConfiguration)
+					allErrors = multierror.Append(allErrors, err)
+					return
+				}
+
+				data.policyConfiguration = string(policyBytes)
+			}
+
 			if p, err := policy.NewPolicy(
 				cmd.Context(), data.policyConfiguration, data.rekorURL, data.publicKey, data.effectiveTime,
 			); err != nil {
@@ -234,7 +254,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&data.policyConfiguration, "policy", "p", data.policyConfiguration,
-		"EntepriseContractPolicy reference [<namespace>/]<name>")
+		"EnterpriseContractPolicy reference [<namespace>/]<name>")
 
 	cmd.Flags().StringVarP(&data.imageRef, "image", "i", data.imageRef, "OCI image reference")
 
@@ -248,7 +268,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		"path to ApplicationSnapshot Spec JSON file")
 
 	cmd.Flags().StringVarP(&data.input, "json-input", "j", data.input,
-		"JSON represenation of an ApplicationSnapshot Spec")
+		"JSON representation of an ApplicationSnapshot Spec")
 
 	cmd.Flags().StringSliceVar(&data.output, "output", data.output, hd.Doc(`
 		write output to a file in a specific format. Use empty string path for stdout.

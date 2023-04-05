@@ -271,6 +271,236 @@ func Test_ValidateImageCommand(t *testing.T) {
 	  }`, mockPublicKey, mockPublicKey), out.String())
 }
 
+func Test_ValidateImageCommandYAMLPolicyFile(t *testing.T) {
+	validate := func(_ context.Context, url string, _ policy.Policy, _ bool) (*output.Output, error) {
+		return &output.Output{
+			ImageSignatureCheck: output.VerificationStatus{
+				Passed: true,
+			},
+			ImageAccessibleCheck: output.VerificationStatus{
+				Passed: true,
+			},
+			AttestationSignatureCheck: output.VerificationStatus{
+				Passed: true,
+			},
+			AttestationSyntaxCheck: output.VerificationStatus{
+				Passed: true,
+			},
+			PolicyCheck: evaluator.CheckResults{
+				{
+					CheckResult: conftestOutput.CheckResult{
+						FileName:  "test.json",
+						Namespace: "test.main",
+						Successes: 1,
+					},
+					Successes: []conftestOutput.Result{
+						{
+							Message: "Pass",
+							Metadata: map[string]interface{}{
+								"code": "policy.nice",
+							},
+						},
+					},
+				},
+			},
+			ImageURL: url,
+			ExitCode: 0,
+		}, nil
+	}
+
+	cmd := validateImageCmd(validate)
+
+	fs := afero.NewMemMapFs()
+
+	cmd.SetContext(utils.WithFS(context.TODO(), fs))
+	testPublicKey := `
+-----BEGIN PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEpXcIGCQmaP7qhEq/xfXT49BNBmTE
+AWJvteQ7WiOp1VovrkOlqW64afWtf3qPz70ETXUhZ42lHvg1aKu24vKK/w==
+-----END PUBLIC KEY-----
+`
+	testPolicyYaml := `sources:
+  - policy:
+      - "registry/policy:latest"
+    data:
+      - "registry/policy-data:latest"
+configuration:
+  collections:
+    - minimal
+  include:
+    - "*"
+  exclude: []
+`
+	err := afero.WriteFile(fs, "/policy.yaml", []byte(testPolicyYaml), 0644)
+	if err != nil {
+		panic(err)
+	}
+	args := []string{
+		"--image",
+		"registry/image:tag",
+		"--public-key",
+		testPublicKey,
+		"--policy",
+		"/policy.yaml",
+	}
+	cmd.SetArgs(args)
+
+	var out bytes.Buffer
+	cmd.SetOut(&out)
+
+	err = cmd.Execute()
+	assert.NoError(t, err)
+}
+
+func Test_ValidateImageCommandJSONPolicyFile(t *testing.T) {
+	validate := func(_ context.Context, url string, _ policy.Policy, _ bool) (*output.Output, error) {
+		return &output.Output{
+			ImageSignatureCheck: output.VerificationStatus{
+				Passed: true,
+			},
+			ImageAccessibleCheck: output.VerificationStatus{
+				Passed: true,
+			},
+			AttestationSignatureCheck: output.VerificationStatus{
+				Passed: true,
+			},
+			AttestationSyntaxCheck: output.VerificationStatus{
+				Passed: true,
+			},
+			PolicyCheck: evaluator.CheckResults{
+				{
+					CheckResult: conftestOutput.CheckResult{
+						FileName:  "test.json",
+						Namespace: "test.main",
+						Successes: 1,
+					},
+					Successes: []conftestOutput.Result{
+						{
+							Message: "Pass",
+							Metadata: map[string]interface{}{
+								"code": "policy.nice",
+							},
+						},
+					},
+				},
+			},
+			ImageURL: url,
+			ExitCode: 0,
+		}, nil
+	}
+
+	cmd := validateImageCmd(validate)
+
+	fs := afero.NewMemMapFs()
+
+	cmd.SetContext(utils.WithFS(context.TODO(), fs))
+	testPublicKey := `
+-----BEGIN PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEpXcIGCQmaP7qhEq/xfXT49BNBmTE
+AWJvteQ7WiOp1VovrkOlqW64afWtf3qPz70ETXUhZ42lHvg1aKu24vKK/w==
+-----END PUBLIC KEY-----
+`
+	testPolicyJSON := `sources:
+  - policy:
+      - "registry/policy:latest"
+    data:
+      - "registry/policy-data:latest"
+configuration:
+  collections:
+    - minimal
+  include:
+    - "*"
+  exclude: []
+`
+	err := afero.WriteFile(fs, "/policy.json", []byte(testPolicyJSON), 0644)
+	if err != nil {
+		panic(err)
+	}
+	args := []string{
+		"--image",
+		"registry/image:tag",
+		"--public-key",
+		testPublicKey,
+		"--policy",
+		"/policy.json",
+	}
+	cmd.SetArgs(args)
+
+	var out bytes.Buffer
+	cmd.SetOut(&out)
+
+	err = cmd.Execute()
+	assert.NoError(t, err)
+}
+
+func Test_ValidateImageCommandEmptyPolicyFile(t *testing.T) {
+	validate := func(_ context.Context, url string, _ policy.Policy, _ bool) (*output.Output, error) {
+		return &output.Output{
+			ImageSignatureCheck: output.VerificationStatus{
+				Passed: true,
+			},
+			ImageAccessibleCheck: output.VerificationStatus{
+				Passed: true,
+			},
+			AttestationSignatureCheck: output.VerificationStatus{
+				Passed: true,
+			},
+			AttestationSyntaxCheck: output.VerificationStatus{
+				Passed: true,
+			},
+			PolicyCheck: evaluator.CheckResults{
+				{
+					CheckResult: conftestOutput.CheckResult{
+						FileName:  "test.json",
+						Namespace: "test.main",
+						Successes: 1,
+					},
+					Successes: []conftestOutput.Result{
+						{
+							Message: "Pass",
+							Metadata: map[string]interface{}{
+								"code": "policy.nice",
+							},
+						},
+					},
+				},
+			},
+			ImageURL: url,
+			ExitCode: 0,
+		}, nil
+	}
+
+	cmd := validateImageCmd(validate)
+
+	fs := afero.NewMemMapFs()
+
+	cmd.SetContext(utils.WithFS(context.TODO(), fs))
+	testPublicKey := `
+-----BEGIN PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEpXcIGCQmaP7qhEq/xfXT49BNBmTE
+AWJvteQ7WiOp1VovrkOlqW64afWtf3qPz70ETXUhZ42lHvg1aKu24vKK/w==
+-----END PUBLIC KEY-----
+`
+	err := afero.WriteFile(fs, "/policy.yaml", []byte(nil), 0644)
+	if err != nil {
+		panic(err)
+	}
+	args := []string{
+		"--image",
+		"registry/image:tag",
+		"--public-key",
+		testPublicKey,
+		"--policy",
+		"/policy.yaml",
+	}
+	cmd.SetArgs(args)
+
+	var out bytes.Buffer
+	cmd.SetOut(&out)
+
+	err = cmd.Execute()
+	assert.EqualError(t, err, "1 error occurred:\n\t* file /policy.yaml is empty\n\n")
+}
 func Test_ValidateErrorCommand(t *testing.T) {
 	cases := []struct {
 		name     string
