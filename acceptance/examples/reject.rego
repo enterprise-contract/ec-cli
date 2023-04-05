@@ -7,6 +7,7 @@ package main
 # custom:
 #   short_name: rejector
 #   failure_msg: Fails always
+#   solution: None
 #   collections:
 #   - A
 deny[result] {

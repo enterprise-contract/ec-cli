@@ -590,6 +590,7 @@ Feature: evaluate enterprise contract
               "metadata": {
                 "title": "Reject rule",
                 "description": "This rule will always fail",
+                "solution": "None",
                 "code": "main.rejector",
                 "collections": ["A"],
                 "effective_on": "2022-01-01T00:00:00Z"

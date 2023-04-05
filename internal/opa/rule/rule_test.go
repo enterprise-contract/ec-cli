@@ -289,6 +289,33 @@ func TestEffectiveOn(t *testing.T) {
 	}
 }
 
+func TestSolution(t *testing.T) {
+	cases := []struct {
+		name       string
+		annotation *ast.AnnotationsRef
+		expected   string
+	}{
+		// I don't want to redo all the edge cases here. I think there's enough
+		// coverage for those code paths already in TestEffectiveOn above.
+		{
+			name: "with solution",
+			annotation: annotationRef(heredoc.Doc(`
+				package a
+				# METADATA
+				# custom:
+				#   solution: Chunky bacon
+				deny() { true }`)),
+			expected: "Chunky bacon",
+		},
+	}
+
+	for i, c := range cases {
+		t.Run(fmt.Sprintf("[%d] - %s", i, c.name), func(t *testing.T) {
+			assert.Equal(t, c.expected, solution(c.annotation))
+		})
+	}
+}
+
 func TestCollections(t *testing.T) {
 	cases := []struct {
 		name       string

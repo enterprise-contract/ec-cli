@@ -7,6 +7,7 @@ package main
 # custom:
 #   short_name: acceptor
 #   failure_msg: Always succeeds
+#   solution: Easy
 #   collections:
 #   - A
 deny[result] {
