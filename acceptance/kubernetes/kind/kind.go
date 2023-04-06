@@ -58,12 +58,12 @@ type key int
 
 const testStateKey = key(0)
 
-// we don't want to bootstrap two clusters simultaniously
-var clusterMutex = sync.Mutex{}
-
 // cluster consumers, we wait for every consumer to stop using the cluster
 // before we shutdown the cluster
 var clusterGroup = sync.WaitGroup{}
+
+// make sure we try to create the cluster only once
+var create = sync.Once{}
 
 // make sure we try to destroy the cluster only once
 var destroy = sync.Once{}
@@ -109,7 +109,7 @@ func init() {
 }
 
 func (k *kindCluster) Up(_ context.Context) bool {
-	if k.provider == nil || k.name == "" {
+	if k == nil || k.provider == nil || k.name == "" {
 		return false
 	}
 
@@ -122,116 +122,139 @@ func (k *kindCluster) Up(_ context.Context) bool {
 // meaning: the hack/test kustomization will applied to the cluster, the ec-cli
 // and the Tekton Task bundle images will be pushed to the registry running in
 // the cluster.
-func Start(ctx context.Context) (context.Context, types.Cluster, error) {
-	clusterMutex.Lock()
-	defer clusterMutex.Unlock()
-
+func Start(givenCtx context.Context) (ctx context.Context, kCluster types.Cluster, err error) {
+	var logger log.Logger
+	logger, ctx = log.LoggerFor(givenCtx)
 	defer func() {
-		if globalCluster != nil {
-			// we were given or we started the cluster, so count us as a
-			// consumer of the cluster
-			clusterGroup.Add(1)
-		}
+		clusterGroup.Add(1)
+		logger.Log("Registered with cluster group")
 	}()
 
-	if globalCluster != nil {
-		return ctx, globalCluster, nil
-	}
+	create.Do(func() {
+		logger.Log("Starting Kind cluster")
 
-	configDir, err := os.MkdirTemp("", "ec-acceptance.*")
-	if err != nil {
-		return ctx, nil, err
-	}
+		var configDir string
+		configDir, err = os.MkdirTemp("", "ec-acceptance.*")
+		if err != nil {
+			logger.Errorf("Unable to create temp directory: %v", err)
+			return
+		}
 
-	kCluster := kindCluster{
-		name:     fmt.Sprintf("acceptance-%d", rand.Uint64()),
-		provider: k.NewProvider(k.ProviderWithLogger(log.LoggerFor(ctx))),
-	}
+		kCluster := kindCluster{
+			name:     fmt.Sprintf("acceptance-%d", rand.Uint64()),
+			provider: k.NewProvider(k.ProviderWithLogger(logger)),
+		}
+		kCluster.kubeconfigPath = path.Join(configDir, "kubeconfig")
 
-	if port, err := freeport.GetFreePort(); err != nil {
-		return ctx, nil, err
-	} else {
-		kCluster.registryPort = int32(port)
-	}
+		defer func() {
+			if err != nil {
+				// an error happened we need to cleanup
+				kCluster.provider.Delete(kCluster.name, kCluster.kubeconfigPath)
+			}
+		}()
 
-	kCluster.kubeconfigPath = path.Join(configDir, "kubeconfig")
+		var port int
+		if port, err = freeport.GetFreePort(); err != nil {
+			logger.Errorf("Unable to determine a free port: %v", err)
+			return
+		} else {
+			kCluster.registryPort = int32(port)
+		}
 
-	if err := kCluster.provider.Create(kCluster.name,
-		k.CreateWithV1Alpha4Config(&v1alpha4.Cluster{
-			TypeMeta: v1alpha4.TypeMeta{
-				Kind:       "Cluster",
-				APIVersion: "kind.x-k8s.io/v1alpha4",
-			},
-			Nodes: []v1alpha4.Node{
-				{
-					Role: v1alpha4.ControlPlaneRole,
-					KubeadmConfigPatches: []string{
-						clusterConfiguration,
-					},
-					// exposes the registry port to the host OS
-					ExtraPortMappings: []v1alpha4.PortMapping{
-						{
-							ContainerPort: kCluster.registryPort,
-							HostPort:      kCluster.registryPort,
-							Protocol:      v1alpha4.PortMappingProtocolTCP,
-							ListenAddress: "127.0.0.1",
+		if err = kCluster.provider.Create(kCluster.name,
+			k.CreateWithV1Alpha4Config(&v1alpha4.Cluster{
+				TypeMeta: v1alpha4.TypeMeta{
+					Kind:       "Cluster",
+					APIVersion: "kind.x-k8s.io/v1alpha4",
+				},
+				Nodes: []v1alpha4.Node{
+					{
+						Role: v1alpha4.ControlPlaneRole,
+						KubeadmConfigPatches: []string{
+							clusterConfiguration,
+						},
+						// exposes the registry port to the host OS
+						ExtraPortMappings: []v1alpha4.PortMapping{
+							{
+								ContainerPort: kCluster.registryPort,
+								HostPort:      kCluster.registryPort,
+								Protocol:      v1alpha4.PortMappingProtocolTCP,
+								ListenAddress: "127.0.0.1",
+							},
 						},
 					},
 				},
-			},
-		}),
-		k.CreateWithKubeconfigPath(kCluster.kubeconfigPath)); err != nil {
-		return ctx, &kCluster, err
-	}
+			}),
+			k.CreateWithKubeconfigPath(kCluster.kubeconfigPath)); err != nil {
+			logger.Errorf("Unable launch the Kind cluster: %v", err)
+			return
+		}
 
-	rules := clientcmd.NewDefaultClientConfigLoadingRules()
-	rules.ExplicitPath = kCluster.kubeconfigPath
+		rules := clientcmd.NewDefaultClientConfigLoadingRules()
+		rules.ExplicitPath = kCluster.kubeconfigPath
 
-	clientConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(rules, nil)
+		clientConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(rules, nil)
 
-	if kCluster.config, err = clientConfig.ClientConfig(); err != nil {
-		return ctx, &kCluster, err
-	}
+		if kCluster.config, err = clientConfig.ClientConfig(); err != nil {
+			logger.Errorf("Unable get the client config: %v", err)
+			return
+		}
 
-	if kCluster.dynamic, err = dynamic.NewForConfig(kCluster.config); err != nil {
-		return ctx, &kCluster, err
-	}
+		if kCluster.dynamic, err = dynamic.NewForConfig(kCluster.config); err != nil {
+			logger.Errorf("Unable get the dynamic client config: %v", err)
+			return
+		}
 
-	if kCluster.client, err = kubernetes.NewForConfig(kCluster.config); err != nil {
-		return ctx, &kCluster, err
-	}
+		if kCluster.client, err = kubernetes.NewForConfig(kCluster.config); err != nil {
+			logger.Errorf("Unable get create k8s client: %v", err)
+			return
+		}
 
-	discovery := discovery.NewDiscoveryClientForConfigOrDie(kCluster.config)
+		discovery := discovery.NewDiscoveryClientForConfigOrDie(kCluster.config)
 
-	if resources, err := restmapper.GetAPIGroupResources(discovery); err != nil {
-		return ctx, &kCluster, err
-	} else {
-		kCluster.mapper = restmapper.NewDiscoveryRESTMapper(resources)
-	}
+		var resources []*restmapper.APIGroupResources
+		if resources, err = restmapper.GetAPIGroupResources(discovery); err != nil {
+			logger.Errorf("Unable access API resources: %v", err)
+			return
+		} else {
+			kCluster.mapper = restmapper.NewDiscoveryRESTMapper(resources)
+		}
 
-	yaml, err := renderTestConfiguration(&kCluster)
+		var yaml []byte
+		yaml, err = renderTestConfiguration(&kCluster)
+		if err != nil {
+			logger.Errorf("Unable to kustomize test configuration: %v", err)
+			return
+		}
+
+		err = applyConfiguration(ctx, &kCluster, yaml)
+		if err != nil {
+			logger.Errorf("Unable apply cluster configuration: %v", err)
+			return
+		}
+
+		err = kCluster.buildCliImage(ctx)
+		if err != nil {
+			logger.Errorf("Unable to build CLI image: %v", err)
+			return
+		}
+
+		err = kCluster.buildTaskBundleImage(ctx)
+		if err != nil {
+			logger.Errorf("Unable to build Task image: %v", err)
+			return
+		}
+
+		globalCluster = &kCluster
+
+		logger.Log("Cluster started")
+	})
+
 	if err != nil {
-		return ctx, &kCluster, err
+		logger.Error("Unable to start the cluster")
 	}
 
-	err = applyConfiguration(ctx, &kCluster, yaml)
-	if err != nil {
-		return ctx, &kCluster, err
-	}
-
-	err = kCluster.buildCliImage(ctx)
-	if err != nil {
-		return ctx, &kCluster, err
-	}
-
-	err = kCluster.buildTaskBundleImage(ctx)
-	if err != nil {
-		return ctx, &kCluster, err
-	}
-
-	globalCluster = &kCluster
-
-	return ctx, &kCluster, nil
+	return ctx, globalCluster, err
 }
 
 // renderTestConfiguration renders the hack/test Kustomize directory into a
@@ -350,28 +373,34 @@ func (k *kindCluster) KubeConfig(ctx context.Context) (string, error) {
 	}
 }
 
-func (k *kindCluster) Stop(ctx context.Context) error {
+func (k *kindCluster) Stop(ctx context.Context) (context.Context, error) {
+	logger, ctx := log.LoggerFor(ctx)
+
 	if !k.Up(ctx) {
-		return nil
+		logger.Log("[Stop] Cluster not up")
+		return ctx, nil
 	}
 
 	// release cluster
 	clusterGroup.Done()
+	logger.Log("[Stop] Released cluster to group")
 
-	// wait for other cluster consumers to finish
-	clusterGroup.Wait()
+	destroy.Do(func() {
+		logger.Log("[Stop] Stopping cluster")
 
-	destroy.Do(k.destroyCluster)
+		// wait for other cluster consumers to finish
+		clusterGroup.Wait()
+		logger.Log("[Stop] Last cluster consumer finished")
 
-	return nil
-}
+		defer func() {
+			kindDir := path.Join(k.kubeconfigPath, "..")
+			_ = os.RemoveAll(kindDir) // ignore errors
+		}()
 
-func (k *kindCluster) destroyCluster() {
-	defer func() {
-		kindDir := path.Join(k.kubeconfigPath, "..")
-		_ = os.RemoveAll(kindDir) // ignore errors
-	}()
+		// ignore error
+		_ = k.provider.Delete(k.name, k.kubeconfigPath)
+		logger.Log("[Stop] Destroyed the cluster")
+	})
 
-	// ignore error
-	_ = k.provider.Delete(k.name, k.kubeconfigPath)
+	return ctx, nil
 }

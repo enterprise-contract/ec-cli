@@ -157,10 +157,12 @@ func startStubGitServer(ctx context.Context) (context.Context, error) {
 		},
 	})
 
+	logger, ctx := log.LoggerFor(ctx)
+
 	git, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: req,
 		Started:          true,
-		Logger:           log.LoggerFor(ctx),
+		Logger:           logger,
 	})
 	if err != nil {
 		return ctx, err

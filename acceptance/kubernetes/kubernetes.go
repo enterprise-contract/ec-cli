@@ -254,6 +254,6 @@ func AddStepsTo(sc *godog.ScenarioContext) {
 			return ctx, nil
 		}
 
-		return ctx, c.cluster.Stop(ctx)
+		return c.cluster.Stop(ctx)
 	})
 }

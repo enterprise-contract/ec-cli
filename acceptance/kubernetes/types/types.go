@@ -22,7 +22,7 @@ import (
 
 type Cluster interface {
 	Up(context.Context) bool
-	Stop(context.Context) error
+	Stop(context.Context) (context.Context, error)
 	KubeConfig(context.Context) (string, error)
 	CreateNamespace(context.Context) (context.Context, error)
 	CreateNamedPolicy(context.Context, string, string) error

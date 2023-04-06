@@ -154,7 +154,8 @@ func ecCommandIsRunWith(ctx context.Context, parameters string) (context.Context
 		// we're not asserting here, so let's log the error
 		// depending on how we assert the error might or
 		// might not surface again
-		logger := log.LoggerFor(ctx)
+		var logger log.Logger
+		logger, ctx = log.LoggerFor(ctx)
 		logger.Log(err)
 	}
 
