@@ -69,6 +69,7 @@ const (
 	metadataCollections = "collections"
 	metadataDescription = "description"
 	metadataEffectiveOn = "effective_on"
+	metadataSolution    = "solution"
 	metadataTerm        = "term"
 	metadataTitle       = "title"
 )
@@ -314,6 +315,9 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (Check
 			result.Metadata[metadataEffectiveOn] = rule.EffectiveOn
 		}
 
+		// Let's omit the solution text here because if the rule is passing
+		// already then the user probably doesn't care about the solution.
+
 		if !isResultEffective(result, effectiveTime) {
 			log.Debugf("Skipping result success: %#v", result)
 			continue
@@ -358,6 +362,12 @@ func addRuleMetadata(result *output.Result, rules policyRules) (string, bool) {
 }
 
 func addMetadataToResults(r *output.Result, rule rule.Info) {
+	// Note that r.Metadata already includes some fields that we get from
+	// the real conftest violation and warning results, (as provided by
+	// lib.result_helper in the ec-policies rego). Here we augment it with
+	// other fields from rule.Metadata, which we get by opa-inspecting the
+	// rego source.
+
 	if r.Metadata == nil {
 		return
 	}
@@ -383,6 +393,9 @@ func addMetadataToResults(r *output.Result, rule rule.Info) {
 	}
 	if rule.Description != "" {
 		r.Metadata[metadataDescription] = rule.Description
+	}
+	if rule.Solution != "" {
+		r.Metadata[metadataSolution] = rule.Solution
 	}
 	if len(rule.Collections) > 0 {
 		r.Metadata[metadataCollections] = rule.Collections
