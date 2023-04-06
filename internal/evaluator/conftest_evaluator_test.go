@@ -21,6 +21,7 @@ package evaluator
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/MakeNowJust/heredoc"
 	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
@@ -1182,6 +1183,8 @@ func TestCollectAnnotationData(t *testing.T) {
 }
 
 func TestRuleMetadata(t *testing.T) {
+	effectiveOnTest := time.Now().Format(effectiveOnFormat)
+
 	rules := policyRules{
 		"warning1": rule.Info{
 			Title: "Warning1",
@@ -1189,6 +1192,16 @@ func TestRuleMetadata(t *testing.T) {
 		"failure2": rule.Info{
 			Title:       "Failure2",
 			Description: "Failure 2 description",
+		},
+		"warning2": rule.Info{
+			Title:       "Warning2",
+			Description: "Warning 2 description",
+			EffectiveOn: "2022-01-01T00:00:00Z",
+		},
+		"warning3": rule.Info{
+			Title:       "Warning3",
+			Description: "Warning 3 description",
+			EffectiveOn: effectiveOnTest,
 		},
 	}
 	cases := []struct {
@@ -1232,6 +1245,45 @@ func TestRuleMetadata(t *testing.T) {
 					"collections": []string{"A"},
 					"description": "Failure 2 description",
 					"title":       "Failure2",
+				},
+			},
+		},
+		{
+			name: "drop stale effectiveOn",
+			result: output.Result{
+				Metadata: map[string]any{
+					"code":        "warning2",
+					"collections": []any{"A"},
+				},
+			},
+			rules: rules,
+			code:  "warning2",
+			want: output.Result{
+				Metadata: map[string]any{
+					"code":        "warning2",
+					"collections": []string{"A"},
+					"description": "Warning 2 description",
+					"title":       "Warning2",
+				},
+			},
+		},
+		{
+			name: "add relevant effectiveOn",
+			result: output.Result{
+				Metadata: map[string]any{
+					"code":        "warning3",
+					"collections": []any{"A"},
+				},
+			},
+			rules: rules,
+			code:  "warning3",
+			want: output.Result{
+				Metadata: map[string]any{
+					"code":         "warning3",
+					"collections":  []string{"A"},
+					"description":  "Warning 3 description",
+					"title":        "Warning3",
+					"effective_on": effectiveOnTest,
 				},
 			},
 		},
