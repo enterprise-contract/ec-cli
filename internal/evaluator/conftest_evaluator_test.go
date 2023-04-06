@@ -20,6 +20,7 @@ package evaluator
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
 
 	"github.com/MakeNowJust/heredoc"
@@ -29,6 +30,7 @@ import (
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"k8s.io/kube-openapi/pkg/util/sets"
 
 	"github.com/enterprise-contract/ec-cli/internal/downloader"
 	"github.com/enterprise-contract/ec-cli/internal/opa/rule"
@@ -194,6 +196,7 @@ func setupTestContext(r *mockTestRunner, dl *mockDownloader) context.Context {
 	ctx = downloader.WithDownloadImpl(ctx, dl)
 	fs := afero.NewMemMapFs()
 	ctx = utils.WithFS(ctx, fs)
+	ctx = withCapabilities(ctx, testCapabilities)
 
 	if err := afero.WriteFile(fs, "/policy/example.rego", []byte(heredoc.Doc(`# Simplest always-failing policy
 	package main
@@ -210,6 +213,40 @@ func setupTestContext(r *mockTestRunner, dl *mockDownloader) context.Context {
 	return ctx
 }
 
+func TestConftestEvaluatorCapabilities(t *testing.T) {
+	ctx := setupTestContext(nil, nil)
+	fs := utils.FS(ctx)
+
+	p, err := policy.NewOfflinePolicy(ctx, policy.Now)
+	assert.NoError(t, err)
+
+	evaluator, err := NewConftestEvaluator(ctx, []source.PolicySource{
+		testPolicySource{},
+	}, p)
+	assert.NoError(t, err)
+
+	blob, err := afero.ReadFile(fs, evaluator.CapabilitiesPath())
+	assert.NoError(t, err)
+	var capabilities ast.Capabilities
+	err = json.Unmarshal(blob, &capabilities)
+	assert.NoError(t, err)
+
+	defaultBuiltins := sets.NewString()
+	for _, b := range ast.CapabilitiesForThisVersion().Builtins {
+		defaultBuiltins.Insert(b.Name)
+	}
+
+	gotBuiltins := sets.NewString()
+	for _, b := range capabilities.Builtins {
+		gotBuiltins.Insert(b.Name)
+	}
+
+	expectedRemoved := sets.NewString("opa.runtime", "http.send", "net.lookup_ip_addr")
+
+	assert.Equal(t, defaultBuiltins.Difference(gotBuiltins), expectedRemoved)
+
+	assert.Equal(t, []string{""}, capabilities.AllowNet)
+}
 func TestConftestEvaluatorEvaluateNoSuccessWarningsOrFailures(t *testing.T) {
 	results := []output.CheckResult{
 		{
@@ -1316,4 +1353,16 @@ func TestNameScoring(t *testing.T) {
 			assert.Equal(t, c.score, score(c.name))
 		})
 	}
+}
+
+var testCapabilities string
+
+func init() {
+	// Given the amount of tests in this file, creating the capabilities string
+	// can add significant overhead. We do it here once for all the tests instead.
+	data, err := strictCapabilities(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	testCapabilities = data
 }

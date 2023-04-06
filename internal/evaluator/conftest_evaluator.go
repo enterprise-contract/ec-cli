@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 	"time"
@@ -30,6 +31,7 @@ import (
 	"github.com/open-policy-agent/opa/ast"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
+	"k8s.io/apimachinery/pkg/util/sets"
 
 	"github.com/enterprise-contract/ec-cli/internal/opa"
 	"github.com/enterprise-contract/ec-cli/internal/opa/rule"
@@ -40,7 +42,10 @@ import (
 
 type contextKey string
 
-const runnerKey contextKey = "ec.evaluator.runner"
+const (
+	runnerKey       contextKey = "ec.evaluator.runner"
+	capabilitiesKey contextKey = "ec.evaluator.capabilities"
+)
 
 type CheckResult struct {
 	output.CheckResult
@@ -120,6 +125,10 @@ func NewConftestEvaluatorWithNamespace(ctx context.Context, policySources []sour
 		return nil, err
 	}
 
+	if err := c.createCapabilitiesFile(ctx); err != nil {
+		return nil, err
+	}
+
 	log.Debug("Conftest test runner created")
 	return c, nil
 }
@@ -129,6 +138,10 @@ func (c conftestEvaluator) Destroy() {
 	if os.Getenv("EC_DEBUG") == "" {
 		_ = c.fs.RemoveAll(c.workDir)
 	}
+}
+
+func (c conftestEvaluator) CapabilitiesPath() string {
+	return path.Join(c.workDir, "capabilities.json")
 }
 
 type policyRules map[string]rule.Info
@@ -195,6 +208,7 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (Check
 			AllNamespaces: allNamespaces,
 			NoFail:        true,
 			Output:        c.outputFormat,
+			Capabilities:  c.CapabilitiesPath(),
 		}
 	}
 
@@ -476,6 +490,28 @@ func (c *conftestEvaluator) createDataDirectory(ctx context.Context) error {
 	return nil
 }
 
+// createCapabilitiesFile writes the default OPA capabilities a file.
+func (c *conftestEvaluator) createCapabilitiesFile(ctx context.Context) error {
+	fs := utils.FS(ctx)
+	f, err := fs.Create(c.CapabilitiesPath())
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	data, err := strictCapabilities(ctx)
+	if err != nil {
+		return err
+	}
+
+	if _, err := f.WriteString(data); err != nil {
+		return err
+	}
+	log.Debugf("Capabilities file written to %s", f.Name())
+
+	return nil
+}
+
 // isResultEffective returns whether or not the given result's effective date is before now.
 // Failure to determine the effective date is reported as the result being effective.
 func isResultEffective(failure output.Result, now time.Time) bool {
@@ -621,4 +657,52 @@ func ExtractStringFromMetadata(result output.Result, key string) string {
 		}
 	}
 	return ""
+}
+
+func withCapabilities(ctx context.Context, capabilities string) context.Context {
+	return context.WithValue(ctx, capabilitiesKey, capabilities)
+}
+
+// strictCapabilities returns a JSON serialized OPA Capability meant to isolate rego
+// policies from accessing external information, such as hosts or environment
+// variables. If the context already contains the capability, then that is
+// returned as is. Use withCapabilities to pre-populate the context if needed. The
+// strict capabilities aim to provide a safe environment to execute arbitrary
+// rego policies.
+func strictCapabilities(ctx context.Context) (string, error) {
+	if c, ok := ctx.Value(capabilitiesKey).(string); ok && c != "" {
+		return c, nil
+	}
+
+	capabilities := ast.CapabilitiesForThisVersion()
+	// An empty list means no hosts can be reached. However, a nil value means all
+	// hosts can be reached. Unfortunately, the required JSON marshalling process
+	// drops the "allow_net" attribute if it's an empty list. So when it's loaded
+	// by OPA, it's seen as a nil value. As a workaround, we add an empty string
+	// to the list which shouldn't match any host but preserves the list after the
+	// JSON dance.
+	capabilities.AllowNet = []string{""}
+	log.Debug("Network access from rego policies disabled")
+
+	builtins := make([]*ast.Builtin, 0, len(capabilities.Builtins))
+	disallowed := sets.NewString(
+		// disallow access to environment variables
+		"opa.runtime",
+		// disallow external connections. This is a second layer of defense since
+		// AllowNet should prevent external connections in the first place.
+		"http.send", "net.lookup_ip_addr",
+	)
+	for _, b := range capabilities.Builtins {
+		if !disallowed.Has(b.Name) {
+			builtins = append(builtins, b)
+		}
+	}
+	capabilities.Builtins = builtins
+	log.Debugf("Access to some rego built-in functions disabled: %s", disallowed.List())
+
+	blob, err := json.Marshal(capabilities)
+	if err != nil {
+		return "", err
+	}
+	return string(blob), nil
 }

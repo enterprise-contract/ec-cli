@@ -26,4 +26,7 @@ type Evaluator interface {
 
 	// Destroy performs any cleanup needed
 	Destroy()
+
+	// CapabilitiesPath returns the path to the file where capabilities are defined
+	CapabilitiesPath() string
 }
