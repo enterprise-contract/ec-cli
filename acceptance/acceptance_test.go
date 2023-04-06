@@ -32,6 +32,7 @@ import (
 	"github.com/enterprise-contract/ec-cli/acceptance/git"
 	"github.com/enterprise-contract/ec-cli/acceptance/image"
 	"github.com/enterprise-contract/ec-cli/acceptance/kubernetes"
+	"github.com/enterprise-contract/ec-cli/acceptance/log"
 	"github.com/enterprise-contract/ec-cli/acceptance/pipeline"
 	"github.com/enterprise-contract/ec-cli/acceptance/registry"
 	"github.com/enterprise-contract/ec-cli/acceptance/rekor"
@@ -66,6 +67,13 @@ func initializeScenario(sc *godog.ScenarioContext) {
 	wiremock.AddStepsTo(sc)
 	pipeline.AddStepsTo(sc)
 	conftest.AddStepsTo(sc)
+
+	sc.Before(func(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
+		logger, ctx := log.LoggerFor(ctx)
+		logger.Name(sc.Name)
+
+		return ctx, nil
+	})
 
 	sc.After(func(ctx context.Context, scenario *godog.Scenario, scenarioErr error) (context.Context, error) {
 		_, err := testenv.Persist(ctx)

@@ -75,10 +75,12 @@ func startStubRegistry(ctx context.Context) (context.Context, error) {
 		WaitingFor:   wait.ForHTTP("/v2/").WithPort("5000/tcp"),
 	})
 
+	logger, ctx := log.LoggerFor(ctx)
+
 	registry, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: req,
 		Started:          true,
-		Logger:           log.LoggerFor(ctx),
+		Logger:           logger,
 	})
 	if err != nil {
 		return ctx, err

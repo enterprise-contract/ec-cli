@@ -163,6 +163,6 @@ func (s stubCluster) Up(ctx context.Context) bool {
 	return wiremock.IsRunning(ctx)
 }
 
-func (s stubCluster) Stop(ctx context.Context) error {
-	return nil
+func (s stubCluster) Stop(ctx context.Context) (context.Context, error) {
+	return ctx, nil
 }

@@ -123,14 +123,22 @@ func (k *kindCluster) Up(_ context.Context) bool {
 // and the Tekton Task bundle images will be pushed to the registry running in
 // the cluster.
 func Start(ctx context.Context) (context.Context, types.Cluster, error) {
+	logger, ctx := log.LoggerFor(ctx)
+	logger.Log("Starting Kind cluster")
+
 	clusterMutex.Lock()
-	defer clusterMutex.Unlock()
+	logger.Log("Acquired cluster lock")
+	defer func() {
+		clusterMutex.Unlock()
+		logger.Log("Released cluster lock")
+	}()
 
 	defer func() {
 		if globalCluster != nil {
 			// we were given or we started the cluster, so count us as a
 			// consumer of the cluster
 			clusterGroup.Add(1)
+			logger.Log("Registered with cluster group")
 		}
 	}()
 
@@ -351,22 +359,29 @@ func (k *kindCluster) KubeConfig(ctx context.Context) (string, error) {
 }
 
 func (k *kindCluster) Stop(ctx context.Context) error {
+	logger, ctx := log.LoggerFor(ctx)
+	logger.Log("Stopping cluster")
 	if !k.Up(ctx) {
+		logger.Log("Cluster not up")
 		return nil
 	}
 
 	// release cluster
 	clusterGroup.Done()
+	logger.Log("Released cluster to group")
 
 	// wait for other cluster consumers to finish
 	clusterGroup.Wait()
+	logger.Log("Last cluster consumer finished")
 
-	destroy.Do(k.destroyCluster)
+	destroy.Do(func() {
+		k.destroyCluster(ctx)
+	})
 
 	return nil
 }
 
-func (k *kindCluster) destroyCluster() {
+func (k *kindCluster) destroyCluster(ctx context.Context) {
 	defer func() {
 		kindDir := path.Join(k.kubeconfigPath, "..")
 		_ = os.RemoveAll(kindDir) // ignore errors
@@ -374,4 +389,6 @@ func (k *kindCluster) destroyCluster() {
 
 	// ignore error
 	_ = k.provider.Delete(k.name, k.kubeconfigPath)
+	logger, _ := log.LoggerFor(ctx)
+	logger.Log("Destroyed the cluster")
 }

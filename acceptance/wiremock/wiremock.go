@@ -213,10 +213,12 @@ func StartWiremock(ctx context.Context) (context.Context, error) {
 		},
 	})
 
+	logger, ctx := log.LoggerFor(ctx)
+
 	w, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: req,
 		Started:          true,
-		Logger:           log.LoggerFor(ctx),
+		Logger:           logger,
 	})
 	if err != nil {
 		return ctx, err
@@ -300,7 +302,7 @@ func AddStepsTo(sc *godog.ScenarioContext) {
 			return ctx, nil
 		}
 
-		logger := log.LoggerFor(ctx)
+		logger, ctx := log.LoggerFor(ctx)
 		logger.Log("Found unmatched WireMock requests:")
 		for i, u := range unmatched {
 			logger.Logf("[%d]: %s", i, u)

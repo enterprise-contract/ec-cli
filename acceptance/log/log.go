@@ -19,44 +19,58 @@ package log
 
 import (
 	"context"
-	"testing"
+	"fmt"
+	"sync/atomic"
 
 	"sigs.k8s.io/kind/pkg/log"
 
 	"github.com/enterprise-contract/ec-cli/acceptance/testenv"
 )
 
-type Logger interface {
+type loggerKeyType int
+
+const loggerKey loggerKeyType = 0
+
+var counter atomic.Uint32
+
+type DelegateLogger interface {
 	Log(args ...any)
 	Logf(format string, args ...any)
-	Printf(format string, v ...any)
-	Warn(message string)
-	Warnf(format string, args ...any)
+}
+
+type Logger interface {
+	DelegateLogger
+	Enabled() bool
 	Error(message string)
 	Errorf(format string, args ...any)
-	V(level log.Level) log.InfoLogger
 	Info(message string)
 	Infof(format string, args ...any)
-	Enabled() bool
+	Name(name string)
+	Printf(format string, v ...any)
+	V(level log.Level) log.InfoLogger
+	Warn(message string)
+	Warnf(format string, args ...any)
 }
 
 type logger struct {
-	t *testing.T
+	id   uint32
+	name string
+	t    DelegateLogger
 }
 
 // Log logs given arguments
 func (l logger) Log(args ...any) {
-	l.t.Log(args...)
+	l.t.Logf("(%010d: %s) %s", l.id, l.name, fmt.Sprint(args...))
 }
 
 // Logf logs using given format and specified arguments
 func (l logger) Logf(format string, args ...any) {
-	l.t.Logf(format, args...)
+	l.t.Logf("(%010d: %s) "+format, append([]any{l.id, l.name}, args...)...)
 }
 
 // Printf logs using given format and specified arguments
 func (l logger) Printf(format string, args ...any) {
-	l.Logf(format, args...)
+	l.t.Logf("(%010d: %s) "+format, append([]any{l.id, l.name}, args...)...)
 }
 
 func (l logger) Warn(message string) {
@@ -91,9 +105,28 @@ func (l logger) Enabled() bool {
 	return true
 }
 
+func (l *logger) Name(name string) {
+	l.name = name
+}
+
 // LoggerFor returns the logger for the provided Context, it is
 // expected that a *testing.T instance is stored in the Context
 // under the TestingKey key
-func LoggerFor(ctx context.Context) Logger {
-	return logger{testenv.Testing(ctx)}
+func LoggerFor(ctx context.Context) (Logger, context.Context) {
+	if logger, ok := ctx.Value(loggerKey).(Logger); ok {
+		return logger, ctx
+	}
+
+	delegate, ok := ctx.Value(testenv.TestingT).(DelegateLogger)
+	if !ok {
+		panic("No testing.T found in context")
+	}
+
+	logger := logger{
+		t:    delegate,
+		id:   counter.Add(1),
+		name: "*",
+	}
+
+	return &logger, context.WithValue(ctx, loggerKey, &logger)
 }
