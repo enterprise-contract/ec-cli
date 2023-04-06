@@ -18,7 +18,7 @@ require (
 	github.com/pkg/diff v0.0.0-20210226163009-20ebb0f2a09e
 	github.com/pkg/errors v0.9.1
 	github.com/redhat-appstudio/application-api v0.0.0-20230309195839-6e0986f52132
-	github.com/sigstore/cosign/v2 v2.0.0
+	github.com/sigstore/cosign/v2 v2.0.1-0.20230301174648-781d814b2797 // not using v2.0.0 to include https://github.com/sigstore/cosign/pull/2752
 	github.com/sigstore/rekor v1.0.1
 	github.com/sigstore/sigstore v1.6.1
 	github.com/stretchr/testify v1.8.2

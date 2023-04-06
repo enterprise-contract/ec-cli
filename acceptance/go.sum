@@ -731,8 +731,8 @@ github.com/sergi/go-diff v1.2.0/go.mod h1:STckp+ISIX8hZLjrqAeVduY0gWCT9IjLuqbuNX
 github.com/shibumi/go-pathspec v1.3.0 h1:QUyMZhFo0Md5B8zV8x2tesohbb5kfbpTi9rBnKh5dkI=
 github.com/shibumi/go-pathspec v1.3.0/go.mod h1:Xutfslp817l2I1cZvgcfeMQJG5QnU2lh5tVaaMCl3jE=
 github.com/shurcooL/sanitized_anchor_name v1.0.0/go.mod h1:1NzhyTcUVG4SuEtjjoZeVRXNmyL/1OwPU0+IJeTBvfc=
-github.com/sigstore/cosign/v2 v2.0.0 h1:x+K6VQKtrBR9/MYOx6ebJB6/Aux56nmf2Zn3chZlP5w=
-github.com/sigstore/cosign/v2 v2.0.0/go.mod h1:MeJyYfKll3AAsb+CdnhI3YkecDPX2erPvf1JaUaFCrM=
+github.com/sigstore/cosign/v2 v2.0.1-0.20230301174648-781d814b2797 h1:qOjK78uxI14UWBRyngtoo+q0Q7tWiAtxtbn1/vkGTl4=
+github.com/sigstore/cosign/v2 v2.0.1-0.20230301174648-781d814b2797/go.mod h1:uXN0WvI8xrmzZ/p+f4wE6doKOhnqAyjqvMrNvNrDAlk=
 github.com/sigstore/rekor v1.0.1 h1:rcESXSNkAPRWFYZel9rarspdvneET60F2ngNkadi89c=
 github.com/sigstore/rekor v1.0.1/go.mod h1:ecTKdZWGWqE1pl3U1m1JebQJLU/hSjD9vYHOmHQ7w4g=
 github.com/sigstore/sigstore v1.6.1 h1:xKBPWrNonThuY3HIxEkef/rKmLzpgcsc5/SRLcCriLA=
@@ -884,7 +884,7 @@ go.opentelemetry.io/otel/trace v1.14.0/go.mod h1:8avnQLK+CG77yNLUae4ea2JDQ6iT+go
 go.opentelemetry.io/proto/otlp v0.7.0/go.mod h1:PqfVotwruBrMGOCsRd/89rSnXhoiJIqeYNgFYFoEGnI=
 go.starlark.net v0.0.0-20200306205701-8dd3e2ee1dd5 h1:+FNtrFTmVw0YZGpBGX56XDee331t6JAXeK2bcyhLOOc=
 go.starlark.net v0.0.0-20200306205701-8dd3e2ee1dd5/go.mod h1:nmDLcffg48OtT/PSW0Hg7FvpRQsQh5OSqIylirxKC7o=
-go.step.sm/crypto v0.25.0 h1:a+7sKyozZH9B30s0dHluygxreUxI1NtCBEmuNXx7a4k=
+go.step.sm/crypto v0.25.1 h1:e08ioZBiZoHrWG0tJOUDPwqoF3PTRiFebINDEw3yPpo=
 go.uber.org/atomic v1.4.0/go.mod h1:gD2HeocX3+yG+ygLZcrzQJaqmWj9AIm7n08wl/qW/PE=
 go.uber.org/atomic v1.10.0 h1:9qC72Qh0+3MqyJbAn8YU5xVq1frD8bn3JtD2oXtafVQ=
 go.uber.org/atomic v1.10.0/go.mod h1:LUxbIzbOniOlMKjJjyPfpl4v+PKK2cNJn91OQbhoJI0=
