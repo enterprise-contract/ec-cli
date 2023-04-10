@@ -420,6 +420,36 @@ func theStandardOutputShouldContain(ctx context.Context, expected *godog.DocStri
 	return fmt.Errorf("expected and actual output differ:\n%s", b.String())
 }
 
+// theStandardErrorShouldContain looks at the standard error (stderr) of the last invoked ec
+// command and compares the expected error with the resulted error.
+func theStandardErrorShouldContain(ctx context.Context, expected *godog.DocString) error {
+	status, err := ecStatusFrom(ctx)
+	if err != nil {
+		return err
+	}
+
+	if expected == nil {
+		return errors.New("must provide expected error")
+	}
+
+	expectedStdErr := os.Expand(expected.Content, func(key string) string {
+		return status.vars[key]
+	})
+
+	stderr := status.stderr.String()
+
+	// shortcut, if the output is exactly as expected
+	if stderr == expectedStdErr {
+		return nil
+	}
+
+	if matched, err := regexp.MatchString(expectedStdErr, stderr); matched && err == nil {
+		return nil
+	}
+
+	return fmt.Errorf("expected error:\n%s\nnot found in standard error:\n%s", expected, stderr)
+}
+
 func filterMatchedByRegexp(obj any, diff gojsondiff.Diff) diffy {
 	deltas := diff.Deltas()
 	if v, ok := obj.(map[string]any); ok {
@@ -605,6 +635,7 @@ func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^ec command is run with "(.+)"$`, ecCommandIsRunWith)
 	sc.Step(`^the exit status should be (\d+)$`, theExitStatusIs)
 	sc.Step(`^the standard output should contain$`, theStandardOutputShouldContain)
+	sc.Step(`^the standard error should contain$`, theStandardErrorShouldContain)
 	sc.After(func(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
 		logExecution(ctx)
 
