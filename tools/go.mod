@@ -8,7 +8,7 @@ require (
 	github.com/google/addlicense v1.1.1
 	github.com/open-policy-agent/conftest v0.40.0
 	github.com/tektoncd/chains v0.15.0
-	github.com/tektoncd/cli v0.30.0
+	github.com/tektoncd/cli v0.30.1
 	github.com/wadey/gocovmerge v0.0.0-20160331181800-b5bfa59ec0ad
 	sigs.k8s.io/kustomize/kustomize/v4 v4.5.7
 )
