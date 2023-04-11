@@ -22,7 +22,7 @@ require (
 	github.com/sigstore/rekor v1.1.0
 	github.com/sigstore/sigstore v1.6.1
 	github.com/stretchr/testify v1.8.2
-	github.com/tektoncd/cli v0.30.0
+	github.com/tektoncd/cli v0.30.1
 	github.com/tektoncd/pipeline v0.44.0
 	github.com/testcontainers/testcontainers-go v0.19.0
 	github.com/theupdateframework/go-tuf v0.5.2
