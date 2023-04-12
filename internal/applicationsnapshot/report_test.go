@@ -30,6 +30,7 @@ import (
 	hd "github.com/MakeNowJust/heredoc"
 	"github.com/open-policy-agent/conftest/output"
 	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
+	"github.com/sigstore/cosign/v2/pkg/cosign"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 
@@ -577,7 +578,7 @@ var testPublicKey = hd.Doc(`
 var testPublicKeyCompact = strings.ReplaceAll(testPublicKey, "\n", "\\n")
 
 func createTestPolicy(t *testing.T, ctx context.Context) policy.Policy {
-	p, err := policy.NewPolicy(ctx, "", "", testPublicKey, policy.Now)
+	p, err := policy.NewPolicy(ctx, "", "", testPublicKey, policy.Now, cosign.Identity{})
 	assert.NoError(t, err)
 	return p
 }

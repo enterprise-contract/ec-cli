@@ -111,6 +111,8 @@ func NewReport(snapshot string, components []Component, policy policy.Policy) (R
 		return Report{}, err
 	}
 
+	// TODO: Add some keyless information to the report.
+
 	info, _ := version.ComputeInfo()
 
 	return Report{

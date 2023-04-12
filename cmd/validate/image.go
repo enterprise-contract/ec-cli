@@ -26,6 +26,7 @@ import (
 	hd "github.com/MakeNowJust/heredoc"
 	"github.com/hashicorp/go-multierror"
 	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
+	"github.com/sigstore/cosign/v2/pkg/cosign"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
@@ -40,20 +41,24 @@ type imageValidationFunc func(context.Context, string, policy.Policy, bool) (*ou
 
 func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 	var data = struct {
-		effectiveTime       string
-		filePath            string
-		imageRef            string
-		info                bool
-		input               string
-		output              []string
-		outputFile          string
-		policy              policy.Policy
-		policyConfiguration string
-		publicKey           string
-		rekorURL            string
-		snapshot            string
-		spec                *app.SnapshotSpec
-		strict              bool
+		certificateIdentity         string
+		certificateIdentityRegExp   string
+		certificateOIDCIssuer       string
+		certificateOIDCIssuerRegExp string
+		effectiveTime               string
+		filePath                    string
+		imageRef                    string
+		info                        bool
+		input                       string
+		output                      []string
+		outputFile                  string
+		policy                      policy.Policy
+		policyConfiguration         string
+		publicKey                   string
+		rekorURL                    string
+		snapshot                    string
+		spec                        *app.SnapshotSpec
+		strict                      bool
 	}{
 
 		policyConfiguration: "enterprise-contract-service/default",
@@ -127,6 +132,22 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 
 			Write output in YAML format to stdout and in HACBS format to a file
 			  ec validate image --image registry/name:tag --output yaml --output hacbs=<path>
+
+			Validate a single image with keyless workflow. This is an experimental feature
+			that requires setting the EC_EXPERIMENTAL environment variable to "1".
+
+			  EC_EXPERIMENTAL="1" ec validate image --image registry/name:tag --policy my-policy \
+			    --certificate-identity 'https://github.com/user/repo/.github/workflows/push.yaml@refs/heads/main' \
+			    --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
+			    --rekor-url 'https://rekor.sigstore.dev'
+
+			Use a regular expression to match certificate attributes. This is an experimental
+			feature that requires setting the EC_EXPERIMENTAL environment variable to "1".
+
+			  EC_EXPERIMENTAL="1" ec validate image --image registry/name:tag --policy my-policy \
+			    --certificate-identity-regexp '^https://github\.com' \
+			    --certificate-oidc-issuer-regexp 'githubusercontent' \
+			    --rekor-url 'https://rekor.sigstore.dev'
 		`),
 
 		PreRunE: func(cmd *cobra.Command, args []string) (allErrors error) {
@@ -140,6 +161,13 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 				allErrors = multierror.Append(allErrors, err)
 			} else {
 				data.spec = s
+			}
+
+			identity := cosign.Identity{
+				Issuer:        data.certificateOIDCIssuer,
+				IssuerRegExp:  data.certificateOIDCIssuerRegExp,
+				Subject:       data.certificateIdentity,
+				SubjectRegExp: data.certificateIdentityRegExp,
 			}
 
 			// Check if policyConfiguration is a file path, if so, we read it into the var data.policyConfiguration
@@ -161,7 +189,8 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 			}
 
 			if p, err := policy.NewPolicy(
-				cmd.Context(), data.policyConfiguration, data.rekorURL, data.publicKey, data.effectiveTime,
+				cmd.Context(), data.policyConfiguration, data.rekorURL, data.publicKey,
+				data.effectiveTime, identity,
 			); err != nil {
 				allErrors = multierror.Append(allErrors, err)
 			} else {
@@ -263,6 +292,18 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 
 	cmd.Flags().StringVarP(&data.rekorURL, "rekor-url", "r", data.rekorURL,
 		"Rekor URL. Overrides rekorURL from EnterpriseContractPolicy")
+
+	cmd.Flags().StringVar(&data.certificateIdentity, "certificate-identity", data.certificateIdentity,
+		"EXPERIMENTAL. URL of the certificate identity for keyless verification")
+
+	cmd.Flags().StringVar(&data.certificateIdentityRegExp, "certificate-identity-regexp", data.certificateIdentityRegExp,
+		"EXPERIMENTAL. Regular expression for the URL of the certificate identity for keyless verification")
+
+	cmd.Flags().StringVar(&data.certificateOIDCIssuer, "certificate-oidc-issuer", data.certificateOIDCIssuer,
+		"EXPERIMENTAL. URL of the certificate OIDC issuer for keyless verification")
+
+	cmd.Flags().StringVar(&data.certificateOIDCIssuerRegExp, "certificate-oidc-issuer-regexp", data.certificateOIDCIssuerRegExp,
+		"EXPERIMENTAL. Regular expresssion for the URL of the certificate OIDC issuer for keyless verification")
 
 	cmd.Flags().StringVarP(&data.filePath, "file-path", "f", data.filePath,
 		"path to ApplicationSnapshot Spec JSON file")

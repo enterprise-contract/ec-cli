@@ -186,7 +186,8 @@ func (a *ApplicationSnapshotImage) ValidateAttestationSignature(ctx context.Cont
 	for _, att := range layers {
 		sp, err := attestation.SLSAProvenanceFromLayer(att)
 		if err != nil {
-			return err
+			log.Debugf("Ignoring non SLSA Provenance attestation: %s", err)
+			continue
 		}
 		a.attestations = append(a.attestations, sp)
 
