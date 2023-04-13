@@ -19,7 +19,9 @@ package source
 import (
 	"context"
 	"crypto/sha256"
+	"encoding/base64"
 	"fmt"
+	"os"
 	"path"
 	"time"
 
@@ -91,4 +93,30 @@ func uniqueDestination(rootDir string, subdir string, sourceUrl string) string {
 // timestamp appended to the input for some extra randomness
 func uniqueDir(input string) string {
 	return fmt.Sprintf("%x", sha256.Sum224([]byte(fmt.Sprintf("%s/%s", input, time.Now()))))[:9]
+}
+
+type inlineData struct {
+	source []byte
+}
+
+func InlineData(source []byte) PolicySource {
+	return inlineData{source}
+}
+
+func (s inlineData) GetPolicy(ctx context.Context, workDir string, showMsg bool) (string, error) {
+	dest := uniqueDestination(workDir, s.Subdir(), fmt.Sprintf("%x", (sha256.Sum256(s.source))))
+
+	if err := os.MkdirAll(dest, 0755); err != nil {
+		return "", err
+	}
+
+	return dest, os.WriteFile(path.Join(dest, "rule_data.json"), s.source, 0400)
+}
+
+func (s inlineData) PolicyUrl() string {
+	return "data:application/json;base64," + base64.StdEncoding.EncodeToString(s.source)
+}
+
+func (s inlineData) Subdir() string {
+	return "data"
 }

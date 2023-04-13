@@ -21,6 +21,8 @@ package source
 import (
 	"context"
 	"errors"
+	"os"
+	"path"
 	"regexp"
 	"testing"
 
@@ -92,4 +94,24 @@ func TestGetPolicy(t *testing.T) {
 			mock.AssertExpectationsForObjects(t, &dl)
 		})
 	}
+}
+
+func TestInlineDataSource(t *testing.T) {
+	s := InlineData([]byte("some data"))
+
+	temp := t.TempDir()
+
+	assert.Equal(t, "data", s.Subdir())
+
+	dest, err := s.GetPolicy(context.Background(), temp, false)
+	assert.NoError(t, err)
+
+	file := path.Join(dest, "rule_data.json")
+	assert.FileExists(t, file)
+
+	data, err := os.ReadFile(file)
+	assert.NoError(t, err)
+	assert.Equal(t, []byte("some data"), data)
+
+	assert.Equal(t, "data:application/json;base64,c29tZSBkYXRh", s.PolicyUrl())
 }
