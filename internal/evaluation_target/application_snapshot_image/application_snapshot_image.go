@@ -123,6 +123,12 @@ func fetchPolicySources(s ecc.Source) ([]source.PolicySource, error) {
 		url := source.PolicyUrl{Url: dataSourceUrl, Kind: "data"}
 		policySources = append(policySources, &url)
 	}
+
+	if s.RuleData != nil {
+		data := append(append([]byte(`{"rule_data__configuration__":`), s.RuleData.Raw...), '}')
+		policySources = append(policySources, source.InlineData(data))
+	}
+
 	return policySources, nil
 }
 

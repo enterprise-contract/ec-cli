@@ -986,3 +986,75 @@ Feature: evaluate enterprise contract
     Then the standard output should contain
     """
     """
+
+  Scenario: Custom rule data
+    Given a key pair named "known"
+    Given an image named "acceptance/image"
+    Given a valid image signature of "acceptance/image" image signed by the "known" key
+    Given a valid attestation of "acceptance/image" signed by the "known" key
+    Given a git repository named "my-policy1" with
+      | rule_data.rego | examples/rule_data.rego |
+    Given a git repository named "my-policy2" with
+      | rule_data.rego | examples/rule_data.rego |
+    Given policy configuration named "ec-policy" with specification
+    """
+    {
+      "sources": [
+        {
+          "policy": [
+            "git::https://${GITHOST}/git/my-policy1.git"
+          ],
+          "ruleData": {
+            "custom": "data1"
+          }
+        },
+        {
+          "policy": [
+            "git::https://${GITHOST}/git/my-policy2.git"
+          ],
+          "ruleData": {
+            "other": "data2"
+          }
+        }
+      ]
+    }
+    """
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/image --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --strict"
+    Then the exit status should be 0
+    Then the standard output should contain
+    """
+    {
+      "components": [
+        {
+          "containerImage": "localhost:(\\d+)/acceptance/image@sha256:[0-9a-f]{64}",
+          "name": "Unnamed",
+          "signatures": ${ATTESTATION_SIGNATURES_JSON},
+          "success": true
+        }
+      ],
+      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
+      "key": ${known_PUBLIC_KEY_JSON},
+      "policy": {
+        "publicKey": "${known_PUBLIC_KEY}",
+        "sources": [
+          {
+            "policy": [
+              "git::https://${GITHOST}/git/my-policy1.git"
+            ],
+            "ruleData": {
+              "custom": "data1"
+            }
+          },
+          {
+            "policy": [
+              "git::https://${GITHOST}/git/my-policy2.git"
+            ],
+            "ruleData": {
+              "other": "data2"
+            }
+          }
+        ]
+      },
+      "success": true
+    }
+    """
