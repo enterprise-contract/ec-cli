@@ -23,11 +23,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
+	"path"
 	"testing"
 
 	hd "github.com/MakeNowJust/heredoc"
 	conftestOutput "github.com/open-policy-agent/conftest/output"
 	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
+	"github.com/sigstore/cosign/v2/pkg/cosign"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 
@@ -271,6 +274,46 @@ func Test_ValidateImageCommand(t *testing.T) {
 	  }`, mockPublicKey, mockPublicKey), out.String())
 }
 
+func Test_ValidateImageCommandKeyless(t *testing.T) {
+	called := false
+	cmd := validateImageCmd(func(_ context.Context, url string, p policy.Policy, _ bool) (*output.Output, error) {
+		assert.Equal(t, cosign.Identity{
+			Issuer:        "my-certificate-oidc-issuer",
+			Subject:       "my-certificate-identity",
+			IssuerRegExp:  "my-certificate-oidc-issuer-regexp",
+			SubjectRegExp: "my-certificate-identity-regexp",
+		}, p.Identity())
+
+		called = true
+
+		return &output.Output{}, nil
+	})
+
+	cmd.SetContext(utils.WithFS(context.Background(), afero.NewMemMapFs()))
+
+	cmd.SetArgs([]string{
+		"--image",
+		"registry/image:tag",
+		"--policy",
+		"",
+		"--certificate-identity",
+		"my-certificate-identity",
+		"--certificate-oidc-issuer",
+		"my-certificate-oidc-issuer",
+		"--certificate-identity-regexp",
+		"my-certificate-identity-regexp",
+		"--certificate-oidc-issuer-regexp",
+		"my-certificate-oidc-issuer-regexp",
+	})
+
+	t.Setenv("EC_EXPERIMENTAL", "1")
+	setupFulcioRoots(t)
+	setupCTLogPublicKey(t)
+
+	err := cmd.Execute()
+	assert.NoError(t, err)
+	assert.True(t, called)
+}
 func Test_ValidateImageCommandYAMLPolicyFile(t *testing.T) {
 	validate := func(_ context.Context, url string, _ policy.Policy, _ bool) (*output.Output, error) {
 		return &output.Output{
@@ -758,4 +801,66 @@ func Test_WarningOutput(t *testing.T) {
 			"publicKey": "%s"
 		}
 	  }`, mockPublicKey, mockPublicKey), out.String())
+}
+
+func setupFulcioRoots(t *testing.T) {
+	// Do not use afero.NewMemMapFs() here because the file is read by cosign
+	// which does not understand the filesystem-from-context pattern
+	f, err := os.Create(path.Join(t.TempDir(), "fulcio.pem"))
+	assert.NoError(t, err)
+	defer f.Close()
+	// For posterity, the certificates below have been retrieved with:
+	//    curl -v https://fulcio.sigstore.dev/api/v1/rootCert
+	// They are stored here to avoid external calls when running tests.
+	// The first certificate is the self-signed root, and the second
+	// is an intermediate cert issued by the root. Any set of certs that
+	// match this criteria could be used.
+	_, err = f.Write([]byte(hd.Doc(`
+		-----BEGIN CERTIFICATE-----
+		MIICGjCCAaGgAwIBAgIUALnViVfnU0brJasmRkHrn/UnfaQwCgYIKoZIzj0EAwMw
+		KjEVMBMGA1UEChMMc2lnc3RvcmUuZGV2MREwDwYDVQQDEwhzaWdzdG9yZTAeFw0y
+		MjA0MTMyMDA2MTVaFw0zMTEwMDUxMzU2NThaMDcxFTATBgNVBAoTDHNpZ3N0b3Jl
+		LmRldjEeMBwGA1UEAxMVc2lnc3RvcmUtaW50ZXJtZWRpYXRlMHYwEAYHKoZIzj0C
+		AQYFK4EEACIDYgAE8RVS/ysH+NOvuDZyPIZtilgUF9NlarYpAd9HP1vBBH1U5CV7
+		7LSS7s0ZiH4nE7Hv7ptS6LvvR/STk798LVgMzLlJ4HeIfF3tHSaexLcYpSASr1kS
+		0N/RgBJz/9jWCiXno3sweTAOBgNVHQ8BAf8EBAMCAQYwEwYDVR0lBAwwCgYIKwYB
+		BQUHAwMwEgYDVR0TAQH/BAgwBgEB/wIBADAdBgNVHQ4EFgQU39Ppz1YkEZb5qNjp
+		KFWixi4YZD8wHwYDVR0jBBgwFoAUWMAeX5FFpWapesyQoZMi0CrFxfowCgYIKoZI
+		zj0EAwMDZwAwZAIwPCsQK4DYiZYDPIaDi5HFKnfxXx6ASSVmERfsynYBiX2X6SJR
+		nZU84/9DZdnFvvxmAjBOt6QpBlc4J/0DxvkTCqpclvziL6BCCPnjdlIB3Pu3BxsP
+		mygUY7Ii2zbdCdliiow=
+		-----END CERTIFICATE-----
+		-----BEGIN CERTIFICATE-----
+		MIIB9zCCAXygAwIBAgIUALZNAPFdxHPwjeDloDwyYChAO/4wCgYIKoZIzj0EAwMw
+		KjEVMBMGA1UEChMMc2lnc3RvcmUuZGV2MREwDwYDVQQDEwhzaWdzdG9yZTAeFw0y
+		MTEwMDcxMzU2NTlaFw0zMTEwMDUxMzU2NThaMCoxFTATBgNVBAoTDHNpZ3N0b3Jl
+		LmRldjERMA8GA1UEAxMIc2lnc3RvcmUwdjAQBgcqhkjOPQIBBgUrgQQAIgNiAAT7
+		XeFT4rb3PQGwS4IajtLk3/OlnpgangaBclYpsYBr5i+4ynB07ceb3LP0OIOZdxex
+		X69c5iVuyJRQ+Hz05yi+UF3uBWAlHpiS5sh0+H2GHE7SXrk1EC5m1Tr19L9gg92j
+		YzBhMA4GA1UdDwEB/wQEAwIBBjAPBgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBRY
+		wB5fkUWlZql6zJChkyLQKsXF+jAfBgNVHSMEGDAWgBRYwB5fkUWlZql6zJChkyLQ
+		KsXF+jAKBggqhkjOPQQDAwNpADBmAjEAj1nHeXZp+13NWBNa+EDsDP8G1WWg1tCM
+		WP/WHPqpaVo0jhsweNFZgSs0eE7wYI4qAjEA2WB9ot98sIkoF3vZYdd3/VtWB5b9
+		TNMea7Ix/stJ5TfcLLeABLE4BNJOsQ4vnBHJ
+		-----END CERTIFICATE-----
+		`)))
+	assert.NoError(t, err)
+	t.Setenv("SIGSTORE_ROOT_FILE", f.Name())
+}
+
+func setupCTLogPublicKey(t *testing.T) {
+	// Do not use afero.NewMemMapFs() here because the file is read by cosign
+	// which does not understand the filesystem-from-context pattern
+	f, err := os.Create(path.Join(t.TempDir(), "ctlog.pem"))
+	assert.NoError(t, err)
+	defer f.Close()
+	// This is just an arbitrary key created via `cosign generate-key-pair` with
+	// no password.
+	_, err = f.Write([]byte(hd.Doc(`
+		-----BEGIN PUBLIC KEY-----
+		MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEOocIWHWZ1D1v996GmWtnYWx8BYau
+		gWMm0tCdRiJPEedIvTGypPtC5lJHo5zJABbQ8UKRixFuzs+Qaa06xkTatg==
+		-----END PUBLIC KEY-----`)))
+	assert.NoError(t, err)
+	t.Setenv("SIGSTORE_CT_LOG_PUBLIC_KEY_FILE", f.Name())
 }

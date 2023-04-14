@@ -21,11 +21,13 @@ import (
 	"crypto"
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
 	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/hashicorp/go-multierror"
+	"github.com/sigstore/cosign/v2/cmd/cosign/cli/fulcio"
 	"github.com/sigstore/cosign/v2/cmd/cosign/cli/rekor"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
 	cosignSig "github.com/sigstore/cosign/v2/pkg/signature"
@@ -58,6 +60,7 @@ type Policy interface {
 	Spec() ecc.EnterpriseContractPolicySpec
 	EffectiveTime() time.Time
 	AttestationTime(time.Time)
+	Identity() cosign.Identity
 }
 
 type policy struct {
@@ -66,11 +69,18 @@ type policy struct {
 	choosenTime     string
 	effectiveTime   *time.Time
 	attestationTime *time.Time
+	// TODO: Move these to ecc.EnterpriseContractPolicySpec
+	identity cosign.Identity
 }
 
 // PublicKeyPEM returns the PublicKey in PEM format.
 func (p *policy) PublicKeyPEM() ([]byte, error) {
 	if p.checkOpts == nil || p.checkOpts.SigVerifier == nil {
+		if keylessEnabled() {
+			// When using the experimental keyless functionality, it is not expected
+			// that SigVerifier will be set.
+			return []byte{}, nil
+		}
 		return nil, errors.New("no check options or sig verifier configured")
 	}
 	pk, err := p.checkOpts.SigVerifier.PublicKey()
@@ -89,6 +99,10 @@ func (p *policy) CheckOpts() (*cosign.CheckOpts, error) {
 
 func (p *policy) Spec() ecc.EnterpriseContractPolicySpec {
 	return p.EnterpriseContractPolicySpec
+}
+
+func (p *policy) Identity() cosign.Identity {
+	return p.identity
 }
 
 // NewOfflinePolicy construct and return a new instance of Policy that is used
@@ -137,7 +151,7 @@ func NewInertPolicy(ctx context.Context, policyRef string) (Policy, error) {
 //
 // The public key is resolved as part of object construction. If the public key is a reference
 // to a kubernetes resource, for example, the cluster will be contacted.
-func NewPolicy(ctx context.Context, policyRef, rekorUrl, publicKey, effectiveTime string) (Policy, error) {
+func NewPolicy(ctx context.Context, policyRef, rekorUrl, publicKey, effectiveTime string, identity cosign.Identity) (Policy, error) {
 	p := policy{
 		choosenTime: effectiveTime,
 	}
@@ -157,7 +171,13 @@ func NewPolicy(ctx context.Context, policyRef, rekorUrl, publicKey, effectiveTim
 	}
 
 	if p.PublicKey == "" {
-		return nil, errors.New("policy must provide a public key")
+		if !keylessEnabled() {
+			return nil, errors.New("policy must provide a public key")
+		}
+		p.identity = identity
+		if err := validateIdentity(p.identity); err != nil {
+			return nil, err
+		}
 	}
 
 	if efn, err := parseEffectiveTime(effectiveTime); err != nil {
@@ -276,13 +296,11 @@ func checkOpts(ctx context.Context, p *policy) (*cosign.CheckOpts, error) {
 	var err error
 	opts := cosign.CheckOpts{}
 
-	opts.SigVerifier, err = signatureVerifier(ctx, p)
-	if err != nil {
-		return nil, err
-	}
-
 	if p.RekorUrl == "" {
+		// TODO: Rethink this? Maybe have an explicit flag to do ignore rekor. That
+		// way we can provide a default value.
 		opts.IgnoreTlog = true
+		log.Debug("Transparency log verification disabled")
 	} else {
 		if opts.RekorClient, err = rekor.NewClient(p.RekorUrl); err != nil {
 			log.Debugf("Problem creating a rekor client using url %q", p.RekorUrl)
@@ -291,6 +309,30 @@ func checkOpts(ctx context.Context, p *policy) (*cosign.CheckOpts, error) {
 		log.Debug("Rekor client created")
 
 		if opts.RekorPubKeys, err = cosign.GetRekorPubs(ctx); err != nil {
+			return nil, err
+		}
+		log.Debug("Retrieved Rekor public keys")
+	}
+
+	if p.PublicKey != "" {
+		log.Debug("Using long-lived key workflow")
+		if opts.SigVerifier, err = signatureVerifier(ctx, p); err != nil {
+			return nil, err
+		}
+	} else {
+		log.Debug("Using keyless workflow")
+		opts.Identities = []cosign.Identity{p.identity}
+
+		// Get Fulcio certificates
+		if opts.RootCerts, err = fulcio.GetRoots(); err != nil {
+			return nil, err
+		}
+		if opts.IntermediateCerts, err = fulcio.GetIntermediates(); err != nil {
+			return nil, err
+		}
+
+		// Get Certificate Transparency Log public keys
+		if opts.CTLogPubKeys, err = cosign.GetCTLogPubs(ctx); err != nil {
 			return nil, err
 		}
 		log.Debug("Retrieved Rekor public keys")
@@ -343,4 +385,28 @@ func signatureVerifier(ctx context.Context, p *policy) (sigstoreSig.Verifier, er
 		return nil, err
 	}
 	return verifier, nil
+}
+
+func validateIdentity(identity cosign.Identity) error {
+	var errs error
+
+	if identity.Issuer == "" && identity.IssuerRegExp == "" {
+		errs = multierror.Append(errs, errors.New(
+			"certificate OIDC issuer must be provided for keyless workflow"))
+	}
+
+	if identity.Subject == "" && identity.SubjectRegExp == "" {
+		errs = multierror.Append(errs, errors.New(
+			"certificate identity must be provided for keyless workflow"))
+	}
+
+	return errs
+}
+
+func keylessEnabled() bool {
+	return experimental()
+}
+
+func experimental() bool {
+	return os.Getenv("EC_EXPERIMENTAL") == "1"
 }
