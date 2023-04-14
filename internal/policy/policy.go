@@ -186,9 +186,9 @@ func (p *policy) loadPolicy(ctx context.Context, policyRef string) error {
 
 	if strings.Contains(policyRef, ":") { // Should detect JSON or YAML objects 🤞
 		log.Debug("Read EnterpriseContractPolicy as YAML")
-		if err := yaml.Unmarshal([]byte(policyRef), &p); err != nil {
-			log.Debugf("Problem parsing EnterpriseContractPolicy Spec from %q", policyRef)
-			return fmt.Errorf("unable to parse EnterpriseContractPolicy Spec: %w", err)
+		if err := yaml.Unmarshal([]byte(policyRef), &p.EnterpriseContractPolicySpec); err != nil {
+			log.Debugf("Problem parsing EnterpriseContractPolicySpec from %q", policyRef)
+			return fmt.Errorf("unable to parse EnterpriseContractPolicySpec: %w", err)
 		}
 	} else {
 		log.Debug("Read EnterpriseContractPolicy as k8s resource")

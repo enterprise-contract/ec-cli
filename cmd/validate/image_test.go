@@ -529,7 +529,7 @@ func Test_ValidateErrorCommand(t *testing.T) {
 				`{"invalid": "json""}`,
 			},
 			expected: `1 error occurred:
-	* unable to parse EnterpriseContractPolicy Spec: error converting YAML to JSON: yaml: found unexpected end of stream
+	* unable to parse EnterpriseContractPolicySpec: error converting YAML to JSON: yaml: found unexpected end of stream
 
 `,
 		},
@@ -556,7 +556,7 @@ func Test_ValidateErrorCommand(t *testing.T) {
 			},
 			expected: `2 errors occurred:
 	* unable to parse Snapshot specification from input: error converting YAML to JSON: yaml: found unexpected end of stream
-	* unable to parse EnterpriseContractPolicy Spec: error converting YAML to JSON: yaml: found unexpected end of stream
+	* unable to parse EnterpriseContractPolicySpec: error converting YAML to JSON: yaml: found unexpected end of stream
 
 `,
 		},
