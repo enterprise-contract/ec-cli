@@ -23,8 +23,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
-	"path"
 	"testing"
 
 	hd "github.com/MakeNowJust/heredoc"
@@ -40,11 +38,6 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
-
-const mockPublicKey string = `-----BEGIN PUBLIC KEY-----\n` +
-	`MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEPEwqj1tPu2Uwti2abGgGgURluuad\n` +
-	`BK1e0Opk9WTCJ6WyP8Yo3Dl9wNJnjfzBGoRocUsfSd8foGKnFX1E34xVzw==\n` +
-	`-----END PUBLIC KEY-----\n`
 
 type data struct {
 	imageRef string
@@ -246,7 +239,7 @@ func Test_ValidateImageCommand(t *testing.T) {
 		"--image",
 		"registry/image:tag",
 		"--policy",
-		fmt.Sprintf(`{"publicKey": "%s"}`, mockPublicKey),
+		fmt.Sprintf(`{"publicKey": %s}`, utils.TestPublicKeyJSON),
 	})
 
 	var out bytes.Buffer
@@ -257,7 +250,7 @@ func Test_ValidateImageCommand(t *testing.T) {
 	assert.JSONEq(t, fmt.Sprintf(`{
 		"success": true,
 		"ec-version": "development",
-		"key": "%s",
+		"key": %s,
 		"components": [
 		  {
 			"name": "Unnamed",
@@ -269,9 +262,9 @@ func Test_ValidateImageCommand(t *testing.T) {
 		  }
 		],
 		"policy": {
-			"publicKey": "%s"
+			"publicKey": %s
 		}
-	  }`, mockPublicKey, mockPublicKey), out.String())
+	  }`, utils.TestPublicKeyJSON, utils.TestPublicKeyJSON), out.String())
 }
 
 func Test_ValidateImageCommandKeyless(t *testing.T) {
@@ -307,8 +300,8 @@ func Test_ValidateImageCommandKeyless(t *testing.T) {
 	})
 
 	t.Setenv("EC_EXPERIMENTAL", "1")
-	setupFulcioRoots(t)
-	setupCTLogPublicKey(t)
+	utils.SetTestFulcioRoots(t)
+	utils.SetTestCTLogPublicKey(t)
 
 	err := cmd.Execute()
 	assert.NoError(t, err)
@@ -356,12 +349,7 @@ func Test_ValidateImageCommandYAMLPolicyFile(t *testing.T) {
 	fs := afero.NewMemMapFs()
 
 	cmd.SetContext(utils.WithFS(context.TODO(), fs))
-	testPublicKey := `
------BEGIN PUBLIC KEY-----
-MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEpXcIGCQmaP7qhEq/xfXT49BNBmTE
-AWJvteQ7WiOp1VovrkOlqW64afWtf3qPz70ETXUhZ42lHvg1aKu24vKK/w==
------END PUBLIC KEY-----
-`
+
 	testPolicyYaml := `sources:
   - policy:
       - "registry/policy:latest"
@@ -382,7 +370,7 @@ configuration:
 		"--image",
 		"registry/image:tag",
 		"--public-key",
-		testPublicKey,
+		utils.TestPublicKey,
 		"--policy",
 		"/policy.yaml",
 	}
@@ -437,12 +425,7 @@ func Test_ValidateImageCommandJSONPolicyFile(t *testing.T) {
 	fs := afero.NewMemMapFs()
 
 	cmd.SetContext(utils.WithFS(context.TODO(), fs))
-	testPublicKey := `
------BEGIN PUBLIC KEY-----
-MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEpXcIGCQmaP7qhEq/xfXT49BNBmTE
-AWJvteQ7WiOp1VovrkOlqW64afWtf3qPz70ETXUhZ42lHvg1aKu24vKK/w==
------END PUBLIC KEY-----
-`
+
 	testPolicyJSON := `sources:
   - policy:
       - "registry/policy:latest"
@@ -463,7 +446,7 @@ configuration:
 		"--image",
 		"registry/image:tag",
 		"--public-key",
-		testPublicKey,
+		utils.TestPublicKey,
 		"--policy",
 		"/policy.json",
 	}
@@ -518,12 +501,7 @@ func Test_ValidateImageCommandEmptyPolicyFile(t *testing.T) {
 	fs := afero.NewMemMapFs()
 
 	cmd.SetContext(utils.WithFS(context.TODO(), fs))
-	testPublicKey := `
------BEGIN PUBLIC KEY-----
-MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEpXcIGCQmaP7qhEq/xfXT49BNBmTE
-AWJvteQ7WiOp1VovrkOlqW64afWtf3qPz70ETXUhZ42lHvg1aKu24vKK/w==
------END PUBLIC KEY-----
-`
+
 	err := afero.WriteFile(fs, "/policy.yaml", []byte(nil), 0644)
 	if err != nil {
 		panic(err)
@@ -532,7 +510,7 @@ AWJvteQ7WiOp1VovrkOlqW64afWtf3qPz70ETXUhZ42lHvg1aKu24vKK/w==
 		"--image",
 		"registry/image:tag",
 		"--public-key",
-		testPublicKey,
+		utils.TestPublicKey,
 		"--policy",
 		"/policy.yaml",
 	}
@@ -556,7 +534,7 @@ func Test_ValidateErrorCommand(t *testing.T) {
 				"--image",
 				"registry/image:tag",
 				"--policy",
-				fmt.Sprintf(`{"publicKey": "%s"}`, mockPublicKey),
+				fmt.Sprintf(`{"publicKey": %s}`, utils.TestPublicKeyJSON),
 			},
 			expected: `1 error occurred:
 	* error validating image registry/image:tag of component Unnamed: expected
@@ -582,7 +560,7 @@ func Test_ValidateErrorCommand(t *testing.T) {
 				"--json-input",
 				`{"invalid": "json""}`,
 				"--policy",
-				fmt.Sprintf(`{"publicKey": "%s"}`, mockPublicKey),
+				fmt.Sprintf(`{"publicKey": %s}`, utils.TestPublicKeyJSON),
 			},
 			expected: `1 error occurred:
 	* unable to parse Snapshot specification from input: error converting YAML to JSON: yaml: found unexpected end of stream
@@ -655,7 +633,7 @@ func Test_FailureImageAccessibility(t *testing.T) {
 		"--image",
 		"registry/image:tag",
 		"--policy",
-		fmt.Sprintf(`{"publicKey": "%s"}`, mockPublicKey),
+		fmt.Sprintf(`{"publicKey": %s}`, utils.TestPublicKeyJSON),
 	})
 
 	var out bytes.Buffer
@@ -666,7 +644,7 @@ func Test_FailureImageAccessibility(t *testing.T) {
 	assert.JSONEq(t, fmt.Sprintf(`{
 		"success": false,
 		"ec-version": "development",
-		"key": "%s",
+		"key": %s,
 		"components": [
 		  {
 			"name": "Unnamed",
@@ -680,9 +658,9 @@ func Test_FailureImageAccessibility(t *testing.T) {
 		  }
 		],
 		"policy": {
-			"publicKey": "%s"
+			"publicKey": %s
 		}
-	  }`, mockPublicKey, mockPublicKey), out.String())
+	  }`, utils.TestPublicKeyJSON, utils.TestPublicKeyJSON), out.String())
 }
 
 func Test_FailureOutput(t *testing.T) {
@@ -711,7 +689,7 @@ func Test_FailureOutput(t *testing.T) {
 		"--image",
 		"registry/image:tag",
 		"--policy",
-		fmt.Sprintf(`{"publicKey": "%s"}`, mockPublicKey),
+		fmt.Sprintf(`{"publicKey": %s}`, utils.TestPublicKeyJSON),
 	})
 
 	var out bytes.Buffer
@@ -722,7 +700,7 @@ func Test_FailureOutput(t *testing.T) {
 	assert.JSONEq(t, fmt.Sprintf(`{
 		"success": false,
 		"ec-version": "development",
-		"key": "%s",
+		"key": %s,
 		"components": [
 		  {
 			"name": "Unnamed",
@@ -735,9 +713,9 @@ func Test_FailureOutput(t *testing.T) {
 		  }
 		],
 		"policy": {
-			"publicKey": "%s"
+			"publicKey": %s
 		}
-	  }`, mockPublicKey, mockPublicKey), out.String())
+	  }`, utils.TestPublicKeyJSON, utils.TestPublicKeyJSON), out.String())
 }
 
 func Test_WarningOutput(t *testing.T) {
@@ -774,7 +752,7 @@ func Test_WarningOutput(t *testing.T) {
 		"--image",
 		"registry/image:tag",
 		"--policy",
-		fmt.Sprintf(`{"publicKey": "%s"}`, mockPublicKey),
+		fmt.Sprintf(`{"publicKey": %s}`, utils.TestPublicKeyJSON),
 	})
 
 	var out bytes.Buffer
@@ -785,7 +763,7 @@ func Test_WarningOutput(t *testing.T) {
 	assert.JSONEq(t, fmt.Sprintf(`{
 		"success": true,
 		"ec-version": "development",
-		"key": "%s",
+		"key": %s,
 		"components": [
 		  {
 			"name": "Unnamed",
@@ -798,69 +776,7 @@ func Test_WarningOutput(t *testing.T) {
 		  }
 		],
 		"policy": {
-			"publicKey": "%s"
+			"publicKey": %s
 		}
-	  }`, mockPublicKey, mockPublicKey), out.String())
-}
-
-func setupFulcioRoots(t *testing.T) {
-	// Do not use afero.NewMemMapFs() here because the file is read by cosign
-	// which does not understand the filesystem-from-context pattern
-	f, err := os.Create(path.Join(t.TempDir(), "fulcio.pem"))
-	assert.NoError(t, err)
-	defer f.Close()
-	// For posterity, the certificates below have been retrieved with:
-	//    curl -v https://fulcio.sigstore.dev/api/v1/rootCert
-	// They are stored here to avoid external calls when running tests.
-	// The first certificate is the self-signed root, and the second
-	// is an intermediate cert issued by the root. Any set of certs that
-	// match this criteria could be used.
-	_, err = f.Write([]byte(hd.Doc(`
-		-----BEGIN CERTIFICATE-----
-		MIICGjCCAaGgAwIBAgIUALnViVfnU0brJasmRkHrn/UnfaQwCgYIKoZIzj0EAwMw
-		KjEVMBMGA1UEChMMc2lnc3RvcmUuZGV2MREwDwYDVQQDEwhzaWdzdG9yZTAeFw0y
-		MjA0MTMyMDA2MTVaFw0zMTEwMDUxMzU2NThaMDcxFTATBgNVBAoTDHNpZ3N0b3Jl
-		LmRldjEeMBwGA1UEAxMVc2lnc3RvcmUtaW50ZXJtZWRpYXRlMHYwEAYHKoZIzj0C
-		AQYFK4EEACIDYgAE8RVS/ysH+NOvuDZyPIZtilgUF9NlarYpAd9HP1vBBH1U5CV7
-		7LSS7s0ZiH4nE7Hv7ptS6LvvR/STk798LVgMzLlJ4HeIfF3tHSaexLcYpSASr1kS
-		0N/RgBJz/9jWCiXno3sweTAOBgNVHQ8BAf8EBAMCAQYwEwYDVR0lBAwwCgYIKwYB
-		BQUHAwMwEgYDVR0TAQH/BAgwBgEB/wIBADAdBgNVHQ4EFgQU39Ppz1YkEZb5qNjp
-		KFWixi4YZD8wHwYDVR0jBBgwFoAUWMAeX5FFpWapesyQoZMi0CrFxfowCgYIKoZI
-		zj0EAwMDZwAwZAIwPCsQK4DYiZYDPIaDi5HFKnfxXx6ASSVmERfsynYBiX2X6SJR
-		nZU84/9DZdnFvvxmAjBOt6QpBlc4J/0DxvkTCqpclvziL6BCCPnjdlIB3Pu3BxsP
-		mygUY7Ii2zbdCdliiow=
-		-----END CERTIFICATE-----
-		-----BEGIN CERTIFICATE-----
-		MIIB9zCCAXygAwIBAgIUALZNAPFdxHPwjeDloDwyYChAO/4wCgYIKoZIzj0EAwMw
-		KjEVMBMGA1UEChMMc2lnc3RvcmUuZGV2MREwDwYDVQQDEwhzaWdzdG9yZTAeFw0y
-		MTEwMDcxMzU2NTlaFw0zMTEwMDUxMzU2NThaMCoxFTATBgNVBAoTDHNpZ3N0b3Jl
-		LmRldjERMA8GA1UEAxMIc2lnc3RvcmUwdjAQBgcqhkjOPQIBBgUrgQQAIgNiAAT7
-		XeFT4rb3PQGwS4IajtLk3/OlnpgangaBclYpsYBr5i+4ynB07ceb3LP0OIOZdxex
-		X69c5iVuyJRQ+Hz05yi+UF3uBWAlHpiS5sh0+H2GHE7SXrk1EC5m1Tr19L9gg92j
-		YzBhMA4GA1UdDwEB/wQEAwIBBjAPBgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBRY
-		wB5fkUWlZql6zJChkyLQKsXF+jAfBgNVHSMEGDAWgBRYwB5fkUWlZql6zJChkyLQ
-		KsXF+jAKBggqhkjOPQQDAwNpADBmAjEAj1nHeXZp+13NWBNa+EDsDP8G1WWg1tCM
-		WP/WHPqpaVo0jhsweNFZgSs0eE7wYI4qAjEA2WB9ot98sIkoF3vZYdd3/VtWB5b9
-		TNMea7Ix/stJ5TfcLLeABLE4BNJOsQ4vnBHJ
-		-----END CERTIFICATE-----
-		`)))
-	assert.NoError(t, err)
-	t.Setenv("SIGSTORE_ROOT_FILE", f.Name())
-}
-
-func setupCTLogPublicKey(t *testing.T) {
-	// Do not use afero.NewMemMapFs() here because the file is read by cosign
-	// which does not understand the filesystem-from-context pattern
-	f, err := os.Create(path.Join(t.TempDir(), "ctlog.pem"))
-	assert.NoError(t, err)
-	defer f.Close()
-	// This is just an arbitrary key created via `cosign generate-key-pair` with
-	// no password.
-	_, err = f.Write([]byte(hd.Doc(`
-		-----BEGIN PUBLIC KEY-----
-		MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEOocIWHWZ1D1v996GmWtnYWx8BYau
-		gWMm0tCdRiJPEedIvTGypPtC5lJHo5zJABbQ8UKRixFuzs+Qaa06xkTatg==
-		-----END PUBLIC KEY-----`)))
-	assert.NoError(t, err)
-	t.Setenv("SIGSTORE_CT_LOG_PUBLIC_KEY_FILE", f.Name())
+	  }`, utils.TestPublicKeyJSON, utils.TestPublicKeyJSON), out.String())
 }
