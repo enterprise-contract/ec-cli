@@ -29,7 +29,7 @@ require (
 	golang.org/x/exp v0.0.0-20230124195608-d38c7dcee874
 	golang.org/x/net v0.9.0
 	golang.org/x/tools v0.8.0
-	k8s.io/apimachinery v0.27.0
+	k8s.io/apimachinery v0.27.1
 	k8s.io/client-go v0.26.3
 	k8s.io/klog/v2 v2.90.1
 	k8s.io/kubernetes v1.15.0-alpha.0
