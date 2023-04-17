@@ -18,7 +18,7 @@ not be applicable to other use cases.
 To install, run:
 
 ```shell
-npm install @hacbs-contract/reference-antora-extension@latest
+npm install @enterprise-contract/reference-antora-extension@latest
 ```
 
 To use, add the extension to the Antora Playbook:
@@ -26,7 +26,7 @@ To use, add the extension to the Antora Playbook:
 ```yaml
 antora:
   extensions:
-    - require: '@hacbs-contract/reference-antora-extension'
+    - require: '@enterprise-contract/reference-antora-extension'
 
 ```
 

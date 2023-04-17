@@ -1,5 +1,5 @@
 {
-  "name": "@hacbs-contract/reference-antora-extension",
+  "name": "@enterprise-contract/reference-antora-extension",
   "version": "0.0.0",
   "description": "Antora Extension to generate Asciidoc documents from Cobra YAML documentation format",
   "main": "index.js",
