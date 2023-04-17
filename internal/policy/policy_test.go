@@ -23,8 +23,7 @@ import (
 	"crypto"
 	"encoding/json"
 	"fmt"
-	"os"
-	"path"
+	"strings"
 	"testing"
 	"time"
 
@@ -37,16 +36,8 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/enterprise-contract/ec-cli/internal/kubernetes"
+	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
-
-const testPublicKey = `-----BEGIN PUBLIC KEY-----
-MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEt/WF76OOR/jS8+XnrlUeOw6hk01n
-CTeemlLBj+GVwnrnTgS1ow2jxgOgNFs0ADh2UfqHQqxeXFmphmsiAxtOxA==
------END PUBLIC KEY-----
-`
-
-const testRekorUrl = "https://example.com/api"
-const testRekorURLLogID = "5c88613c1a35d9fbf61144a6762502d594d9433c065af8d0b375f4bda16464b8"
 
 func TestNewPolicy(t *testing.T) {
 	timeNowStr := "2022-11-23T16:30:00Z"
@@ -63,91 +54,91 @@ func TestNewPolicy(t *testing.T) {
 	}{
 		{
 			name:      "simple JSON inline",
-			policyRef: toJson(&ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey}),
+			policyRef: toJson(&ecc.EnterpriseContractPolicySpec{PublicKey: utils.TestPublicKey}),
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: testPublicKey}, effectiveTime: &timeNow, choosenTime: timeNowStr},
+				PublicKey: utils.TestPublicKey}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 		{
 			name:      "simple YAML inline",
-			policyRef: toYAML(&ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey}),
+			policyRef: toYAML(&ecc.EnterpriseContractPolicySpec{PublicKey: utils.TestPublicKey}),
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: testPublicKey}, effectiveTime: &timeNow, choosenTime: timeNowStr},
+				PublicKey: utils.TestPublicKey}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 		{
 			name:      "JSON inline with public key overwrite",
 			policyRef: toJson(&ecc.EnterpriseContractPolicySpec{PublicKey: "ignored"}),
-			publicKey: testPublicKey,
+			publicKey: utils.TestPublicKey,
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: testPublicKey}, effectiveTime: &timeNow, choosenTime: timeNowStr},
+				PublicKey: utils.TestPublicKey}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 		{
 			name:      "YAML inline with public key overwrite",
 			policyRef: toYAML(&ecc.EnterpriseContractPolicySpec{PublicKey: "ignored"}),
-			publicKey: testPublicKey,
+			publicKey: utils.TestPublicKey,
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: testPublicKey}, effectiveTime: &timeNow, choosenTime: timeNowStr},
+				PublicKey: utils.TestPublicKey}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 		{
 			name:      "JSON inline with rekor URL",
-			policyRef: toJson(&ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey, RekorUrl: testRekorUrl}),
+			policyRef: toJson(&ecc.EnterpriseContractPolicySpec{PublicKey: utils.TestPublicKey, RekorUrl: utils.TestRekorURL}),
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: testPublicKey, RekorUrl: testRekorUrl}, effectiveTime: &timeNow, choosenTime: timeNowStr},
+				PublicKey: utils.TestPublicKey, RekorUrl: utils.TestRekorURL}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 		{
 			name:      "YAML inline with rekor URL",
-			policyRef: toYAML(&ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey, RekorUrl: testRekorUrl}),
+			policyRef: toYAML(&ecc.EnterpriseContractPolicySpec{PublicKey: utils.TestPublicKey, RekorUrl: utils.TestRekorURL}),
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: testPublicKey, RekorUrl: testRekorUrl}, effectiveTime: &timeNow, choosenTime: timeNowStr},
+				PublicKey: utils.TestPublicKey, RekorUrl: utils.TestRekorURL}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 		{
 			name:      "JSON inline with rekor URL overwrite",
-			policyRef: toJson(&ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey, RekorUrl: "ignored"}),
-			rekorUrl:  testRekorUrl,
+			policyRef: toJson(&ecc.EnterpriseContractPolicySpec{PublicKey: utils.TestPublicKey, RekorUrl: "ignored"}),
+			rekorUrl:  utils.TestRekorURL,
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: testPublicKey, RekorUrl: testRekorUrl}, effectiveTime: &timeNow, choosenTime: timeNowStr},
+				PublicKey: utils.TestPublicKey, RekorUrl: utils.TestRekorURL}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 		{
 			name:      "YAML inline with rekor URL overwrite",
-			policyRef: toYAML(&ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey, RekorUrl: "ignored"}),
-			rekorUrl:  testRekorUrl,
+			policyRef: toYAML(&ecc.EnterpriseContractPolicySpec{PublicKey: utils.TestPublicKey, RekorUrl: "ignored"}),
+			rekorUrl:  utils.TestRekorURL,
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: testPublicKey, RekorUrl: testRekorUrl}, effectiveTime: &timeNow, choosenTime: timeNowStr},
+				PublicKey: utils.TestPublicKey, RekorUrl: utils.TestRekorURL}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 		{
 			name:        "simple k8sPath",
 			policyRef:   "ec-policy",
-			k8sResource: &ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey},
+			k8sResource: &ecc.EnterpriseContractPolicySpec{PublicKey: utils.TestPublicKey},
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: testPublicKey}, effectiveTime: &timeNow, choosenTime: timeNowStr},
+				PublicKey: utils.TestPublicKey}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 		{
 			name:        "k8sPath with public key overwrite",
 			policyRef:   "ec-policy",
 			k8sResource: &ecc.EnterpriseContractPolicySpec{PublicKey: "ignored"},
-			publicKey:   testPublicKey,
+			publicKey:   utils.TestPublicKey,
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: testPublicKey}, effectiveTime: &timeNow, choosenTime: timeNowStr},
+				PublicKey: utils.TestPublicKey}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 		{
 			name:        "k8sPath with rekor URL",
 			policyRef:   "ec-policy",
-			k8sResource: &ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey, RekorUrl: testRekorUrl},
+			k8sResource: &ecc.EnterpriseContractPolicySpec{PublicKey: utils.TestPublicKey, RekorUrl: utils.TestRekorURL},
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: testPublicKey, RekorUrl: testRekorUrl}, effectiveTime: &timeNow, choosenTime: timeNowStr},
+				PublicKey: utils.TestPublicKey, RekorUrl: utils.TestRekorURL}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 		{
 			name:        "k8sPath with rekor overwrite",
 			policyRef:   "ec-policy",
-			k8sResource: &ecc.EnterpriseContractPolicySpec{PublicKey: testPublicKey},
-			rekorUrl:    testRekorUrl,
+			k8sResource: &ecc.EnterpriseContractPolicySpec{PublicKey: utils.TestPublicKey},
+			rekorUrl:    utils.TestRekorURL,
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: testPublicKey, RekorUrl: testRekorUrl}, effectiveTime: &timeNow, choosenTime: timeNowStr},
+				PublicKey: utils.TestPublicKey, RekorUrl: utils.TestRekorURL}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 		{
 			name:      "default empty policy",
-			publicKey: testPublicKey,
+			publicKey: utils.TestPublicKey,
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: testPublicKey}, effectiveTime: &timeNow, choosenTime: timeNowStr},
+				PublicKey: utils.TestPublicKey}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 	}
 
@@ -158,7 +149,7 @@ func TestNewPolicy(t *testing.T) {
 			if c.k8sResource != nil {
 				ctx = kubernetes.WithClient(ctx, &FakeKubernetesClient{Policy: *c.k8sResource})
 			}
-			setupRekorPublicKey(t)
+			utils.SetTestRekorPublicKey(t)
 			got, err := NewPolicy(ctx, c.policyRef, c.rekorUrl, c.publicKey, timeNowStr, cosign.Identity{})
 			assert.NoError(t, err)
 			// CheckOpts is more thoroughly checked in TestCheckOpts.
@@ -238,22 +229,22 @@ func TestCheckOpts(t *testing.T) {
 	}{
 		{
 			name:      "create rekor client",
-			rekorUrl:  testRekorUrl,
-			publicKey: testPublicKey,
+			rekorUrl:  utils.TestRekorURL,
+			publicKey: utils.TestPublicKey,
 		},
 		{
 			name:      "inline public key",
-			publicKey: testPublicKey,
+			publicKey: utils.TestPublicKey,
 		},
 		{
 			name:            "in-cluster public key",
 			publicKey:       "k8s://test/cosign-public-key",
-			remotePublicKey: testPublicKey,
+			remotePublicKey: utils.TestPublicKey,
 		},
 		{
 			name:      "with rekor public key",
-			rekorUrl:  testRekorUrl,
-			publicKey: testPublicKey,
+			rekorUrl:  utils.TestRekorURL,
+			publicKey: utils.TestPublicKey,
 		},
 		{
 			name: "missing public key",
@@ -261,7 +252,7 @@ func TestCheckOpts(t *testing.T) {
 		},
 		{
 			name:            "keyless",
-			rekorUrl:        testRekorUrl,
+			rekorUrl:        utils.TestRekorURL,
 			setExperimental: true,
 			expectKeyless:   true,
 			identity: cosign.Identity{
@@ -280,7 +271,7 @@ func TestCheckOpts(t *testing.T) {
 		},
 		{
 			name:            "keyless with regexp issuer",
-			rekorUrl:        testRekorUrl,
+			rekorUrl:        utils.TestRekorURL,
 			setExperimental: true,
 			expectKeyless:   true,
 			identity: cosign.Identity{
@@ -290,7 +281,7 @@ func TestCheckOpts(t *testing.T) {
 		},
 		{
 			name:            "keyless with regexp subject",
-			rekorUrl:        testRekorUrl,
+			rekorUrl:        utils.TestRekorURL,
 			setExperimental: true,
 			expectKeyless:   true,
 			identity: cosign.Identity{
@@ -300,7 +291,7 @@ func TestCheckOpts(t *testing.T) {
 		},
 		{
 			name:            "keyless with regexp issuer and subject",
-			rekorUrl:        testRekorUrl,
+			rekorUrl:        utils.TestRekorURL,
 			setExperimental: true,
 			expectKeyless:   true,
 			identity: cosign.Identity{
@@ -310,8 +301,8 @@ func TestCheckOpts(t *testing.T) {
 		},
 		{
 			name:            "prioritize public key worklow",
-			rekorUrl:        testRekorUrl,
-			publicKey:       testPublicKey,
+			rekorUrl:        utils.TestRekorURL,
+			publicKey:       utils.TestPublicKey,
 			setExperimental: true,
 			expectKeyless:   false,
 			identity: cosign.Identity{
@@ -341,9 +332,9 @@ func TestCheckOpts(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			ctx := context.Background()
 			ctx = withSignatureClient(ctx, &FakeCosignClient{publicKey: c.remotePublicKey})
-			setupRekorPublicKey(t)
-			setupTestFulcioRoots(t)
-			setupTestCTLogPublicKey(t)
+			utils.SetTestRekorPublicKey(t)
+			utils.SetTestFulcioRoots(t)
+			utils.SetTestCTLogPublicKey(t)
 
 			if c.setExperimental {
 				t.Setenv("EC_EXPERIMENTAL", "1")
@@ -370,7 +361,7 @@ func TestCheckOpts(t *testing.T) {
 
 			if c.rekorUrl != "" {
 				assert.NotNil(t, opts.RekorPubKeys)
-				_, present := opts.RekorPubKeys.Keys[testRekorURLLogID]
+				_, present := opts.RekorPubKeys.Keys[utils.TestRekorURLLogID]
 				assert.True(t, present, "Expecting specific log id based on the provided public key")
 			} else {
 				assert.Nil(t, opts.RekorPubKeys)
@@ -405,9 +396,9 @@ func TestPublicKeyPEM(t *testing.T) {
 		{
 			name: "public key",
 			newPolicy: func(ctx context.Context) (Policy, error) {
-				return NewPolicy(ctx, "", "", testPublicKey, Now, cosign.Identity{})
+				return NewPolicy(ctx, "", "", utils.TestPublicKey, Now, cosign.Identity{})
 			},
-			expectedPublicKey: testPublicKey,
+			expectedPublicKey: utils.TestPublicKey,
 		},
 		{
 			name: "checkOpts is nil",
@@ -429,8 +420,8 @@ func TestPublicKeyPEM(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			ctx := context.Background()
-			setupTestFulcioRoots(t)
-			setupTestCTLogPublicKey(t)
+			utils.SetTestFulcioRoots(t)
+			utils.SetTestCTLogPublicKey(t)
 
 			if c.setExperimental {
 				t.Setenv("EC_EXPERIMENTAL", "1")
@@ -447,7 +438,9 @@ func TestPublicKeyPEM(t *testing.T) {
 			}
 			assert.NoError(t, err)
 
-			assert.Equal(t, c.expectedPublicKey, string(publicKeyPEM))
+			assert.Equal(t,
+				strings.TrimSpace(c.expectedPublicKey),
+				strings.TrimSpace(string(publicKeyPEM)))
 		})
 	}
 }
@@ -473,8 +466,8 @@ func TestIdentity(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			ctx := context.Background()
-			setupTestFulcioRoots(t)
-			setupTestCTLogPublicKey(t)
+			utils.SetTestFulcioRoots(t)
+			utils.SetTestCTLogPublicKey(t)
 
 			t.Setenv("EC_EXPERIMENTAL", "1")
 
@@ -589,77 +582,4 @@ func toYAML(policy *ecc.EnterpriseContractPolicySpec) string {
 		panic(fmt.Errorf("invalid YAML: %w", err))
 	}
 	return string(inline)
-}
-
-func setupRekorPublicKey(t *testing.T) {
-	// Do not use afero.NewMemMapFs() here because the file is read by cosign
-	// which does not understand the filesystem-from-context pattern
-	f, err := os.Create(path.Join(t.TempDir(), "rekor.pem"))
-	assert.NoError(t, err)
-	defer f.Close()
-	_, err = f.Write([]byte(testPublicKey))
-	assert.NoError(t, err)
-	t.Setenv("SIGSTORE_REKOR_PUBLIC_KEY", f.Name())
-}
-
-func setupTestFulcioRoots(t *testing.T) {
-	// Do not use afero.NewMemMapFs() here because the file is read by cosign
-	// which does not understand the filesystem-from-context pattern
-	f, err := os.Create(path.Join(t.TempDir(), "fulcio.pem"))
-	assert.NoError(t, err)
-	defer f.Close()
-	// For posterity, the certificates below have been retrieved with:
-	//    curl -v https://fulcio.sigstore.dev/api/v1/rootCert
-	// They are stored here to avoid external calls when running tests.
-	// The first certificate is the self-signed root, and the second
-	// is an intermediate cert issued by the root. Any set of certs that
-	// match this criteria could be used.
-	_, err = f.Write([]byte(hd.Doc(`
-		-----BEGIN CERTIFICATE-----
-		MIICGjCCAaGgAwIBAgIUALnViVfnU0brJasmRkHrn/UnfaQwCgYIKoZIzj0EAwMw
-		KjEVMBMGA1UEChMMc2lnc3RvcmUuZGV2MREwDwYDVQQDEwhzaWdzdG9yZTAeFw0y
-		MjA0MTMyMDA2MTVaFw0zMTEwMDUxMzU2NThaMDcxFTATBgNVBAoTDHNpZ3N0b3Jl
-		LmRldjEeMBwGA1UEAxMVc2lnc3RvcmUtaW50ZXJtZWRpYXRlMHYwEAYHKoZIzj0C
-		AQYFK4EEACIDYgAE8RVS/ysH+NOvuDZyPIZtilgUF9NlarYpAd9HP1vBBH1U5CV7
-		7LSS7s0ZiH4nE7Hv7ptS6LvvR/STk798LVgMzLlJ4HeIfF3tHSaexLcYpSASr1kS
-		0N/RgBJz/9jWCiXno3sweTAOBgNVHQ8BAf8EBAMCAQYwEwYDVR0lBAwwCgYIKwYB
-		BQUHAwMwEgYDVR0TAQH/BAgwBgEB/wIBADAdBgNVHQ4EFgQU39Ppz1YkEZb5qNjp
-		KFWixi4YZD8wHwYDVR0jBBgwFoAUWMAeX5FFpWapesyQoZMi0CrFxfowCgYIKoZI
-		zj0EAwMDZwAwZAIwPCsQK4DYiZYDPIaDi5HFKnfxXx6ASSVmERfsynYBiX2X6SJR
-		nZU84/9DZdnFvvxmAjBOt6QpBlc4J/0DxvkTCqpclvziL6BCCPnjdlIB3Pu3BxsP
-		mygUY7Ii2zbdCdliiow=
-		-----END CERTIFICATE-----
-		-----BEGIN CERTIFICATE-----
-		MIIB9zCCAXygAwIBAgIUALZNAPFdxHPwjeDloDwyYChAO/4wCgYIKoZIzj0EAwMw
-		KjEVMBMGA1UEChMMc2lnc3RvcmUuZGV2MREwDwYDVQQDEwhzaWdzdG9yZTAeFw0y
-		MTEwMDcxMzU2NTlaFw0zMTEwMDUxMzU2NThaMCoxFTATBgNVBAoTDHNpZ3N0b3Jl
-		LmRldjERMA8GA1UEAxMIc2lnc3RvcmUwdjAQBgcqhkjOPQIBBgUrgQQAIgNiAAT7
-		XeFT4rb3PQGwS4IajtLk3/OlnpgangaBclYpsYBr5i+4ynB07ceb3LP0OIOZdxex
-		X69c5iVuyJRQ+Hz05yi+UF3uBWAlHpiS5sh0+H2GHE7SXrk1EC5m1Tr19L9gg92j
-		YzBhMA4GA1UdDwEB/wQEAwIBBjAPBgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBRY
-		wB5fkUWlZql6zJChkyLQKsXF+jAfBgNVHSMEGDAWgBRYwB5fkUWlZql6zJChkyLQ
-		KsXF+jAKBggqhkjOPQQDAwNpADBmAjEAj1nHeXZp+13NWBNa+EDsDP8G1WWg1tCM
-		WP/WHPqpaVo0jhsweNFZgSs0eE7wYI4qAjEA2WB9ot98sIkoF3vZYdd3/VtWB5b9
-		TNMea7Ix/stJ5TfcLLeABLE4BNJOsQ4vnBHJ
-		-----END CERTIFICATE-----
-		`)))
-	assert.NoError(t, err)
-	t.Setenv("SIGSTORE_ROOT_FILE", f.Name())
-}
-
-func setupTestCTLogPublicKey(t *testing.T) {
-	// Do not use afero.NewMemMapFs() here because the file is read by cosign
-	// which does not understand the filesystem-from-context pattern
-	f, err := os.Create(path.Join(t.TempDir(), "ctlog.pem"))
-	assert.NoError(t, err)
-	defer f.Close()
-	// This is just an arbitrary key created via `cosign generate-key-pair` with
-	// no password.
-	_, err = f.Write([]byte(hd.Doc(`
-		-----BEGIN PUBLIC KEY-----
-		MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEOocIWHWZ1D1v996GmWtnYWx8BYau
-		gWMm0tCdRiJPEedIvTGypPtC5lJHo5zJABbQ8UKRixFuzs+Qaa06xkTatg==
-		-----END PUBLIC KEY-----`)))
-	assert.NoError(t, err)
-	t.Setenv("SIGSTORE_CT_LOG_PUBLIC_KEY_FILE", f.Name())
 }

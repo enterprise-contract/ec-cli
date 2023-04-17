@@ -23,11 +23,9 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
-	"strings"
 	"testing"
 	"time"
 
-	hd "github.com/MakeNowJust/heredoc"
 	"github.com/open-policy-agent/conftest/output"
 	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
@@ -36,6 +34,7 @@ import (
 
 	"github.com/enterprise-contract/ec-cli/internal/format"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
+	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
 //go:embed test_snapshot.json
@@ -50,7 +49,7 @@ func Test_ReportJson(t *testing.T) {
     {
       "success": false,
 	  "ec-version": "development",
-	  "key": "%s",
+	  "key": %s,
 	  "snapshot": "snappy",
       "components": [
         {
@@ -75,10 +74,10 @@ func Test_ReportJson(t *testing.T) {
         }
       ],
 	  "policy": {
-		"publicKey": "%s"
+		"publicKey": %s
 	  }
     }
-  	`, testPublicKeyCompact, testPublicKeyCompact)
+  	`, utils.TestPublicKeyJSON, utils.TestPublicKeyJSON)
 
 	components := testComponentsFor(snapshot)
 
@@ -98,7 +97,7 @@ func Test_ReportYaml(t *testing.T) {
 
 	expected := fmt.Sprintf(`
 success: false
-key: "%s"
+key: %s
 ec-version: development
 snapshot: snappy
 components:
@@ -122,8 +121,8 @@ components:
       - msg: success3
     success: true
 policy:
-  publicKey: "%s"
-`, testPublicKeyCompact, testPublicKeyCompact)
+  publicKey: %s
+`, utils.TestPublicKeyJSON, utils.TestPublicKeyJSON)
 
 	components := testComponentsFor(*snapshot)
 
@@ -182,7 +181,7 @@ func Test_ReportSummary(t *testing.T) {
 					},
 				},
 				Success: false,
-				Key:     testPublicKey,
+				Key:     utils.TestPublicKey,
 			},
 		},
 		{
@@ -214,7 +213,7 @@ func Test_ReportSummary(t *testing.T) {
 					},
 				},
 				Success: false,
-				Key:     testPublicKey,
+				Key:     utils.TestPublicKey,
 			},
 		},
 		{
@@ -268,7 +267,7 @@ func Test_ReportSummary(t *testing.T) {
 					},
 				},
 				Success: false,
-				Key:     testPublicKey,
+				Key:     utils.TestPublicKey,
 			},
 		},
 		{
@@ -314,7 +313,7 @@ func Test_ReportSummary(t *testing.T) {
 					},
 				},
 				Success: false,
-				Key:     testPublicKey,
+				Key:     utils.TestPublicKey,
 			},
 		},
 		{
@@ -362,7 +361,7 @@ func Test_ReportSummary(t *testing.T) {
 					},
 				},
 				Success: false,
-				Key:     testPublicKey,
+				Key:     utils.TestPublicKey,
 			},
 		},
 	}
@@ -568,17 +567,8 @@ func testComponentsFor(snapshot app.SnapshotSpec) []Component {
 	return components
 }
 
-var testPublicKey = hd.Doc(`
-	-----BEGIN PUBLIC KEY-----
-	MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEd1WDOudb86dW6Ume+d0B8SILNdsW
-	vn2vZNA6+5u53oaJRFDi15iOqDPlxMWbvwN1C0r8OpIvIQeOAWEjHqfx/w==
-	-----END PUBLIC KEY-----
-	`)
-
-var testPublicKeyCompact = strings.ReplaceAll(testPublicKey, "\n", "\\n")
-
 func createTestPolicy(t *testing.T, ctx context.Context) policy.Policy {
-	p, err := policy.NewPolicy(ctx, "", "", testPublicKey, policy.Now, cosign.Identity{})
+	p, err := policy.NewPolicy(ctx, "", "", utils.TestPublicKey, policy.Now, cosign.Identity{})
 	assert.NoError(t, err)
 	return p
 }
