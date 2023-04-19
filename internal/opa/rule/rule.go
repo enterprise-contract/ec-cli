@@ -18,6 +18,7 @@ package rule
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/open-policy-agent/opa/ast"
@@ -31,12 +32,16 @@ func title(a *ast.AnnotationsRef) string {
 	return a.Annotations.Title
 }
 
+// xrefRegExp is used to detect asciidoc links in a string.
+var xrefRegExp = regexp.MustCompile(`xref:[\w\.\$\#]+\[([\w\s/\.]+)\]`)
+
 func description(a *ast.AnnotationsRef) string {
 	if a == nil || a.Annotations == nil {
 		return ""
 	}
 
-	return a.Annotations.Description
+	// Unlink asciidoc text to avoid unexpected output
+	return xrefRegExp.ReplaceAllString(a.Annotations.Description, "$1")
 }
 
 func customAnnotationString(a *ast.AnnotationsRef, fieldName string) string {

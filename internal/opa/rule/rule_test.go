@@ -121,6 +121,17 @@ func TestDescription(t *testing.T) {
 				deny() { true }`)),
 			expected: "description",
 		},
+		{
+			name: "with xref links",
+			annotation: annotationRef(heredoc.Doc(`
+				package a
+				# METADATA
+				# description: >-
+				#   See xref:release_policy.adoc#attestation_task_bundle_package[here] and
+				#   xref:attachment$acceptable_tekton_bundles.yml[over there] for details.
+				deny() { true }`)),
+			expected: "See here and over there for details.",
+		},
 	}
 
 	for i, c := range cases {
