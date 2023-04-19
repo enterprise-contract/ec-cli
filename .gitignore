@@ -174,3 +174,6 @@ tags
 acceptance/.persisted
 
 node_modules
+
+# kustomize expanded Helm charts from Sigstore
+hack/sigstore/*/charts
