@@ -68,7 +68,7 @@ ${KUSTOMIZE} "${ROOT}/hack/development" | kubectl apply -f -
 # Wait for the image registry to be deployed before we build and push the images
 # to it
 echo -e '✨ \033[1mWaiting for the image registry to become available\033[0m'
-kubectl -n image-registry wait deployment -l "app.kubernetes.io/name=registry" --for=condition=Available --timeout=60s
+kubectl -n image-registry wait deployment -l "app.kubernetes.io/name=registry" --for=condition=Available --timeout=120s
 
 # Wait for Tekton Pipelines & Webhook controllers to be ready
 echo -e '✨ \033[1mWaiting for Tekton Pipelines to become available\033[0m'
