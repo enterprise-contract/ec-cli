@@ -3,7 +3,9 @@ package main
 
 # METADATA
 # title: Reject rule
-# description: This rule will always fail
+# description: >-
+#   This rule xref:sith.adoc#commandments[will always]
+#   xref:attachment$failing_is_the_new_success.yml[fail]
 # custom:
 #   short_name: rejector
 #   failure_msg: Fails always
