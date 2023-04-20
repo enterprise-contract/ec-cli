@@ -92,81 +92,107 @@ type Output struct {
 
 // SetImageAccessibleCheck sets the passed and result.message fields of the ImageAccessibleCheck to the given values.
 func (o *Output) SetImageAccessibleCheckFromError(err error) {
-	if err == nil {
-		message := "Image URL is accessible"
-		log.Debug(message)
-		o.ImageAccessibleCheck.Passed = true
-		o.ImageAccessibleCheck.Result = &output.Result{Message: message}
-		return
+	metadata := map[string]interface{}{
+		"code":  "builtin.image.accessible",
+		"title": "Image URL is accessible",
 	}
-
-	log.Debugf("Image access check failed. Error: %s", err.Error())
-	o.ImageAccessibleCheck.Passed = false
-	message := fmt.Sprintf("Image URL is not accessible: %s", err)
-	o.ImageAccessibleCheck.Result = &output.Result{Message: message}
+	var message string
+	if err == nil {
+		o.ImageAccessibleCheck.Passed = true
+		message = "Pass"
+		log.Debug("Image URL is accessible")
+	} else {
+		o.ImageAccessibleCheck.Passed = false
+		message = "Image access check failed"
+		log.Debugf("%s. Error: %s", message, err.Error())
+	}
+	result := &output.Result{Message: message, Metadata: metadata}
+	if !o.Detailed {
+		keepSomeMetadataSingle(*result)
+	}
+	o.ImageAccessibleCheck.Result = result
 }
 
 // SetImageSignatureCheck sets the passed and result.message fields of the ImageSignatureCheck to the given values.
 func (o *Output) SetImageSignatureCheckFromError(err error) {
-	if err == nil {
-		message := "Image signature check passed"
-		log.Debug(message)
-		o.ImageSignatureCheck.Passed = true
-		o.ImageSignatureCheck.Result = &output.Result{Message: message}
-		return
+	metadata := map[string]interface{}{
+		"code":  "builtin.image.signature_check",
+		"title": "Image signature check passed",
 	}
-
-	log.Debug("Image signature check failed")
-	o.ImageSignatureCheck.Passed = false
-
 	var message string
-	if verr, ok := err.(*cosign.VerificationError); ok && verr.ErrorType() == cosign.ErrNoMatchingSignaturesType {
-		// If the error is due to no matching signatures, use a more user-friendly message.
-		message = missingSignatureMessage
-	} else {
-		message = fmt.Sprintf("Image signature check failed: %s", err)
-	}
 
-	o.ImageSignatureCheck.Result = &output.Result{Message: message}
+	if err == nil {
+		o.ImageSignatureCheck.Passed = true
+		message = "Pass"
+		log.Debug("Image signature check passed")
+	} else {
+		o.ImageSignatureCheck.Passed = false
+		if verr, ok := err.(*cosign.VerificationError); ok && verr.ErrorType() == cosign.ErrNoMatchingSignaturesType {
+			// If the error is due to no matching signatures, use a more user-friendly message.
+			message = missingSignatureMessage
+		} else {
+			message = fmt.Sprintf("Image signature check failed: %s", err)
+		}
+		log.Debug(message)
+	}
+	result := &output.Result{Message: message, Metadata: metadata}
+	if !o.Detailed {
+		keepSomeMetadataSingle(*result)
+	}
+	o.ImageSignatureCheck.Result = result
 }
 
 // SetAttestationSignatureCheck sets the passed and result.message fields of the AttestationSignatureCheck to the given values.
 func (o *Output) SetAttestationSignatureCheckFromError(err error) {
-	if err == nil {
-		message := "Image attestation check passed"
-		log.Debug(message)
-		o.AttestationSignatureCheck.Passed = true
-		o.AttestationSignatureCheck.Result = &output.Result{Message: message}
-		return
+	metadata := map[string]interface{}{
+		"code":  "builtin.attestation.signature_check",
+		"title": "Attestation signature check passed",
 	}
-
-	log.Debug("Image attestation signature check failed")
-	o.AttestationSignatureCheck.Passed = false
-
 	var message string
-	if verr, ok := err.(*cosign.VerificationError); ok && verr.ErrorType() == cosign.ErrNoMatchingAttestationsType {
-		// If the error is due to no matching attestations, use a more user-friendly message.
-		message = missingAttestationMessage
-	} else {
-		message = fmt.Sprintf("Image attestation check failed: %s", err.Error())
-	}
 
-	o.AttestationSignatureCheck.Result = &output.Result{Message: message}
+	if err == nil {
+		o.AttestationSignatureCheck.Passed = true
+		message = "Pass"
+		log.Debug("Attestation signature check passed")
+	} else {
+		o.AttestationSignatureCheck.Passed = false
+		if verr, ok := err.(*cosign.VerificationError); ok && verr.ErrorType() == cosign.ErrNoMatchingAttestationsType {
+			// If the error is due to no matching attestations, use a more user-friendly message.
+			message = missingAttestationMessage
+		} else {
+			message = fmt.Sprintf("Attestation check failed: %s", err.Error())
+		}
+		log.Debug(message)
+	}
+	result := &output.Result{Message: message, Metadata: metadata}
+	if !o.Detailed {
+		keepSomeMetadataSingle(*result)
+	}
+	o.AttestationSignatureCheck.Result = result
 }
 
 // SetAttestationSyntaxCheck sets the passed and result.message fields of the AttestationSyntaxCheck to the given values.
 func (o *Output) SetAttestationSyntaxCheckFromError(err error) {
-	if err == nil {
-		message := "Image attestation syntax check passed"
-		log.Debug(message)
-		o.AttestationSyntaxCheck.Passed = true
-		o.AttestationSyntaxCheck.Result = &output.Result{Message: message}
-		return
+	metadata := map[string]interface{}{
+		"code":  "builtin.attestation.syntax_check",
+		"title": "Attestation syntax check passed",
 	}
+	var message string
 
-	o.AttestationSyntaxCheck.Passed = false
-	message := fmt.Sprintf("Attestation syntax check failed: %s", err)
-	o.AttestationSyntaxCheck.Result = &output.Result{Message: message}
+	if err == nil {
+		o.AttestationSyntaxCheck.Passed = true
+		message = "Pass"
+		log.Debug("Attestation syntax check passed")
+	} else {
+		o.AttestationSyntaxCheck.Passed = false
+		message := fmt.Sprintf("Attestation syntax check failed: %s", err)
+		log.Debug(message)
+	}
+	result := &output.Result{Message: message, Metadata: metadata}
+	if !o.Detailed {
+		keepSomeMetadataSingle(*result)
+	}
+	o.AttestationSyntaxCheck.Result = result
 }
 
 // SetPolicyCheck sets the PolicyCheck and ExitCode to the results and exit code of the Results
@@ -192,13 +218,16 @@ func (o *Output) SetPolicyCheck(results evaluator.CheckResults) {
 
 func keepSomeMetadata(results []output.Result) {
 	for i := range results {
-		for key := range results[i].Metadata {
-			if key == "code" || key == "effective_on" {
-				continue
-			}
+		keepSomeMetadataSingle(results[i])
+	}
+}
 
-			delete(results[i].Metadata, key)
+func keepSomeMetadataSingle(result output.Result) {
+	for key := range result.Metadata {
+		if key == "code" || key == "effective_on" {
+			continue
 		}
+		delete(result.Metadata, key)
 	}
 }
 
