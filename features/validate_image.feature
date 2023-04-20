@@ -42,15 +42,6 @@ Feature: evaluate enterprise contract
           "containerImage": "localhost:(\\d+)/acceptance/ec-happy-day",
           "successes": [
             {
-              "msg": "Image attestation check passed"
-            },
-            {
-              "msg": "Image attestation syntax check passed"
-            },
-            {
-              "msg": "Image signature check passed"
-            },
-            {
               "msg": "Pass",
               "metadata": {
                 "code": "main.acceptor"
@@ -144,15 +135,6 @@ Feature: evaluate enterprise contract
           "containerImage": "localhost:(\\d+)/acceptance/ec-happy-day",
           "successes": [
             {
-              "msg": "Image attestation check passed"
-            },
-            {
-              "msg": "Image attestation syntax check passed"
-            },
-            {
-              "msg": "Image signature check passed"
-            },
-            {
               "msg": "Pass",
               "metadata": {
                 "code": "main.acceptor"
@@ -202,17 +184,6 @@ Feature: evaluate enterprise contract
               "msg": "Fails in 2099"
             }
           ],
-          "successes": [
-            {
-              "msg": "Image attestation check passed"
-            },
-            {
-              "msg": "Image attestation syntax check passed"
-            },
-            {
-              "msg": "Image signature check passed"
-            }
-          ],
           "success": true,
           "signatures": ${ATTESTATION_SIGNATURES_JSON}
         }
@@ -254,17 +225,6 @@ Feature: evaluate enterprise contract
                 "effective_on": "2099-01-01T00:00:00Z"
               },
               "msg": "Fails in 2099"
-            }
-          ],
-          "successes": [
-            {
-              "msg": "Image attestation check passed"
-            },
-            {
-              "msg": "Image attestation syntax check passed"
-            },
-            {
-              "msg": "Image signature check passed"
             }
           ],
           "success": false,
@@ -331,15 +291,6 @@ Feature: evaluate enterprise contract
             }
           ],
           "successes": [
-            {
-              "msg": "Image attestation check passed"
-            },
-            {
-              "msg": "Image attestation syntax check passed"
-            },
-            {
-              "msg": "Image signature check passed"
-            },
             {
               "msg": "Pass",
               "metadata": {
@@ -425,15 +376,6 @@ Feature: evaluate enterprise contract
             }
           ],
           "successes": [
-            {
-              "msg": "Image attestation check passed"
-            },
-            {
-              "msg": "Image attestation syntax check passed"
-            },
-            {
-              "msg": "Image signature check passed"
-            },
             {
               "msg": "Pass",
               "metadata": {
@@ -541,17 +483,6 @@ Feature: evaluate enterprise contract
               "msg": "Failure due to spider attack"
             }
           ],
-          "successes": [
-            {
-              "msg": "Image attestation check passed"
-            },
-            {
-              "msg": "Image attestation syntax check passed"
-            },
-            {
-              "msg": "Image signature check passed"
-            }
-          ],
           "success": false,
           "signatures": ${ATTESTATION_SIGNATURES_JSON}
         }
@@ -607,17 +538,6 @@ Feature: evaluate enterprise contract
                 "effective_on": "2099-01-01T00:00:00Z"
               },
               "msg": "Fails in 2099"
-            }
-          ],
-          "successes": [
-            {
-              "msg": "Image attestation check passed"
-            },
-            {
-              "msg": "Image attestation syntax check passed"
-            },
-            {
-              "msg": "Image signature check passed"
             }
           ],
           "success": false,
@@ -678,15 +598,6 @@ Feature: evaluate enterprise contract
             }
           ],
           "successes": [
-            {
-              "msg": "Image attestation check passed"
-            },
-            {
-              "msg": "Image attestation syntax check passed"
-            },
-            {
-              "msg": "Image signature check passed"
-            },
             {
               "msg": "Pass",
               "metadata": {
@@ -751,15 +662,6 @@ Feature: evaluate enterprise contract
           "success": true,
           "signatures": ${ATTESTATION_SIGNATURES_JSON},
           "successes": [
-            {
-              "msg": "Image attestation check passed"
-            },
-            {
-              "msg": "Image attestation syntax check passed"
-            },
-            {
-              "msg": "Image signature check passed"
-            },
             {"metadata": {"code": "filtering.always_pass"}, "msg": "Pass"},
             {"metadata": {"code": "filtering.always_pass_with_collection"}, "msg": "Pass"}
           ]
@@ -827,21 +729,7 @@ Feature: evaluate enterprise contract
           "success": true,
           "signatures": ${ATTESTATION_SIGNATURES_JSON},
           "successes": [
-            {
-              "msg": "Image attestation check passed"
-            },
-            {
-              "msg": "Image attestation syntax check passed"
-            },
-            {
-              "msg": "Image signature check passed"
-            },
-            {
-              "metadata": {
-                "code": "filtering.always_pass"
-              },
-              "msg": "Pass"
-            }
+            {"metadata": {"code": "filtering.always_pass"}, "msg": "Pass"}
           ]
         }
       ],
@@ -894,15 +782,6 @@ Feature: evaluate enterprise contract
           "name": "Happy",
           "containerImage": "localhost:(\\d+)/acceptance/ec-happy-day@sha256:[0-9a-f]{64}",
           "successes": [
-            {
-              "msg": "Image attestation check passed"
-            },
-            {
-              "msg": "Image attestation syntax check passed"
-            },
-            {
-              "msg": "Image signature check passed"
-            },
             {
               "msg": "Pass",
               "metadata": {
@@ -968,15 +847,6 @@ Feature: evaluate enterprise contract
           "containerImage": "localhost:(\\d+)/acceptance/ec-happy-day@sha256:[0-9a-f]{64}",
           "successes": [
             {
-              "msg": "Image attestation check passed"
-            },
-            {
-              "msg": "Image attestation syntax check passed"
-            },
-            {
-              "msg": "Image signature check passed"
-            },
-            {
               "msg": "Pass",
               "metadata": {
                 "code": "main.acceptor"
@@ -1020,7 +890,7 @@ Feature: evaluate enterprise contract
     Then the exit status should be 1
     Then the standard output should contain
     """
-    <testsuites><testsuite name="Unnamed \(localhost:\d+\/acceptance\/image@sha256:[0-9a-f]{64}\)" tests="5" errors="0" failures="1" time="0" timestamp="\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{1,9}Z" hostname="">(<property name="image" value="localhost:\d+\/acceptance\/image@sha256:[0-9a-f]{64}"><\/property>|<property name="key" value="-----BEGIN PUBLIC KEY-----[^"]+"><\/property>|<property name="success" value="false"><\/property>|<property name="keyId" value=""><\/property>|<property name="signature" value="[a-zA-Z0-9+\/]+={0,2}"><\/property>|<property name="metadata.predicateType" value="https:\/\/slsa.dev\/provenance\/v0.2"><\/property>|<property name="metadata.type" value="https:\/\/in-toto.io\/Statement\/v0.1"><\/property>|<property name="metadata.predicateBuildType" value="https:\/\/tekton.dev\/attestations\/chains\/pipelinerun@v2"><\/property>)+<testcase name="Image attestation check passed" classname="Image attestation check passed" time="0"><\/testcase><testcase name="Image attestation syntax check passed" classname="Image attestation syntax check passed" time="0"><\/testcase><testcase name="Image signature check passed" classname="Image signature check passed" time="0"><\/testcase><testcase name="main.acceptor: Pass" classname="main.acceptor: Pass" time="0"><\/testcase><testcase name="main.rejector: Fails always \[effective_on=2022-01-01T00:00:00Z\]" classname="main.rejector: Fails always \[effective_on=2022-01-01T00:00:00Z\]" time="0"><failure message="Fails always" type=""><!\[CDATA\[Fails always\]\]><\/failure><\/testcase><\/testsuite><\/testsuites>
+    <testsuites><testsuite name="Unnamed \(localhost:\d+\/acceptance\/image@sha256:[0-9a-f]{64}\)" tests="2" errors="0" failures="1" time="0" timestamp="\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{1,9}Z" hostname="">(<property name="image" value="localhost:\d+\/acceptance\/image@sha256:[0-9a-f]{64}"><\/property>|<property name="key" value="-----BEGIN PUBLIC KEY-----[^"]+"><\/property>|<property name="success" value="false"><\/property>|<property name="keyId" value=""><\/property>|<property name="signature" value="[a-zA-Z0-9+\/]+={0,2}"><\/property>|<property name="metadata.predicateType" value="https:\/\/slsa.dev\/provenance\/v0.2"><\/property>|<property name="metadata.type" value="https:\/\/in-toto.io\/Statement\/v0.1"><\/property>|<property name="metadata.predicateBuildType" value="https:\/\/tekton.dev\/attestations\/chains\/pipelinerun@v2"><\/property>)+<testcase name="main.acceptor: Pass" classname="main.acceptor: Pass" time="0"><\/testcase><testcase name="main.rejector: Fails always \[effective_on=2022-01-01T00:00:00Z\]" classname="main.rejector: Fails always \[effective_on=2022-01-01T00:00:00Z\]" time="0"><failure message="Fails always" type=""><!\[CDATA\[Fails always\]\]><\/failure><\/testcase><\/testsuite><\/testsuites>
     """
 
   Scenario: Using OCI bundles
@@ -1058,15 +928,6 @@ Feature: evaluate enterprise contract
           "name": "Unnamed",
           "containerImage": "localhost:(\\d+)/acceptance/my-image@sha256:[0-9a-f]{64}",
           "successes": [
-            {
-              "msg": "Image attestation check passed"
-            },
-            {
-              "msg": "Image attestation syntax check passed"
-            },
-            {
-              "msg": "Image signature check passed"
-            },
             {
               "msg": "Pass",
               "metadata": {
@@ -1168,18 +1029,7 @@ Feature: evaluate enterprise contract
           "containerImage": "localhost:(\\d+)/acceptance/image@sha256:[0-9a-f]{64}",
           "name": "Unnamed",
           "signatures": ${ATTESTATION_SIGNATURES_JSON},
-          "success": true,
-          "successes": [
-            {
-              "msg": "Image attestation check passed"
-            },
-            {
-              "msg": "Image attestation syntax check passed"
-            },
-            {
-              "msg": "Image signature check passed"
-            }
-          ]
+          "success": true
         }
       ],
       "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
