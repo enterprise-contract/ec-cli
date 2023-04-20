@@ -8,7 +8,7 @@ require (
 	github.com/google/addlicense v1.1.1
 	github.com/open-policy-agent/conftest v0.41.0
 	github.com/tektoncd/chains v0.15.1-0.20230406140737-50a40c019838
-	github.com/tektoncd/cli v0.3.1-0.20230419203848-832d14301e20
+	github.com/tektoncd/cli v0.30.1
 	github.com/wadey/gocovmerge v0.0.0-20160331181800-b5bfa59ec0ad
 	sigs.k8s.io/kustomize/kustomize/v4 v4.5.7
 )
@@ -54,6 +54,7 @@ require (
 	github.com/KeisukeYamashita/go-vcl v0.4.0 // indirect
 	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/Microsoft/go-winio v0.6.0 // indirect
+	github.com/Netflix/go-expect v0.0.0-20220104043353-73e0943537d2 // indirect
 	github.com/OneOfOne/xxhash v1.2.8 // indirect
 	github.com/OpenPeeDeeP/depguard v1.1.1 // indirect
 	github.com/ProtonMail/go-crypto v0.0.0-20230217124315-7d5c6f04bbb8 // indirect
@@ -122,6 +123,7 @@ require (
 	github.com/containerd/typeurl v1.0.2 // indirect
 	github.com/coreos/go-oidc/v3 v3.5.0 // indirect
 	github.com/cpuguy83/dockercfg v0.3.1 // indirect
+	github.com/creack/pty v1.1.18 // indirect
 	github.com/curioswitch/go-reassign v0.2.0 // indirect
 	github.com/cyberphone/json-canonicalization v0.0.0-20210823021906-dc406ceaf94b // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -207,6 +209,7 @@ require (
 	github.com/google/go-containerregistry v0.14.0 // indirect
 	github.com/google/go-containerregistry/pkg/authn/k8schain v0.0.0-20221030203717-1711cefd7eec // indirect
 	github.com/google/go-containerregistry/pkg/authn/kubernetes v0.0.0-20221017135236-9b4fdd506cdd // indirect
+	github.com/google/go-github/v45 v45.2.0 // indirect
 	github.com/google/go-github/v50 v50.2.0 // indirect
 	github.com/google/go-jsonnet v0.18.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
@@ -243,6 +246,7 @@ require (
 	github.com/hashicorp/hcl/v2 v2.9.1 // indirect
 	github.com/hashicorp/vault/api v1.9.0 // indirect
 	github.com/hexops/gotextdiff v1.0.3 // indirect
+	github.com/hinshun/vt10x v0.0.0-20220228203356-1ab2cad5fd82 // indirect
 	github.com/imdario/mergo v0.3.13 // indirect
 	github.com/in-toto/in-toto-golang v0.7.1 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
@@ -352,6 +356,7 @@ require (
 	github.com/shazow/go-diff v0.0.0-20160112020656-b6b7b6733b8c // indirect
 	github.com/shibumi/go-pathspec v1.3.0 // indirect
 	github.com/shteou/go-ignore v0.3.1 // indirect
+	github.com/sigstore/cosign v1.13.1 // indirect
 	github.com/sigstore/cosign/v2 v2.0.1-0.20230323140840-42c4b8d9016a // indirect
 	github.com/sigstore/fulcio v1.2.0 // indirect
 	github.com/sigstore/rekor v1.0.1 // indirect
@@ -453,6 +458,8 @@ require (
 	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
+	gotest.tools v2.2.0+incompatible // indirect
+	gotest.tools/v3 v3.4.0 // indirect
 	honnef.co/go/tools v0.4.3 // indirect
 	k8s.io/api v0.26.1 // indirect
 	k8s.io/apiextensions-apiserver v0.26.0 // indirect

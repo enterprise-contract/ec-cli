@@ -731,8 +731,8 @@ github.com/awslabs/amazon-ecr-credential-helper/ecr-login v0.0.0-20221004211355-
 github.com/basgys/goxml2json v1.1.0 h1:4ln5i4rseYfXNd86lGEB+Vi652IsIXIvggKM/BhUKVw=
 github.com/basgys/goxml2json v1.1.0/go.mod h1:wH7a5Np/Q4QoECFIU8zTQlZwZkrilY0itPfecMw41Dw=
 github.com/benbjohnson/clock v1.0.3/go.mod h1:bGMdMPoPVvcYyt1gHDf4J2KE153Yf9BuiUKYMaxlTDM=
+github.com/benbjohnson/clock v1.1.0 h1:Q92kusRqC1XV2MjkWETPvjJVqKetz1OzxZB7mHJLju8=
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
-github.com/benbjohnson/clock v1.3.0 h1:ip6w0uFQkncKQ979AypyG0ER7mqUSBdKLOgAle/AT8A=
 github.com/beorn7/perks v0.0.0-20160804104726-4c0e84591b9a/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+CedLV8=
@@ -981,6 +981,7 @@ github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ3
 github.com/creack/pty v1.1.11/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/creack/pty v1.1.17/go.mod h1:MOBLtS5ELjhRRrroQr9kyvTxUAFNvYEK993ew/Vr4O4=
 github.com/creack/pty v1.1.18 h1:n56/Zwd5o6whRC5PMGretI4IdRLlmBXYNjScPaBgsbY=
+github.com/creack/pty v1.1.18/go.mod h1:MOBLtS5ELjhRRrroQr9kyvTxUAFNvYEK993ew/Vr4O4=
 github.com/curioswitch/go-reassign v0.2.0 h1:G9UZyOcpk/d7Gd6mqYgd8XYWFMw/znxwGDUstnC9DIo=
 github.com/curioswitch/go-reassign v0.2.0/go.mod h1:x6OpXuWvgfQaMGks2BZybTngWjT84hqJfKoO8Tt/Roc=
 github.com/cyberphone/json-canonicalization v0.0.0-20210823021906-dc406ceaf94b h1:lMzA7yYThpwx7iYNpTeiQnRH6h5JSfSYMJdz+pxZOW8=
@@ -1444,6 +1445,8 @@ github.com/google/go-containerregistry/pkg/authn/k8schain v0.0.0-20221030203717-
 github.com/google/go-containerregistry/pkg/authn/k8schain v0.0.0-20221030203717-1711cefd7eec/go.mod h1:7QLaBZxN+nMCx82XO5R7qPHq0m61liEg8yca68zymHo=
 github.com/google/go-containerregistry/pkg/authn/kubernetes v0.0.0-20221017135236-9b4fdd506cdd h1:+nq85YWt99EkBpsKV+ABoAzxM7My/uOKHModpV/mwgs=
 github.com/google/go-containerregistry/pkg/authn/kubernetes v0.0.0-20221017135236-9b4fdd506cdd/go.mod h1:k/wl/uGzWEl8kLqUOWSnKe9QL/10YKnuwHMNZHnXhfY=
+github.com/google/go-github/v45 v45.2.0 h1:5oRLszbrkvxDDqBCNj2hjDZMKmvexaZ1xw/FCD+K3FI=
+github.com/google/go-github/v45 v45.2.0/go.mod h1:FObaZJEDSTa/WGCzZ2Z3eoCDXWJKMenWWTrd8jrta28=
 github.com/google/go-github/v50 v50.2.0 h1:j2FyongEHlO9nxXLc+LP3wuBSVU9mVxfpdYUexMpIfk=
 github.com/google/go-github/v50 v50.2.0/go.mod h1:VBY8FB6yPIjrtKhozXv4FQupxKLS6H4m6xFZlT43q8Q=
 github.com/google/go-jsonnet v0.18.0 h1:/6pTy6g+Jh1a1I2UMoAODkqELFiVIdOxbNwv0DDzoOg=
@@ -1641,8 +1644,8 @@ github.com/hashicorp/go-version v1.6.0/go.mod h1:fltr4n8CU8Ke44wwGCBoEymUuxUHl09
 github.com/hashicorp/go.net v0.0.1/go.mod h1:hjKkEWcCURg++eb33jQU7oqQcI9XDCnUzHA0oac0k90=
 github.com/hashicorp/golang-lru v0.5.0/go.mod h1:/m3WP610KZHVQ1SGc6re/UDhFvYD7pJ4Ao+sR/qLZy8=
 github.com/hashicorp/golang-lru v0.5.1/go.mod h1:/m3WP610KZHVQ1SGc6re/UDhFvYD7pJ4Ao+sR/qLZy8=
+github.com/hashicorp/golang-lru v0.5.4 h1:YDjusn29QI/Das2iO9M0BHnIbxPeyuCHsjMW+lJfyTc=
 github.com/hashicorp/golang-lru v0.5.4/go.mod h1:iADmTwqILo4mZ8BN3D2Q6+9jd8WM5uGBxy+E8yxSoD4=
-github.com/hashicorp/golang-lru v0.6.0 h1:uL2shRDx7RTrOrTCUZEGP/wJUFiUI8QT6E7z5o8jga4=
 github.com/hashicorp/hcl v1.0.0 h1:0Anlzjpi4vEasTeNFn2mLJgTSwt0+6sfsiTG8qcWGx4=
 github.com/hashicorp/hcl v1.0.0/go.mod h1:E5yfLk+7swimpb2L/Alb/PJmXilQ/rhwaUYs4T20WEQ=
 github.com/hashicorp/hcl/v2 v2.6.0/go.mod h1:bQTN5mpo+jewjJgh8jr0JUguIi7qPHUF6yIfAEN3jqY=
@@ -1666,6 +1669,7 @@ github.com/hexops/gotextdiff v1.0.3 h1:gitA9+qJrrTCsiCl7+kh75nPqQt1cx4ZkudSTLoUq
 github.com/hexops/gotextdiff v1.0.3/go.mod h1:pSWU5MAI3yDq+fZBTazCSJysOMbxWL1BSow5/V2vxeg=
 github.com/hinshun/vt10x v0.0.0-20220119200601-820417d04eec/go.mod h1:Q48J4R4DvxnHolD5P8pOtXigYlRuPLGl6moFx3ulM68=
 github.com/hinshun/vt10x v0.0.0-20220228203356-1ab2cad5fd82 h1:uf1FmugJNeFovjWtxD7FSPWQXdi0KuKnZfvN4CFUAtA=
+github.com/hinshun/vt10x v0.0.0-20220228203356-1ab2cad5fd82/go.mod h1:Q48J4R4DvxnHolD5P8pOtXigYlRuPLGl6moFx3ulM68=
 github.com/honeycombio/beeline-go v1.10.0 h1:cUDe555oqvw8oD76BQJ8alk7FP0JZ/M/zXpNvOEDLDc=
 github.com/honeycombio/libhoney-go v1.16.0 h1:kPpqoz6vbOzgp7jC6SR7SkNj7rua7rgxvznI6M3KdHc=
 github.com/hpcloud/tail v1.0.0/go.mod h1:ab1qPbhIpdTxEkNHXyeSf5vhxWSCs/tWer42PpOxQnU=
@@ -2331,6 +2335,8 @@ github.com/shurcooL/go-goon v0.0.0-20170922171312-37c2f522c041/go.mod h1:N5mDOms
 github.com/shurcooL/httpfs v0.0.0-20190707220628-8d4bc4ba7749/go.mod h1:ZY1cvUeJuFPAdZ/B6v7RHavJWZn2YPVFQ1OSXhCGOkg=
 github.com/shurcooL/sanitized_anchor_name v1.0.0/go.mod h1:1NzhyTcUVG4SuEtjjoZeVRXNmyL/1OwPU0+IJeTBvfc=
 github.com/shurcooL/vfsgen v0.0.0-20200824052919-0d455de96546/go.mod h1:TrYk7fJVaAttu97ZZKrO9UbRa8izdowaMIZcxYMbVaw=
+github.com/sigstore/cosign v1.13.1 h1:+5oF8jisEcDw2TuXxCADC1u5//HfdnJhGbpv9Isiwu4=
+github.com/sigstore/cosign v1.13.1/go.mod h1:PlfJODkovUOKsLrGI7Su57Ie/Eb/Ks7hRHw3tn5hQS4=
 github.com/sigstore/cosign/v2 v2.0.1-0.20230323140840-42c4b8d9016a h1:aX+be/QKHo1aVwpdyza/Ctuo8LATpJ3/yXgELHC5LJ8=
 github.com/sigstore/cosign/v2 v2.0.1-0.20230323140840-42c4b8d9016a/go.mod h1:JXyOwUUijUVVvCPcP12Cjkkvr5HBSDrS0w+6xlLxq24=
 github.com/sigstore/fulcio v1.2.0 h1:I4H764cDbryKXkPtasUvo8bcix/7xLvkxWYWNp+JtWI=
@@ -2461,8 +2467,8 @@ github.com/tdakkota/asciicheck v0.2.0/go.mod h1:Qb7Y9EgjCLJGup51gDHFzbI08/gbGhL/
 github.com/tedsuo/ifrit v0.0.0-20180802180643-bea94bb476cc/go.mod h1:eyZnKCc955uh98WQvzOm0dgAeLnf2O0Rz0LPoC5ze+0=
 github.com/tektoncd/chains v0.15.1-0.20230406140737-50a40c019838 h1:R8NIirt6bdrrTJm1YdEUaYgUiqcBLFbMx/5mWjR7nDE=
 github.com/tektoncd/chains v0.15.1-0.20230406140737-50a40c019838/go.mod h1:L8PwNS3J4WnPuwy5uVMntPj7ypRMPdzaZPXvHKE/6cA=
-github.com/tektoncd/cli v0.3.1-0.20230419203848-832d14301e20 h1:gAkGk0Y1jaSxqD+1Uw91luWaRVDtSoZSPOhH7CSVK2o=
-github.com/tektoncd/cli v0.3.1-0.20230419203848-832d14301e20/go.mod h1:rXFuloaX8Z6uUNbpB3ht32CibjOvn5v7O/NdENP8Vuc=
+github.com/tektoncd/cli v0.30.1 h1:5MUDbcw3CXogagDBQhFbYLx+OcFASuFhyb6qkqqV6ao=
+github.com/tektoncd/cli v0.30.1/go.mod h1:AZRVXTJ4Lwthn33z3q7eyFFdH5CS0BJ1rt2MJc7tkFA=
 github.com/tektoncd/hub v1.12.1 h1:ItKjjIFSNnjq8yU+LvvIN+sqvxtCHDpWNMopo/xRWk8=
 github.com/tektoncd/hub v1.12.1/go.mod h1:DyFA8WVfXQ7wC3LMFQ0DUQ/6Kg5/jyqod8o/etWAMOk=
 github.com/tektoncd/pipeline v0.45.0 h1:Hv9kyutu5GWGXKtcMrM7PXdAULgeQc0F2HWDNg+jo5c=
@@ -3617,6 +3623,7 @@ gotest.tools v2.2.0+incompatible/go.mod h1:DsYFclhRJ6vuDpmuTbkuFWG+y2sxOXAzmJt81
 gotest.tools/v3 v3.0.2/go.mod h1:3SzNCllyD9/Y+b5r9JIKQ474KzkZyqLqEfYqMsX94Bk=
 gotest.tools/v3 v3.0.3/go.mod h1:Z7Lb0S5l+klDB31fvDQX8ss/FlKDxtlFlw3Oa8Ymbl8=
 gotest.tools/v3 v3.4.0 h1:ZazjZUfuVeZGLAmlKKuyv3IKP5orXcwtOwDQH6YVr6o=
+gotest.tools/v3 v3.4.0/go.mod h1:CtbdzLSsqVhDgMtKsx03ird5YTGB3ar27v0u/yKBW5g=
 honnef.co/go/tools v0.0.0-20180728063816-88497007e858/go.mod h1:rf3lG4BRIbNafJWhAfAdb/ePZxsR/4RtNHQocxwk9r4=
 honnef.co/go/tools v0.0.0-20190102054323-c2f93a96b099/go.mod h1:rf3lG4BRIbNafJWhAfAdb/ePZxsR/4RtNHQocxwk9r4=
 honnef.co/go/tools v0.0.0-20190106161140-3f1c8253044a/go.mod h1:rf3lG4BRIbNafJWhAfAdb/ePZxsR/4RtNHQocxwk9r4=
