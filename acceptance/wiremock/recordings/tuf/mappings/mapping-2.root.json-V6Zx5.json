@@ -1,0 +1,19 @@
+{
+  "id" : "58b325d0-cdb9-3e3d-81e4-97b04abd6f49",
+  "request" : {
+    "url" : "/2.root.json",
+    "method" : "GET"
+  },
+  "response" : {
+    "status" : 404,
+    "bodyFileName" : "body-2.root.json-V6Zx5.txt",
+    "headers" : {
+      "content-type" : "text/plain; charset=utf-8",
+      "date" : "Thu, 27 Apr 2023 13:06:17 GMT",
+      "x-content-type-options" : "nosniff",
+      "x-envoy-upstream-service-time" : "0",
+      "server" : "envoy"
+    }
+  },
+  "uuid" : "58b325d0-cdb9-3e3d-81e4-97b04abd6f49"
+}

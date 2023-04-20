@@ -1,0 +1,20 @@
+{
+  "id" : "4f26a93d-bbf4-3082-b5aa-41cf38e2d542",
+  "request" : {
+    "url" : "/targets/fulcio_v1.crt.pem",
+    "method" : "GET"
+  },
+  "response" : {
+    "status" : 200,
+    "bodyFileName" : "body-targets-fulcio_v1.crt.pem-1rwRI.txt",
+    "headers" : {
+      "accept-ranges" : "bytes",
+      "content-type" : "text/plain; charset=utf-8",
+      "date" : "Thu, 27 Apr 2023 13:06:17 GMT",
+      "last-modified" : "Thu, 27 Apr 2023 13:06:01 GMT",
+      "x-envoy-upstream-service-time" : "0",
+      "server" : "envoy"
+    }
+  },
+  "uuid" : "4f26a93d-bbf4-3082-b5aa-41cf38e2d542"
+}

@@ -46,6 +46,7 @@ import (
 	"github.com/enterprise-contract/ec-cli/acceptance/registry"
 	"github.com/enterprise-contract/ec-cli/acceptance/rekor"
 	"github.com/enterprise-contract/ec-cli/acceptance/testenv"
+	"github.com/enterprise-contract/ec-cli/acceptance/tuf"
 )
 
 type status struct {
@@ -60,6 +61,7 @@ type key int
 
 const (
 	processStatusKey key = iota
+	cmdEnvVar        key = iota
 )
 
 type diffy []gojsondiff.Delta
@@ -99,7 +101,6 @@ func ecCommandIsRunWith(ctx context.Context, parameters string) (context.Context
 		"PATH=" + os.Getenv("PATH"),
 		"COVERAGE_FILEPATH=" + os.Getenv("COVERAGE_FILEPATH"), // where to put the coverage file, $COVERAGE_FILEPATH is provided by the Makefile, if empty it'll be $TMPDIR
 		"COVERAGE_FILENAME=" + os.Getenv("COVERAGE_FILENAME"), // suffix for the coverage file
-		"SIGSTORE_NO_CACHE=1",                                 // don't try to write sigstore TUF cache: we're running tests concurently and there could be race issues against the filesystem
 	}
 
 	// variables that can be substituted on the command line
@@ -127,6 +128,14 @@ func ecCommandIsRunWith(ctx context.Context, parameters string) (context.Context
 	}
 
 	if environment, vars, err = setupGitHost(ctx, vars, environment); err != nil {
+		return ctx, err
+	}
+
+	if environment, vars, err = setupTUF(ctx, vars, environment); err != nil {
+		return ctx, err
+	}
+
+	if environment, err = setupCmdEnvironmentVariable(ctx, environment); err != nil {
 		return ctx, err
 	}
 
@@ -223,15 +232,18 @@ func setupRekor(ctx context.Context, vars map[string]string, environment []strin
 
 	vars["REKOR"] = rekorURL
 
-	f, err := os.CreateTemp("", "ec-acceptance-rekor-pub-*")
-	if err != nil {
-		return environment, vars, err
+	// If TUF is initialized, skip setting SIGSTORE_REKOR_PUBLIC_KEY to avoid conflicts.
+	if !tuf.Initialized(ctx) {
+		f, err := os.CreateTemp("", "ec-acceptance-rekor-pub-*")
+		if err != nil {
+			return environment, vars, err
+		}
+		defer f.Close()
+		if _, err := f.Write(rekor.PublicKey(ctx)); err != nil {
+			return environment, vars, err
+		}
+		environment = append(environment, fmt.Sprintf("SIGSTORE_REKOR_PUBLIC_KEY=%s", f.Name()))
 	}
-	defer f.Close()
-	if _, err := f.Write(rekor.PublicKey(ctx)); err != nil {
-		return environment, vars, err
-	}
-	environment = append(environment, fmt.Sprintf("SIGSTORE_REKOR_PUBLIC_KEY=%s", f.Name()))
 
 	return environment, vars, nil
 }
@@ -309,6 +321,28 @@ func setupGitHost(ctx context.Context, vars map[string]string, environment []str
 	environment = append(environment, fmt.Sprintf("SSL_CERT_FILE=%s", git.CertificatePath(ctx)), "GIT_SSL_NO_VERIFY=true")
 
 	vars["GITHOST"] = git.Host(ctx)
+	return environment, vars, nil
+}
+
+func setupTUF(ctx context.Context, vars map[string]string, environment []string) ([]string, map[string]string, error) {
+	if !tuf.IsRunning(ctx) {
+		// Don't write sigstore TUF cache. Tests run concurently and there could be race issues
+		// against the filesystem.
+		environment = append(environment, "SIGSTORE_NO_CACHE=1")
+		return environment, vars, nil
+	}
+
+	tufURL, err := tuf.Stub(ctx)
+	if err != nil {
+		return environment, vars, err
+	}
+	vars["TUF"] = tufURL
+
+	vars["CERT_IDENTITY"] = "https://kubernetes.io/namespaces/default/serviceaccounts/default"
+	vars["CERT_ISSUER"] = "https://kubernetes.default.svc.cluster.local"
+
+	environment = append(environment, fmt.Sprintf("TUF_ROOT=%s", tuf.Root(ctx)))
+
 	return environment, vars, nil
 }
 
@@ -636,6 +670,7 @@ func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^the exit status should be (\d+)$`, theExitStatusIs)
 	sc.Step(`^the standard output should contain$`, theStandardOutputShouldContain)
 	sc.Step(`^the standard error should contain$`, theStandardErrorShouldContain)
+	sc.Step(`^the environment variable is set "([^"]*)"$`, theEnvironmentVarilableIsSet)
 	sc.After(func(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
 		logExecution(ctx)
 
@@ -667,4 +702,28 @@ func compareJSON(left []byte, right []byte, isArray bool) (gojsondiff.Diff, erro
 		}
 	}
 	return diff, nil
+}
+
+// theEnvironmentVarilableIsSet sets the given environment variable to be used
+// when launching a command.
+func theEnvironmentVarilableIsSet(ctx context.Context, parameter string) (context.Context, error) {
+	environment, ok := ctx.Value(cmdEnvVar).([]string)
+	if !ok && environment != nil {
+		return ctx, errors.New("unexpected type for environment in context during initialization")
+	}
+	environment = append(environment, parameter)
+
+	ctx = context.WithValue(ctx, cmdEnvVar, environment)
+	return ctx, nil
+}
+
+// setupCmdEnvironmentVariable adds to the given environment slice any other
+// environment values from the context.
+func setupCmdEnvironmentVariable(ctx context.Context, environment []string) ([]string, error) {
+	newEnvironment, ok := ctx.Value(cmdEnvVar).([]string)
+	if !ok && environment != nil {
+		return environment, nil
+	}
+	environment = append(environment, newEnvironment...)
+	return environment, nil
 }

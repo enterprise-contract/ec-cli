@@ -6,6 +6,7 @@ Feature: evaluate enterprise contract
     Given stub rekord running
     Given stub registry running
     Given stub git daemon running
+    Given stub tuf running
 
   Scenario: happy day
     Given a key pair named "known"
@@ -80,6 +81,87 @@ Feature: evaluate enterprise contract
     }
     """
 
+  Scenario: happy day with keyless
+    Given a signed and attested keyless image named "acceptance/ec-happy-day-keyless"
+    Given a initialized tuf root
+    Given a git repository named "happy-day-policy" with
+      | main.rego | examples/happy_day.rego |
+    Given policy configuration named "ec-policy" with specification
+    """
+    {
+      "sources": [
+        {
+          "policy": [
+            "git::https://${GITHOST}/git/happy-day-policy.git"
+          ]
+        }
+      ]
+    }
+    """
+    Given the environment variable is set "EC_EXPERIMENTAL=1"
+    # TODO: The Rekor value is ignored here, but it cannot be an empty value because that causes
+    # the ec-cli to ignore the tlog altogether.
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day-keyless --policy acceptance/ec-policy --rekor-url http://this.is.ignored --certificate-oidc-issuer ${CERT_ISSUER} --certificate-identity ${CERT_IDENTITY} --strict"
+    Then the exit status should be 0
+    Then the standard output should contain
+    """
+    {
+      "success": true,
+      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
+      "key": "",
+      "components": [
+        {
+          "name": "Unnamed",
+          "containerImage": "localhost:(\\d+)/acceptance/ec-happy-day",
+          "successes": [
+            {
+              "msg": "Pass",
+              "metadata": {
+                "code": "builtin.attestation.signature_check"
+              }
+            },
+            {
+              "msg": "Pass",
+              "metadata": {
+                "code": "builtin.attestation.syntax_check"
+              }
+            },
+            {
+              "msg": "Pass",
+              "metadata": {
+                "code": "builtin.image.signature_check"
+              }
+            },
+            {
+              "msg": "Pass",
+              "metadata": {
+                "code": "main.acceptor"
+              }
+            }
+          ],
+          "success": true,
+          "signatures": [
+            {
+              "keyid": "",
+              "metadata": {
+                "predicateBuildType": "tekton.dev/v1beta1/PipelineRun",
+                "predicateType": "https://slsa.dev/provenance/v0.2",
+                "type": "https://in-toto.io/Statement/v0.1"
+              },
+              "sig": "[a-zA-Z0-9/=]*"
+            }
+          ]
+        }
+      ],
+      "policy": {
+        "rekorUrl": "http://this.is.ignored",
+        "sources": [
+          { "policy": ["git::https://${GITHOST}/git/happy-day-policy.git"] }
+        ]
+      }
+    }
+    """
+
   Scenario: invalid image signature
     Given a key pair named "known"
     Given a key pair named "unknown"
@@ -135,6 +217,64 @@ Feature: evaluate enterprise contract
         "rekorUrl": "${REKOR}",
         "sources": [
           { "policy": ["git::https://${GITHOST}/git/invalid-image-signature.git"] }
+        ]
+      }
+    }
+    """
+
+  Scenario: unexpected image signature cert
+    Given a signed and attested keyless image named "acceptance/unexpected-keyless-cert"
+    Given a initialized tuf root
+    Given a git repository named "unexpected-keyless-cert" with
+      | main.rego | examples/happy_day.rego |
+    Given policy configuration named "ec-policy" with specification
+    """
+    {
+      "sources": [
+        {
+          "policy": [
+            "git::https://${GITHOST}/git/unexpected-keyless-cert.git"
+          ]
+        }
+      ]
+    }
+    """
+    Given the environment variable is set "EC_EXPERIMENTAL=1"
+    # TODO: The Rekor value is ignored here, but it cannot be an empty value because that causes
+    # the ec-cli to ignore the tlog altogether.
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/unexpected-keyless-cert --policy acceptance/ec-policy --rekor-url http://this.is.ignored --certificate-oidc-issuer https://spam.cluster.local --certificate-identity https://kubernetes.io/namespaces/bacon/serviceaccounts/eggs --strict"
+    Then the exit status should be 1
+    Then the standard output should contain
+    """
+    {
+      "success": false,
+      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
+      "key": "",
+      "components": [
+        {
+          "name": "Unnamed",
+          "containerImage": "localhost:(\\d+)/acceptance/unexpected-keyless-cert@sha256:[0-9a-f]{64}",
+          "violations": [
+            {
+              "msg": "No image attestations found matching the given public key. Verify the correct public key was provided, and one or more attestations were created.",
+              "metadata": {
+                "code": "builtin.attestation.signature_check"
+              }
+            },
+            {
+              "msg": "No image signatures found matching the given public key. Verify the correct public key was provided, and a signature was created.",
+              "metadata": {
+                "code": "builtin.image.signature_check"
+              }
+            }
+          ],
+          "success": false
+        }
+      ],
+      "policy": {
+        "rekorUrl": "http://this.is.ignored",
+        "sources": [
+          { "policy": ["git::https://${GITHOST}/git/unexpected-keyless-cert.git"] }
         ]
       }
     }

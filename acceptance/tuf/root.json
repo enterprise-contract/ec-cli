@@ -1,0 +1,87 @@
+{
+ "signed": {
+  "_type": "root",
+  "spec_version": "1.0",
+  "version": 1,
+  "expires": "2023-10-27T13:06:01Z",
+  "keys": {
+   "2648168d246622d96a3840ac647b3b420dbca5ef252f75429c29e59838fdf2e3": {
+    "keytype": "ed25519",
+    "scheme": "ed25519",
+    "keyid_hash_algorithms": [
+     "sha256",
+     "sha512"
+    ],
+    "keyval": {
+     "public": "a23c9e2446fac3c891619a19d0bc58fc9b0e12d9272c03d7b321c0b6e3e569be"
+    }
+   },
+   "28349ef1b91d6181b2a2b5c01338fc3e4a6158a0616b08d314fc09d1decd9384": {
+    "keytype": "ed25519",
+    "scheme": "ed25519",
+    "keyid_hash_algorithms": [
+     "sha256",
+     "sha512"
+    ],
+    "keyval": {
+     "public": "a910bceb64287a32a3b0ed1e5a5dfd0ddc72fc84d43a5952cb513354fad0171f"
+    }
+   },
+   "b26258ffcb69c9fb4fb525f0aea183cee6f61969b3244c0a5191b1d32a5c80c2": {
+    "keytype": "ed25519",
+    "scheme": "ed25519",
+    "keyid_hash_algorithms": [
+     "sha256",
+     "sha512"
+    ],
+    "keyval": {
+     "public": "ccff747c92d4b3d430bff05128a6051ef3a32c7ab405afffa666104fa1b30b42"
+    }
+   },
+   "fceca6242b4166e6baf19d07609d2a81db948e724e0095bea7a6bab30faf227a": {
+    "keytype": "ed25519",
+    "scheme": "ed25519",
+    "keyid_hash_algorithms": [
+     "sha256",
+     "sha512"
+    ],
+    "keyval": {
+     "public": "271b69e4b5ebbd7b5d4f721524592fe9a2cb637abd97ebf90962196ee1f10dd3"
+    }
+   }
+  },
+  "roles": {
+   "root": {
+    "keyids": [
+     "b26258ffcb69c9fb4fb525f0aea183cee6f61969b3244c0a5191b1d32a5c80c2"
+    ],
+    "threshold": 1
+   },
+   "snapshot": {
+    "keyids": [
+     "fceca6242b4166e6baf19d07609d2a81db948e724e0095bea7a6bab30faf227a"
+    ],
+    "threshold": 1
+   },
+   "targets": {
+    "keyids": [
+     "28349ef1b91d6181b2a2b5c01338fc3e4a6158a0616b08d314fc09d1decd9384"
+    ],
+    "threshold": 1
+   },
+   "timestamp": {
+    "keyids": [
+     "2648168d246622d96a3840ac647b3b420dbca5ef252f75429c29e59838fdf2e3"
+    ],
+    "threshold": 1
+   }
+  },
+  "consistent_snapshot": false
+ },
+ "signatures": [
+  {
+   "keyid": "b26258ffcb69c9fb4fb525f0aea183cee6f61969b3244c0a5191b1d32a5c80c2",
+   "sig": "064d6a97892be0f032ad1a28496bf78e1ab3c3f62110768322c3f45c4574e72425deb4bbcd85f776589f9c66032dc17f6fc70c2e333a3f8ba696394c9246f008"
+  }
+ ]
+}

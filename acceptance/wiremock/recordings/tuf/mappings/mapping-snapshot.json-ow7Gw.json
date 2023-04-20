@@ -1,0 +1,20 @@
+{
+  "id" : "23268e3c-6998-30a8-b096-a047be895946",
+  "request" : {
+    "url" : "/snapshot.json",
+    "method" : "GET"
+  },
+  "response" : {
+    "status" : 200,
+    "bodyFileName" : "body-snapshot.json-ow7Gw.json",
+    "headers" : {
+      "accept-ranges" : "bytes",
+      "content-type" : "application/json",
+      "date" : "Thu, 27 Apr 2023 13:06:17 GMT",
+      "last-modified" : "Thu, 27 Apr 2023 13:06:01 GMT",
+      "x-envoy-upstream-service-time" : "0",
+      "server" : "envoy"
+    }
+  },
+  "uuid" : "23268e3c-6998-30a8-b096-a047be895946"
+}

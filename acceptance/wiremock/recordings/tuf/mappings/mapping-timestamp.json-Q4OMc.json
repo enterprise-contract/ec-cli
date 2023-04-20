@@ -1,0 +1,20 @@
+{
+  "id" : "8c4ccc7e-c6bf-3785-860d-dadb04899019",
+  "request" : {
+    "url" : "/timestamp.json",
+    "method" : "GET"
+  },
+  "response" : {
+    "status" : 200,
+    "bodyFileName" : "body-timestamp.json-Q4OMc.json",
+    "headers" : {
+      "accept-ranges" : "bytes",
+      "content-type" : "application/json",
+      "date" : "Thu, 27 Apr 2023 13:06:17 GMT",
+      "last-modified" : "Thu, 27 Apr 2023 13:06:01 GMT",
+      "x-envoy-upstream-service-time" : "0",
+      "server" : "envoy"
+    }
+  },
+  "uuid" : "8c4ccc7e-c6bf-3785-860d-dadb04899019"
+}
