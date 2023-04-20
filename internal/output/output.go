@@ -57,20 +57,6 @@ func (v VerificationStatus) addToViolations(violations []output.Result) []output
 	return result
 }
 
-// addToSuccesses appends the success result to the successes slice.
-func (v VerificationStatus) addToSuccesses(successes []output.Result) []output.Result {
-	if !v.Passed {
-		return successes
-	}
-
-	result := successes
-	if v.Result != nil {
-		result = append(successes, *v.Result)
-	}
-
-	return result
-}
-
 type EntitySignature struct {
 	KeyID     string            `json:"keyid"`
 	Signature string            `json:"sig"`
@@ -93,10 +79,8 @@ type Output struct {
 // SetImageAccessibleCheck sets the passed and result.message fields of the ImageAccessibleCheck to the given values.
 func (o *Output) SetImageAccessibleCheckFromError(err error) {
 	if err == nil {
-		message := "Image URL is accessible"
-		log.Debug(message)
+		log.Debug("Image access check passed")
 		o.ImageAccessibleCheck.Passed = true
-		o.ImageAccessibleCheck.Result = &output.Result{Message: message}
 		return
 	}
 
@@ -109,10 +93,8 @@ func (o *Output) SetImageAccessibleCheckFromError(err error) {
 // SetImageSignatureCheck sets the passed and result.message fields of the ImageSignatureCheck to the given values.
 func (o *Output) SetImageSignatureCheckFromError(err error) {
 	if err == nil {
-		message := "Image signature check passed"
-		log.Debug(message)
+		log.Debug("Image signature check passed")
 		o.ImageSignatureCheck.Passed = true
-		o.ImageSignatureCheck.Result = &output.Result{Message: message}
 		return
 	}
 
@@ -133,10 +115,8 @@ func (o *Output) SetImageSignatureCheckFromError(err error) {
 // SetAttestationSignatureCheck sets the passed and result.message fields of the AttestationSignatureCheck to the given values.
 func (o *Output) SetAttestationSignatureCheckFromError(err error) {
 	if err == nil {
-		message := "Image attestation check passed"
-		log.Debug(message)
+		log.Debug("Image signature check passed")
 		o.AttestationSignatureCheck.Passed = true
-		o.AttestationSignatureCheck.Result = &output.Result{Message: message}
 		return
 	}
 
@@ -157,10 +137,8 @@ func (o *Output) SetAttestationSignatureCheckFromError(err error) {
 // SetAttestationSyntaxCheck sets the passed and result.message fields of the AttestationSyntaxCheck to the given values.
 func (o *Output) SetAttestationSyntaxCheckFromError(err error) {
 	if err == nil {
-		message := "Image attestation syntax check passed"
-		log.Debug(message)
+		log.Debug("Image attestation syntax check passed")
 		o.AttestationSyntaxCheck.Passed = true
-		o.AttestationSyntaxCheck.Result = &output.Result{Message: message}
 		return
 	}
 
@@ -241,10 +219,6 @@ func (o Output) Successes() []output.Result {
 	for _, result := range o.PolicyCheck {
 		successes = append(successes, result.Successes...)
 	}
-
-	successes = o.ImageSignatureCheck.addToSuccesses(successes)
-	successes = o.AttestationSignatureCheck.addToSuccesses(successes)
-	successes = o.AttestationSyntaxCheck.addToSuccesses(successes)
 
 	successes = sortResults(successes)
 	return successes

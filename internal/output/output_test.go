@@ -484,144 +484,6 @@ func Test_Violations(t *testing.T) {
 	}
 }
 
-func Test_Successes(t *testing.T) {
-	cases := []struct {
-		name     string
-		output   Output
-		expected []output.Result
-	}{
-		{
-			name: "passing",
-			output: Output{
-				ImageSignatureCheck: VerificationStatus{
-					Passed: true,
-					Result: &output.Result{Message: "image signature passed"},
-				},
-				AttestationSignatureCheck: VerificationStatus{
-					Passed: true,
-					Result: &output.Result{Message: "attestation signature passed"},
-				},
-				ImageAccessibleCheck: VerificationStatus{
-					Passed: true,
-					Result: &output.Result{Message: "image accessible passed"},
-				},
-				AttestationSyntaxCheck: VerificationStatus{
-					Passed: true,
-					Result: &output.Result{Message: "attestation syntax passed"},
-				},
-				PolicyCheck: evaluator.CheckResults{
-					{
-						Successes: []output.Result{
-							{
-								Message: "passed policy check",
-							},
-						},
-					},
-				},
-			},
-			expected: []output.Result{
-				{Message: "attestation signature passed"},
-				{Message: "attestation syntax passed"},
-				{Message: "image signature passed"},
-				{Message: "passed policy check"},
-			},
-		},
-		{
-			name: "failing image signature",
-			output: Output{
-				ImageSignatureCheck: VerificationStatus{
-					Passed: false,
-					Result: &output.Result{Message: "image signature failed"},
-				},
-				AttestationSignatureCheck: VerificationStatus{
-					Passed: true,
-					Result: &output.Result{Message: "attestation signature passed"},
-				},
-				ImageAccessibleCheck: VerificationStatus{
-					Passed: true,
-					Result: &output.Result{Message: "image accessible passed"},
-				},
-				AttestationSyntaxCheck: VerificationStatus{
-					Passed: true,
-					Result: &output.Result{Message: "attestation syntax passed"},
-				},
-			},
-			expected: []output.Result{
-				{Message: "attestation signature passed"},
-				{Message: "attestation syntax passed"},
-			},
-		},
-		{
-			name: "failing attestation signature",
-			output: Output{
-				ImageSignatureCheck: VerificationStatus{
-					Passed: true,
-					Result: &output.Result{Message: "image signature passed"},
-				},
-				AttestationSignatureCheck: VerificationStatus{
-					Passed: false,
-					Result: &output.Result{Message: "attestation signature failed"},
-				},
-				ImageAccessibleCheck: VerificationStatus{
-					Passed: true,
-					Result: &output.Result{Message: "image accessible passed"},
-				},
-				AttestationSyntaxCheck: VerificationStatus{
-					Passed: true,
-					Result: &output.Result{Message: "attestation syntax passed"},
-				},
-			},
-			expected: []output.Result{
-				{Message: "attestation syntax passed"},
-				{Message: "image signature passed"},
-			},
-		},
-		{
-			name: "failing policy check",
-			output: Output{
-				ImageSignatureCheck: VerificationStatus{
-					Passed: true,
-					Result: &output.Result{Message: "image signature passed"},
-				},
-				AttestationSignatureCheck: VerificationStatus{
-					Passed: true,
-					Result: &output.Result{Message: "attestation signature passed"},
-				},
-				ImageAccessibleCheck: VerificationStatus{
-					Passed: true,
-					Result: &output.Result{Message: "image accessible passed"},
-				},
-				AttestationSyntaxCheck: VerificationStatus{
-					Passed: true,
-					Result: &output.Result{Message: "attestation syntax passed"},
-				},
-				PolicyCheck: evaluator.CheckResults{
-					{
-						CheckResult: output.CheckResult{
-							Failures: []output.Result{
-								{
-									Message: "failed policy check",
-								},
-							},
-						},
-					},
-				},
-			},
-			expected: []output.Result{
-				{Message: "attestation signature passed"},
-				{Message: "attestation syntax passed"},
-				{Message: "image signature passed"},
-			},
-		},
-	}
-
-	for _, c := range cases {
-		t.Run(c.name, func(t *testing.T) {
-			assert.Equal(t, c.expected, c.output.Successes())
-		})
-	}
-}
-
 func Test_Warnings(t *testing.T) {
 	cases := []struct {
 		name     string
@@ -740,9 +602,6 @@ func TestSetImageAccessibleCheckFromError(t *testing.T) {
 		{
 			name:           "success",
 			expectedPassed: true,
-			expectedResult: &output.Result{
-				Message: "Image URL is accessible",
-			},
 		},
 		{
 			name:           "failure",
@@ -778,9 +637,6 @@ func TestSetImageSignatureCheckFromError(t *testing.T) {
 		{
 			name:           "success",
 			expectedPassed: true,
-			expectedResult: &output.Result{
-				Message: "Image signature check passed",
-			},
 		},
 		{
 			name:           "generic failure",
@@ -823,9 +679,6 @@ func TestSetAttestationSignatureCheckFromError(t *testing.T) {
 		{
 			name:           "success",
 			expectedPassed: true,
-			expectedResult: &output.Result{
-				Message: "Image attestation check passed",
-			},
 		},
 		{
 			name:           "generic failure",
@@ -866,9 +719,6 @@ func TestSetAttestationSyntaxCheckFromError(t *testing.T) {
 		{
 			name:           "success",
 			expectedPassed: true,
-			expectedResult: &output.Result{
-				Message: "Image attestation syntax check passed",
-			},
 		},
 		{
 			name:           "failure",
