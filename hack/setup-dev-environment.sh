@@ -81,6 +81,9 @@ ${KUSTOMIZE} "${ROOT}/hack/development" | kubectl apply -f -
 echo -e '✨ \033[1mWaiting for the image registry to become available\033[0m'
 kubectl -n image-registry wait deployment -l "app.kubernetes.io/name=registry" --for=condition=Available --timeout=120s
 
+echo -e '✨ \033[1mGenerating ingress controller certificate\033[0m'
+"${ROOT}/hack/generate-ingress-cert.sh"
+
 # Wait for Nginx-based ingress to be available
 echo -e '✨ \033[1mWaiting for the Nginx ingress to become available\033[0m'
 kubectl -n ingress-nginx wait deployment -l "app.kubernetes.io/name=ingress-nginx" --for=condition=Available --timeout=90s
@@ -93,11 +96,12 @@ kubectl -n tekton-pipelines wait deployment -l "app.kubernetes.io/part-of=tekton
 echo -e '✨ \033[1mWaiting for Tekton Chains to become available\033[0m'
 kubectl -n tekton-chains wait deployment -l "app.kubernetes.io/part-of=tekton-chains" --for=condition=Available --timeout=180s
 
+# Wait for everything from Sigstore to be ready
+echo -e '✨ \033[1mWaiting for everything from Sigstore to become available\033[0m'
+kubectl wait deployment -A -l "app.kubernetes.io/instance=sigstore" --for=condition=Available --timeout=180s
+
 # Set the current context's namespace to "work"
 kubectl config set-context --current --namespace=work
-
-echo -e '✨ \033[1mGenerating ingress controller certificate\033[0m'
-"${ROOT}/hack/generate-ingress-cert.sh"
 
 echo -e '✨ \033[1mDone\033[0m'
 echo -e "The \033[1mwork\033[0m namespace is set as current and prepared to run the verify-enterprise-contract Tekton Task."
