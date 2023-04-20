@@ -23,4 +23,26 @@ set -o nounset
 
 CHAINS_VERSION="${CHAINS_VERSION:-$(cd "$(git rev-parse --show-toplevel)/tools" && go list -f '{{.Version}}' -m github.com/tektoncd/chains)}"
 
-curl -sSL "https://storage.googleapis.com/tekton-releases/chains/previous/${CHAINS_VERSION}/release.yaml"
+YAML="$(mktemp --tmpdir)"
+cleanup() {
+    rm -f "${YAML}"
+}
+trap cleanup exit
+
+while [[ "$(curl -sSL -w '%{http_code}' -o "${YAML}" "https://storage.googleapis.com/tekton-releases/chains/previous/${CHAINS_VERSION}/release.yaml")" != "200" ]]; do
+    # first fallback, remove any trailing timestamp + sha, e.g.
+    # vX.Y.Z-0.TIMESTAMP-HASH -> vX.Y.Z
+    if [[ "${CHAINS_VERSION}" == v*-*-* ]]; then
+        CHAINS_VERSION="${CHAINS_VERSION%-*-*}"
+        continue
+    fi
+    # second fallback, replace vX.Y.1 with vX.Y.0
+    if [[ "${CHAINS_VERSION}" == *.1 ]]; then
+        CHAINS_VERSION="${CHAINS_VERSION/%.1/.0}"
+        continue
+    fi
+    # no more fallbacks, fail
+    exit 1
+done
+
+cat "${YAML}"
