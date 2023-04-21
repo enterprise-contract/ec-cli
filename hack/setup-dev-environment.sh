@@ -98,7 +98,7 @@ kubectl -n tekton-chains wait deployment -l "app.kubernetes.io/part-of=tekton-ch
 
 # Wait for everything from Sigstore to be ready
 echo -e '✨ \033[1mWaiting for everything from Sigstore to become available\033[0m'
-kubectl wait deployment -A -l "app.kubernetes.io/instance=sigstore" --for=condition=Available --timeout=180s
+kubectl wait deployment -A -l "app.kubernetes.io/instance=sigstore" --for=condition=Available --timeout=10m
 
 # Set the current context's namespace to "work"
 kubectl config set-context --current --namespace=work
