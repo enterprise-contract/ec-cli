@@ -69,3 +69,44 @@ patches:
       kind: Ingress
       name: rekor-server
       namespace: rekor-system
+  - patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/args/-
+        value: --cert-organization
+      - op: add
+        path: /spec/template/spec/containers/0/args/-
+        value: Enterprise Contract
+      - op: add
+        path: /spec/template/spec/containers/0/args/-
+        value: --cert-country
+      - op: add
+        path: /spec/template/spec/containers/0/args/-
+        value: EC
+      - op: add
+        path: /spec/template/spec/containers/0/args/-
+        value: --cert-province
+      - op: add
+        path: /spec/template/spec/containers/0/args/-
+        value: Chimborazo
+      - op: add
+        path: /spec/template/spec/containers/0/args/-
+        value: --cert-locality
+      - op: add
+        path: /spec/template/spec/containers/0/args/-
+        value: San Pedro de Riobamba
+      - op: add
+        path: /spec/template/spec/containers/0/args/-
+        value: --cert-address
+      - op: add
+        path: /spec/template/spec/containers/0/args/-
+        value: Cesar León Hidalgo entre Villa Orellana
+      - op: add
+        path: /spec/template/spec/containers/0/args/-
+        value: --cert-postal
+      - op: add
+        path: /spec/template/spec/containers/0/args/-
+        value: 88PM+2G
+    target:
+      kind: Job
+      name: fulcio-createcerts
+      namespace: fulcio-system
