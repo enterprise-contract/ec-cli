@@ -42,24 +42,29 @@ import (
 // We're expecting only one of the bool params to be set, but if
 // there are multiple set we'll accept it and the more verbose
 // option will take precendence.
-func InitLogging(verbose bool, quiet bool, debug bool) {
+func InitLogging(verbose, quiet, debug, trace bool) {
 	var level log.Level
 	var v string
-	if debug {
+	switch {
+	case trace:
 		level = log.DebugLevel
 		setupDebugMode()
 		v = "9"
-	} else if verbose {
+	case debug:
 		level = log.DebugLevel
-		v = "9"
-	} else if quiet {
+		setupDebugMode()
+		v = "6"
+	case verbose:
+		level = log.DebugLevel
+		v = "6"
+	case quiet:
 		level = log.ErrorLevel
 		v = "1"
-	} else {
-		// Default
+	default:
 		level = log.WarnLevel
 		v = "1"
 	}
+
 	log.SetLevel(level)
 
 	// The problem with klog is that it'll log to stdout/stderr, we want to
@@ -69,7 +74,7 @@ func InitLogging(verbose bool, quiet bool, debug bool) {
 	// see
 	// https://github.com/kubernetes/community/blob/master/contributors/devel/sig-instrumentation/logging.md
 	// https://github.com/kubernetes/klog/issues/87
-	klog.SetLogger(logr.New(&logrusSink{}))
+	klog.SetLogger(logr.New(&logrusSink{}).V(int(level)))
 	flags := &flag.FlagSet{}
 	klog.InitFlags(flags)
 	if err := flags.Set("v", v); err != nil {
