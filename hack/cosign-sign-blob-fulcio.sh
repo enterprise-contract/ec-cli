@@ -15,9 +15,8 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-# Installs Tekton Pipeline, the Enterprise Contract Policy custom resource and
-# loads the Tekton Task bundle and the container image with the `ec` command
-# line needed by the task to execute
+# Runs `cosign sign-blob` in cluster and `cosign verify-blob` locally, the
+# cluster needs to be setup with hack/setup-dev-environment.sh
 
 set -o errexit
 set -o pipefail
