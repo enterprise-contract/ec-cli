@@ -103,7 +103,7 @@ func (o *Output) SetImageAccessibleCheckFromError(err error) {
 		log.Debug("Image URL is accessible")
 	} else {
 		o.ImageAccessibleCheck.Passed = false
-		message = "Image access check failed"
+		message = fmt.Sprintf("Image URL is not accessible: %s", err)
 		log.Debugf("%s. Error: %s", message, err.Error())
 	}
 	result := &output.Result{Message: message, Metadata: metadata}
@@ -160,7 +160,7 @@ func (o *Output) SetAttestationSignatureCheckFromError(err error) {
 			// If the error is due to no matching attestations, use a more user-friendly message.
 			message = missingAttestationMessage
 		} else {
-			message = fmt.Sprintf("Attestation check failed: %s", err.Error())
+			message = fmt.Sprintf("Image attestation check failed: %s", err.Error())
 		}
 		log.Debug(message)
 	}
@@ -185,7 +185,7 @@ func (o *Output) SetAttestationSyntaxCheckFromError(err error) {
 		log.Debug("Attestation syntax check passed")
 	} else {
 		o.AttestationSyntaxCheck.Passed = false
-		message := fmt.Sprintf("Attestation syntax check failed: %s", err)
+		message = fmt.Sprintf("Attestation syntax check failed: %s", err)
 		log.Debug(message)
 	}
 	result := &output.Result{Message: message, Metadata: metadata}

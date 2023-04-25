@@ -78,7 +78,9 @@ func TestValidateImage(t *testing.T) {
 			client: &mockASIClient{},
 			url:    imageRef,
 			expectedViolations: []conftestOutput.Result{
-				{Message: "Image URL is not accessible: no response received"},
+				{Message: "Image URL is not accessible: no response received", Metadata: map[string]interface{}{
+					"code": "builtin.image.accessible",
+				}},
 			},
 			expectedWarnings: []conftestOutput.Result{},
 			expectedImageURL: imageRef,
@@ -91,7 +93,9 @@ func TestValidateImage(t *testing.T) {
 			},
 			url: imageRef,
 			expectedViolations: []conftestOutput.Result{
-				{Message: "Image signature check failed: no image signatures client error"},
+				{Message: "Image signature check failed: no image signatures client error", Metadata: map[string]interface{}{
+					"code": "builtin.image.signature_check",
+				}},
 			},
 			expectedWarnings: []conftestOutput.Result{},
 			expectedImageURL: imageRegistry + "@sha256:" + imageDigest,
@@ -104,7 +108,9 @@ func TestValidateImage(t *testing.T) {
 			},
 			url: imageRef,
 			expectedViolations: []conftestOutput.Result{
-				{Message: "Image attestation check failed: no image attestations client error"},
+				{Message: "Image attestation check failed: no image attestations client error", Metadata: map[string]interface{}{
+					"code": "builtin.attestation.signature_check",
+				}},
 			},
 			expectedWarnings: []conftestOutput.Result{},
 			expectedImageURL: imageRegistry + "@sha256:" + imageDigest,
