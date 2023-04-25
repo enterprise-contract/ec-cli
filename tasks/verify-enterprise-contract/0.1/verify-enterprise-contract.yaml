@@ -89,6 +89,11 @@ spec:
       description: Value for the HOME environment variable.
       default: /tekton/home
 
+    - name: EFFECTIVE_TIME
+      type: string
+      description: Run policy checks with the provided time.
+      default: "now"
+
   results:
     - name: HACBS_TEST_OUTPUT
       description: Short summary of the policy evaluation for each image
@@ -122,6 +127,7 @@ spec:
         # NOTE: The syntax below is required to negate boolean parameters
         - "--info=$(params.INFO)"
         - "--strict=false"
+        - "--effective-time=$(params.EFFECTIVE_TIME)"
         - "--output"
         - "yaml=$(params.HOMEDIR)/report.yaml"
         - "--output"
