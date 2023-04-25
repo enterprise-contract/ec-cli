@@ -495,11 +495,17 @@ func Test_Successes(t *testing.T) {
 			output: Output{
 				ImageSignatureCheck: VerificationStatus{
 					Passed: true,
-					Result: &output.Result{Message: "image signature passed"},
+					Result: &output.Result{Message: "Pass", Metadata: map[string]interface{}{
+						"code":  "builtin.image.signature_check",
+						"title": "Image signature check passed",
+					}},
 				},
 				AttestationSignatureCheck: VerificationStatus{
 					Passed: true,
-					Result: &output.Result{Message: "attestation signature passed"},
+					Result: &output.Result{Message: "Pass", Metadata: map[string]interface{}{
+						"code":  "builtin.attestation.signature_check",
+						"title": "Attestation signature check passed",
+					}},
 				},
 				ImageAccessibleCheck: VerificationStatus{
 					Passed: true,
@@ -507,7 +513,10 @@ func Test_Successes(t *testing.T) {
 				},
 				AttestationSyntaxCheck: VerificationStatus{
 					Passed: true,
-					Result: &output.Result{Message: "attestation syntax passed"},
+					Result: &output.Result{Message: "Pass", Metadata: map[string]interface{}{
+						"code":  "builtin.attestation.syntax_check",
+						"title": "Attestation syntax check passed",
+					}},
 				},
 				PolicyCheck: evaluator.CheckResults{
 					{
@@ -520,10 +529,19 @@ func Test_Successes(t *testing.T) {
 				},
 			},
 			expected: []output.Result{
-				{Message: "attestation signature passed"},
-				{Message: "attestation syntax passed"},
-				{Message: "image signature passed"},
 				{Message: "passed policy check"},
+				{Message: "Pass", Metadata: map[string]interface{}{
+					"code":  "builtin.attestation.signature_check",
+					"title": "Attestation signature check passed",
+				}},
+				{Message: "Pass", Metadata: map[string]interface{}{
+					"code":  "builtin.attestation.syntax_check",
+					"title": "Attestation syntax check passed",
+				}},
+				{Message: "Pass", Metadata: map[string]interface{}{
+					"code":  "builtin.image.signature_check",
+					"title": "Image signature check passed",
+				}},
 			},
 		},
 		{
@@ -531,11 +549,17 @@ func Test_Successes(t *testing.T) {
 			output: Output{
 				ImageSignatureCheck: VerificationStatus{
 					Passed: false,
-					Result: &output.Result{Message: "image signature failed"},
+					Result: &output.Result{Message: "Image signature check failed", Metadata: map[string]interface{}{
+						"code":  "builtin.image.signature_check",
+						"title": "Image signature check passed",
+					}},
 				},
 				AttestationSignatureCheck: VerificationStatus{
 					Passed: true,
-					Result: &output.Result{Message: "attestation signature passed"},
+					Result: &output.Result{Message: "Pass", Metadata: map[string]interface{}{
+						"code":  "builtin.attestation.signature_check",
+						"title": "Attestation signature check passed",
+					}},
 				},
 				ImageAccessibleCheck: VerificationStatus{
 					Passed: true,
@@ -543,12 +567,21 @@ func Test_Successes(t *testing.T) {
 				},
 				AttestationSyntaxCheck: VerificationStatus{
 					Passed: true,
-					Result: &output.Result{Message: "attestation syntax passed"},
+					Result: &output.Result{Message: "Pass", Metadata: map[string]interface{}{
+						"code":  "builtin.attestation.syntax_check",
+						"title": "Attestation syntax check passed",
+					}},
 				},
 			},
 			expected: []output.Result{
-				{Message: "attestation signature passed"},
-				{Message: "attestation syntax passed"},
+				{Message: "Pass", Metadata: map[string]interface{}{
+					"code":  "builtin.attestation.signature_check",
+					"title": "Attestation signature check passed",
+				}},
+				{Message: "Pass", Metadata: map[string]interface{}{
+					"code":  "builtin.attestation.syntax_check",
+					"title": "Attestation syntax check passed",
+				}},
 			},
 		},
 		{
@@ -556,11 +589,17 @@ func Test_Successes(t *testing.T) {
 			output: Output{
 				ImageSignatureCheck: VerificationStatus{
 					Passed: true,
-					Result: &output.Result{Message: "image signature passed"},
+					Result: &output.Result{Message: "Pass", Metadata: map[string]interface{}{
+						"code":  "builtin.image.signature_check",
+						"title": "Image signature check passed",
+					}},
 				},
 				AttestationSignatureCheck: VerificationStatus{
 					Passed: false,
-					Result: &output.Result{Message: "attestation signature failed"},
+					Result: &output.Result{Message: "Attestation check failed", Metadata: map[string]interface{}{
+						"code":  "builtin.attestation.signature_check",
+						"title": "Attestation signature check passed",
+					}},
 				},
 				ImageAccessibleCheck: VerificationStatus{
 					Passed: true,
@@ -568,12 +607,31 @@ func Test_Successes(t *testing.T) {
 				},
 				AttestationSyntaxCheck: VerificationStatus{
 					Passed: true,
-					Result: &output.Result{Message: "attestation syntax passed"},
+					Result: &output.Result{Message: "Pass", Metadata: map[string]interface{}{
+						"code":  "builtin.attestation.syntax_check",
+						"title": "Attestation syntax check passed",
+					}},
+				},
+				PolicyCheck: evaluator.CheckResults{
+					{
+						Successes: []output.Result{
+							{
+								Message: "passed policy check",
+							},
+						},
+					},
 				},
 			},
 			expected: []output.Result{
-				{Message: "attestation syntax passed"},
-				{Message: "image signature passed"},
+				{Message: "passed policy check"},
+				{Message: "Pass", Metadata: map[string]interface{}{
+					"code":  "builtin.attestation.syntax_check",
+					"title": "Attestation syntax check passed",
+				}},
+				{Message: "Pass", Metadata: map[string]interface{}{
+					"code":  "builtin.image.signature_check",
+					"title": "Image signature check passed",
+				}},
 			},
 		},
 		{
@@ -581,11 +639,17 @@ func Test_Successes(t *testing.T) {
 			output: Output{
 				ImageSignatureCheck: VerificationStatus{
 					Passed: true,
-					Result: &output.Result{Message: "image signature passed"},
+					Result: &output.Result{Message: "Pass", Metadata: map[string]interface{}{
+						"code":  "builtin.image.signature_check",
+						"title": "Image signature check passed",
+					}},
 				},
 				AttestationSignatureCheck: VerificationStatus{
 					Passed: true,
-					Result: &output.Result{Message: "attestation signature passed"},
+					Result: &output.Result{Message: "Pass", Metadata: map[string]interface{}{
+						"code":  "builtin.attestation.signature_check",
+						"title": "Attestation signature check passed",
+					}},
 				},
 				ImageAccessibleCheck: VerificationStatus{
 					Passed: true,
@@ -593,7 +657,10 @@ func Test_Successes(t *testing.T) {
 				},
 				AttestationSyntaxCheck: VerificationStatus{
 					Passed: true,
-					Result: &output.Result{Message: "attestation syntax passed"},
+					Result: &output.Result{Message: "Pass", Metadata: map[string]interface{}{
+						"code":  "builtin.attestation.syntax_check",
+						"title": "Attestation syntax check passed",
+					}},
 				},
 				PolicyCheck: evaluator.CheckResults{
 					{
@@ -608,9 +675,18 @@ func Test_Successes(t *testing.T) {
 				},
 			},
 			expected: []output.Result{
-				{Message: "attestation signature passed"},
-				{Message: "attestation syntax passed"},
-				{Message: "image signature passed"},
+				{Message: "Pass", Metadata: map[string]interface{}{
+					"code":  "builtin.attestation.signature_check",
+					"title": "Attestation signature check passed",
+				}},
+				{Message: "Pass", Metadata: map[string]interface{}{
+					"code":  "builtin.attestation.syntax_check",
+					"title": "Attestation syntax check passed",
+				}},
+				{Message: "Pass", Metadata: map[string]interface{}{
+					"code":  "builtin.image.signature_check",
+					"title": "Image signature check passed",
+				}},
 			},
 		},
 	}
@@ -741,7 +817,10 @@ func TestSetImageAccessibleCheckFromError(t *testing.T) {
 			name:           "success",
 			expectedPassed: true,
 			expectedResult: &output.Result{
-				Message: "Image URL is accessible",
+				Message: "Pass",
+				Metadata: map[string]interface{}{
+					"code": "builtin.image.accessible",
+				},
 			},
 		},
 		{
@@ -750,6 +829,9 @@ func TestSetImageAccessibleCheckFromError(t *testing.T) {
 			err:            errors.New("kaboom!"),
 			expectedResult: &output.Result{
 				Message: "Image URL is not accessible: kaboom!",
+				Metadata: map[string]interface{}{
+					"code": "builtin.image.accessible",
+				},
 			},
 		},
 	}
@@ -779,7 +861,10 @@ func TestSetImageSignatureCheckFromError(t *testing.T) {
 			name:           "success",
 			expectedPassed: true,
 			expectedResult: &output.Result{
-				Message: "Image signature check passed",
+				Message: "Pass",
+				Metadata: map[string]interface{}{
+					"code": "builtin.image.signature_check",
+				},
 			},
 		},
 		{
@@ -788,6 +873,9 @@ func TestSetImageSignatureCheckFromError(t *testing.T) {
 			err:            errors.New("kaboom!"),
 			expectedResult: &output.Result{
 				Message: "Image signature check failed: kaboom!",
+				Metadata: map[string]interface{}{
+					"code": "builtin.image.signature_check",
+				},
 			},
 		},
 		{
@@ -796,6 +884,9 @@ func TestSetImageSignatureCheckFromError(t *testing.T) {
 			err:            noMatchingSignatures,
 			expectedResult: &output.Result{
 				Message: missingSignatureMessage,
+				Metadata: map[string]interface{}{
+					"code": "builtin.image.signature_check",
+				},
 			},
 		},
 	}
@@ -824,7 +915,10 @@ func TestSetAttestationSignatureCheckFromError(t *testing.T) {
 			name:           "success",
 			expectedPassed: true,
 			expectedResult: &output.Result{
-				Message: "Image attestation check passed",
+				Message: "Pass",
+				Metadata: map[string]interface{}{
+					"code": "builtin.attestation.signature_check",
+				},
 			},
 		},
 		{
@@ -833,6 +927,9 @@ func TestSetAttestationSignatureCheckFromError(t *testing.T) {
 			err:            errors.New("kaboom!"),
 			expectedResult: &output.Result{
 				Message: "Image attestation check failed: kaboom!",
+				Metadata: map[string]interface{}{
+					"code": "builtin.attestation.signature_check",
+				},
 			},
 		},
 		{
@@ -841,6 +938,9 @@ func TestSetAttestationSignatureCheckFromError(t *testing.T) {
 			err:            noMatchingAttestations,
 			expectedResult: &output.Result{
 				Message: missingAttestationMessage,
+				Metadata: map[string]interface{}{
+					"code": "builtin.attestation.signature_check",
+				},
 			},
 		},
 	}
@@ -867,7 +967,10 @@ func TestSetAttestationSyntaxCheckFromError(t *testing.T) {
 			name:           "success",
 			expectedPassed: true,
 			expectedResult: &output.Result{
-				Message: "Image attestation syntax check passed",
+				Message: "Pass",
+				Metadata: map[string]interface{}{
+					"code": "builtin.attestation.syntax_check",
+				},
 			},
 		},
 		{
@@ -876,6 +979,9 @@ func TestSetAttestationSyntaxCheckFromError(t *testing.T) {
 			err:            errors.New("kaboom!"),
 			expectedResult: &output.Result{
 				Message: "Attestation syntax check failed: kaboom!",
+				Metadata: map[string]interface{}{
+					"code": "builtin.attestation.syntax_check",
+				},
 			},
 		},
 	}
