@@ -41,4 +41,4 @@ variable can be set to prevent deletion of temporary `ec-work-*` directories so
 that the attestations, policy and data files can be examined.
 
 [pol]: https://github.com/enterprise-contract/ec-policies/
-[docs]: https://enterprise-contract.github.io/ec-cli/main/index.html
+[docs]: https://enterprisecontract.dev/docs/ec-cli/main/ec.html
