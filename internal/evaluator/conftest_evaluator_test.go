@@ -1222,6 +1222,10 @@ func TestCollectAnnotationData(t *testing.T) {
 func TestRuleMetadata(t *testing.T) {
 	effectiveOnTest := time.Now().Format(effectiveOnFormat)
 
+	effectiveTimeTest := time.Now().Add(-24 * time.Hour)
+	ctx := context.TODO()
+	ctx = context.WithValue(ctx, effectiveTimeKey, effectiveTimeTest)
+
 	rules := policyRules{
 		"warning1": rule.Info{
 			Title: "Warning1",
@@ -1342,7 +1346,7 @@ func TestRuleMetadata(t *testing.T) {
 	}
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			rule, _ := addRuleMetadata(&tt.result, tt.rules)
+			rule, _ := addRuleMetadata(ctx, &tt.result, tt.rules)
 			assert.Equal(t, rule, tt.code)
 			assert.Equal(t, tt.result, tt.want)
 		})
