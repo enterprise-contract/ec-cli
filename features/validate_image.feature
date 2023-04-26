@@ -506,8 +506,7 @@ Feature: evaluate enterprise contract
             {
               "msg": "Fails always",
               "metadata": {
-                "code": "main.rejector",
-                "effective_on": "2022-01-01T00:00:00Z"
+                "code": "main.rejector"
               }
             }
           ],
@@ -609,8 +608,7 @@ Feature: evaluate enterprise contract
             {
               "msg": "Fails always",
               "metadata": {
-                "code": "main.rejector",
-                "effective_on": "2022-01-01T00:00:00Z"
+                "code": "main.rejector"
               }
             }
           ],
@@ -894,8 +892,7 @@ Feature: evaluate enterprise contract
                 "description": "This rule will always fail",
                 "solution": "None",
                 "code": "main.rejector",
-                "collections": ["A"],
-                "effective_on": "2022-01-01T00:00:00Z"
+                "collections": ["A"]
               }
             }
           ],
@@ -1290,7 +1287,7 @@ Feature: evaluate enterprise contract
     Then the exit status should be 1
     Then the standard output should contain
     """
-    <testsuites><testsuite name="Unnamed \(localhost:\d+\/acceptance\/image@sha256:[0-9a-f]{64}\)" tests="5" errors="0" failures="1" time="0" timestamp="\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{1,9}Z" hostname="">(<property name="image" value="localhost:\d+\/acceptance\/image@sha256:[0-9a-f]{64}"><\/property>|<property name="key" value="-----BEGIN PUBLIC KEY-----[^"]+"><\/property>|<property name="success" value="false"><\/property>|<property name="keyId" value=""><\/property>|<property name="signature" value="[a-zA-Z0-9+\/]+={0,2}"><\/property>|<property name="metadata.predicateType" value="https:\/\/slsa.dev\/provenance\/v0.2"><\/property>|<property name="metadata.type" value="https:\/\/in-toto.io\/Statement\/v0.1"><\/property>|<property name="metadata.predicateBuildType" value="https:\/\/tekton.dev\/attestations\/chains\/pipelinerun@v2"><\/property>)+<testcase name="builtin.attestation.signature_check: Pass" classname="builtin.attestation.signature_check: Pass" time="0"><\/testcase><testcase name="builtin.attestation.syntax_check: Pass" classname="builtin.attestation.syntax_check: Pass" time="0"><\/testcase><testcase name="builtin.image.signature_check: Pass" classname="builtin.image.signature_check: Pass" time="0"><\/testcase><testcase name="main.acceptor: Pass" classname="main.acceptor: Pass" time="0"><\/testcase><testcase name="main.rejector: Fails always \[effective_on=2022-01-01T00:00:00Z\]" classname="main.rejector: Fails always \[effective_on=2022-01-01T00:00:00Z\]" time="0"><failure message="Fails always" type=""><!\[CDATA\[Fails always\]\]><\/failure><\/testcase><\/testsuite><\/testsuites>
+    <testsuites><testsuite name="Unnamed \(localhost:\d+\/acceptance\/image@sha256:[0-9a-f]{64}\)" tests="5" errors="0" failures="1" time="0" timestamp="\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{1,9}Z" hostname="">(<property name="image" value="localhost:\d+\/acceptance\/image@sha256:[0-9a-f]{64}"><\/property>|<property name="key" value="-----BEGIN PUBLIC KEY-----[^"]+"><\/property>|<property name="success" value="false"><\/property>|<property name="keyId" value=""><\/property>|<property name="signature" value="[a-zA-Z0-9+\/]+={0,2}"><\/property>|<property name="metadata.predicateType" value="https:\/\/slsa.dev\/provenance\/v0.2"><\/property>|<property name="metadata.type" value="https:\/\/in-toto.io\/Statement\/v0.1"><\/property>|<property name="metadata.predicateBuildType" value="https:\/\/tekton.dev\/attestations\/chains\/pipelinerun@v2"><\/property>)+<testcase name="builtin.attestation.signature_check: Pass" classname="builtin.attestation.signature_check: Pass" time="0"><\/testcase><testcase name="builtin.attestation.syntax_check: Pass" classname="builtin.attestation.syntax_check: Pass" time="0"><\/testcase><testcase name="builtin.image.signature_check: Pass" classname="builtin.image.signature_check: Pass" time="0"><\/testcase><testcase name="main.acceptor: Pass" classname="main.acceptor: Pass" time="0"><\/testcase><testcase name="main.rejector: Fails always" classname="main.rejector: Fails always" time="0"><failure message="Fails always" type=""><!\[CDATA\[Fails always\]\]><\/failure><\/testcase><\/testsuite><\/testsuites>
     """
 
   Scenario: Using OCI bundles

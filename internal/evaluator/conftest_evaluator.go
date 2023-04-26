@@ -43,8 +43,9 @@ import (
 type contextKey string
 
 const (
-	runnerKey       contextKey = "ec.evaluator.runner"
-	capabilitiesKey contextKey = "ec.evaluator.capabilities"
+	runnerKey        contextKey = "ec.evaluator.runner"
+	capabilitiesKey  contextKey = "ec.evaluator.capabilities"
+	effectiveTimeKey contextKey = "ec.evaluator.effective_time"
 )
 
 type CheckResult struct {
@@ -223,6 +224,7 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (Check
 	}
 
 	effectiveTime := c.policy.EffectiveTime()
+	ctx = context.WithValue(ctx, effectiveTimeKey, effectiveTime)
 
 	// loop over each policy (namespace) evaluation
 	// effectively replacing the results returned from conftest
@@ -236,7 +238,7 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (Check
 
 		for i := range result.Warnings {
 			warning := result.Warnings[i]
-			r, ok := addRuleMetadata(&warning, rules)
+			r, ok := addRuleMetadata(ctx, &warning, rules)
 			ruleCollection[r] = ok
 
 			if !c.isResultIncluded(warning) {
@@ -248,7 +250,7 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (Check
 
 		for i := range result.Failures {
 			failure := result.Failures[i]
-			r, ok := addRuleMetadata(&failure, rules)
+			r, ok := addRuleMetadata(ctx, &failure, rules)
 			ruleCollection[r] = ok
 
 			if !c.isResultIncluded(failure) {
@@ -266,14 +268,14 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (Check
 
 		for i := range result.Exceptions {
 			exception := result.Exceptions[i]
-			r, ok := addRuleMetadata(&exception, rules)
+			r, ok := addRuleMetadata(ctx, &exception, rules)
 			ruleCollection[r] = ok
 			exceptions = append(exceptions, exception)
 		}
 
 		for i := range result.Skipped {
 			skip := result.Skipped[i]
-			r, ok := addRuleMetadata(&skip, rules)
+			r, ok := addRuleMetadata(ctx, &skip, rules)
 			ruleCollection[r] = ok
 			skipped = append(skipped, skip)
 		}
@@ -367,16 +369,16 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (Check
 	return results, nil
 }
 
-func addRuleMetadata(result *output.Result, rules policyRules) (string, bool) {
+func addRuleMetadata(ctx context.Context, result *output.Result, rules policyRules) (string, bool) {
 	code, ok := (*result).Metadata[metadataCode].(string)
 	if ok {
-		addMetadataToResults(result, rules[code])
+		addMetadataToResults(ctx, result, rules[code])
 		return code, true
 	}
 	return "", false
 }
 
-func addMetadataToResults(r *output.Result, rule rule.Info) {
+func addMetadataToResults(ctx context.Context, r *output.Result, rule rule.Info) {
 	// Note that r.Metadata already includes some fields that we get from
 	// the real conftest violation and warning results, (as provided by
 	// lib.result_helper in the ec-policies rego). Here we augment it with
@@ -407,16 +409,7 @@ func addMetadataToResults(r *output.Result, rule rule.Info) {
 		r.Metadata[metadataTitle] = rule.Title
 	}
 	if rule.EffectiveOn != "" {
-		effectiveOnTime, err := time.Parse(effectiveOnFormat, rule.EffectiveOn)
-		if err == nil {
-			// If the rule has been effective for a long time, we'll consider
-			// the effective_on date not relevant and not bother including it
-			if effectiveOnTime.After(time.Now().Add(effectiveOnTimeout)) {
-				r.Metadata[metadataEffectiveOn] = rule.EffectiveOn
-			}
-		} else {
-			log.Warnf("Invalid %q value %q", metadataEffectiveOn, rule.EffectiveOn)
-		}
+		r.Metadata[metadataEffectiveOn] = rule.EffectiveOn
 	}
 	if rule.Description != "" {
 		r.Metadata[metadataDescription] = rule.Description
@@ -426,6 +419,23 @@ func addMetadataToResults(r *output.Result, rule rule.Info) {
 	}
 	if len(rule.Collections) > 0 {
 		r.Metadata[metadataCollections] = rule.Collections
+	}
+
+	// If the rule has been effective for a long time, we'll consider
+	// the effective_on date not relevant and not bother including it
+	if effectiveTime, ok := ctx.Value(effectiveTimeKey).(time.Time); ok {
+		if effectiveOnString, ok := r.Metadata[metadataEffectiveOn].(string); ok {
+			effectiveOnTime, err := time.Parse(effectiveOnFormat, effectiveOnString)
+			if err == nil {
+				if effectiveOnTime.Before(effectiveTime.Add(effectiveOnTimeout)) {
+					delete(r.Metadata, metadataEffectiveOn)
+				}
+			} else {
+				log.Warnf("Invalid %q value %q", metadataEffectiveOn, rule.EffectiveOn)
+			}
+		}
+	} else {
+		log.Warnf("Could not get effectiveTime from context")
 	}
 }
 
