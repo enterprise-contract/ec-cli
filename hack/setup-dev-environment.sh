@@ -86,7 +86,7 @@ echo -e '✨ \033[1mGenerating ingress controller certificate\033[0m'
 
 # Wait for Nginx-based ingress to be available
 echo -e '✨ \033[1mWaiting for the Nginx ingress to become available\033[0m'
-kubectl -n ingress-nginx wait deployment -l "app.kubernetes.io/name=ingress-nginx" --for=condition=Available --timeout=90s
+kubectl -n ingress-nginx wait deployment -l "app.kubernetes.io/name=ingress-nginx" --for=condition=Available --timeout=120s
 
 # Wait for Tekton Pipelines & Webhook controllers to be ready
 echo -e '✨ \033[1mWaiting for Tekton Pipelines to become available\033[0m'

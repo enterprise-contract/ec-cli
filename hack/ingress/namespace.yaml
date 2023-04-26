@@ -15,26 +15,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 ---
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-
-nameSuffix: ""
-namespace: ingress-nginx
-
-resources:
-  - namespace.yaml
-
-helmCharts:
-  - name: ingress-nginx
-    repo: https://kubernetes.github.io/ingress-nginx
-    releaseName: ec
-    valuesFile: values.yaml
-
-patches:
-  - patch: |-
-      - op: add
-        path: /spec/template/spec/containers/0/args/-
-        value: --default-ssl-certificate=ingress-nginx/wildcard-localhost
-    target:
-      kind: Deployment
-      name: ec-ingress-nginx-controller
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ingress-nginx
