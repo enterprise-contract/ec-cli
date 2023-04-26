@@ -104,12 +104,12 @@ cat "${TLOG_ENTRY}"
 echo -e "🔍 \033[1mVerifying signature\033[0m"
 SSL_CERT_FILE=<(kubectl get cm kube-root-ca.crt -o jsonpath="{['data']['ca\.crt']}") \
 SIGSTORE_REKOR_PUBLIC_KEY=<(curl -s http://rekor.localhost/api/v1/log/publicKey) \
+SIGSTORE_CT_LOG_PUBLIC_KEY_FILE=<(kubectl get secret ctlog-public-key -o jsonpath='{.data.public}'|base64 -d) \
     cosign verify-blob \
     --certificate "${CERTIFICATE}" \
     --certificate-chain <(kubectl -n fulcio-system get secret fulcio-server-secret -o jsonpath='{.data.cert}'|base64 -d) \
     --certificate-identity-regexp '.*' \
     --certificate-oidc-issuer https://kubernetes.default.svc.cluster.local \
-    --insecure-ignore-sct \
     --rekor-url https://rekor.localhost \
     --signature "${SIGNATURE}" \
     "$1"
