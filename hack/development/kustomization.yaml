@@ -24,3 +24,11 @@ resources:
   - ../test
   - ../chains
   - ../sigstore
+
+patches:
+  - patch: |-
+      - op: replace
+        path: /spec/backoffLimit
+        value: 25
+    target:
+      kind: Job
