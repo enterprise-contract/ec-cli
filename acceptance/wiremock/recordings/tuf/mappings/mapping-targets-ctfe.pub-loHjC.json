@@ -1,0 +1,20 @@
+{
+  "id" : "99bce573-8a4b-3512-9439-06dcbe400bef",
+  "request" : {
+    "url" : "/targets/ctfe.pub",
+    "method" : "GET"
+  },
+  "response" : {
+    "status" : 200,
+    "bodyFileName" : "body-targets-ctfe.pub-loHjC.txt",
+    "headers" : {
+      "accept-ranges" : "bytes",
+      "content-type" : "text/plain; charset=utf-8",
+      "date" : "Thu, 27 Apr 2023 13:06:17 GMT",
+      "last-modified" : "Thu, 27 Apr 2023 13:06:01 GMT",
+      "x-envoy-upstream-service-time" : "0",
+      "server" : "envoy"
+    }
+  },
+  "uuid" : "99bce573-8a4b-3512-9439-06dcbe400bef"
+}

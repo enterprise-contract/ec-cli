@@ -321,6 +321,7 @@ func checkOpts(ctx context.Context, p *policy) (*cosign.CheckOpts, error) {
 		}
 	} else {
 		log.Debug("Using keyless workflow")
+		log.Debugf("TUF_ROOT=%s", os.Getenv("TUF_ROOT"))
 		opts.Identities = []cosign.Identity{p.identity}
 
 		// Get Fulcio certificates

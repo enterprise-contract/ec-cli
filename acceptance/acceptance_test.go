@@ -38,6 +38,7 @@ import (
 	"github.com/enterprise-contract/ec-cli/acceptance/rekor"
 	"github.com/enterprise-contract/ec-cli/acceptance/tekton"
 	"github.com/enterprise-contract/ec-cli/acceptance/testenv"
+	"github.com/enterprise-contract/ec-cli/acceptance/tuf"
 	"github.com/enterprise-contract/ec-cli/acceptance/wiremock"
 )
 
@@ -67,6 +68,7 @@ func initializeScenario(sc *godog.ScenarioContext) {
 	wiremock.AddStepsTo(sc)
 	pipeline.AddStepsTo(sc)
 	conftest.AddStepsTo(sc)
+	tuf.AddStepsTo(sc)
 
 	sc.Before(func(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
 		logger, ctx := log.LoggerFor(ctx)

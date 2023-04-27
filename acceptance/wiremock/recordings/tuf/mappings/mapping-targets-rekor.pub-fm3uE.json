@@ -1,0 +1,20 @@
+{
+  "id" : "4b2b6548-aa68-3783-90c2-0dd593454296",
+  "request" : {
+    "url" : "/targets/rekor.pub",
+    "method" : "GET"
+  },
+  "response" : {
+    "status" : 200,
+    "bodyFileName" : "body-targets-rekor.pub-fm3uE.txt",
+    "headers" : {
+      "accept-ranges" : "bytes",
+      "content-type" : "text/plain; charset=utf-8",
+      "date" : "Thu, 27 Apr 2023 13:06:17 GMT",
+      "last-modified" : "Thu, 27 Apr 2023 13:06:01 GMT",
+      "x-envoy-upstream-service-time" : "0",
+      "server" : "envoy"
+    }
+  },
+  "uuid" : "4b2b6548-aa68-3783-90c2-0dd593454296"
+}

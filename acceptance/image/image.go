@@ -39,6 +39,8 @@ import (
 	"github.com/in-toto/in-toto-golang/in_toto"
 	v02 "github.com/in-toto/in-toto-golang/in_toto/slsa_provenance/v0.2"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
+	"github.com/sigstore/cosign/v2/pkg/oci/layout"
+	cosignRemote "github.com/sigstore/cosign/v2/pkg/oci/remote"
 	"github.com/sigstore/cosign/v2/pkg/oci/static"
 	cosigntypes "github.com/sigstore/cosign/v2/pkg/types"
 	"github.com/sigstore/sigstore/pkg/signature"
@@ -314,6 +316,33 @@ func createAndPushImage(ctx context.Context, imageName string) (context.Context,
 	return ctx, nil
 }
 
+// createAndPushKeylessImage loads an existing image from disk, along its signature and attestation
+// into the docker registry.
+func createAndPushKeylessImage(ctx context.Context, imageName string) (context.Context, error) {
+	ref, err := registry.ImageReferenceInStubRegistry(ctx, imageName)
+	if err != nil {
+		return ctx, err
+	}
+
+	cwd, err := os.Getwd()
+	if err != nil {
+		return ctx, err
+	}
+
+	imageDir := path.Join(cwd, "acceptance", "image", "testimage")
+	// get the signed image from disk
+	sii, err := layout.SignedImageIndex(imageDir)
+	if err != nil {
+		return ctx, err
+	}
+
+	if err := cosignRemote.WriteSignedImageIndexImages(ref, sii); err != nil {
+		return ctx, err
+	}
+
+	return ctx, nil
+}
+
 // createAndPushPolicyBundle creates a OCI policy bundle with the given files as
 // layers
 func createAndPushPolicyBundle(ctx context.Context, imageName string, files *godog.Table) (context.Context, error) {
@@ -512,5 +541,6 @@ func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^a valid image signature of "([^"]*)" image signed by the "([^"]*)" key$`, createAndPushImageSignature)
 	sc.Step(`^a valid attestation of "([^"]*)" signed by the "([^"]*)" key$`, createAndPushAttestation)
 	sc.Step(`^a valid attestation of "([^"]*)" signed by the "([^"]*)" key, patched with$`, createAndPushAttestationWithPatches)
+	sc.Step(`^a signed and attested keyless image named "([^"]*)"$`, createAndPushKeylessImage)
 	sc.Step(`^a OCI policy bundle named "([^"]*)" with$`, createAndPushPolicyBundle)
 }

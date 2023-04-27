@@ -30,6 +30,7 @@ import (
 
 	"cuelang.org/go/pkg/strings"
 	"github.com/cucumber/godog"
+	"github.com/otiai10/copy"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 	"github.com/walkerus/go-wiremock"
@@ -196,8 +197,7 @@ func StartWiremock(ctx context.Context) (context.Context, error) {
 		return ctx, nil
 	}
 
-	// cwd is the directory where the test is run from i.e. $GITROOT
-	cwd, err := os.Getwd()
+	recordings, err := recordingsDir()
 	if err != nil {
 		return ctx, err
 	}
@@ -206,7 +206,7 @@ func StartWiremock(ctx context.Context) (context.Context, error) {
 		Image:        wireMockImage,
 		ExposedPorts: []string{"0.0.0.0::8080/tcp", "0.0.0.0::8443/tcp"},
 		WaitingFor:   wait.ForHTTP("/__admin/mappings").WithPort("8080/tcp"),
-		Binds:        []string{fmt.Sprintf("%s:/recordings:z", path.Join(cwd, "acceptance", "wiremock", "recordings"))}, // relative to the running test, i.e. $GITROOT
+		Binds:        []string{fmt.Sprintf("%s:/recordings:z", recordings)},
 		Cmd: []string{
 			"--root-dir=/recordings",
 			"--verbose",
@@ -310,4 +310,34 @@ func AddStepsTo(sc *godog.ScenarioContext) {
 
 		return ctx, nil
 	})
+}
+
+func recordingsDir() (string, error) {
+	// cwd is the directory where the test is run from i.e. $GITROOT
+	cwd, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+
+	aggregate, err := os.MkdirTemp("", "ec-acceptance-wiremock.*")
+	if err != nil {
+		return "", err
+	}
+
+	sourcePath := path.Join(cwd, "acceptance", "wiremock", "recordings")
+	services, err := os.ReadDir(sourcePath)
+	if err != nil {
+		return "", err
+	}
+
+	for _, s := range services {
+		if !s.IsDir() {
+			continue
+		}
+		src := path.Join(sourcePath, s.Name())
+		if err := copy.Copy(src, aggregate); err != nil {
+			return "", err
+		}
+	}
+	return aggregate, nil
 }
