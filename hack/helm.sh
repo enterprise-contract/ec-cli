@@ -1,4 +1,5 @@
-# Copyright 2022 Red Hat, Inc.
+#!/usr/bin/env bash
+# Copyright 2023 Red Hat, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,21 +15,12 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
----
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
+# Runs helm with the version provided via tools/go.mod
 
-resources:
-  - ../ingress
-  - ../apiserver
-  - ../test
-  - ../chains
-  - ../sigstore
+set -o errexit
+set -o pipefail
+set -o nounset
+set -o errtrace
 
-patches:
-  - patch: |-
-      - op: replace
-        path: /spec/backoffLimit
-        value: 25
-    target:
-      kind: Job
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
+go run -modfile "${ROOT}/tools/go.mod" helm.sh/helm/v3/cmd/helm "$@"

@@ -32,7 +32,7 @@ function handle_error {
 }
 trap handle_error ERR
 
-KUSTOMIZE="go run -modfile "${ROOT}/tools/go.mod" sigs.k8s.io/kustomize/kustomize/v4 build --enable-exec --enable-alpha-plugins"
+KUSTOMIZE="go run -modfile "${ROOT}/tools/go.mod" sigs.k8s.io/kustomize/kustomize/v4 build --enable-exec --enable-alpha-plugins --enable-helm --helm-command=${ROOT}/hack/helm.sh"
 
 # The name of the Kind cluster
 KIND_CLUSTER_NAME=${KIND_CLUSTER_NAME:-ec}
@@ -50,10 +50,21 @@ nodes:
     apiServer:
       extraArgs:
         "service-node-port-range": "1-65535"
+  - |
+    kind: InitConfiguration
+    nodeRegistration:
+      kubeletExtraArgs:
+        node-labels: "ingress-ready=true"
   extraPortMappings:
   - containerPort: ${REGISTRY_PORT:-5000}
     hostPort: ${REGISTRY_PORT:-5000}
     listenAddress: 127.0.0.1
+    protocol: TCP
+  - containerPort: 80
+    hostPort: 80
+    protocol: TCP
+  - containerPort: 443
+    hostPort: 443
     protocol: TCP
 EOF
 else
@@ -68,7 +79,14 @@ ${KUSTOMIZE} "${ROOT}/hack/development" | kubectl apply -f -
 # Wait for the image registry to be deployed before we build and push the images
 # to it
 echo -e '✨ \033[1mWaiting for the image registry to become available\033[0m'
-kubectl -n image-registry wait deployment -l "app.kubernetes.io/name=registry" --for=condition=Available --timeout=60s
+kubectl -n image-registry wait deployment -l "app.kubernetes.io/name=registry" --for=condition=Available --timeout=120s
+
+echo -e '✨ \033[1mGenerating ingress controller certificate\033[0m'
+"${ROOT}/hack/generate-ingress-cert.sh"
+
+# Wait for Nginx-based ingress to be available
+echo -e '✨ \033[1mWaiting for the Nginx ingress to become available\033[0m'
+kubectl -n ingress-nginx wait deployment -l "app.kubernetes.io/name=ingress-nginx" --for=condition=Available --timeout=120s
 
 # Wait for Tekton Pipelines & Webhook controllers to be ready
 echo -e '✨ \033[1mWaiting for Tekton Pipelines to become available\033[0m'
@@ -77,6 +95,10 @@ kubectl -n tekton-pipelines wait deployment -l "app.kubernetes.io/part-of=tekton
 # Wait for Tekton Chains controller to be ready
 echo -e '✨ \033[1mWaiting for Tekton Chains to become available\033[0m'
 kubectl -n tekton-chains wait deployment -l "app.kubernetes.io/part-of=tekton-chains" --for=condition=Available --timeout=180s
+
+# Wait for everything from Sigstore to be ready
+echo -e '✨ \033[1mWaiting for everything from Sigstore to become available\033[0m'
+kubectl wait deployment -A -l "app.kubernetes.io/instance=sigstore" --for=condition=Available --timeout=10m
 
 # Set the current context's namespace to "work"
 kubectl config set-context --current --namespace=work

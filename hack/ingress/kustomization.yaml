@@ -1,4 +1,4 @@
-# Copyright 2022 Red Hat, Inc.
+# Copyright 2023 Red Hat, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,17 +18,23 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
+nameSuffix: ""
+namespace: ingress-nginx
+
 resources:
-  - ../ingress
-  - ../apiserver
-  - ../test
-  - ../chains
-  - ../sigstore
+  - namespace.yaml
+
+helmCharts:
+  - name: ingress-nginx
+    repo: https://kubernetes.github.io/ingress-nginx
+    releaseName: ec
+    valuesFile: values.yaml
 
 patches:
   - patch: |-
-      - op: replace
-        path: /spec/backoffLimit
-        value: 25
+      - op: add
+        path: /spec/template/spec/containers/0/args/-
+        value: --default-ssl-certificate=ingress-nginx/wildcard-localhost
     target:
-      kind: Job
+      kind: Deployment
+      name: ec-ingress-nginx-controller
