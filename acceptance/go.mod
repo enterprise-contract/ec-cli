@@ -14,7 +14,7 @@ require (
 	github.com/go-openapi/strfmt v0.21.7
 	github.com/google/go-containerregistry v0.14.1-0.20230409045903-ed5c185df419
 	github.com/in-toto/in-toto-golang v0.8.0
-	github.com/otiai10/copy v1.2.0
+	github.com/otiai10/copy v1.11.0
 	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
 	github.com/pkg/diff v0.0.0-20210226163009-20ebb0f2a09e
 	github.com/pkg/errors v0.9.1
