@@ -25,6 +25,7 @@ helmCharts:
   - name: scaffold
     repo: https://sigstore.github.io/helm-charts
     releaseName: sigstore
+    valuesFile: values.yaml
 
 patches:
   - patch: |-
@@ -110,3 +111,11 @@ patches:
       kind: Job
       name: fulcio-createcerts
       namespace: fulcio-system
+  - patch: |-
+      - op: replace
+        path: /metadata/labels
+        value:
+          app.kubernetes.io/instance: tuf-sigstore
+    target:
+      kind: Deployment
+      namespace: tuf-system
