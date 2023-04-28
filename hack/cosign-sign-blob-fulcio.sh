@@ -23,91 +23,41 @@ set -o pipefail
 set -o nounset
 set -o errtrace
 # Enable debugging
-# set -o xtrace
+#set -o xtrace
 
 if (( $# != 1 )); then
     echo "usage $0 <file to sign>"
     exit 1
 fi
 
-# Setup for the Cosign image from Sigstore
-IMAGE=gcr.io/projectsigstore/cosign
-SIGSTORE_CONF=/home/nonroot/.sigstore
+export TUF_ROOT="$(mktemp --directory --tmpdir)"
 
-# For custom container this might look like
-# IMAGE=quay.io/zregvart_redhat/cosign-debug
-# SIGSTORE_CONF=/root/.sigstore
+SERVICE_ACCOUNT="${2:-default}"
 
 LOGS="$(mktemp --tmpdir)"
 SIGNATURE="$(mktemp --tmpdir)"
 CERTIFICATE="$(mktemp --tmpdir)"
 TLOG_ENTRY="$(mktemp --tmpdir)"
 cleanup() {
-    [ -o xtrace ] && echo -e "📜 \033[1mCosign logs\033[0m" && kubectl logs sign-blob --all-containers
+    [ -o xtrace ] && echo -e "📜 \033[1mCosign logs\033[0m" && cat "${LOGS}"
 
-    rm -f "${LOGS}" "${SIGNATURE}" "${CERTIFICATE}" "${TLOG_ENTRY}"
-    kubectl delete pod sign-blob > /dev/null 2>&1 || true
+    rm -rf "${LOGS}" "${SIGNATURE}" "${CERTIFICATE}" "${TLOG_ENTRY}" "${TUF_ROOT}"
 }
 trap cleanup exit
 
-kubectl run sign-blob \
-    --quiet \
-    --stdin \
-    --attach \
-    --image="${IMAGE}" \
-    --env=SSL_CERT_FILE=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt \
-    --override-type=strategic \
-    --overrides='{
-        "apiVersion": "v1",
-        "spec": {
-            "initContainers": [
-                {
-                    "name": "cosign-initialize",
-                    "image": "'"${IMAGE}"'",
-                    "command": [
-                        "cosign",
-                        "initialize",
-                        "--mirror",
-                        "http://tuf-server.tuf-system.svc.cluster.local",
-                        "--root",
-                        "http://tuf-server.tuf-system.svc.cluster.local/root.json"
-                    ],
-                    "volumeMounts": [
-                        {
-                            "name": "sigstore",
-                            "mountPath": "'"${SIGSTORE_CONF}"'"
-                        }
-                    ]
-                }
-            ],
-            "containers":[
-                {
-                    "name": "sign-blob",
-                    "volumeMounts": [
-                        {
-                            "name": "sigstore",
-                            "mountPath": "'"${SIGSTORE_CONF}"'"
-                        }
-                    ]
-                }
-            ],
-            "volumes": [
-                {
-                    "name": "sigstore",
-                    "emptyDir": {}
-                }
-            ]
-        }
-    }' \
-    -- \
-    sign-blob \
+cosign initialize --mirror http://tuf.localhost --root http://tuf.localhost/root.json
+
+ls -l "${TUF_ROOT}"
+
+cosign sign-blob \
     --oidc-issuer https://kubernetes.default.svc.cluster.local \
-    --fulcio-url http://fulcio-server.fulcio-system.svc.cluster.local \
-    --identity-token /var/run/secrets/kubernetes.io/serviceaccount/token \
-    --rekor-url http://rekor-server.rekor-system.svc.cluster.local \
+    --fulcio-url http://fulcio.localhost \
+    --identity-token <(kubectl create token "${SERVICE_ACCOUNT}") \
+    --rekor-url http://rekor.localhost \
+    --output-file "${SIGNATURE}" \
     --yes \
-    --output-file=/dev/fd/1 \
-    /dev/fd/0 < "$1" 2> "${LOGS}" > "${SIGNATURE}"
+    "$1" \
+    2> "${LOGS}"
 
 echo -e "🎗️ \033[1mCertificate\033[0m"
 sed -n "/-----BEGIN CERTIFICATE-----/,/-----END CERTIFICATE-----/p" "${LOGS}" > "${CERTIFICATE}"
@@ -121,14 +71,11 @@ rekor-cli get --rekor_server http://rekor.localhost --log-index "$(sed -r -n -e 
 cat "${TLOG_ENTRY}"
 
 echo -e "🔍 \033[1mVerifying signature\033[0m"
-SSL_CERT_FILE=<(kubectl get cm kube-root-ca.crt -o jsonpath="{['data']['ca\.crt']}") \
-SIGSTORE_REKOR_PUBLIC_KEY=<(curl -s http://rekor.localhost/api/v1/log/publicKey) \
-SIGSTORE_CT_LOG_PUBLIC_KEY_FILE=<(kubectl get secret ctlog-public-key -o jsonpath='{.data.public}'|base64 -d) \
-    cosign verify-blob \
+cosign verify-blob \
     --certificate "${CERTIFICATE}" \
     --certificate-chain <(kubectl -n fulcio-system get secret fulcio-server-secret -o jsonpath='{.data.cert}'|base64 -d) \
     --certificate-identity-regexp '.*' \
     --certificate-oidc-issuer https://kubernetes.default.svc.cluster.local \
-    --rekor-url https://rekor.localhost \
+    --rekor-url http://rekor.localhost \
     --signature "${SIGNATURE}" \
     "$1"
