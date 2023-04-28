@@ -15,7 +15,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-# This is an image regularly built in Stonesoup for testing purposes.
+# This is an image regularly built in RHTAP for testing purposes.
 # See https://github.com/enterprise-contract/golden-container
 #
 IMAGE=${IMAGE:-"quay.io/redhat-appstudio/ec-golden-image:latest"}
