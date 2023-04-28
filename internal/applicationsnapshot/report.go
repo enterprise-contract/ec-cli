@@ -213,6 +213,8 @@ func condensedMsg(results []conftestOutput.Result) map[string][]string {
 
 // toHACBS returns a version of the report that conforms to the
 // HACBS_TEST_OUTPUT format.
+// (Note: the name of the Tekton task result where this generally
+// gets written is now TEST_OUTPUT instead of HACBS_TEST_OUTPUT)
 func (r *Report) toHACBS() hacbsReport {
 	result := hacbsReport{Timestamp: r.created.UTC().Unix()}
 

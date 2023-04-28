@@ -96,6 +96,9 @@ spec:
 
   results:
     - name: HACBS_TEST_OUTPUT
+      description: Short summary of the policy evaluation for each image (Deprecated)
+
+    - name: TEST_OUTPUT
       description: Short summary of the policy evaluation for each image
 
   stepTemplate:
@@ -130,6 +133,10 @@ spec:
         - "--effective-time=$(params.EFFECTIVE_TIME)"
         - "--output"
         - "yaml=$(params.HOMEDIR)/report.yaml"
+        # Write to both the new and the old deprecated result
+        # HACBS_TEST_OUTPUT will be removed in the future
+        - "--output"
+        - "hacbs=$(results.TEST_OUTPUT.path)"
         - "--output"
         - "hacbs=$(results.HACBS_TEST_OUTPUT.path)"
       env:
@@ -152,7 +159,7 @@ spec:
       command: [jq]
       args:
         - "."
-        - "$(results.HACBS_TEST_OUTPUT.path)"
+        - "$(results.TEST_OUTPUT.path)"
     - name: assert
       image: quay.io/hacbs-contract/ec-cli:snapshot
       command: [jq]
