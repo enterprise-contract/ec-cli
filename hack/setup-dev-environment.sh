@@ -100,6 +100,15 @@ kubectl -n tekton-chains wait deployment -l "app.kubernetes.io/part-of=tekton-ch
 echo -e '✨ \033[1mWaiting for everything from Sigstore to become available\033[0m'
 kubectl wait deployment -A -l "app.kubernetes.io/instance=sigstore" --for=condition=Available --timeout=10m
 
+echo -e '✨ \033[1mCreating necessary secrets for TUF\033[0m'
+kubectl -n tuf-system create secret generic ctlog-public-key --from-file=public=<(kubectl -n ctlog-system get secret ctlog-public-key -o jsonpath='{.data.public}'|base64 -d) --dry-run=client -o yaml | kubectl apply -f -
+kubectl -n tuf-system create secret generic fulcio-server-secret --from-file=cert=<(kubectl -n fulcio-system get secret fulcio-server-secret -o jsonpath='{.data.cert}'|base64 -d) --dry-run=client -o yaml | kubectl apply -f -
+kubectl -n tuf-system create secret generic rekor-public-key --from-file=key=<(curl -s http://rekor.localhost/api/v1/log/publicKey) --dry-run=client -o yaml | kubectl apply -f -
+
+# Wait for TUF to be ready
+echo -e '✨ \033[1mWaiting for TUF to become available\033[0m'
+kubectl wait deployment -A -l "app.kubernetes.io/instance=tuf-sigstore" --for=condition=Available --timeout=1m
+
 # Set the current context's namespace to "work"
 kubectl config set-context --current --namespace=work
 
