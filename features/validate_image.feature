@@ -31,55 +31,7 @@ Feature: evaluate enterprise contract
     """
     When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
     Then the exit status should be 0
-    Then the standard output should contain
-    """
-    {
-      "success": true,
-      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
-      "key": ${known_PUBLIC_KEY_JSON},
-      "components": [
-        {
-          "name": "Unnamed",
-          "containerImage": "localhost:(\\d+)/acceptance/ec-happy-day",
-          "successes": [
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.attestation.signature_check"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.attestation.syntax_check"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.image.signature_check"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "main.acceptor"
-              }
-            }
-          ],
-          "success": true,
-          "signatures": ${ATTESTATION_SIGNATURES_JSON}
-        }
-      ],
-      "policy": {
-        "publicKey": "${known_PUBLIC_KEY}",
-        "rekorUrl": "${REKOR}",
-        "sources": [
-          { "policy": ["git::https://${GITHOST}/git/happy-day-policy.git"] }
-        ]
-      }
-    }
-    """
+    Then the standard output should match baseline file "baselines/happy-output.json"
 
   Scenario: happy day with keyless
     Given a signed and attested keyless image named "acceptance/ec-happy-day-keyless"
