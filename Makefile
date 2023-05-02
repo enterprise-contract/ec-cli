@@ -129,7 +129,7 @@ lint: tekton-lint ## Run linter
 
 .PHONY: lint-fix
 lint-fix: ## Fix linting issues automagically
-	@go run -modfile tools/go.mod github.com/google/addlicense -c $(COPY) -s -ignore 'dist/reference/*.yaml' .
+	@go run -modfile tools/go.mod github.com/google/addlicense -c $(COPY) -s $(LICENSE_IGNORE) .
 	@go run -modfile tools/go.mod github.com/golangci/golangci-lint/cmd/golangci-lint run --fix
 # We don't apply the fixes from the internal (error handling) linter.
 # TODO: fix the outstanding error handling lint issues and enable the fixer
