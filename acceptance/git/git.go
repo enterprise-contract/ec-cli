@@ -33,6 +33,7 @@ import (
 	"math/big"
 	"os"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/cucumber/godog"
@@ -238,6 +239,23 @@ func createGitRepository(ctx context.Context, repositoryName string, files *godo
 		b, err := os.ReadFile(path.Join("acceptance", source))
 		if err != nil {
 			return err
+		}
+
+		// Replace ${GITHOST} with the actual real git host.
+		// Used for acceptance/examples/happy_config yaml and json.
+		// Should be a noop otherwise.
+		if !strings.HasSuffix(source, ".rego") {
+			b = []byte(os.Expand(string(b), func(key string) string {
+				switch key {
+				case "GITHOST":
+					return Host(ctx)
+				default:
+					// Anything else can stay as-is, but beware we don't actually
+					// know if it was originally $FOO or ${FOO}, so this has the
+					// potential to cause interesting failures...
+					return fmt.Sprintf("${%s}", key)
+				}
+			}))
 		}
 
 		err = os.WriteFile(dest, b, 0644)

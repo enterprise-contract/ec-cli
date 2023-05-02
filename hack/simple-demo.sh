@@ -71,9 +71,6 @@ CONFIG="$MINIMAL_CONFIG"
 # The ECP config. Modify as required.
 #
 POLICY="
-publicKey: |-
-$(echo "$PUBLIC_KEY" | sed 's/^/  /')
-
 sources:
   - name: EC Policies
     policy:
@@ -84,10 +81,20 @@ sources:
 ${CONFIG}
 "
 
+# Put this inside the double quotes above to add the public key to the ECP
+# config. Currently we're using the --public-key flag instead.
+#
+#publicKey: |-
+#$(echo "$PUBLIC_KEY" | sed 's/^/  /')
+
+# Uncomment one of these to use a config stored in git
+#POLICY="github.com/enterprise-contract/ec-cli//configs/default?ref=main"
+#POLICY="github.com/enterprise-contract/ec-cli//configs/everything?ref=main"
+
 # To show debug output:
 #   hack/simple-demo.sh --debug
 #
 OPTS=${1:-}
 
 MAIN_GO=$(git rev-parse --show-toplevel)/main.go
-go run $MAIN_GO validate image --json-input "${APPLICATION_SNAPSHOT}" --policy "${POLICY}" --info=true $OPTS | yq -P
+go run $MAIN_GO validate image --json-input "${APPLICATION_SNAPSHOT}" --policy "${POLICY}" --public-key <(echo "${PUBLIC_KEY}") --info=true $OPTS | yq -P

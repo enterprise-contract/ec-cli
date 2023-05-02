@@ -26,6 +26,7 @@ import (
 	"github.com/hashicorp/go-multierror"
 	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
@@ -33,6 +34,7 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/format"
 	"github.com/enterprise-contract/ec-cli/internal/output"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
+	"github.com/enterprise-contract/ec-cli/internal/policy/source"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
@@ -60,6 +62,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		strict                      bool
 	}{
 
+		// Default policy from an ECP cluster resource
 		policyConfiguration: "enterprise-contract-service/default",
 	}
 	cmd := &cobra.Command{
@@ -126,6 +129,16 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 			Use an inline EnterpriseContractPolicy spec
 			  ec validate image --image registry/name:tag --policy '{"publicKey": "<path/to/public/key>"}'
 
+			Use a git url for the policy configuration. In the first example there should be a '.ec/policy.yaml'
+			or a 'policy.yaml' inside a directory called 'default' in the top level of the git repo. In the second
+			example there should be a '.ec/policy.yaml' or a 'policy.yaml' file in the top level
+			of the git repo. For git repos not hosted on 'github.com' or 'gitlab.com', prefix the url with
+			'git::'. For the policy configuration files you can use json instead of yaml if you prefer.
+
+			  ec validate image --image registry/name:tag --policy github.com/user/repo//default?ref=main
+
+			  ec validate image --image registry/name:tag --policy github.com/user/repo
+
 			Write output in JSON format to a file
 			  ec validate image --image registry/name:tag --output json=<path>
 
@@ -169,9 +182,36 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 				SubjectRegExp: data.certificateIdentityRegExp,
 			}
 
+			// Check if policyConfiguration is a git url, if so, try to download a config file from git
+			if source.SourceIsGit(data.policyConfiguration) {
+				log.Debugf("Fetching policy config from git url %s", data.policyConfiguration)
+
+				// Create a temporary dir to download the config. It will be different to the
+				// workdir used later for downloading policy sources, but it won't matter
+				// because this dir is not used again once the config file has been read.
+				fs := utils.FS(ctx)
+				tmpDir, err := utils.CreateWorkDir(fs)
+				if err != nil {
+					allErrors = multierror.Append(allErrors, err)
+					return
+				}
+				defer utils.CleanupWorkDir(fs, tmpDir)
+
+				// Git download and find a suitable config file
+				configFile, err := source.GitConfigDownload(cmd.Context(), tmpDir, data.policyConfiguration)
+				if err != nil {
+					allErrors = multierror.Append(allErrors, err)
+					return
+				}
+
+				// Changing data.policyConfiguration to the name of the newly downloaded
+				// file means we can use the code below to load the config
+				data.policyConfiguration = configFile
+			}
+
 			// Check if policyConfiguration is a file path, if so, we read it into the var data.policyConfiguration
 			if utils.HasJsonOrYamlExt(data.policyConfiguration) {
-				fs := utils.FS(cmd.Context())
+				fs := utils.FS(ctx)
 				policyBytes, err := afero.ReadFile(fs, data.policyConfiguration)
 				if err != nil {
 					allErrors = multierror.Append(allErrors, err)
