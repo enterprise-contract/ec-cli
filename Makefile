@@ -113,7 +113,7 @@ ci: test lint-fix acceptance ## Run the usual required CI tasks
 
 ##@ Linters
 
-LICENSE_IGNORE=-ignore 'dist/cli-reference/*.yaml' -ignore 'node_modules/**'
+LICENSE_IGNORE=-ignore 'dist/cli-reference/*.yaml' -ignore 'acceptance/examples/*.yaml' -ignore 'node_modules/**'
 LINT_TO_GITHUB_ANNOTATIONS='map(map(.)[])[][] as $$d | $$d.posn | split(":") as $$posn | "::warning file=\($$posn[0]),line=\($$posn[1]),col=\($$posn[2])::\($$d.message)"'
 .PHONY: lint
 lint: tekton-lint ## Run linter
