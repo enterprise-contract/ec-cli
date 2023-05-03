@@ -254,3 +254,18 @@ func TestIsFile(t *testing.T) {
 	assert.False(t, isFile)
 	assert.Nil(t, err)
 }
+
+func TestHasJsonOrYamlExt(t *testing.T) {
+	tests := []struct {
+		src  string
+		want bool
+	}{
+		{src: "foo.json", want: true},
+		{src: "foo.yml", want: true},
+		{src: "foo.bson", want: false},
+		{src: "foo", want: false},
+	}
+	for _, tt := range tests {
+		assert.Equal(t, tt.want, HasJsonOrYamlExt(tt.src))
+	}
+}

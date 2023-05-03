@@ -20,7 +20,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 	"sync"
 
 	hd "github.com/MakeNowJust/heredoc"
@@ -171,7 +170,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 			}
 
 			// Check if policyConfiguration is a file path, if so, we read it into the var data.policyConfiguration
-			if strings.HasSuffix(data.policyConfiguration, ".yaml") || strings.HasSuffix(data.policyConfiguration, ".yml") || strings.HasSuffix(data.policyConfiguration, ".json") {
+			if utils.HasJsonOrYamlExt(data.policyConfiguration) {
 				fs := utils.FS(cmd.Context())
 				policyBytes, err := afero.ReadFile(fs, data.policyConfiguration)
 				if err != nil {
