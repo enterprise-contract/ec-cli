@@ -127,6 +127,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 			  ec validate image --image registry/name:tag --policy my-namespace/my-policy
 
 			Use an inline EnterpriseContractPolicy spec
+
 			  ec validate image --image registry/name:tag --policy '{"publicKey": "<path/to/public/key>"}'
 
 			Use a git url for the policy configuration. In the first example there should be a '.ec/policy.yaml'
@@ -140,9 +141,11 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 			  ec validate image --image registry/name:tag --policy github.com/user/repo
 
 			Write output in JSON format to a file
+
 			  ec validate image --image registry/name:tag --output json=<path>
 
 			Write output in YAML format to stdout and in HACBS format to a file
+
 			  ec validate image --image registry/name:tag --output yaml --output hacbs=<path>
 
 			Validate a single image with keyless workflow. This is an experimental feature
