@@ -1570,3 +1570,67 @@ Feature: evaluate enterprise contract
       }
     }
     """
+
+  Scenario: mismatched image digest in attestation
+    Given a key pair named "known"
+    Given an image named "acceptance/image"
+    Given a valid attestation of "acceptance/image" signed by the "known" key
+    Given an image named "acceptance/bad-actor" with attestation from "acceptance/image"
+    Given a valid image signature of "acceptance/bad-actor" image signed by the "known" key
+    Given a git repository named "mismatched-image-digest" with
+      | main.rego | examples/happy_day.rego |
+    Given policy configuration named "mismatched-image-digest" with specification
+    """
+    {
+      "sources": [
+        {
+          "policy": [
+            "git::https://${GITHOST}/git/mismatched-image-digest.git"
+          ]
+        }
+      ]
+    }
+    """
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/bad-actor --policy acceptance/mismatched-image-digest --public-key ${known_PUBLIC_KEY} --strict"
+    Then the exit status should be 1
+    Then the standard error should contain
+    """
+    Error: success criteria not met
+    """
+    Then the standard output should contain
+    """
+    {
+      "success": false,
+      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
+      "key": ${known_PUBLIC_KEY_JSON},
+      "components": [
+        {
+          "name": "Unnamed",
+          "containerImage": "localhost:(\\d+)/acceptance/bad-actor@sha256:[0-9a-f]{64}",
+          "violations": [
+            {
+              "msg": "No image attestations found matching the given public key. Verify the correct public key was provided, and one or more attestations were created.",
+              "metadata": {
+                "code": "builtin.attestation.signature_check"
+              }
+            }
+          ],
+          "successes": [
+            {
+              "metadata": {
+                "code": "builtin.image.signature_check"
+              },
+              "msg": "Pass"
+            }
+          ],
+          "success": false
+        }
+      ],
+      "policy": {
+        "publicKey": "${known_PUBLIC_KEY}",
+        "sources": [
+          { "policy": ["git::https://${GITHOST}/git/mismatched-image-digest.git"] }
+        ]
+      }
+    }
+    """
