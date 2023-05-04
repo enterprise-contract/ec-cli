@@ -76,7 +76,7 @@ type componentSummary struct {
 // it is always an empty string from the ec-cli as a way to indicate all
 // namespaces were used.
 type hacbsReport struct {
-	Timestamp int64  `json:"timestamp"`
+	Timestamp string `json:"timestamp"`
 	Namespace string `json:"namespace"`
 	Successes int    `json:"successes"`
 	Failures  int    `json:"failures"`
@@ -216,7 +216,7 @@ func condensedMsg(results []conftestOutput.Result) map[string][]string {
 // (Note: the name of the Tekton task result where this generally
 // gets written is now TEST_OUTPUT instead of HACBS_TEST_OUTPUT)
 func (r *Report) toHACBS() hacbsReport {
-	result := hacbsReport{Timestamp: r.created.UTC().Unix()}
+	result := hacbsReport{Timestamp: fmt.Sprint(r.created.UTC().Unix())}
 
 	hasFailures := false
 	for _, component := range r.Components {
