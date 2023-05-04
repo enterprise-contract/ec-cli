@@ -113,7 +113,7 @@ ci: test lint-fix acceptance ## Run the usual required CI tasks
 
 ##@ Linters
 
-LICENSE_IGNORE=-ignore 'dist/cli-reference/*.yaml' -ignore 'node_modules/**'
+LICENSE_IGNORE=-ignore 'dist/cli-reference/*.yaml' -ignore 'acceptance/examples/*.yaml' -ignore 'configs/*/*.yaml' -ignore 'node_modules/**'
 LINT_TO_GITHUB_ANNOTATIONS='map(map(.)[])[][] as $$d | $$d.posn | split(":") as $$posn | "::warning file=\($$posn[0]),line=\($$posn[1]),col=\($$posn[2])::\($$d.message)"'
 .PHONY: lint
 lint: tekton-lint ## Run linter
@@ -129,7 +129,7 @@ lint: tekton-lint ## Run linter
 
 .PHONY: lint-fix
 lint-fix: ## Fix linting issues automagically
-	@go run -modfile tools/go.mod github.com/google/addlicense -c $(COPY) -s -ignore 'dist/reference/*.yaml' .
+	@go run -modfile tools/go.mod github.com/google/addlicense -c $(COPY) -s $(LICENSE_IGNORE) .
 	@go run -modfile tools/go.mod github.com/golangci/golangci-lint/cmd/golangci-lint run --fix
 # We don't apply the fixes from the internal (error handling) linter.
 # TODO: fix the outstanding error handling lint issues and enable the fixer

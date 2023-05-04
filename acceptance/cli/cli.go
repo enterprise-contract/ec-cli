@@ -484,6 +484,18 @@ func theStandardErrorShouldContain(ctx context.Context, expected *godog.DocStrin
 	return fmt.Errorf("expected error:\n%s\nnot found in standard error:\n%s", expected, stderr)
 }
 
+// theStandardOutputShouldMatchBaseline reads the expected text from a file instead of directly
+// from the feature file
+func theStandardOutputShouldMatchBaseline(ctx context.Context, fileName string) error {
+	b, err := os.ReadFile(path.Join("acceptance", fileName))
+	if err != nil {
+		return err
+	}
+
+	docString := godog.DocString{Content: string(b)}
+	return theStandardOutputShouldContain(ctx, &docString)
+}
+
 func filterMatchedByRegexp(obj any, diff gojsondiff.Diff) diffy {
 	deltas := diff.Deltas()
 	if v, ok := obj.(map[string]any); ok {
@@ -669,6 +681,7 @@ func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^ec command is run with "(.+)"$`, ecCommandIsRunWith)
 	sc.Step(`^the exit status should be (\d+)$`, theExitStatusIs)
 	sc.Step(`^the standard output should contain$`, theStandardOutputShouldContain)
+	sc.Step(`^the standard output should match baseline file "(.+)"$`, theStandardOutputShouldMatchBaseline)
 	sc.Step(`^the standard error should contain$`, theStandardErrorShouldContain)
 	sc.Step(`^the environment variable is set "([^"]*)"$`, theEnvironmentVarilableIsSet)
 	sc.After(func(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {

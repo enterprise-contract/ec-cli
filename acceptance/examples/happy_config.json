@@ -1,0 +1,9 @@
+{
+  "sources": [
+    {
+      "policy": [
+        "git::https://${GITHOST}/git/happy-day-policy.git"
+      ]
+    }
+  ]
+}

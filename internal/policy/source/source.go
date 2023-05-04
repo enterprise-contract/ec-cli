@@ -14,6 +14,11 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+// This module is more of a general purpose wrapper for fetching files and
+// saving them locally. It was originally used only for policy, i.e. rego and
+// yaml files, from the ec-policies repo, hence the name choice for PolicySource,
+// but now it's also used for fetching configuration from a git url.
+
 package source
 
 import (
@@ -37,6 +42,7 @@ const (
 	DownloaderFuncKey key        = 0
 	PolicyKind        policyKind = "policy"
 	DataKind          policyKind = "data"
+	ConfigKind        policyKind = "config"
 )
 
 type downloaderFunc interface {
@@ -54,7 +60,7 @@ type PolicySource interface {
 type PolicyUrl struct {
 	// A string containing a go-getter style source url compatible with conftest pull
 	Url string
-	// Either "data" or "policy"
+	// Either "data", "policy", or "config"
 	Kind policyKind
 }
 

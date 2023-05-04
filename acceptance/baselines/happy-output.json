@@ -1,0 +1,46 @@
+{
+  "success": true,
+  "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
+  "key": ${known_PUBLIC_KEY_JSON},
+  "components": [
+	{
+	  "name": "Unnamed",
+	  "containerImage": "localhost:(\\d+)/acceptance/ec-happy-day",
+	  "successes": [
+		{
+		  "msg": "Pass",
+		  "metadata": {
+			"code": "builtin.attestation.signature_check"
+		  }
+		},
+		{
+		  "msg": "Pass",
+		  "metadata": {
+			"code": "builtin.attestation.syntax_check"
+		  }
+		},
+		{
+		  "msg": "Pass",
+		  "metadata": {
+			"code": "builtin.image.signature_check"
+		  }
+		},
+		{
+		  "msg": "Pass",
+		  "metadata": {
+			"code": "main.acceptor"
+		  }
+		}
+	  ],
+	  "success": true,
+	  "signatures": ${ATTESTATION_SIGNATURES_JSON}
+	}
+  ],
+  "policy": {
+	"publicKey": "${known_PUBLIC_KEY}",
+	"rekorUrl": "${REKOR}",
+	"sources": [
+	  { "policy": ["git::https://${GITHOST}/git/happy-day-policy.git"] }
+	]
+  }
+}

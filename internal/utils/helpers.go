@@ -22,6 +22,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"path/filepath"
+	"strings"
 	"unicode"
 
 	log "github.com/sirupsen/logrus"
@@ -134,4 +135,17 @@ func IsYamlMap(data string) bool {
 func IsFile(ctx context.Context, path string) (bool, error) {
 	fs := FS(ctx)
 	return afero.Exists(fs, path)
+}
+
+func HasSuffix(str string, extensions []string) bool {
+	for _, e := range extensions {
+		if strings.HasSuffix(str, e) {
+			return true
+		}
+	}
+	return false
+}
+
+func HasJsonOrYamlExt(str string) bool {
+	return HasSuffix(str, []string{".json", ".yaml", ".yml"})
 }
