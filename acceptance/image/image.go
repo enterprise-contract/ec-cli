@@ -535,6 +535,52 @@ func applyPatches(statement *in_toto.ProvenanceStatement, patches *godog.Table) 
 	return &modified, nil
 }
 
+// createAndPushImageWithSignatureFrom creates an image using createAndPushImage
+// and steals the signature from an existing image
+func createAndPushImageWithSignatureFrom(ctx context.Context, imageName string, signatureFrom string) (context.Context, error) {
+	ctx, err := createAndPushImage(ctx, imageName)
+	if err != nil {
+		return ctx, err
+	}
+
+	fromImg, err := imageFrom(ctx, signatureFrom)
+	if err != nil {
+		return ctx, err
+	}
+
+	fromDigest, err := fromImg.Digest()
+	if err != nil {
+		return ctx, err
+	}
+
+	fromSignatureRef, err := registry.ImageReferenceInStubRegistry(ctx, signatureFrom+":%s-%s.sig", fromDigest.Algorithm, fromDigest.Hex)
+	if err != nil {
+		return ctx, err
+	}
+
+	signature, err := remote.Image(fromSignatureRef)
+	if err != nil {
+		return ctx, err
+	}
+
+	toImg, err := imageFrom(ctx, imageName)
+	if err != nil {
+		return ctx, err
+	}
+
+	toDigest, err := toImg.Digest()
+	if err != nil {
+		return ctx, err
+	}
+
+	toSignatureRef, err := registry.ImageReferenceInStubRegistry(ctx, imageName+":%s-%s.sig", toDigest.Algorithm, toDigest.Hex)
+	if err != nil {
+		return ctx, err
+	}
+
+	return ctx, remote.Write(toSignatureRef, signature)
+}
+
 // AddStepsTo adds Gherkin steps to the godog ScenarioContext
 func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^an image named "([^"]*)"$`, createAndPushImage)
@@ -543,4 +589,5 @@ func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^a valid attestation of "([^"]*)" signed by the "([^"]*)" key, patched with$`, createAndPushAttestationWithPatches)
 	sc.Step(`^a signed and attested keyless image named "([^"]*)"$`, createAndPushKeylessImage)
 	sc.Step(`^a OCI policy bundle named "([^"]*)" with$`, createAndPushPolicyBundle)
+	sc.Step(`^an image named "([^"]*)" with signature from "([^"]*)"$`, createAndPushImageWithSignatureFrom)
 }
