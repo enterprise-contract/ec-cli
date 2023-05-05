@@ -130,6 +130,9 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 
 			  ec validate image --image registry/name:tag --policy '{"publicKey": "<path/to/public/key>"}'
 
+			Use an EnterpriseContractPolicy spec from a local YAML file
+			  ec validate image --image registry/name:tag --policy my-policy.yaml
+
 			Use a git url for the policy configuration. In the first example there should be a '.ec/policy.yaml'
 			or a 'policy.yaml' inside a directory called 'default' in the top level of the git repo. In the second
 			example there should be a '.ec/policy.yaml' or a 'policy.yaml' file in the top level
