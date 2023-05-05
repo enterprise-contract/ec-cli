@@ -20,19 +20,28 @@ package application_snapshot_image
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"regexp"
 	"strings"
 	"testing"
 
 	"github.com/google/go-containerregistry/pkg/name"
+	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/in-toto/in-toto-golang/in_toto"
 	"github.com/in-toto/in-toto-golang/in_toto/slsa_provenance/common"
 	v02 "github.com/in-toto/in-toto-golang/in_toto/slsa_provenance/v0.2"
+	"github.com/secure-systems-lab/go-securesystemslib/dsse"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
+	"github.com/sigstore/cosign/v2/pkg/oci"
+	"github.com/sigstore/cosign/v2/pkg/oci/static"
+	"github.com/sigstore/sigstore/pkg/signature/payload"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 
 	"github.com/enterprise-contract/ec-cli/internal/attestation"
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
@@ -322,6 +331,266 @@ func TestSyntaxValidation(t *testing.T) {
 				assert.Error(t, err)
 				assert.Regexp(t, err, err.Error())
 			}
+		})
+	}
+}
+
+type MockClient struct {
+	mock.Mock
+}
+
+func (c *MockClient) VerifyImageSignatures(ctx context.Context, name name.Reference, opts *cosign.CheckOpts) ([]oci.Signature, bool, error) {
+	args := c.Called(ctx, name, opts)
+
+	return args.Get(0).([]oci.Signature), args.Get(1).(bool), args.Error(2)
+}
+
+func (c *MockClient) VerifyImageAttestations(ctx context.Context, name name.Reference, opts *cosign.CheckOpts) ([]oci.Signature, bool, error) {
+	args := c.Called(ctx, name, opts)
+
+	return args.Get(0).([]oci.Signature), args.Get(1).(bool), args.Error(2)
+}
+
+func (c *MockClient) Head(name name.Reference, options ...remote.Option) (*v1.Descriptor, error) {
+	args := c.Called(name, options)
+
+	return args.Get(0).(*v1.Descriptor), args.Error(1)
+}
+
+func TestValidateImageSignatureClaims(t *testing.T) {
+	ref := name.MustParseReference("registry.io/repository/image:tag")
+	a := ApplicationSnapshotImage{
+		reference: ref,
+	}
+
+	c := MockClient{}
+
+	ctx := WithClient(context.Background(), &c)
+
+	c.On("VerifyImageSignatures", ctx, ref, mock.Anything).Return([]oci.Signature{}, false, nil)
+
+	err := a.ValidateImageSignature(ctx)
+	require.NoError(t, err)
+
+	call := c.Calls[0]
+
+	checkOpts := call.Arguments.Get(2).(*cosign.CheckOpts)
+	assert.NotNil(t, checkOpts)
+
+	claimVerifier := checkOpts.ClaimVerifier
+	assert.NotNil(t, claimVerifier)
+
+	cases := []struct {
+		name        string
+		payload     payload.SimpleContainerImage
+		digest      v1.Hash
+		annotations map[string]any
+		err         error
+	}{
+		{
+			name: "happy day",
+			payload: payload.SimpleContainerImage{
+				Critical: payload.Critical{
+					Image: payload.Image{
+						DockerManifestDigest: "sha256:dabbad00",
+					},
+				},
+			},
+			digest: v1.Hash{Algorithm: "sha256", Hex: "dabbad00"},
+		},
+		{
+			name: "happy day with annotations",
+			payload: payload.SimpleContainerImage{
+				Critical: payload.Critical{
+					Image: payload.Image{
+						DockerManifestDigest: "sha256:dabbad00",
+					},
+				},
+				Optional: map[string]any{
+					"a": "x",
+					"b": "y",
+				},
+			},
+			digest: v1.Hash{Algorithm: "sha256", Hex: "dabbad00"},
+			annotations: map[string]any{
+				"a": "x",
+				"b": "y",
+			},
+		},
+		{
+			name: "bad digest",
+			payload: payload.SimpleContainerImage{
+				Critical: payload.Critical{
+					Image: payload.Image{
+						DockerManifestDigest: "sha256:ffbaddD11",
+					},
+				},
+			},
+			digest: v1.Hash{Algorithm: "sha256", Hex: "dabbad00"},
+			err:    errors.New("invalid or missing digest in claim: sha256:ffbaddD11"),
+		},
+		{
+			name: "missing annotation",
+			payload: payload.SimpleContainerImage{
+				Critical: payload.Critical{
+					Image: payload.Image{
+						DockerManifestDigest: "sha256:dabbad00",
+					},
+				},
+			},
+			digest: v1.Hash{Algorithm: "sha256", Hex: "dabbad00"},
+			annotations: map[string]any{
+				"a": "x",
+			},
+			err: errors.New("missing or incorrect annotation"),
+		},
+		{
+			name: "incorrect annotation",
+			payload: payload.SimpleContainerImage{
+				Critical: payload.Critical{
+					Image: payload.Image{
+						DockerManifestDigest: "sha256:dabbad00",
+					},
+				},
+				Optional: map[string]any{
+					"a": "y",
+				},
+			},
+			digest: v1.Hash{Algorithm: "sha256", Hex: "dabbad00"},
+			annotations: map[string]any{
+				"a": "x",
+			},
+			err: errors.New("missing or incorrect annotation"),
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			payload, err := json.Marshal(c.payload)
+			require.NoError(t, err)
+
+			signature, err := static.NewSignature(payload, "signature")
+			require.NoError(t, err)
+
+			err = claimVerifier(signature, c.digest, c.annotations)
+			assert.Equal(t, c.err, err)
+		})
+	}
+}
+
+func TestValidateAttestationSignatureClaims(t *testing.T) {
+	ref := name.MustParseReference("registry.io/repository/image:tag")
+	a := ApplicationSnapshotImage{
+		reference: ref,
+	}
+
+	c := MockClient{}
+
+	ctx := WithClient(context.Background(), &c)
+
+	c.On("VerifyImageAttestations", ctx, ref, mock.Anything).Return([]oci.Signature{}, false, nil)
+
+	err := a.ValidateAttestationSignature(ctx)
+	require.NoError(t, err)
+
+	call := c.Calls[0]
+
+	checkOpts := call.Arguments.Get(2).(*cosign.CheckOpts)
+	assert.NotNil(t, checkOpts)
+
+	claimVerifier := checkOpts.ClaimVerifier
+	assert.NotNil(t, claimVerifier)
+
+	cases := []struct {
+		name      string
+		statement in_toto.Statement
+		digest    v1.Hash
+		err       error
+	}{
+		{
+			name: "happy day",
+			statement: in_toto.Statement{
+				StatementHeader: in_toto.StatementHeader{
+					Subject: []in_toto.Subject{
+						{
+							Digest: map[string]string{
+								"sha256": "dabbad00",
+							},
+						},
+					},
+				},
+			},
+			digest: v1.Hash{Algorithm: "sha256", Hex: "dabbad00"},
+		},
+		{
+			name: "happy day - multiple digests",
+			statement: in_toto.Statement{
+				StatementHeader: in_toto.StatementHeader{
+					Subject: []in_toto.Subject{
+						{
+							Digest: map[string]string{
+								"sha512": "dead10cc",
+								"sha256": "dabbad00",
+							},
+						},
+					},
+				},
+			},
+			digest: v1.Hash{Algorithm: "sha256", Hex: "dabbad00"},
+		},
+		{
+			name: "no digests",
+			statement: in_toto.Statement{
+				StatementHeader: in_toto.StatementHeader{
+					Subject: []in_toto.Subject{},
+				},
+			},
+			digest: v1.Hash{Algorithm: "sha256", Hex: "dabbad00"},
+			err:    errors.New("no matching subject digest found"),
+		},
+		{
+			name: "mismatched digests",
+			statement: in_toto.Statement{
+				StatementHeader: in_toto.StatementHeader{
+					Subject: []in_toto.Subject{
+						{
+							Digest: map[string]string{
+								"sha256": "dead10cc",
+							},
+						},
+					},
+				},
+			},
+			digest: v1.Hash{Algorithm: "sha256", Hex: "dabbad00"},
+			err:    errors.New("no matching subject digest found"),
+		},
+		{
+			name:      "empty statement",
+			statement: in_toto.Statement{},
+			digest:    v1.Hash{Algorithm: "sha256", Hex: "dabbad00"},
+			err:       errors.New("no matching subject digest found"),
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			statementJSON, err := json.Marshal(c.statement)
+			require.NoError(t, err)
+
+			statement := base64.StdEncoding.EncodeToString(statementJSON)
+
+			dsse := dsse.Envelope{
+				Payload: statement,
+			}
+
+			payload, err := json.Marshal(dsse)
+			require.NoError(t, err)
+
+			signature, err := static.NewSignature(payload, "signature")
+			require.NoError(t, err)
+
+			err = claimVerifier(signature, c.digest, nil)
+			assert.Equal(t, c.err, err)
 		})
 	}
 }
