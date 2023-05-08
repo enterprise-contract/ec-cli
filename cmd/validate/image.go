@@ -327,8 +327,12 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&data.policyConfiguration, "policy", "p", data.policyConfiguration,
-		"EnterpriseContractPolicy reference [<namespace>/]<name>")
+	cmd.Flags().StringVarP(&data.policyConfiguration, "policy", "p", data.policyConfiguration, hd.Doc(`
+		Policy configuration as:
+		  * Kubernetes reference ([<namespace>/]<name>)
+		  * file (policy.yaml)
+		  * git reference (github.com/user/repo//default?ref=main), or
+		  * inline JSON ('{sources: {...}, configuration: {...}}')")`))
 
 	cmd.Flags().StringVarP(&data.imageRef, "image", "i", data.imageRef, "OCI image reference")
 
