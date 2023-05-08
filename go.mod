@@ -37,7 +37,7 @@ require (
 )
 
 require (
-	github.com/hashicorp/go-getter v1.7.0
+	github.com/hashicorp/go-getter v1.7.1
 	github.com/secure-systems-lab/go-securesystemslib v0.6.0
 	k8s.io/kube-openapi v0.0.0-20230308215209-15aac26d736a
 )
