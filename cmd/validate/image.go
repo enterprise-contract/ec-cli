@@ -130,6 +130,9 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 
 			  ec validate image --image registry/name:tag --policy '{"publicKey": "<path/to/public/key>"}'
 
+			Use an EnterpriseContractPolicy spec from a local YAML file
+			  ec validate image --image registry/name:tag --policy my-policy.yaml
+
 			Use a git url for the policy configuration. In the first example there should be a '.ec/policy.yaml'
 			or a 'policy.yaml' inside a directory called 'default' in the top level of the git repo. In the second
 			example there should be a '.ec/policy.yaml' or a 'policy.yaml' file in the top level
@@ -324,8 +327,12 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&data.policyConfiguration, "policy", "p", data.policyConfiguration,
-		"EnterpriseContractPolicy reference [<namespace>/]<name>")
+	cmd.Flags().StringVarP(&data.policyConfiguration, "policy", "p", data.policyConfiguration, hd.Doc(`
+		Policy configuration as:
+		  * Kubernetes reference ([<namespace>/]<name>)
+		  * file (policy.yaml)
+		  * git reference (github.com/user/repo//default?ref=main), or
+		  * inline JSON ('{sources: {...}, configuration: {...}}')")`))
 
 	cmd.Flags().StringVarP(&data.imageRef, "image", "i", data.imageRef, "OCI image reference")
 
