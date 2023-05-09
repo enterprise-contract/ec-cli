@@ -27,7 +27,7 @@ require (
 	github.com/tektoncd/pipeline v0.44.0
 	github.com/testcontainers/testcontainers-go v0.19.0
 	github.com/theupdateframework/go-tuf v0.5.2
-	github.com/transparency-dev/merkle v0.0.1
+	github.com/transparency-dev/merkle v0.0.2
 	github.com/walkerus/go-wiremock v1.5.0
 	github.com/yudai/gojsondiff v1.0.0
 	gopkg.in/square/go-jose.v2 v2.6.0
