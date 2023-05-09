@@ -25,7 +25,7 @@ require (
 	github.com/stretchr/testify v1.8.2
 	github.com/tektoncd/cli v0.30.1
 	github.com/tektoncd/pipeline v0.44.0
-	github.com/testcontainers/testcontainers-go v0.19.0
+	github.com/testcontainers/testcontainers-go v0.20.0
 	github.com/theupdateframework/go-tuf v0.5.2
 	github.com/transparency-dev/merkle v0.0.1
 	github.com/walkerus/go-wiremock v1.5.0
@@ -68,7 +68,7 @@ require (
 	github.com/digitorus/timestamp v0.0.0-20221019182153-ef3b63b79b31 // indirect
 	github.com/docker/cli v23.0.1+incompatible // indirect
 	github.com/docker/distribution v2.8.1+incompatible // indirect
-	github.com/docker/docker v23.0.3+incompatible // indirect
+	github.com/docker/docker v23.0.5+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.7.0 // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
