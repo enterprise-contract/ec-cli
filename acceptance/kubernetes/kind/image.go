@@ -23,7 +23,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"strings"
 
 	"github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
@@ -35,6 +34,7 @@ import (
 // `localhost:<registry-port>/ec-cli:latest-<architecture>-<os>`, see push-image
 // Makefile target for details. The registry is running without TLS, so we need
 // `--tls-verify=false` here.
+
 func (k *kindCluster) buildCliImage(ctx context.Context) error {
 	cmd := exec.CommandContext(ctx, "make", "push-image", fmt.Sprintf("IMAGE_REPO=localhost:%d/ec-cli", k.registryPort), "PODMAN_OPTS=--tls-verify=false")
 
@@ -53,6 +53,7 @@ func (k *kindCluster) buildCliImage(ctx context.Context) error {
 // only the task of a particular version. The image reference to the ec-cli
 // image is replaced with the image reference from buildCliImage.
 func (k *kindCluster) buildTaskBundleImage(ctx context.Context) error {
+
 	taskBundles := make(map[string][]string)
 
 	basePath := "tasks/"
@@ -92,10 +93,14 @@ func (k *kindCluster) buildTaskBundleImage(ctx context.Context) error {
 				return err
 			}
 
+			imgTag, err := getTag(ctx)
+			if err != nil {
+				return err
+			}
 			// using registry.image-registry.svc.cluster.local instead of 127.0.0.1
 			// leads to "dial tcp: lookup registry.image-registry.svc.cluster.local:
 			// Temporary failure in name resolution" in Tekton Pipeline controller
-			img := fmt.Sprintf("127.0.0.1:%d/ec-cli:latest-%s-%s", k.registryPort, runtime.GOOS, runtime.GOARCH)
+			img := fmt.Sprintf("127.0.0.1:%d/ec-cli:%s", k.registryPort, imgTag)
 			steps := taskDefinition.Spec.Steps
 			for i, step := range steps {
 				if strings.Contains(step.Image, "/ec-cli:") {
@@ -132,4 +137,14 @@ func (k *kindCluster) buildTaskBundleImage(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func getTag(ctx context.Context) (string, error) {
+	archCmd := exec.CommandContext(ctx, "podman", "version", "-f", "{{.Server.OsArch}}")
+	archOut, archErr := archCmd.CombinedOutput()
+	if archErr != nil {
+		return "", archErr
+	}
+
+	return fmt.Sprintf("latest-%s", strings.Replace(strings.TrimSuffix(string(archOut), "\n"), "/", "-", -1)), nil
 }

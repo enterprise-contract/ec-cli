@@ -3,7 +3,7 @@ VERSION:=v0.1.$$(git rev-list --count HEAD)-$$(git rev-parse --short HEAD)
 # a list of "dist/ec_{platform}_{arch}" that we support
 ALL_SUPPORTED_OS_ARCH:=$(shell go tool dist list -json|jq -r '.[] | select((.FirstClass == true or .GOARCH == "ppc64le") and .GOARCH != "386") | "dist/ec_\(.GOOS)_\(.GOARCH)"')
 # a list of image_* targets that we do not support
-UNSUPPORTED_OS_ARCH_IMG:=image_windows_amd64 image_darwin_amd64 image_darwin_arm64 image_linux_arm
+UNSUPPORTED_OS_ARCH_IMG:=image_windows_amd64 image_linux_arm
 # a list of image_* targets that we do support generated from
 # ALL_SUPPORTED_OS_ARCH by replacing "dist/ec_" with "image_"
 ALL_SUPPORTED_IMG_OS_ARCH:=$(filter-out $(UNSUPPORTED_OS_ARCH_IMG),$(subst dist/ec_,image_,$(ALL_SUPPORTED_OS_ARCH)))
@@ -48,9 +48,14 @@ $(ALL_SUPPORTED_OS_ARCH): ## Build binaries for specific platform/architecture, 
 .PHONY: dist
 dist: $(ALL_SUPPORTED_OS_ARCH) ## Build binaries for all supported operating systems and architectures
 
+BUILD_LOCAL_ARCH:=$(shell go env GOOS)_$(shell go env GOARCH)
 .PHONY: build
-build: dist/ec_$(shell go env GOOS)_$(shell go env GOARCH) ## Build the ec binary for the current platform
-	@ln -sf ec_$(shell go env GOOS)_$(shell go env GOARCH) dist/ec
+build: dist/ec_$(BUILD_LOCAL_ARCH) ## Build the ec binary for the current platform
+	@ln -sf ec_$(BUILD_LOCAL_ARCH) dist/ec
+
+BUILD_IMG_ARCH:=$(shell podman version -f {{.Server.OsArch}} | awk -F/ '{print $$1}')_$(shell podman version -f {{.Server.OsArch}} | awk -F/ '{print $$2}')
+.PHONY: build-for-test
+build-for-test: dist/ec_$(BUILD_IMG_ARCH)
 
 .PHONY: reference-docs
 reference-docs: ## Generate reference documentation input YAML files
@@ -72,6 +77,7 @@ test: ## Run all unit tests
 # to 30s to accommodate many samples being generated and test cases being run.
 	@go test -race -covermode=atomic -coverprofile=coverage-generative.out -timeout 30s -tags=generative ./...
 
+ACCEPTANCE_TIMEOUT:=10m
 .ONESHELL:
 .SHELLFLAGS=-e -c
 .PHONY: acceptance
@@ -85,9 +91,12 @@ acceptance: ## Run all acceptance tests
 	@cd "$${ACCEPTANCE_WORKDIR}"
 	@go run acceptance/coverage/coverage.go .
 	@$(MAKE) build
+ifneq ($(BUILD_IMG_ARCH),$(BUILD_LOCAL_ARCH))
+	@$(MAKE) build-for-test
+endif
 	@export COVERAGE_FILEPATH="$${ACCEPTANCE_WORKDIR}"
 	@export COVERAGE_FILENAME="-acceptance"
-	@cd acceptance && go test ./...
+	@cd acceptance && go test -timeout $(ACCEPTANCE_TIMEOUT) ./...
 	@go run -modfile "$${ACCEPTANCE_WORKDIR}/tools/go.mod" github.com/wadey/gocovmerge "$${ACCEPTANCE_WORKDIR}"/coverage-acceptance*.out > "$(ROOT_DIR)/coverage-acceptance.out"
 
 # Add @focus above the feature you're hacking on to use this
@@ -153,10 +162,10 @@ tekton-lint: node_modules $(wildcard tasks/*/*/*.yaml) ## Run tekton-lint for 't
 IMAGE_TAG ?= latest
 IMAGE_REPO ?= quay.io/hacbs-contract/ec-cli
 .PHONY: build-image
-build-image: image_$(shell go env GOOS)_$(shell go env GOARCH) ## Build container image with ec-cli
+build-image: image_$(BUILD_IMG_ARCH) ## Build container image with ec-cli
 
 .PHONY: push-image
-push-image: push_image_$(shell go env GOOS)_$(shell go env GOARCH) ## Push ec-cli container image to default location
+push-image: push_image_$(BUILD_IMG_ARCH) ## Push ec-cli container image to default location
 
 .PHONY: build-snapshot-image
 build-snapshot-image: push-image ## Build the ec-cli image and tag it with "snapshot"

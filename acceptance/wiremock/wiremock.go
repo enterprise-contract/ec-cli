@@ -214,14 +214,13 @@ func StartWiremock(ctx context.Context) (context.Context, error) {
 	})
 
 	logger, ctx := log.LoggerFor(ctx)
-
 	w, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: req,
 		Started:          true,
 		Logger:           logger,
 	})
 	if err != nil {
-		return ctx, err
+		return ctx, fmt.Errorf("unable to run GenericContainer: %v", err)
 	}
 
 	port, err := w.MappedPort(ctx, "8080/tcp")

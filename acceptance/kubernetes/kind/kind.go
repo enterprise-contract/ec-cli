@@ -148,6 +148,7 @@ func Start(givenCtx context.Context) (ctx context.Context, kCluster types.Cluste
 
 		defer func() {
 			if err != nil {
+				logger.Infof("An error occured creating the cluster: %v", err)
 				// an error happened we need to cleanup
 				kCluster.provider.Delete(kCluster.name, kCluster.kubeconfigPath)
 			}

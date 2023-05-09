@@ -118,3 +118,15 @@ from the test failure.
 
 `context deadline exceeded: failed to start container` may occur in some
 cases. `sudo systemctl restart docker` usually fixes it.
+
+## Running on MacOS
+Running on MacOS has been tested using podman machine. Listed below are the recommended
+podman machine settings.
+* Set rootful to true
+  * `podman machine set -rootful=true`
+* Set memory to 4GB
+  * `podman machine set -m 4096`
+* Set cpus to 2
+  * `podman machine set -cpus 2`
+* Disable selinux on the podman vm
+  * `podman machine ssh setenforce 0`
