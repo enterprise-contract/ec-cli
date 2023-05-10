@@ -28,7 +28,7 @@ require (
 	github.com/tektoncd/pipeline v0.42.0
 	golang.org/x/exp v0.0.0-20230124195608-d38c7dcee874
 	golang.org/x/net v0.10.0
-	golang.org/x/tools v0.9.0
+	golang.org/x/tools v0.9.1
 	k8s.io/apimachinery v0.27.1
 	k8s.io/client-go v0.26.3
 	k8s.io/klog/v2 v2.100.1
