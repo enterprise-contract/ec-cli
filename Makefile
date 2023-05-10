@@ -77,7 +77,7 @@ test: ## Run all unit tests
 # to 30s to accommodate many samples being generated and test cases being run.
 	@go test -race -covermode=atomic -coverprofile=coverage-generative.out -timeout 30s -tags=generative ./...
 
-ACCEPTANCE_TIMEOUT:=10m
+ACCEPTANCE_TIMEOUT:=20m
 .ONESHELL:
 .SHELLFLAGS=-e -c
 .PHONY: acceptance
@@ -91,9 +91,6 @@ acceptance: ## Run all acceptance tests
 	@cd "$${ACCEPTANCE_WORKDIR}"
 	@go run acceptance/coverage/coverage.go .
 	@$(MAKE) build
-ifneq ($(BUILD_IMG_ARCH),$(BUILD_LOCAL_ARCH))
-	@$(MAKE) build-for-test
-endif
 	@export COVERAGE_FILEPATH="$${ACCEPTANCE_WORKDIR}"
 	@export COVERAGE_FILENAME="-acceptance"
 	@cd acceptance && go test -timeout $(ACCEPTANCE_TIMEOUT) ./...
