@@ -39,7 +39,7 @@ trap cleanup EXIT
 skopeo inspect "docker://quay.io/hacbs-contract/ec-task-bundle:${TASK_BUNDLE_TAG}" --raw > "${MANIFEST}"
 TASK_BUNDLE_DIGEST="$(skopeo manifest-digest "${MANIFEST}")"
 REVISION="$(jq -r '.annotations["org.opencontainers.image.revision"]' "${MANIFEST}")"
-if [[ -n "${REVISION}" && "${REVISION}" != null ]]; then
+if [[ -z "${KEEP_TAG:-}" && -n "${REVISION}" && "${REVISION}" != null ]]; then
     TASK_BUNDLE_TAG="${REVISION}"
 fi
 # Sanity check
