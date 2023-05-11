@@ -25,6 +25,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/enterprise-contract/ec-cli/cmd/fetch"
+	"github.com/enterprise-contract/ec-cli/cmd/initialize"
 	"github.com/enterprise-contract/ec-cli/cmd/inspect"
 	"github.com/enterprise-contract/ec-cli/cmd/test"
 	"github.com/enterprise-contract/ec-cli/cmd/track"
@@ -91,6 +92,7 @@ func Execute() {
 
 func init() {
 	RootCmd.AddCommand(fetch.FetchCmd)
+	RootCmd.AddCommand(initialize.InitCmd)
 	RootCmd.AddCommand(inspect.InspectCmd)
 	RootCmd.AddCommand(track.TrackCmd)
 	RootCmd.AddCommand(validate.ValidateCmd)
