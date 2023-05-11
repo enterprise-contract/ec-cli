@@ -25,7 +25,7 @@ require (
 	github.com/stretchr/testify v1.8.2
 	github.com/tektoncd/cli v0.31.0
 	github.com/tektoncd/pipeline v0.47.0
-	github.com/testcontainers/testcontainers-go v0.20.0
+	github.com/testcontainers/testcontainers-go v0.20.1
 	github.com/theupdateframework/go-tuf v0.5.2
 	github.com/transparency-dev/merkle v0.0.2
 	github.com/walkerus/go-wiremock v1.5.0
