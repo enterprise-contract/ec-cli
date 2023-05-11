@@ -318,6 +318,18 @@ func TestSolution(t *testing.T) {
 				deny() { true }`)),
 			expected: "Chunky bacon",
 		},
+		{
+			name: "with xref links",
+			annotation: annotationRef(heredoc.Doc(`
+				package a
+				# METADATA
+				# custom:
+				#  solution: >-
+				#    See xref:release_policy.adoc#attestation_task_bundle_package[here] and
+				#    xref:attachment$acceptable_tekton_bundles.yml[over there] for details.
+				deny() { true }`)),
+			expected: "See here and over there for details.",
+		},
 	}
 
 	for i, c := range cases {
