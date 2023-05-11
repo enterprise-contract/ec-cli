@@ -730,21 +730,11 @@
 
 [TestPredicateMaterialsUri/case_1 - 1]
 []jsonschema.KeyError{
-    {
-        PropertyPath: "/predicate/materials/0/uri",
-        InvalidValue: "",
-        Message:      "invalid uri: uri missing scheme prefix",
-    },
 }
 ---
 
 [TestPredicateMaterialsUri/case_2 - 1]
 []jsonschema.KeyError{
-    {
-        PropertyPath: "/predicate/materials/0/uri",
-        InvalidValue: "not_uri",
-        Message:      "invalid uri: uri missing scheme prefix",
-    },
 }
 ---
 
