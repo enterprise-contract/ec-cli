@@ -214,7 +214,9 @@ func TestContainersRequest(ctx context.Context, req testcontainers.ContainerRequ
 	persisted := Persisted(ctx)
 
 	req.AutoRemove = !persisted
-	req.SkipReaper = persisted
+	if persisted {
+		os.Setenv("TESTCONTAINERS_RYUK_DISABLED", "true")
+	}
 
 	return req
 }

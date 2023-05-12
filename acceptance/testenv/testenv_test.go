@@ -19,6 +19,7 @@ package testenv
 import (
 	"context"
 	"io/fs"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -201,52 +202,51 @@ func Test_TestContainersRequest(t *testing.T) {
 		persisted  bool
 		req        testcontainers.ContainerRequest
 		autoRemove bool
-		skipReaper bool
+		skipReaper string
 	}{
 		{
 			name:       "not persisted",
 			persisted:  false,
 			req:        testcontainers.ContainerRequest{},
 			autoRemove: true,
-			skipReaper: false,
+			skipReaper: "",
 		},
 		{
 			name:      "not persisted - changed defaults",
 			persisted: false,
 			req: testcontainers.ContainerRequest{
 				AutoRemove: false,
-				SkipReaper: true,
 			},
 			autoRemove: true,
-			skipReaper: false,
+			skipReaper: "",
 		},
 		{
 			name:       "persisted",
 			persisted:  true,
 			req:        testcontainers.ContainerRequest{},
 			autoRemove: false,
-			skipReaper: true,
+			skipReaper: "true",
 		},
 		{
 			name:      "persisted - change defaults",
 			persisted: true,
 			req: testcontainers.ContainerRequest{
 				AutoRemove: true,
-				SkipReaper: false,
 			},
 			autoRemove: false,
-			skipReaper: true,
+			skipReaper: "true",
 		},
 	}
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
+			os.Clearenv()
 			ctx := context.WithValue(context.TODO(), PersistStubEnvironment, c.persisted)
 
 			out := TestContainersRequest(ctx, c.req)
 
 			assert.Equal(t, c.autoRemove, out.AutoRemove, "AutoRemove")
-			assert.Equal(t, c.skipReaper, out.SkipReaper, "SkipReaper")
+			assert.Equal(t, c.skipReaper, os.Getenv("TESTCONTAINERS_RYUK_DISABLED"), "SkipReaper")
 		})
 	}
 }
