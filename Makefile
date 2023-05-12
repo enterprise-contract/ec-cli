@@ -3,7 +3,7 @@ VERSION:=v0.1.$$(git rev-list --count HEAD)-$$(git rev-parse --short HEAD)
 # a list of "dist/ec_{platform}_{arch}" that we support
 ALL_SUPPORTED_OS_ARCH:=$(shell go tool dist list -json|jq -r '.[] | select((.FirstClass == true or .GOARCH == "ppc64le") and .GOARCH != "386") | "dist/ec_\(.GOOS)_\(.GOARCH)"')
 # a list of image_* targets that we do not support
-UNSUPPORTED_OS_ARCH_IMG:=image_windows_amd64 image_linux_arm
+UNSUPPORTED_OS_ARCH_IMG:=image_windows_amd64 image_darwin_amd64 image_darwin_arm64 image_linux_arm
 # a list of image_* targets that we do support generated from
 # ALL_SUPPORTED_OS_ARCH by replacing "dist/ec_" with "image_"
 ALL_SUPPORTED_IMG_OS_ARCH:=$(filter-out $(UNSUPPORTED_OS_ARCH_IMG),$(subst dist/ec_,image_,$(ALL_SUPPORTED_OS_ARCH)))
