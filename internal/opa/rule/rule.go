@@ -59,7 +59,7 @@ func effectiveOn(a *ast.AnnotationsRef) string {
 }
 
 func solution(a *ast.AnnotationsRef) string {
-	return customAnnotationString(a, "solution")
+	return xrefRegExp.ReplaceAllString(customAnnotationString(a, "solution"), "$1")
 }
 
 func lastTerm(a *ast.AnnotationsRef) string {
