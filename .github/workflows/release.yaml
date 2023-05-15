@@ -71,6 +71,20 @@ jobs:
       - name: Build distribution
         run: make dist
 
+      - name: Registry login
+        run: podman login -u ${{ secrets.BUNDLE_PUSH_USER  }} -p ${{ secrets.BUNDLE_PUSH_PASS }} quay.io
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Create and push image
+        run: make dist-image-push IMAGE_TAG=$TAG IMAGE_REPO=$IMAGE_REPO ADD_IMAGE_TAG=snapshot
+
+      - name: Create and push the tekton bundle
+        env:
+          TASK: "tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml tasks/verify-definition/0.1/verify-definition.yaml"
+        run: make task-bundle-snapshot TASK_TAG=$TAG TASK=<( yq e ".spec.steps[].image? = \"$IMAGE_REPO:$TAG\"" $TASK | yq 'select(. != null)')
+
       - name: Delete snapshot release and tag
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
@@ -96,17 +110,3 @@ jobs:
           tag_name: snapshot
           generate_release_notes: false
           files: dist/*
-
-      - name: Registry login
-        run: podman login -u ${{ secrets.BUNDLE_PUSH_USER  }} -p ${{ secrets.BUNDLE_PUSH_PASS }} quay.io
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-
-      - name: Create and push image
-        run: make dist-image-push IMAGE_TAG=$TAG IMAGE_REPO=$IMAGE_REPO ADD_IMAGE_TAG=snapshot
-
-      - name: Create and push the tekton bundle
-        env:
-          TASK: "tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml tasks/verify-definition/0.1/verify-definition.yaml"
-        run: make task-bundle-snapshot TASK_TAG=$TAG TASK=<( yq e ".spec.steps[].image? = \"$IMAGE_REPO:$TAG\"" $TASK | yq 'select(. != null)')
