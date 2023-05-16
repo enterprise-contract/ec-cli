@@ -26,5 +26,5 @@ import (
 	_ "github.com/tektoncd/cli/cmd/tkn"
 	_ "github.com/wadey/gocovmerge"
 	_ "helm.sh/helm/v3/cmd/helm"
-	_ "sigs.k8s.io/kustomize/kustomize/v4"
+	_ "sigs.k8s.io/kustomize/kustomize/v5"
 )
