@@ -25,6 +25,7 @@ import (
 	"io"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/cucumber/godog"
 	jsonpatch "github.com/evanphx/json-patch/v5"
@@ -583,6 +584,47 @@ func steal(what string) func(context.Context, string, string) (context.Context, 
 	}
 }
 
+func copyAllImages(ctx context.Context, source, destination string) (context.Context, error) {
+	state := testenv.FetchState[imageState](ctx)
+
+	pusher, err := remote.NewPusher()
+	if err != nil {
+		return ctx, err
+	}
+
+	for _, imgs := range []map[string]string{state.Images, state.Signatures, state.Attestations} {
+		var sourceStr string
+		var ok bool
+		if sourceStr, ok = imgs[source]; !ok {
+			continue
+		}
+
+		sourceRef, err := name.ParseReference(sourceStr)
+		if err != nil {
+			return ctx, err
+		}
+
+		destStr := strings.ReplaceAll(sourceStr, source, destination)
+		destRef, err := name.ParseReference(destStr)
+		if err != nil {
+			return ctx, err
+		}
+
+		desc, err := remote.Get(sourceRef)
+		if err != nil {
+			return ctx, err
+		}
+
+		if err := pusher.Push(ctx, destRef, desc); err != nil {
+			return ctx, err
+		}
+
+		imgs[destination] = destStr
+	}
+
+	return ctx, nil
+}
+
 // AddStepsTo adds Gherkin steps to the godog ScenarioContext
 func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^an image named "([^"]*)"$`, createAndPushImage)
@@ -593,4 +635,5 @@ func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^a OCI policy bundle named "([^"]*)" with$`, createAndPushPolicyBundle)
 	sc.Step(`^an image named "([^"]*)" with signature from "([^"]*)"$`, steal("sig"))
 	sc.Step(`^an image named "([^"]*)" with attestation from "([^"]*)"$`, steal("att"))
+	sc.Step(`^all images relating to "([^"]*)" are copied to "([^"]*)"$`, copyAllImages)
 }

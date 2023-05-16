@@ -1634,3 +1634,81 @@ Feature: evaluate enterprise contract
       }
     }
     """
+
+  Scenario: artifact relocation
+    Given a key pair named "known"
+    Given an image named "acceptance/source"
+    Given a valid image signature of "acceptance/source" image signed by the "known" key
+    Given a valid Rekor entry for image signature of "acceptance/source"
+    Given a valid attestation of "acceptance/source" signed by the "known" key
+    Given a valid Rekor entry for attestation of "acceptance/source"
+    Given a git repository named "happy-day-policy" with
+      | main.rego | examples/happy_day.rego |
+    Given policy configuration named "ec-policy" with specification
+    """
+    {
+      "sources": [
+        {
+          "policy": [
+            "git::https://${GITHOST}/git/happy-day-policy.git"
+          ]
+        }
+      ]
+    }
+    """
+    When all images relating to "acceptance/source" are copied to "acceptance/destination"
+    And ec command is run with "validate image --image ${REGISTRY}/acceptance/destination --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
+    Then the exit status should be 0
+    Then the standard output should contain
+    """
+    {
+      "components": [
+        {
+          "containerImage": "localhost:(\\d+)/acceptance/destination@sha256:[0-9a-f]{64}",
+          "name": "Unnamed",
+          "signatures": ${ATTESTATION_SIGNATURES_JSON},
+          "success": true,
+          "successes": [
+            {
+              "msg": "Pass",
+              "metadata": {
+                "code": "builtin.attestation.signature_check"
+              }
+            },
+            {
+              "msg": "Pass",
+              "metadata": {
+                "code": "builtin.attestation.syntax_check"
+              }
+            },
+            {
+              "msg": "Pass",
+              "metadata": {
+                "code": "builtin.image.signature_check"
+              }
+            },
+            {
+              "metadata": {
+                "code": "main.acceptor"
+              },
+              "msg": "Pass"
+            }
+          ]
+        }
+      ],
+      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
+      "key": ${known_PUBLIC_KEY_JSON},
+      "policy": {
+        "publicKey": "${known_PUBLIC_KEY}",
+        "rekorUrl": "${REKOR}",
+        "sources": [
+          {
+            "policy": [
+              "git::https://${GITHOST}/git/happy-day-policy.git"
+            ]
+          }
+        ]
+      },
+      "success": true
+    }
+    """
