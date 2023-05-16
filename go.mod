@@ -6,7 +6,7 @@ require (
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/enterprise-contract/enterprise-contract-controller/api v0.0.0-20230411141906-b8166da93dc9
 	github.com/evanphx/json-patch v5.6.0+incompatible
-	github.com/gkampitakis/go-snaps v0.4.2
+	github.com/gkampitakis/go-snaps v0.4.3
 	github.com/go-logr/logr v1.2.4
 	github.com/google/go-containerregistry v0.14.1-0.20230409045903-ed5c185df419
 	github.com/hako/durafmt v0.0.0-20210608085754-5c1018a4e16b
@@ -132,8 +132,8 @@ require (
 	github.com/evanphx/json-patch/v5 v5.6.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
-	github.com/gkampitakis/ciinfo v0.1.1 // indirect
-	github.com/gkampitakis/go-diff v1.3.0 // indirect
+	github.com/gkampitakis/ciinfo v0.2.4 // indirect
+	github.com/gkampitakis/go-diff v1.3.2 // indirect
 	github.com/go-akka/configuration v0.0.0-20200606091224-a002c0330665 // indirect
 	github.com/go-chi/chi v4.1.2+incompatible // indirect
 	github.com/go-ini/ini v1.67.0 // indirect
@@ -245,9 +245,9 @@ require (
 	github.com/tchap/go-patricia/v2 v2.3.1 // indirect
 	github.com/thales-e-security/pool v0.0.2 // indirect
 	github.com/theupdateframework/go-tuf v0.5.2 // indirect
-	github.com/tidwall/gjson v1.14.3 // indirect
+	github.com/tidwall/gjson v1.14.4 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
-	github.com/tidwall/pretty v1.2.0 // indirect
+	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/tidwall/sjson v1.2.5 // indirect
 	github.com/titanous/rocacheck v0.0.0-20171023193734-afe73141d399 // indirect
 	github.com/tjfoc/gmsm v1.3.2 // indirect
