@@ -18,7 +18,7 @@ require (
 	github.com/qri-io/jsonpointer v0.1.1
 	github.com/qri-io/jsonschema v0.2.2-0.20210831022256-780655b2ba0e
 	github.com/redhat-appstudio/application-api v0.0.0-20230309195839-6e0986f52132
-	github.com/sigstore/cosign/v2 v2.0.2 // not using v2.0.0 to include https://github.com/sigstore/cosign/pull/2752
+	github.com/sigstore/cosign/v2 v2.0.3-0.20230505201329-3121a17d136e
 	github.com/sigstore/sigstore v1.6.4
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/afero v1.9.5
@@ -160,7 +160,7 @@ require (
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
-	github.com/google/certificate-transparency-go v1.1.4 // indirect
+	github.com/google/certificate-transparency-go v1.1.5 // indirect
 	github.com/google/gnostic v0.6.9 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/go-github/v50 v50.2.0 // indirect
@@ -224,15 +224,15 @@ require (
 	github.com/prometheus/statsd_exporter v0.21.0 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
 	github.com/rivo/uniseg v0.4.2 // indirect
-	github.com/rogpeppe/go-internal v1.9.0 // indirect
+	github.com/rogpeppe/go-internal v1.10.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sassoftware/relic v7.2.1+incompatible // indirect
 	github.com/segmentio/ksuid v1.0.4 // indirect
 	github.com/shibumi/go-pathspec v1.3.0 // indirect
 	github.com/shteou/go-ignore v0.3.1 // indirect
-	github.com/sigstore/fulcio v1.2.0 // indirect
+	github.com/sigstore/fulcio v1.3.1 // indirect
 	github.com/sigstore/rekor v1.1.1 // indirect
-	github.com/sigstore/timestamp-authority v1.0.0 // indirect
+	github.com/sigstore/timestamp-authority v1.1.0 // indirect
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966 // indirect
 	github.com/spdx/tools-golang v0.3.1-0.20230104082527-d6f58551be3f // indirect
 	github.com/spf13/cast v1.5.0 // indirect
@@ -252,7 +252,7 @@ require (
 	github.com/titanous/rocacheck v0.0.0-20171023193734-afe73141d399 // indirect
 	github.com/tjfoc/gmsm v1.3.2 // indirect
 	github.com/tmccombs/hcl2json v0.3.1 // indirect
-	github.com/transparency-dev/merkle v0.0.1 // indirect
+	github.com/transparency-dev/merkle v0.0.2 // indirect
 	github.com/ulikunitz/xz v0.5.10 // indirect
 	github.com/vbatts/tar-split v0.11.3 // indirect
 	github.com/xanzy/go-gitlab v0.83.0 // indirect
@@ -262,11 +262,11 @@ require (
 	github.com/zclconf/go-cty v1.10.0 // indirect
 	go.mongodb.org/mongo-driver v1.11.3 // indirect
 	go.opencensus.io v0.24.0 // indirect
-	go.opentelemetry.io/otel v1.14.0 // indirect
-	go.opentelemetry.io/otel/trace v1.14.0 // indirect
+	go.opentelemetry.io/otel v1.15.0 // indirect
+	go.opentelemetry.io/otel/trace v1.15.0 // indirect
 	go.step.sm/crypto v0.29.3 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
-	go.uber.org/multierr v1.9.0 // indirect
+	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.24.0 // indirect
 	golang.org/x/crypto v0.8.0 // indirect
 	golang.org/x/mod v0.10.0 // indirect
@@ -292,11 +292,11 @@ require (
 	k8s.io/api v0.26.3 // indirect
 	k8s.io/apiextensions-apiserver v0.26.3 // indirect
 	k8s.io/component-base v0.26.3 // indirect
-	k8s.io/utils v0.0.0-20230209194617-a36077c30491 // indirect
-	knative.dev/pkg v0.0.0-20230125083639-408ad0773f47 // indirect
+	k8s.io/utils v0.0.0-20230406110748-d93618cff8a2 // indirect
+	knative.dev/pkg v0.0.0-20230404101938-ee73c9355c9d // indirect
 	muzzammil.xyz/jsonc v1.0.0 // indirect
 	olympos.io/encoding/edn v0.0.0-20201019073823-d3554ca0b0a3 // indirect
-	oras.land/oras-go/v2 v2.0.2 // indirect
+	oras.land/oras-go/v2 v2.1.0 // indirect
 	sigs.k8s.io/controller-runtime v0.14.6 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/release-utils v0.7.3 // indirect
