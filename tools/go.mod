@@ -10,8 +10,8 @@ require (
 	github.com/tektoncd/chains v0.16.0
 	github.com/tektoncd/cli v0.31.0
 	github.com/wadey/gocovmerge v0.0.0-20160331181800-b5bfa59ec0ad
-	helm.sh/helm/v3 v3.11.3
-	sigs.k8s.io/kustomize/kustomize/v4 v4.5.7
+	helm.sh/helm/v3 v3.12.0
+	sigs.k8s.io/kustomize/kustomize/v5 v5.0.3
 )
 
 // until https://github.com/grafeas/grafeas/pull/565 is merged/released
@@ -495,16 +495,16 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	honnef.co/go/tools v0.4.3 // indirect
-	k8s.io/api v0.26.4 // indirect
-	k8s.io/apiextensions-apiserver v0.26.0 // indirect
-	k8s.io/apimachinery v0.26.4 // indirect
-	k8s.io/apiserver v0.26.2 // indirect
-	k8s.io/cli-runtime v0.26.0 // indirect
-	k8s.io/client-go v0.26.2 // indirect
-	k8s.io/component-base v0.26.2 // indirect
+	k8s.io/api v0.27.1 // indirect
+	k8s.io/apiextensions-apiserver v0.27.1 // indirect
+	k8s.io/apimachinery v0.27.1 // indirect
+	k8s.io/apiserver v0.27.1 // indirect
+	k8s.io/cli-runtime v0.27.1 // indirect
+	k8s.io/client-go v0.27.1 // indirect
+	k8s.io/component-base v0.27.1 // indirect
 	k8s.io/klog/v2 v2.90.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20230308215209-15aac26d736a // indirect
-	k8s.io/kubectl v0.26.0 // indirect
+	k8s.io/kubectl v0.27.1 // indirect
 	k8s.io/utils v0.0.0-20230220204549-a5ecb0141aa5 // indirect
 	knative.dev/pkg v0.0.0-20230412013349-d3d7625d8e1e // indirect
 	muzzammil.xyz/jsonc v1.0.0 // indirect
@@ -516,9 +516,9 @@ require (
 	oras.land/oras-go v1.2.2 // indirect
 	oras.land/oras-go/v2 v2.0.2 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
-	sigs.k8s.io/kustomize/api v0.12.1 // indirect
-	sigs.k8s.io/kustomize/cmd/config v0.10.9 // indirect
-	sigs.k8s.io/kustomize/kyaml v0.13.9 // indirect
+	sigs.k8s.io/kustomize/api v0.13.4 // indirect
+	sigs.k8s.io/kustomize/cmd/config v0.11.2 // indirect
+	sigs.k8s.io/kustomize/kyaml v0.14.2 // indirect
 	sigs.k8s.io/release-utils v0.7.3 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect

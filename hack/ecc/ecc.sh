@@ -38,4 +38,4 @@ if [ -z "${ECC_VERSION:-}" ]; then
   )
 fi
 
-go run -modfile "${ROOT}/tools/go.mod" sigs.k8s.io/kustomize/kustomize/v4 build "https://github.com/enterprise-contract/enterprise-contract-controller/config/crd?ref=${ECC_VERSION}"
+go run -modfile "${ROOT}/tools/go.mod" sigs.k8s.io/kustomize/kustomize/v5 build "https://github.com/enterprise-contract/enterprise-contract-controller/config/crd?ref=${ECC_VERSION}"
