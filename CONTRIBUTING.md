@@ -10,11 +10,11 @@ Please, make sure you read both of them before contributing, so you can help us 
 
 ## Requesting Support
 
-Before you ask a question, it is best to search for existing [issues](/issues) that might help you. In case you have found a suitable issue and still need clarification, you can write your question in this issue. It is also advisable to search the internet for answers first.
+Before you ask a question, it is best to search for existing [issues](https://github.com/enterprise-contract/ec-cli/issues) that might help you. In case you have found a suitable issue and still need clarification, you can write your question in this issue. It is also advisable to search the internet for answers first.
 
 If you then still feel the need to ask a question and need clarification, we recommend the following:
 
-* Open an [issue](/issues/new).
+* Open an [issue](https://github.com/enterprise-contract/ec-cli/issues/new).
 * Provide as much context as you can about what you’re running into.
 * Provide project and platform versions (golang, operator-sdk, etc), depending on what seems relevant.
 
