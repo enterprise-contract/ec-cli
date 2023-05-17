@@ -1,0 +1,28 @@
+#
+# To use this configuration:
+#   ec validate image ... --policy github.com/enterprise-contract//configs/slsa3
+#
+description: >
+  Use the policy rules from the "minimal" collection, plus the rules associated with level one,
+  two and three of the SLSA v0.1 specification. The minimal and slsa collections are defined in
+  https://enterprisecontract.dev/docs/ec-policies/release_policy.html#_available_rule_collections
+
+publicKey: "k8s://tekton-chains/public-key"
+
+sources:
+  - name: Default
+    policy:
+      - github.com/enterprise-contract/ec-policies//policy/lib
+      - github.com/enterprise-contract/ec-policies//policy/release
+    data:
+      - github.com/enterprise-contract/ec-policies//data
+
+configuration:
+  include:
+    - "@minimal"
+    - "@slsa1"
+    - "@slsa2"
+    - "@slsa3"
+  exclude:
+    # This can be removed once https://issues.redhat.com/browse/OCPBUGS-8428 is addressed
+    - step_image_registries
