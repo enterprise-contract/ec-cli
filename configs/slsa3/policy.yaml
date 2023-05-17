@@ -1,6 +1,6 @@
 #
 # To use this configuration:
-#   ec validate image ... --policy github.com/enterprise-contract//configs/slsa3
+#   ec validate image ... --policy github.com/enterprise-contract/ec-cli//configs/slsa3
 #
 description: >
   Use the policy rules from the "minimal" collection, plus the rules associated with level one,

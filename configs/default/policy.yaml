@@ -1,6 +1,6 @@
 #
 # To use this configuration:
-#   ec validate image ... --policy github.com/enterprise-contract//configs/default
+#   ec validate image ... --policy github.com/enterprise-contract/ec-cli//configs/default
 #
 description: >
   Use the policy rules from the "minimal" collection. This and other collections are defined in
