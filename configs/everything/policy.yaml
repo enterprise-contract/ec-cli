@@ -1,6 +1,6 @@
 #
 # To use this configuration:
-#   ec validate image ... --policy github.com/enterprise-contract//configs/everything
+#   ec validate image ... --policy github.com/enterprise-contract/ec-cli//configs/everything
 #
 description: >
   Identical to the default configuration, but use every rule instead of just the rules
