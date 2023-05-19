@@ -20,6 +20,7 @@ import (
 	"context"
 	_ "embed"
 	"os"
+	"strings"
 	"sync"
 
 	"github.com/cucumber/godog"
@@ -100,7 +101,12 @@ func initializeRoot(ctx context.Context) (context.Context, error) {
 
 // Stub returns the `http://host:port` of the stubbed TUF.
 func Stub(ctx context.Context) (string, error) {
-	return wiremock.Endpoint(ctx)
+	endpoint, err := wiremock.Endpoint(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	return strings.Replace(endpoint, "localhost", "tuf.localhost", 1), nil
 }
 
 // IsRunning returns true if the stubbed TUF is running.
