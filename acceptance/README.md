@@ -114,6 +114,21 @@ easy to reason about the context of the failure. Consider situations where
 all that is available is the log output of the tests and the error message
 from the test failure.
 
+## Using snapshots
+
+We use
+[github.com/gkampitakis/go-snaps](https://github.com/gkampitakis/go-snaps) for
+snapshotting mostly for asserting the standard error and output of the CLI with
+the `the output should match the snapshot` step. The snapshots are placed in the
+`features/__snapshots__` directory.
+
+Sometimes the output changes and the snapshots need updating, this can be done
+by setting `UPDATE_SNAPS=true` environment variable.
+
+NOTE: If subset of features is run, there might be a message from the
+snappshoting library that there are outdated snapshots, the cause of this might
+be that the scenario generating the snapshot was not run.
+
 ## Known Issues
 
 `context deadline exceeded: failed to start container` may occur in some
@@ -136,7 +151,7 @@ podman machine settings.
   * `podman machine ssh`
   * `vi /etc/containers/containers.conf`
   * Set `[network]
-         default_network="bridge"` 
+         default_network="bridge"`
 * Restart the vm
   * `podman machine stop`
   * `podman machine start`

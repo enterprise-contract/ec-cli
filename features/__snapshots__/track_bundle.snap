@@ -1,0 +1,19 @@
+
+[:stdout - 1]
+/-/-/-/
+pipeline-bundles:
+  ${REGISTRY}/acceptance/bundle:
+    - digest: ${REGISTRY_acceptance/bundle:tag_HASH}
+      effective_on: "${TIMESTAMP}"
+      tag: tag
+task-bundles:
+  ${REGISTRY}/acceptance/bundle:
+    - digest: ${REGISTRY_acceptance/bundle:tag_HASH}
+      effective_on: "${TIMESTAMP}"
+      tag: tag
+
+---
+
+[:stderr - 1]
+
+---

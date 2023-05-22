@@ -25,6 +25,7 @@ import (
 	"testing"
 
 	"github.com/cucumber/godog"
+	"github.com/gkampitakis/go-snaps/snaps"
 
 	"github.com/enterprise-contract/ec-cli/acceptance/cli"
 	"github.com/enterprise-contract/ec-cli/acceptance/conftest"
@@ -74,7 +75,7 @@ func initializeScenario(sc *godog.ScenarioContext) {
 		logger, ctx := log.LoggerFor(ctx)
 		logger.Name(sc.Name)
 
-		return ctx, nil
+		return context.WithValue(ctx, testenv.Scenario, sc), nil
 	})
 
 	sc.After(func(ctx context.Context, scenario *godog.Scenario, scenarioErr error) (context.Context, error) {
@@ -127,4 +128,13 @@ func TestFeatures(t *testing.T) {
 	if suite.Run() != 0 {
 		t.Fatal("failure in acceptance tests")
 	}
+}
+
+func TestMain(t *testing.M) {
+	v := t.Run()
+
+	// After all tests have run `go-snaps` can check for not used snapshots
+	snaps.Clean(t)
+
+	os.Exit(v)
 }

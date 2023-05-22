@@ -84,6 +84,7 @@ ACCEPTANCE_TIMEOUT:=20m
 acceptance: ## Run all acceptance tests
 	@ACCEPTANCE_WORKDIR="$$(mktemp -d)"
 	@function cleanup() {
+	  cp "$${ACCEPTANCE_WORKDIR}"/features/__snapshots__/* "$(ROOT_DIR)"/features/__snapshots__/
 	  rm -rf "$${ACCEPTANCE_WORKDIR}"
 	}
 	@trap cleanup EXIT
