@@ -31,7 +31,7 @@ Feature: evaluate enterprise contract
     """
     When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
     Then the exit status should be 0
-    Then the standard output should match baseline file "baselines/happy-output.json"
+    Then the output should match the snapshot
 
   Scenario: happy day with git config and yaml
     Given a key pair named "known"
@@ -46,7 +46,7 @@ Feature: evaluate enterprise contract
       | policy.yaml | examples/happy_config.yaml |
     When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy git::https://${GITHOST}/git/happy-config.git --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
     Then the exit status should be 0
-    Then the standard output should match baseline file "baselines/happy-output.json"
+    Then the output should match the snapshot
 
   Scenario: happy day with git config and json
     Given a key pair named "known"
@@ -61,7 +61,7 @@ Feature: evaluate enterprise contract
       | policy.json | examples/happy_config.json |
     When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy git::https://${GITHOST}/git/happy-config.git --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
     Then the exit status should be 0
-    Then the standard output should match baseline file "baselines/happy-output.json"
+    Then the output should match the snapshot
 
   Scenario: happy day with missing git config
     Given a key pair named "known"
@@ -76,10 +76,7 @@ Feature: evaluate enterprise contract
       | perlicy.json | examples/happy_config.json |
     When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy git::https://${GITHOST}/git/happy-config.git --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
     Then the exit status should be 1
-    Then the standard error should contain
-    """
-    No suitable config file found at git::https://${GITHOST}/git/happy-config.git
-    """
+    Then the output should match the snapshot
 
   Scenario: happy day with keyless
     Given a signed and attested keyless image named "acceptance/ec-happy-day-keyless"
@@ -103,64 +100,7 @@ Feature: evaluate enterprise contract
     # the ec-cli to ignore the tlog altogether.
     When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day-keyless --policy acceptance/ec-policy --rekor-url http://this.is.ignored --certificate-oidc-issuer ${CERT_ISSUER} --certificate-identity ${CERT_IDENTITY} --strict"
     Then the exit status should be 0
-    Then the standard output should contain
-    """
-    {
-      "success": true,
-      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
-      "key": "",
-      "components": [
-        {
-          "name": "Unnamed",
-          "containerImage": "localhost:(\\d+)/acceptance/ec-happy-day",
-          "successes": [
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.attestation.signature_check"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.attestation.syntax_check"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.image.signature_check"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "main.acceptor"
-              }
-            }
-          ],
-          "success": true,
-          "signatures": [
-            {
-              "keyid": "",
-              "metadata": {
-                "predicateBuildType": "tekton.dev/v1beta1/PipelineRun",
-                "predicateType": "https://slsa.dev/provenance/v0.2",
-                "type": "https://in-toto.io/Statement/v0.1"
-              },
-              "sig": "[a-zA-Z0-9/=]*"
-            }
-          ]
-        }
-      ],
-      "policy": {
-        "rekorUrl": "http://this.is.ignored",
-        "sources": [
-          { "policy": ["git::https://${GITHOST}/git/happy-day-policy.git"] }
-        ]
-      }
-    }
-    """
+    Then the output should match the snapshot
 
   Scenario: invalid image signature
     Given a key pair named "known"
@@ -185,42 +125,7 @@ Feature: evaluate enterprise contract
     """
     When ec command is run with "validate image --image ${REGISTRY}/acceptance/invalid-image-signature --policy acceptance/invalid-image-signature-policy --public-key ${unknown_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
     Then the exit status should be 1
-    Then the standard output should contain
-    """
-    {
-      "success": false,
-      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
-      "key": ${unknown_PUBLIC_KEY_JSON},
-      "components": [
-        {
-          "name": "Unnamed",
-          "containerImage": "localhost:(\\d+)/acceptance/invalid-image-signature@sha256:[0-9a-f]{64}",
-          "violations": [
-            {
-              "msg": "No image attestations found matching the given public key. Verify the correct public key was provided, and one or more attestations were created.",
-              "metadata": {
-                "code": "builtin.attestation.signature_check"
-              }
-            },
-            {
-              "msg": "No image signatures found matching the given public key. Verify the correct public key was provided, and a signature was created.",
-              "metadata": {
-                "code": "builtin.image.signature_check"
-              }
-            }
-          ],
-          "success": false
-        }
-      ],
-      "policy": {
-        "publicKey": "${unknown_PUBLIC_KEY}",
-        "rekorUrl": "${REKOR}",
-        "sources": [
-          { "policy": ["git::https://${GITHOST}/git/invalid-image-signature.git"] }
-        ]
-      }
-    }
-    """
+    Then the output should match the snapshot
 
   Scenario: unexpected image signature cert
     Given a signed and attested keyless image named "acceptance/unexpected-keyless-cert"
@@ -244,41 +149,7 @@ Feature: evaluate enterprise contract
     # the ec-cli to ignore the tlog altogether.
     When ec command is run with "validate image --image ${REGISTRY}/acceptance/unexpected-keyless-cert --policy acceptance/ec-policy --rekor-url http://this.is.ignored --certificate-oidc-issuer https://spam.cluster.local --certificate-identity https://kubernetes.io/namespaces/bacon/serviceaccounts/eggs --strict"
     Then the exit status should be 1
-    Then the standard output should contain
-    """
-    {
-      "success": false,
-      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
-      "key": "",
-      "components": [
-        {
-          "name": "Unnamed",
-          "containerImage": "localhost:(\\d+)/acceptance/unexpected-keyless-cert@sha256:[0-9a-f]{64}",
-          "violations": [
-            {
-              "msg": "No image attestations found matching the given public key. Verify the correct public key was provided, and one or more attestations were created.",
-              "metadata": {
-                "code": "builtin.attestation.signature_check"
-              }
-            },
-            {
-              "msg": "No image signatures found matching the given public key. Verify the correct public key was provided, and a signature was created.",
-              "metadata": {
-                "code": "builtin.image.signature_check"
-              }
-            }
-          ],
-          "success": false
-        }
-      ],
-      "policy": {
-        "rekorUrl": "http://this.is.ignored",
-        "sources": [
-          { "policy": ["git::https://${GITHOST}/git/unexpected-keyless-cert.git"] }
-        ]
-      }
-    }
-    """
+    Then the output should match the snapshot
 
   Scenario: inline policy
     Given a key pair named "known"
@@ -291,55 +162,7 @@ Feature: evaluate enterprise contract
       | main.rego | examples/happy_day.rego |
     When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy {"sources":[{"policy":["git::https://${GITHOST}/git/happy-day-policy.git"]}]} --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
     Then the exit status should be 0
-    Then the standard output should contain
-    """
-    {
-      "success": true,
-      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
-      "key": ${known_PUBLIC_KEY_JSON},
-      "components": [
-        {
-          "name": "Unnamed",
-          "containerImage": "localhost:(\\d+)/acceptance/ec-happy-day",
-          "successes": [
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.attestation.signature_check"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.attestation.syntax_check"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.image.signature_check"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "main.acceptor"
-              }
-            }
-          ],
-          "success": true,
-          "signatures": ${ATTESTATION_SIGNATURES_JSON}
-        }
-      ],
-      "policy": {
-        "publicKey": "${known_PUBLIC_KEY}",
-        "rekorUrl": "${REKOR}",
-        "sources": [
-          { "policy": ["git::https://${GITHOST}/git/happy-day-policy.git"] }
-        ]
-      }
-    }
-    """
+    Then the output should match the snapshot
 
   Scenario: future failure is converted to a warning
     Given a key pair named "known"
@@ -352,57 +175,7 @@ Feature: evaluate enterprise contract
       | main.rego | examples/future_deny.rego |
     When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy {"sources":[{"policy":["git::https://${GITHOST}/git/future-deny-policy.git"]}]} --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
     Then the exit status should be 0
-    Then the standard output should contain
-    """
-    {
-      "success": true,
-      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
-      "key": ${known_PUBLIC_KEY_JSON},
-      "components": [
-        {
-          "name": "Unnamed",
-          "containerImage": "localhost:(\\d+)/acceptance/ec-happy-day",
-          "warnings": [
-            {
-              "metadata": {
-                "effective_on": "2099-01-01T00:00:00Z"
-              },
-              "msg": "Fails in 2099"
-            }
-          ],
-          "successes": [
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.attestation.signature_check"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.attestation.syntax_check"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.image.signature_check"
-              }
-            }
-          ],
-          "success": true,
-          "signatures": ${ATTESTATION_SIGNATURES_JSON}
-        }
-      ],
-      "policy": {
-        "publicKey": "${known_PUBLIC_KEY}",
-        "rekorUrl": "${REKOR}",
-        "sources": [
-          { "policy": ["git::https://${GITHOST}/git/future-deny-policy.git"] }
-        ]
-      }
-    }
-    """
+    Then the output should match the snapshot
 
   Scenario: future failure is a deny when using effective-date flag
     Given a key pair named "known"
@@ -415,57 +188,7 @@ Feature: evaluate enterprise contract
       | main.rego | examples/future_deny.rego |
     When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy {"sources":[{"policy":["git::https://${GITHOST}/git/future-deny-policy.git"]}]} --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --effective-time 2100-01-01T12:00:00Z --strict"
     Then the exit status should be 1
-    Then the standard output should contain
-    """
-    {
-      "success": false,
-      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
-      "key": ${known_PUBLIC_KEY_JSON},
-      "components": [
-        {
-          "name": "Unnamed",
-          "containerImage": "localhost:(\\d+)/acceptance/ec-happy-day",
-          "violations": [
-            {
-              "metadata": {
-                "effective_on": "2099-01-01T00:00:00Z"
-              },
-              "msg": "Fails in 2099"
-            }
-          ],
-          "successes": [
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.attestation.signature_check"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.attestation.syntax_check"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.image.signature_check"
-              }
-            }
-          ],
-          "success": false,
-          "signatures": ${ATTESTATION_SIGNATURES_JSON}
-        }
-      ],
-      "policy": {
-        "publicKey": "${known_PUBLIC_KEY}",
-        "rekorUrl": "${REKOR}",
-        "sources": [
-          { "policy": ["git::https://${GITHOST}/git/future-deny-policy.git"] }
-        ]
-      }
-    }
-    """
+    Then the output should match the snapshot
 
   Scenario: multiple policy sources with multiple source groups
     Given a key pair named "known"
@@ -492,70 +215,7 @@ Feature: evaluate enterprise contract
     """
     When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-multiple-sources --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
     Then the exit status should be 1
-    Then the standard output should contain
-    """
-    {
-      "success": false,
-      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
-      "key": ${known_PUBLIC_KEY_JSON},
-      "components": [
-        {
-          "name": "Unnamed",
-          "containerImage": "localhost:(\\d+)/acceptance/ec-multiple-sources@sha256:[0-9a-f]{64}",
-          "violations": [
-            {
-              "msg": "Fails always",
-              "metadata": {
-                "code": "main.rejector"
-              }
-            }
-          ],
-          "warnings": [
-            {
-              "msg": "Has a warning"
-            }
-          ],
-          "successes": [
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.attestation.signature_check"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.attestation.syntax_check"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.image.signature_check"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "main.acceptor"
-              }
-            }
-          ],
-          "success": false,
-          "signatures": ${ATTESTATION_SIGNATURES_JSON}
-        }
-      ],
-      "policy": {
-        "publicKey": "${known_PUBLIC_KEY}",
-        "rekorUrl": "${REKOR}",
-        "sources": [
-          { "policy": ["git::https://${GITHOST}/git/repository1.git"] },
-          { "policy": ["git::https://${GITHOST}/git/repository2.git"] },
-          { "policy": ["git::https://${GITHOST}/git/repository3.git"] }
-        ]
-      }
-    }
-    """
+    Then the output should match the snapshot
 
   #
   # Todo: There is much duplication with the previous scenario. There should
@@ -594,72 +254,7 @@ Feature: evaluate enterprise contract
     """
     When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-multiple-sources --policy acceptance/ec-policy-variation --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
     Then the exit status should be 1
-    Then the standard output should contain
-    """
-    {
-      "success": false,
-      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
-      "key": ${known_PUBLIC_KEY_JSON},
-      "components": [
-        {
-          "name": "Unnamed",
-          "containerImage": "localhost:(\\d+)/acceptance/ec-multiple-sources@sha256:[0-9a-f]{64}",
-          "violations": [
-            {
-              "msg": "Fails always",
-              "metadata": {
-                "code": "main.rejector"
-              }
-            }
-          ],
-          "warnings": [
-            {
-              "msg": "Has a warning"
-            }
-          ],
-          "successes": [
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.attestation.signature_check"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.attestation.syntax_check"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.image.signature_check"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "main.acceptor"
-              }
-            }
-          ],
-          "success": false,
-          "signatures": ${ATTESTATION_SIGNATURES_JSON}
-        }
-      ],
-      "policy": {
-        "publicKey": "${known_PUBLIC_KEY}",
-        "rekorUrl": "${REKOR}",
-        "sources": [
-          {"policy": [
-            "git::https://${GITHOST}/git/repository1.git",
-            "git::https://${GITHOST}/git/repository2.git",
-            "git::https://${GITHOST}/git/repository3.git"
-          ]}
-        ]
-      }
-    }
-    """
+    Then the output should match the snapshot
 
   # Demonstrate that a validation with no failures, warnings, or successes constitutes a failure as nothing was actually evaluated.
   Scenario: no failures, warnings, or successes
@@ -725,72 +320,7 @@ Feature: evaluate enterprise contract
     """
     When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
     Then the exit status should be 1
-    Then the standard output should contain
-    """
-    {
-      "success": false,
-      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
-      "key": ${known_PUBLIC_KEY_JSON},
-      "components": [
-        {
-          "name": "Unnamed",
-          "containerImage": "localhost:(\\d+)/acceptance/ec-happy-day",
-          "violations": [
-            {
-              "msg": "Failure due to overripeness"
-            },
-            {
-              "msg": "Failure due to spider attack"
-            }
-          ],
-          "successes": [
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.attestation.signature_check"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.attestation.syntax_check"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.image.signature_check"
-              }
-            }
-          ],
-          "success": false,
-          "signatures": ${ATTESTATION_SIGNATURES_JSON}
-        }
-      ],
-      "policy": {
-        "publicKey": "${known_PUBLIC_KEY}",
-        "rekorUrl": "${REKOR}",
-        "sources": [
-          {
-            "policy": [
-              "git::https://${GITHOST}/git/banana_check.git"
-            ],
-            "data": [
-              "git::https://${GITHOST}/git/banana_data_1.git"
-            ]
-          },
-          {
-            "policy": [
-              "git::https://${GITHOST}/git/banana_check.git"
-            ],
-            "data": [
-              "git::https://${GITHOST}/git/banana_data_2.git"
-            ]
-          }
-        ]
-      }
-    }
-    """
+    Then the output should match the snapshot
 
   Scenario: using attestation time as effective time
     Given a key pair named "known"
@@ -802,56 +332,7 @@ Feature: evaluate enterprise contract
       | main.rego | examples/future_deny.rego |
     When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy {"sources":[{"policy":["git::https://${GITHOST}/git/future-deny-policy.git"]}]} --public-key ${known_PUBLIC_KEY} --effective-time attestation --strict"
     Then the exit status should be 1
-    Then the standard output should contain
-    """
-    {
-      "success": false,
-      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
-      "key": ${known_PUBLIC_KEY_JSON},
-      "components": [
-        {
-          "name": "Unnamed",
-          "containerImage": "localhost:(\\d+)/acceptance/ec-happy-day",
-          "violations": [
-            {
-              "metadata": {
-                "effective_on": "2099-01-01T00:00:00Z"
-              },
-              "msg": "Fails in 2099"
-            }
-          ],
-          "successes": [
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.attestation.signature_check"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.attestation.syntax_check"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.image.signature_check"
-              }
-            }
-          ],
-          "success": false,
-          "signatures": ${ATTESTATION_SIGNATURES_JSON}
-        }
-      ],
-      "policy": {
-        "publicKey": "${known_PUBLIC_KEY}",
-        "sources": [
-          { "policy": ["git::https://${GITHOST}/git/future-deny-policy.git"] }
-        ]
-      }
-    }
-    """
+    Then the output should match the snapshot
 
   Scenario: detailed failures output
     Given a key pair named "known"
@@ -875,72 +356,7 @@ Feature: evaluate enterprise contract
     """
     When ec command is run with "validate image --image ${REGISTRY}/acceptance/image --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --info --strict"
     Then the exit status should be 1
-    Then the standard output should contain
-    """
-    {
-      "components": [
-        {
-          "containerImage": "localhost:(\\d+)/acceptance/image",
-          "name": "Unnamed",
-          "signatures": ${ATTESTATION_SIGNATURES_JSON},
-          "success": false,
-          "violations": [
-            {
-              "msg": "Fails always",
-              "metadata": {
-                "title": "Reject rule",
-                "description": "This rule will always fail",
-                "solution": "None",
-                "code": "main.rejector",
-                "collections": ["A"]
-              }
-            }
-          ],
-          "successes": [
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.attestation.signature_check",
-                "title": "Attestation signature check passed"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.attestation.syntax_check",
-                "title": "Attestation syntax check passed"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.image.signature_check",
-                "title": "Image signature check passed"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "title": "Allow rule",
-                "description": "This rule will never fail",
-                "code": "main.acceptor",
-                "collections": ["A"]
-              }
-            }
-          ]
-        }
-      ],
-      "policy": {
-        "publicKey": "${known_PUBLIC_KEY}",
-        "sources": [
-          { "policy": ["git::https://${GITHOST}/git/happy-day-policy.git"] }
-        ]
-      },
-      "key": ${known_PUBLIC_KEY_JSON},
-      "success": false,
-      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+"
-    }
-    """
+    Then the output should match the snapshot
 
   Scenario: policy rule filtering
     Given a key pair named "known"
@@ -969,65 +385,7 @@ Feature: evaluate enterprise contract
     """
     When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
     Then the exit status should be 0
-    Then the standard output should contain
-    """
-    {
-      "success": true,
-      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
-      "key": ${known_PUBLIC_KEY_JSON},
-      "components": [
-        {
-          "name": "Unnamed",
-          "containerImage": "localhost:(\\d+)/acceptance/ec-happy-day",
-          "success": true,
-          "signatures": ${ATTESTATION_SIGNATURES_JSON},
-          "successes": [
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.attestation.signature_check"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.attestation.syntax_check"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.image.signature_check"
-              }
-            },
-            {"metadata": {"code": "filtering.always_pass"}, "msg": "Pass"},
-            {"metadata": {"code": "filtering.always_pass_with_collection"}, "msg": "Pass"}
-          ]
-        }
-      ],
-      "policy": {
-        "configuration": {
-          "exclude": [
-            "filtering.always_fail",
-            "filtering.always_fail_with_collection"
-          ],
-          "include": [
-            "@stamps",
-            "filtering.always_pass"
-          ]
-        },
-        "publicKey": "${known_PUBLIC_KEY}",
-        "rekorUrl": "${REKOR}",
-        "sources": [
-          {
-            "policy": [
-              "git::https://${GITHOST}/git/happy-day-policy.git"
-            ]
-          }
-        ]
-      }
-    }
-    """
+    Then the output should match the snapshot
 
   Scenario: policy rule filtering for successes
     Given a key pair named "known"
@@ -1054,62 +412,7 @@ Feature: evaluate enterprise contract
     """
     When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --strict"
     Then the exit status should be 0
-    Then the standard output should contain
-    """
-    {
-      "success": true,
-      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
-      "key": ${known_PUBLIC_KEY_JSON},
-      "components": [
-        {
-          "name": "Unnamed",
-          "containerImage": "localhost:(\\d+)/acceptance/ec-happy-day",
-          "success": true,
-          "signatures": ${ATTESTATION_SIGNATURES_JSON},
-          "successes": [
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.attestation.signature_check"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.attestation.syntax_check"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.image.signature_check"
-              }
-            },
-            {
-              "metadata": {
-                "code": "filtering.always_pass"
-              },
-              "msg": "Pass"
-            }
-          ]
-        }
-      ],
-      "policy": {
-        "configuration": {
-          "include": ["@stamps", "filtering.always_pass"],
-          "exclude": ["filtering.always_pass_with_collection", "filtering.always_fail_with_collection"]
-        },
-        "publicKey": "${known_PUBLIC_KEY}",
-        "sources": [
-          {
-            "policy": [
-              "git::https://${GITHOST}/git/happy-day-policy.git"
-            ]
-          }
-        ]
-      }
-    }
-    """
+    Then the output should match the snapshot
 
   Scenario: inline application snapshot
     Given a key pair named "known"
@@ -1132,54 +435,7 @@ Feature: evaluate enterprise contract
     """
     When ec command is run with "validate image --json-input {"components":[{"name":"Happy","containerImage":"${REGISTRY}/acceptance/ec-happy-day"}]} --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --strict"
     Then the exit status should be 0
-    Then the standard output should contain
-    """
-    {
-      "success": true,
-      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
-      "key": ${known_PUBLIC_KEY_JSON},
-      "components": [
-        {
-          "name": "Happy",
-          "containerImage": "localhost:(\\d+)/acceptance/ec-happy-day@sha256:[0-9a-f]{64}",
-          "successes": [
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.attestation.signature_check"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.attestation.syntax_check"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.image.signature_check"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "main.acceptor"
-              }
-            }
-          ],
-          "success": true,
-          "signatures": ${ATTESTATION_SIGNATURES_JSON}
-        }
-      ],
-      "policy": {
-        "publicKey": "${known_PUBLIC_KEY}",
-        "sources": [
-          { "policy": ["git::https://${GITHOST}/git/happy-day-policy.git"] }
-        ]
-      }
-    }
-    """
+    Then the output should match the snapshot
 
   Scenario: application snapshot reference
     Given a key pair named "known"
@@ -1213,55 +469,7 @@ Feature: evaluate enterprise contract
     """
     When ec command is run with "validate image --snapshot acceptance/happy --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --strict"
     Then the exit status should be 0
-    Then the standard output should contain
-    """
-    {
-      "success": true,
-      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
-      "key": ${known_PUBLIC_KEY_JSON},
-      "snapshot": "acceptance/happy",
-      "components": [
-        {
-          "name": "Happy",
-          "containerImage": "localhost:(\\d+)/acceptance/ec-happy-day@sha256:[0-9a-f]{64}",
-          "successes": [
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.attestation.signature_check"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.attestation.syntax_check"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.image.signature_check"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "main.acceptor"
-              }
-            }
-          ],
-          "success": true,
-          "signatures": ${ATTESTATION_SIGNATURES_JSON}
-        }
-      ],
-      "policy": {
-        "publicKey": "${known_PUBLIC_KEY}",
-        "sources": [
-          { "policy": ["git::https://${GITHOST}/git/happy-day-policy.git"] }
-        ]
-      }
-    }
-    """
+    Then the output should match the snapshot
 
   Scenario: JUnit output format
     Given a key pair named "known"
@@ -1285,10 +493,7 @@ Feature: evaluate enterprise contract
     """
     When ec command is run with "validate image --image ${REGISTRY}/acceptance/image --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --output junit --strict"
     Then the exit status should be 1
-    Then the standard output should contain
-    """
-    <testsuites><testsuite name="Unnamed \(localhost:\d+\/acceptance\/image@sha256:[0-9a-f]{64}\)" tests="5" errors="0" failures="1" time="0" timestamp="\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{1,9}Z" hostname="">(<property name="image" value="localhost:\d+\/acceptance\/image@sha256:[0-9a-f]{64}"><\/property>|<property name="key" value="-----BEGIN PUBLIC KEY-----[^"]+"><\/property>|<property name="success" value="false"><\/property>|<property name="keyId" value=""><\/property>|<property name="signature" value="[a-zA-Z0-9+\/]+={0,2}"><\/property>|<property name="metadata.predicateType" value="https:\/\/slsa.dev\/provenance\/v0.2"><\/property>|<property name="metadata.type" value="https:\/\/in-toto.io\/Statement\/v0.1"><\/property>|<property name="metadata.predicateBuildType" value="https:\/\/tekton.dev\/attestations\/chains\/pipelinerun@v2"><\/property>)+<testcase name="builtin.attestation.signature_check: Pass" classname="builtin.attestation.signature_check: Pass" time="0"><\/testcase><testcase name="builtin.attestation.syntax_check: Pass" classname="builtin.attestation.syntax_check: Pass" time="0"><\/testcase><testcase name="builtin.image.signature_check: Pass" classname="builtin.image.signature_check: Pass" time="0"><\/testcase><testcase name="main.acceptor: Pass" classname="main.acceptor: Pass" time="0"><\/testcase><testcase name="main.rejector: Fails always" classname="main.rejector: Fails always" time="0"><failure message="Fails always" type=""><!\[CDATA\[Fails always\]\]><\/failure><\/testcase><\/testsuite><\/testsuites>
-    """
+    Then the output should match the snapshot
 
   Scenario: Using OCI bundles
     Given a key pair named "known"
@@ -1314,59 +519,7 @@ Feature: evaluate enterprise contract
     """
     When ec command is run with "validate image --image ${REGISTRY}/acceptance/my-image --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --strict"
     Then the exit status should be 0
-    Then the standard output should contain
-    """
-    {
-      "success": true,
-      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
-      "key": ${known_PUBLIC_KEY_JSON},
-      "components": [
-        {
-          "name": "Unnamed",
-          "containerImage": "localhost:(\\d+)/acceptance/my-image@sha256:[0-9a-f]{64}",
-          "successes": [
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.attestation.signature_check"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.attestation.syntax_check"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.image.signature_check"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "main.acceptor"
-              }
-            }
-          ],
-          "success": true,
-          "signatures": ${ATTESTATION_SIGNATURES_JSON}
-        }
-      ],
-      "policy": {
-        "publicKey": "${known_PUBLIC_KEY}",
-        "sources": [
-          {
-            "policy": [
-              "oci::https://${REGISTRY}/acceptance/happy-day-policy:tag",
-              "oci::${REGISTRY}/acceptance/allow-all:latest"
-            ]
-          }
-        ]
-      }
-    }
-    """
+    Then the output should match the snapshot
 
   Scenario: Dropping rego capabilities
     Given a key pair named "known"
@@ -1391,16 +544,7 @@ Feature: evaluate enterprise contract
     """
     When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
     Then the exit status should be 1
-    Then the standard error should contain
-    """
-    \* error validating image ${REGISTRY}/acceptance/ec-happy-day of component Unnamed: load: loading policies: get compiler: 3 errors occurred:
-    .* undefined function opa\.runtime
-    .* undefined function http\.send
-    .* undefined function net\.lookup_ip_addr
-    """
-    Then the standard output should contain
-    """
-    """
+    Then the output should match the snapshot
 
   Scenario: Custom rule data
     Given a key pair named "known"
@@ -1436,63 +580,7 @@ Feature: evaluate enterprise contract
     """
     When ec command is run with "validate image --image ${REGISTRY}/acceptance/image --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --strict"
     Then the exit status should be 0
-    Then the standard output should contain
-    """
-    {
-      "components": [
-        {
-          "containerImage": "localhost:(\\d+)/acceptance/image@sha256:[0-9a-f]{64}",
-          "name": "Unnamed",
-          "signatures": ${ATTESTATION_SIGNATURES_JSON},
-          "success": true,
-          "successes": [
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.attestation.signature_check"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.attestation.syntax_check"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.image.signature_check"
-              }
-            }
-          ]
-        }
-      ],
-      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
-      "key": ${known_PUBLIC_KEY_JSON},
-      "policy": {
-        "publicKey": "${known_PUBLIC_KEY}",
-        "sources": [
-          {
-            "policy": [
-              "git::https://${GITHOST}/git/my-policy1.git"
-            ],
-            "ruleData": {
-              "custom": "data1"
-            }
-          },
-          {
-            "policy": [
-              "git::https://${GITHOST}/git/my-policy2.git"
-            ],
-            "ruleData": {
-              "other": "data2"
-            }
-          }
-        ]
-      },
-      "success": true
-    }
-    """
+    Then the output should match the snapshot
 
   Scenario: mismatched image digest in signature
     Given a key pair named "known"
@@ -1516,60 +604,7 @@ Feature: evaluate enterprise contract
     """
     When ec command is run with "validate image --image ${REGISTRY}/acceptance/bad-actor --policy acceptance/mismatched-image-digest --public-key ${known_PUBLIC_KEY} --strict"
     Then the exit status should be 1
-    Then the standard error should contain
-    """
-    Error: success criteria not met
-    """
-    Then the standard output should contain
-    """
-    {
-      "success": false,
-      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
-      "key": ${known_PUBLIC_KEY_JSON},
-      "components": [
-        {
-          "name": "Unnamed",
-          "containerImage": "localhost:(\\d+)/acceptance/bad-actor@sha256:[0-9a-f]{64}",
-          "violations": [
-            {
-              "msg": "No image signatures found matching the given public key. Verify the correct public key was provided, and a signature was created.",
-              "metadata": {
-                "code": "builtin.image.signature_check"
-              }
-            }
-          ],
-          "successes": [
-            {
-              "metadata": {
-                "code": "builtin.attestation.signature_check"
-              },
-              "msg": "Pass"
-            },
-            {
-              "metadata": {
-                "code": "builtin.attestation.syntax_check"
-              },
-              "msg": "Pass"
-            },
-            {
-              "metadata": {
-                "code": "main.acceptor"
-              },
-              "msg": "Pass"
-            }
-          ],
-          "success": false,
-          "signatures": ${ATTESTATION_SIGNATURES_JSON}
-        }
-      ],
-      "policy": {
-        "publicKey": "${known_PUBLIC_KEY}",
-        "sources": [
-          { "policy": ["git::https://${GITHOST}/git/mismatched-image-digest.git"] }
-        ]
-      }
-    }
-    """
+    Then the output should match the snapshot
 
   Scenario: mismatched image digest in attestation
     Given a key pair named "known"
@@ -1593,47 +628,7 @@ Feature: evaluate enterprise contract
     """
     When ec command is run with "validate image --image ${REGISTRY}/acceptance/bad-actor --policy acceptance/mismatched-image-digest --public-key ${known_PUBLIC_KEY} --strict"
     Then the exit status should be 1
-    Then the standard error should contain
-    """
-    Error: success criteria not met
-    """
-    Then the standard output should contain
-    """
-    {
-      "success": false,
-      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
-      "key": ${known_PUBLIC_KEY_JSON},
-      "components": [
-        {
-          "name": "Unnamed",
-          "containerImage": "localhost:(\\d+)/acceptance/bad-actor@sha256:[0-9a-f]{64}",
-          "violations": [
-            {
-              "msg": "No image attestations found matching the given public key. Verify the correct public key was provided, and one or more attestations were created.",
-              "metadata": {
-                "code": "builtin.attestation.signature_check"
-              }
-            }
-          ],
-          "successes": [
-            {
-              "metadata": {
-                "code": "builtin.image.signature_check"
-              },
-              "msg": "Pass"
-            }
-          ],
-          "success": false
-        }
-      ],
-      "policy": {
-        "publicKey": "${known_PUBLIC_KEY}",
-        "sources": [
-          { "policy": ["git::https://${GITHOST}/git/mismatched-image-digest.git"] }
-        ]
-      }
-    }
-    """
+    Then the output should match the snapshot
 
   Scenario: artifact relocation
     Given a key pair named "known"
@@ -1659,56 +654,4 @@ Feature: evaluate enterprise contract
     When all images relating to "acceptance/source" are copied to "acceptance/destination"
     And ec command is run with "validate image --image ${REGISTRY}/acceptance/destination --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
     Then the exit status should be 0
-    Then the standard output should contain
-    """
-    {
-      "components": [
-        {
-          "containerImage": "localhost:(\\d+)/acceptance/destination@sha256:[0-9a-f]{64}",
-          "name": "Unnamed",
-          "signatures": ${ATTESTATION_SIGNATURES_JSON},
-          "success": true,
-          "successes": [
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.attestation.signature_check"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.attestation.syntax_check"
-              }
-            },
-            {
-              "msg": "Pass",
-              "metadata": {
-                "code": "builtin.image.signature_check"
-              }
-            },
-            {
-              "metadata": {
-                "code": "main.acceptor"
-              },
-              "msg": "Pass"
-            }
-          ]
-        }
-      ],
-      "ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+",
-      "key": ${known_PUBLIC_KEY_JSON},
-      "policy": {
-        "publicKey": "${known_PUBLIC_KEY}",
-        "rekorUrl": "${REKOR}",
-        "sources": [
-          {
-            "policy": [
-              "git::https://${GITHOST}/git/happy-day-policy.git"
-            ]
-          }
-        ]
-      },
-      "success": true
-    }
-    """
+    Then the output should match the snapshot

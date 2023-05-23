@@ -1,0 +1,136 @@
+// Copyright 2023 Red Hat, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+// SPDX-License-Identifier: Apache-2.0
+
+package snaps
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"os"
+	"path"
+	"path/filepath"
+	"regexp"
+	"strings"
+	"testing"
+	"time"
+
+	"github.com/cucumber/godog"
+	"github.com/gkampitakis/go-snaps/snaps"
+	"github.com/hashicorp/go-multierror"
+
+	"github.com/enterprise-contract/ec-cli/acceptance/testenv"
+)
+
+var currentYear = time.Now().Year()
+var timestampRegex = regexp.MustCompile(fmt.Sprintf(`%d-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?Z`, currentYear)) // generalized timestamp in the current year
+var tempPathRegex = regexp.MustCompile(`\$\{TEMP\}([^: ]+)[: ]?`)                                                    // starts with "${TEMP}" and ends with something not in path, perhaps breaks on Windows due to the colon
+var randomBitsRegex = regexp.MustCompile(`([a-f\d]+)$`)                                                              // in general, we add random bits to paths as suffixes
+
+type errCapture struct {
+	t         *testing.T
+	scenario  *godog.Scenario
+	qualifier string
+	err       error
+}
+
+func (e errCapture) Helper() {
+	e.t.Helper()
+}
+
+func (e errCapture) Skip(args ...interface{}) {
+	e.t.Skip(args...)
+}
+
+func (e errCapture) Skipf(format string, args ...interface{}) {
+	e.t.Skipf(format, args...)
+}
+
+func (e errCapture) SkipNow() {
+	e.t.SkipNow()
+}
+
+func (e errCapture) Name() string {
+	return e.scenario.Name + ":" + e.qualifier
+}
+
+func (e *errCapture) Error(args ...interface{}) {
+	err := errors.New(fmt.Sprint(args...))
+	var merr error = multierror.Append(e.err, err)
+	e.err = merr
+}
+
+func (e errCapture) Log(args ...interface{}) {
+}
+
+func capture(ctx context.Context, qualifier string) errCapture {
+	t := testenv.Testing(ctx)
+
+	scenario := ctx.Value(testenv.Scenario).(*godog.Scenario)
+	return errCapture{
+		t:         t,
+		scenario:  scenario,
+		qualifier: qualifier,
+	}
+}
+
+func MatchSnapshot(ctx context.Context, qualifier, text string, vars map[string]string) error {
+	errs := capture(ctx, qualifier)
+
+	for k, v := range vars {
+		text = strings.ReplaceAll(text, v, "${"+k+"}")
+	}
+
+	// replace any remaining timestamps
+	text = timestampRegex.ReplaceAllString(text, "$${TIMESTAMP}")
+
+	// handle temp directories, replace local temp path with "${TEMP}"
+	text = strings.ReplaceAll(text, os.TempDir(), "${TEMP}")
+
+	// find all ${TEMP}/dir1/dir2/.../file.ext paths
+	submatches := tempPathRegex.FindAllStringSubmatch(text, -1)
+	for _, submatch := range submatches {
+		if len(submatch) == 1 {
+			continue
+		}
+
+		path := submatch[1]
+
+		parts := strings.Split(path, string(os.PathSeparator))
+
+		for i, part := range parts {
+			parts[i] = randomBitsRegex.ReplaceAllString(part, "$${RANDOM}")
+		}
+
+		// here we want `/` so that snapshots don't differentiate between
+		// systems
+		text = strings.ReplaceAll(text, path, strings.Join(parts, "/"))
+	}
+
+	wd, err := os.Getwd()
+
+	if err != nil {
+		return err
+	}
+
+	scenario := ctx.Value(testenv.Scenario).(*godog.Scenario)
+
+	snapshot := strings.TrimSuffix(filepath.Base(scenario.Uri), filepath.Ext(scenario.Uri))
+
+	snaps.WithConfig(snaps.Dir(path.Join(wd, "features", "__snapshots__")), snaps.Filename(snapshot)).MatchSnapshot(&errs, text)
+
+	return errs.err
+}

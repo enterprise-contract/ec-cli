@@ -21,6 +21,7 @@ package image
 import (
 	"context"
 	"encoding/base64"
+	"encoding/xml"
 	"fmt"
 	"io"
 	"os"
@@ -46,6 +47,7 @@ import (
 	cosigntypes "github.com/sigstore/cosign/v2/pkg/types"
 	"github.com/sigstore/sigstore/pkg/signature"
 	"gopkg.in/square/go-jose.v2/json"
+	"k8s.io/kubernetes/test/utils/junit"
 
 	"github.com/enterprise-contract/ec-cli/acceptance/attestation"
 	"github.com/enterprise-contract/ec-cli/acceptance/crypto"
@@ -477,8 +479,19 @@ func storeAttestationSignatures(ctx context.Context, rawAttestation []byte) (con
 		return nil, err
 	}
 
-	signatures := make([]entitySignature, 0, len(attestationPayload.Signatures))
-	for _, signature := range attestationPayload.Signatures {
+	return context.WithValue(ctx, imageAttestationSignaturesKey, attestationPayload.Signatures), nil
+}
+
+// JSONAttestationSignaturesFrom returns the list of attestation signatures found in the context in
+// JSON format. If not found, and empty JSON array is returned.
+func JSONAttestationSignaturesFrom(ctx context.Context) (string, error) {
+	sigs, ok := ctx.Value(imageAttestationSignaturesKey).([]cosign.Signatures)
+	if !ok {
+		return "", nil
+	}
+
+	signatures := make([]entitySignature, 0, len(sigs))
+	for _, signature := range sigs {
 		signatures = append(signatures, entitySignature{
 			KeyID:     signature.KeyID,
 			Signature: signature.Sig,
@@ -491,20 +504,34 @@ func storeAttestationSignatures(ctx context.Context, rawAttestation []byte) (con
 	}
 	signaturesJson, err := json.Marshal(signatures)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return context.WithValue(ctx, imageAttestationSignaturesKey, string(signaturesJson)), nil
+	return string(signaturesJson), nil
 }
 
-// JSONAttestationSignaturesFrom returns the list of attestation signatures found in the context in
-// JSON format. If not found, and empty JSON array is returned.
-func JSONAttestationSignaturesFrom(ctx context.Context) string {
-	sigs, ok := ctx.Value(imageAttestationSignaturesKey).(string)
+func XMLAttestationSignaturesFrom(ctx context.Context) (string, error) {
+	sigs, ok := ctx.Value(imageAttestationSignaturesKey).([]cosign.Signatures)
 	if !ok {
-		return "[]"
+		return "", nil
 	}
-	return sigs
+
+	properties := make([]junit.Property, 0, 2*len(sigs))
+	for _, signature := range sigs {
+		properties = append(properties, junit.Property{
+			Name:  "keyId",
+			Value: signature.KeyID,
+		}, junit.Property{
+			Name:  "signature",
+			Value: signature.Sig,
+		})
+	}
+
+	if signaturesXML, err := xml.Marshal(properties); err != nil {
+		return "", err
+	} else {
+		return string(signaturesXML), nil
+	}
 }
 
 func applyPatches(statement *in_toto.ProvenanceStatement, patches *godog.Table) (*in_toto.ProvenanceStatement, error) {

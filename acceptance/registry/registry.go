@@ -23,6 +23,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"sort"
+	"strings"
 	"time"
 
 	"github.com/cucumber/godog"
@@ -163,6 +165,7 @@ func AllHashes(ctx context.Context) (map[string]string, error) {
 	}
 
 	all := map[string]string{}
+	refsByDigest := map[string][]string{}
 	for _, repository := range repositories {
 		r, err := name.NewRepository(repository, name.WithDefaultRegistry(url))
 		if err != nil {
@@ -185,9 +188,30 @@ func AllHashes(ctx context.Context) (map[string]string, error) {
 				return nil, err
 			}
 
-			all[repository+":"+tag] = descriptor.Digest.String()
+			digest := descriptor.Digest.String()
+			imgRef := repository + ":" + tag
+			all[imgRef] = digest
+			refsByDigest[digest] = append(refsByDigest[digest], imgRef)
+		}
+	}
+
+	// images could have same hashes, then our matching fails as we could
+	// reversly map a digest to either of the two or more references, with this
+	// we remove the references with the same digest and map to a synthetic
+	// "IMAGE_ref1|ref2|..." reference
+	for _, digest := range all {
+		if len(refsByDigest[digest]) == 1 {
+			// unique digest
+			continue
 		}
 
+		for _, sameDigestRef := range refsByDigest[digest] {
+			delete(all, sameDigestRef)
+		}
+
+		sort.Strings(refsByDigest[digest])
+		refs := strings.Join(refsByDigest[digest], "|")
+		all["IMAGE_"+refs] = digest
 	}
 
 	return all, nil

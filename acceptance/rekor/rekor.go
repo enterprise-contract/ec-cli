@@ -28,6 +28,7 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"errors"
+	"strings"
 
 	"github.com/cucumber/godog"
 	"github.com/cyberphone/json-canonicalization/go/src/webpki.org/jsoncanonicalizer"
@@ -316,7 +317,12 @@ func rekorEntryForImageSignature(ctx context.Context, imageName string) error {
 
 // StubRekor returns the `http://host:port` of the stubbed Rekord
 func StubRekor(ctx context.Context) (string, error) {
-	return wiremock.Endpoint(ctx)
+	endpoint, err := wiremock.Endpoint(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	return strings.Replace(endpoint, "localhost", "rekor.localhost", 1), nil
 }
 
 // PublicKey returns the public key of the Rekor signing key

@@ -21,6 +21,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"encoding/xml"
 	"errors"
 	"fmt"
 	"os"
@@ -30,10 +31,12 @@ import (
 	"runtime"
 	"sort"
 	"strings"
+	"sync"
 	"unicode"
 
 	"github.com/cucumber/godog"
 	c "github.com/doiit/picocolors"
+	"github.com/hashicorp/go-multierror"
 	"github.com/pkg/diff"
 	"github.com/yudai/gojsondiff"
 	"github.com/yudai/gojsondiff/formatter"
@@ -45,9 +48,13 @@ import (
 	"github.com/enterprise-contract/ec-cli/acceptance/log"
 	"github.com/enterprise-contract/ec-cli/acceptance/registry"
 	"github.com/enterprise-contract/ec-cli/acceptance/rekor"
+	"github.com/enterprise-contract/ec-cli/acceptance/snaps"
 	"github.com/enterprise-contract/ec-cli/acceptance/testenv"
 	"github.com/enterprise-contract/ec-cli/acceptance/tuf"
 )
+
+var version sync.Once
+var ecVersion = "undefined"
 
 type status struct {
 	*exec.Cmd
@@ -140,6 +147,10 @@ func ecCommandIsRunWith(ctx context.Context, parameters string) (context.Context
 		return ctx, err
 	}
 
+	if vars, err = setupCliVersion(ctx, vars); err != nil {
+		return ctx, err
+	}
+
 	// performs the actual substitution of ${...} with the
 	// values from `vars``
 	args := os.Expand(parameters, func(key string) string {
@@ -208,14 +219,26 @@ func setupKeys(ctx context.Context, vars map[string]string, environment []string
 			return environment, vars, err
 		}
 		vars[name+"_PUBLIC_KEY_JSON"] = string(publicKeyJson)
+
+		publicKeyXML := bytes.Buffer{}
+		xml.EscapeText(&publicKeyXML, []byte(publicKey))
+		vars[name+"_PUBLIC_KEY_XML"] = publicKeyXML.String()
 	}
 
 	return environment, vars, nil
 }
 
 func setupSigs(ctx context.Context, vars map[string]string, environment []string) ([]string, map[string]string, error) {
-	if sigs := image.JSONAttestationSignaturesFrom(ctx); sigs != "" {
+	if sigs, err := image.JSONAttestationSignaturesFrom(ctx); err == nil && sigs != "" {
 		vars["ATTESTATION_SIGNATURES_JSON"] = sigs
+	} else {
+		return environment, vars, err
+	}
+
+	if sigs, err := image.XMLAttestationSignaturesFrom(ctx); err == nil && sigs != "" {
+		vars["ATTESTATION_SIGNATURES_XML"] = sigs
+	} else {
+		return environment, vars, err
 	}
 
 	return environment, vars, nil
@@ -677,6 +700,22 @@ func logExecution(ctx context.Context) {
 	fmt.Print(output.String())
 }
 
+func matchSnapshot(ctx context.Context) error {
+	status, err := ecStatusFrom(ctx)
+	if err != nil {
+		return err
+	}
+
+	stdout := snaps.MatchSnapshot(ctx, "stdout", status.stdout.String(), status.vars)
+	stderr := snaps.MatchSnapshot(ctx, "stderr", status.stderr.String(), status.vars)
+
+	if stdout == nil && stderr == nil {
+		return nil
+	}
+
+	return multierror.Append(stdout, stderr)
+}
+
 // AddStepsTo adds Gherkin steps to the godog ScenarioContext
 func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^ec command is run with "(.+)"$`, ecCommandIsRunWith)
@@ -685,6 +724,7 @@ func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^the standard output should match baseline file "(.+)"$`, theStandardOutputShouldMatchBaseline)
 	sc.Step(`^the standard error should contain$`, theStandardErrorShouldContain)
 	sc.Step(`^the environment variable is set "([^"]*)"$`, theEnvironmentVarilableIsSet)
+	sc.Step(`^the output should match the snapshot$`, matchSnapshot)
 	sc.After(func(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
 		logExecution(ctx)
 
@@ -740,4 +780,29 @@ func setupCmdEnvironmentVariable(ctx context.Context, environment []string) ([]s
 	}
 	environment = append(environment, newEnvironment...)
 	return environment, nil
+}
+
+func setupCliVersion(ctx context.Context, vars map[string]string) (map[string]string, error) {
+	version.Do(func() {
+		ec := path.Join("dist", fmt.Sprintf("ec_%s_%s", runtime.GOOS, runtime.GOARCH))
+
+		cmd := exec.CommandContext(ctx, ec, "version", "--json")
+		var stdout bytes.Buffer
+		cmd.Stdout = &stdout
+
+		if err := cmd.Run(); err != nil {
+			panic(err)
+		}
+
+		ver := struct {
+			Version string
+		}{}
+		json.Unmarshal(stdout.Bytes(), &ver)
+
+		ecVersion = ver.Version
+	})
+
+	vars["EC_VERSION"] = ecVersion
+
+	return vars, nil
 }

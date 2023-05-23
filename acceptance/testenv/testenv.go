@@ -38,6 +38,7 @@ const (
 	TestingT                              // key to the *testing.T instance in Context
 	persistedEnv                          // key to a map of persisted environment states
 	RekorImpl                             // key to a implementation of the Rekor interface, used to prevent import cycles
+	Scenario                              // key to a the *godog.Scenario of the current scenario, used to prevent import cycles
 
 	persistedFile = ".persisted"
 )

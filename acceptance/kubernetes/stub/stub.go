@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
@@ -128,7 +129,13 @@ func (s stubCluster) TaskInfo(context.Context) (*types.TaskInfo, error) {
 // KubeConfig returns a valid kubeconfig configuration file in YAML format that
 // points to the stubbed apiserver and uses no authentication
 func (s stubCluster) KubeConfig(ctx context.Context) (string, error) {
-	server, err := wiremock.Endpoint(ctx)
+	endpoint, err := wiremock.Endpoint(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	server := strings.Replace(endpoint, "localhost", "apiserver.localhost", 1)
+
 	if err != nil {
 		return "", err
 	}

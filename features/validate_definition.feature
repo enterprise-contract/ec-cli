@@ -24,7 +24,4 @@ Feature: validate pipeline definition
     """
     When ec command is run with "validate definition --file pipeline_definition.yaml --policy git::https://${GITHOST}/git/happy-day-policy.git"
     Then the exit status should be 0
-    Then the standard output should contain
-    """
-    {"definitions": [{"filename":"pipeline_definition.yaml","violations":[],"warnings":[],"success":true}],"success":true,"ec-version":"v\\d+.\\d+.\\d+-[0-9a-f]+"}
-    """
+    Then the output should match the snapshot

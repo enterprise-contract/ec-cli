@@ -1,0 +1,8 @@
+
+[:stdout - 1]
+{"definitions":[{"filename":"pipeline_definition.yaml","violations":[],"warnings":[],"success":true}],"success":true,"ec-version":"${EC_VERSION}"}
+---
+
+[:stderr - 1]
+
+---
