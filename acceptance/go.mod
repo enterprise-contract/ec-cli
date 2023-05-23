@@ -34,7 +34,7 @@ require (
 	github.com/yudai/gojsondiff v1.0.0
 	gopkg.in/square/go-jose.v2 v2.6.0
 	k8s.io/api v0.26.4
-	k8s.io/apimachinery v0.27.1
+	k8s.io/apimachinery v0.27.2
 	k8s.io/client-go v0.26.3
 	k8s.io/kubernetes v1.15.0-alpha.0
 	sigs.k8s.io/kind v0.19.0
