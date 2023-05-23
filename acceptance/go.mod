@@ -13,7 +13,7 @@ require (
 	github.com/go-git/go-billy/v5 v5.4.1
 	github.com/go-git/go-git/v5 v5.6.1
 	github.com/go-openapi/strfmt v0.21.7
-	github.com/google/go-containerregistry v0.15.1
+	github.com/google/go-containerregistry v0.15.2
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/in-toto/in-toto-golang v0.9.0
 	github.com/otiai10/copy v1.11.0
