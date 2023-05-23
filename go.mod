@@ -24,7 +24,7 @@ require (
 	github.com/spf13/afero v1.9.5
 	github.com/spf13/cobra v1.7.0
 	github.com/stretchr/testify v1.8.3
-	github.com/stuart-warren/yamlfmt v0.1.2
+	github.com/stuart-warren/yamlfmt v0.2.0
 	github.com/tektoncd/pipeline v0.42.0
 	golang.org/x/exp v0.0.0-20230124195608-d38c7dcee874
 	golang.org/x/net v0.10.0
