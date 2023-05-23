@@ -655,3 +655,26 @@ Feature: evaluate enterprise contract
     And ec command is run with "validate image --image ${REGISTRY}/acceptance/destination --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
     Then the exit status should be 0
     Then the output should match the snapshot
+
+  Scenario: rule dependencies
+    Given a key pair named "known"
+    Given an image named "acceptance/image"
+    Given a valid image signature of "acceptance/image" image signed by the "known" key
+    Given a valid attestation of "acceptance/image" signed by the "known" key
+    Given a git repository named "with-dependencies" with
+      | main.rego | examples/rules_with_dependencies.rego |
+    Given policy configuration named "ec-policy" with specification
+    """
+    {
+      "sources": [
+        {
+          "policy": [
+            "git::https://${GITHOST}/git/with-dependencies.git"
+          ]
+        }
+      ]
+    }
+    """
+    And ec command is run with "validate image --image ${REGISTRY}/acceptance/image --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --strict"
+    Then the exit status should be 1
+    Then the output should match the snapshot

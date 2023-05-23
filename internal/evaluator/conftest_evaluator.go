@@ -65,6 +65,61 @@ func (c CheckResults) ToConftestResults() []output.CheckResult {
 	return results
 }
 
+// trim removes all failure, warning, success or skipped results that depend on
+// a result reported as failure, warning or skipped. Dependencies are declared
+// by setting the metadata via metadataDependsOn.
+func (c *CheckResults) trim() {
+	// holds codes for all failures, warnings or skipped rules, as a map to ease
+	// the lookup, any rule that depends on a reported code will be removed from
+	// the results
+	reported := map[string]bool{}
+
+	for _, checks := range *c {
+		for _, results := range [][]output.Result{checks.Failures, checks.Warnings, checks.Skipped} {
+			for _, result := range results {
+				if code, ok := result.Metadata[metadataCode].(string); ok {
+					reported[code] = true
+				}
+			}
+		}
+	}
+
+	// helper function inlined for ecapsulation, removes any results that depend
+	// on a reported rule, by code
+	trimOutput := func(what []output.Result) []output.Result {
+		if what == nil {
+			// nil might get passed in, while this would not cause an issue, the
+			// function would return empty array and that would needlessly
+			// change the output
+			return nil
+		}
+
+		// holds leftover results, i.e. the ones that do not depend on a rule
+		// reported as failure, warning or skipped
+		trimmed := make([]output.Result, 0, len(what))
+		for _, result := range what {
+			if dependancy, ok := result.Metadata[metadataDependsOn].([]string); ok {
+				for _, d := range dependancy {
+					if !reported[d] {
+						trimmed = append(trimmed, result)
+					}
+				}
+			} else {
+				trimmed = append(trimmed, result)
+			}
+		}
+
+		return trimmed
+	}
+
+	for i, checks := range *c {
+		(*c)[i].Failures = trimOutput(checks.Failures)
+		(*c)[i].Warnings = trimOutput(checks.Warnings)
+		(*c)[i].Skipped = trimOutput(checks.Skipped)
+		(*c)[i].Successes = trimOutput(checks.Successes)
+	}
+}
+
 type testRunner interface {
 	Run(context.Context, []string) ([]output.CheckResult, error)
 }
@@ -74,6 +129,7 @@ const (
 	effectiveOnTimeout  = -90 * 24 * time.Hour // keep effective_on metadata up to 90 days
 	metadataCode        = "code"
 	metadataCollections = "collections"
+	metadataDependsOn   = "depends_on"
 	metadataDescription = "description"
 	metadataEffectiveOn = "effective_on"
 	metadataSolution    = "solution"
@@ -172,7 +228,7 @@ func (r *policyRules) collect(a *ast.AnnotationsRef) error {
 }
 
 func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (CheckResults, error) {
-	results := make([]CheckResult, 0, 10)
+	results := CheckResults{}
 
 	// hold all rule annotations from all policy sources
 	// NOTE: emphasis on _all rules from all sources_; meaning that if two rules
@@ -198,7 +254,9 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (Check
 			if a.Annotations == nil {
 				continue
 			}
-			rules.collect(a)
+			if err := rules.collect(a); err != nil {
+				return nil, err
+			}
 		}
 	}
 
@@ -295,6 +353,8 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (Check
 		results = append(results, result)
 	}
 
+	results.trim()
+
 	// Evaluate total successes, warnings, and failures. If all are 0, then
 	// we have effectively failed, because no tests were actually ran due to
 	// input error, etc.
@@ -346,20 +406,24 @@ func (c conftestEvaluator) computeSuccesses(result CheckResult, rules policyRule
 		success := output.Result{
 			Message: "Pass",
 			Metadata: map[string]interface{}{
-				"code": code,
+				metadataCode: code,
 			},
 		}
 
 		if rule.Title != "" {
-			success.Metadata["title"] = rule.Title
+			success.Metadata[metadataTitle] = rule.Title
 		}
 
 		if rule.Description != "" {
-			success.Metadata["description"] = rule.Description
+			success.Metadata[metadataDescription] = rule.Description
 		}
 
 		if len(rule.Collections) > 0 {
-			success.Metadata["collections"] = rule.Collections
+			success.Metadata[metadataCollections] = rule.Collections
+		}
+
+		if len(rule.DependsOn) > 0 {
+			success.Metadata[metadataDependsOn] = rule.DependsOn
 		}
 
 		if !c.isResultIncluded(success) {
@@ -438,6 +502,9 @@ func addMetadataToResults(ctx context.Context, r *output.Result, rule rule.Info)
 	}
 	if len(rule.Collections) > 0 {
 		r.Metadata[metadataCollections] = rule.Collections
+	}
+	if len(rule.DependsOn) > 0 {
+		r.Metadata[metadataDependsOn] = rule.DependsOn
 	}
 
 	// If the rule has been effective for a long time, we'll consider
