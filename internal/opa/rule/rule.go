@@ -213,10 +213,11 @@ func documentationUrl(a *ast.AnnotationsRef) string {
 	//     data.policy.release.some_package_name.deny
 	//   Avoid errors indexing pathStrings and also try to avoid showing a url
 	//   if it's unlikely to be a real link to existing docs.
+	ruleDocUrlFormat := "https://enterprisecontract.dev/docs/ec-policies/%s_policy.html#%s__%s"
 	pathStrings := strings.Split(a.Path.String(), ".")
 	shortName := shortName(a)
 	if len(pathStrings) == 5 && pathStrings[1] == "policy" && shortName != "" {
-		return fmt.Sprintf("https://enterprise-contract.github.io/ec-policies/%s_policy.html#%s__%s", pathStrings[2], pathStrings[3], shortName)
+		return fmt.Sprintf(ruleDocUrlFormat, pathStrings[2], pathStrings[3], shortName)
 	}
 
 	return ""
