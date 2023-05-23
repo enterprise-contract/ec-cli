@@ -1249,7 +1249,6 @@ func TestRuleMetadata(t *testing.T) {
 		name   string
 		result output.Result
 		rules  policyRules
-		code   string
 		want   output.Result
 	}{
 		{
@@ -1261,7 +1260,6 @@ func TestRuleMetadata(t *testing.T) {
 				},
 			},
 			rules: rules,
-			code:  "warning1",
 			want: output.Result{
 				Metadata: map[string]any{
 					"code":        "warning1",
@@ -1279,7 +1277,6 @@ func TestRuleMetadata(t *testing.T) {
 				},
 			},
 			rules: rules,
-			code:  "failure2",
 			want: output.Result{
 				Metadata: map[string]any{
 					"code":        "failure2",
@@ -1298,7 +1295,6 @@ func TestRuleMetadata(t *testing.T) {
 				},
 			},
 			rules: rules,
-			code:  "warning2",
 			want: output.Result{
 				Metadata: map[string]any{
 					"code":        "warning2",
@@ -1317,7 +1313,6 @@ func TestRuleMetadata(t *testing.T) {
 				},
 			},
 			rules: rules,
-			code:  "warning3",
 			want: output.Result{
 				Metadata: map[string]any{
 					"code":         "warning3",
@@ -1336,7 +1331,6 @@ func TestRuleMetadata(t *testing.T) {
 				},
 			},
 			rules: rules,
-			code:  "",
 			want: output.Result{
 				Metadata: map[string]any{
 					"collections": []any{"A"},
@@ -1346,8 +1340,7 @@ func TestRuleMetadata(t *testing.T) {
 	}
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			rule, _ := addRuleMetadata(ctx, &tt.result, tt.rules)
-			assert.Equal(t, rule, tt.code)
+			addRuleMetadata(ctx, &tt.result, tt.rules)
 			assert.Equal(t, tt.result, tt.want)
 		})
 	}

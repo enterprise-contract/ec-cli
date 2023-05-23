@@ -228,7 +228,6 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (Check
 
 	// loop over each policy (namespace) evaluation
 	// effectively replacing the results returned from conftest
-	ruleCollection := make(map[string]bool)
 	for i, result := range runResults {
 		log.Debugf("Evaluation result at %d: %#v", i, result)
 		warnings := []output.Result{}
@@ -238,8 +237,7 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (Check
 
 		for i := range result.Warnings {
 			warning := result.Warnings[i]
-			r, ok := addRuleMetadata(ctx, &warning, rules)
-			ruleCollection[r] = ok
+			addRuleMetadata(ctx, &warning, rules)
 
 			if !c.isResultIncluded(warning) {
 				log.Debugf("Skipping result warning: %#v", warning)
@@ -250,8 +248,7 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (Check
 
 		for i := range result.Failures {
 			failure := result.Failures[i]
-			r, ok := addRuleMetadata(ctx, &failure, rules)
-			ruleCollection[r] = ok
+			addRuleMetadata(ctx, &failure, rules)
 
 			if !c.isResultIncluded(failure) {
 				log.Debugf("Skipping result failure: %#v", failure)
@@ -268,15 +265,13 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (Check
 
 		for i := range result.Exceptions {
 			exception := result.Exceptions[i]
-			r, ok := addRuleMetadata(ctx, &exception, rules)
-			ruleCollection[r] = ok
+			addRuleMetadata(ctx, &exception, rules)
 			exceptions = append(exceptions, exception)
 		}
 
 		for i := range result.Skipped {
 			skip := result.Skipped[i]
-			r, ok := addRuleMetadata(ctx, &skip, rules)
-			ruleCollection[r] = ok
+			addRuleMetadata(ctx, &skip, rules)
 			skipped = append(skipped, skip)
 		}
 
@@ -288,65 +283,9 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (Check
 		results = append(results, CheckResult{CheckResult: result})
 	}
 
-	// set successes, these are not provided in the Conftest results, so we
-	// reconstruct these from the parsed rules, any rule that hasn't been
-	// touched by adding metadata must have succeeded
-
 	// TODO see about multiple results, somehow; using results[0] for now
-	if l := len(rules); l > 0 {
-		results[0].Successes = make([]output.Result, 0, l)
-	}
-
-	// any rule left DID NOT get metadata added so it's a success
-	// this depends on the delete in addMetadata
-	for code, rule := range rules {
-		if ruleCode, ok := ruleCollection[code]; ruleCode && ok {
-			continue
-		}
-
-		result := output.Result{
-			Message: "Pass",
-			Metadata: map[string]interface{}{
-				"code": code,
-			},
-		}
-
-		if rule.Title != "" {
-			result.Metadata["title"] = rule.Title
-		}
-
-		if rule.Description != "" {
-			result.Metadata["description"] = rule.Description
-		}
-
-		if len(rule.Collections) > 0 {
-			result.Metadata["collections"] = rule.Collections
-		}
-
-		if !c.isResultIncluded(result) {
-			log.Debugf("Skipping result success: %#v", result)
-			continue
-		}
-
-		if rule.EffectiveOn != "" {
-			result.Metadata[metadataEffectiveOn] = rule.EffectiveOn
-		}
-
-		// Let's omit the solution text here because if the rule is passing
-		// already then the user probably doesn't care about the solution.
-
-		if !isResultEffective(result, effectiveTime) {
-			log.Debugf("Skipping result success: %#v", result)
-			continue
-		}
-
-		// Todo maybe: We could also call isResultEffective here for the
-		// success and skip it if the rule is not yet effective. This would
-		// require collecting the effective_on value from the custom annotation
-		// in rule.RuleInfo.
-
-		results[0].Successes = append(results[0].Successes, result)
-	}
+	result := results[0]
+	result.Successes = c.computeSuccesses(result, rules, effectiveTime)
 
 	// Evaluate total successes, warnings, and failures. If all are 0, then
 	// we have effectively failed, because no tests were actually ran due to
@@ -369,13 +308,85 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (Check
 	return results, nil
 }
 
-func addRuleMetadata(ctx context.Context, result *output.Result, rules policyRules) (string, bool) {
+// computeSuccesses generates success results, these are not provided in the
+// Conftest results, so we reconstruct these from the parsed rules, any rule
+// that hasn't been touched by adding metadata must have succeeded
+func (c conftestEvaluator) computeSuccesses(result CheckResult, rules policyRules, effectiveTime time.Time) []output.Result {
+	// what rules, by code, have we seen in the Conftest results, use map to
+	// take advantage of hashing for quicker lookup
+	seenRules := map[string]bool{}
+	for _, o := range [][]output.Result{result.Failures, result.Warnings, result.Skipped, result.Exceptions} {
+		for _, r := range o {
+			if code, ok := r.Metadata[metadataCode].(string); ok {
+				seenRules[code] = true
+			}
+		}
+	}
+
+	var successes []output.Result
+	if l := len(rules); l > 0 {
+		successes = make([]output.Result, 0, l)
+	}
+
+	// any rule left DID NOT get metadata added so it's a success
+	// this depends on the delete in addMetadata
+	for code, rule := range rules {
+		if _, ok := seenRules[code]; ok {
+			continue
+		}
+
+		success := output.Result{
+			Message: "Pass",
+			Metadata: map[string]interface{}{
+				"code": code,
+			},
+		}
+
+		if rule.Title != "" {
+			success.Metadata["title"] = rule.Title
+		}
+
+		if rule.Description != "" {
+			success.Metadata["description"] = rule.Description
+		}
+
+		if len(rule.Collections) > 0 {
+			success.Metadata["collections"] = rule.Collections
+		}
+
+		if !c.isResultIncluded(success) {
+			log.Debugf("Skipping result success: %#v", success)
+			continue
+		}
+
+		if rule.EffectiveOn != "" {
+			success.Metadata[metadataEffectiveOn] = rule.EffectiveOn
+		}
+
+		// Let's omit the solution text here because if the rule is passing
+		// already then the user probably doesn't care about the solution.
+
+		if !isResultEffective(success, effectiveTime) {
+			log.Debugf("Skipping result success: %#v", success)
+			continue
+		}
+
+		// Todo maybe: We could also call isResultEffective here for the
+		// success and skip it if the rule is not yet effective. This would
+		// require collecting the effective_on value from the custom annotation
+		// in rule.RuleInfo.
+
+		successes = append(successes, success)
+	}
+
+	return successes
+}
+
+func addRuleMetadata(ctx context.Context, result *output.Result, rules policyRules) {
 	code, ok := (*result).Metadata[metadataCode].(string)
 	if ok {
 		addMetadataToResults(ctx, result, rules[code])
-		return code, true
 	}
-	return "", false
 }
 
 func addMetadataToResults(ctx context.Context, r *output.Result, rule rule.Info) {
