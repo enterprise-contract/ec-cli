@@ -148,9 +148,9 @@ func (c conftestEvaluator) CapabilitiesPath() string {
 
 type policyRules map[string]rule.Info
 
-func (r *policyRules) collect(a *ast.AnnotationsRef) {
+func (r *policyRules) collect(a *ast.AnnotationsRef) error {
 	if a.Annotations == nil {
-		return
+		return nil
 	}
 
 	info := rule.RuleInfo(a)
@@ -158,17 +158,26 @@ func (r *policyRules) collect(a *ast.AnnotationsRef) {
 	if info.ShortName == "" {
 		// no short name matching with the code from Metadata will not be
 		// deterministic
-		return
+		return nil
 	}
 
 	code := info.Code
+
+	if _, ok := (*r)[code]; ok {
+		return fmt.Errorf("found a second rule with the same code: `%s`", code)
+	}
+
 	(*r)[code] = info
+	return nil
 }
 
 func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (CheckResults, error) {
 	results := make([]CheckResult, 0, 10)
 
-	// hold all rule annotations
+	// hold all rule annotations from all policy sources
+	// NOTE: emphasis on _all rules from all sources_; meaning that if two rules
+	// exist with the same code in two separate sources the collected rule
+	// information is not deterministic
 	rules := policyRules{}
 	// Download all sources
 	for _, s := range c.policySources {
@@ -280,12 +289,11 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (Check
 		result.Exceptions = exceptions
 		result.Skipped = skipped
 
-		results = append(results, CheckResult{CheckResult: result})
-	}
+		result := CheckResult{CheckResult: result}
+		result.Successes = c.computeSuccesses(result, rules, effectiveTime)
 
-	// TODO see about multiple results, somehow; using results[0] for now
-	result := results[0]
-	result.Successes = c.computeSuccesses(result, rules, effectiveTime)
+		results = append(results, result)
+	}
 
 	// Evaluate total successes, warnings, and failures. If all are 0, then
 	// we have effectively failed, because no tests were actually ran due to
