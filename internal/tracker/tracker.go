@@ -103,7 +103,7 @@ func (t Tracker) Output() ([]byte, error) {
 	}
 
 	// sorts the YAML document making it deterministic
-	return yamlfmt.Format(bytes.NewBuffer(out))
+	return yamlfmt.Format(bytes.NewBuffer(out), true)
 }
 
 // Track implements the common workflow of loading an existing tracker file and adding
