@@ -45,7 +45,7 @@ func ValidateDefinition(ctx context.Context, fpath string, sources []source.Poli
 		return nil, err
 	}
 
-	results, err := p.Evaluator.Evaluate(ctx, defFiles)
+	results, _, err := p.Evaluator.Evaluate(ctx, defFiles)
 	if err != nil {
 		log.Debug("Problem running conftest policy check!")
 		return nil, err

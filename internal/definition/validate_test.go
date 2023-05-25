@@ -36,8 +36,8 @@ import (
 type mockEvaluator struct{}
 type badMockEvaluator struct{}
 
-func (e mockEvaluator) Evaluate(ctx context.Context, inputs []string) (evaluator.CheckResults, error) {
-	return evaluator.CheckResults{}, nil
+func (e mockEvaluator) Evaluate(ctx context.Context, inputs []string) (evaluator.CheckResults, evaluator.Data, error) {
+	return evaluator.CheckResults{}, nil, nil
 }
 
 func (e mockEvaluator) Destroy() {
@@ -47,8 +47,8 @@ func (e mockEvaluator) CapabilitiesPath() string {
 	return ""
 }
 
-func (b badMockEvaluator) Evaluate(ctx context.Context, inputs []string) (evaluator.CheckResults, error) {
-	return nil, errors.New("Evaluator error")
+func (b badMockEvaluator) Evaluate(ctx context.Context, inputs []string) (evaluator.CheckResults, evaluator.Data, error) {
+	return nil, nil, errors.New("Evaluator error")
 }
 
 func (e badMockEvaluator) Destroy() {

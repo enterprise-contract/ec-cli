@@ -27,8 +27,10 @@ import (
 	"time"
 
 	"github.com/open-policy-agent/conftest/output"
+	conftest "github.com/open-policy-agent/conftest/policy"
 	"github.com/open-policy-agent/conftest/runner"
 	"github.com/open-policy-agent/opa/ast"
+	"github.com/open-policy-agent/opa/storage"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -38,6 +40,11 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/policy/source"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
+	e "github.com/enterprise-contract/ec-cli/pkg/error"
+)
+
+var (
+	CE001 = e.NewError("CE001", "Could not retrieve data from the policy engine", e.ErrorExitStatus)
 )
 
 type contextKey string
@@ -120,8 +127,10 @@ func (c *CheckResults) trim() {
 	}
 }
 
+type Data map[string]any
+
 type testRunner interface {
-	Run(context.Context, []string) ([]output.CheckResult, error)
+	Run(context.Context, []string) ([]output.CheckResult, Data, error)
 }
 
 const (
@@ -147,6 +156,49 @@ type conftestEvaluator struct {
 	policy        policy.Policy
 	fs            afero.Fs
 	namespace     []string
+}
+
+type conftestRunner struct {
+	runner.TestRunner
+}
+
+func (r conftestRunner) Run(ctx context.Context, fileList []string) (result []output.CheckResult, data Data, err error) {
+	result, err = r.TestRunner.Run(ctx, fileList)
+	if err != nil {
+		return
+	}
+
+	// we can't reference the engine from the test runner or from the results so
+	// we need to recreate it, this needs to remain the same as in
+	// runner.TestRunner's Run function
+	var engine *conftest.Engine
+	engine, err = conftest.LoadWithData(r.Policy, r.Data, r.Capabilities, r.Strict)
+	if err != nil {
+		return
+	}
+
+	store := engine.Store()
+
+	var txn storage.Transaction
+	txn, err = store.NewTransaction(ctx)
+	if err != nil {
+		return
+	}
+
+	ids := []string{} // everything
+
+	var d any
+	d, err = store.Read(ctx, txn, ids)
+	if err != nil {
+		return
+	}
+
+	var ok bool
+	if data, ok = d.(map[string]any); !ok {
+		err = CE001.CausedBy(fmt.Errorf("Data is: %v", d))
+	}
+
+	return
 }
 
 // NewConftestEvaluator returns initialized conftestEvaluator implementing
@@ -227,7 +279,7 @@ func (r *policyRules) collect(a *ast.AnnotationsRef) error {
 	return nil
 }
 
-func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (CheckResults, error) {
+func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (CheckResults, Data, error) {
 	results := CheckResults{}
 
 	// hold all rule annotations from all policy sources
@@ -241,13 +293,13 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (Check
 		if err != nil {
 			log.Debugf("Unable to download source from %s!", s.PolicyUrl())
 			// TODO do we want to download other policies instead of erroring out?
-			return nil, err
+			return nil, nil, err
 		}
 
 		fs := utils.FS(ctx)
 		annotations, err := opa.InspectDir(fs, dir)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		for _, a := range annotations {
@@ -255,7 +307,7 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (Check
 				continue
 			}
 			if err := rules.collect(a); err != nil {
-				return nil, err
+				return nil, nil, err
 			}
 		}
 	}
@@ -270,24 +322,26 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (Check
 			allNamespaces = false
 		}
 
-		r = &runner.TestRunner{
-			Data:          []string{c.dataDir},
-			Policy:        []string{c.policyDir},
-			Namespace:     c.namespace,
-			AllNamespaces: allNamespaces,
-			NoFail:        true,
-			Output:        c.outputFormat,
-			Capabilities:  c.CapabilitiesPath(),
+		r = &conftestRunner{
+			runner.TestRunner{
+				Data:          []string{c.dataDir},
+				Policy:        []string{c.policyDir},
+				Namespace:     c.namespace,
+				AllNamespaces: allNamespaces,
+				NoFail:        true,
+				Output:        c.outputFormat,
+				Capabilities:  c.CapabilitiesPath(),
+			},
 		}
 	}
 
 	log.Debugf("runner: %#v", r)
 	log.Debugf("inputs: %#v", inputs)
 
-	runResults, err := r.Run(ctx, inputs)
+	runResults, data, err := r.Run(ctx, inputs)
 	if err != nil {
 		// TODO do we want to evaluate further policies instead of erroring out?
-		return nil, err
+		return nil, nil, err
 	}
 
 	effectiveTime := c.policy.EffectiveTime()
@@ -370,10 +424,10 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (Check
 	}
 	if total == 0 {
 		log.Error("no successes, warnings, or failures, check input")
-		return nil, fmt.Errorf("no successes, warnings, or failures, check input")
+		return nil, nil, fmt.Errorf("no successes, warnings, or failures, check input")
 	}
 
-	return results, nil
+	return results, data, nil
 }
 
 // computeSuccesses generates success results, these are not provided in the

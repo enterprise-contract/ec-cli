@@ -51,6 +51,7 @@ type Report struct {
 	Key        string                           `json:"key"`
 	Policy     ecc.EnterpriseContractPolicySpec `json:"policy"`
 	EcVersion  string                           `json:"ec-version"`
+	Data       any                              `json:"-"`
 }
 
 type summary struct {
@@ -93,11 +94,12 @@ const (
 	HACBS   = "hacbs"
 	Summary = "summary"
 	JUNIT   = "junit"
+	DATA    = "data"
 )
 
 // WriteReport returns a new instance of Report representing the state of
 // components from the snapshot.
-func NewReport(snapshot string, components []Component, policy policy.Policy) (Report, error) {
+func NewReport(snapshot string, components []Component, policy policy.Policy, data any) (Report, error) {
 	success := true
 
 	// Set the report success, remains true if all components are successful
@@ -125,6 +127,7 @@ func NewReport(snapshot string, components []Component, policy policy.Policy) (R
 		Key:        string(key),
 		Policy:     policy.Spec(),
 		EcVersion:  info.Version,
+		Data:       data,
 	}, nil
 }
 
@@ -161,6 +164,8 @@ func (r *Report) toFormat(format string) (data []byte, err error) {
 		data, err = json.Marshal(r.toAppstudioReport())
 	case JUNIT:
 		data, err = xml.Marshal(r.toJUnit())
+	case DATA:
+		data, err = yaml.Marshal(r.Data)
 	default:
 		return nil, fmt.Errorf("%q is not a valid report format", format)
 	}

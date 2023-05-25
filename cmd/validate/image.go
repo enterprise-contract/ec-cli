@@ -31,6 +31,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/enterprise-contract/ec-cli/internal/applicationsnapshot"
+	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 	"github.com/enterprise-contract/ec-cli/internal/format"
 	"github.com/enterprise-contract/ec-cli/internal/output"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
@@ -151,6 +152,11 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 
 			  ec validate image --image registry/name:tag --output yaml --output appstudio=<path>
 
+			Write the data used in the policy evaluation to a file in YAML format
+
+			  ec validate image --image registry/name:tag --output data=<path>
+
+
 			Validate a single image with keyless workflow. This is an experimental feature
 			that requires setting the EC_EXPERIMENTAL environment variable to "1".
 
@@ -249,6 +255,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 			type result struct {
 				err       error
 				component applicationsnapshot.Component
+				data      []evaluator.Data
 			}
 
 			appComponents := data.spec.Components
@@ -281,6 +288,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 						res.component.Successes = out.Successes()
 						res.component.Signatures = out.Signatures
 						res.component.ContainerImage = out.ImageURL
+						res.data = out.Data
 					}
 					res.component.Success = err == nil && len(res.component.Violations) == 0
 
@@ -292,6 +300,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 			close(ch)
 
 			var components []applicationsnapshot.Component
+			var manyData [][]evaluator.Data
 			var allErrors error = nil
 			for r := range ch {
 				if r.err != nil {
@@ -299,6 +308,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 					allErrors = multierror.Append(allErrors, e)
 				} else {
 					components = append(components, r.component)
+					manyData = append(manyData, r.data)
 				}
 			}
 			if allErrors != nil {
@@ -309,7 +319,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 				data.output = append(data.output, fmt.Sprintf("%s=%s", applicationsnapshot.JSON, data.outputFile))
 			}
 
-			report, err := applicationsnapshot.NewReport(data.snapshot, components, data.policy)
+			report, err := applicationsnapshot.NewReport(data.snapshot, components, data.policy, manyData)
 			if err != nil {
 				return err
 			}
@@ -362,8 +372,8 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 
 	cmd.Flags().StringSliceVar(&data.output, "output", data.output, hd.Doc(`
 		write output to a file in a specific format. Use empty string path for stdout.
-		May be used multiple times. Possible formats are json, yaml, appstudio, junit, and
-		summary
+		May be used multiple times. Possible formats are json, yaml, appstudio, junit,
+		summary and data.
 	`))
 
 	cmd.Flags().StringVarP(&data.outputFile, "output-file", "o", data.outputFile,
