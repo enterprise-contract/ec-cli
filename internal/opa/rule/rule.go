@@ -223,6 +223,30 @@ func documentationUrl(a *ast.AnnotationsRef) string {
 	return ""
 }
 
+func dependsOn(a *ast.AnnotationsRef) []string {
+	if a == nil {
+		return []string{}
+	}
+
+	dependsOn, ok := a.Annotations.Custom["depends_on"]
+
+	if !ok {
+		return []string{}
+	}
+
+	switch d := dependsOn.(type) {
+	case []any:
+		ret := make([]string, 0, len(d))
+		for _, v := range d {
+			ret = append(ret, fmt.Sprint(v))
+		}
+		return ret
+	default:
+		return []string{fmt.Sprint(d)}
+	}
+
+}
+
 type RuleKind string
 
 const (
@@ -235,13 +259,14 @@ type Info struct {
 	Code             string
 	CodePackage      string
 	Collections      []string
+	DependsOn        []string
 	Description      string
 	DocumentationUrl string
 	EffectiveOn      string
-	Solution         string
 	Kind             RuleKind
 	Package          string
 	ShortName        string
+	Solution         string
 	Title            string
 }
 
@@ -251,6 +276,7 @@ func RuleInfo(a *ast.AnnotationsRef) Info {
 		CodePackage:      codePackage(a),
 		Collections:      collections(a),
 		Description:      description(a),
+		DependsOn:        dependsOn(a),
 		DocumentationUrl: documentationUrl(a),
 		EffectiveOn:      effectiveOn(a),
 		Solution:         solution(a),

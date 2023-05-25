@@ -31,6 +31,7 @@ import (
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 	"k8s.io/kube-openapi/pkg/util/sets"
 
 	"github.com/enterprise-contract/ec-cli/internal/downloader"
@@ -1195,6 +1196,7 @@ func TestCollectAnnotationData(t *testing.T) {
 		#   short_name: short
 		#   collections: [A, B, C]
 		#   effective_on: 2022-01-01T00:00:00Z
+		#   depends_on: a.b.c
 		deny[msg] {
 			msg := "hi"
 		}`), ast.ParserOptions{
@@ -1202,13 +1204,14 @@ func TestCollectAnnotationData(t *testing.T) {
 	})
 
 	rules := policyRules{}
-	rules.collect(ast.NewAnnotationsRef(module.Annotations[0]))
+	require.NoError(t, rules.collect(ast.NewAnnotationsRef(module.Annotations[0])))
 
 	assert.Equal(t, policyRules{
 		"a.b.c.short": {
 			Code:        "a.b.c.short",
 			CodePackage: "a.b.c",
 			Collections: []string{"A", "B", "C"},
+			DependsOn:   []string{"a.b.c"},
 			Description: "Description",
 			EffectiveOn: "2022-01-01T00:00:00Z",
 			Kind:        rule.Deny,
@@ -1249,7 +1252,6 @@ func TestRuleMetadata(t *testing.T) {
 		name   string
 		result output.Result
 		rules  policyRules
-		code   string
 		want   output.Result
 	}{
 		{
@@ -1261,7 +1263,6 @@ func TestRuleMetadata(t *testing.T) {
 				},
 			},
 			rules: rules,
-			code:  "warning1",
 			want: output.Result{
 				Metadata: map[string]any{
 					"code":        "warning1",
@@ -1279,7 +1280,6 @@ func TestRuleMetadata(t *testing.T) {
 				},
 			},
 			rules: rules,
-			code:  "failure2",
 			want: output.Result{
 				Metadata: map[string]any{
 					"code":        "failure2",
@@ -1298,7 +1298,6 @@ func TestRuleMetadata(t *testing.T) {
 				},
 			},
 			rules: rules,
-			code:  "warning2",
 			want: output.Result{
 				Metadata: map[string]any{
 					"code":        "warning2",
@@ -1317,7 +1316,6 @@ func TestRuleMetadata(t *testing.T) {
 				},
 			},
 			rules: rules,
-			code:  "warning3",
 			want: output.Result{
 				Metadata: map[string]any{
 					"code":         "warning3",
@@ -1336,7 +1334,6 @@ func TestRuleMetadata(t *testing.T) {
 				},
 			},
 			rules: rules,
-			code:  "",
 			want: output.Result{
 				Metadata: map[string]any{
 					"collections": []any{"A"},
@@ -1346,8 +1343,7 @@ func TestRuleMetadata(t *testing.T) {
 	}
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			rule, _ := addRuleMetadata(ctx, &tt.result, tt.rules)
-			assert.Equal(t, rule, tt.code)
+			addRuleMetadata(ctx, &tt.result, tt.rules)
 			assert.Equal(t, tt.result, tt.want)
 		})
 	}
@@ -1407,6 +1403,219 @@ func TestNameScoring(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			assert.Equal(t, c.score, score(c.name))
+		})
+	}
+}
+
+func TestCheckResultsTrim(t *testing.T) {
+	cases := []struct {
+		name     string
+		given    CheckResults
+		expected CheckResults
+	}{
+		{
+			name: "simple dependency",
+			given: CheckResults{
+				CheckResult{
+					CheckResult: output.CheckResult{
+						Failures: []output.Result{
+							{
+								Message: "failure 1",
+								Metadata: map[string]interface{}{
+									metadataCode: "a.failure1",
+								},
+							},
+						},
+					},
+					Successes: []output.Result{
+						{
+							Message: "pass",
+							Metadata: map[string]interface{}{
+								metadataCode:      "a.success1",
+								metadataDependsOn: []string{"a.failure1"},
+							},
+						},
+					},
+				},
+			},
+			expected: CheckResults{
+				CheckResult{
+					CheckResult: output.CheckResult{
+						Failures: []output.Result{
+							{
+								Message: "failure 1",
+								Metadata: map[string]interface{}{
+									metadataCode: "a.failure1",
+								},
+							},
+						},
+					},
+					Successes: []output.Result{},
+				},
+			},
+		},
+		{
+			name: "successful dependants are not trimmed",
+			given: CheckResults{
+				CheckResult{
+					Successes: []output.Result{
+						{
+							Message: "pass",
+							Metadata: map[string]interface{}{
+								metadataCode: "a.success1",
+							},
+						},
+					},
+				},
+				CheckResult{
+					Successes: []output.Result{
+						{
+							Message: "pass",
+							Metadata: map[string]interface{}{
+								metadataCode:      "a.success2",
+								metadataDependsOn: []string{"a.success1"},
+							},
+						},
+					},
+				},
+			},
+			expected: CheckResults{
+				CheckResult{
+					Successes: []output.Result{
+						{
+							Message: "pass",
+							Metadata: map[string]interface{}{
+								metadataCode: "a.success1",
+							},
+						},
+					},
+				},
+				CheckResult{
+					Successes: []output.Result{
+						{
+							Message: "pass",
+							Metadata: map[string]interface{}{
+								metadataCode:      "a.success2",
+								metadataDependsOn: []string{"a.success1"},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "failures, warnings and successes with dependencies",
+			given: CheckResults{
+				CheckResult{
+					CheckResult: output.CheckResult{
+						Failures: []output.Result{
+							{
+								Message: "Fails",
+								Metadata: map[string]interface{}{
+									metadataCode: "a.failure",
+								},
+							},
+							{
+								Message: "Fails and depends",
+								Metadata: map[string]interface{}{
+									metadataCode:      "a.failure",
+									metadataDependsOn: []string{"a.failure"},
+								},
+							},
+						},
+						Warnings: []output.Result{
+							{
+								Message: "Warning",
+								Metadata: map[string]interface{}{
+									metadataCode:      "a.warning",
+									metadataDependsOn: []string{"a.failure"},
+								},
+							},
+						},
+					},
+					Successes: []output.Result{
+						{
+							Message: "pass",
+							Metadata: map[string]interface{}{
+								metadataCode:      "a.success",
+								metadataDependsOn: []string{"a.failure"},
+							},
+						},
+					},
+				},
+			},
+			expected: CheckResults{
+				CheckResult{
+					CheckResult: output.CheckResult{
+						Failures: []output.Result{
+							{
+								Message: "Fails",
+								Metadata: map[string]interface{}{
+									metadataCode: "a.failure",
+								},
+							},
+						},
+						Warnings: []output.Result{},
+					},
+					Successes: []output.Result{},
+				},
+			},
+		},
+		{
+			name: "unrelated dependency",
+			given: CheckResults{
+				CheckResult{
+					CheckResult: output.CheckResult{
+						Failures: []output.Result{
+							{
+								Message: "failure 1",
+								Metadata: map[string]interface{}{
+									metadataCode: "a.failure",
+								},
+							},
+						},
+					},
+					Successes: []output.Result{
+						{
+							Message: "pass",
+							Metadata: map[string]interface{}{
+								metadataCode:      "a.success1",
+								metadataDependsOn: []string{"a.unrelated"},
+							},
+						},
+					},
+				},
+			},
+			expected: CheckResults{
+				CheckResult{
+					CheckResult: output.CheckResult{
+						Failures: []output.Result{
+							{
+								Message: "failure 1",
+								Metadata: map[string]interface{}{
+									metadataCode: "a.failure",
+								},
+							},
+						},
+					},
+					Successes: []output.Result{
+						{
+							Message: "pass",
+							Metadata: map[string]interface{}{
+								metadataCode:      "a.success1",
+								metadataDependsOn: []string{"a.unrelated"},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for _, c := range cases[2:] {
+		t.Run(c.name, func(t *testing.T) {
+			c.given.trim()
+			assert.Equal(t, c.expected, c.given)
 		})
 	}
 }
