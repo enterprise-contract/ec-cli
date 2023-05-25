@@ -542,3 +542,53 @@ func TestCode(t *testing.T) {
 		})
 	}
 }
+
+func TestDependsOn(t *testing.T) {
+	cases := []struct {
+		name       string
+		annotation *ast.AnnotationsRef
+		expected   []string
+	}{
+		{
+			name:       "nothing",
+			annotation: nil,
+			expected:   []string{},
+		},
+		{
+			name: "no depends_on annotation",
+			annotation: annotationRef(heredoc.Doc(`
+				package a
+				deny() { true }`)),
+			expected: []string{},
+		},
+		{
+			name: "single depends_on annotation",
+			annotation: annotationRef(heredoc.Doc(`
+				package a
+				# METADATA
+				# custom:
+				#   depends_on: a.b.c
+				deny() { true }`)),
+			expected: []string{"a.b.c"},
+		},
+		{
+			name: "multiple depends_on annotation",
+			annotation: annotationRef(heredoc.Doc(`
+				package a
+				# METADATA
+				# custom:
+				#   depends_on:
+				#     - a.b.c
+				#     - d.e.f
+				#     - g.h.i
+				deny() { true }`)),
+			expected: []string{"a.b.c", "d.e.f", "g.h.i"},
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			assert.Equal(t, c.expected, dependsOn(c.annotation))
+		})
+	}
+}

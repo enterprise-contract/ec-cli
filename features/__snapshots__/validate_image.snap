@@ -228,3 +228,12 @@ ${TEMP}/ec-work-${RANDOM}/policy/${RANDOM}/main.rego:29: rego_type_error: undefi
 [happy day:stderr - 1]
 
 ---
+
+[rule dependencies:stdout - 1]
+{"success":false,"components":[{"name":"Unnamed","containerImage":"${REGISTRY}/acceptance/image@${REGISTRY_acceptance/image:latest_HASH}","violations":[{"msg":"Failure","metadata":{"code":"pkg.fails"}}],"warnings":[{"msg":"Warning","metadata":{"code":"pkg.warns"}}],"successes":[{"msg":"Pass","metadata":{"code":"builtin.attestation.signature_check"}},{"msg":"Pass","metadata":{"code":"builtin.attestation.syntax_check"}},{"msg":"Pass","metadata":{"code":"builtin.image.signature_check"}}],"success":false,"signatures":${ATTESTATION_SIGNATURES_JSON}}],"key":${known_PUBLIC_KEY_JSON},"policy":{"sources":[{"policy":["git::https://${GITHOST}/git/with-dependencies.git"]}],"publicKey":"${known_PUBLIC_KEY}"},"ec-version":"${EC_VERSION}"}
+---
+
+[rule dependencies:stderr - 1]
+Error: success criteria not met
+
+---
