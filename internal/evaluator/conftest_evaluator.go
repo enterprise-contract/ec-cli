@@ -403,6 +403,11 @@ func (c conftestEvaluator) computeSuccesses(result CheckResult, rules policyRule
 			continue
 		}
 
+		// Ignore any successes that are not meant for the package this CheckResult represents
+		if rule.Package != result.Namespace {
+			continue
+		}
+
 		success := output.Result{
 			Message: "Pass",
 			Metadata: map[string]interface{}{

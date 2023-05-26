@@ -678,3 +678,22 @@ Feature: evaluate enterprise contract
     And ec command is run with "validate image --image ${REGISTRY}/acceptance/image --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --strict"
     Then the exit status should be 1
     Then the output should match the snapshot
+
+  Scenario: successes are not duplicated
+    Given a key pair named "known"
+    Given an image named "acceptance/unique-successes"
+    Given a valid image signature of "acceptance/unique-successes" image signed by the "known" key
+    Given a valid Rekor entry for image signature of "acceptance/unique-successes"
+    Given a valid attestation of "acceptance/unique-successes" signed by the "known" key
+    Given a valid Rekor entry for attestation of "acceptance/unique-successes"
+    Given a git repository named "unique-successes" with
+      | happy.rego  | examples/happy_day.rego   |
+      | reject.rgo  | examples/reject.rego      |
+      | gloomy.rego | examples/gloomy_day.rego |
+    Given policy configuration named "ec-policy" with specification
+    """
+    {"sources": [{"policy": ["git::https://${GITHOST}/git/unique-successes.git"]}]}
+    """
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/unique-successes --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR}"
+    Then the exit status should be 0
+    Then the output should match the snapshot
