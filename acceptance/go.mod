@@ -24,7 +24,7 @@ require (
 	github.com/sigstore/cosign/v2 v2.0.3-0.20230505201329-3121a17d136e
 	github.com/sigstore/rekor v1.1.1
 	github.com/sigstore/sigstore v1.6.4
-	github.com/stretchr/testify v1.8.3
+	github.com/stretchr/testify v1.8.4
 	github.com/tektoncd/cli v0.31.0
 	github.com/tektoncd/pipeline v0.47.0
 	github.com/testcontainers/testcontainers-go v0.20.1
