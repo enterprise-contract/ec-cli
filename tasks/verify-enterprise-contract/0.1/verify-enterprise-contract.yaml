@@ -95,9 +95,6 @@ spec:
       default: "now"
 
   results:
-    - name: HACBS_TEST_OUTPUT
-      description: Short summary of the policy evaluation for each image (Deprecated)
-
     - name: TEST_OUTPUT
       description: Short summary of the policy evaluation for each image
 
@@ -133,12 +130,8 @@ spec:
         - "--effective-time=$(params.EFFECTIVE_TIME)"
         - "--output"
         - "yaml=$(params.HOMEDIR)/report.yaml"
-        # Write to both the new and the old deprecated result
-        # HACBS_TEST_OUTPUT will be removed in the future
         - "--output"
-        - "hacbs=$(results.TEST_OUTPUT.path)"
-        - "--output"
-        - "hacbs=$(results.HACBS_TEST_OUTPUT.path)"
+        - "test=$(results.TEST_OUTPUT.path)"
       env:
         - name: SSL_CERT_DIR
           # The Tekton Operator automatically sets the SSL_CERT_DIR env to the value below but,
@@ -170,4 +163,4 @@ spec:
         - "-e"
         - >
           .result == "SUCCESS" or .result == "WARNING" or ($strict | not)
-        - "$(results.HACBS_TEST_OUTPUT.path)"
+        - "$(results.TEST_OUTPUT.path)"

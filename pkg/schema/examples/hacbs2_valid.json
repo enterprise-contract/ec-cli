@@ -336,7 +336,7 @@
           "status": "Succeeded",
           "steps": [
             {
-              "entryPoint": "CONFTEST_OPTIONS=\"\"\nif [ -s \"../sanity-inspect-image/base_image_inspect.json\" ]; then\n  CONFTEST_OPTIONS=\"-d=../sanity-inspect-image/base_image_inspect.json\"\nfi\n\necho \"Running conftest using $(params.POLICY_DIR) policy, $(params.POLICY_NAMESPACE) namespace\"\n/usr/bin/conftest test --no-fail ../sanity-inspect-image/image_inspect.json \"${CONFTEST_OPTIONS}\" \\\n--policy $(params.POLICY_DIR) --namespace $(params.POLICY_NAMESPACE) \\\n--output=json 2> stderr.txt | tee sanity_label_check_output.json\n\nERR_MSG=\"$(cat stderr.txt)\"\nERR_MSG=\"${ERR_MSG:-unknown}\"\nHACBS_ERROR_OUTPUT=$(jq -rc --arg date $(date +%s) --arg ERR_MSG \"${ERR_MSG: 0: 3000}\" --null-input \\\n  '{result: \"ERROR\", timestamp: $date, failures: [$ERR_MSG]}')\nHACBS_TEST_OUTPUT=$(jq -rce --arg date $(date +%s) \\\n  '.[] | { result: (if (.failures | length > 0) then \"FAILURE\" else \"SUCCESS\" end),\n           timestamp: $date,\n           namespace,\n           successes,\n           failures: (.failures // [])|map(.metadata.details.name) | unique\n         }' sanity_label_check_output.json || true)\necho \"${HACBS_TEST_OUTPUT:-${HACBS_ERROR_OUTPUT}}\" | tee $(results.HACBS_TEST_OUTPUT.path)\n",
+              "entryPoint": "CONFTEST_OPTIONS=\"\"\nif [ -s \"../sanity-inspect-image/base_image_inspect.json\" ]; then\n  CONFTEST_OPTIONS=\"-d=../sanity-inspect-image/base_image_inspect.json\"\nfi\n\necho \"Running conftest using $(params.POLICY_DIR) policy, $(params.POLICY_NAMESPACE) namespace\"\n/usr/bin/conftest test --no-fail ../sanity-inspect-image/image_inspect.json \"${CONFTEST_OPTIONS}\" \\\n--policy $(params.POLICY_DIR) --namespace $(params.POLICY_NAMESPACE) \\\n--output=json 2> stderr.txt | tee sanity_label_check_output.json\n\nERR_MSG=\"$(cat stderr.txt)\"\nERR_MSG=\"${ERR_MSG:-unknown}\"\nHACBS_ERROR_OUTPUT=$(jq -rc --arg date $(date +%s) --arg ERR_MSG \"${ERR_MSG: 0: 3000}\" --null-input \\\n  '{result: \"ERROR\", timestamp: $date, failures: [$ERR_MSG]}')\nTEST_OUTPUT=$(jq -rce --arg date $(date +%s) \\\n  '.[] | { result: (if (.failures | length > 0) then \"FAILURE\" else \"SUCCESS\" end),\n           timestamp: $date,\n           namespace,\n           successes,\n           failures: (.failures // [])|map(.metadata.details.name) | unique\n         }' sanity_label_check_output.json || true)\necho \"${TEST_OUTPUT:-${HACBS_ERROR_OUTPUT}}\" | tee $(results.TEST_OUTPUT.path)\n",
               "arguments": null,
               "environment": {
                 "container": "basic-sanity-checks-required-labels",
@@ -354,7 +354,7 @@
           },
           "results": [
             {
-              "name": "HACBS_TEST_OUTPUT",
+              "name": "TEST_OUTPUT",
               "value": "{\"result\":\"SUCCESS\",\"timestamp\":\"1664452757\",\"namespace\":\"required_checks\",\"successes\":22,\"failures\":[]}\n"
             }
           ]
@@ -374,7 +374,7 @@
           "status": "Succeeded",
           "steps": [
             {
-              "entryPoint": "CONFTEST_OPTIONS=\"\"\nif [ -s \"../sanity-inspect-image/base_image_inspect.json\" ]; then\n  CONFTEST_OPTIONS=\"-d=../sanity-inspect-image/base_image_inspect.json\"\nfi\n\necho \"Running conftest using $(params.POLICY_DIR) policy, $(params.POLICY_NAMESPACE) namespace\"\n/usr/bin/conftest test --no-fail ../sanity-inspect-image/image_inspect.json \"${CONFTEST_OPTIONS}\" \\\n--policy $(params.POLICY_DIR) --namespace $(params.POLICY_NAMESPACE) \\\n--output=json 2> stderr.txt | tee sanity_label_check_output.json\n\nERR_MSG=\"$(cat stderr.txt)\"\nERR_MSG=\"${ERR_MSG:-unknown}\"\nHACBS_ERROR_OUTPUT=$(jq -rc --arg date $(date +%s) --arg ERR_MSG \"${ERR_MSG: 0: 3000}\" --null-input \\\n  '{result: \"ERROR\", timestamp: $date, failures: [$ERR_MSG]}')\nHACBS_TEST_OUTPUT=$(jq -rce --arg date $(date +%s) \\\n  '.[] | { result: (if (.failures | length > 0) then \"FAILURE\" else \"SUCCESS\" end),\n           timestamp: $date,\n           namespace,\n           successes,\n           failures: (.failures // [])|map(.metadata.details.name) | unique\n         }' sanity_label_check_output.json || true)\necho \"${HACBS_TEST_OUTPUT:-${HACBS_ERROR_OUTPUT}}\" | tee $(results.HACBS_TEST_OUTPUT.path)\n",
+              "entryPoint": "CONFTEST_OPTIONS=\"\"\nif [ -s \"../sanity-inspect-image/base_image_inspect.json\" ]; then\n  CONFTEST_OPTIONS=\"-d=../sanity-inspect-image/base_image_inspect.json\"\nfi\n\necho \"Running conftest using $(params.POLICY_DIR) policy, $(params.POLICY_NAMESPACE) namespace\"\n/usr/bin/conftest test --no-fail ../sanity-inspect-image/image_inspect.json \"${CONFTEST_OPTIONS}\" \\\n--policy $(params.POLICY_DIR) --namespace $(params.POLICY_NAMESPACE) \\\n--output=json 2> stderr.txt | tee sanity_label_check_output.json\n\nERR_MSG=\"$(cat stderr.txt)\"\nERR_MSG=\"${ERR_MSG:-unknown}\"\nHACBS_ERROR_OUTPUT=$(jq -rc --arg date $(date +%s) --arg ERR_MSG \"${ERR_MSG: 0: 3000}\" --null-input \\\n  '{result: \"ERROR\", timestamp: $date, failures: [$ERR_MSG]}')\nTEST_OUTPUT=$(jq -rce --arg date $(date +%s) \\\n  '.[] | { result: (if (.failures | length > 0) then \"FAILURE\" else \"SUCCESS\" end),\n           timestamp: $date,\n           namespace,\n           successes,\n           failures: (.failures // [])|map(.metadata.details.name) | unique\n         }' sanity_label_check_output.json || true)\necho \"${TEST_OUTPUT:-${HACBS_ERROR_OUTPUT}}\" | tee $(results.TEST_OUTPUT.path)\n",
               "arguments": null,
               "environment": {
                 "container": "basic-sanity-checks-required-labels",
@@ -392,7 +392,7 @@
           },
           "results": [
             {
-              "name": "HACBS_TEST_OUTPUT",
+              "name": "TEST_OUTPUT",
               "value": "{\"result\":\"SUCCESS\",\"timestamp\":\"1664452757\",\"namespace\":\"optional_checks\",\"successes\":7,\"failures\":[]}\n"
             }
           ]
@@ -430,7 +430,7 @@
               "annotations": null
             },
             {
-              "entryPoint": "ERR_MSG=\"$(echo -n $(cat $(workspaces.sanity-ws.path)/stderr.txt))\"\nERR_MSG=\"${ERR_MSG:-unknown}\"\nHACBS_ERROR_OUTPUT=$(jq -rc --arg date $(date +%s) --arg MSG \"${ERR_MSG: 0: 3000}\" --null-input \\\n  '{result: \"ERROR\", timestamp: $date, failures: $MSG}')\nHACBS_TEST_OUTPUT=$(jq -rce --arg date $(date +%s) \\\n  '.[] | { result: (if (.failures | length > 0) then \"FAILURE\" else \"SUCCESS\" end),\n           timestamp: $date,\n           namespace,\n           successes,\n           failures: (.failures // [])|map(.metadata.details.name) | unique\n         }' $(workspaces.sanity-ws.path)/deprecated_image_check_output.json || true)\n\necho \"${HACBS_TEST_OUTPUT:-${HACBS_ERROR_OUTPUT}}\" | tee $(results.HACBS_TEST_OUTPUT.path)\n",
+              "entryPoint": "ERR_MSG=\"$(echo -n $(cat $(workspaces.sanity-ws.path)/stderr.txt))\"\nERR_MSG=\"${ERR_MSG:-unknown}\"\nHACBS_ERROR_OUTPUT=$(jq -rc --arg date $(date +%s) --arg MSG \"${ERR_MSG: 0: 3000}\" --null-input \\\n  '{result: \"ERROR\", timestamp: $date, failures: $MSG}')\nTEST_OUTPUT=$(jq -rce --arg date $(date +%s) \\\n  '.[] | { result: (if (.failures | length > 0) then \"FAILURE\" else \"SUCCESS\" end),\n           timestamp: $date,\n           namespace,\n           successes,\n           failures: (.failures // [])|map(.metadata.details.name) | unique\n         }' $(workspaces.sanity-ws.path)/deprecated_image_check_output.json || true)\n\necho \"${TEST_OUTPUT:-${HACBS_ERROR_OUTPUT}}\" | tee $(results.TEST_OUTPUT.path)\n",
               "arguments": null,
               "environment": {
                 "container": "test-format-result",
@@ -454,7 +454,7 @@
               "value": "404"
             },
             {
-              "name": "HACBS_TEST_OUTPUT",
+              "name": "TEST_OUTPUT",
               "value": "{\"result\":\"ERROR\",\"timestamp\":\"1664452774\",\"failures\":\"Registry/image registry.access.redhat.com/ not found in Pyxis\"}\n"
             }
           ]
@@ -515,7 +515,7 @@
               "annotations": null
             },
             {
-              "entryPoint": "HACBS_ERROR_OUTPUT=$(jq -rc --arg date $(date +%s) --null-input \\\n  '{result: \"ERROR\", timestamp: $date}')\nHACBS_TEST_OUTPUT=$(jq -rce --arg date $(date +%s) \\\n  '.[] | { result: (if (.failures | length > 0) then \"FAILURE\" else \"SUCCESS\" end),\n           timestamp: $date,\n           namespace,\n           successes,\n           failures: (.failures // [])|map(.metadata.details.name) | unique\n         }' $(workspaces.conftest-ws.path)/clair-vulnerabilities.json || true)\necho \"${HACBS_TEST_OUTPUT:-${HACBS_ERROR_OUTPUT}}\" | tee $(results.HACBS_TEST_OUTPUT.path)\n",
+              "entryPoint": "HACBS_ERROR_OUTPUT=$(jq -rc --arg date $(date +%s) --null-input \\\n  '{result: \"ERROR\", timestamp: $date}')\nTEST_OUTPUT=$(jq -rce --arg date $(date +%s) \\\n  '.[] | { result: (if (.failures | length > 0) then \"FAILURE\" else \"SUCCESS\" end),\n           timestamp: $date,\n           namespace,\n           successes,\n           failures: (.failures // [])|map(.metadata.details.name) | unique\n         }' $(workspaces.conftest-ws.path)/clair-vulnerabilities.json || true)\necho \"${TEST_OUTPUT:-${HACBS_ERROR_OUTPUT}}\" | tee $(results.TEST_OUTPUT.path)\n",
               "arguments": null,
               "environment": {
                 "container": "test-format-result",
@@ -530,7 +530,7 @@
           },
           "results": [
             {
-              "name": "HACBS_TEST_OUTPUT",
+              "name": "TEST_OUTPUT",
               "value": "{\"result\":\"FAILURE\",\"timestamp\":\"1664454218\",\"namespace\":\"required_checks\",\"successes\":2,\"failures\":[\"clair_high_vulnerabilities\",\"clair_medium_vulnerabilities\"]}\n"
             }
           ]
@@ -550,7 +550,7 @@
           "status": "Succeeded",
           "steps": [
             {
-              "entryPoint": "/usr/local/go/bin/gosec -no-fail -fmt=sarif -out=gosec_output.json $(workspaces.workspace.path)/... | tee gosec_output.txt\n\n# Test if any package was found\n# Even with -no-fail, gosec uses exit code 1 for several states,\n# including when there are no packages found.\nSKIP_MSG=\"No packages found\"\ntest_not_skipped=0\ngrep -q \"$SKIP_MSG$\" gosec_output.txt || test_not_skipped=$?\n\nHACBS_ERROR_OUTPUT=$(jq -rc --arg date $(date +%s) --null-input \\\n  '{result: \"ERROR\", timestamp: $date}')\n\nif [ -f gosec_output.json ];\nthen\n  cat gosec_output.json\n  HACBS_TEST_OUTPUT=$(jq -rce --arg date $(date +%s) --arg tmp_not_skipped $test_not_skipped \\\n                         --arg SKIP_MESSAGE \"${SKIP_MSG}\" \\\n    '{ result: (if (.runs[].results | length > 0) then \"FAILURE\" elif $tmp_not_skipped==\"0\" then \"SKIPPED\" else \"SUCCESS\" end),\n       timestamp: $date,\n       namespace: \"default\",\n       successes: 0,\n       note: (if $tmp_not_skipped==\"0\" then $SKIP_MESSAGE else \"\" end),\n       failures: (.runs[].results // [])|map(.message.text) | unique\n     }' gosec_output.json || true)\nelse\n  HACBS_TEST_OUTPUT=$(jq -rc --arg date $(date +%s) --arg tmp_not_skipped $test_not_skipped --null-input \\\n                         --arg SKIP_MESSAGE \"${SKIP_MSG}\" \\\n    '{ result: (if $tmp_not_skipped==\"0\" then \"SKIPPED\" else \"SUCCESS\" end),\n       timestamp: $date,\n       namespace: \"default\",\n       successes: 0,\n       note: (if $tmp_not_skipped==\"0\" then $SKIP_MESSAGE else \"\" end),\n       failures: 0\n     }')\nfi\n\necho \"${HACBS_TEST_OUTPUT:-${HACBS_ERROR_OUTPUT}}\" | tee $(results.HACBS_TEST_OUTPUT.path)\n",
+              "entryPoint": "/usr/local/go/bin/gosec -no-fail -fmt=sarif -out=gosec_output.json $(workspaces.workspace.path)/... | tee gosec_output.txt\n\n# Test if any package was found\n# Even with -no-fail, gosec uses exit code 1 for several states,\n# including when there are no packages found.\nSKIP_MSG=\"No packages found\"\ntest_not_skipped=0\ngrep -q \"$SKIP_MSG$\" gosec_output.txt || test_not_skipped=$?\n\nHACBS_ERROR_OUTPUT=$(jq -rc --arg date $(date +%s) --null-input \\\n  '{result: \"ERROR\", timestamp: $date}')\n\nif [ -f gosec_output.json ];\nthen\n  cat gosec_output.json\n  TEST_OUTPUT=$(jq -rce --arg date $(date +%s) --arg tmp_not_skipped $test_not_skipped \\\n                         --arg SKIP_MESSAGE \"${SKIP_MSG}\" \\\n    '{ result: (if (.runs[].results | length > 0) then \"FAILURE\" elif $tmp_not_skipped==\"0\" then \"SKIPPED\" else \"SUCCESS\" end),\n       timestamp: $date,\n       namespace: \"default\",\n       successes: 0,\n       note: (if $tmp_not_skipped==\"0\" then $SKIP_MESSAGE else \"\" end),\n       failures: (.runs[].results // [])|map(.message.text) | unique\n     }' gosec_output.json || true)\nelse\n  TEST_OUTPUT=$(jq -rc --arg date $(date +%s) --arg tmp_not_skipped $test_not_skipped --null-input \\\n                         --arg SKIP_MESSAGE \"${SKIP_MSG}\" \\\n    '{ result: (if $tmp_not_skipped==\"0\" then \"SKIPPED\" else \"SUCCESS\" end),\n       timestamp: $date,\n       namespace: \"default\",\n       successes: 0,\n       note: (if $tmp_not_skipped==\"0\" then $SKIP_MESSAGE else \"\" end),\n       failures: 0\n     }')\nfi\n\necho \"${TEST_OUTPUT:-${HACBS_ERROR_OUTPUT}}\" | tee $(results.TEST_OUTPUT.path)\n",
               "arguments": null,
               "environment": {
                 "container": "sast-go",
@@ -565,7 +565,7 @@
           },
           "results": [
             {
-              "name": "HACBS_TEST_OUTPUT",
+              "name": "TEST_OUTPUT",
               "value": "{\"result\":\"SUCCESS\",\"timestamp\":\"1664452666\",\"namespace\":\"default\",\"successes\":0,\"note\":\"\",\"failures\":0}\n"
             }
           ]
@@ -585,7 +585,7 @@
           "status": "Succeeded",
           "steps": [
             {
-              "entryPoint": "#!/bin/bash -x\n\npushd $(workspaces.workspace.path)\nif [ -f \"$(params.PATH_CONTEXT)/pom.xml\" ]; then\n  mvn package -f $(params.PATH_CONTEXT)/\nelse\n  echo \"pom.xml file doesn't exist in $(workspaces.workspace.path)/$(params.PATH_CONTEXT)\"\nfi\npopd\n\nJAR_PATH=`ls $(workspaces.workspace.path)/$(params.PATH_CONTEXT)/target/*.jar`\nif [ -n \"$JAR_PATH\" ]; then\n  /home/findsecbugs-cli/findsecbugs.sh $(params.OPTIONAL_ARGS) $(params.OUTPUT_ONLY_ANALYZE) -$(params.OUTPUT_FORMAT) \\\n    -output sast_java_sec_output.json $JAR_PATH  2> stderr.txt\n  cat sast_java_sec_output.json\n  test_skipped=0\nelse\n  echo \"jar file $JAR_PATH doesn't exist\" > stderr.txt\n  test_skipped=1\nfi\n\nERR_MSG=\"$(echo -n $(cat stderr.txt))\"\nERR_MSG=\"${ERR_MSG:-unknown}\"\nHACBS_ERROR_OUTPUT=$(jq -rc --arg date $(date +%s) --arg MSG \"${ERR_MSG: 0: 3000}\" \\\n                      --arg test_skipped $test_skipped --null-input \\\n    '{result: (if $test_skipped==\"1\" then \"SKIPPED\" else \"ERROR\" end),\n      timestamp: $date,\n      note: (if $test_skipped==\"1\" then $MSG else \"\" end),\n      failures: (if $test_skipped==\"1\" then \"\" else [$MSG] end)}')\nHACBS_TEST_OUTPUT=$(jq -rce --arg date $(date +%s)  \\\n  '{ result: (if (.runs[].results | length > 0) then \"FAILURE\" else \"SUCCESS\" end),\n           timestamp: $date,\n           namespace: \"default\",\n           successes: 0,\n           note: \"\",\n           failures: (.runs[].results | length)\n         }' sast_java_sec_output.json || true)\necho \"${HACBS_TEST_OUTPUT:-${HACBS_ERROR_OUTPUT}}\" | tee $(results.HACBS_TEST_OUTPUT.path)\n",
+              "entryPoint": "#!/bin/bash -x\n\npushd $(workspaces.workspace.path)\nif [ -f \"$(params.PATH_CONTEXT)/pom.xml\" ]; then\n  mvn package -f $(params.PATH_CONTEXT)/\nelse\n  echo \"pom.xml file doesn't exist in $(workspaces.workspace.path)/$(params.PATH_CONTEXT)\"\nfi\npopd\n\nJAR_PATH=`ls $(workspaces.workspace.path)/$(params.PATH_CONTEXT)/target/*.jar`\nif [ -n \"$JAR_PATH\" ]; then\n  /home/findsecbugs-cli/findsecbugs.sh $(params.OPTIONAL_ARGS) $(params.OUTPUT_ONLY_ANALYZE) -$(params.OUTPUT_FORMAT) \\\n    -output sast_java_sec_output.json $JAR_PATH  2> stderr.txt\n  cat sast_java_sec_output.json\n  test_skipped=0\nelse\n  echo \"jar file $JAR_PATH doesn't exist\" > stderr.txt\n  test_skipped=1\nfi\n\nERR_MSG=\"$(echo -n $(cat stderr.txt))\"\nERR_MSG=\"${ERR_MSG:-unknown}\"\nHACBS_ERROR_OUTPUT=$(jq -rc --arg date $(date +%s) --arg MSG \"${ERR_MSG: 0: 3000}\" \\\n                      --arg test_skipped $test_skipped --null-input \\\n    '{result: (if $test_skipped==\"1\" then \"SKIPPED\" else \"ERROR\" end),\n      timestamp: $date,\n      note: (if $test_skipped==\"1\" then $MSG else \"\" end),\n      failures: (if $test_skipped==\"1\" then \"\" else [$MSG] end)}')\nTEST_OUTPUT=$(jq -rce --arg date $(date +%s)  \\\n  '{ result: (if (.runs[].results | length > 0) then \"FAILURE\" else \"SUCCESS\" end),\n           timestamp: $date,\n           namespace: \"default\",\n           successes: 0,\n           note: \"\",\n           failures: (.runs[].results | length)\n         }' sast_java_sec_output.json || true)\necho \"${TEST_OUTPUT:-${HACBS_ERROR_OUTPUT}}\" | tee $(results.TEST_OUTPUT.path)\n",
               "arguments": null,
               "environment": {
                 "container": "java-sec-check",
@@ -605,7 +605,7 @@
           },
           "results": [
             {
-              "name": "HACBS_TEST_OUTPUT",
+              "name": "TEST_OUTPUT",
               "value": "{\"result\":\"SKIPPED\",\"timestamp\":\"1664452716\",\"note\":\"jar file doesn't exist\",\"failures\":\"\"}\n"
             }
           ]
@@ -625,7 +625,7 @@
           "status": "Succeeded",
           "steps": [
             {
-              "entryPoint": "#!/usr/bin/env bash\nSNYK_TOKEN=\"$(cat /etc/secrets/snyk_token)\"\nif [[ -z $SNYK_TOKEN ]]; then\n  echo \"SNYK_TOKEN is empty and a secret 'test-team-snyk' which includes 'snyk_token' need to be created in test-team namespace\" | tee stdout.txt\n  exit 0\nfi\nexport SNYK_TOKEN\nSNYK_EXIT_CODE=0\nsnyk code test $(params.ARGS) ../.. --sarif-file-output=sast_snyk_check_out.json 1>&2>> stdout.txt || SNYK_EXIT_CODE=$?\ntest_not_skipped=0\nSKIP_MSG=\"We found 0 supported files\"\ngrep -q \"$SKIP_MSG\" stdout.txt || test_not_skipped=$?\nif [[ \"$SNYK_EXIT_CODE\" -eq 0 ]] || [[ \"$SNYK_EXIT_CODE\" -eq 1 ]]; then\n  cat sast_snyk_check_out.json\n  HACBS_TEST_OUTPUT=$(jq -rce --arg date $(date +%s) \\\n    '{ result: (if (.runs[].results | length > 0) then \"FAILURE\" else \"SUCCESS\" end),\n           timestamp: $date,\n           namespace: \"default\",\n           successes: 0,\n           note: \"\",\n           failures: (.runs[].results // [])|map(.message.text) | unique\n         }' sast_snyk_check_out.json || true)\n# When the test is skipped, the \"SNYK_EXIT_CODE\" is 3 and it can also be 3 in some other situation\nelif [[ \"$test_not_skipped\" -eq 0 ]]; then\n  HACBS_ERROR_OUTPUT=$(jq -rc --arg date $(date +%s) --arg SKIP_MESSAGE \"${SKIP_MSG}\" --null-input \\\n    '{result: \"SKIPPED\", note: $SKIP_MESSAGE, timestamp: $date}')\nelse\n  ERR_MSG=\"$(cat stdout.txt)\"\n  HACBS_ERROR_OUTPUT=$(jq -rc --arg date $(date +%s) --arg ERR_MESSAGE \"${ERR_MSG}\" --null-input \\\n    '{result: \"ERROR\", timestamp: $date, failures: [$ERR_MESSAGE]}')\nfi\necho \"${HACBS_TEST_OUTPUT:-${HACBS_ERROR_OUTPUT}}\" | tee $(results.HACBS_TEST_OUTPUT.path)\n",
+              "entryPoint": "#!/usr/bin/env bash\nSNYK_TOKEN=\"$(cat /etc/secrets/snyk_token)\"\nif [[ -z $SNYK_TOKEN ]]; then\n  echo \"SNYK_TOKEN is empty and a secret 'test-team-snyk' which includes 'snyk_token' need to be created in test-team namespace\" | tee stdout.txt\n  exit 0\nfi\nexport SNYK_TOKEN\nSNYK_EXIT_CODE=0\nsnyk code test $(params.ARGS) ../.. --sarif-file-output=sast_snyk_check_out.json 1>&2>> stdout.txt || SNYK_EXIT_CODE=$?\ntest_not_skipped=0\nSKIP_MSG=\"We found 0 supported files\"\ngrep -q \"$SKIP_MSG\" stdout.txt || test_not_skipped=$?\nif [[ \"$SNYK_EXIT_CODE\" -eq 0 ]] || [[ \"$SNYK_EXIT_CODE\" -eq 1 ]]; then\n  cat sast_snyk_check_out.json\n  TEST_OUTPUT=$(jq -rce --arg date $(date +%s) \\\n    '{ result: (if (.runs[].results | length > 0) then \"FAILURE\" else \"SUCCESS\" end),\n           timestamp: $date,\n           namespace: \"default\",\n           successes: 0,\n           note: \"\",\n           failures: (.runs[].results // [])|map(.message.text) | unique\n         }' sast_snyk_check_out.json || true)\n# When the test is skipped, the \"SNYK_EXIT_CODE\" is 3 and it can also be 3 in some other situation\nelif [[ \"$test_not_skipped\" -eq 0 ]]; then\n  HACBS_ERROR_OUTPUT=$(jq -rc --arg date $(date +%s) --arg SKIP_MESSAGE \"${SKIP_MSG}\" --null-input \\\n    '{result: \"SKIPPED\", note: $SKIP_MESSAGE, timestamp: $date}')\nelse\n  ERR_MSG=\"$(cat stdout.txt)\"\n  HACBS_ERROR_OUTPUT=$(jq -rc --arg date $(date +%s) --arg ERR_MESSAGE \"${ERR_MSG}\" --null-input \\\n    '{result: \"ERROR\", timestamp: $date, failures: [$ERR_MESSAGE]}')\nfi\necho \"${TEST_OUTPUT:-${HACBS_ERROR_OUTPUT}}\" | tee $(results.TEST_OUTPUT.path)\n",
               "arguments": null,
               "environment": {
                 "container": "sast-snyk-check",

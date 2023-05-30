@@ -377,7 +377,7 @@ func Test_ReportSummary(t *testing.T) {
 
 }
 
-func Test_ReportHACBS(t *testing.T) {
+func Test_ReportTEST(t *testing.T) {
 	cases := []struct {
 		name       string
 		expected   string
@@ -511,7 +511,7 @@ func Test_ReportHACBS(t *testing.T) {
 			report.created = time.Unix(0, 0).UTC()
 
 			p := format.NewTargetParser(JSON, defaultWriter, fs)
-			assert.NoError(t, report.WriteAll([]string{"hacbs=report.json", "hacbs"}, p))
+			assert.NoError(t, report.WriteAll([]string{"test=report.json", "test"}, p))
 
 			reportText, err := afero.ReadFile(fs, "report.json")
 			assert.NoError(t, err)

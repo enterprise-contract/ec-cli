@@ -71,11 +71,11 @@ type componentSummary struct {
 	TotalSuccesses  int                 `json:"total_successes"`
 }
 
-// hacbsReport represents the standardized HACBS_TEST_OUTPUT format.
-// The `Namespace` attribute is required for the HACBS results API. However,
+// testReport represents the standardized TEST_OUTPUT format.
+// The `Namespace` attribute is required for the appstudio results API. However,
 // it is always an empty string from the ec-cli as a way to indicate all
 // namespaces were used.
-type hacbsReport struct {
+type testReport struct {
 	Timestamp string `json:"timestamp"`
 	Namespace string `json:"namespace"`
 	Successes int    `json:"successes"`
@@ -88,7 +88,7 @@ type hacbsReport struct {
 const (
 	JSON    = "json"
 	YAML    = "yaml"
-	HACBS   = "hacbs"
+	TEST    = "test"
 	Summary = "summary"
 	JUNIT   = "junit"
 )
@@ -152,8 +152,8 @@ func (r *Report) toFormat(format string) (data []byte, err error) {
 		data, err = yaml.Marshal(r)
 	case Summary:
 		data, err = json.Marshal(r.toSummary())
-	case HACBS:
-		data, err = json.Marshal(r.toHACBS())
+	case TEST:
+		data, err = json.Marshal(r.toTestReport())
 	case JUNIT:
 		data, err = xml.Marshal(r.toJUnit())
 	default:
@@ -211,12 +211,12 @@ func condensedMsg(results []conftestOutput.Result) map[string][]string {
 	return shortNames
 }
 
-// toHACBS returns a version of the report that conforms to the
-// HACBS_TEST_OUTPUT format.
+// toTestReport returns a version of the report that conforms to the
+// TEST_OUTPUT format.
 // (Note: the name of the Tekton task result where this generally
-// gets written is now TEST_OUTPUT instead of HACBS_TEST_OUTPUT)
-func (r *Report) toHACBS() hacbsReport {
-	result := hacbsReport{Timestamp: fmt.Sprint(r.created.UTC().Unix())}
+// gets written is now TEST_OUTPUT instead of TEST_OUTPUT)
+func (r *Report) toTestReport() testReport {
+	result := testReport{Timestamp: fmt.Sprint(r.created.UTC().Unix())}
 
 	hasFailures := false
 	for _, component := range r.Components {
