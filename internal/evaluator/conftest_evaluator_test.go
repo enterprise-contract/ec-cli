@@ -19,13 +19,22 @@
 package evaluator
 
 import (
+	"archive/tar"
 	"context"
+	"embed"
 	"encoding/json"
+	"io"
+	"os"
+	"path"
+	"path/filepath"
+	"sort"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/MakeNowJust/heredoc"
 	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
+	"github.com/gkampitakis/go-snaps/snaps"
 	"github.com/open-policy-agent/conftest/output"
 	"github.com/open-policy-agent/opa/ast"
 	"github.com/spf13/afero"
@@ -79,7 +88,7 @@ func (m *mockDownloader) Download(ctx context.Context, dest string, urls []strin
 	return args.Error(0)
 }
 
-func TestConftestEvaluatorEvaluate(t *testing.T) {
+func TestConftestEvaluatorEvaluateTimeBased(t *testing.T) {
 	results := []output.CheckResult{
 		{
 			Failures: []output.Result{
@@ -1618,6 +1627,81 @@ func TestCheckResultsTrim(t *testing.T) {
 			assert.Equal(t, c.expected, c.given)
 		})
 	}
+}
+
+//go:embed __testdir__/*.rego
+var policies embed.FS
+
+func TestConftestEvaluatorEvaluate(t *testing.T) {
+	dir := t.TempDir()
+	require.NoError(t, os.MkdirAll(path.Join(dir, "inputs"), 0755))
+	require.NoError(t, os.WriteFile(path.Join(dir, "inputs", "data.json"), []byte("{}"), 0600))
+	require.NoError(t, os.MkdirAll(path.Join(dir, "policy"), 0755))
+
+	f, err := os.Create(path.Join(dir, "policy", "rules.tar"))
+	require.NoError(t, err)
+	ar := tar.NewWriter(f)
+
+	rego, err := policies.ReadDir("__testdir__")
+	require.NoError(t, err)
+
+	for _, r := range rego {
+		if r.IsDir() {
+			continue
+		}
+		f, err := policies.Open(path.Join("__testdir__", r.Name()))
+		require.NoError(t, err)
+
+		bytes, err := io.ReadAll(f)
+		require.NoError(t, err)
+
+		require.NoError(t, ar.WriteHeader(&tar.Header{
+			Name: r.Name(),
+			Mode: 0644,
+			Size: int64(len(bytes)),
+		}))
+
+		_, err = ar.Write(bytes)
+		require.NoError(t, err)
+	}
+	ar.Close()
+	f.Close()
+
+	ctx := withCapabilities(context.Background(), testCapabilities)
+
+	p, err := policy.NewOfflinePolicy(ctx, policy.Now)
+	require.NoError(t, err)
+
+	p = p.WithSpec(ecc.EnterpriseContractPolicySpec{
+		Configuration: &ecc.EnterpriseContractPolicyConfiguration{},
+	})
+
+	evaluator, err := NewConftestEvaluator(ctx, []source.PolicySource{
+		&source.PolicyUrl{
+			Url:  path.Join(dir, "policy", "rules.tar"),
+			Kind: source.PolicyKind,
+		},
+	}, p)
+	require.NoError(t, err)
+
+	results, err := evaluator.Evaluate(ctx, []string{path.Join(dir, "inputs")})
+	require.NoError(t, err)
+
+	// sort the slice by code for test stability
+	sort.Slice(results, func(l, r int) bool {
+		return strings.Compare(results[l].Namespace, results[r].Namespace) < 0
+	})
+
+	for i := range results {
+		// let's not fail the snapshot on different locations of $TMPDIR
+		results[i].FileName = filepath.ToSlash(strings.Replace(results[i].FileName, dir, "$TMPDIR", 1))
+		// sort the slice by code for test stability
+		sort.Slice(results[i].Successes, func(l, r int) bool {
+			return strings.Compare(results[i].Successes[l].Metadata[metadataCode].(string), results[i].Successes[r].Metadata[metadataCode].(string)) < 0
+		})
+	}
+
+	snaps.MatchSnapshot(t, results)
 }
 
 var testCapabilities string
