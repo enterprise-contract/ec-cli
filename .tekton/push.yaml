@@ -36,7 +36,7 @@ spec:
       value: "tasks/verify-enterprise-contract/0.1,!tasks/verify-enterprise-contract/0.1/tests"
   pipelineRef:
     name: tekton-bundle-builder
-    bundle: quay.io/redhat-appstudio-tekton-catalog/pipeline-tekton-bundle-builder:e051ad5066a7d6bcdb26a00a00b51daf58d40652@sha256:405b92043f65f0df81a86f41f5d63d8ac86f58442dedeaff959381c0ecb7bdee
+    bundle: quay.io/redhat-appstudio-tekton-catalog/pipeline-tekton-bundle-builder:4c203a1b6b05196fdac8916c19a4d1ce918704bd@sha256:655d823e44b8638de3c2c0bf0c0bcbd49d79deaac2c549e3e048f48f7b86c4f8
   workspaces:
     - name: workspace
       volumeClaimTemplate:
