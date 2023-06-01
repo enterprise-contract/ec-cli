@@ -147,9 +147,9 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 
 			  ec validate image --image registry/name:tag --output json=<path>
 
-			Write output in YAML format to stdout and in test format to a file
+			Write output in YAML format to stdout and in appstudio format to a file
 
-			  ec validate image --image registry/name:tag --output yaml --output test=<path>
+			  ec validate image --image registry/name:tag --output yaml --output appstudio=<path>
 
 			Validate a single image with keyless workflow. This is an experimental feature
 			that requires setting the EC_EXPERIMENTAL environment variable to "1".
@@ -362,7 +362,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 
 	cmd.Flags().StringSliceVar(&data.output, "output", data.output, hd.Doc(`
 		write output to a file in a specific format. Use empty string path for stdout.
-		May be used multiple times. Possible formats are json, yaml, test, junit, and
+		May be used multiple times. Possible formats are json, yaml, appstudio, junit, and
 		summary
 	`))
 

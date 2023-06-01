@@ -86,9 +86,11 @@ type testReport struct {
 
 // Possible formats the report can be written as.
 const (
-	JSON    = "json"
-	YAML    = "yaml"
-	TEST    = "test"
+	JSON      = "json"
+	YAML      = "yaml"
+	APPSTUDIO = "appstudio"
+	// Deprecated. Remove when hacbs output is removed
+	HACBS   = "hacbs"
 	Summary = "summary"
 	JUNIT   = "junit"
 )
@@ -152,8 +154,11 @@ func (r *Report) toFormat(format string) (data []byte, err error) {
 		data, err = yaml.Marshal(r)
 	case Summary:
 		data, err = json.Marshal(r.toSummary())
-	case TEST:
-		data, err = json.Marshal(r.toTestReport())
+	case APPSTUDIO:
+		data, err = json.Marshal(r.toAppstudioReport())
+	// Deprecated. Remove when hacbs output is removed
+	case HACBS:
+		data, err = json.Marshal(r.toAppstudioReport())
 	case JUNIT:
 		data, err = xml.Marshal(r.toJUnit())
 	default:
@@ -211,11 +216,11 @@ func condensedMsg(results []conftestOutput.Result) map[string][]string {
 	return shortNames
 }
 
-// toTestReport returns a version of the report that conforms to the
+// toAppstudioReport returns a version of the report that conforms to the
 // TEST_OUTPUT format.
 // (Note: the name of the Tekton task result where this generally
 // gets written is now TEST_OUTPUT instead of TEST_OUTPUT)
-func (r *Report) toTestReport() testReport {
+func (r *Report) toAppstudioReport() testReport {
 	result := testReport{Timestamp: fmt.Sprint(r.created.UTC().Unix())}
 
 	hasFailures := false

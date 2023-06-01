@@ -131,7 +131,7 @@ spec:
         - "--output"
         - "yaml=$(params.HOMEDIR)/report.yaml"
         - "--output"
-        - "test=$(results.TEST_OUTPUT.path)"
+        - "appstudio=$(results.TEST_OUTPUT.path)"
       env:
         - name: SSL_CERT_DIR
           # The Tekton Operator automatically sets the SSL_CERT_DIR env to the value below but,
