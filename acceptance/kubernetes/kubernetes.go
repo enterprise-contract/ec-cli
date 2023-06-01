@@ -153,23 +153,30 @@ func runTaskWithWorkspace(ctx context.Context, version, name, workspace string, 
 }
 
 func theTaskShouldSucceed(ctx context.Context) error {
+	return processTaskCompletedStatus(ctx, true)
+}
+
+func theTaskShouldFail(ctx context.Context) error {
+	return processTaskCompletedStatus(ctx, false)
+}
+
+func processTaskCompletedStatus(ctx context.Context, want bool) error {
 	c := testenv.FetchState[ClusterState](ctx)
 
 	if err := mustBeUp(ctx, *c); err != nil {
 		return err
 	}
 
-	successful, err := c.cluster.AwaitUntilTaskIsDone(ctx)
+	got, err := c.cluster.AwaitUntilTaskIsDone(ctx)
 	if err != nil {
 		return err
 	}
 
-	if !successful {
+	if got != want {
 		if err := logTaskOutput(ctx, *c); err != nil {
 			return err
 		}
-
-		return errors.New("the TaskRun did not succeed")
+		return fmt.Errorf("the TaskRun did not complete as expected: want=%v, got=%v", want, got)
 	}
 
 	return nil
@@ -236,6 +243,7 @@ func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^version ([\d.]+) of the task named "([^"]*)" is run with parameters:$`, runTask)
 	sc.Step(`^version ([\d.]+) of the task named "([^"]*)" with workspace "([^"]*)" is run with parameters:$`, runTaskWithWorkspace)
 	sc.Step(`^the task should succeed$`, theTaskShouldSucceed)
+	sc.Step(`^the task should fail$`, theTaskShouldFail)
 	sc.Step(`^an Snapshot named "([^"]*)" with specification$`, createNamedSnapshot)
 	// stops the cluster unless the environment is persisted, the cluster state
 	// is nonexistent or the cluster wasn't started
