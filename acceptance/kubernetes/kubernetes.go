@@ -26,10 +26,15 @@ import (
 
 	"github.com/cucumber/godog"
 	clr "github.com/doiit/picocolors"
+	"golang.org/x/exp/maps"
 
+	"github.com/enterprise-contract/ec-cli/acceptance/crypto"
+	"github.com/enterprise-contract/ec-cli/acceptance/image"
 	"github.com/enterprise-contract/ec-cli/acceptance/kubernetes/kind"
 	"github.com/enterprise-contract/ec-cli/acceptance/kubernetes/stub"
 	"github.com/enterprise-contract/ec-cli/acceptance/kubernetes/types"
+	"github.com/enterprise-contract/ec-cli/acceptance/registry"
+	"github.com/enterprise-contract/ec-cli/acceptance/snaps"
 	"github.com/enterprise-contract/ec-cli/acceptance/testenv"
 )
 
@@ -233,6 +238,69 @@ func logTaskOutput(ctx context.Context, c ClusterState) error {
 	return nil
 }
 
+func taskLogsShouldMatchTheSnapshot(ctx context.Context, stepName string) error {
+	c := testenv.FetchState[ClusterState](ctx)
+
+	if err := mustBeUp(ctx, *c); err != nil {
+		return err
+	}
+
+	info, err := c.cluster.TaskInfo(ctx)
+	if err != nil {
+		return err
+	}
+
+	r, err := c.cluster.Registry(ctx)
+	if err != nil {
+		return err
+	}
+
+	vars := map[string]string{
+		"REGISTRY": r,
+	}
+
+	publicKeys := crypto.PublicKeysFrom(ctx)
+	for name, key := range publicKeys {
+		// account for various indentations
+		vars[fmt.Sprintf("__%s_PUBLIC_KEY", name)] = indent(key, 2)
+		vars[fmt.Sprintf("____%s_PUBLIC_KEY", name)] = indent(key, 4)
+	}
+
+	hashes, err := registry.AllHashes(ctx)
+	if err != nil {
+		return err
+	}
+
+	for repositoryAndTag, hash := range hashes {
+		vars[fmt.Sprintf("REGISTRY_%s_HASH", repositoryAndTag)] = hash
+	}
+
+	maps.Copy(vars, image.RawAttestationSignaturesFrom(ctx))
+
+	v, err := testenv.CLIVersion(ctx)
+	if err != nil {
+		return err
+	}
+
+	vars["EC_VERSION"] = v
+
+	for _, step := range info.Steps {
+		if step.Name == stepName {
+			return snaps.MatchSnapshot(ctx, step.Name, step.Logs, vars)
+		}
+	}
+
+	return nil
+}
+
+func indent(str string, n int) string {
+	idnt := strings.Repeat(" ", n)
+
+	lines := strings.Split(str, "\n")
+
+	return idnt + strings.TrimSuffix(strings.Join(lines, "\n"+idnt), "\n"+idnt)
+}
+
 // AddStepsTo adds cluster-related steps to the context
 func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^a stub cluster running$`, startAndSetupState(stub.Start))
@@ -245,6 +313,7 @@ func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^the task should succeed$`, theTaskShouldSucceed)
 	sc.Step(`^the task should fail$`, theTaskShouldFail)
 	sc.Step(`^an Snapshot named "([^"]*)" with specification$`, createNamedSnapshot)
+	sc.Step(`^the task logs for step "([^"]*)" should match the snapshot$`, taskLogsShouldMatchTheSnapshot)
 	// stops the cluster unless the environment is persisted, the cluster state
 	// is nonexistent or the cluster wasn't started
 	sc.After(func(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {

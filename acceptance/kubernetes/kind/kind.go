@@ -52,6 +52,7 @@ import (
 	"github.com/enterprise-contract/ec-cli/acceptance/kubernetes/types"
 	"github.com/enterprise-contract/ec-cli/acceptance/kustomize"
 	"github.com/enterprise-contract/ec-cli/acceptance/log"
+	"github.com/enterprise-contract/ec-cli/acceptance/registry"
 )
 
 type key int
@@ -76,6 +77,7 @@ type testState struct {
 	policy    string
 	taskRun   string
 	snapshot  string
+	registry  string
 }
 
 func (n testState) Key() any {
@@ -255,6 +257,8 @@ func Start(givenCtx context.Context) (ctx context.Context, kCluster types.Cluste
 		logger.Error("Unable to start the cluster")
 	}
 
+	ctx, err = registry.Register(ctx, fmt.Sprintf("localhost:%d", globalCluster.registryPort))
+
 	return ctx, globalCluster, err
 }
 
@@ -416,4 +420,8 @@ func Destroy(ctx context.Context) {
 		}
 		logger.Log("[Destroy] Destroyed global cluster")
 	})
+}
+
+func (k *kindCluster) Registry(ctx context.Context) (string, error) {
+	return fmt.Sprintf("registry.image-registry.svc.cluster.local:%d", k.registryPort), nil
 }

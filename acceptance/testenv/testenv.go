@@ -18,11 +18,16 @@
 package testenv
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
+	"os/exec"
+	"path"
+	"runtime"
+	"sync"
 	"testing"
 
 	"github.com/testcontainers/testcontainers-go"
@@ -45,6 +50,10 @@ const (
 
 var loader = os.ReadFile
 var persister = os.WriteFile
+
+var version sync.Once
+var ecVersion = "undefined"
+var ecVersionErr error
 
 type Rekor interface {
 	StubRekorEntryFor(context.Context, []byte) error
@@ -220,4 +229,28 @@ func TestContainersRequest(ctx context.Context, req testcontainers.ContainerRequ
 	}
 
 	return req
+}
+
+// CLIVersion returns the version of the CLI, useful for matching in snapshots
+func CLIVersion(ctx context.Context) (string, error) {
+	version.Do(func() {
+		ec := path.Join("dist", fmt.Sprintf("ec_%s_%s", runtime.GOOS, runtime.GOARCH))
+
+		cmd := exec.CommandContext(ctx, ec, "version", "--json")
+		var stdout bytes.Buffer
+		cmd.Stdout = &stdout
+
+		if ecVersionErr = cmd.Run(); ecVersionErr != nil {
+			return
+		}
+
+		ver := struct {
+			Version string
+		}{}
+		json.Unmarshal(stdout.Bytes(), &ver)
+
+		ecVersion = ver.Version
+	})
+
+	return ecVersion, ecVersionErr
 }

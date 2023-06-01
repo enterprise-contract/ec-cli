@@ -274,6 +274,22 @@ func assertImageContent(ctx context.Context, imageRef string, data *godog.DocStr
 	return fmt.Errorf("expected image layer and actual image layer differ:\n%s", b.String())
 }
 
+func Register(ctx context.Context, hostAndPort string) (context.Context, error) {
+	var state *registryState
+	ctx, err := testenv.SetupState(ctx, &state)
+	if err != nil {
+		return ctx, err
+	}
+
+	if state.Up() {
+		return ctx, errors.New("A registry has already been stubbed in this context")
+	}
+
+	state.HostAndPort = hostAndPort
+
+	return ctx, nil
+}
+
 // AddStepsTo adds Gherkin steps to the godog ScenarioContext
 func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^stub registry running$`, startStubRegistry)
