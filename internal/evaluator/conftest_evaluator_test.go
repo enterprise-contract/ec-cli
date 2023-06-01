@@ -1612,7 +1612,7 @@ func TestCheckResultsTrim(t *testing.T) {
 		},
 	}
 
-	for _, c := range cases[2:] {
+	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			c.given.trim()
 			assert.Equal(t, c.expected, c.given)
