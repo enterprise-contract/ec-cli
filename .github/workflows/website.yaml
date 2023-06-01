@@ -33,8 +33,6 @@ jobs:
         include:
           - APP_INSTALL_ID: 29980719
             REPOSITORY: enterprise-contract/enterprise-contract.github.io
-          - APP_INSTALL_ID: 32872589
-            REPOSITORY: redhat-appstudio/docs.stonesoup.io
     steps:
       - name: Trigger website update
         env:
