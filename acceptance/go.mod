@@ -23,7 +23,7 @@ require (
 	github.com/redhat-appstudio/application-api v0.0.0-20230309195839-6e0986f52132
 	github.com/sigstore/cosign/v2 v2.0.3-0.20230505201329-3121a17d136e
 	github.com/sigstore/rekor v1.2.1
-	github.com/sigstore/sigstore v1.6.4
+	github.com/sigstore/sigstore v1.6.5
 	github.com/stretchr/testify v1.8.4
 	github.com/tektoncd/cli v0.31.0
 	github.com/tektoncd/pipeline v0.47.0
@@ -172,6 +172,10 @@ require (
 	github.com/secure-systems-lab/go-securesystemslib v0.6.0 // indirect
 	github.com/sergi/go-diff v1.3.1 // indirect
 	github.com/shibumi/go-pathspec v1.3.0 // indirect
+	github.com/sigstore/sigstore/pkg/signature/kms/aws v1.6.5 // indirect
+	github.com/sigstore/sigstore/pkg/signature/kms/azure v1.6.5 // indirect
+	github.com/sigstore/sigstore/pkg/signature/kms/gcp v1.6.5 // indirect
+	github.com/sigstore/sigstore/pkg/signature/kms/hashivault v1.6.5 // indirect
 	github.com/sigstore/timestamp-authority v1.1.0 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
 	github.com/skeema/knownhosts v1.1.1 // indirect
@@ -207,7 +211,7 @@ require (
 	golang.org/x/exp v0.0.0-20230321023759-10a507213a29 // indirect
 	golang.org/x/mod v0.10.0 // indirect
 	golang.org/x/net v0.10.0 // indirect
-	golang.org/x/oauth2 v0.7.0 // indirect
+	golang.org/x/oauth2 v0.8.0 // indirect
 	golang.org/x/sync v0.2.0 // indirect
 	golang.org/x/sys v0.8.0 // indirect
 	golang.org/x/term v0.8.0 // indirect
