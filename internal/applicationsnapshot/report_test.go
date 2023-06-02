@@ -377,6 +377,154 @@ func Test_ReportSummary(t *testing.T) {
 
 }
 
+func Test_ReportAppstudio(t *testing.T) {
+	cases := []struct {
+		name       string
+		expected   string
+		snapshot   string
+		components []Component
+		success    bool
+	}{
+		{
+			name: "success",
+			expected: `
+			{
+				"failures": 0,
+				"namespace": "",
+				"result": "SUCCESS",
+				"successes": 3,
+				"timestamp": "0",
+				"warnings": 0
+			}`,
+			components: []Component{{Success: true}, {Success: true}, {Success: true}},
+			success:    true,
+		},
+		{
+			name: "warning",
+			expected: `
+			{
+				"failures": 0,
+				"namespace": "",
+				"result": "WARNING",
+				"successes": 2,
+				"timestamp": "0",
+				"warnings": 1
+			}`,
+			components: []Component{
+				{Success: true},
+				{Success: true, Warnings: []output.Result{{Message: "this is a warning"}}},
+			},
+			success: true,
+		},
+		{
+			name: "failure",
+			expected: `
+			{
+				"failures": 1,
+				"namespace": "",
+				"result": "FAILURE",
+				"successes": 1,
+				"timestamp": "0",
+				"warnings": 0
+			}`,
+			components: []Component{
+				{Success: true},
+				{Success: false, Violations: []output.Result{{Message: "this is a violation"}}},
+			},
+			success: false,
+		},
+		{
+			name: "failure without violations",
+			expected: `
+			{
+				"failures": 0,
+				"namespace": "",
+				"result": "FAILURE",
+				"successes": 1,
+				"timestamp": "0",
+				"warnings": 0
+			}`,
+			components: []Component{{Success: false}, {Success: true}},
+			success:    false,
+		},
+		{
+			name: "failure over warning",
+			expected: `
+			{
+				"failures": 1,
+				"namespace": "",
+				"result": "FAILURE",
+				"successes": 1,
+				"timestamp": "0",
+				"warnings": 1
+			}`,
+			components: []Component{
+				{Success: true},
+				{Success: false, Violations: []output.Result{{Message: "this is a violation"}}},
+				{Success: false, Warnings: []output.Result{{Message: "this is a warning"}}},
+			},
+			success: false,
+		},
+		{
+			name: "skipped",
+			expected: `
+			{
+				"failures": 0,
+				"namespace": "",
+				"result": "SKIPPED",
+				"successes": 0,
+				"timestamp": "0",
+				"warnings": 0
+			}`,
+			components: []Component{},
+			success:    true,
+		},
+		{
+			name: "with snapshot",
+			expected: `
+			{
+				"failures": 0,
+				"namespace": "",
+				"result": "SUCCESS",
+				"successes": 3,
+				"timestamp": "0",
+				"warnings": 0
+			}`,
+			snapshot:   "snappy",
+			components: []Component{{Success: true}, {Success: true}, {Success: true}},
+			success:    true,
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			fs := afero.NewMemMapFs()
+			defaultWriter, err := fs.Create("default")
+			assert.NoError(t, err)
+
+			ctx := context.Background()
+			report, err := NewReport(c.snapshot, c.components, createTestPolicy(t, ctx))
+			assert.NoError(t, err)
+			assert.False(t, report.created.IsZero())
+			assert.Equal(t, c.success, report.Success)
+
+			report.created = time.Unix(0, 0).UTC()
+
+			p := format.NewTargetParser(JSON, defaultWriter, fs)
+			assert.NoError(t, report.WriteAll([]string{"appstudio=report.json", "appstudio"}, p))
+
+			reportText, err := afero.ReadFile(fs, "report.json")
+			assert.NoError(t, err)
+			assert.JSONEq(t, c.expected, string(reportText))
+
+			defaultReportText, err := afero.ReadFile(fs, "default")
+			assert.NoError(t, err)
+			assert.JSONEq(t, c.expected, string(defaultReportText))
+		})
+	}
+}
+
+// Deprecated. Remove when hacbs output is removed
 func Test_ReportHACBS(t *testing.T) {
 	cases := []struct {
 		name       string
