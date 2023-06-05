@@ -84,6 +84,15 @@ jobs:
           go-version-file: go.mod
           cache: false
 
+      # The acceptance tests pull images from docker.io in order to spin up a
+      # local registry and kind cluster. This avoids reaching the rate-limiting
+      # on docker.io.
+      - name: Login to docker.io
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_READONLY_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_READONLY_TOKEN }}
+
       - name: Acceptance test
         run: make acceptance
 
@@ -92,4 +101,3 @@ jobs:
         with:
           files: ./coverage-acceptance.out
           flags: acceptance
-          
