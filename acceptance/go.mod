@@ -16,6 +16,7 @@ require (
 	github.com/google/go-containerregistry v0.15.2
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/in-toto/in-toto-golang v0.9.0
+	github.com/jstemmer/go-junit-report/v2 v2.0.0
 	github.com/otiai10/copy v1.11.0
 	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
 	github.com/pkg/diff v0.0.0-20210226163009-20ebb0f2a09e
@@ -36,7 +37,6 @@ require (
 	k8s.io/api v0.26.4
 	k8s.io/apimachinery v0.27.2
 	k8s.io/client-go v0.26.3
-	k8s.io/kubernetes v1.27.2
 	sigs.k8s.io/kind v0.19.0
 	sigs.k8s.io/kustomize/api v0.13.4
 	sigs.k8s.io/kustomize/kyaml v0.14.2

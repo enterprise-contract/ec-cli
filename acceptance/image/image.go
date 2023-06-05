@@ -40,6 +40,7 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/in-toto/in-toto-golang/in_toto"
 	v02 "github.com/in-toto/in-toto-golang/in_toto/slsa_provenance/v0.2"
+	"github.com/jstemmer/go-junit-report/v2/junit"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
 	"github.com/sigstore/cosign/v2/pkg/oci/layout"
 	cosignRemote "github.com/sigstore/cosign/v2/pkg/oci/remote"
@@ -47,7 +48,6 @@ import (
 	cosigntypes "github.com/sigstore/cosign/v2/pkg/types"
 	"github.com/sigstore/sigstore/pkg/signature"
 	"gopkg.in/square/go-jose.v2/json"
-	"k8s.io/kubernetes/test/utils/junit"
 
 	"github.com/enterprise-contract/ec-cli/acceptance/attestation"
 	"github.com/enterprise-contract/ec-cli/acceptance/crypto"
@@ -516,14 +516,23 @@ func XMLAttestationSignaturesFrom(ctx context.Context) (string, error) {
 		return "", nil
 	}
 
-	properties := make([]junit.Property, 0, 2*len(sigs))
+	type property struct {
+		XMLName xml.Name `xml:"property"`
+		junit.Property
+	}
+
+	properties := make([]property, 0, 2*len(sigs))
 	for _, signature := range sigs {
-		properties = append(properties, junit.Property{
-			Name:  "keyId",
-			Value: signature.KeyID,
-		}, junit.Property{
-			Name:  "signature",
-			Value: signature.Sig,
+		properties = append(properties, property{
+			Property: junit.Property{
+				Name:  "keyId",
+				Value: signature.KeyID,
+			},
+		}, property{
+			Property: junit.Property{
+				Name:  "signature",
+				Value: signature.Sig,
+			},
 		})
 	}
 
