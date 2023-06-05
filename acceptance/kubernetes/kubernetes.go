@@ -264,4 +264,11 @@ func AddStepsTo(sc *godog.ScenarioContext) {
 
 		return c.cluster.Stop(ctx)
 	})
+
+}
+
+func InitializeSuite(ctx context.Context, tsc *godog.TestSuiteContext) {
+	tsc.AfterSuite(func() {
+		kind.Destroy(ctx)
+	})
 }
