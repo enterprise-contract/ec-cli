@@ -17,7 +17,7 @@ require (
 	github.com/jstemmer/go-junit-report/v2 v2.0.0
 	github.com/leanovate/gopter v0.2.9
 	github.com/open-policy-agent/conftest v0.39.1-0.20230309145322-347708d2fd13
-	github.com/open-policy-agent/opa v0.53.0
+	github.com/open-policy-agent/opa v0.53.1
 	github.com/qri-io/jsonpointer v0.1.1
 	github.com/qri-io/jsonschema v0.2.1
 	github.com/redhat-appstudio/application-api v0.0.0-20230309195839-6e0986f52132
