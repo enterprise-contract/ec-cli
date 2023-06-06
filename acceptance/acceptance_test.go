@@ -84,6 +84,12 @@ func initializeScenario(sc *godog.ScenarioContext) {
 	})
 }
 
+func initializeSuite(ctx context.Context) func(*godog.TestSuiteContext) {
+	return func(tsc *godog.TestSuiteContext) {
+		kubernetes.InitializeSuite(ctx, tsc)
+	}
+}
+
 // setupContext creates a Context prepopulated with the *testing.T and *persist
 // values
 func setupContext(t *testing.T) context.Context {
@@ -109,20 +115,23 @@ func TestFeatures(t *testing.T) {
 		t.Error(err)
 	}
 
+	ctx := setupContext(t)
+
 	opts := godog.Options{
 		Format:         "pretty",
 		Paths:          []string{featuresDir},
 		Randomize:      -1,
 		Concurrency:    runtime.NumCPU(),
 		TestingT:       t,
-		DefaultContext: setupContext(t),
+		DefaultContext: ctx,
 		Tags:           *tags,
 		NoColors:       *noColors,
 	}
 
 	suite := godog.TestSuite{
-		ScenarioInitializer: initializeScenario,
-		Options:             &opts,
+		ScenarioInitializer:  initializeScenario,
+		TestSuiteInitializer: initializeSuite(ctx),
+		Options:              &opts,
 	}
 
 	if suite.Run() != 0 {

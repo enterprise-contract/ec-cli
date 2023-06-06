@@ -63,6 +63,11 @@ spec:
       description: Rekor host for transparency log lookups
       default: ""
 
+    - name: TUF_MIRROR
+      type: string
+      description: TUF mirror URL. Provide a value when NOT using public sigstore deployment.
+      default: ""
+
     - name: SSL_CERT_DIR
       type: string
       description: |
@@ -109,6 +114,22 @@ spec:
       command: [ec]
       args:
         - version
+    - name: initialize-tuf
+      image: quay.io/hacbs-contract/ec-cli:snapshot
+      script: |-
+        set -euo pipefail
+
+        if [[ -z "${TUF_MIRROR:-}" ]]; then
+            echo 'TUF_MIRROR not set. Skipping TUF root initialization.'
+            exit
+        fi
+
+        echo 'Initializing TUF root...'
+        cosign initialize --mirror "${TUF_MIRROR}" --root "${TUF_MIRROR}/root.json"
+        echo 'Done!'
+      env:
+        - name: TUF_MIRROR
+          value: "$(params.TUF_MIRROR)"
     - name: validate
       image: quay.io/hacbs-contract/ec-cli:snapshot
       command: [ec]

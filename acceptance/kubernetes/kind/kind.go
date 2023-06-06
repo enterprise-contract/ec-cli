@@ -386,22 +386,34 @@ func (k *kindCluster) Stop(ctx context.Context) (context.Context, error) {
 	clusterGroup.Done()
 	logger.Log("[Stop] Released cluster to group")
 
+	return ctx, nil
+}
+
+func Destroy(ctx context.Context) {
+	logger, _ := log.LoggerFor(ctx)
 	destroy.Do(func() {
-		logger.Log("[Stop] Stopping cluster")
+		if globalCluster == nil {
+			logger.Log("[Destroy] Skipping global cluster destruction")
+			return
+		}
+		logger.Log("[Destroy] Destroying global cluster")
 
 		// wait for other cluster consumers to finish
+		logger.Log("[Destroy] Waiting for all consumers to finish")
 		clusterGroup.Wait()
-		logger.Log("[Stop] Last cluster consumer finished")
+		logger.Log("[Destroy] Last global cluster consumer finished")
 
 		defer func() {
-			kindDir := path.Join(k.kubeconfigPath, "..")
-			_ = os.RemoveAll(kindDir) // ignore errors
+			kindDir := path.Join(globalCluster.kubeconfigPath, "..")
+			if err := os.RemoveAll(kindDir); err != nil {
+				panic(err)
+			}
 		}()
 
 		// ignore error
-		_ = k.provider.Delete(k.name, k.kubeconfigPath)
-		logger.Log("[Stop] Destroyed the cluster")
+		if err := globalCluster.provider.Delete(globalCluster.name, globalCluster.kubeconfigPath); err != nil {
+			panic(err)
+		}
+		logger.Log("[Destroy] Destroyed global cluster")
 	})
-
-	return ctx, nil
 }
