@@ -3,6 +3,7 @@ module github.com/enterprise-contract/ec-cli
 go 1.19
 
 require (
+	cuelang.org/go v0.5.0
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/enterprise-contract/enterprise-contract-controller/api v0.0.0-20230411141906-b8166da93dc9
 	github.com/evanphx/json-patch v5.6.0+incompatible
@@ -13,6 +14,7 @@ require (
 	github.com/hashicorp/go-getter v1.7.1
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/in-toto/in-toto-golang v0.9.0
+	github.com/jstemmer/go-junit-report/v2 v2.0.0
 	github.com/leanovate/gopter v0.2.9
 	github.com/open-policy-agent/conftest v0.39.1-0.20230309145322-347708d2fd13
 	github.com/open-policy-agent/opa v0.53.0
@@ -35,7 +37,6 @@ require (
 	k8s.io/client-go v0.26.3
 	k8s.io/klog/v2 v2.100.1
 	k8s.io/kube-openapi v0.0.0-20230501164219-8b0f38b5fd1f
-	k8s.io/kubernetes v1.27.2
 	sigs.k8s.io/yaml v1.3.0
 )
 
@@ -47,7 +48,6 @@ require (
 	cloud.google.com/go/storage v1.30.1 // indirect
 	contrib.go.opencensus.io/exporter/ocagent v0.7.1-0.20200907061046-05415f1de66d // indirect
 	contrib.go.opencensus.io/exporter/prometheus v0.4.0 // indirect
-	cuelang.org/go v0.5.0 // indirect
 	filippo.io/edwards25519 v1.0.0 // indirect
 	github.com/AliyunContainerService/ack-ram-tool/pkg/credentials/alibabacloudsdkgo/helper v0.2.0 // indirect
 	github.com/Azure/azure-sdk-for-go v68.0.0+incompatible // indirect

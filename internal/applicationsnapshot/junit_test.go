@@ -19,67 +19,62 @@ package applicationsnapshot
 import (
 	"testing"
 
+	"github.com/jstemmer/go-junit-report/v2/junit"
 	"github.com/open-policy-agent/conftest/output"
 	"github.com/redhat-appstudio/application-api/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
-	"k8s.io/kubernetes/test/utils/junit"
 
 	o "github.com/enterprise-contract/ec-cli/internal/output"
 )
 
-type mapper struct {
-	mock.Mock
-}
-
-func (m *mapper) mappy(r output.Result) int {
-	args := m.Called(r)
-
-	return args.Int(0)
-}
-
 func TestMapResults(t *testing.T) {
-	m := mapper{}
-	m.On("mappy", mock.Anything).Return(0).Once()
-	m.On("mappy", mock.Anything).Return(1).Once()
-	m.On("mappy", mock.Anything).Return(2).Once()
+	s := junit.Testsuite{}
+	mapResults(&s, []output.Result{{Message: "0"}, {Message: "1"}, {Message: "2"}}, func(r output.Result) junit.Testcase {
+		return junit.Testcase{
+			Name: r.Message,
+		}
+	})
 
-	mapped := mapResults([]output.Result{{}, {}, {}}, m.mappy)
+	assert.Equal(t, junit.Testsuite{
+		Tests: 3,
+		Testcases: []junit.Testcase{
+			{Name: "0"},
+			{Name: "1"},
+			{Name: "2"},
+		},
+	}, s)
 
-	assert.Equal(t, []int{0, 1, 2}, mapped)
-
-	m.AssertExpectations(t)
 }
 
 func TestAsTestCase(t *testing.T) {
 	cases := []struct {
 		name     string
 		result   output.Result
-		expected *junit.TestCase
+		expected junit.Testcase
 	}{
 		{
 			name:     "nil",
-			expected: &junit.TestCase{},
+			expected: junit.Testcase{},
 		},
 		{
 			name:     "trivial",
 			result:   output.Result{Message: "msg"},
-			expected: &junit.TestCase{Name: "msg", Classname: "msg"},
+			expected: junit.Testcase{Name: "msg", Classname: "msg"},
 		},
 		{
 			name:     "with code",
 			result:   output.Result{Message: "msg", Metadata: map[string]interface{}{"code": "a.b.c"}},
-			expected: &junit.TestCase{Name: "a.b.c: msg", Classname: "a.b.c: msg"},
+			expected: junit.Testcase{Name: "a.b.c: msg", Classname: "a.b.c: msg"},
 		},
 		{
 			name:     "with metadata",
 			result:   output.Result{Message: "msg", Metadata: map[string]interface{}{"x": "1", "y": "2", "z": "3"}},
-			expected: &junit.TestCase{Name: "msg [x=1, y=2, z=3]", Classname: "msg [x=1, y=2, z=3]"},
+			expected: junit.Testcase{Name: "msg [x=1, y=2, z=3]", Classname: "msg [x=1, y=2, z=3]"},
 		},
 		{
 			name:     "with code and metadata",
 			result:   output.Result{Message: "msg", Metadata: map[string]interface{}{"code": "a.b.c", "x": "1", "y": "2", "z": "3"}},
-			expected: &junit.TestCase{Name: "a.b.c: msg [x=1, y=2, z=3]", Classname: "a.b.c: msg [x=1, y=2, z=3]"},
+			expected: junit.Testcase{Name: "a.b.c: msg [x=1, y=2, z=3]", Classname: "a.b.c: msg [x=1, y=2, z=3]"},
 		},
 	}
 
@@ -96,7 +91,7 @@ func TestToJunit(t *testing.T) {
 	cases := []struct {
 		name     string
 		report   Report
-		expected testSuites
+		expected junit.Testsuites
 	}{
 		{
 			name: "trivial",
@@ -155,11 +150,18 @@ func TestToJunit(t *testing.T) {
 				Key:     "key",
 				Success: true,
 			},
-			expected: testSuites{
-				TestSuites: []*junit.TestSuite{
+			expected: junit.Testsuites{
+				Tests:    3,
+				Failures: 1,
+				Skipped:  1,
+				Suites: []junit.Testsuite{
 					{
-						Name: "Name (registry.io/repository/image:tag)",
-						Properties: []*junit.Property{
+						Name:      "Name (registry.io/repository/image:tag)",
+						Timestamp: "0001-01-01T00:00:00Z",
+						Tests:     3,
+						Failures:  1,
+						Skipped:   1,
+						Properties: &[]junit.Property{
 							{
 								Name:  "image",
 								Value: "registry.io/repository/image:tag",
@@ -201,7 +203,7 @@ func TestToJunit(t *testing.T) {
 								Value: "D",
 							},
 						},
-						TestCases: []*junit.TestCase{
+						Testcases: []junit.Testcase{
 							{
 								Name:      "success: success",
 								Classname: "success: success",
@@ -209,17 +211,18 @@ func TestToJunit(t *testing.T) {
 							{
 								Name:      "violation: violation",
 								Classname: "violation: violation",
-								Failures: []*junit.Failure{
-									{
-										Message: "violation",
-										Value:   "violation",
-									},
+								Failure: &junit.Result{
+									Message: "violation",
+									Data:    "violation",
 								},
 							},
 							{
 								Name:      "warning: warning",
 								Classname: "warning: warning",
-								Skipped:   "warning",
+								Skipped: &junit.Result{
+									Message: "warning",
+									Data:    "warning",
+								},
 							},
 						},
 					},
@@ -231,8 +234,6 @@ func TestToJunit(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			got := c.report.toJUnit()
-
-			c.expected.update()
 
 			assert.Equal(t, c.expected, got)
 		})

@@ -17,39 +17,25 @@
 package applicationsnapshot
 
 import (
-	"encoding/xml"
 	"fmt"
 	"sort"
 	"strings"
 
+	"cuelang.org/go/pkg/time"
+	"github.com/jstemmer/go-junit-report/v2/junit"
 	conftestOutput "github.com/open-policy-agent/conftest/output"
 	"golang.org/x/exp/maps"
-	"k8s.io/kubernetes/test/utils/junit"
 )
-
-type testSuites struct {
-	XMLName    xml.Name           `xml:"testsuites"`
-	TestSuites []*junit.TestSuite `xml:"testsuite"`
-}
-
-func (t *testSuites) update() {
-	for _, s := range t.TestSuites {
-		s.Update()
-	}
-}
 
 // mapResults maps an slice of Conftest results to a slice of arbitrary types
 // given a mapper function
-func mapResults[T any](results []conftestOutput.Result, m func(conftestOutput.Result) T) []T {
-	mapped := make([]T, 0, len(results))
+func mapResults(suite *junit.Testsuite, results []conftestOutput.Result, m func(conftestOutput.Result) junit.Testcase) {
 	for _, r := range results {
-		mapped = append(mapped, m(r))
+		suite.AddTestcase(m(r))
 	}
-
-	return mapped
 }
 
-func asTestCase(r conftestOutput.Result) *junit.TestCase {
+func asTestCase(r conftestOutput.Result) junit.Testcase {
 	meta := maps.Clone(r.Metadata)
 	delete(meta, "code")
 
@@ -70,18 +56,18 @@ func asTestCase(r conftestOutput.Result) *junit.TestCase {
 		name = fmt.Sprintf("%s: %s", code, name)
 	}
 
-	return &junit.TestCase{
+	return junit.Testcase{
 		Name:      name,
 		Classname: name, // some reporting tools might require Classname as well
 	}
 }
 
 // toJUnit returns a version of the report in JUnit XML format
-func (r *Report) toJUnit() testSuites {
-	report := testSuites{}
+func (r *Report) toJUnit() junit.Testsuites {
+	report := junit.Testsuites{}
 
 	for _, component := range r.Components {
-		properties := []*junit.Property{
+		properties := []junit.Property{
 			{
 				Name:  "image",
 				Value: component.ContainerImage,
@@ -95,17 +81,17 @@ func (r *Report) toJUnit() testSuites {
 		}
 
 		for _, s := range component.Signatures {
-			properties = append(properties, &junit.Property{
+			properties = append(properties, junit.Property{
 				Name:  "keyId",
 				Value: s.KeyID,
-			}, &junit.Property{
+			}, junit.Property{
 				Name:  "signature",
 				Value: s.Signature,
 			})
 
-			metaProps := make([]*junit.Property, 0, len(s.Metadata))
+			metaProps := make([]junit.Property, 0, len(s.Metadata))
 			for k, v := range s.Metadata {
-				metaProps = append(metaProps, &junit.Property{
+				metaProps = append(metaProps, junit.Property{
 					Name:  "metadata." + k,
 					Value: v,
 				})
@@ -118,34 +104,35 @@ func (r *Report) toJUnit() testSuites {
 			properties = append(properties, metaProps...)
 		}
 
-		suite := junit.TestSuite{
-			Timestamp:  r.created,
+		suite := junit.Testsuite{
+			Timestamp:  r.created.Format(time.RFC3339),
 			Name:       fmt.Sprintf("%s (%s)", component.Name, component.ContainerImage),
-			Properties: properties,
+			Properties: &properties,
 		}
 
-		suite.TestCases = mapResults(component.Successes, asTestCase)
+		mapResults(&suite, component.Successes, asTestCase)
 
-		suite.TestCases = append(suite.TestCases, mapResults(component.Violations, func(r conftestOutput.Result) *junit.TestCase {
+		mapResults(&suite, component.Violations, func(r conftestOutput.Result) junit.Testcase {
 			c := asTestCase(r)
-			c.Failures = append(c.Failures, &junit.Failure{
+			c.Failure = &junit.Result{
 				Message: r.Message,
-				Value:   r.Message,
-			})
+				Data:    r.Message,
+			}
 
 			return c
-		})...)
+		})
 
-		suite.TestCases = append(suite.TestCases, mapResults(component.Warnings, func(r conftestOutput.Result) *junit.TestCase {
+		mapResults(&suite, component.Warnings, func(r conftestOutput.Result) junit.Testcase {
 			c := asTestCase(r)
-			c.Skipped = r.Message
+			c.Skipped = &junit.Result{
+				Message: r.Message,
+				Data:    r.Message,
+			}
 
 			return c
-		})...)
+		})
 
-		suite.Update()
-
-		report.TestSuites = append(report.TestSuites, &suite)
+		report.AddSuite(suite)
 	}
 
 	return report
