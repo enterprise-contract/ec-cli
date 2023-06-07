@@ -314,13 +314,8 @@ func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^the task should fail$`, theTaskShouldFail)
 	sc.Step(`^an Snapshot named "([^"]*)" with specification$`, createNamedSnapshot)
 	sc.Step(`^the task logs for step "([^"]*)" should match the snapshot$`, taskLogsShouldMatchTheSnapshot)
-	// stops the cluster unless the environment is persisted, the cluster state
-	// is nonexistent or the cluster wasn't started
+	// stop usage of the cluster once a test is done
 	sc.After(func(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
-		if testenv.Persisted(ctx) {
-			return ctx, nil
-		}
-
 		if !testenv.HasState[ClusterState](ctx) {
 			return ctx, nil
 		}
@@ -338,6 +333,8 @@ func AddStepsTo(sc *godog.ScenarioContext) {
 
 func InitializeSuite(ctx context.Context, tsc *godog.TestSuiteContext) {
 	tsc.AfterSuite(func() {
-		kind.Destroy(ctx)
+		if !testenv.Persisted(ctx) {
+			kind.Destroy(ctx)
+		}
 	})
 }
