@@ -6,7 +6,7 @@ require (
 	github.com/daixiang0/gci v0.10.1
 	github.com/golangci/golangci-lint v1.53.2
 	github.com/google/addlicense v1.1.1
-	github.com/open-policy-agent/conftest v0.43.0
+	github.com/open-policy-agent/conftest v0.43.1
 	github.com/tektoncd/chains v0.16.0
 	github.com/tektoncd/cli v0.31.0
 	github.com/wadey/gocovmerge v0.0.0-20160331181800-b5bfa59ec0ad
@@ -359,7 +359,7 @@ require (
 	github.com/nunnatsa/ginkgolinter v0.12.0 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
-	github.com/open-policy-agent/opa v0.53.0 // indirect
+	github.com/open-policy-agent/opa v0.53.1 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.0-rc2.0.20221005185240-3a7f492d3f1b // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
