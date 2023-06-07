@@ -31,7 +31,6 @@ import (
 	"runtime"
 	"sort"
 	"strings"
-	"sync"
 	"unicode"
 
 	"github.com/cucumber/godog"
@@ -52,9 +51,6 @@ import (
 	"github.com/enterprise-contract/ec-cli/acceptance/testenv"
 	"github.com/enterprise-contract/ec-cli/acceptance/tuf"
 )
-
-var version sync.Once
-var ecVersion = "undefined"
 
 type status struct {
 	*exec.Cmd
@@ -783,26 +779,11 @@ func setupCmdEnvironmentVariable(ctx context.Context, environment []string) ([]s
 }
 
 func setupCliVersion(ctx context.Context, vars map[string]string) (map[string]string, error) {
-	version.Do(func() {
-		ec := path.Join("dist", fmt.Sprintf("ec_%s_%s", runtime.GOOS, runtime.GOARCH))
-
-		cmd := exec.CommandContext(ctx, ec, "version", "--json")
-		var stdout bytes.Buffer
-		cmd.Stdout = &stdout
-
-		if err := cmd.Run(); err != nil {
-			panic(err)
-		}
-
-		ver := struct {
-			Version string
-		}{}
-		json.Unmarshal(stdout.Bytes(), &ver)
-
-		ecVersion = ver.Version
-	})
-
-	vars["EC_VERSION"] = ecVersion
+	v, err := testenv.CLIVersion(ctx)
+	if err != nil {
+		return vars, err
+	}
+	vars["EC_VERSION"] = v
 
 	return vars, nil
 }

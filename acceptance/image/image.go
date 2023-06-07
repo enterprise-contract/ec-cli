@@ -543,6 +543,20 @@ func XMLAttestationSignaturesFrom(ctx context.Context) (string, error) {
 	}
 }
 
+func RawAttestationSignaturesFrom(ctx context.Context) map[string]string {
+	sigs, ok := ctx.Value(imageAttestationSignaturesKey).([]cosign.Signatures)
+	if !ok {
+		return nil
+	}
+
+	ret := map[string]string{}
+	for i, signature := range sigs {
+		ret[fmt.Sprintf("ATTESTATION_SIGNATURE_%d", i)] = signature.Sig
+	}
+
+	return ret
+}
+
 func applyPatches(statement *in_toto.ProvenanceStatement, patches *godog.Table) (*in_toto.ProvenanceStatement, error) {
 	if statement == nil || patches == nil || len(patches.Rows) == 0 {
 		return statement, nil

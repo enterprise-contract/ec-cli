@@ -173,3 +173,7 @@ func (s stubCluster) Up(ctx context.Context) bool {
 func (s stubCluster) Stop(ctx context.Context) (context.Context, error) {
 	return ctx, nil
 }
+
+func (s stubCluster) Registry(ctx context.Context) (string, error) {
+	return registry.Url(ctx)
+}

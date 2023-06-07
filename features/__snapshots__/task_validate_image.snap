@@ -1,0 +1,293 @@
+
+[Non strict with failures:report - 1]
+components:
+- containerImage: ${REGISTRY}/acceptance/does-not-exist
+  name: ""
+  success: false
+  violations:
+  - metadata:
+      code: builtin.image.accessible
+      title: Image URL is accessible
+    msg: 'Image URL is not accessible: HEAD http://${REGISTRY}/v2/acceptance/does-not-exist/manifests/latest:
+      unexpected status code 404 Not Found (HEAD responses have no body, use GET for
+      details)'
+ec-version: ${EC_VERSION}
+key: |
+${__known_PUBLIC_KEY}
+policy:
+  publicKey: |
+${____known_PUBLIC_KEY}
+success: false
+
+---
+
+[Strict with failures:report - 1]
+components:
+- containerImage: ${REGISTRY}/acceptance/does-not-exist
+  name: ""
+  success: false
+  violations:
+  - metadata:
+      code: builtin.image.accessible
+      title: Image URL is accessible
+    msg: 'Image URL is not accessible: HEAD http://${REGISTRY}/v2/acceptance/does-not-exist/manifests/latest:
+      unexpected status code 404 Not Found (HEAD responses have no body, use GET for
+      details)'
+ec-version: ${EC_VERSION}
+key: |
+${__known_PUBLIC_KEY}
+policy:
+  publicKey: |
+${____known_PUBLIC_KEY}
+success: false
+
+---
+
+[Non strict with warnings:report - 1]
+components:
+- containerImage: ${REGISTRY}/acceptance/non-strict-with-warnings@${REGISTRY_acceptance/non-strict-with-warnings:latest_HASH}
+  name: ""
+  signatures:
+  - keyid: ""
+    metadata:
+      predicateBuildType: https://tekton.dev/attestations/chains/pipelinerun@v2
+      predicateType: https://slsa.dev/provenance/v0.2
+      type: https://in-toto.io/Statement/v0.1
+    sig: ${ATTESTATION_SIGNATURE_0}
+  success: true
+  successes:
+  - metadata:
+      code: builtin.attestation.signature_check
+      title: Attestation signature check passed
+    msg: Pass
+  - metadata:
+      code: builtin.attestation.syntax_check
+      title: Attestation syntax check passed
+    msg: Pass
+  - metadata:
+      code: builtin.image.signature_check
+      title: Image signature check passed
+    msg: Pass
+  - metadata:
+      code: test.no_skipped_tests
+      description: Reports any test that has its result set to "SKIPPED".
+      title: No tests were skipped
+    msg: Pass
+ec-version: ${EC_VERSION}
+key: |
+${__known_PUBLIC_KEY}
+policy:
+  configuration:
+    include:
+    - test.no_skipped_tests
+  publicKey: |
+${____known_PUBLIC_KEY}
+  sources:
+  - policy:
+    - github.com/enterprise-contract/ec-policies//policy
+success: true
+
+---
+
+[Strict with warnings:report - 1]
+components:
+- containerImage: ${REGISTRY}/acceptance/strict-with-warnings@${REGISTRY_acceptance/strict-with-warnings:latest_HASH}
+  name: ""
+  signatures:
+  - keyid: ""
+    metadata:
+      predicateBuildType: https://tekton.dev/attestations/chains/pipelinerun@v2
+      predicateType: https://slsa.dev/provenance/v0.2
+      type: https://in-toto.io/Statement/v0.1
+    sig: ${ATTESTATION_SIGNATURE_0}
+  success: true
+  successes:
+  - metadata:
+      code: builtin.attestation.signature_check
+      title: Attestation signature check passed
+    msg: Pass
+  - metadata:
+      code: builtin.attestation.syntax_check
+      title: Attestation syntax check passed
+    msg: Pass
+  - metadata:
+      code: builtin.image.signature_check
+      title: Image signature check passed
+    msg: Pass
+  - metadata:
+      code: test.no_skipped_tests
+      description: Reports any test that has its result set to "SKIPPED".
+      title: No tests were skipped
+    msg: Pass
+ec-version: ${EC_VERSION}
+key: |
+${__known_PUBLIC_KEY}
+policy:
+  configuration:
+    include:
+    - test.no_skipped_tests
+  publicKey: |
+${____known_PUBLIC_KEY}
+  sources:
+  - policy:
+    - github.com/enterprise-contract/ec-policies//policy
+success: true
+
+---
+
+[Golden container image:report - 1]
+components:
+- containerImage: quay.io/hacbs-contract-demo/golden-container@sha256:e76a4ae9dd8a52a0d191fd34ca133af5b4f2609536d32200a4a40a09fdc93a0d
+  name: ""
+  signatures:
+  - keyid: SHA256:RHajkr+wMEtGfT2CRFrQEhg/8MY2bDLXVg3F8IuI5nE
+    metadata:
+      predicateBuildType: tekton.dev/v1beta1/TaskRun
+      predicateType: https://slsa.dev/provenance/v0.2
+      type: https://in-toto.io/Statement/v0.1
+    sig: MEUCIHFVZeVR59n9UvN1dwF9Lh3Gv8XWLPDPIIJcnQ8e3TtvAiEA0z/5v6ggvmQyQ1EnYTJo9rwxOYuve4th4P/0639orLg=
+  - keyid: SHA256:RHajkr+wMEtGfT2CRFrQEhg/8MY2bDLXVg3F8IuI5nE
+    metadata:
+      predicateBuildType: tekton.dev/v1beta1/PipelineRun
+      predicateType: https://slsa.dev/provenance/v0.2
+      type: https://in-toto.io/Statement/v0.1
+    sig: MEUCIQClx1zvZGvyRu5gCHiC+oWVZTmWJGQlocSZMnzx/5omZAIgUiLQuMm+USYE+H0PDn/xPSVVQjkhWjDc3fulkxVzlC0=
+  - keyid: SHA256:RHajkr+wMEtGfT2CRFrQEhg/8MY2bDLXVg3F8IuI5nE
+    metadata:
+      predicateBuildType: tekton.dev/v1beta1/PipelineRun
+      predicateType: https://slsa.dev/provenance/v0.2
+      type: https://in-toto.io/Statement/v0.1
+    sig: MEUCIGS176zN5aoorLQMukjoCkHm7ocu7UhnKXLhzEdsgp4BAiEAviub3Lf4thLmSTU6ZqnEjw02kkrb9LKBBa1t8hVgAM4=
+  success: true
+  successes:
+  - metadata:
+      code: builtin.attestation.signature_check
+      title: Attestation signature check passed
+    msg: Pass
+  - metadata:
+      code: builtin.attestation.syntax_check
+      title: Attestation syntax check passed
+    msg: Pass
+  - metadata:
+      code: builtin.image.signature_check
+      title: Image signature check passed
+    msg: Pass
+  - metadata:
+      code: slsa_provenance_available.attestation_predicate_type_accepted
+      collections:
+      - minimal
+      - slsa1
+      - slsa2
+      - slsa3
+      description: The predicateType field of the attestation must indicate the in-toto
+        SLSA Provenance format was used to attest the PipelineRun.
+      title: Expected attestation predicate type found
+    msg: Pass
+ec-version: ${EC_VERSION}
+key: |
+  -----BEGIN PUBLIC KEY-----
+  MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAERhr8Zj4dZW67zucg8fDr11M4lmRp
+  zN6SIcIjkvH39siYg1DkCoa2h2xMUZ10ecbM3/ECqvBV55YwQ2rcIEa7XQ==
+  -----END PUBLIC KEY-----
+policy:
+  configuration:
+    include:
+    - slsa_provenance_available
+  publicKey: |-
+    -----BEGIN PUBLIC KEY-----
+    MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAERhr8Zj4dZW67zucg8fDr11M4lmRp
+    zN6SIcIjkvH39siYg1DkCoa2h2xMUZ10ecbM3/ECqvBV55YwQ2rcIEa7XQ==
+    -----END PUBLIC KEY-----
+  sources:
+  - policy:
+    - github.com/enterprise-contract/ec-policies//policy
+success: true
+
+---
+
+[Initialize TUF fails:report - 1]
+${TIMESTAMP} Skipping step because a previous step failed
+
+---
+
+[Initialize TUF fails:initialize-tuf - 1]
+Initializing TUF root...
+Error: Get "http://spam.spam.spam.spam/root.json": dial tcp: lookup spam.spam.spam.spam on 10.96.0.10:53: no such host
+main.go:74: error during command execution: Get "http://spam.spam.spam.spam/root.json": dial tcp: lookup spam.spam.spam.spam on 10.96.0.10:53: no such host
+
+---
+
+[Initialize TUF succeeds:report - 1]
+components:
+- containerImage: quay.io/hacbs-contract-demo/golden-container@sha256:e76a4ae9dd8a52a0d191fd34ca133af5b4f2609536d32200a4a40a09fdc93a0d
+  name: ""
+  signatures:
+  - keyid: SHA256:RHajkr+wMEtGfT2CRFrQEhg/8MY2bDLXVg3F8IuI5nE
+    metadata:
+      predicateBuildType: tekton.dev/v1beta1/TaskRun
+      predicateType: https://slsa.dev/provenance/v0.2
+      type: https://in-toto.io/Statement/v0.1
+    sig: MEUCIHFVZeVR59n9UvN1dwF9Lh3Gv8XWLPDPIIJcnQ8e3TtvAiEA0z/5v6ggvmQyQ1EnYTJo9rwxOYuve4th4P/0639orLg=
+  - keyid: SHA256:RHajkr+wMEtGfT2CRFrQEhg/8MY2bDLXVg3F8IuI5nE
+    metadata:
+      predicateBuildType: tekton.dev/v1beta1/PipelineRun
+      predicateType: https://slsa.dev/provenance/v0.2
+      type: https://in-toto.io/Statement/v0.1
+    sig: MEUCIQClx1zvZGvyRu5gCHiC+oWVZTmWJGQlocSZMnzx/5omZAIgUiLQuMm+USYE+H0PDn/xPSVVQjkhWjDc3fulkxVzlC0=
+  - keyid: SHA256:RHajkr+wMEtGfT2CRFrQEhg/8MY2bDLXVg3F8IuI5nE
+    metadata:
+      predicateBuildType: tekton.dev/v1beta1/PipelineRun
+      predicateType: https://slsa.dev/provenance/v0.2
+      type: https://in-toto.io/Statement/v0.1
+    sig: MEUCIGS176zN5aoorLQMukjoCkHm7ocu7UhnKXLhzEdsgp4BAiEAviub3Lf4thLmSTU6ZqnEjw02kkrb9LKBBa1t8hVgAM4=
+  success: true
+  successes:
+  - metadata:
+      code: builtin.attestation.signature_check
+      title: Attestation signature check passed
+    msg: Pass
+  - metadata:
+      code: builtin.attestation.syntax_check
+      title: Attestation syntax check passed
+    msg: Pass
+  - metadata:
+      code: builtin.image.signature_check
+      title: Image signature check passed
+    msg: Pass
+  - metadata:
+      code: slsa_provenance_available.attestation_predicate_type_accepted
+      collections:
+      - minimal
+      - slsa1
+      - slsa2
+      - slsa3
+      description: The predicateType field of the attestation must indicate the in-toto
+        SLSA Provenance format was used to attest the PipelineRun.
+      title: Expected attestation predicate type found
+    msg: Pass
+ec-version: ${EC_VERSION}
+key: |
+  -----BEGIN PUBLIC KEY-----
+  MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAERhr8Zj4dZW67zucg8fDr11M4lmRp
+  zN6SIcIjkvH39siYg1DkCoa2h2xMUZ10ecbM3/ECqvBV55YwQ2rcIEa7XQ==
+  -----END PUBLIC KEY-----
+policy:
+  configuration:
+    include:
+    - slsa_provenance_available
+  publicKey: |-
+    -----BEGIN PUBLIC KEY-----
+    MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAERhr8Zj4dZW67zucg8fDr11M4lmRp
+    zN6SIcIjkvH39siYg1DkCoa2h2xMUZ10ecbM3/ECqvBV55YwQ2rcIEa7XQ==
+    -----END PUBLIC KEY-----
+  sources:
+  - policy:
+    - github.com/enterprise-contract/ec-policies//policy
+success: true
+
+---
+
+[Initialize TUF succeeds:initialize-tuf - 1]
+TUF_MIRROR not set. Skipping TUF root initialization.
+
+---

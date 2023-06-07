@@ -31,6 +31,7 @@ type Cluster interface {
 	AwaitUntilTaskIsDone(context.Context) (bool, error)
 	TaskInfo(context.Context) (*TaskInfo, error)
 	CreateNamedSnapshot(context.Context, string, string) error
+	Registry(context.Context) (string, error)
 }
 
 type TaskInfo struct {

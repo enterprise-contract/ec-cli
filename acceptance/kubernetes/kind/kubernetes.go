@@ -23,6 +23,7 @@ import (
 	"io"
 	"os"
 	"path"
+	"strings"
 	"time"
 
 	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
@@ -35,6 +36,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 
+	"github.com/enterprise-contract/ec-cli/acceptance/crypto"
 	"github.com/enterprise-contract/ec-cli/acceptance/kubernetes/types"
 	"github.com/enterprise-contract/ec-cli/acceptance/kustomize"
 	"github.com/enterprise-contract/ec-cli/acceptance/testenv"
@@ -44,6 +46,25 @@ import (
 // Spec from the specification expected as a JSON string
 func (k *kindCluster) createPolicyObject(ctx context.Context, specification string) (*ecc.EnterpriseContractPolicy, error) {
 	t := testenv.FetchState[testState](ctx)
+
+	specification = os.Expand(specification, func(key string) string {
+		if strings.HasSuffix(key, "_PUBLIC_KEY") {
+			publicKeys := crypto.PublicKeysFrom(ctx)
+			keyName := strings.TrimSuffix(key, "_PUBLIC_KEY")
+			publicKey, ok := publicKeys[keyName]
+			if !ok {
+				panic(fmt.Sprintf("Unexpected or no value found for public key named: `%s`", keyName))
+			}
+
+			if escaped, err := json.Marshal(publicKey); err == nil {
+				return string(escaped)
+			} else {
+				panic(err)
+			}
+		}
+
+		return ""
+	})
 
 	policySpec := ecc.EnterpriseContractPolicySpec{}
 	if err := json.Unmarshal([]byte(specification), &policySpec); err != nil {
@@ -195,6 +216,11 @@ func (k *kindCluster) CreateNamespace(ctx context.Context) (context.Context, err
 
 	t.namespace = namespace.GetName()
 
+	t.registry, err = k.Registry(ctx)
+	if err != nil {
+		return ctx, err
+	}
+
 	// to prevent concurrency issues we lock/unlock the environment mutex here
 	render := func() ([]byte, error) {
 		envMutex.Lock()
@@ -227,6 +253,8 @@ func stringParam(name, value string, t *testState) tknv1beta1.Param {
 			return t.namespace
 		case "POLICY_NAME":
 			return t.policy
+		case "REGISTRY":
+			return t.registry
 		}
 
 		return ""

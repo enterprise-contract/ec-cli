@@ -1,5 +1,5 @@
 Feature: Verify Enterprise Contract Tekton Tasks
-  The Verify Enterprise Contract Tekton task verification against a set of golden images
+  Verify Enterprise Contract Tekton Task feature scenarios
 
   Background:
     Given a cluster running
@@ -30,6 +30,7 @@ Feature: Verify Enterprise Contract Tekton Tasks
       | POLICY_CONFIGURATION | ${NAMESPACE}/${POLICY_NAME}                                                                                                                                  |
       | STRICT               | true                                                                                                                                                         |
     Then the task should succeed
+     And the task logs for step "report" should match the snapshot
 
   Scenario: Initialize TUF succeeds
     Given a working namespace
@@ -57,6 +58,8 @@ Feature: Verify Enterprise Contract Tekton Tasks
       | TUF_MIRROR           | ${TUF}                                                                                                                                                       |
       | STRICT               | true                                                                                                                                                         |
     Then the task should succeed
+     And the task logs for step "report" should match the snapshot
+     And the task logs for step "initialize-tuf" should match the snapshot
 
   Scenario: Initialize TUF fails
     Given a working namespace
@@ -84,3 +87,99 @@ Feature: Verify Enterprise Contract Tekton Tasks
       | TUF_MIRROR           | http://spam.spam.spam.spam                                                                                                                                                       |
       | STRICT               | true                                                                                                                                                         |
     Then the task should fail
+     And the task logs for step "report" should match the snapshot
+     And the task logs for step "initialize-tuf" should match the snapshot
+
+  Scenario: Non strict with warnings
+    Given a working namespace
+      And a key pair named "known"
+      And an image named "acceptance/non-strict-with-warnings"
+      And a valid image signature of "acceptance/non-strict-with-warnings" image signed by the "known" key
+      And a valid attestation of "acceptance/non-strict-with-warnings" signed by the "known" key
+      And a cluster policy with content:
+      ```
+      {
+        "publicKey": ${known_PUBLIC_KEY},
+        "sources": [
+          {
+            "policy": [
+              "github.com/enterprise-contract/ec-policies//policy"
+            ]
+          }
+        ],
+        "configuration": {
+          "include": [
+            "test.no_skipped_tests"
+          ]
+        }
+      }
+      ```
+    When version 0.1 of the task named "verify-enterprise-contract" is run with parameters:
+      | IMAGES               | {"components": [{"containerImage": "${REGISTRY}/acceptance/non-strict-with-warnings"}]} |
+      | POLICY_CONFIGURATION | ${NAMESPACE}/${POLICY_NAME}                                                             |
+      | STRICT               | false                                                                                   |
+    Then the task should succeed
+    And the task logs for step "report" should match the snapshot
+
+  Scenario: Strict with warnings
+    Given a working namespace
+      And a key pair named "known"
+      And an image named "acceptance/strict-with-warnings"
+      And a valid image signature of "acceptance/strict-with-warnings" image signed by the "known" key
+      And a valid attestation of "acceptance/strict-with-warnings" signed by the "known" key
+      And a cluster policy with content:
+      ```
+      {
+        "publicKey": ${known_PUBLIC_KEY},
+        "sources": [
+          {
+            "policy": [
+              "github.com/enterprise-contract/ec-policies//policy"
+            ]
+          }
+        ],
+        "configuration": {
+          "include": [
+            "test.no_skipped_tests"
+          ]
+        }
+      }
+      ```
+    When version 0.1 of the task named "verify-enterprise-contract" is run with parameters:
+      | IMAGES               | {"components": [{"containerImage": "${REGISTRY}/acceptance/strict-with-warnings"}]} |
+      | POLICY_CONFIGURATION | ${NAMESPACE}/${POLICY_NAME}                                                         |
+      | STRICT               | true                                                                                |
+    Then the task should succeed
+     And the task logs for step "report" should match the snapshot
+
+  Scenario: Non strict with failures
+    Given a working namespace
+      And a key pair named "known"
+      And a cluster policy with content:
+      ```
+      {
+        "publicKey": ${known_PUBLIC_KEY}
+      }
+      ```
+    When version 0.1 of the task named "verify-enterprise-contract" is run with parameters:
+      | IMAGES               | {"components": [{"containerImage": "${REGISTRY}/acceptance/does-not-exist"}]} |
+      | POLICY_CONFIGURATION | ${NAMESPACE}/${POLICY_NAME}                                                   |
+      | STRICT               | false                                                                         |
+    Then the task should succeed
+     And the task logs for step "report" should match the snapshot
+
+  Scenario: Strict with failures
+    Given a working namespace
+      And a key pair named "known"
+      And a cluster policy with content:
+      ```
+      {
+        "publicKey": ${known_PUBLIC_KEY}
+      }
+      ```
+    When version 0.1 of the task named "verify-enterprise-contract" is run with parameters:
+      | IMAGES               | {"components": [{"containerImage": "${REGISTRY}/acceptance/does-not-exist"}]} |
+      | POLICY_CONFIGURATION | ${NAMESPACE}/${POLICY_NAME}                                                   |
+      | STRICT               | true                                                                          |
+    Then the task should fail
+     And the task logs for step "report" should match the snapshot
