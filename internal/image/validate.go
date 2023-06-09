@@ -39,7 +39,7 @@ import (
 func ValidateImage(ctx context.Context, url string, p policy.Policy, detailed bool) (*output.Output, error) {
 	log.Debugf("Validating image %s", url)
 
-	out := &output.Output{ImageURL: url, Detailed: detailed}
+	out := &output.Output{ImageURL: url, Detailed: detailed, Policy: p}
 	a, err := application_snapshot_image.NewApplicationSnapshotImage(ctx, url, p)
 	if err != nil {
 		log.Debug("Failed to create application snapshot image!")

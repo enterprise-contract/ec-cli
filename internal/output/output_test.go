@@ -20,14 +20,18 @@ package output
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"testing"
 
 	"github.com/open-policy-agent/conftest/output"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
+	"github.com/enterprise-contract/ec-cli/internal/policy"
+	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
 func Test_PrintExpectedJSON(t *testing.T) {
@@ -856,6 +860,8 @@ func TestSetImageSignatureCheckFromError(t *testing.T) {
 		err            error
 		expectedPassed bool
 		expectedResult *output.Result
+		policy         func(context.Context) policy.Policy
+		experimental   bool
 	}{
 		{
 			name:           "success",
@@ -889,11 +895,44 @@ func TestSetImageSignatureCheckFromError(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:           "missing signatures failure with keyless",
+			expectedPassed: false,
+			err:            noMatchingSignatures,
+			expectedResult: &output.Result{
+				Message: "Image signature check failed: kaboom!",
+				Metadata: map[string]interface{}{
+					"code": "builtin.image.signature_check",
+				},
+			},
+			policy: func(ctx context.Context) policy.Policy {
+				p, err := policy.NewPolicy(
+					ctx, "", "", "", policy.Now,
+					cosign.Identity{Issuer: "issuer", Subject: "subject"})
+				require.NoError(t, err)
+				return p
+			},
+			experimental: true,
+		},
 	}
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			o := Output{}
+			ctx := context.Background()
+
+			if c.experimental {
+				t.Setenv("EC_EXPERIMENTAL", "1")
+			}
+
+			var p policy.Policy
+			if c.policy != nil {
+				utils.SetTestRekorPublicKey(t)
+				utils.SetTestFulcioRoots(t)
+				utils.SetTestCTLogPublicKey(t)
+				p = c.policy(ctx)
+			}
+
+			o := Output{Policy: p}
 			o.SetImageSignatureCheckFromError(c.err)
 
 			assert.Equal(t, c.expectedPassed, o.ImageSignatureCheck.Passed)
@@ -910,6 +949,8 @@ func TestSetAttestationSignatureCheckFromError(t *testing.T) {
 		err            error
 		expectedPassed bool
 		expectedResult *output.Result
+		policy         func(context.Context) policy.Policy
+		experimental   bool
 	}{
 		{
 			name:           "success",
@@ -943,11 +984,44 @@ func TestSetAttestationSignatureCheckFromError(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:           "missing attestations failure with keyless",
+			expectedPassed: false,
+			err:            noMatchingAttestations,
+			expectedResult: &output.Result{
+				Message: "Image attestation check failed: kaboom!",
+				Metadata: map[string]interface{}{
+					"code": "builtin.attestation.signature_check",
+				},
+			},
+			policy: func(ctx context.Context) policy.Policy {
+				p, err := policy.NewPolicy(
+					ctx, "", "", "", policy.Now,
+					cosign.Identity{Issuer: "issuer", Subject: "subject"})
+				require.NoError(t, err)
+				return p
+			},
+			experimental: true,
+		},
 	}
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			o := Output{}
+			ctx := context.Background()
+
+			if c.experimental {
+				t.Setenv("EC_EXPERIMENTAL", "1")
+			}
+
+			var p policy.Policy
+			if c.policy != nil {
+				utils.SetTestRekorPublicKey(t)
+				utils.SetTestFulcioRoots(t)
+				utils.SetTestCTLogPublicKey(t)
+				p = c.policy(ctx)
+			}
+
+			o := Output{Policy: p}
 			o.SetAttestationSignatureCheckFromError(c.err)
 
 			assert.Equal(t, c.expectedPassed, o.AttestationSignatureCheck.Passed)
