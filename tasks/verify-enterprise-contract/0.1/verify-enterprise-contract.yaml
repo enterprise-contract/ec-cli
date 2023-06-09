@@ -102,8 +102,6 @@ spec:
   results:
     - name: TEST_OUTPUT
       description: Short summary of the policy evaluation for each image
-    - name: DATA_OUTPUT
-      description: Record of the data used in policy evaluation
 
   stepTemplate:
     env:
@@ -157,7 +155,7 @@ spec:
         - "--output"
         - "appstudio=$(results.TEST_OUTPUT.path)"
         - "--output"
-        - "data=$(results.DATA_OUTPUT.path)"
+        - "data=$(params.HOMEDIR)/data.yaml"
       env:
         - name: SSL_CERT_DIR
           # The Tekton Operator automatically sets the SSL_CERT_DIR env to the value below but,
@@ -177,7 +175,7 @@ spec:
       image: quay.io/hacbs-contract/ec-cli:snapshot
       command: [cat]
       args:
-        - "$(results.DATA_OUTPUT.path)"
+        - "$(params.HOMEDIR)/data.yaml"
     - name: summary
       image: quay.io/hacbs-contract/ec-cli:snapshot
       command: [jq]
