@@ -30,6 +30,10 @@ func init() {
 		Use:   "validate",
 		Short: "Validate conformance with the Enterprise Contract",
 	}
+	ValidateCmd.PersistentFlags().Bool("show-successes", false, "")
+}
+
+func init() {
 	ValidateCmd.AddCommand(validateImageCmd(image.ValidateImage))
 	ValidateCmd.AddCommand(validateDefinitionCmd(definition.ValidateDefinition))
 }
