@@ -255,9 +255,6 @@ func Test_ValidateImageCommand(t *testing.T) {
 		  {
 			"name": "Unnamed",
 			"containerImage": "registry/image:tag",
-			"successes": [
-				{"msg": "Pass", "metadata": {"code": "policy.nice"}}
-			],
 			"success": true
 		  }
 		],

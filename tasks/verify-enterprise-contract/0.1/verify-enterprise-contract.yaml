@@ -150,6 +150,7 @@ spec:
         # NOTE: The syntax below is required to negate boolean parameters
         - "--info=$(params.INFO)"
         - "--strict=false"
+        - "--show-successes"
         - "--effective-time=$(params.EFFECTIVE_TIME)"
         - "--output"
         - "yaml=$(params.HOMEDIR)/report.yaml"

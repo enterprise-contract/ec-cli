@@ -29,7 +29,7 @@ Feature: evaluate enterprise contract
       ]
     }
     """
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict --show-successes"
     Then the exit status should be 0
     Then the output should match the snapshot
 
@@ -44,7 +44,7 @@ Feature: evaluate enterprise contract
       | main.rego | examples/happy_day.rego |
     Given a git repository named "happy-config" with
       | policy.yaml | examples/happy_config.yaml |
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy git::https://${GITHOST}/git/happy-config.git --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy git::https://${GITHOST}/git/happy-config.git --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict --show-successes"
     Then the exit status should be 0
     Then the output should match the snapshot
 
@@ -59,7 +59,7 @@ Feature: evaluate enterprise contract
       | main.rego | examples/happy_day.rego |
     Given a git repository named "happy-config" with
       | policy.json | examples/happy_config.json |
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy git::https://${GITHOST}/git/happy-config.git --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy git::https://${GITHOST}/git/happy-config.git --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict --show-successes"
     Then the exit status should be 0
     Then the output should match the snapshot
 
@@ -74,7 +74,7 @@ Feature: evaluate enterprise contract
       | main.rego | examples/happy_day.rego |
     Given a git repository named "happy-config" with
       | perlicy.json | examples/happy_config.json |
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy git::https://${GITHOST}/git/happy-config.git --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy git::https://${GITHOST}/git/happy-config.git --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict --show-successes"
     Then the exit status should be 1
     Then the output should match the snapshot
 
@@ -98,7 +98,7 @@ Feature: evaluate enterprise contract
     Given the environment variable is set "EC_EXPERIMENTAL=1"
     # TODO: The Rekor value is ignored here, but it cannot be an empty value because that causes
     # the ec-cli to ignore the tlog altogether.
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day-keyless --policy acceptance/ec-policy --rekor-url http://this.is.ignored --certificate-oidc-issuer ${CERT_ISSUER} --certificate-identity ${CERT_IDENTITY} --strict"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day-keyless --policy acceptance/ec-policy --rekor-url http://this.is.ignored --certificate-oidc-issuer ${CERT_ISSUER} --certificate-identity ${CERT_IDENTITY} --strict --show-successes"
     Then the exit status should be 0
     Then the output should match the snapshot
 
@@ -123,7 +123,7 @@ Feature: evaluate enterprise contract
       ]
     }
     """
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/invalid-image-signature --policy acceptance/invalid-image-signature-policy --public-key ${unknown_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/invalid-image-signature --policy acceptance/invalid-image-signature-policy --public-key ${unknown_PUBLIC_KEY} --rekor-url ${REKOR} --strict --show-successes"
     Then the exit status should be 1
     Then the output should match the snapshot
 
@@ -147,7 +147,7 @@ Feature: evaluate enterprise contract
     Given the environment variable is set "EC_EXPERIMENTAL=1"
     # TODO: The Rekor value is ignored here, but it cannot be an empty value because that causes
     # the ec-cli to ignore the tlog altogether.
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/unexpected-keyless-cert --policy acceptance/ec-policy --rekor-url http://this.is.ignored --certificate-oidc-issuer https://spam.cluster.local --certificate-identity https://kubernetes.io/namespaces/bacon/serviceaccounts/eggs --strict"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/unexpected-keyless-cert --policy acceptance/ec-policy --rekor-url http://this.is.ignored --certificate-oidc-issuer https://spam.cluster.local --certificate-identity https://kubernetes.io/namespaces/bacon/serviceaccounts/eggs --strict --show-successes"
     Then the exit status should be 1
     Then the output should match the snapshot
 
@@ -160,7 +160,7 @@ Feature: evaluate enterprise contract
     Given a valid Rekor entry for attestation of "acceptance/ec-happy-day"
     Given a git repository named "happy-day-policy" with
       | main.rego | examples/happy_day.rego |
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy {"sources":[{"policy":["git::https://${GITHOST}/git/happy-day-policy.git"]}]} --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy {"sources":[{"policy":["git::https://${GITHOST}/git/happy-day-policy.git"]}]} --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict --show-successes"
     Then the exit status should be 0
     Then the output should match the snapshot
 
@@ -173,7 +173,7 @@ Feature: evaluate enterprise contract
     Given a valid Rekor entry for attestation of "acceptance/ec-happy-day"
     Given a git repository named "future-deny-policy" with
       | main.rego | examples/future_deny.rego |
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy {"sources":[{"policy":["git::https://${GITHOST}/git/future-deny-policy.git"]}]} --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy {"sources":[{"policy":["git::https://${GITHOST}/git/future-deny-policy.git"]}]} --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict --show-successes"
     Then the exit status should be 0
     Then the output should match the snapshot
 
@@ -186,7 +186,7 @@ Feature: evaluate enterprise contract
     Given a valid Rekor entry for attestation of "acceptance/ec-happy-day"
     Given a git repository named "future-deny-policy" with
       | main.rego | examples/future_deny.rego |
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy {"sources":[{"policy":["git::https://${GITHOST}/git/future-deny-policy.git"]}]} --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --effective-time 2100-01-01T12:00:00Z --strict"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy {"sources":[{"policy":["git::https://${GITHOST}/git/future-deny-policy.git"]}]} --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --effective-time 2100-01-01T12:00:00Z --strict --show-successes"
     Then the exit status should be 1
     Then the output should match the snapshot
 
@@ -213,7 +213,7 @@ Feature: evaluate enterprise contract
       ]
     }
     """
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-multiple-sources --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-multiple-sources --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict --show-successes"
     Then the exit status should be 1
     Then the output should match the snapshot
 
@@ -252,7 +252,7 @@ Feature: evaluate enterprise contract
       ]
     }
     """
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-multiple-sources --policy acceptance/ec-policy-variation --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-multiple-sources --policy acceptance/ec-policy-variation --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict --show-successes"
     Then the exit status should be 1
     Then the output should match the snapshot
 
@@ -278,7 +278,7 @@ Feature: evaluate enterprise contract
       ]
     }
     """
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict --show-successes"
     Then the exit status should be 1
 
   # Demonstrate data sources and using the same rules with different data
@@ -318,7 +318,7 @@ Feature: evaluate enterprise contract
       ]
     }
     """
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict --show-successes"
     Then the exit status should be 1
     Then the output should match the snapshot
 
@@ -330,7 +330,7 @@ Feature: evaluate enterprise contract
       | [{"op": "add", "path": "/predicate/metadata", "value": {}}, {"op": "add", "path": "/predicate/metadata/buildFinishedOn", "value": "2100-01-01T00:00:00Z"}] |
     Given a git repository named "future-deny-policy" with
       | main.rego | examples/future_deny.rego |
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy {"sources":[{"policy":["git::https://${GITHOST}/git/future-deny-policy.git"]}]} --public-key ${known_PUBLIC_KEY} --effective-time attestation --strict"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy {"sources":[{"policy":["git::https://${GITHOST}/git/future-deny-policy.git"]}]} --public-key ${known_PUBLIC_KEY} --effective-time attestation --strict --show-successes"
     Then the exit status should be 1
     Then the output should match the snapshot
 
@@ -354,7 +354,7 @@ Feature: evaluate enterprise contract
       ]
     }
     """
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/image --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --info --strict"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/image --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --info --strict --show-successes"
     Then the exit status should be 1
     Then the output should match the snapshot
 
@@ -383,7 +383,7 @@ Feature: evaluate enterprise contract
       ]
     }
     """
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict --show-successes"
     Then the exit status should be 0
     Then the output should match the snapshot
 
@@ -410,7 +410,7 @@ Feature: evaluate enterprise contract
       ]
     }
     """
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --strict"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --strict --show-successes"
     Then the exit status should be 0
     Then the output should match the snapshot
 
@@ -433,7 +433,7 @@ Feature: evaluate enterprise contract
       ]
     }
     """
-    When ec command is run with "validate image --json-input {"components":[{"name":"Happy","containerImage":"${REGISTRY}/acceptance/ec-happy-day"}]} --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --strict"
+    When ec command is run with "validate image --json-input {"components":[{"name":"Happy","containerImage":"${REGISTRY}/acceptance/ec-happy-day"}]} --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --strict  --show-successes"
     Then the exit status should be 0
     Then the output should match the snapshot
 
@@ -467,7 +467,7 @@ Feature: evaluate enterprise contract
       ]
     }
     """
-    When ec command is run with "validate image --snapshot acceptance/happy --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --strict"
+    When ec command is run with "validate image --snapshot acceptance/happy --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --strict  --show-successes"
     Then the exit status should be 0
     Then the output should match the snapshot
 
@@ -491,7 +491,7 @@ Feature: evaluate enterprise contract
       ]
     }
     """
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/image --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --output junit --strict"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/image --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --output junit --strict  --show-successes"
     Then the exit status should be 1
     Then the output should match the snapshot
 
@@ -517,7 +517,7 @@ Feature: evaluate enterprise contract
       ]
     }
     """
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/my-image --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --strict"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/my-image --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --strict  --show-successes"
     Then the exit status should be 0
     Then the output should match the snapshot
 
@@ -542,7 +542,7 @@ Feature: evaluate enterprise contract
       ]
     }
     """
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict  --show-successes"
     Then the exit status should be 1
     Then the output should match the snapshot
 
@@ -578,7 +578,7 @@ Feature: evaluate enterprise contract
       ]
     }
     """
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/image --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --output=json --output data=${TMPDIR}/custom-rule-data.yaml --effective-time 2014-05-31 --strict"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/image --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --output=json --output data=${TMPDIR}/custom-rule-data.yaml --effective-time 2014-05-31 --strict --show-successes"
     Then the exit status should be 0
     And the output should match the snapshot
     And the "${TMPDIR}/custom-rule-data.yaml" file should match the snapshot
@@ -603,7 +603,7 @@ Feature: evaluate enterprise contract
       ]
     }
     """
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/bad-actor --policy acceptance/mismatched-image-digest --public-key ${known_PUBLIC_KEY} --strict"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/bad-actor --policy acceptance/mismatched-image-digest --public-key ${known_PUBLIC_KEY} --strict  --show-successes"
     Then the exit status should be 1
     Then the output should match the snapshot
 
@@ -627,7 +627,7 @@ Feature: evaluate enterprise contract
       ]
     }
     """
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/bad-actor --policy acceptance/mismatched-image-digest --public-key ${known_PUBLIC_KEY} --strict"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/bad-actor --policy acceptance/mismatched-image-digest --public-key ${known_PUBLIC_KEY} --strict  --show-successes"
     Then the exit status should be 1
     Then the output should match the snapshot
 
@@ -653,7 +653,7 @@ Feature: evaluate enterprise contract
     }
     """
     When all images relating to "acceptance/source" are copied to "acceptance/destination"
-    And ec command is run with "validate image --image ${REGISTRY}/acceptance/destination --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict"
+    And ec command is run with "validate image --image ${REGISTRY}/acceptance/destination --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict  --show-successes"
     Then the exit status should be 0
     Then the output should match the snapshot
 
@@ -676,7 +676,7 @@ Feature: evaluate enterprise contract
       ]
     }
     """
-    And ec command is run with "validate image --image ${REGISTRY}/acceptance/image --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --strict"
+    And ec command is run with "validate image --image ${REGISTRY}/acceptance/image --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --strict --show-successes"
     Then the exit status should be 1
     Then the output should match the snapshot
 
@@ -695,6 +695,6 @@ Feature: evaluate enterprise contract
     """
     {"sources": [{"policy": ["git::https://${GITHOST}/git/unique-successes.git"]}]}
     """
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/unique-successes --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR}"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/unique-successes --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --show-successes"
     Then the exit status should be 0
     Then the output should match the snapshot

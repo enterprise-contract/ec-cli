@@ -284,8 +284,11 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 					// Skip on err to not panic. Error is return on routine completion.
 					if err == nil {
 						res.component.Violations = out.Violations()
+						showSuccesses, _ := cmd.Flags().GetBool("show-successes")
 						res.component.Warnings = out.Warnings()
-						res.component.Successes = out.Successes()
+						if showSuccesses {
+							res.component.Successes = out.Successes()
+						}
 						res.component.Signatures = out.Signatures
 						res.component.ContainerImage = out.ImageURL
 						res.data = out.Data
