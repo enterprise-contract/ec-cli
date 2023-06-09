@@ -109,7 +109,10 @@ func ecCommandIsRunWith(ctx context.Context, parameters string) (context.Context
 
 	// variables that can be substituted on the command line
 	// provided by the `parameters`` parameter
-	vars := map[string]string{}
+
+	vars := map[string]string{
+		"TMPDIR": testenv.Testing(ctx).TempDir(),
+	}
 
 	if environment, vars, err = setupKubernetes(ctx, vars, environment); err != nil {
 		return ctx, err
@@ -712,6 +715,24 @@ func matchSnapshot(ctx context.Context) error {
 	return multierror.Append(stdout, stderr)
 }
 
+func matchFileSnapshot(ctx context.Context, file string) error {
+	status, err := ecStatusFrom(ctx)
+	if err != nil {
+		return err
+	}
+
+	expanded := os.Expand(file, func(key string) string {
+		return status.vars[key]
+	})
+
+	content, err := os.ReadFile(expanded)
+	if err != nil {
+		return err
+	}
+
+	return snaps.MatchSnapshot(ctx, file, string(content), status.vars)
+}
+
 // AddStepsTo adds Gherkin steps to the godog ScenarioContext
 func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^ec command is run with "(.+)"$`, ecCommandIsRunWith)
@@ -721,6 +742,7 @@ func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^the standard error should contain$`, theStandardErrorShouldContain)
 	sc.Step(`^the environment variable is set "([^"]*)"$`, theEnvironmentVarilableIsSet)
 	sc.Step(`^the output should match the snapshot$`, matchSnapshot)
+	sc.Step(`^the "([^"]*)" file should match the snapshot$`, matchFileSnapshot)
 	sc.After(func(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
 		logExecution(ctx)
 

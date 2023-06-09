@@ -578,9 +578,10 @@ Feature: evaluate enterprise contract
       ]
     }
     """
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/image --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --strict"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/image --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --output=json --output data=${TMPDIR}/custom-rule-data.yaml --effective-time 2014-05-31 --strict"
     Then the exit status should be 0
-    Then the output should match the snapshot
+    And the output should match the snapshot
+    And the "${TMPDIR}/custom-rule-data.yaml" file should match the snapshot
 
   Scenario: mismatched image digest in signature
     Given a key pair named "known"

@@ -82,7 +82,7 @@ func Test_ReportJson(t *testing.T) {
 	components := testComponentsFor(snapshot)
 
 	ctx := context.Background()
-	report, err := NewReport("snappy", components, createTestPolicy(t, ctx))
+	report, err := NewReport("snappy", components, createTestPolicy(t, ctx), "data here")
 	assert.NoError(t, err)
 	reportJson, err := report.toFormat(JSON)
 	assert.NoError(t, err)
@@ -127,7 +127,7 @@ policy:
 	components := testComponentsFor(*snapshot)
 
 	ctx := context.Background()
-	report, err := NewReport("snappy", components, createTestPolicy(t, ctx))
+	report, err := NewReport("snappy", components, createTestPolicy(t, ctx), "data here")
 	assert.NoError(t, err)
 	reportYaml, err := report.toFormat(YAML)
 	assert.NoError(t, err)
@@ -369,7 +369,7 @@ func Test_ReportSummary(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("NewReport=%s", tc.name), func(t *testing.T) {
 			ctx := context.Background()
-			report, err := NewReport(tc.snapshot, []Component{tc.input}, createTestPolicy(t, ctx))
+			report, err := NewReport(tc.snapshot, []Component{tc.input}, createTestPolicy(t, ctx), "data here")
 			assert.NoError(t, err)
 			assert.Equal(t, tc.want, report.toSummary())
 		})
@@ -503,7 +503,7 @@ func Test_ReportAppstudio(t *testing.T) {
 			assert.NoError(t, err)
 
 			ctx := context.Background()
-			report, err := NewReport(c.snapshot, c.components, createTestPolicy(t, ctx))
+			report, err := NewReport(c.snapshot, c.components, createTestPolicy(t, ctx), nil)
 			assert.NoError(t, err)
 			assert.False(t, report.created.IsZero())
 			assert.Equal(t, c.success, report.Success)
@@ -651,7 +651,7 @@ func Test_ReportHACBS(t *testing.T) {
 			assert.NoError(t, err)
 
 			ctx := context.Background()
-			report, err := NewReport(c.snapshot, c.components, createTestPolicy(t, ctx))
+			report, err := NewReport(c.snapshot, c.components, createTestPolicy(t, ctx), "data here")
 			assert.NoError(t, err)
 			assert.False(t, report.created.IsZero())
 			assert.Equal(t, c.success, report.Success)

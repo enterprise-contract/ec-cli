@@ -245,3 +245,17 @@ Error: success criteria not met
 [successes are not duplicated:stderr - 1]
 
 ---
+
+[Custom rule data:${TMPDIR}/custom-rule-data.yaml - 1]
+- - config:
+      policy:
+        when_ns: 1401494400000000000
+    rule_data__configuration__:
+      custom: data1
+  - config:
+      policy:
+        when_ns: 1401494400000000000
+    rule_data__configuration__:
+      other: data2
+
+---

@@ -162,4 +162,11 @@ evaluator.CheckResults{
         },
     },
 }
+evaluator.Data{
+    "config": map[string]interface {}{
+        "policy": map[string]interface {}{
+            "when_ns": "1401494400000000000",
+        },
+    },
+}
 ---

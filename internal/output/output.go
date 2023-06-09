@@ -88,6 +88,7 @@ type Output struct {
 	Signatures                []EntitySignature      `json:"signatures,omitempty"`
 	ImageURL                  string                 `json:"-"`
 	Detailed                  bool                   `json:"-"`
+	Data                      []evaluator.Data       `json:"-"`
 }
 
 // SetImageAccessibleCheck sets the passed and result.message fields of the ImageAccessibleCheck to the given values.

@@ -54,10 +54,10 @@ type mockTestRunner struct {
 	mock.Mock
 }
 
-func (m *mockTestRunner) Run(ctx context.Context, inputs []string) ([]output.CheckResult, error) {
+func (m *mockTestRunner) Run(ctx context.Context, inputs []string) ([]output.CheckResult, Data, error) {
 	args := m.Called(ctx, inputs)
 
-	return args.Get(0).([]output.CheckResult), args.Error(1)
+	return args.Get(0).([]output.CheckResult), args.Get(1).(Data), args.Error(2)
 }
 
 func withTestRunner(ctx context.Context, clnt testRunner) context.Context {
@@ -185,9 +185,13 @@ func TestConftestEvaluatorEvaluateTimeBased(t *testing.T) {
 
 	inputs := []string{"inputs"}
 
+	expectedData := Data(map[string]any{
+		"a": 1,
+	})
+
 	ctx := setupTestContext(&r, &dl)
 
-	r.On("Run", ctx, inputs).Return(results, nil)
+	r.On("Run", ctx, inputs).Return(results, expectedData, nil)
 
 	pol, err := policy.NewOfflinePolicy(ctx, policy.Now)
 	assert.NoError(t, err)
@@ -197,9 +201,10 @@ func TestConftestEvaluatorEvaluateTimeBased(t *testing.T) {
 	}, pol)
 
 	assert.NoError(t, err)
-	actualResults, err := evaluator.Evaluate(ctx, inputs)
+	actualResults, data, err := evaluator.Evaluate(ctx, inputs)
 	assert.NoError(t, err)
 	assert.Equal(t, expectedResults, actualResults)
+	assert.Equal(t, expectedData, data)
 }
 
 func setupTestContext(r *mockTestRunner, dl *mockDownloader) context.Context {
@@ -267,8 +272,6 @@ func TestConftestEvaluatorEvaluateNoSuccessWarningsOrFailures(t *testing.T) {
 		},
 	}
 
-	expectedResults := CheckResults(nil)
-
 	r := mockTestRunner{}
 
 	dl := mockDownloader{}
@@ -277,7 +280,7 @@ func TestConftestEvaluatorEvaluateNoSuccessWarningsOrFailures(t *testing.T) {
 
 	ctx := setupTestContext(&r, &dl)
 
-	r.On("Run", ctx, inputs).Return(results, nil)
+	r.On("Run", ctx, inputs).Return(results, Data(nil), nil)
 
 	p, err := policy.NewOfflinePolicy(ctx, policy.Now)
 	assert.NoError(t, err)
@@ -287,9 +290,10 @@ func TestConftestEvaluatorEvaluateNoSuccessWarningsOrFailures(t *testing.T) {
 	}, p)
 
 	assert.NoError(t, err)
-	actualResults, err := evaluator.Evaluate(ctx, inputs)
+	actualResults, data, err := evaluator.Evaluate(ctx, inputs)
 	assert.ErrorContains(t, err, "no successes, warnings, or failures, check input")
-	assert.Equal(t, expectedResults, actualResults)
+	assert.Nil(t, actualResults)
+	assert.Nil(t, data)
 }
 
 func TestConftestEvaluatorIncludeExclude(t *testing.T) {
@@ -1138,7 +1142,7 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 			dl := mockDownloader{}
 			inputs := []string{"inputs"}
 			ctx := setupTestContext(&r, &dl)
-			r.On("Run", ctx, inputs).Return(tt.results, nil)
+			r.On("Run", ctx, inputs).Return(tt.results, Data(nil), nil)
 
 			p, err := policy.NewOfflinePolicy(ctx, policy.Now)
 			assert.NoError(t, err)
@@ -1152,9 +1156,10 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 			}, p)
 
 			assert.NoError(t, err)
-			got, err := evaluator.Evaluate(ctx, inputs)
+			got, data, err := evaluator.Evaluate(ctx, inputs)
 			assert.NoError(t, err)
 			assert.Equal(t, tt.want, got)
+			assert.Equal(t, Data(nil), data)
 		})
 	}
 }
@@ -1669,7 +1674,7 @@ func TestConftestEvaluatorEvaluate(t *testing.T) {
 
 	ctx := withCapabilities(context.Background(), testCapabilities)
 
-	p, err := policy.NewOfflinePolicy(ctx, policy.Now)
+	p, err := policy.NewOfflinePolicy(ctx, "2014-05-31")
 	require.NoError(t, err)
 
 	p = p.WithSpec(ecc.EnterpriseContractPolicySpec{
@@ -1684,7 +1689,7 @@ func TestConftestEvaluatorEvaluate(t *testing.T) {
 	}, p)
 	require.NoError(t, err)
 
-	results, err := evaluator.Evaluate(ctx, []string{path.Join(dir, "inputs")})
+	results, data, err := evaluator.Evaluate(ctx, []string{path.Join(dir, "inputs")})
 	require.NoError(t, err)
 
 	// sort the slice by code for test stability
@@ -1701,7 +1706,7 @@ func TestConftestEvaluatorEvaluate(t *testing.T) {
 		})
 	}
 
-	snaps.MatchSnapshot(t, results)
+	snaps.MatchSnapshot(t, results, data)
 }
 
 var testCapabilities string

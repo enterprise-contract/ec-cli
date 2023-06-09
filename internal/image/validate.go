@@ -98,7 +98,7 @@ func ValidateImage(ctx context.Context, url string, p policy.Policy, detailed bo
 	var allResults evaluator.CheckResults
 	for _, e := range a.Evaluators {
 		// Todo maybe: Handle each one concurrently
-		results, err := e.Evaluate(ctx, []string{input})
+		results, data, err := e.Evaluate(ctx, []string{input})
 		defer e.Destroy()
 
 		if err != nil {
@@ -106,7 +106,7 @@ func ValidateImage(ctx context.Context, url string, p policy.Policy, detailed bo
 			return nil, err
 		}
 		allResults = append(allResults, results...)
-
+		out.Data = append(out.Data, data)
 	}
 
 	log.Debug("Conftest policy check complete")
