@@ -26,7 +26,8 @@
             "program": "${workspaceFolder}/acceptance",
             "args": [
                 "-tags=@focus"
-            ]
+            ],
+            "preLaunchTask": "build"
         },
         {
             "name": "Acceptance tests (persist environment)",
@@ -37,7 +38,8 @@
             "args": [
                 "-persist",
                 "-tags=@focus"
-            ]
+            ],
+            "preLaunchTask": "build"
         },
         {
             "name": "Acceptance tests (restore persisted environment)",
@@ -47,7 +49,8 @@
             "program": "${workspaceFolder}/acceptance",
             "args": [
                 "-restore"
-            ]
+            ],
+            "preLaunchTask": "build"
         },
         {
             "name": "ec validate image (against persisted environment - update as needed)",
