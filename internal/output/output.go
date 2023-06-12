@@ -73,9 +73,11 @@ func (v VerificationStatus) addToSuccesses(successes []output.Result) []output.R
 }
 
 type EntitySignature struct {
-	KeyID     string            `json:"keyid"`
-	Signature string            `json:"sig"`
-	Metadata  map[string]string `json:"metadata,omitempty"`
+	KeyID       string            `json:"keyid"`
+	Signature   string            `json:"sig"`
+	Certificate string            `json:"certificate,omitempty"`
+	Chain       []string          `json:"chain,omitempty"`
+	Metadata    map[string]string `json:"metadata,omitempty"`
 }
 
 // Output is a struct representing checks and exit code.

@@ -20,8 +20,12 @@ package image
 
 import (
 	"context"
+	"crypto/x509"
 	"encoding/base64"
+	"encoding/hex"
+	"encoding/pem"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -39,9 +43,9 @@ import (
 	s "github.com/google/go-containerregistry/pkg/v1/static"
 	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/in-toto/in-toto-golang/in_toto"
-	v02 "github.com/in-toto/in-toto-golang/in_toto/slsa_provenance/v0.2"
 	"github.com/jstemmer/go-junit-report/v2/junit"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
+	"github.com/sigstore/cosign/v2/pkg/oci"
 	"github.com/sigstore/cosign/v2/pkg/oci/layout"
 	cosignRemote "github.com/sigstore/cosign/v2/pkg/oci/remote"
 	"github.com/sigstore/cosign/v2/pkg/oci/static"
@@ -58,8 +62,7 @@ import (
 type key int
 
 const (
-	imageStateKey                 key = iota // Key to imageState struct within context
-	imageAttestationSignaturesKey            // Key to image attestation signatures within context
+	imageStateKey key = iota // Key to imageState struct within context
 )
 
 const (
@@ -68,13 +71,47 @@ const (
 	title               = "org.opencontainers.image.title"
 )
 
-type imageState struct {
-	Attestations map[string]string
-	Images       map[string]string
-	Signatures   map[string]string
+// Signature is the information about the signature of the image
+type Signature struct {
+	KeyID       string            `json:"keyid"`
+	Signature   string            `json:"sig"`
+	Certificate string            `json:"certificate,omitempty"`
+	Chain       []string          `json:"chain,omitempty"`
+	Metadata    map[string]string `json:"metadata,omitempty"`
 }
 
-func (g imageState) Key() any {
+// imageState holds the state of images used in acceptance tests keyed by the
+// short image name, a name without the registry or the digest, e.g.
+// "acceptance/hello-world". string values hold the concrete references, e.g.
+// "registry:port/acceptance/sha256-hash.att" and the Signature values hold more
+// information about the signature of the image/data itself.
+type imageState struct {
+	AttestationSignatures map[string]Signature
+	Attestations          map[string]string
+	Images                map[string]string
+	ImageSignatures       map[string]Signature
+	Signatures            map[string]string
+}
+
+func (i *imageState) Initialize() {
+	if i.AttestationSignatures == nil {
+		i.AttestationSignatures = map[string]Signature{}
+	}
+	if i.Attestations == nil {
+		i.Attestations = map[string]string{}
+	}
+	if i.Images == nil {
+		i.Images = map[string]string{}
+	}
+	if i.ImageSignatures == nil {
+		i.ImageSignatures = map[string]Signature{}
+	}
+	if i.Signatures == nil {
+		i.Signatures = map[string]string{}
+	}
+}
+
+func (i imageState) Key() any {
 	return imageStateKey
 }
 
@@ -105,7 +142,7 @@ func createAndPushImageSignature(ctx context.Context, imageName string, keyName 
 		return ctx, err
 	}
 
-	if state.Signatures[imageName] != "" {
+	if _, ok := state.Signatures[imageName]; ok {
 		// we already created the signature
 		return ctx, nil
 	}
@@ -138,6 +175,7 @@ func createAndPushImageSignature(ctx context.Context, imageName string, keyName 
 	}
 
 	signatureBase64 := base64.StdEncoding.EncodeToString(signature)
+
 	// creates the layer with the image signature
 	signatureLayer, err := static.NewSignature(payload, signatureBase64)
 	if err != nil {
@@ -170,11 +208,11 @@ func createAndPushImageSignature(ctx context.Context, imageName string, keyName 
 		return ctx, err
 	}
 
-	if state.Signatures == nil {
-		state.Signatures = make(map[string]string)
-	}
-
 	state.Signatures[imageName] = ref.String()
+	state.ImageSignatures[imageName] = Signature{
+		KeyID:     "",
+		Signature: signatureBase64,
+	}
 
 	return ctx, nil
 }
@@ -229,9 +267,13 @@ func createAndPushAttestationWithPatches(ctx context.Context, imageName, keyName
 	}
 	signatureBase64 := base64.StdEncoding.EncodeToString(signedAttestation)
 
-	ctx, err = storeAttestationSignatures(ctx, signedAttestation)
-	if err != nil {
+	if sig, err := unmarshallSignatures(signedAttestation); err != nil {
 		return ctx, err
+	} else {
+		state.AttestationSignatures[imageName] = Signature{
+			KeyID:     sig.KeyID,
+			Signature: sig.Sig,
+		}
 	}
 
 	attestationLayer, err := static.NewAttestation(signedAttestation)
@@ -343,6 +385,124 @@ func createAndPushKeylessImage(ctx context.Context, imageName string) (context.C
 		return ctx, err
 	}
 
+	var state *imageState
+	ctx, err = testenv.SetupState(ctx, &state)
+	if err != nil {
+		return ctx, err
+	}
+
+	if state.Images == nil {
+		state.Images = make(map[string]string)
+	}
+	state.Images[imageName] = ref.String()
+
+	storeSignatureData := func(where map[string]Signature, f func() (oci.Signatures, error)) error {
+		sigs, err := f()
+		if err != nil {
+			return err
+		}
+
+		m, err := sigs.Manifest()
+		if err != nil {
+			return err
+		}
+
+		// read the signature from the layer annotations
+		for _, l := range m.Layers {
+			// just check for a single annotation
+			var signature string
+			var ok bool
+			if signature, ok = l.Annotations[static.SignatureAnnotationKey]; !ok {
+				continue
+			}
+
+			sig := Signature{
+				Signature: signature,
+			}
+
+			if certPEM, ok := l.Annotations[static.CertificateAnnotationKey]; ok {
+				certDER, _ := pem.Decode([]byte(certPEM))
+
+				cert, err := x509.ParseCertificate(certDER.Bytes)
+				if err != nil {
+					return err
+				}
+
+				sig.KeyID = hex.EncodeToString(cert.SubjectKeyId)
+				sig.Certificate = certPEM
+			}
+
+			if cert, ok := l.Annotations[static.ChainAnnotationKey]; ok {
+				if strings.Contains(cert, "-\n-") {
+					return errors.New("thus far we have only seen chain of length 1, fix the test to support more than one certificate in chain")
+				}
+				if !strings.HasSuffix(cert, "\n") { // for whatever reason the trailing newline is missing in the annotation
+					cert += "\n"
+				}
+				sig.Chain = []string{cert} // TODO hmm
+			}
+
+			where[imageName] = sig
+
+			return nil // TODO: support more than one signature
+
+		}
+
+		layers, err := sigs.Layers()
+		if err != nil {
+			return err
+		}
+
+		// read the signature from the layer content
+		for _, l := range layers {
+			r, err := l.Uncompressed()
+			if err != nil {
+				return err
+			}
+
+			raw, err := io.ReadAll(r)
+			if err != nil {
+				return err
+			}
+
+			sig, err := unmarshallSignatures(raw)
+			if err != nil {
+				return err
+			}
+
+			if sig != nil {
+				where[imageName] = Signature{
+					KeyID:     sig.KeyID,
+					Signature: sig.Sig,
+				}
+
+				return nil // TODO: support more than one signature
+			}
+		}
+
+		return nil
+	}
+
+	if sig, err := cosignRemote.SignatureTag(ref); err != nil {
+		return ctx, err
+	} else {
+		state.Signatures[imageName] = sig.String()
+	}
+
+	if err := storeSignatureData(state.ImageSignatures, sii.Signatures); err != nil {
+		return ctx, err
+	}
+
+	if att, err := cosignRemote.AttestationTag(ref); err != nil {
+		return ctx, err
+	} else {
+		state.Attestations[imageName] = att.String()
+	}
+
+	if err := storeSignatureData(state.AttestationSignatures, sii.Attestations); err != nil {
+		return ctx, err
+	}
+
 	return ctx, nil
 }
 
@@ -434,124 +594,174 @@ func AttestationFrom(ctx context.Context, imageName string) ([]byte, error) {
 func ImageSignatureFrom(ctx context.Context, imageName string) ([]byte, error) {
 	state := testenv.FetchState[imageState](ctx)
 
-	refStr := state.Signatures[imageName]
-
-	if refStr == "" {
+	if sig, ok := state.ImageSignatures[imageName]; !ok {
 		return nil, fmt.Errorf("no image signature found for image %s, did you create it beforehand?", imageName)
+	} else {
+		return json.Marshal(sig)
 	}
-
-	ref, err := name.ParseReference(refStr)
-	if err != nil {
-		return nil, err
-	}
-
-	image, err := remote.Image(ref)
-	if err != nil {
-		return nil, err
-	}
-
-	manifest, err := image.Manifest()
-	if err != nil {
-		return nil, err
-	}
-
-	annotations := manifest.Layers[0].Annotations
-
-	signature := annotations[static.SignatureAnnotationKey]
-
-	return base64.StdEncoding.DecodeString(signature)
 }
 
-// copied from ../../internal/attestation/slsa_provenance_02.go not to create a
-// dependancy on CLI from acceptance tests
-type entitySignature struct {
-	KeyID     string            `json:"keyid"`
-	Signature string            `json:"sig"`
-	Metadata  map[string]string `json:"metadata,omitempty"` // additional metadata added by ec-cli, see internal/attestation/slsa_provenance_02.go.describeStatement
-}
-
-// storeAttestationSignatures extracts the signatures from the raw attestation and stores it
-// in the context for later retrieval.
-// TODO: allow support for multiple attestations
-func storeAttestationSignatures(ctx context.Context, rawAttestation []byte) (context.Context, error) {
+// unmarshallSignatures extracts the signatures from the raw attestation
+func unmarshallSignatures(rawCosignSignature []byte) (*cosign.Signatures, error) {
 	var attestationPayload cosign.AttestationPayload
-	if err := json.Unmarshal(rawAttestation, &attestationPayload); err != nil {
+	if err := json.Unmarshal(rawCosignSignature, &attestationPayload); err != nil {
 		return nil, err
 	}
 
-	return context.WithValue(ctx, imageAttestationSignaturesKey, attestationPayload.Signatures), nil
+	l := len(attestationPayload.Signatures)
+	switch {
+	case l == 0:
+		return nil, nil
+	case l > 1:
+		return nil, fmt.Errorf("received %d signatures, not expecting more than 1", l)
+	default:
+		return &attestationPayload.Signatures[0], nil
+	}
 }
 
 // JSONAttestationSignaturesFrom returns the list of attestation signatures found in the context in
 // JSON format. If not found, and empty JSON array is returned.
-func JSONAttestationSignaturesFrom(ctx context.Context) (string, error) {
-	sigs, ok := ctx.Value(imageAttestationSignaturesKey).([]cosign.Signatures)
-	if !ok {
-		return "", nil
+func JSONAttestationSignaturesFrom(ctx context.Context) (map[string]string, error) {
+	if !testenv.HasState[imageState](ctx) {
+		return nil, nil
 	}
 
-	signatures := make([]entitySignature, 0, len(sigs))
-	for _, signature := range sigs {
-		signatures = append(signatures, entitySignature{
-			KeyID:     signature.KeyID,
-			Signature: signature.Sig,
-			Metadata: map[string]string{ // add the metadata we don't have in the signature
-				"predicateBuildType": attestation.PredicateBuilderType,
-				"predicateType":      v02.PredicateSLSAProvenance,
-				"type":               in_toto.StatementInTotoV01,
-			},
-		})
-	}
-	signaturesJson, err := json.Marshal(signatures)
-	if err != nil {
-		return "", err
+	state := testenv.FetchState[imageState](ctx)
+
+	signatures := map[string]string{}
+	for name, signature := range state.AttestationSignatures {
+		json, err := json.Marshal(signature)
+		if err != nil {
+			return nil, err
+		}
+		signatures[name] = string(json)
 	}
 
-	return string(signaturesJson), nil
+	return signatures, nil
 }
 
-func XMLAttestationSignaturesFrom(ctx context.Context) (string, error) {
-	sigs, ok := ctx.Value(imageAttestationSignaturesKey).([]cosign.Signatures)
-	if !ok {
-		return "", nil
+func XMLAttestationSignaturesFrom(ctx context.Context) (map[string]string, error) {
+	if !testenv.HasState[imageState](ctx) {
+		return nil, nil
 	}
+
+	state := testenv.FetchState[imageState](ctx)
 
 	type property struct {
 		XMLName xml.Name `xml:"property"`
 		junit.Property
 	}
 
-	properties := make([]property, 0, 2*len(sigs))
-	for _, signature := range sigs {
-		properties = append(properties, property{
-			Property: junit.Property{
-				Name:  "keyId",
-				Value: signature.KeyID,
+	ret := map[string]string{}
+	for name, signature := range state.AttestationSignatures {
+		properties := []property{
+			{
+				Property: junit.Property{
+					Name:  "keyId",
+					Value: signature.KeyID,
+				},
 			},
-		}, property{
-			Property: junit.Property{
-				Name:  "signature",
-				Value: signature.Sig,
+			{
+				Property: junit.Property{
+					Name:  "signature",
+					Value: signature.Signature,
+				},
 			},
-		})
+		}
+
+		xml, err := xml.Marshal(properties)
+		if err != nil {
+			return nil, err
+		}
+		ret[name] = string(xml)
 	}
 
-	if signaturesXML, err := xml.Marshal(properties); err != nil {
-		return "", err
-	} else {
-		return string(signaturesXML), nil
-	}
+	return ret, nil
 }
 
 func RawAttestationSignaturesFrom(ctx context.Context) map[string]string {
-	sigs, ok := ctx.Value(imageAttestationSignaturesKey).([]cosign.Signatures)
-	if !ok {
+	if !testenv.HasState[imageState](ctx) {
 		return nil
 	}
 
+	state := testenv.FetchState[imageState](ctx)
+
 	ret := map[string]string{}
-	for i, signature := range sigs {
-		ret[fmt.Sprintf("ATTESTATION_SIGNATURE_%d", i)] = signature.Sig
+	for ref, signature := range state.AttestationSignatures {
+		ret[fmt.Sprintf("ATTESTATION_SIGNATURE_%s", ref)] = signature.Signature
+	}
+
+	return ret
+}
+
+func JSONImageSignaturesFrom(ctx context.Context) (map[string]string, error) {
+	if !testenv.HasState[imageState](ctx) {
+		return nil, nil
+	}
+
+	state := testenv.FetchState[imageState](ctx)
+
+	ret := map[string]string{}
+	for name, signature := range state.ImageSignatures {
+		json, err := json.Marshal(signature)
+		if err != nil {
+			return nil, err
+		}
+		ret[name] = string(json)
+	}
+
+	return ret, nil
+}
+
+func XMLImageSignaturesFrom(ctx context.Context) (map[string]string, error) {
+	if !testenv.HasState[imageState](ctx) {
+		return nil, nil
+	}
+
+	state := testenv.FetchState[imageState](ctx)
+
+	type property struct {
+		XMLName xml.Name `xml:"property"`
+		junit.Property
+	}
+
+	ret := map[string]string{}
+	for name, signature := range state.ImageSignatures {
+		properties := []property{
+			{
+				Property: junit.Property{
+					Name:  "keyId",
+					Value: signature.KeyID,
+				},
+			},
+			{
+				Property: junit.Property{
+					Name:  "signature",
+					Value: signature.Signature,
+				},
+			},
+		}
+
+		xml, err := xml.Marshal(properties)
+		if err != nil {
+			return nil, err
+		}
+		ret[name] = string(xml)
+	}
+
+	return ret, nil
+}
+
+func RawImageSignaturesFrom(ctx context.Context) map[string]string {
+	if !testenv.HasState[imageState](ctx) {
+		return nil
+	}
+
+	state := testenv.FetchState[imageState](ctx)
+
+	ret := map[string]string{}
+	for ref, signature := range state.ImageSignatures {
+		ret[fmt.Sprintf("IMAGE_SIGNATURE_%s", ref)] = signature.Signature
 	}
 
 	return ret

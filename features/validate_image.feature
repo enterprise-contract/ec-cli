@@ -82,7 +82,7 @@ Feature: evaluate enterprise contract
     Given a signed and attested keyless image named "acceptance/ec-happy-day-keyless"
     Given a initialized tuf root
     Given a git repository named "happy-day-policy" with
-      | main.rego | examples/happy_day.rego |
+      | main.rego | examples/keyless.rego |
     Given policy configuration named "ec-policy" with specification
     """
     {
