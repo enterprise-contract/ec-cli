@@ -7,7 +7,7 @@ require (
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/enterprise-contract/enterprise-contract-controller/api v0.0.0-20230411141906-b8166da93dc9
 	github.com/evanphx/json-patch v5.6.0+incompatible
-	github.com/gkampitakis/go-snaps v0.4.5
+	github.com/gkampitakis/go-snaps v0.4.6
 	github.com/go-logr/logr v1.2.4
 	github.com/google/go-containerregistry v0.15.2
 	github.com/hako/durafmt v0.0.0-20210608085754-5c1018a4e16b
