@@ -27,6 +27,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
+	"github.com/enterprise-contract/ec-cli/internal/policy"
 )
 
 const missingSignatureMessage = "No image signatures found matching the given public key. " +
@@ -89,6 +90,7 @@ type Output struct {
 	ImageURL                  string                 `json:"-"`
 	Detailed                  bool                   `json:"-"`
 	Data                      []evaluator.Data       `json:"-"`
+	Policy                    policy.Policy          `json:"-"`
 }
 
 // SetImageAccessibleCheck sets the passed and result.message fields of the ImageAccessibleCheck to the given values.
@@ -128,12 +130,7 @@ func (o *Output) SetImageSignatureCheckFromError(err error) {
 		log.Debug("Image signature check passed")
 	} else {
 		o.ImageSignatureCheck.Passed = false
-		if verr, ok := err.(*cosign.VerificationError); ok && verr.ErrorType() == cosign.ErrNoMatchingSignaturesType {
-			// If the error is due to no matching signatures, use a more user-friendly message.
-			message = missingSignatureMessage
-		} else {
-			message = fmt.Sprintf("Image signature check failed: %s", err)
-		}
+		message = wrapCosignErrorMessage(err, "signature", o.Policy)
 		log.Debug(message)
 	}
 	result := &output.Result{Message: message, Metadata: metadata}
@@ -157,12 +154,7 @@ func (o *Output) SetAttestationSignatureCheckFromError(err error) {
 		log.Debug("Attestation signature check passed")
 	} else {
 		o.AttestationSignatureCheck.Passed = false
-		if verr, ok := err.(*cosign.VerificationError); ok && verr.ErrorType() == cosign.ErrNoMatchingAttestationsType {
-			// If the error is due to no matching attestations, use a more user-friendly message.
-			message = missingAttestationMessage
-		} else {
-			message = fmt.Sprintf("Image attestation check failed: %s", err.Error())
-		}
+		message = wrapCosignErrorMessage(err, "attestation", o.Policy)
 		log.Debug(message)
 	}
 	result := &output.Result{Message: message, Metadata: metadata}
@@ -335,4 +327,29 @@ func (o Outputs) Print(out io.Writer) error {
 	}
 	fmt.Fprint(out, "]\n")
 	return nil
+}
+
+// wrapCosignErrorMessage wraps the message from the given error indicating the
+// type of check that was performed. It may also completey change the  message
+// with a more helpful one in some cases.
+func wrapCosignErrorMessage(err error, checkType string, p policy.Policy) string {
+	// When NOT using the keyless workflow, the "no matching signatures" error from cosign lacks
+	// any useful information. Only in such case, change the error message to something more
+	// helpful.
+	if p == nil || !p.Keyless() {
+		var noMatchingErr string
+		var msg string
+		switch checkType {
+		case "signature":
+			noMatchingErr = cosign.ErrNoMatchingSignaturesType
+			msg = missingSignatureMessage
+		case "attestation":
+			noMatchingErr = cosign.ErrNoMatchingAttestationsType
+			msg = missingAttestationMessage
+		}
+		if vErr, ok := err.(*cosign.VerificationError); ok && vErr.ErrorType() == noMatchingErr && msg != "" {
+			return msg
+		}
+	}
+	return fmt.Sprintf("Image %s check failed: %s", checkType, err)
 }

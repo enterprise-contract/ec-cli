@@ -61,6 +61,7 @@ type Policy interface {
 	EffectiveTime() time.Time
 	AttestationTime(time.Time)
 	Identity() cosign.Identity
+	Keyless() bool
 }
 
 type policy struct {
@@ -103,6 +104,11 @@ func (p *policy) Spec() ecc.EnterpriseContractPolicySpec {
 
 func (p *policy) Identity() cosign.Identity {
 	return p.identity
+}
+
+// Keyless returns whether or not the Policy uses the keyless workflow for verification.
+func (p *policy) Keyless() bool {
+	return keylessEnabled() && p.PublicKey == ""
 }
 
 // NewOfflinePolicy construct and return a new instance of Policy that is used
