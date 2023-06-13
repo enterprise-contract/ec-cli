@@ -376,10 +376,16 @@ func (k *kindCluster) TaskInfo(ctx context.Context) (*types.TaskInfo, error) {
 		return nil, err
 	}
 
+	results := map[string]any{}
+	for _, r := range tr.Status.TaskRunResults {
+		results[r.Name] = r.Value
+	}
+
 	info := types.TaskInfo{
 		Namespace: t.namespace,
 		Name:      t.taskRun,
 		Status:    formatted.Condition(tr.Status.Conditions),
+		Results:   results,
 	}
 
 	info.Params = map[string]any{}

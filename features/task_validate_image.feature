@@ -31,6 +31,7 @@ Feature: Verify Enterprise Contract Tekton Tasks
       | STRICT               | true                                                                                                                                                         |
     Then the task should succeed
      And the task logs for step "report" should match the snapshot
+     And the task results should match the snapshot
 
   Scenario: Initialize TUF succeeds
     Given a working namespace
@@ -60,6 +61,7 @@ Feature: Verify Enterprise Contract Tekton Tasks
     Then the task should succeed
      And the task logs for step "report" should match the snapshot
      And the task logs for step "initialize-tuf" should match the snapshot
+     And the task results should match the snapshot
 
   Scenario: Initialize TUF fails
     Given a working namespace
@@ -89,6 +91,7 @@ Feature: Verify Enterprise Contract Tekton Tasks
     Then the task should fail
      And the task logs for step "report" should match the snapshot
      And the task logs for step "initialize-tuf" should match the snapshot
+     And the task results should match the snapshot
 
   Scenario: Non strict with warnings
     Given a working namespace
@@ -120,6 +123,7 @@ Feature: Verify Enterprise Contract Tekton Tasks
       | STRICT               | false                                                                                   |
     Then the task should succeed
     And the task logs for step "report" should match the snapshot
+    And the task results should match the snapshot
 
   Scenario: Strict with warnings
     Given a working namespace
@@ -151,6 +155,7 @@ Feature: Verify Enterprise Contract Tekton Tasks
       | STRICT               | true                                                                                |
     Then the task should succeed
      And the task logs for step "report" should match the snapshot
+     And the task results should match the snapshot
 
   Scenario: Non strict with failures
     Given a working namespace
@@ -167,6 +172,7 @@ Feature: Verify Enterprise Contract Tekton Tasks
       | STRICT               | false                                                                         |
     Then the task should succeed
      And the task logs for step "report" should match the snapshot
+     And the task results should match the snapshot
 
   Scenario: Strict with failures
     Given a working namespace
@@ -183,3 +189,4 @@ Feature: Verify Enterprise Contract Tekton Tasks
       | STRICT               | true                                                                          |
     Then the task should fail
      And the task logs for step "report" should match the snapshot
+     And the task results should match the snapshot

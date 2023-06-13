@@ -259,3 +259,31 @@ success: true
 TUF_MIRROR not set. Skipping TUF root initialization.
 
 ---
+
+[Initialize TUF fails:results - 1]
+{}
+---
+
+[Strict with failures:results - 1]
+{}
+---
+
+[Non strict with failures:results - 1]
+{"TEST_OUTPUT":"{\"timestamp\":\"${TIMESTAMP}\",\"namespace\":\"\",\"successes\":0,\"failures\":1,\"warnings\":0,\"result\":\"FAILURE\"}"}
+---
+
+[Strict with warnings:results - 1]
+{"TEST_OUTPUT":"{\"timestamp\":\"${TIMESTAMP}\",\"namespace\":\"\",\"successes\":1,\"failures\":0,\"warnings\":0,\"result\":\"SUCCESS\"}"}
+---
+
+[Non strict with warnings:results - 1]
+{"TEST_OUTPUT":"{\"timestamp\":\"${TIMESTAMP}\",\"namespace\":\"\",\"successes\":1,\"failures\":0,\"warnings\":0,\"result\":\"SUCCESS\"}"}
+---
+
+[Golden container image:results - 1]
+{"TEST_OUTPUT":"{\"timestamp\":\"${TIMESTAMP}\",\"namespace\":\"\",\"successes\":1,\"failures\":0,\"warnings\":0,\"result\":\"SUCCESS\"}"}
+---
+
+[Initialize TUF succeeds:results - 1]
+{"TEST_OUTPUT":"{\"timestamp\":\"${TIMESTAMP}\",\"namespace\":\"\",\"successes\":1,\"failures\":0,\"warnings\":0,\"result\":\"SUCCESS\"}"}
+---

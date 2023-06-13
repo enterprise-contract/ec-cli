@@ -19,6 +19,7 @@ package kubernetes
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -297,6 +298,26 @@ func taskLogsShouldMatchTheSnapshot(ctx context.Context, stepName string) error 
 	return nil
 }
 
+func taskResultsShouldMatchTheSnapshot(ctx context.Context) error {
+	c := testenv.FetchState[ClusterState](ctx)
+
+	if err := mustBeUp(ctx, *c); err != nil {
+		return err
+	}
+
+	info, err := c.cluster.TaskInfo(ctx)
+	if err != nil {
+		return err
+	}
+
+	j, err := json.Marshal(info.Results)
+	if err != nil {
+		return err
+	}
+
+	return snaps.MatchSnapshot(ctx, "results", string(j), nil)
+}
+
 func indent(str string, n int) string {
 	idnt := strings.Repeat(" ", n)
 
@@ -318,6 +339,7 @@ func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^the task should fail$`, theTaskShouldFail)
 	sc.Step(`^an Snapshot named "([^"]*)" with specification$`, createNamedSnapshot)
 	sc.Step(`^the task logs for step "([^"]*)" should match the snapshot$`, taskLogsShouldMatchTheSnapshot)
+	sc.Step(`^the task results should match the snapshot$`, taskResultsShouldMatchTheSnapshot)
 	// stop usage of the cluster once a test is done, godog will call this
 	// function on failure and on the last step, so more than once if the
 	// failure is not on the last step and once if there was no failure or the

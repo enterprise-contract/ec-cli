@@ -35,10 +35,11 @@ type Cluster interface {
 }
 
 type TaskInfo struct {
-	Namespace string
 	Name      string
-	Status    string
+	Namespace string
 	Params    map[string]any
+	Results   map[string]any
+	Status    string
 	Steps     []Step
 }
 
