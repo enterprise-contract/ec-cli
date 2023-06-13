@@ -70,6 +70,8 @@ components:
     msg: Pass
   - metadata:
       code: test.no_skipped_tests
+      depends_on:
+      - test.test_data_found
       description: Reports any test that has its result set to "SKIPPED".
       title: No tests were skipped
     msg: Pass
@@ -116,6 +118,8 @@ components:
     msg: Pass
   - metadata:
       code: test.no_skipped_tests
+      depends_on:
+      - test.test_data_found
       description: Reports any test that has its result set to "SKIPPED".
       title: No tests were skipped
     msg: Pass
@@ -179,6 +183,8 @@ components:
       - slsa1
       - slsa2
       - slsa3
+      depends_on:
+      - attestation_type.known_attestation_type
       description: The predicateType field of the attestation must indicate the in-toto
         SLSA Provenance format was used to attest the PipelineRun.
       title: Expected attestation predicate type found
@@ -261,6 +267,8 @@ components:
       - slsa1
       - slsa2
       - slsa3
+      depends_on:
+      - attestation_type.known_attestation_type
       description: The predicateType field of the attestation must indicate the in-toto
         SLSA Provenance format was used to attest the PipelineRun.
       title: Expected attestation predicate type found
