@@ -2752,8 +2752,8 @@ github.com/tdakkota/asciicheck v0.2.0/go.mod h1:Qb7Y9EgjCLJGup51gDHFzbI08/gbGhL/
 github.com/tedsuo/ifrit v0.0.0-20180802180643-bea94bb476cc/go.mod h1:eyZnKCc955uh98WQvzOm0dgAeLnf2O0Rz0LPoC5ze+0=
 github.com/tektoncd/chains v0.16.0 h1:JUFLA3p/I7kifi1BEX/3C0I54hHBIRvpdMIFxZUYGl0=
 github.com/tektoncd/chains v0.16.0/go.mod h1:tIA/Ar78NS728T7q955CEfm9ycekZtWFHLHCuXDxBZg=
-github.com/tektoncd/cli v0.31.0 h1:9euLDdCEL0HnLpcllfzpFy384JglSeEya2VQPLczhZU=
-github.com/tektoncd/cli v0.31.0/go.mod h1:MB0HrmwcGnHjPv9d/oviOWAqNmvuhdNP84UJUZfqy7A=
+github.com/tektoncd/cli v0.31.1 h1:rhVfvwWRilHMXO8Y6bLDx9Ow3nRRWCLeEPuk52PJ/uQ=
+github.com/tektoncd/cli v0.31.1/go.mod h1:MB0HrmwcGnHjPv9d/oviOWAqNmvuhdNP84UJUZfqy7A=
 github.com/tektoncd/hub v1.13.0 h1:WJF9JMQzdBxfiQILtDT2lgAXxBc+y9v5U4qwavUO5pE=
 github.com/tektoncd/hub v1.13.0/go.mod h1:9n47cu03gbNVB5n922jKjc602sRpe/ihgQ3SvHNijQ4=
 github.com/tektoncd/pipeline v0.47.0 h1:zZxmp6im8/p9RaH32LgeCP6dwH/4hcsfvEQUrwGsUPA=
