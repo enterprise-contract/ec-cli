@@ -20,6 +20,7 @@ package application_snapshot_image
 
 import (
 	"context"
+	_ "embed"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -30,6 +31,7 @@ import (
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
+	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/in-toto/in-toto-golang/in_toto"
 	"github.com/in-toto/in-toto-golang/in_toto/slsa_provenance/common"
 	v02 "github.com/in-toto/in-toto-golang/in_toto/slsa_provenance/v0.2"
@@ -37,6 +39,7 @@ import (
 	"github.com/sigstore/cosign/v2/pkg/cosign"
 	"github.com/sigstore/cosign/v2/pkg/oci"
 	"github.com/sigstore/cosign/v2/pkg/oci/static"
+	cosignTypes "github.com/sigstore/cosign/v2/pkg/types"
 	"github.com/sigstore/sigstore/pkg/signature/payload"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
@@ -173,19 +176,42 @@ func TestWriteInputFile(t *testing.T) {
 		{
 			name: "single attestations",
 			snapshot: ApplicationSnapshotImage{
+				reference:    name.MustParseReference("registry.io/repository/image:tag"),
 				attestations: []attestation.Attestation[in_toto.ProvenanceStatementSLSA02]{createSimpleAttestation(nil)},
 			},
-			want: `{"attestations": [` + simpleAttestationJSONText + `]}`,
+			want: `{"attestations": [` + simpleAttestationJSONText + `], "image": {"ref": "registry.io/repository/image:tag"}}`,
 		},
 		{
 			name: "multiple attestations",
 			snapshot: ApplicationSnapshotImage{
+				reference: name.MustParseReference("registry.io/repository/image:tag"),
 				attestations: []attestation.Attestation[in_toto.ProvenanceStatementSLSA02]{
 					createSimpleAttestation(nil),
 					createSimpleAttestation(nil),
 				},
 			},
-			want: `{"attestations": [` + simpleAttestationJSONText + "," + simpleAttestationJSONText + `]}`,
+			want: `{"attestations": [` + simpleAttestationJSONText + "," + simpleAttestationJSONText + `], "image": {"ref": "registry.io/repository/image:tag"}}`,
+		},
+		{
+			name: "image signatures",
+			snapshot: ApplicationSnapshotImage{
+				reference: name.MustParseReference("registry.io/repository/image:tag"),
+				signatures: []output.EntitySignature{
+					{
+						KeyID:     "keyId1",
+						Signature: "signature1",
+						Chain:     []string{"certificate1", "certificate2"},
+					},
+					{
+						KeyID:     "keyId2",
+						Signature: "signature2",
+					},
+				},
+				attestations: []attestation.Attestation[in_toto.ProvenanceStatementSLSA02]{
+					createSimpleAttestation(nil),
+				},
+			},
+			want: `{"attestations": [` + simpleAttestationJSONText + `], "image": {"ref": "registry.io/repository/image:tag", "signatures": [{"keyid": "keyId1", "sig": "signature1", "chain": ["certificate1", "certificate2"]}, {"keyid": "keyId2", "sig": "signature2"}]}}`,
 		},
 	}
 
@@ -212,6 +238,7 @@ func TestWriteInputFile(t *testing.T) {
 func TestWriteInputFileMultipleAttestations(t *testing.T) {
 	att := createSimpleAttestation(nil)
 	a := ApplicationSnapshotImage{
+		reference:    name.MustParseReference("registry.io/repository/image:tag"),
 		attestations: []attestation.Attestation[in_toto.ProvenanceStatementSLSA02]{att},
 	}
 
@@ -228,7 +255,7 @@ func TestWriteInputFileMultipleAttestations(t *testing.T) {
 
 	bytes, err := afero.ReadFile(fs, input)
 	assert.NoError(t, err)
-	assert.JSONEq(t, `{"attestations": [`+simpleAttestationJSONText+`]}`, string(bytes))
+	assert.JSONEq(t, `{"attestations": [`+simpleAttestationJSONText+`], "image": {"ref": "registry.io/repository/image:tag"}}`, string(bytes))
 }
 
 func TestSyntaxValidationWithoutAttestations(t *testing.T) {
@@ -593,4 +620,60 @@ func TestValidateAttestationSignatureClaims(t *testing.T) {
 			assert.Equal(t, c.err, err)
 		})
 	}
+}
+
+//go:embed chainguard_release.cer
+var chainguard_release_cert string
+
+//go:embed sigstore_chain.cer
+var chain string
+
+func TestValidateImageSignatureWithCertificates(t *testing.T) {
+	ref := name.MustParseReference("registry.io/repository/image:tag")
+	a := ApplicationSnapshotImage{
+		reference: ref,
+	}
+
+	c := MockClient{}
+
+	ctx := WithClient(context.Background(), &c)
+
+	signature, err := static.NewSignature(
+		[]byte(`image`),
+		"signature",
+		static.WithLayerMediaType(types.MediaType((cosignTypes.DssePayloadType))),
+		static.WithCertChain(
+			[]byte(chainguard_release_cert),
+			[]byte(chain),
+		),
+	)
+	require.NoError(t, err)
+
+	c.On("VerifyImageSignatures", ctx, ref, mock.Anything).Return([]oci.Signature{signature}, false, nil)
+
+	err = a.ValidateImageSignature(ctx)
+	require.NoError(t, err)
+
+	// split the chain into individual PEM certificates and restore the removed
+	// separator chars
+	chainAry := strings.Split(chain, "-\n-")
+	for i, cer := range chainAry {
+		switch {
+		case i == 0:
+			chainAry[i] = cer + "-\n"
+		case i == len(chainAry)-1:
+			chainAry[i] = "-" + cer
+		default:
+			chainAry[i] = "-" + cer + "\n"
+		}
+	}
+
+	assert.Equal(t, []output.EntitySignature{
+		{
+			KeyID:       "6add046e38418d021a562c6a8633d5eca7379595",
+			Signature:   "signature",
+			Certificate: chainguard_release_cert,
+			Chain:       chainAry,
+		},
+	}, a.signatures)
 }

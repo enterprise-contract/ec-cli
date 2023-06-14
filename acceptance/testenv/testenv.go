@@ -129,6 +129,10 @@ type WithState interface {
 	Key() any
 }
 
+type Initializing interface {
+	Initialize()
+}
+
 // persistedKey constructs a key in the form of type.value
 func persistedKey[S WithState](state S) string {
 	key := state.Key()
@@ -156,6 +160,9 @@ func SetupState[S WithState](ctx context.Context, state **S) (context.Context, e
 
 	if existing == nil {
 		*state = newS
+		if i, ok := any(*state).(Initializing); ok {
+			i.Initialize()
+		}
 	} else {
 		*state = existing.(*S)
 	}

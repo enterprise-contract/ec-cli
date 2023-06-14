@@ -49,11 +49,7 @@ components:
   name: ""
   signatures:
   - keyid: ""
-    metadata:
-      predicateBuildType: https://tekton.dev/attestations/chains/pipelinerun@v2
-      predicateType: https://slsa.dev/provenance/v0.2
-      type: https://in-toto.io/Statement/v0.1
-    sig: ${ATTESTATION_SIGNATURE_0}
+    sig: ${IMAGE_SIGNATURE_acceptance/non-strict-with-warnings}
   success: true
   successes:
   - metadata:
@@ -97,11 +93,7 @@ components:
   name: ""
   signatures:
   - keyid: ""
-    metadata:
-      predicateBuildType: https://tekton.dev/attestations/chains/pipelinerun@v2
-      predicateType: https://slsa.dev/provenance/v0.2
-      type: https://in-toto.io/Statement/v0.1
-    sig: ${ATTESTATION_SIGNATURE_0}
+    sig: ${IMAGE_SIGNATURE_acceptance/strict-with-warnings}
   success: true
   successes:
   - metadata:
@@ -144,24 +136,8 @@ components:
 - containerImage: quay.io/hacbs-contract-demo/golden-container@sha256:e76a4ae9dd8a52a0d191fd34ca133af5b4f2609536d32200a4a40a09fdc93a0d
   name: ""
   signatures:
-  - keyid: SHA256:RHajkr+wMEtGfT2CRFrQEhg/8MY2bDLXVg3F8IuI5nE
-    metadata:
-      predicateBuildType: tekton.dev/v1beta1/TaskRun
-      predicateType: https://slsa.dev/provenance/v0.2
-      type: https://in-toto.io/Statement/v0.1
-    sig: MEUCIHFVZeVR59n9UvN1dwF9Lh3Gv8XWLPDPIIJcnQ8e3TtvAiEA0z/5v6ggvmQyQ1EnYTJo9rwxOYuve4th4P/0639orLg=
-  - keyid: SHA256:RHajkr+wMEtGfT2CRFrQEhg/8MY2bDLXVg3F8IuI5nE
-    metadata:
-      predicateBuildType: tekton.dev/v1beta1/PipelineRun
-      predicateType: https://slsa.dev/provenance/v0.2
-      type: https://in-toto.io/Statement/v0.1
-    sig: MEUCIQClx1zvZGvyRu5gCHiC+oWVZTmWJGQlocSZMnzx/5omZAIgUiLQuMm+USYE+H0PDn/xPSVVQjkhWjDc3fulkxVzlC0=
-  - keyid: SHA256:RHajkr+wMEtGfT2CRFrQEhg/8MY2bDLXVg3F8IuI5nE
-    metadata:
-      predicateBuildType: tekton.dev/v1beta1/PipelineRun
-      predicateType: https://slsa.dev/provenance/v0.2
-      type: https://in-toto.io/Statement/v0.1
-    sig: MEUCIGS176zN5aoorLQMukjoCkHm7ocu7UhnKXLhzEdsgp4BAiEAviub3Lf4thLmSTU6ZqnEjw02kkrb9LKBBa1t8hVgAM4=
+  - keyid: ""
+    sig: MEUCIFPod1d9HhGt+TEQPG4j+LINjkifCFFOFrE4jbkvexGGAiEAqSp3ROZUsIOwWro6Tv+lRiR7sdMR0U6Crs1ISuQhHtA=
   success: true
   successes:
   - metadata:
@@ -228,24 +204,8 @@ components:
 - containerImage: quay.io/hacbs-contract-demo/golden-container@sha256:e76a4ae9dd8a52a0d191fd34ca133af5b4f2609536d32200a4a40a09fdc93a0d
   name: ""
   signatures:
-  - keyid: SHA256:RHajkr+wMEtGfT2CRFrQEhg/8MY2bDLXVg3F8IuI5nE
-    metadata:
-      predicateBuildType: tekton.dev/v1beta1/TaskRun
-      predicateType: https://slsa.dev/provenance/v0.2
-      type: https://in-toto.io/Statement/v0.1
-    sig: MEUCIHFVZeVR59n9UvN1dwF9Lh3Gv8XWLPDPIIJcnQ8e3TtvAiEA0z/5v6ggvmQyQ1EnYTJo9rwxOYuve4th4P/0639orLg=
-  - keyid: SHA256:RHajkr+wMEtGfT2CRFrQEhg/8MY2bDLXVg3F8IuI5nE
-    metadata:
-      predicateBuildType: tekton.dev/v1beta1/PipelineRun
-      predicateType: https://slsa.dev/provenance/v0.2
-      type: https://in-toto.io/Statement/v0.1
-    sig: MEUCIQClx1zvZGvyRu5gCHiC+oWVZTmWJGQlocSZMnzx/5omZAIgUiLQuMm+USYE+H0PDn/xPSVVQjkhWjDc3fulkxVzlC0=
-  - keyid: SHA256:RHajkr+wMEtGfT2CRFrQEhg/8MY2bDLXVg3F8IuI5nE
-    metadata:
-      predicateBuildType: tekton.dev/v1beta1/PipelineRun
-      predicateType: https://slsa.dev/provenance/v0.2
-      type: https://in-toto.io/Statement/v0.1
-    sig: MEUCIGS176zN5aoorLQMukjoCkHm7ocu7UhnKXLhzEdsgp4BAiEAviub3Lf4thLmSTU6ZqnEjw02kkrb9LKBBa1t8hVgAM4=
+  - keyid: ""
+    sig: MEUCIFPod1d9HhGt+TEQPG4j+LINjkifCFFOFrE4jbkvexGGAiEAqSp3ROZUsIOwWro6Tv+lRiR7sdMR0U6Crs1ISuQhHtA=
   success: true
   successes:
   - metadata:

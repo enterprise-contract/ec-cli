@@ -276,6 +276,7 @@ func taskLogsShouldMatchTheSnapshot(ctx context.Context, stepName string) error 
 	}
 
 	maps.Copy(vars, image.RawAttestationSignaturesFrom(ctx))
+	maps.Copy(vars, image.RawImageSignaturesFrom(ctx))
 
 	v, err := testenv.CLIVersion(ctx)
 	if err != nil {

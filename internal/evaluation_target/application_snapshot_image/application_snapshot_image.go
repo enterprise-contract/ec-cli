@@ -18,7 +18,9 @@ package application_snapshot_image
 
 import (
 	"context"
+	"encoding/hex"
 	"encoding/json"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"os"
@@ -172,8 +174,48 @@ func (a *ApplicationSnapshotImage) ValidateImageSignature(ctx context.Context) e
 	// Set the ClaimVerifier on a shallow *copy* of CheckOpts to avoid unexpected side-effects
 	opts := a.checkOpts
 	opts.ClaimVerifier = cosign.SimpleClaimVerifier
-	_, _, err := NewClient(ctx).VerifyImageSignatures(ctx, a.reference, &opts)
-	return err
+	signatures, _, err := NewClient(ctx).VerifyImageSignatures(ctx, a.reference, &opts)
+	if err != nil {
+		return err
+	}
+
+	for _, s := range signatures {
+		sig, err := s.Base64Signature()
+		if err != nil {
+			return err
+		}
+
+		es := output.EntitySignature{
+			Signature: sig,
+		}
+
+		cert, err := s.Cert()
+		if err != nil {
+			return err
+		}
+		if cert != nil {
+			es.Certificate = string(pem.EncodeToMemory(&pem.Block{
+				Type:  "CERTIFICATE",
+				Bytes: cert.Raw,
+			}))
+			es.KeyID = hex.EncodeToString(cert.SubjectKeyId)
+		}
+
+		chain, err := s.Chain()
+		if err != nil {
+			return err
+		}
+		for _, c := range chain {
+			es.Chain = append(es.Chain, string(pem.EncodeToMemory(&pem.Block{
+				Type:  "CERTIFICATE",
+				Bytes: c.Raw,
+			})))
+		}
+
+		a.signatures = append(a.signatures, es)
+	}
+
+	return nil
 }
 
 // ValidateAttestationSignature executes the cosign.VerifyImageAttestations method
@@ -196,8 +238,6 @@ func (a *ApplicationSnapshotImage) ValidateAttestationSignature(ctx context.Cont
 			continue
 		}
 		a.attestations = append(a.attestations, sp)
-
-		a.signatures = append(a.signatures, sp.Signatures()...)
 	}
 	return nil
 }
@@ -269,7 +309,22 @@ func (a *ApplicationSnapshotImage) WriteInputFile(ctx context.Context) (string, 
 	for _, sp := range a.attestations {
 		statements = append(statements, sp.Statement())
 	}
-	attestations := map[string][]in_toto.ProvenanceStatementSLSA02{"attestations": statements}
+
+	type Image struct {
+		Ref        string                   `json:"ref"`
+		Signatures []output.EntitySignature `json:"signatures,omitempty"`
+	}
+
+	input := struct {
+		Attestations []in_toto.ProvenanceStatementSLSA02 `json:"attestations"`
+		Image        Image                               `json:"image"`
+	}{
+		Attestations: statements,
+		Image: Image{
+			Ref:        a.reference.String(),
+			Signatures: a.signatures,
+		},
+	}
 
 	fs := utils.FS(ctx)
 	inputDir, err := afero.TempDir(fs, "", "ecp_input.")
@@ -288,7 +343,7 @@ func (a *ApplicationSnapshotImage) WriteInputFile(ctx context.Context) (string, 
 	defer f.Close()
 
 	j := json.NewEncoder(f)
-	err = j.Encode(attestations)
+	err = j.Encode(input)
 	if err != nil {
 		log.Debug("Problem encoding attestion JSON!")
 		return "", err

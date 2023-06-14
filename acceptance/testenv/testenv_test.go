@@ -23,6 +23,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go"
 )
 
@@ -36,6 +37,7 @@ type stateful struct {
 const (
 	statefulKey key = iota
 	anotherKey
+	initializingKey
 )
 
 func (s stateful) Key() any {
@@ -48,6 +50,18 @@ type another struct {
 
 func (a another) Key() any {
 	return anotherKey
+}
+
+type initializing struct {
+	initialized bool
+}
+
+func (i initializing) Key() any {
+	return initializingKey
+}
+
+func (i *initializing) Initialize() {
+	i.initialized = true
 }
 
 func Test_SetupStatePersisted(t *testing.T) {
@@ -259,4 +273,16 @@ func Test_ColorFlag(t *testing.T) {
 
 	ctx = context.WithValue(context.TODO(), NoColors, true)
 	assert.True(t, NoColorOutput(ctx))
+}
+
+func TestInitializingState(t *testing.T) {
+	var i *initializing
+	ctx, err := SetupState(context.Background(), &i)
+	require.NoError(t, err)
+
+	assert.Equal(t, true, i.initialized)
+
+	i2 := FetchState[initializing](ctx)
+
+	assert.Equal(t, true, i2.initialized)
 }
