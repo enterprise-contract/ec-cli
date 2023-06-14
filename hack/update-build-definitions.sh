@@ -49,15 +49,25 @@ diff \
 TASK_BUNDLE_REF="quay.io/hacbs-contract/ec-task-bundle:${TASK_BUNDLE_TAG}@${TASK_BUNDLE_DIGEST}"
 echo "Resolved bundle is ${TASK_BUNDLE_REF}"
 
-echo -n "Double-checking parameters of the pipeline are contained within the task parameters... "
-jq --exit-status \
-    --slurpfile pipeline <(yq -o json '.spec.tasks[] | select(.name == "verify") | [.params[].name]' pipelines/enterprise-contract.yaml) \
-    'contains($pipeline[0])' \
-    <(cd "${ROOT}"; go run -modfile tools/go.mod github.com/tektoncd/cli/cmd/tkn bundle list --output json "${TASK_BUNDLE_REF}" task verify-enterprise-contract 2>/dev/null| jq '.spec.params | map(.name)')
+function update() {
+    local definition
+    definition="${1}"
+    echo "# Processing ${definition}"
+    echo -n "Double-checking parameters of the pipeline are contained within the task parameters... "
+    jq --exit-status \
+        --slurpfile pipeline <(yq -o json '.spec.tasks[] | select(.name == "verify") | [.params[].name]' "${definition}") \
+        'contains($pipeline[0])' \
+        <(cd "${ROOT}"; go run -modfile tools/go.mod github.com/tektoncd/cli/cmd/tkn bundle list --output json "${TASK_BUNDLE_REF}" task verify-enterprise-contract 2>/dev/null| jq '.spec.params | map(.name)')
 
-echo 'Updating build-deployments...'
-REF="${TASK_BUNDLE_REF}" yq e -i \
-    '.spec.tasks[] |= select(.name == "verify").taskRef.bundle |= env(REF)' \
-    pipelines/enterprise-contract.yaml
+    echo 'Updating build-deployments...'
+    REF="${TASK_BUNDLE_REF}" yq e -i \
+        '.spec.tasks[] |= select(.name == "verify").taskRef.bundle |= env(REF)' \
+        "${definition}"
+    echo
+}
+
+for f in pipelines/enterprise-contract*.yaml; do
+    update "${f}"
+done
 
 echo 'build-definitions updated successfully'
