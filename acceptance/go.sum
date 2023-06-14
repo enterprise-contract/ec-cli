@@ -759,8 +759,8 @@ github.com/subosito/gotenv v1.4.2 h1:X1TuBLAMDFbaTAChgCBLu3DU3UPyELpnF2jjJ2cz/S8
 github.com/subosito/gotenv v1.4.2/go.mod h1:ayKnFf/c6rvx/2iiLrJUk1e6plDbT3edrFNGqEflhK0=
 github.com/syndtr/goleveldb v1.0.1-0.20220721030215-126854af5e6d h1:vfofYNRScrDdvS342BElfbETmL1Aiz3i2t0zfRj16Hs=
 github.com/syndtr/goleveldb v1.0.1-0.20220721030215-126854af5e6d/go.mod h1:RRCYJbIwD5jmqPI9XoAFR0OcDxqUctll6zUj/+B4S48=
-github.com/tektoncd/cli v0.31.0 h1:9euLDdCEL0HnLpcllfzpFy384JglSeEya2VQPLczhZU=
-github.com/tektoncd/cli v0.31.0/go.mod h1:MB0HrmwcGnHjPv9d/oviOWAqNmvuhdNP84UJUZfqy7A=
+github.com/tektoncd/cli v0.31.1 h1:rhVfvwWRilHMXO8Y6bLDx9Ow3nRRWCLeEPuk52PJ/uQ=
+github.com/tektoncd/cli v0.31.1/go.mod h1:MB0HrmwcGnHjPv9d/oviOWAqNmvuhdNP84UJUZfqy7A=
 github.com/tektoncd/pipeline v0.47.0 h1:zZxmp6im8/p9RaH32LgeCP6dwH/4hcsfvEQUrwGsUPA=
 github.com/tektoncd/pipeline v0.47.0/go.mod h1:7H1DeNuEJFGoExGwQTlRul2IziCPxkjXRdDdirWmoQs=
 github.com/tektoncd/triggers v0.23.1-0.20230420080448-bf603123cc0f h1:VwUu2eWgu+c34hoocxCL2IE+1zjNeGigyNHdd9ODfL8=
