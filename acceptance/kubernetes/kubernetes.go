@@ -40,7 +40,10 @@ import (
 
 type key int
 
-const clusterStateKey = key(0) // we store the ClusterState struct under this key in Context and when persisted
+const (
+	clusterStateKey = key(0) // we store the ClusterState struct under this key in Context and when persisted
+	stopStateKey    = key(iota)
+)
 
 // ClusterState holds the Cluster used in the current Context
 type ClusterState struct {
@@ -315,8 +318,18 @@ func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^the task should fail$`, theTaskShouldFail)
 	sc.Step(`^an Snapshot named "([^"]*)" with specification$`, createNamedSnapshot)
 	sc.Step(`^the task logs for step "([^"]*)" should match the snapshot$`, taskLogsShouldMatchTheSnapshot)
-	// stop usage of the cluster once a test is done
+	// stop usage of the cluster once a test is done, godog will call this
+	// function on failure and on the last step, so more than once if the
+	// failure is not on the last step and once if there was no failure or the
+	// failure was on the last step
 	sc.After(func(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
+		if ctx.Value(stopStateKey) == nil {
+			ctx = context.WithValue(ctx, stopStateKey, true)
+		} else {
+			// we did this already
+			return ctx, nil
+		}
+
 		if !testenv.HasState[ClusterState](ctx) {
 			return ctx, nil
 		}
