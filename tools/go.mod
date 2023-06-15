@@ -10,7 +10,7 @@ require (
 	github.com/tektoncd/chains v0.16.0
 	github.com/tektoncd/cli v0.31.1
 	github.com/wadey/gocovmerge v0.0.0-20160331181800-b5bfa59ec0ad
-	helm.sh/helm/v3 v3.12.0
+	helm.sh/helm/v3 v3.12.1
 	sigs.k8s.io/kustomize/kustomize/v5 v5.0.3
 )
 
@@ -68,7 +68,7 @@ require (
 	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/Masterminds/semver/v3 v3.2.1 // indirect
 	github.com/Masterminds/sprig/v3 v3.2.3 // indirect
-	github.com/Masterminds/squirrel v1.5.3 // indirect
+	github.com/Masterminds/squirrel v1.5.4 // indirect
 	github.com/Masterminds/vcs v1.13.3 // indirect
 	github.com/Microsoft/go-winio v0.6.0 // indirect
 	github.com/OneOfOne/xxhash v1.2.8 // indirect
@@ -503,16 +503,16 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	honnef.co/go/tools v0.4.3 // indirect
-	k8s.io/api v0.27.1 // indirect
-	k8s.io/apiextensions-apiserver v0.27.1 // indirect
-	k8s.io/apimachinery v0.27.1 // indirect
-	k8s.io/apiserver v0.27.1 // indirect
-	k8s.io/cli-runtime v0.27.1 // indirect
-	k8s.io/client-go v0.27.1 // indirect
-	k8s.io/component-base v0.27.1 // indirect
+	k8s.io/api v0.27.2 // indirect
+	k8s.io/apiextensions-apiserver v0.27.2 // indirect
+	k8s.io/apimachinery v0.27.2 // indirect
+	k8s.io/apiserver v0.27.2 // indirect
+	k8s.io/cli-runtime v0.27.2 // indirect
+	k8s.io/client-go v0.27.2 // indirect
+	k8s.io/component-base v0.27.2 // indirect
 	k8s.io/klog/v2 v2.100.1 // indirect
-	k8s.io/kube-openapi v0.0.0-20230308215209-15aac26d736a // indirect
-	k8s.io/kubectl v0.27.1 // indirect
+	k8s.io/kube-openapi v0.0.0-20230501164219-8b0f38b5fd1f // indirect
+	k8s.io/kubectl v0.27.2 // indirect
 	k8s.io/utils v0.0.0-20230220204549-a5ecb0141aa5 // indirect
 	knative.dev/pkg v0.0.0-20230412013349-d3d7625d8e1e // indirect
 	muzzammil.xyz/jsonc v1.0.0 // indirect
