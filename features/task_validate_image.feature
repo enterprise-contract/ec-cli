@@ -31,6 +31,7 @@ Feature: Verify Enterprise Contract Tekton Tasks
       | STRICT               | true                                                                                                                                                         |
     Then the task should succeed
      And the task logs for step "report" should match the snapshot
+     And the task results should match the snapshot
 
   Scenario: Initialize TUF succeeds
     Given a working namespace
@@ -60,6 +61,7 @@ Feature: Verify Enterprise Contract Tekton Tasks
     Then the task should succeed
      And the task logs for step "report" should match the snapshot
      And the task logs for step "initialize-tuf" should match the snapshot
+     And the task results should match the snapshot
 
   Scenario: Initialize TUF fails
     Given a working namespace
@@ -89,13 +91,15 @@ Feature: Verify Enterprise Contract Tekton Tasks
     Then the task should fail
      And the task logs for step "report" should match the snapshot
      And the task logs for step "initialize-tuf" should match the snapshot
+     And the task results should match the snapshot
 
   Scenario: Non strict with warnings
     Given a working namespace
       And a key pair named "known"
       And an image named "acceptance/non-strict-with-warnings"
       And a valid image signature of "acceptance/non-strict-with-warnings" image signed by the "known" key
-      And a valid attestation of "acceptance/non-strict-with-warnings" signed by the "known" key
+      And a valid attestation of "acceptance/non-strict-with-warnings" signed by the "known" key, patched with
+      | [{"op": "add", "path": "/predicate/buildConfig", "value": {}},{"op": "add", "path": "/predicate/buildConfig/tasks", "value": [{"name":"skipped","results":[{"name":"TEST_OUTPUT","type":"string","value":"{\"result\":\"SKIPPED\"}"}]}]}] |
       And a cluster policy with content:
       ```
       {
@@ -120,13 +124,15 @@ Feature: Verify Enterprise Contract Tekton Tasks
       | STRICT               | false                                                                                   |
     Then the task should succeed
     And the task logs for step "report" should match the snapshot
+    And the task results should match the snapshot
 
   Scenario: Strict with warnings
     Given a working namespace
       And a key pair named "known"
       And an image named "acceptance/strict-with-warnings"
       And a valid image signature of "acceptance/strict-with-warnings" image signed by the "known" key
-      And a valid attestation of "acceptance/strict-with-warnings" signed by the "known" key
+      And a valid attestation of "acceptance/strict-with-warnings" signed by the "known" key, patched with
+      | [{"op": "add", "path": "/predicate/buildConfig", "value": {}},{"op": "add", "path": "/predicate/buildConfig/tasks", "value": [{"name":"skipped","results":[{"name":"TEST_OUTPUT","type":"string","value":"{\"result\":\"SKIPPED\"}"}]}]}] |
       And a cluster policy with content:
       ```
       {
@@ -151,6 +157,7 @@ Feature: Verify Enterprise Contract Tekton Tasks
       | STRICT               | true                                                                                |
     Then the task should succeed
      And the task logs for step "report" should match the snapshot
+     And the task results should match the snapshot
 
   Scenario: Non strict with failures
     Given a working namespace
@@ -167,6 +174,7 @@ Feature: Verify Enterprise Contract Tekton Tasks
       | STRICT               | false                                                                         |
     Then the task should succeed
      And the task logs for step "report" should match the snapshot
+     And the task results should match the snapshot
 
   Scenario: Strict with failures
     Given a working namespace
@@ -183,3 +191,4 @@ Feature: Verify Enterprise Contract Tekton Tasks
       | STRICT               | true                                                                          |
     Then the task should fail
      And the task logs for step "report" should match the snapshot
+     And the task results should match the snapshot

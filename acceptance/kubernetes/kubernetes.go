@@ -19,6 +19,7 @@ package kubernetes
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -40,7 +41,10 @@ import (
 
 type key int
 
-const clusterStateKey = key(0) // we store the ClusterState struct under this key in Context and when persisted
+const (
+	clusterStateKey = key(0) // we store the ClusterState struct under this key in Context and when persisted
+	stopStateKey    = key(iota)
+)
 
 // ClusterState holds the Cluster used in the current Context
 type ClusterState struct {
@@ -294,6 +298,26 @@ func taskLogsShouldMatchTheSnapshot(ctx context.Context, stepName string) error 
 	return nil
 }
 
+func taskResultsShouldMatchTheSnapshot(ctx context.Context) error {
+	c := testenv.FetchState[ClusterState](ctx)
+
+	if err := mustBeUp(ctx, *c); err != nil {
+		return err
+	}
+
+	info, err := c.cluster.TaskInfo(ctx)
+	if err != nil {
+		return err
+	}
+
+	j, err := json.Marshal(info.Results)
+	if err != nil {
+		return err
+	}
+
+	return snaps.MatchSnapshot(ctx, "results", string(j), nil)
+}
+
 func indent(str string, n int) string {
 	idnt := strings.Repeat(" ", n)
 
@@ -315,8 +339,19 @@ func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^the task should fail$`, theTaskShouldFail)
 	sc.Step(`^an Snapshot named "([^"]*)" with specification$`, createNamedSnapshot)
 	sc.Step(`^the task logs for step "([^"]*)" should match the snapshot$`, taskLogsShouldMatchTheSnapshot)
-	// stop usage of the cluster once a test is done
+	sc.Step(`^the task results should match the snapshot$`, taskResultsShouldMatchTheSnapshot)
+	// stop usage of the cluster once a test is done, godog will call this
+	// function on failure and on the last step, so more than once if the
+	// failure is not on the last step and once if there was no failure or the
+	// failure was on the last step
 	sc.After(func(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
+		if ctx.Value(stopStateKey) == nil {
+			ctx = context.WithValue(ctx, stopStateKey, true)
+		} else {
+			// we did this already
+			return ctx, nil
+		}
+
 		if !testenv.HasState[ClusterState](ctx) {
 			return ctx, nil
 		}
