@@ -37,6 +37,7 @@ import (
 
 var currentYear = time.Now().Year()
 var timestampRegex = regexp.MustCompile(fmt.Sprintf(`%d-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?Z`, currentYear)) // generalized timestamp in the current year
+var effectiveTimeRegex = regexp.MustCompile(`^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}?Z`)                                // generalized timestamp for any year
 var logTimestampRegex = regexp.MustCompile(`^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}`)                                 // timestamp as it apears in the logs
 var tempPathRegex = regexp.MustCompile(`\$\{TEMP\}([^: \\"]+)[: ]?`)                                                 // starts with "${TEMP}" and ends with something not in path, perhaps breaks on Windows due to the colon
 var randomBitsRegex = regexp.MustCompile(`([a-f0-9]+)$`)                                                             // in general, we add random bits to paths as suffixes
@@ -101,6 +102,9 @@ func MatchSnapshot(ctx context.Context, qualifier, text string, vars map[string]
 
 	// replace any log timestamps
 	text = logTimestampRegex.ReplaceAllString(text, "$${TIMESTAMP}")
+
+	// replace any effective time timestamps
+	text = effectiveTimeRegex.ReplaceAllString(text, "$${TIMESTAMP}")
 
 	// more timestamps, Unix here
 	text = unixTimestamp.ReplaceAllString(text, "$1$${TIMESTAMP}$2")

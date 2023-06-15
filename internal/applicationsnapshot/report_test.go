@@ -45,10 +45,20 @@ func Test_ReportJson(t *testing.T) {
 	err := json.Unmarshal([]byte(testSnapshot), &snapshot)
 	assert.NoError(t, err)
 
+	components := testComponentsFor(snapshot)
+
+	ctx := context.Background()
+	testPolicy := createTestPolicy(t, ctx)
+	report, err := NewReport("snappy", components, testPolicy, "data here")
+	assert.NoError(t, err)
+
+	testEffectiveTime := testPolicy.EffectiveTime().UTC().Format(time.RFC3339Nano)
+
 	expected := fmt.Sprintf(`
     {
       "success": false,
 	  "ec-version": "development",
+	  "effective-time": %q,
 	  "key": %s,
 	  "snapshot": "snappy",
       "components": [
@@ -77,13 +87,8 @@ func Test_ReportJson(t *testing.T) {
 		"publicKey": %s
 	  }
     }
-  	`, utils.TestPublicKeyJSON, utils.TestPublicKeyJSON)
+  	`, testEffectiveTime, utils.TestPublicKeyJSON, utils.TestPublicKeyJSON)
 
-	components := testComponentsFor(snapshot)
-
-	ctx := context.Background()
-	report, err := NewReport("snappy", components, createTestPolicy(t, ctx), "data here")
-	assert.NoError(t, err)
 	reportJson, err := report.toFormat(JSON)
 	assert.NoError(t, err)
 	assert.JSONEq(t, expected, string(reportJson))
@@ -95,8 +100,18 @@ func Test_ReportYaml(t *testing.T) {
 	err := json.Unmarshal([]byte(testSnapshot), &snapshot)
 	assert.NoError(t, err)
 
+	components := testComponentsFor(*snapshot)
+
+	ctx := context.Background()
+	testPolicy := createTestPolicy(t, ctx)
+	report, err := NewReport("snappy", components, testPolicy, "data here")
+	assert.NoError(t, err)
+
+	testEffectiveTime := testPolicy.EffectiveTime().UTC().Format(time.RFC3339Nano)
+
 	expected := fmt.Sprintf(`
 success: false
+effective-time: %q
 key: %s
 ec-version: development
 snapshot: snappy
@@ -122,13 +137,8 @@ components:
     success: true
 policy:
   publicKey: %s
-`, utils.TestPublicKeyJSON, utils.TestPublicKeyJSON)
+`, testEffectiveTime, utils.TestPublicKeyJSON, utils.TestPublicKeyJSON)
 
-	components := testComponentsFor(*snapshot)
-
-	ctx := context.Background()
-	report, err := NewReport("snappy", components, createTestPolicy(t, ctx), "data here")
-	assert.NoError(t, err)
 	reportYaml, err := report.toFormat(YAML)
 	assert.NoError(t, err)
 	assert.YAMLEq(t, expected, string(reportYaml))
