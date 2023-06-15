@@ -12,6 +12,7 @@ components:
       unexpected status code 404 Not Found (HEAD responses have no body, use GET for
       details)'
 ec-version: ${EC_VERSION}
+effective-time: "${TIMESTAMP}"
 key: |
 ${__known_PUBLIC_KEY}
 policy:
@@ -34,6 +35,7 @@ components:
       unexpected status code 404 Not Found (HEAD responses have no body, use GET for
       details)'
 ec-version: ${EC_VERSION}
+effective-time: "${TIMESTAMP}"
 key: |
 ${__known_PUBLIC_KEY}
 policy:
@@ -77,6 +79,7 @@ components:
       title: No tests were skipped
     msg: Test "skipped" was skipped
 ec-version: ${EC_VERSION}
+effective-time: "${TIMESTAMP}"
 key: |
 ${__known_PUBLIC_KEY}
 policy:
@@ -126,6 +129,7 @@ components:
       title: No tests were skipped
     msg: Test "skipped" was skipped
 ec-version: ${EC_VERSION}
+effective-time: "${TIMESTAMP}"
 key: |
 ${__known_PUBLIC_KEY}
 policy:
@@ -176,6 +180,7 @@ components:
       title: Expected attestation predicate type found
     msg: Pass
 ec-version: ${EC_VERSION}
+effective-time: "${TIMESTAMP}"
 key: |
   -----BEGIN PUBLIC KEY-----
   MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAERhr8Zj4dZW67zucg8fDr11M4lmRp
@@ -244,6 +249,7 @@ components:
       title: Expected attestation predicate type found
     msg: Pass
 ec-version: ${EC_VERSION}
+effective-time: "${TIMESTAMP}"
 key: |
   -----BEGIN PUBLIC KEY-----
   MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAERhr8Zj4dZW67zucg8fDr11M4lmRp

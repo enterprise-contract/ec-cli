@@ -24,6 +24,7 @@ import (
 	"errors"
 	"fmt"
 	"testing"
+	"time"
 
 	hd "github.com/MakeNowJust/heredoc"
 	conftestOutput "github.com/open-policy-agent/conftest/output"
@@ -235,11 +236,15 @@ func Test_ValidateImageCommand(t *testing.T) {
 
 	cmd.SetContext(utils.WithFS(context.TODO(), afero.NewMemMapFs()))
 
+	effectiveTimeTest := time.Now().UTC().Format(time.RFC3339Nano)
+
 	cmd.SetArgs([]string{
 		"--image",
 		"registry/image:tag",
 		"--policy",
 		fmt.Sprintf(`{"publicKey": %s}`, utils.TestPublicKeyJSON),
+		"--effective-time",
+		effectiveTimeTest,
 	})
 
 	var out bytes.Buffer
@@ -250,6 +255,7 @@ func Test_ValidateImageCommand(t *testing.T) {
 	assert.JSONEq(t, fmt.Sprintf(`{
 		"success": true,
 		"ec-version": "development",
+		"effective-time": %q,
 		"key": %s,
 		"components": [
 		  {
@@ -261,7 +267,7 @@ func Test_ValidateImageCommand(t *testing.T) {
 		"policy": {
 			"publicKey": %s
 		}
-	  }`, utils.TestPublicKeyJSON, utils.TestPublicKeyJSON), out.String())
+	  }`, effectiveTimeTest, utils.TestPublicKeyJSON, utils.TestPublicKeyJSON), out.String())
 }
 
 func Test_ValidateImageCommandKeyless(t *testing.T) {
@@ -626,11 +632,15 @@ func Test_FailureImageAccessibility(t *testing.T) {
 
 	cmd.SetContext(utils.WithFS(context.TODO(), afero.NewMemMapFs()))
 
+	effectiveTimeTest := time.Now().UTC().Format(time.RFC3339Nano)
+
 	cmd.SetArgs([]string{
 		"--image",
 		"registry/image:tag",
 		"--policy",
 		fmt.Sprintf(`{"publicKey": %s}`, utils.TestPublicKeyJSON),
+		"--effective-time",
+		effectiveTimeTest,
 	})
 
 	var out bytes.Buffer
@@ -641,6 +651,7 @@ func Test_FailureImageAccessibility(t *testing.T) {
 	assert.JSONEq(t, fmt.Sprintf(`{
 		"success": false,
 		"ec-version": "development",
+		"effective-time": %q,
 		"key": %s,
 		"components": [
 		  {
@@ -657,7 +668,7 @@ func Test_FailureImageAccessibility(t *testing.T) {
 		"policy": {
 			"publicKey": %s
 		}
-	  }`, utils.TestPublicKeyJSON, utils.TestPublicKeyJSON), out.String())
+	  }`, effectiveTimeTest, utils.TestPublicKeyJSON, utils.TestPublicKeyJSON), out.String())
 }
 
 func Test_FailureOutput(t *testing.T) {
@@ -682,11 +693,15 @@ func Test_FailureOutput(t *testing.T) {
 
 	cmd.SetContext(utils.WithFS(context.TODO(), afero.NewMemMapFs()))
 
+	effectiveTimeTest := time.Now().UTC().Format(time.RFC3339Nano)
+
 	cmd.SetArgs([]string{
 		"--image",
 		"registry/image:tag",
 		"--policy",
 		fmt.Sprintf(`{"publicKey": %s}`, utils.TestPublicKeyJSON),
+		"--effective-time",
+		effectiveTimeTest,
 	})
 
 	var out bytes.Buffer
@@ -697,6 +712,7 @@ func Test_FailureOutput(t *testing.T) {
 	assert.JSONEq(t, fmt.Sprintf(`{
 		"success": false,
 		"ec-version": "development",
+		"effective-time": %q,
 		"key": %s,
 		"components": [
 		  {
@@ -712,7 +728,7 @@ func Test_FailureOutput(t *testing.T) {
 		"policy": {
 			"publicKey": %s
 		}
-	  }`, utils.TestPublicKeyJSON, utils.TestPublicKeyJSON), out.String())
+	  }`, effectiveTimeTest, utils.TestPublicKeyJSON, utils.TestPublicKeyJSON), out.String())
 }
 
 func Test_WarningOutput(t *testing.T) {
@@ -745,11 +761,15 @@ func Test_WarningOutput(t *testing.T) {
 
 	cmd.SetContext(utils.WithFS(context.TODO(), afero.NewMemMapFs()))
 
+	effectiveTimeTest := time.Now().UTC().Format(time.RFC3339Nano)
+
 	cmd.SetArgs([]string{
 		"--image",
 		"registry/image:tag",
 		"--policy",
 		fmt.Sprintf(`{"publicKey": %s}`, utils.TestPublicKeyJSON),
+		"--effective-time",
+		effectiveTimeTest,
 	})
 
 	var out bytes.Buffer
@@ -760,6 +780,7 @@ func Test_WarningOutput(t *testing.T) {
 	assert.JSONEq(t, fmt.Sprintf(`{
 		"success": true,
 		"ec-version": "development",
+		"effective-time": %q,
 		"key": %s,
 		"components": [
 		  {
@@ -775,5 +796,5 @@ func Test_WarningOutput(t *testing.T) {
 		"policy": {
 			"publicKey": %s
 		}
-	  }`, utils.TestPublicKeyJSON, utils.TestPublicKeyJSON), out.String())
+	  }`, effectiveTimeTest, utils.TestPublicKeyJSON, utils.TestPublicKeyJSON), out.String())
 }
