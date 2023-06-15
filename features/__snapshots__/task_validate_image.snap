@@ -64,13 +64,18 @@ components:
       code: builtin.image.signature_check
       title: Image signature check passed
     msg: Pass
+  warnings:
   - metadata:
       code: test.no_skipped_tests
       depends_on:
       - test.test_data_found
       description: Reports any test that has its result set to "SKIPPED".
+      solution: There is a test that was skipped. Make sure that each task with a
+        result named 'TEST_OUTPUT' was not skipped. You can find which test was skipped
+        by examining the 'result' key in the 'TEST_OUTPUT'.
+      term: skipped
       title: No tests were skipped
-    msg: Pass
+    msg: Test "skipped" was skipped
 ec-version: ${EC_VERSION}
 key: |
 ${__known_PUBLIC_KEY}
@@ -108,13 +113,18 @@ components:
       code: builtin.image.signature_check
       title: Image signature check passed
     msg: Pass
+  warnings:
   - metadata:
       code: test.no_skipped_tests
       depends_on:
       - test.test_data_found
       description: Reports any test that has its result set to "SKIPPED".
+      solution: There is a test that was skipped. Make sure that each task with a
+        result named 'TEST_OUTPUT' was not skipped. You can find which test was skipped
+        by examining the 'result' key in the 'TEST_OUTPUT'.
+      term: skipped
       title: No tests were skipped
-    msg: Pass
+    msg: Test "skipped" was skipped
 ec-version: ${EC_VERSION}
 key: |
 ${__known_PUBLIC_KEY}
@@ -273,11 +283,11 @@ TUF_MIRROR not set. Skipping TUF root initialization.
 ---
 
 [Strict with warnings:results - 1]
-{"TEST_OUTPUT":"{\"timestamp\":\"${TIMESTAMP}\",\"namespace\":\"\",\"successes\":1,\"failures\":0,\"warnings\":0,\"result\":\"SUCCESS\"}"}
+{"TEST_OUTPUT":"{\"timestamp\":\"${TIMESTAMP}\",\"namespace\":\"\",\"successes\":1,\"failures\":0,\"warnings\":1,\"result\":\"WARNING\"}"}
 ---
 
 [Non strict with warnings:results - 1]
-{"TEST_OUTPUT":"{\"timestamp\":\"${TIMESTAMP}\",\"namespace\":\"\",\"successes\":1,\"failures\":0,\"warnings\":0,\"result\":\"SUCCESS\"}"}
+{"TEST_OUTPUT":"{\"timestamp\":\"${TIMESTAMP}\",\"namespace\":\"\",\"successes\":1,\"failures\":0,\"warnings\":1,\"result\":\"WARNING\"}"}
 ---
 
 [Golden container image:results - 1]
