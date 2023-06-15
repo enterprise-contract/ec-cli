@@ -23,7 +23,7 @@ require (
 	github.com/redhat-appstudio/application-api v0.0.0-20230309195839-6e0986f52132
 	github.com/secure-systems-lab/go-securesystemslib v0.6.0
 	github.com/sigstore/cosign/v2 v2.0.3-0.20230505201329-3121a17d136e
-	github.com/sigstore/sigstore v1.6.5
+	github.com/sigstore/sigstore v1.7.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/afero v1.9.5
 	github.com/spf13/cobra v1.7.0
@@ -274,7 +274,7 @@ require (
 	go.uber.org/zap v1.24.0 // indirect
 	golang.org/x/crypto v0.10.0 // indirect
 	golang.org/x/mod v0.10.0 // indirect
-	golang.org/x/oauth2 v0.8.0 // indirect
+	golang.org/x/oauth2 v0.9.0 // indirect
 	golang.org/x/sync v0.2.0 // indirect
 	golang.org/x/sys v0.9.0 // indirect
 	golang.org/x/term v0.9.0 // indirect
