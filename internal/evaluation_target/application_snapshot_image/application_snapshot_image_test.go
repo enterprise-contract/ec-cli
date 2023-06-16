@@ -28,6 +28,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/gkampitakis/go-snaps/snaps"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
@@ -668,12 +669,5 @@ func TestValidateImageSignatureWithCertificates(t *testing.T) {
 		}
 	}
 
-	assert.Equal(t, []output.EntitySignature{
-		{
-			KeyID:       "6add046e38418d021a562c6a8633d5eca7379595",
-			Signature:   "signature",
-			Certificate: chainguard_release_cert,
-			Chain:       chainAry,
-		},
-	}, a.signatures)
+	snaps.MatchSnapshot(t, a.signatures)
 }
