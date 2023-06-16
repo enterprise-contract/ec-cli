@@ -14,31 +14,33 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package application_snapshot_image
+package sigstore
 
 import (
 	"context"
 
 	"github.com/google/go-containerregistry/pkg/name"
-	gcr "github.com/google/go-containerregistry/pkg/v1"
-	"github.com/google/go-containerregistry/pkg/v1/remote"
+	"github.com/sigstore/cosign/v2/pkg/cosign"
+	"github.com/sigstore/cosign/v2/pkg/oci"
 )
 
 type contextKey string
 
-const clientContextKey contextKey = "ec.appliation-snapshot-image.client"
+const clientContextKey contextKey = "ec.sigstore.client"
 
 // Client is an interface that contains all the external calls used by the
 // application_snapshot_image package.
 type Client interface {
-	Head(name.Reference, ...remote.Option) (*gcr.Descriptor, error)
+	VerifyImageSignatures(context.Context, name.Reference, *cosign.CheckOpts) ([]oci.Signature, bool, error)
+	VerifyImageAttestations(context.Context, name.Reference, *cosign.CheckOpts) ([]oci.Signature, bool, error)
 }
 
 func WithClient(ctx context.Context, client Client) context.Context {
 	return context.WithValue(ctx, clientContextKey, client)
 }
 
-// NewClient constructs a new application_snapshot_image with the default client.
+// NewClient returns a Client from context if available. Otherwise it constructs and returns
+// a new default client.
 func NewClient(ctx context.Context) Client {
 	client, ok := ctx.Value(clientContextKey).(Client)
 	if ok && client != nil {
@@ -51,6 +53,10 @@ func NewClient(ctx context.Context) Client {
 type defaultClient struct {
 }
 
-func (c *defaultClient) Head(ref name.Reference, opts ...remote.Option) (*gcr.Descriptor, error) {
-	return remote.Head(ref, opts...)
+func (c *defaultClient) VerifyImageSignatures(ctx context.Context, ref name.Reference, opts *cosign.CheckOpts) ([]oci.Signature, bool, error) {
+	return cosign.VerifyImageSignatures(ctx, ref, opts)
+}
+
+func (c *defaultClient) VerifyImageAttestations(ctx context.Context, ref name.Reference, opts *cosign.CheckOpts) ([]oci.Signature, bool, error) {
+	return cosign.VerifyImageAttestations(ctx, ref, opts)
 }

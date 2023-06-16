@@ -18,9 +18,7 @@ package application_snapshot_image
 
 import (
 	"context"
-	"encoding/hex"
 	"encoding/json"
-	"encoding/pem"
 	"errors"
 	"fmt"
 	"os"
@@ -41,7 +39,10 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/output"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/policy/source"
+	"github.com/enterprise-contract/ec-cli/internal/sigstore"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
+	"github.com/enterprise-contract/ec-cli/internal/validator"
+	"github.com/enterprise-contract/ec-cli/internal/validator/signature"
 	ece "github.com/enterprise-contract/ec-cli/pkg/error"
 	"github.com/enterprise-contract/ec-cli/pkg/schema"
 )
@@ -70,6 +71,11 @@ type ApplicationSnapshotImage struct {
 	signatures   []output.EntitySignature
 	attestations []attestation.Attestation[in_toto.ProvenanceStatementSLSA02]
 	Evaluators   []evaluator.Evaluator
+	Validators   []validator.ImageValidator
+}
+
+func (a *ApplicationSnapshotImage) ImageReference() name.Reference {
+	return a.reference
 }
 
 // NewApplicationSnapshotImage returns an ApplicationSnapshotImage struct with reference, checkOpts, and evaluator ready to use.
@@ -85,6 +91,18 @@ func NewApplicationSnapshotImage(ctx context.Context, url string, p policy.Polic
 	if err := a.SetImageURL(url); err != nil {
 		return nil, err
 	}
+
+	// TODO: At some point, the SignatureValidator is no longer a special case, and it can
+	// be enabled or disabled via the source groups in the PolicyConfiguration.
+	signatureValidator, err := validator.NewImageValidator(
+		signature.SignatureValidatorName, validator.Options{Policy: p})
+	if err != nil {
+		return nil, err
+	}
+	a.Validators = append(a.Validators, signatureValidator)
+
+	// TODO: Populate a.Validators from sourceGroup. Initially, assume that they all
+	// want ProvenanceV0_2Validator.
 
 	// Return an evaluator for each of these
 	for _, sourceGroup := range p.Spec().Sources {
@@ -169,66 +187,12 @@ func (a *ApplicationSnapshotImage) SetImageURL(url string) error {
 	return nil
 }
 
-// ValidateImageSignature executes the cosign.VerifyImageSignature method on the ApplicationSnapshotImage image ref.
-func (a *ApplicationSnapshotImage) ValidateImageSignature(ctx context.Context) error {
-	// Set the ClaimVerifier on a shallow *copy* of CheckOpts to avoid unexpected side-effects
-	opts := a.checkOpts
-	opts.ClaimVerifier = cosign.SimpleClaimVerifier
-	signatures, _, err := NewClient(ctx).VerifyImageSignatures(ctx, a.reference, &opts)
-	if err != nil {
-		return err
-	}
-
-	for _, s := range signatures {
-		sig, err := s.Base64Signature()
-		if err != nil {
-			return err
-		}
-
-		es := output.EntitySignature{
-			Signature: sig,
-			Metadata:  map[string]string{},
-		}
-
-		cert, err := s.Cert()
-		if err != nil {
-			return err
-		}
-		if cert != nil {
-			es.Certificate = string(pem.EncodeToMemory(&pem.Block{
-				Type:  "CERTIFICATE",
-				Bytes: cert.Raw,
-			}))
-			es.KeyID = hex.EncodeToString(cert.SubjectKeyId)
-
-			if err := addCertificateMetadataTo(&es.Metadata, cert); err != nil {
-				return err
-			}
-		}
-
-		chain, err := s.Chain()
-		if err != nil {
-			return err
-		}
-		for _, c := range chain {
-			es.Chain = append(es.Chain, string(pem.EncodeToMemory(&pem.Block{
-				Type:  "CERTIFICATE",
-				Bytes: c.Raw,
-			})))
-		}
-
-		a.signatures = append(a.signatures, es)
-	}
-
-	return nil
-}
-
 // ValidateAttestationSignature executes the cosign.VerifyImageAttestations method
 func (a *ApplicationSnapshotImage) ValidateAttestationSignature(ctx context.Context) error {
 	// Set the ClaimVerifier on a shallow *copy* of CheckOpts to avoid unexpected side-effects
 	opts := a.checkOpts
 	opts.ClaimVerifier = cosign.IntotoSubjectClaimVerifier
-	layers, _, err := NewClient(ctx).VerifyImageAttestations(ctx, a.reference, &opts)
+	layers, _, err := sigstore.NewClient(ctx).VerifyImageAttestations(ctx, a.reference, &opts)
 	if err != nil {
 		return err
 	}
@@ -300,6 +264,10 @@ func (a ApplicationSnapshotImage) ValidateAttestationSyntax(ctx context.Context)
 // Attestations returns the value of the attestations field of the ApplicationSnapshotImage struct
 func (a *ApplicationSnapshotImage) Attestations() []attestation.Attestation[in_toto.ProvenanceStatementSLSA02] {
 	return a.attestations
+}
+
+func (a *ApplicationSnapshotImage) AddSignatures(signatures ...output.EntitySignature) {
+	a.signatures = append(a.signatures, signatures...)
 }
 
 func (a *ApplicationSnapshotImage) Signatures() []output.EntitySignature {

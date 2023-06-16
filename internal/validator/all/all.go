@@ -14,27 +14,10 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package validate
+// This package loads all the available validators in a way that avoids circular imports.
+package all
 
 import (
-	"github.com/spf13/cobra"
-
-	"github.com/enterprise-contract/ec-cli/internal/definition"
-	"github.com/enterprise-contract/ec-cli/internal/image"
-	_ "github.com/enterprise-contract/ec-cli/internal/validator/all"
+	_ "github.com/enterprise-contract/ec-cli/internal/validator/signature"
+	_ "github.com/enterprise-contract/ec-cli/internal/validator/slsa"
 )
-
-var ValidateCmd *cobra.Command
-
-func init() {
-	ValidateCmd = &cobra.Command{
-		Use:   "validate",
-		Short: "Validate conformance with the Enterprise Contract",
-	}
-	ValidateCmd.PersistentFlags().Bool("show-successes", false, "")
-}
-
-func init() {
-	ValidateCmd.AddCommand(validateImageCmd(image.ValidateImage))
-	ValidateCmd.AddCommand(validateDefinitionCmd(definition.ValidateDefinition))
-}

@@ -42,6 +42,7 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/attestation"
 	"github.com/enterprise-contract/ec-cli/internal/evaluation_target/application_snapshot_image"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
+	"github.com/enterprise-contract/ec-cli/internal/sigstore"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
@@ -68,10 +69,8 @@ func TestValidateImage(t *testing.T) {
 				signatures:   []oci.Signature{validSignature},
 				attestations: []oci.Signature{validAttestation},
 			},
-			url:                imageRef,
-			expectedViolations: []conftestOutput.Result{},
-			expectedWarnings:   []conftestOutput.Result{},
-			expectedImageURL:   imageRegistry + "@sha256:" + imageDigest,
+			url:              imageRef,
+			expectedImageURL: imageRegistry + "@sha256:" + imageDigest,
 		},
 		{
 			name:   "unaccessible image",
@@ -82,7 +81,6 @@ func TestValidateImage(t *testing.T) {
 					"code": "builtin.image.accessible",
 				}},
 			},
-			expectedWarnings: []conftestOutput.Result{},
 			expectedImageURL: imageRef,
 		},
 		{
@@ -97,7 +95,6 @@ func TestValidateImage(t *testing.T) {
 					"code": "builtin.image.signature_check",
 				}},
 			},
-			expectedWarnings: []conftestOutput.Result{},
 			expectedImageURL: imageRegistry + "@sha256:" + imageDigest,
 		},
 		{
@@ -112,7 +109,6 @@ func TestValidateImage(t *testing.T) {
 					"code": "builtin.attestation.signature_check",
 				}},
 			},
-			expectedWarnings: []conftestOutput.Result{},
 			expectedImageURL: imageRegistry + "@sha256:" + imageDigest,
 		},
 	}
@@ -126,6 +122,7 @@ func TestValidateImage(t *testing.T) {
 			assert.NoError(t, err)
 
 			ctx = application_snapshot_image.WithClient(ctx, c.client)
+			ctx = sigstore.WithClient(ctx, c.client)
 
 			actual, err := ValidateImage(ctx, c.url, p, false)
 			assert.NoError(t, err)

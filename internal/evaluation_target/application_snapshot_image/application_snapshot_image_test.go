@@ -28,11 +28,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gkampitakis/go-snaps/snaps"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
-	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/in-toto/in-toto-golang/in_toto"
 	"github.com/in-toto/in-toto-golang/in_toto/slsa_provenance/common"
 	v02 "github.com/in-toto/in-toto-golang/in_toto/slsa_provenance/v0.2"
@@ -40,8 +38,6 @@ import (
 	"github.com/sigstore/cosign/v2/pkg/cosign"
 	"github.com/sigstore/cosign/v2/pkg/oci"
 	"github.com/sigstore/cosign/v2/pkg/oci/static"
-	cosignTypes "github.com/sigstore/cosign/v2/pkg/types"
-	"github.com/sigstore/sigstore/pkg/signature/payload"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -51,11 +47,24 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 	"github.com/enterprise-contract/ec-cli/internal/mocks"
 	"github.com/enterprise-contract/ec-cli/internal/output"
+	"github.com/enterprise-contract/ec-cli/internal/policy"
+	"github.com/enterprise-contract/ec-cli/internal/sigstore"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
 // pipelineRunBuildType is the type of attestation we're interested in evaluating
 const pipelineRunBuildType = "https://tekton.dev/attestations/chains/pipelinerun@v2"
+
+func TestNewApplicationSnapshotImage(t *testing.T) {
+	ctx := context.Background()
+	p, err := policy.NewOfflinePolicy(ctx, policy.Now)
+	require.NoError(t, err)
+
+	asi, err := NewApplicationSnapshotImage(ctx, "example.com/test:latest", p)
+	require.NoError(t, err)
+
+	assert.Len(t, asi.Validators, 1)
+}
 
 func TestApplicationSnapshotImage_ValidateImageAccess(t *testing.T) {
 	type fields struct {
@@ -385,127 +394,6 @@ func (c *MockClient) Head(name name.Reference, options ...remote.Option) (*v1.De
 	return args.Get(0).(*v1.Descriptor), args.Error(1)
 }
 
-func TestValidateImageSignatureClaims(t *testing.T) {
-	ref := name.MustParseReference("registry.io/repository/image:tag")
-	a := ApplicationSnapshotImage{
-		reference: ref,
-	}
-
-	c := MockClient{}
-
-	ctx := WithClient(context.Background(), &c)
-
-	c.On("VerifyImageSignatures", ctx, ref, mock.Anything).Return([]oci.Signature{}, false, nil)
-
-	err := a.ValidateImageSignature(ctx)
-	require.NoError(t, err)
-
-	call := c.Calls[0]
-
-	checkOpts := call.Arguments.Get(2).(*cosign.CheckOpts)
-	assert.NotNil(t, checkOpts)
-
-	claimVerifier := checkOpts.ClaimVerifier
-	assert.NotNil(t, claimVerifier)
-
-	cases := []struct {
-		name        string
-		payload     payload.SimpleContainerImage
-		digest      v1.Hash
-		annotations map[string]any
-		err         error
-	}{
-		{
-			name: "happy day",
-			payload: payload.SimpleContainerImage{
-				Critical: payload.Critical{
-					Image: payload.Image{
-						DockerManifestDigest: "sha256:dabbad00",
-					},
-				},
-			},
-			digest: v1.Hash{Algorithm: "sha256", Hex: "dabbad00"},
-		},
-		{
-			name: "happy day with annotations",
-			payload: payload.SimpleContainerImage{
-				Critical: payload.Critical{
-					Image: payload.Image{
-						DockerManifestDigest: "sha256:dabbad00",
-					},
-				},
-				Optional: map[string]any{
-					"a": "x",
-					"b": "y",
-				},
-			},
-			digest: v1.Hash{Algorithm: "sha256", Hex: "dabbad00"},
-			annotations: map[string]any{
-				"a": "x",
-				"b": "y",
-			},
-		},
-		{
-			name: "bad digest",
-			payload: payload.SimpleContainerImage{
-				Critical: payload.Critical{
-					Image: payload.Image{
-						DockerManifestDigest: "sha256:ffbaddD11",
-					},
-				},
-			},
-			digest: v1.Hash{Algorithm: "sha256", Hex: "dabbad00"},
-			err:    errors.New("invalid or missing digest in claim: sha256:ffbaddD11"),
-		},
-		{
-			name: "missing annotation",
-			payload: payload.SimpleContainerImage{
-				Critical: payload.Critical{
-					Image: payload.Image{
-						DockerManifestDigest: "sha256:dabbad00",
-					},
-				},
-			},
-			digest: v1.Hash{Algorithm: "sha256", Hex: "dabbad00"},
-			annotations: map[string]any{
-				"a": "x",
-			},
-			err: errors.New("missing or incorrect annotation"),
-		},
-		{
-			name: "incorrect annotation",
-			payload: payload.SimpleContainerImage{
-				Critical: payload.Critical{
-					Image: payload.Image{
-						DockerManifestDigest: "sha256:dabbad00",
-					},
-				},
-				Optional: map[string]any{
-					"a": "y",
-				},
-			},
-			digest: v1.Hash{Algorithm: "sha256", Hex: "dabbad00"},
-			annotations: map[string]any{
-				"a": "x",
-			},
-			err: errors.New("missing or incorrect annotation"),
-		},
-	}
-
-	for _, c := range cases {
-		t.Run(c.name, func(t *testing.T) {
-			payload, err := json.Marshal(c.payload)
-			require.NoError(t, err)
-
-			signature, err := static.NewSignature(payload, "signature")
-			require.NoError(t, err)
-
-			err = claimVerifier(signature, c.digest, c.annotations)
-			assert.Equal(t, c.err, err)
-		})
-	}
-}
-
 func TestValidateAttestationSignatureClaims(t *testing.T) {
 	ref := name.MustParseReference("registry.io/repository/image:tag")
 	a := ApplicationSnapshotImage{
@@ -515,6 +403,7 @@ func TestValidateAttestationSignatureClaims(t *testing.T) {
 	c := MockClient{}
 
 	ctx := WithClient(context.Background(), &c)
+	ctx = sigstore.WithClient(ctx, &c)
 
 	c.On("VerifyImageAttestations", ctx, ref, mock.Anything).Return([]oci.Signature{}, false, nil)
 
@@ -623,51 +512,11 @@ func TestValidateAttestationSignatureClaims(t *testing.T) {
 	}
 }
 
-//go:embed chainguard_release.cer
-var chainguard_release_cert string
-
-//go:embed sigstore_chain.cer
-var chain string
-
-func TestValidateImageSignatureWithCertificates(t *testing.T) {
-	ref := name.MustParseReference("registry.io/repository/image:tag")
-	a := ApplicationSnapshotImage{
-		reference: ref,
-	}
-
-	c := MockClient{}
-
-	ctx := WithClient(context.Background(), &c)
-
-	signature, err := static.NewSignature(
-		[]byte(`image`),
-		"signature",
-		static.WithLayerMediaType(types.MediaType((cosignTypes.DssePayloadType))),
-		static.WithCertChain(
-			[]byte(chainguard_release_cert),
-			[]byte(chain),
-		),
-	)
-	require.NoError(t, err)
-
-	c.On("VerifyImageSignatures", ctx, ref, mock.Anything).Return([]oci.Signature{signature}, false, nil)
-
-	err = a.ValidateImageSignature(ctx)
-	require.NoError(t, err)
-
-	// split the chain into individual PEM certificates and restore the removed
-	// separator chars
-	chainAry := strings.Split(chain, "-\n-")
-	for i, cer := range chainAry {
-		switch {
-		case i == 0:
-			chainAry[i] = cer + "-\n"
-		case i == len(chainAry)-1:
-			chainAry[i] = "-" + cer
-		default:
-			chainAry[i] = "-" + cer + "\n"
-		}
-	}
-
-	snaps.MatchSnapshot(t, a.signatures)
+func TestAddSignatures(t *testing.T) {
+	a := ApplicationSnapshotImage{}
+	assert.Empty(t, a.Signatures())
+	a.AddSignatures(output.EntitySignature{})
+	assert.Len(t, a.Signatures(), 1)
+	a.AddSignatures(output.EntitySignature{})
+	assert.Len(t, a.Signatures(), 2)
 }

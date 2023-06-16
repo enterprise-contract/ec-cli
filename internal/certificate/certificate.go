@@ -14,7 +14,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package application_snapshot_image
+package certificate
 
 import (
 	"crypto/x509"
@@ -138,7 +138,7 @@ var certificateMetadata = map[string]extract{
 	"Fulcio Run Invocation URI":                 utf8String(asn1.ObjectIdentifier{1, 3, 6, 1, 4, 1, 57264, 1, 21}),
 }
 
-func addCertificateMetadataTo(where *map[string]string, cer *x509.Certificate) error {
+func AddCertificateMetadataTo(where *map[string]string, cer *x509.Certificate) error {
 	for name, f := range certificateMetadata {
 		v, err := f(cer)
 		if err != nil {

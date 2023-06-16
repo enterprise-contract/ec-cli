@@ -198,9 +198,6 @@ func Test_determineInputSpec(t *testing.T) {
 func Test_ValidateImageCommand(t *testing.T) {
 	validate := func(_ context.Context, url string, _ policy.Policy, _ bool) (*output.Output, error) {
 		return &output.Output{
-			ImageSignatureCheck: output.VerificationStatus{
-				Passed: true,
-			},
 			ImageAccessibleCheck: output.VerificationStatus{
 				Passed: true,
 			},
@@ -313,9 +310,6 @@ func Test_ValidateImageCommandKeyless(t *testing.T) {
 func Test_ValidateImageCommandYAMLPolicyFile(t *testing.T) {
 	validate := func(_ context.Context, url string, _ policy.Policy, _ bool) (*output.Output, error) {
 		return &output.Output{
-			ImageSignatureCheck: output.VerificationStatus{
-				Passed: true,
-			},
 			ImageAccessibleCheck: output.VerificationStatus{
 				Passed: true,
 			},
@@ -389,9 +383,6 @@ configuration:
 func Test_ValidateImageCommandJSONPolicyFile(t *testing.T) {
 	validate := func(_ context.Context, url string, _ policy.Policy, _ bool) (*output.Output, error) {
 		return &output.Output{
-			ImageSignatureCheck: output.VerificationStatus{
-				Passed: true,
-			},
 			ImageAccessibleCheck: output.VerificationStatus{
 				Passed: true,
 			},
@@ -465,9 +456,6 @@ configuration:
 func Test_ValidateImageCommandEmptyPolicyFile(t *testing.T) {
 	validate := func(_ context.Context, url string, _ policy.Policy, _ bool) (*output.Output, error) {
 		return &output.Output{
-			ImageSignatureCheck: output.VerificationStatus{
-				Passed: true,
-			},
 			ImageAccessibleCheck: output.VerificationStatus{
 				Passed: true,
 			},
@@ -611,11 +599,7 @@ func Test_ValidateErrorCommand(t *testing.T) {
 
 func Test_FailureImageAccessibility(t *testing.T) {
 	validate := func(_ context.Context, url string, _ policy.Policy, _ bool) (*output.Output, error) {
-		return &output.Output{
-			ImageSignatureCheck: output.VerificationStatus{
-				Passed: false,
-				Result: &conftestOutput.Result{Message: "skipped due to inaccessible image ref"},
-			},
+		o := &output.Output{
 			ImageAccessibleCheck: output.VerificationStatus{
 				Passed: false,
 				Result: &conftestOutput.Result{Message: "image ref not accessible. HEAD registry/image:tag: unexpected status code 404 Not Found (HEAD responses have no body, use GET for details)"},
@@ -625,7 +609,9 @@ func Test_FailureImageAccessibility(t *testing.T) {
 				Result: &conftestOutput.Result{Message: "skipped due to inaccessible image ref"},
 			},
 			ImageURL: url,
-		}, nil
+		}
+		o.AddViolations(conftestOutput.Result{Message: "skipped due to inaccessible image ref"})
+		return o, nil
 	}
 
 	cmd := validateImageCmd(validate)
@@ -673,11 +659,7 @@ func Test_FailureImageAccessibility(t *testing.T) {
 
 func Test_FailureOutput(t *testing.T) {
 	validate := func(_ context.Context, url string, _ policy.Policy, _ bool) (*output.Output, error) {
-		return &output.Output{
-			ImageSignatureCheck: output.VerificationStatus{
-				Passed: false,
-				Result: &conftestOutput.Result{Message: "failed image signature check"},
-			},
+		o := &output.Output{
 			ImageAccessibleCheck: output.VerificationStatus{
 				Passed: true,
 			},
@@ -686,7 +668,9 @@ func Test_FailureOutput(t *testing.T) {
 				Result: &conftestOutput.Result{Message: "failed attestation signature check"},
 			},
 			ImageURL: url,
-		}, nil
+		}
+		o.AddViolations(conftestOutput.Result{Message: "failed image signature check"})
+		return o, nil
 	}
 
 	cmd := validateImageCmd(validate)
@@ -734,9 +718,6 @@ func Test_FailureOutput(t *testing.T) {
 func Test_WarningOutput(t *testing.T) {
 	validate := func(_ context.Context, url string, _ policy.Policy, _ bool) (*output.Output, error) {
 		return &output.Output{
-			ImageSignatureCheck: output.VerificationStatus{
-				Passed: true,
-			},
 			ImageAccessibleCheck: output.VerificationStatus{
 				Passed: true,
 			},

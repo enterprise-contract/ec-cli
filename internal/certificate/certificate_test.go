@@ -14,7 +14,9 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package application_snapshot_image
+//go:build unit
+
+package certificate
 
 import (
 	"crypto/x509"
@@ -27,19 +29,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-//go:embed other_name_san.cer
-var otherNameSAN []byte
-
-//go:embed chainguard_release.cer
-var cosignReleaseCert []byte
-
 func TestAddCertificateMetadata(t *testing.T) {
 	cases := []struct {
 		name string
 		cert []byte
 	}{
-		{name: "Chainguard Cosign release", cert: cosignReleaseCert},
-		{name: "OtherName SAN", cert: otherNameSAN},
+		{name: "Chainguard Cosign release", cert: ChainguardReleaseCert},
+		{name: "OtherName SAN", cert: OtherNameSAN},
 	}
 
 	for _, c := range cases {
@@ -50,7 +46,7 @@ func TestAddCertificateMetadata(t *testing.T) {
 			require.NoError(t, err)
 
 			metadata := map[string]string{}
-			err = addCertificateMetadataTo(&metadata, cer)
+			err = AddCertificateMetadataTo(&metadata, cer)
 			assert.NoError(t, err)
 
 			snaps.MatchSnapshot(t, metadata)

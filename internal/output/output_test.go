@@ -36,10 +36,6 @@ import (
 
 func Test_PrintExpectedJSON(t *testing.T) {
 	output := Output{
-		ImageSignatureCheck: VerificationStatus{
-			Passed: true,
-			Result: &output.Result{Message: "message1"},
-		},
 		ImageAccessibleCheck: VerificationStatus{
 			Passed: true,
 			Result: &output.Result{Message: "message2"},
@@ -100,12 +96,6 @@ func Test_PrintExpectedJSON(t *testing.T) {
 	output.Print(&json)
 
 	assert.JSONEq(t, `{
-		"imageSignatureCheck": {
-		  "passed": true,
-		  "result": {
-		    "msg": "message1"
-		  }
-		},
 		"imageAccessibleCheck": {
 		  "passed": true,
 		  "result": {
@@ -190,9 +180,6 @@ func Test_PrintOutputsExpectedJSON(t *testing.T) {
 
 	assert.JSONEq(t, `[
 		{
-		  "imageSignatureCheck": {
-			"passed": false
-		  },
 		  "imageAccessibleCheck": {
 			"passed": false
 		  },
@@ -205,9 +192,6 @@ func Test_PrintOutputsExpectedJSON(t *testing.T) {
 		  "policyCheck": null
 		},
 		{
-		  "imageSignatureCheck": {
-			"passed": false
-		  },
 		  "imageAccessibleCheck": {
 			"passed": false
 		  },
@@ -224,16 +208,14 @@ func Test_PrintOutputsExpectedJSON(t *testing.T) {
 
 func Test_Violations(t *testing.T) {
 	cases := []struct {
-		name     string
-		output   Output
-		expected []output.Result
+		name          string
+		output        Output
+		addViolations []output.Result
+		expected      []output.Result
 	}{
 		{
 			name: "passing",
 			output: Output{
-				ImageSignatureCheck: VerificationStatus{
-					Passed: true,
-				},
 				AttestationSignatureCheck: VerificationStatus{
 					Passed: true,
 				},
@@ -244,33 +226,10 @@ func Test_Violations(t *testing.T) {
 					Passed: true,
 				},
 			},
-			expected: []output.Result{},
-		},
-		{
-			name: "failing image signature",
-			output: Output{
-				ImageSignatureCheck: VerificationStatus{
-					Passed: false,
-					Result: &output.Result{Message: "image signature failed"},
-				},
-				ImageAccessibleCheck: VerificationStatus{
-					Passed: true,
-				},
-				AttestationSignatureCheck: VerificationStatus{
-					Passed: true,
-				},
-				AttestationSyntaxCheck: VerificationStatus{
-					Passed: true,
-				},
-			},
-			expected: []output.Result{{Message: "image signature failed"}},
 		},
 		{
 			name: "failing attestation signature",
 			output: Output{
-				ImageSignatureCheck: VerificationStatus{
-					Passed: true,
-				},
 				ImageAccessibleCheck: VerificationStatus{
 					Passed: true,
 				},
@@ -285,34 +244,77 @@ func Test_Violations(t *testing.T) {
 			expected: []output.Result{{Message: "attestation signature failed"}},
 		},
 		{
-			name: "failing attestation signature",
+			name: "added violations",
 			output: Output{
-				AttestationSignatureCheck: VerificationStatus{
-					Passed: false,
-					Result: &output.Result{Message: "attestation signature failed"},
-				},
 				ImageAccessibleCheck: VerificationStatus{
 					Passed: true,
 				},
-				ImageSignatureCheck: VerificationStatus{
-					Passed: false,
-					Result: &output.Result{Message: "image signature failed"},
+				AttestationSignatureCheck: VerificationStatus{
+					Passed: true,
+					Result: &output.Result{Message: "attestation signature failed"},
 				},
 				AttestationSyntaxCheck: VerificationStatus{
 					Passed: true,
 				},
 			},
+			addViolations: []output.Result{
+				{Message: "added violation 1", Metadata: map[string]any{
+					"code":  "added-violation-1",
+					"title": "Added Violation 1",
+				}},
+				{Message: "added violation 2", Metadata: map[string]any{
+					"code":  "added-violation-2",
+					"title": "Added Violation 2",
+				}},
+			},
 			expected: []output.Result{
-				{Message: "attestation signature failed"},
-				{Message: "image signature failed"},
+				{Message: "added violation 1", Metadata: map[string]any{
+					"code": "added-violation-1",
+				}},
+				{Message: "added violation 2", Metadata: map[string]any{
+					"code": "added-violation-2",
+				}},
+			},
+		},
+		{
+			name: "added detailed violations",
+			output: Output{
+				Detailed: true,
+				ImageAccessibleCheck: VerificationStatus{
+					Passed: true,
+				},
+				AttestationSignatureCheck: VerificationStatus{
+					Passed: true,
+					Result: &output.Result{Message: "attestation signature failed"},
+				},
+				AttestationSyntaxCheck: VerificationStatus{
+					Passed: true,
+				},
+			},
+			addViolations: []output.Result{
+				{Message: "added violation 1", Metadata: map[string]any{
+					"code":  "added-violation-1",
+					"title": "Added Violation 1",
+				}},
+				{Message: "added violation 2", Metadata: map[string]any{
+					"code":  "added-violation-2",
+					"title": "Added Violation 2",
+				}},
+			},
+			expected: []output.Result{
+				{Message: "added violation 1", Metadata: map[string]any{
+					"code":  "added-violation-1",
+					"title": "Added Violation 1",
+				}},
+				{Message: "added violation 2", Metadata: map[string]any{
+					"code":  "added-violation-2",
+					"title": "Added Violation 2",
+				}},
 			},
 		},
 		{
 			name: "failing policy check",
 			output: Output{
-				ImageSignatureCheck: VerificationStatus{
-					Passed: true,
-				},
 				ImageAccessibleCheck: VerificationStatus{
 					Passed: true,
 				},
@@ -339,9 +341,6 @@ func Test_Violations(t *testing.T) {
 		{
 			name: "failing multiple policy checks",
 			output: Output{
-				ImageSignatureCheck: VerificationStatus{
-					Passed: true,
-				},
 				ImageAccessibleCheck: VerificationStatus{
 					Passed: true,
 				},
@@ -394,20 +393,21 @@ func Test_Violations(t *testing.T) {
 						},
 					},
 				},
-				ImageSignatureCheck: VerificationStatus{
-					Passed: false,
-					Result: &output.Result{Message: "image signature failed"},
-				},
 				AttestationSyntaxCheck: VerificationStatus{
 					Passed: false,
 					Result: &output.Result{Message: "invalid attestation syntax"},
 				},
 			},
+			addViolations: []output.Result{
+				{Message: "added violation 1"},
+				{Message: "added violation 2"},
+			},
 			expected: []output.Result{
+				{Message: "added violation 1"},
+				{Message: "added violation 2"},
 				{Message: "attestation signature failed"},
 				{Message: "failed policy check 1"},
 				{Message: "failed policy check 2"},
-				{Message: "image signature failed"},
 				{Message: "invalid attestation syntax"},
 			},
 		},
@@ -465,10 +465,6 @@ func Test_Violations(t *testing.T) {
 						},
 					},
 				},
-				ImageSignatureCheck: VerificationStatus{
-					Passed: false,
-					Result: &output.Result{Message: "image signature failed"},
-				},
 			},
 			expected: []output.Result{
 				{Message: "attestation signature failed"},
@@ -476,13 +472,15 @@ func Test_Violations(t *testing.T) {
 				{Message: "failure for policy check 2"},
 				{Message: "failure for policy check 5"},
 				{Message: "failure for policy check 6"},
-				{Message: "image signature failed"},
 			},
 		},
 	}
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
+			if len(c.addViolations) > 0 {
+				c.output.AddViolations(c.addViolations...)
+			}
 			assert.Equal(t, c.expected, c.output.Violations())
 		})
 	}
@@ -490,20 +488,14 @@ func Test_Violations(t *testing.T) {
 
 func Test_Successes(t *testing.T) {
 	cases := []struct {
-		name     string
-		output   Output
-		expected []output.Result
+		name         string
+		output       Output
+		addSuccesses []output.Result
+		expected     []output.Result
 	}{
 		{
 			name: "passing",
 			output: Output{
-				ImageSignatureCheck: VerificationStatus{
-					Passed: true,
-					Result: &output.Result{Message: "Pass", Metadata: map[string]interface{}{
-						"code":  "builtin.image.signature_check",
-						"title": "Image signature check passed",
-					}},
-				},
 				AttestationSignatureCheck: VerificationStatus{
 					Passed: true,
 					Result: &output.Result{Message: "Pass", Metadata: map[string]interface{}{
@@ -542,22 +534,57 @@ func Test_Successes(t *testing.T) {
 					"code":  "builtin.attestation.syntax_check",
 					"title": "Attestation syntax check passed",
 				}},
-				{Message: "Pass", Metadata: map[string]interface{}{
-					"code":  "builtin.image.signature_check",
-					"title": "Image signature check passed",
+			},
+		},
+		{
+			name:   "added successes",
+			output: Output{},
+			addSuccesses: []output.Result{
+				{Message: "added success 1", Metadata: map[string]any{
+					"code":  "added-success-1",
+					"title": "Added Success 1",
+				}},
+				{Message: "added success 2", Metadata: map[string]any{
+					"code":  "added-success-1",
+					"title": "Added Success 1",
+				}},
+			},
+			expected: []output.Result{
+				{Message: "added success 1", Metadata: map[string]any{
+					"code": "added-success-1",
+				}},
+				{Message: "added success 2", Metadata: map[string]any{
+					"code": "added-success-1",
+				}},
+			},
+		},
+		{
+			name:   "added details successes",
+			output: Output{Detailed: true},
+			addSuccesses: []output.Result{
+				{Message: "added success 1", Metadata: map[string]any{
+					"code":  "added-success-1",
+					"title": "Added Success 1",
+				}},
+				{Message: "added success 2", Metadata: map[string]any{
+					"code":  "added-success-1",
+					"title": "Added Success 1",
+				}},
+			},
+			expected: []output.Result{
+				{Message: "added success 1", Metadata: map[string]any{
+					"code":  "added-success-1",
+					"title": "Added Success 1",
+				}},
+				{Message: "added success 2", Metadata: map[string]any{
+					"code":  "added-success-1",
+					"title": "Added Success 1",
 				}},
 			},
 		},
 		{
 			name: "failing image signature",
 			output: Output{
-				ImageSignatureCheck: VerificationStatus{
-					Passed: false,
-					Result: &output.Result{Message: "Image signature check failed", Metadata: map[string]interface{}{
-						"code":  "builtin.image.signature_check",
-						"title": "Image signature check passed",
-					}},
-				},
 				AttestationSignatureCheck: VerificationStatus{
 					Passed: true,
 					Result: &output.Result{Message: "Pass", Metadata: map[string]interface{}{
@@ -591,13 +618,6 @@ func Test_Successes(t *testing.T) {
 		{
 			name: "failing attestation signature",
 			output: Output{
-				ImageSignatureCheck: VerificationStatus{
-					Passed: true,
-					Result: &output.Result{Message: "Pass", Metadata: map[string]interface{}{
-						"code":  "builtin.image.signature_check",
-						"title": "Image signature check passed",
-					}},
-				},
 				AttestationSignatureCheck: VerificationStatus{
 					Passed: false,
 					Result: &output.Result{Message: "Attestation check failed", Metadata: map[string]interface{}{
@@ -632,22 +652,11 @@ func Test_Successes(t *testing.T) {
 					"code":  "builtin.attestation.syntax_check",
 					"title": "Attestation syntax check passed",
 				}},
-				{Message: "Pass", Metadata: map[string]interface{}{
-					"code":  "builtin.image.signature_check",
-					"title": "Image signature check passed",
-				}},
 			},
 		},
 		{
 			name: "failing policy check",
 			output: Output{
-				ImageSignatureCheck: VerificationStatus{
-					Passed: true,
-					Result: &output.Result{Message: "Pass", Metadata: map[string]interface{}{
-						"code":  "builtin.image.signature_check",
-						"title": "Image signature check passed",
-					}},
-				},
 				AttestationSignatureCheck: VerificationStatus{
 					Passed: true,
 					Result: &output.Result{Message: "Pass", Metadata: map[string]interface{}{
@@ -687,16 +696,15 @@ func Test_Successes(t *testing.T) {
 					"code":  "builtin.attestation.syntax_check",
 					"title": "Attestation syntax check passed",
 				}},
-				{Message: "Pass", Metadata: map[string]interface{}{
-					"code":  "builtin.image.signature_check",
-					"title": "Image signature check passed",
-				}},
 			},
 		},
 	}
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
+			if len(c.addSuccesses) > 0 {
+				c.output.AddSuccesses(c.addSuccesses...)
+			}
 			assert.Equal(t, c.expected, c.output.Successes())
 		})
 	}
@@ -704,14 +712,14 @@ func Test_Successes(t *testing.T) {
 
 func Test_Warnings(t *testing.T) {
 	cases := []struct {
-		name     string
-		output   Output
-		expected []output.Result
+		name        string
+		output      Output
+		addWarnings []output.Result
+		expected    []output.Result
 	}{
 		{
-			name:     "no-warnings",
-			output:   Output{},
-			expected: []output.Result{},
+			name:   "no-warnings",
+			output: Output{},
 		},
 		{
 			name: "single warning",
@@ -731,6 +739,52 @@ func Test_Warnings(t *testing.T) {
 			},
 		},
 		{
+			name:   "added warnings",
+			output: Output{},
+			addWarnings: []output.Result{
+				{Message: "added warning 1", Metadata: map[string]any{
+					"code":  "added-warning-1",
+					"title": "Added Warning 1",
+				}},
+				{Message: "added warning 2", Metadata: map[string]any{
+					"code":  "added-warning-2",
+					"title": "Added Warning 2",
+				}},
+			},
+			expected: []output.Result{
+				{Message: "added warning 1", Metadata: map[string]any{
+					"code": "added-warning-1",
+				}},
+				{Message: "added warning 2", Metadata: map[string]any{
+					"code": "added-warning-2",
+				}},
+			},
+		},
+		{
+			name:   "added detailed warnings",
+			output: Output{Detailed: true},
+			addWarnings: []output.Result{
+				{Message: "added warning 1", Metadata: map[string]any{
+					"code":  "added-warning-1",
+					"title": "Added Warning 1",
+				}},
+				{Message: "added warning 2", Metadata: map[string]any{
+					"code":  "added-warning-2",
+					"title": "Added Warning 2",
+				}},
+			},
+			expected: []output.Result{
+				{Message: "added warning 1", Metadata: map[string]any{
+					"code":  "added-warning-1",
+					"title": "Added Warning 1",
+				}},
+				{Message: "added warning 2", Metadata: map[string]any{
+					"code":  "added-warning-2",
+					"title": "Added Warning 2",
+				}},
+			},
+		},
+		{
 			name: "multiple warnings",
 			output: Output{
 				PolicyCheck: evaluator.CheckResults{
@@ -744,7 +798,13 @@ func Test_Warnings(t *testing.T) {
 					},
 				},
 			},
+			addWarnings: []output.Result{
+				{Message: "added warning 1"},
+				{Message: "added warning 2"},
+			},
 			expected: []output.Result{
+				{Message: "added warning 1"},
+				{Message: "added warning 2"},
 				{Message: "warning for policy check 1"},
 				{Message: "warning for policy check 2"},
 			},
@@ -752,9 +812,6 @@ func Test_Warnings(t *testing.T) {
 		{
 			name: "mixed results",
 			output: Output{
-				ImageSignatureCheck: VerificationStatus{
-					Passed: true,
-				},
 				AttestationSignatureCheck: VerificationStatus{
 					Passed: true,
 				},
@@ -805,6 +862,9 @@ func Test_Warnings(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
+			if len(c.addWarnings) > 0 {
+				c.output.AddWarnings(c.addWarnings...)
+			}
 			assert.Equal(t, c.expected, c.output.Warnings())
 		})
 	}
@@ -851,95 +911,6 @@ func TestSetImageAccessibleCheckFromError(t *testing.T) {
 	}
 }
 
-func TestSetImageSignatureCheckFromError(t *testing.T) {
-	noMatchingSignatures := cosign.NewVerificationError("kaboom!")
-	noMatchingSignatures.(*cosign.VerificationError).SetErrorType(cosign.ErrNoMatchingSignaturesType)
-
-	cases := []struct {
-		name           string
-		err            error
-		expectedPassed bool
-		expectedResult *output.Result
-		policy         func(context.Context) policy.Policy
-		experimental   bool
-	}{
-		{
-			name:           "success",
-			expectedPassed: true,
-			expectedResult: &output.Result{
-				Message: "Pass",
-				Metadata: map[string]interface{}{
-					"code": "builtin.image.signature_check",
-				},
-			},
-		},
-		{
-			name:           "generic failure",
-			expectedPassed: false,
-			err:            errors.New("kaboom!"),
-			expectedResult: &output.Result{
-				Message: "Image signature check failed: kaboom!",
-				Metadata: map[string]interface{}{
-					"code": "builtin.image.signature_check",
-				},
-			},
-		},
-		{
-			name:           "missing signatures failure",
-			expectedPassed: false,
-			err:            noMatchingSignatures,
-			expectedResult: &output.Result{
-				Message: missingSignatureMessage,
-				Metadata: map[string]interface{}{
-					"code": "builtin.image.signature_check",
-				},
-			},
-		},
-		{
-			name:           "missing signatures failure with keyless",
-			expectedPassed: false,
-			err:            noMatchingSignatures,
-			expectedResult: &output.Result{
-				Message: "Image signature check failed: kaboom!",
-				Metadata: map[string]interface{}{
-					"code": "builtin.image.signature_check",
-				},
-			},
-			policy: func(ctx context.Context) policy.Policy {
-				p, err := policy.NewPolicy(
-					ctx, "", "", "", policy.Now,
-					cosign.Identity{Issuer: "issuer", Subject: "subject"})
-				require.NoError(t, err)
-				return p
-			},
-			experimental: true,
-		},
-	}
-
-	for _, c := range cases {
-		t.Run(c.name, func(t *testing.T) {
-			ctx := context.Background()
-
-			if c.experimental {
-				t.Setenv("EC_EXPERIMENTAL", "1")
-			}
-
-			var p policy.Policy
-			if c.policy != nil {
-				utils.SetTestRekorPublicKey(t)
-				utils.SetTestFulcioRoots(t)
-				utils.SetTestCTLogPublicKey(t)
-				p = c.policy(ctx)
-			}
-
-			o := Output{Policy: p}
-			o.SetImageSignatureCheckFromError(c.err)
-
-			assert.Equal(t, c.expectedPassed, o.ImageSignatureCheck.Passed)
-			assert.Equal(t, c.expectedResult, o.ImageSignatureCheck.Result)
-		})
-	}
-}
 func TestSetAttestationSignatureCheckFromError(t *testing.T) {
 	noMatchingAttestations := cosign.NewVerificationError("kaboom!")
 	noMatchingAttestations.(*cosign.VerificationError).SetErrorType(cosign.ErrNoMatchingAttestationsType)

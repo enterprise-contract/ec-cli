@@ -57,8 +57,15 @@ func ValidateImage(ctx context.Context, url string, p policy.Policy, detailed bo
 		out.ImageURL = resolved
 	}
 
-	out.SetImageSignatureCheckFromError(a.ValidateImageSignature(ctx))
+	for _, v := range a.Validators {
+		result := v.Validate(ctx, a.ImageReference())
+		out.AddSuccesses(result.Successes...)
+		out.AddWarnings(result.Warnings...)
+		out.AddViolations(result.Violations...)
+		a.AddSignatures(result.Signatures...)
+	}
 
+	// TODO: Eventually, all this logic is performed via validators (see loop above)
 	out.SetAttestationSignatureCheckFromError(a.ValidateAttestationSignature(ctx))
 	if !out.AttestationSignatureCheck.Passed {
 		return out, nil

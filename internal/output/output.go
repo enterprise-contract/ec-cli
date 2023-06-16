@@ -83,7 +83,6 @@ type EntitySignature struct {
 // Output is a struct representing checks and exit code.
 type Output struct {
 	ImageAccessibleCheck      VerificationStatus     `json:"imageAccessibleCheck"`
-	ImageSignatureCheck       VerificationStatus     `json:"imageSignatureCheck"`
 	AttestationSignatureCheck VerificationStatus     `json:"attestationSignatureCheck"`
 	AttestationSyntaxCheck    VerificationStatus     `json:"attestationSyntaxCheck"`
 	PolicyCheck               evaluator.CheckResults `json:"policyCheck"`
@@ -93,6 +92,9 @@ type Output struct {
 	Detailed                  bool                   `json:"-"`
 	Data                      []evaluator.Data       `json:"-"`
 	Policy                    policy.Policy          `json:"-"`
+	violations                []output.Result        `json:"-"`
+	successes                 []output.Result        `json:"-"`
+	warnings                  []output.Result        `json:"-"`
 }
 
 // SetImageAccessibleCheck sets the passed and result.message fields of the ImageAccessibleCheck to the given values.
@@ -116,30 +118,6 @@ func (o *Output) SetImageAccessibleCheckFromError(err error) {
 		keepSomeMetadataSingle(*result)
 	}
 	o.ImageAccessibleCheck.Result = result
-}
-
-// SetImageSignatureCheck sets the passed and result.message fields of the ImageSignatureCheck to the given values.
-func (o *Output) SetImageSignatureCheckFromError(err error) {
-	metadata := map[string]interface{}{
-		"code":  "builtin.image.signature_check",
-		"title": "Image signature check passed",
-	}
-	var message string
-
-	if err == nil {
-		o.ImageSignatureCheck.Passed = true
-		message = "Pass"
-		log.Debug("Image signature check passed")
-	} else {
-		o.ImageSignatureCheck.Passed = false
-		message = wrapCosignErrorMessage(err, "signature", o.Policy)
-		log.Debug(message)
-	}
-	result := &output.Result{Message: message, Metadata: metadata}
-	if !o.Detailed {
-		keepSomeMetadataSingle(*result)
-	}
-	o.ImageSignatureCheck.Result = result
 }
 
 // SetAttestationSignatureCheck sets the passed and result.message fields of the AttestationSignatureCheck to the given values.
@@ -235,10 +213,16 @@ func (o Output) addCheckResultsToViolations(violations []output.Result) []output
 	return violations
 }
 
+func (o *Output) AddViolations(violations ...output.Result) {
+	if !o.Detailed {
+		keepSomeMetadata(violations)
+	}
+	o.violations = append(o.violations, violations...)
+}
+
 // Violations aggregates and returns all violations.
 func (o Output) Violations() []output.Result {
-	violations := make([]output.Result, 0, 10)
-	violations = o.ImageSignatureCheck.addToViolations(violations)
+	violations := o.violations
 	violations = o.ImageAccessibleCheck.addToViolations(violations)
 	violations = o.AttestationSignatureCheck.addToViolations(violations)
 	violations = o.AttestationSyntaxCheck.addToViolations(violations)
@@ -248,9 +232,16 @@ func (o Output) Violations() []output.Result {
 	return violations
 }
 
+func (o *Output) AddWarnings(warnings ...output.Result) {
+	if !o.Detailed {
+		keepSomeMetadata(warnings)
+	}
+	o.warnings = append(o.warnings, warnings...)
+}
+
 // Warnings aggregates and returns all warnings.
 func (o Output) Warnings() []output.Result {
-	warnings := make([]output.Result, 0, 10)
+	warnings := o.warnings
 	for _, result := range o.PolicyCheck {
 		warnings = append(warnings, result.Warnings...)
 	}
@@ -259,14 +250,20 @@ func (o Output) Warnings() []output.Result {
 	return warnings
 }
 
+func (o *Output) AddSuccesses(successes ...output.Result) {
+	if !o.Detailed {
+		keepSomeMetadata(successes)
+	}
+	o.successes = append(o.successes, successes...)
+}
+
 // Successes aggregates and returns all successes.
 func (o Output) Successes() []output.Result {
-	successes := make([]output.Result, 0, 10)
+	successes := o.successes
 	for _, result := range o.PolicyCheck {
 		successes = append(successes, result.Successes...)
 	}
 
-	successes = o.ImageSignatureCheck.addToSuccesses(successes)
 	successes = o.AttestationSignatureCheck.addToSuccesses(successes)
 	successes = o.AttestationSyntaxCheck.addToSuccesses(successes)
 
