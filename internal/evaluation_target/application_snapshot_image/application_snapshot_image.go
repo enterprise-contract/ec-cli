@@ -187,6 +187,7 @@ func (a *ApplicationSnapshotImage) ValidateImageSignature(ctx context.Context) e
 
 		es := output.EntitySignature{
 			Signature: sig,
+			Metadata:  map[string]string{},
 		}
 
 		cert, err := s.Cert()
@@ -199,6 +200,10 @@ func (a *ApplicationSnapshotImage) ValidateImageSignature(ctx context.Context) e
 				Bytes: cert.Raw,
 			}))
 			es.KeyID = hex.EncodeToString(cert.SubjectKeyId)
+
+			if err := addCertificateMetadataTo(&es.Metadata, cert); err != nil {
+				return err
+			}
 		}
 
 		chain, err := s.Chain()
