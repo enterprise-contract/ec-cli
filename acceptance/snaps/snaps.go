@@ -18,6 +18,7 @@ package snaps
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -138,7 +139,13 @@ func MatchSnapshot(ctx context.Context, qualifier, text string, vars map[string]
 
 	snapshot := strings.TrimSuffix(filepath.Base(scenario.Uri), filepath.Ext(scenario.Uri))
 
+    prettySnapshot, err := json.MarshalIndent(snapshot, "", "    ")
+	snapshot = string(prettySnapshot)
+
+
 	snaps.WithConfig(snaps.Dir(path.Join(wd, "features", "__snapshots__")), snaps.Filename(snapshot)).MatchSnapshot(&errs, text)
 
 	return errs.err
 }
+
+

@@ -1,0 +1,61 @@
+
+[json output:stdout - 1]
+{
+    "git::https://${GITHOST}/git/policy.git": [
+        {
+            "annotations": {
+                "custom": {
+                    "short_name": "purr"
+                },
+                "description": "Fluffy",
+                "scope": "rule",
+                "title": "Kittens"
+            },
+            "location": {
+                "file": "main.rego",
+                "row": 9,
+                "col": 1
+            },
+            "path": [
+                {
+                    "type": "var",
+                    "value": "data"
+                },
+                {
+                    "type": "string",
+                    "value": "policy"
+                },
+                {
+                    "type": "string",
+                    "value": "release"
+                },
+                {
+                    "type": "string",
+                    "value": "kitty"
+                },
+                {
+                    "type": "string",
+                    "value": "deny"
+                }
+            ]
+        }
+    ]
+}
+---
+
+[json output:stderr - 1]
+
+---
+
+[inspecting a data source:stdout - 1]
+{
+    "rule_data": {
+        "banana_fail_reason": "spider attack"
+    },
+    "spam_count": 42
+}
+---
+
+[inspecting a data source:stderr - 1]
+
+---

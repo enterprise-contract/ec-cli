@@ -1,0 +1,11 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: basic-build
+spec:
+  tasks:
+  - name: appstudio-init
+    taskRef:
+      name: init
+      version: "0.1"
