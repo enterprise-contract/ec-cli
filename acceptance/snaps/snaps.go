@@ -140,6 +140,10 @@ func MatchSnapshot(ctx context.Context, qualifier, text string, vars map[string]
 	snapshot := strings.TrimSuffix(filepath.Base(scenario.Uri), filepath.Ext(scenario.Uri))
 
     prettySnapshot, err := json.MarshalIndent(snapshot, "", "    ")
+	if err != nil {
+		return err
+		
+	}
 	snapshot = string(prettySnapshot)
 
 

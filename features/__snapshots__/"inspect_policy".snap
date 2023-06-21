@@ -59,3 +59,58 @@
 [inspecting a data source:stderr - 1]
 
 ---
+
+[inspecting a data source with a merge error:stdout - 1]
+
+---
+
+[inspecting a data source with a merge error:stderr - 1]
+Error: Merge error. The 'rule_data' key was found more than once!
+
+---
+
+[short names output:stdout - 1]
+kitty.purr
+
+---
+
+[short names output:stderr - 1]
+
+---
+
+[sources from ECP:stdout - 1]
+# Source: git::https://${GITHOST}/git/policy1.git
+
+policy.release.kitty.purr (deny)
+https://enterprisecontract.dev/docs/ec-policies/release_policy.html#kitty__purr
+Kittens
+Fluffy
+--
+# Source: git::https://${GITHOST}/git/policy2.git
+
+main.rejector (deny)
+Reject rule
+This rule will always fail
+[A]
+--
+
+---
+
+[sources from ECP:stderr - 1]
+
+---
+
+[default output:stdout - 1]
+# Source: git::https://${GITHOST}/git/policy.git
+
+policy.release.kitty.purr (deny)
+https://enterprisecontract.dev/docs/ec-policies/release_policy.html#kitty__purr
+Kittens
+Fluffy
+--
+
+---
+
+[default output:stderr - 1]
+
+---
