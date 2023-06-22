@@ -1,4 +1,41 @@
 
+[inspecting a data source:stdout - 1]
+{
+    "rule_data": {
+        "banana_fail_reason": "spider attack"
+    },
+    "spam_count": 42
+}
+---
+
+[inspecting a data source:stderr - 1]
+
+---
+
+[default output:stdout - 1]
+# Source: git::https://${GITHOST}/git/policy.git
+
+policy.release.kitty.purr (deny)
+https://enterprisecontract.dev/docs/ec-policies/release_policy.html#kitty__purr
+Kittens
+Fluffy
+--
+
+---
+
+[default output:stderr - 1]
+
+---
+
+[inspecting a data source with a merge error:stdout - 1]
+
+---
+
+[inspecting a data source with a merge error:stderr - 1]
+Error: Merge error. The 'rule_data' key was found more than once!
+
+---
+
 [json output:stdout - 1]
 {
     "git::https://${GITHOST}/git/policy.git": [
@@ -47,28 +84,6 @@
 
 ---
 
-[inspecting a data source:stdout - 1]
-{
-    "rule_data": {
-        "banana_fail_reason": "spider attack"
-    },
-    "spam_count": 42
-}
----
-
-[inspecting a data source:stderr - 1]
-
----
-
-[inspecting a data source with a merge error:stdout - 1]
-
----
-
-[inspecting a data source with a merge error:stderr - 1]
-Error: Merge error. The 'rule_data' key was found more than once!
-
----
-
 [short names output:stdout - 1]
 kitty.purr
 
@@ -97,20 +112,5 @@ This rule will always fail
 ---
 
 [sources from ECP:stderr - 1]
-
----
-
-[default output:stdout - 1]
-# Source: git::https://${GITHOST}/git/policy.git
-
-policy.release.kitty.purr (deny)
-https://enterprisecontract.dev/docs/ec-policies/release_policy.html#kitty__purr
-Kittens
-Fluffy
---
-
----
-
-[default output:stderr - 1]
 
 ---

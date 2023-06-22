@@ -1,4 +1,50 @@
 
+[mismatched image digest in attestation:stdout - 1]
+{
+    "success": false,
+    "components": [
+        {
+            "name": "Unnamed",
+            "containerImage": "${REGISTRY}/acceptance/bad-actor@${REGISTRY_acceptance/bad-actor:latest_HASH}",
+            "violations": [
+                {
+                    "msg": "No image attestations found matching the given public key. Verify the correct public key was provided, and one or more attestations were created.",
+                    "metadata": {
+                        "code": "builtin.attestation.signature_check"
+                    }
+                }
+            ],
+            "successes": [
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "builtin.image.signature_check"
+                    }
+                }
+            ],
+            "success": false
+        }
+    ],
+    "key": ${known_PUBLIC_KEY_JSON},
+    "policy": {
+        "sources": [
+            {
+                "policy": [
+                    "git::https://${GITHOST}/git/mismatched-image-digest.git"
+                ]
+            }
+        ],
+        "publicKey": "${known_PUBLIC_KEY}"
+    },
+    "ec-version": "${EC_VERSION}"
+}
+---
+
+[mismatched image digest in attestation:stderr - 1]
+Error: success criteria not met
+
+---
+
 [artifact relocation:stdout - 1]
 {
     "success": true,
@@ -36,7 +82,7 @@
             "signatures": [
                 {
                     "keyid": "",
-                    "sig": "MEQCIBgmYWNpqqqVTl8bdGJl5N6sAYhgFVE90caMlW9C+H+5AiBbYaXq0Cc8ZMN3iot52AZ8nCv4+SW+aEe2KT6mWwc7CQ=="
+                    "sig": "MEUCIEZRcmAFq2TdykCQxzKr1A3RrC6lKTEJ+I7PWvkryUZKAiEAtwPwafu71h8+K/rjsxTvEpyfJy0RF/AFzNyoKRZ5ou4="
                 }
             ]
         }
@@ -61,13 +107,13 @@
 
 ---
 
-[Custom rule data:stdout - 1]
+[happy day with git config and json:stdout - 1]
 {
     "success": true,
     "components": [
         {
             "name": "Unnamed",
-            "containerImage": "${REGISTRY}/acceptance/image@${REGISTRY_acceptance/image:latest_HASH}",
+            "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
             "successes": [
                 {
                     "msg": "Pass",
@@ -86,121 +132,19 @@
                     "metadata": {
                         "code": "builtin.image.signature_check"
                     }
+                },
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "main.acceptor"
+                    }
                 }
             ],
             "success": true,
             "signatures": [
                 {
                     "keyid": "",
-                    "sig": "MEQCIEnJdlQi/f492x0m08xXr3bb5zaP+mkRKwBZwAgsbEkbAiBLj3Ae95s8JRwtsiCWgnDGYunoOtFgvdiG/mkSMgsfHg=="
-                }
-            ]
-        }
-    ],
-    "key": ${known_PUBLIC_KEY_JSON},
-    "policy": {
-        "sources": [
-            {
-                "policy": [
-                    "git::https://${GITHOST}/git/my-policy1.git"
-                ],
-                "ruleData": {
-                    "custom": "data1"
-                }
-            },
-            {
-                "policy": [
-                    "git::https://${GITHOST}/git/my-policy2.git"
-                ],
-                "ruleData": {
-                    "other": "data2"
-                }
-            }
-        ],
-        "publicKey": "${known_PUBLIC_KEY}"
-    },
-    "ec-version": "${EC_VERSION}"
-}
----
-
-[Custom rule data:stderr - 1]
-
----
-
-[Custom rule data:${TMPDIR}/custom-rule-data.yaml - 1]
-- - config:
-      policy:
-        when_ns: 1401494400000000000
-    rule_data__configuration__:
-      custom: data1
-  - config:
-      policy:
-        when_ns: 1401494400000000000
-    rule_data__configuration__:
-      other: data2
-
----
-
-[detailed failures output:stdout - 1]
-{
-    "success": false,
-    "components": [
-        {
-            "name": "Unnamed",
-            "containerImage": "${REGISTRY}/acceptance/image@${REGISTRY_acceptance/image:latest_HASH}",
-            "violations": [
-                {
-                    "msg": "Fails always",
-                    "metadata": {
-                        "code": "main.rejector",
-                        "collections": [
-                            "A"
-                        ],
-                        "description": "This rule will always fail",
-                        "solution": "None",
-                        "title": "Reject rule"
-                    }
-                }
-            ],
-            "successes": [
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "builtin.attestation.signature_check",
-                        "title": "Attestation signature check passed"
-                    }
-                },
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "builtin.attestation.syntax_check",
-                        "title": "Attestation syntax check passed"
-                    }
-                },
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "builtin.image.signature_check",
-                        "title": "Image signature check passed"
-                    }
-                },
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "main.acceptor",
-                        "collections": [
-                            "A"
-                        ],
-                        "description": "This rule will never fail",
-                        "title": "Allow rule"
-                    }
-                }
-            ],
-            "success": false,
-            "signatures": [
-                {
-                    "keyid": "",
-                    "sig": "MEQCIBMZZc9d3HKKchfUJbYq04q/PpJwUFxIImbGgOTLNwBBAiB8F95LjwlL1oB6R3ppulpvMytj0oW06nkcIRCyUqWb+Q=="
+                    "sig": "MEUCIQCRkz6K+hJmHAFZgZdPpZzfmeTeEQCDzhzro/+YOQBHQwIgNjiD8dO8Rxa0gAe9qVNlyO1PHI+sM2tGjyVkXneBDp0="
                 }
             ]
         }
@@ -214,29 +158,58 @@
                 ]
             }
         ],
+        "rekorUrl": "${REKOR}",
         "publicKey": "${known_PUBLIC_KEY}"
     },
     "ec-version": "${EC_VERSION}"
 }
 ---
 
-[detailed failures output:stderr - 1]
+[happy day with git config and json:stderr - 1]
+
+---
+
+[unexpected image signature cert:stdout - 1]
+{
+    "success": false,
+    "components": [
+        {
+            "name": "Unnamed",
+            "containerImage": "${REGISTRY}/acceptance/unexpected-keyless-cert@${REGISTRY_acceptance/unexpected-keyless-cert:latest_HASH}",
+            "violations": [
+                {
+                    "msg": "Image attestation check failed: no matching attestations:\nnone of the expected identities matched what was in the certificate, got subjects [${CERT_IDENTITY}] with issuer ${CERT_ISSUER}",
+                    "metadata": {
+                        "code": "builtin.attestation.signature_check"
+                    }
+                },
+                {
+                    "msg": "Image signature check failed: no matching signatures:\nnone of the expected identities matched what was in the certificate, got subjects [${CERT_IDENTITY}] with issuer ${CERT_ISSUER}",
+                    "metadata": {
+                        "code": "builtin.image.signature_check"
+                    }
+                }
+            ],
+            "success": false
+        }
+    ],
+    "key": "",
+    "policy": {
+        "sources": [
+            {
+                "policy": [
+                    "git::https://${GITHOST}/git/unexpected-keyless-cert.git"
+                ]
+            }
+        ],
+        "rekorUrl": "http://this.is.ignored"
+    },
+    "ec-version": "${EC_VERSION}"
+}
+---
+
+[unexpected image signature cert:stderr - 1]
 Error: success criteria not met
-
----
-
-[Dropping rego capabilities:stdout - 1]
-
----
-
-[Dropping rego capabilities:stderr - 1]
-Error: 1 error occurred:
-    * error validating image ${REGISTRY}/acceptance/ec-happy-day of component Unnamed: load: loading policies: get compiler: 3 errors occurred:
-${TEMP}/ec-work-${RANDOM}/policy/${RANDOM}/main.rego:14: rego_type_error: undefined function opa.runtime
-${TEMP}/ec-work-${RANDOM}/policy/${RANDOM}/main.rego:20: rego_type_error: undefined function http.send
-${TEMP}/ec-work-${RANDOM}/policy/${RANDOM}/main.rego:29: rego_type_error: undefined function net.lookup_ip_addr
-
-
 
 ---
 
@@ -279,7 +252,7 @@ ${TEMP}/ec-work-${RANDOM}/policy/${RANDOM}/main.rego:29: rego_type_error: undefi
             "signatures": [
                 {
                     "keyid": "",
-                    "sig": "MEYCIQDTp/gKOhV3ZVdHrk1XRP5Rt23gbAydtSXXvQi8v2+NtwIhALr9DkddgT6lpsTaWbFBXhwmryACnnfdR94PypZUXWdF"
+                    "sig": "MEUCIQDuYNsasastSfnoxHSbz8KJqq5wid42nBVsZ0H/4jQzqgIgKqKVNgviCGr133isuJggjJ4AbGN4+k+sVshQ/JHK9gY="
                 }
             ]
         }
@@ -302,194 +275,6 @@ ${TEMP}/ec-work-${RANDOM}/policy/${RANDOM}/main.rego:29: rego_type_error: undefi
 
 [future failure is a deny when using effective-date flag:stderr - 1]
 Error: success criteria not met
-
----
-
-[future failure is converted to a warning:stdout - 1]
-{
-    "success": true,
-    "components": [
-        {
-            "name": "Unnamed",
-            "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
-            "warnings": [
-                {
-                    "msg": "Fails in 2099",
-                    "metadata": {
-                        "effective_on": "2099-01-01T00:00:00Z"
-                    }
-                }
-            ],
-            "successes": [
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "builtin.attestation.signature_check"
-                    }
-                },
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "builtin.attestation.syntax_check"
-                    }
-                },
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "builtin.image.signature_check"
-                    }
-                }
-            ],
-            "success": true,
-            "signatures": [
-                {
-                    "keyid": "",
-                    "sig": "MEUCIA0czQmWUTcnJNlLV8nyE6WZmFEu7w5/yOvjus7IIdn4AiEA+kLJw1N0KT3zQ1IRzm3kIU3lURGtyk2g9fgQrSKSOJc="
-                }
-            ]
-        }
-    ],
-    "key": ${known_PUBLIC_KEY_JSON},
-    "policy": {
-        "sources": [
-            {
-                "policy": [
-                    "git::https://${GITHOST}/git/future-deny-policy.git"
-                ]
-            }
-        ],
-        "rekorUrl": "${REKOR}",
-        "publicKey": "${known_PUBLIC_KEY}"
-    },
-    "ec-version": "${EC_VERSION}"
-}
----
-
-[future failure is converted to a warning:stderr - 1]
-
----
-
-[happy day with git config and json:stdout - 1]
-{
-    "success": true,
-    "components": [
-        {
-            "name": "Unnamed",
-            "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
-            "successes": [
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "builtin.attestation.signature_check"
-                    }
-                },
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "builtin.attestation.syntax_check"
-                    }
-                },
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "builtin.image.signature_check"
-                    }
-                },
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "main.acceptor"
-                    }
-                }
-            ],
-            "success": true,
-            "signatures": [
-                {
-                    "keyid": "",
-                    "sig": "MEQCIA99BxaPLkPalEF/jX16HKqZAXyGx/Ucuj8BcxJ8But7AiAxiUDZ3DUAgIgTko14efTzualj28j/kr8B1Eww5+RgTw=="
-                }
-            ]
-        }
-    ],
-    "key": ${known_PUBLIC_KEY_JSON},
-    "policy": {
-        "sources": [
-            {
-                "policy": [
-                    "git::https://${GITHOST}/git/happy-day-policy.git"
-                ]
-            }
-        ],
-        "rekorUrl": "${REKOR}",
-        "publicKey": "${known_PUBLIC_KEY}"
-    },
-    "ec-version": "${EC_VERSION}"
-}
----
-
-[happy day with git config and json:stderr - 1]
-
----
-
-[happy day with git config and yaml:stdout - 1]
-{
-    "success": true,
-    "components": [
-        {
-            "name": "Unnamed",
-            "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
-            "successes": [
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "builtin.attestation.signature_check"
-                    }
-                },
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "builtin.attestation.syntax_check"
-                    }
-                },
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "builtin.image.signature_check"
-                    }
-                },
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "main.acceptor"
-                    }
-                }
-            ],
-            "success": true,
-            "signatures": [
-                {
-                    "keyid": "",
-                    "sig": "MEUCIQDUzEDcQPNhnh5vb1FQ4VTEh+BWQJb1U7fCRB3SEdzTCAIgPHRiyzKI41FPyWOD7exAOuUfN82m/TJI60qi7ji3gsA="
-                }
-            ]
-        }
-    ],
-    "key": ${known_PUBLIC_KEY_JSON},
-    "policy": {
-        "sources": [
-            {
-                "policy": [
-                    "git::https://${GITHOST}/git/happy-day-policy.git"
-                ]
-            }
-        ],
-        "rekorUrl": "${REKOR}",
-        "publicKey": "${known_PUBLIC_KEY}"
-    },
-    "ec-version": "${EC_VERSION}"
-}
----
-
-[happy day with git config and yaml:stderr - 1]
 
 ---
 
@@ -530,7 +315,7 @@ Error: success criteria not met
             "signatures": [
                 {
                     "keyid": "",
-                    "sig": "MEUCIQChcDIR00KAJEP7DZsSlAYalkZRfp/o3aEZF4AGYbYvuQIgdNxoNCdOyOeXhIkq4/zidr8lAdWngT787RlMwifJ9/Y="
+                    "sig": "MEUCIQC4NviTXRCbpKCaElm4PI34m+Mw3KV6fthcN7cYPL9gXgIgTCXQ57zQNacB3d93JoYkzb6henmx6+gihtDFSLz0Xmk="
                 }
             ]
         }
@@ -555,15 +340,214 @@ Error: success criteria not met
 
 ---
 
-[happy day with missing git config:stdout - 1]
+[Using OCI bundles:stdout - 1]
+{
+    "success": true,
+    "components": [
+        {
+            "name": "Unnamed",
+            "containerImage": "${REGISTRY}/acceptance/my-image@${REGISTRY_acceptance/my-image:latest_HASH}",
+            "successes": [
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "builtin.attestation.signature_check"
+                    }
+                },
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "builtin.attestation.syntax_check"
+                    }
+                },
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "builtin.image.signature_check"
+                    }
+                },
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "main.acceptor"
+                    }
+                }
+            ],
+            "success": true,
+            "signatures": [
+                {
+                    "keyid": "",
+                    "sig": "MEUCIQC9hxdwTnS3pa+7D20UbZjQ6mo/WMCu4cXvANRJjsAtMwIgHzlaEentntz9JV+Gz9IDO9c7wqeHvuO6yzXX8+GJHc4="
+                }
+            ]
+        }
+    ],
+    "key": ${known_PUBLIC_KEY_JSON},
+    "policy": {
+        "sources": [
+            {
+                "policy": [
+                    "oci::https://${REGISTRY}/acceptance/happy-day-policy:tag",
+                    "oci::${REGISTRY}/acceptance/allow-all:latest"
+                ]
+            }
+        ],
+        "publicKey": "${known_PUBLIC_KEY}"
+    },
+    "ec-version": "${EC_VERSION}"
+}
+---
+
+[Using OCI bundles:stderr - 1]
 
 ---
 
-[happy day with missing git config:stderr - 1]
-Error: 1 error occurred:
-    * No suitable config file found at git::https://${GITHOST}/git/happy-config.git
+[policy rule filtering:stdout - 1]
+{
+    "success": true,
+    "components": [
+        {
+            "name": "Unnamed",
+            "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
+            "successes": [
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "builtin.attestation.signature_check"
+                    }
+                },
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "builtin.attestation.syntax_check"
+                    }
+                },
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "builtin.image.signature_check"
+                    }
+                },
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "filtering.always_pass"
+                    }
+                },
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "filtering.always_pass_with_collection"
+                    }
+                }
+            ],
+            "success": true,
+            "signatures": [
+                {
+                    "keyid": "",
+                    "sig": "MEYCIQDtWS4sDwrIN7GzD4NkaU4c+4y4cqg9+g057CIDQd0aiQIhAJtalRJ1L7fQQNRFFXJNGxM+Hl6RBqbWVSP9xCod0Q0W"
+                }
+            ]
+        }
+    ],
+    "key": ${known_PUBLIC_KEY_JSON},
+    "policy": {
+        "sources": [
+            {
+                "policy": [
+                    "git::https://${GITHOST}/git/happy-day-policy.git"
+                ]
+            }
+        ],
+        "configuration": {
+            "exclude": [
+                "filtering.always_fail",
+                "filtering.always_fail_with_collection"
+            ],
+            "include": [
+                "@stamps",
+                "filtering.always_pass"
+            ]
+        },
+        "rekorUrl": "${REKOR}",
+        "publicKey": "${known_PUBLIC_KEY}"
+    },
+    "ec-version": "${EC_VERSION}"
+}
+---
 
+[policy rule filtering:stderr - 1]
 
+---
+
+[policy rule filtering for successes:stdout - 1]
+{
+    "success": true,
+    "components": [
+        {
+            "name": "Unnamed",
+            "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
+            "successes": [
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "builtin.attestation.signature_check"
+                    }
+                },
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "builtin.attestation.syntax_check"
+                    }
+                },
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "builtin.image.signature_check"
+                    }
+                },
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "filtering.always_pass"
+                    }
+                }
+            ],
+            "success": true,
+            "signatures": [
+                {
+                    "keyid": "",
+                    "sig": "MEUCIQDV+rrEke6OrIXfTEZhqVVbSBRik3eSFNAmge69kMKPFwIgdgG9y2lEB0Gqrhq/AO4TaRH+yOiGfe4glk5gzo42KAY="
+                }
+            ]
+        }
+    ],
+    "key": ${known_PUBLIC_KEY_JSON},
+    "policy": {
+        "sources": [
+            {
+                "policy": [
+                    "git::https://${GITHOST}/git/happy-day-policy.git"
+                ]
+            }
+        ],
+        "configuration": {
+            "exclude": [
+                "filtering.always_pass_with_collection",
+                "filtering.always_fail_with_collection"
+            ],
+            "include": [
+                "@stamps",
+                "filtering.always_pass"
+            ]
+        },
+        "publicKey": "${known_PUBLIC_KEY}"
+    },
+    "ec-version": "${EC_VERSION}"
+}
+---
+
+[policy rule filtering for successes:stderr - 1]
 
 ---
 
@@ -652,74 +636,41 @@ Error: 1 error occurred:
 
 ---
 
-[inline application snapshot:stdout - 1]
-{
-    "success": true,
-    "components": [
-        {
-            "name": "Happy",
-            "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
-            "successes": [
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "builtin.attestation.signature_check"
-                    }
-                },
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "builtin.attestation.syntax_check"
-                    }
-                },
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "builtin.image.signature_check"
-                    }
-                },
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "main.acceptor"
-                    }
-                }
-            ],
-            "success": true,
-            "signatures": [
-                {
-                    "keyid": "",
-                    "sig": "MEQCIDs7uA1VkyZ0nGUl5s/GmjlGNXBoODatZY8dBDSvpmRWAiASc7SsW79OBkz1Nd8Rhoyvysab5+mI+TrAmqXrkNpofw=="
-                }
-            ]
-        }
-    ],
-    "key": ${known_PUBLIC_KEY_JSON},
-    "policy": {
-        "sources": [
-            {
-                "policy": [
-                    "git::https://${GITHOST}/git/happy-day-policy.git"
-                ]
-            }
-        ],
-        "publicKey": "${known_PUBLIC_KEY}"
-    },
-    "ec-version": "${EC_VERSION}"
-}
----
-
-[inline application snapshot:stderr - 1]
+[Dropping rego capabilities:stdout - 1]
 
 ---
 
-[inline policy:stdout - 1]
+[Dropping rego capabilities:stderr - 1]
+Error: 1 error occurred:
+    * error validating image ${REGISTRY}/acceptance/ec-happy-day of component Unnamed: load: loading policies: get compiler: 3 errors occurred:
+${TEMP}/ec-work-${RANDOM}/policy/${RANDOM}/main.rego:14: rego_type_error: undefined function opa.runtime
+${TEMP}/ec-work-${RANDOM}/policy/${RANDOM}/main.rego:20: rego_type_error: undefined function http.send
+${TEMP}/ec-work-${RANDOM}/policy/${RANDOM}/main.rego:29: rego_type_error: undefined function net.lookup_ip_addr
+
+
+
+---
+
+[multiple policy sources with multiple source groups:stdout - 1]
 {
-    "success": true,
+    "success": false,
     "components": [
         {
             "name": "Unnamed",
-            "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
+            "containerImage": "${REGISTRY}/acceptance/ec-multiple-sources@${REGISTRY_acceptance/ec-multiple-sources:latest_HASH}",
+            "violations": [
+                {
+                    "msg": "Fails always",
+                    "metadata": {
+                        "code": "main.rejector"
+                    }
+                }
+            ],
+            "warnings": [
+                {
+                    "msg": "Has a warning"
+                }
+            ],
             "successes": [
                 {
                     "msg": "Pass",
@@ -746,11 +697,11 @@ Error: 1 error occurred:
                     }
                 }
             ],
-            "success": true,
+            "success": false,
             "signatures": [
                 {
                     "keyid": "",
-                    "sig": "MEQCID3pprOAxilaOyjdSbLItI6n3ZxUxTxDI+YnTtU+hE1PAiAgjDXTTBbHkMYpOheFVmd2JR26lNDaowFGQNRqgz0JAg=="
+                    "sig": "MEUCIQDoyYm1uDLCH5mmOO+e5N36AYgHJh6youznPgFEifk0YAIgcrwMo5Ivf/uY7aTxfsI2rZqK+FKfwlsScZdHRnvXpi0="
                 }
             ]
         }
@@ -760,7 +711,17 @@ Error: 1 error occurred:
         "sources": [
             {
                 "policy": [
-                    "git::https://${GITHOST}/git/happy-day-policy.git"
+                    "git::https://${GITHOST}/git/repository1.git"
+                ]
+            },
+            {
+                "policy": [
+                    "git::https://${GITHOST}/git/repository2.git"
+                ]
+            },
+            {
+                "policy": [
+                    "git::https://${GITHOST}/git/repository3.git"
                 ]
             }
         ],
@@ -771,7 +732,8 @@ Error: 1 error occurred:
 }
 ---
 
-[inline policy:stderr - 1]
+[multiple policy sources with multiple source groups:stderr - 1]
+Error: success criteria not met
 
 ---
 
@@ -820,27 +782,18 @@ Error: success criteria not met
 
 ---
 
-[JUnit output format:stdout - 1]
-<testsuites tests="5" failures="1"><testsuite name="Unnamed (${REGISTRY}/acceptance/image@${REGISTRY_acceptance/image:latest_HASH})" tests="5" failures="1" errors="0" id="0" time="" timestamp="${TIMESTAMP}"><properties><property name="image" value="${REGISTRY}/acceptance/image@${REGISTRY_acceptance/image:latest_HASH}"></property><property name="key" value="${known_PUBLIC_KEY_XML}"></property><property name="success" value="false"></property>${IMAGE_SIGNATURES_XML_acceptance/image}</properties><testcase name="builtin.attestation.signature_check: Pass" classname="builtin.attestation.signature_check: Pass"></testcase><testcase name="builtin.attestation.syntax_check: Pass" classname="builtin.attestation.syntax_check: Pass"></testcase><testcase name="builtin.image.signature_check: Pass" classname="builtin.image.signature_check: Pass"></testcase><testcase name="main.acceptor: Pass" classname="main.acceptor: Pass"></testcase><testcase name="main.rejector: Fails always" classname="main.rejector: Fails always"><failure message="Fails always"><![CDATA[Fails always]]></failure></testcase></testsuite></testsuites>
----
-
-[JUnit output format:stderr - 1]
-Error: success criteria not met
-
----
-
-[mismatched image digest in attestation:stdout - 1]
+[future failure is converted to a warning:stdout - 1]
 {
-    "success": false,
+    "success": true,
     "components": [
         {
             "name": "Unnamed",
-            "containerImage": "${REGISTRY}/acceptance/bad-actor@${REGISTRY_acceptance/bad-actor:latest_HASH}",
-            "violations": [
+            "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
+            "warnings": [
                 {
-                    "msg": "No image attestations found matching the given public key. Verify the correct public key was provided, and one or more attestations were created.",
+                    "msg": "Fails in 2099",
                     "metadata": {
-                        "code": "builtin.attestation.signature_check"
+                        "effective_on": "2099-01-01T00:00:00Z"
                     }
                 }
             ],
@@ -848,11 +801,29 @@ Error: success criteria not met
                 {
                     "msg": "Pass",
                     "metadata": {
+                        "code": "builtin.attestation.signature_check"
+                    }
+                },
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "builtin.attestation.syntax_check"
+                    }
+                },
+                {
+                    "msg": "Pass",
+                    "metadata": {
                         "code": "builtin.image.signature_check"
                     }
                 }
             ],
-            "success": false
+            "success": true,
+            "signatures": [
+                {
+                    "keyid": "",
+                    "sig": "MEYCIQCKbpfrmKDO6hHe/hOAzWW7d33eN05iA5gM4pQguN4LAwIhAL4Drfb2taXsH/xPNxaRLqagYbYTVjtj9yI1O5FF8H6Q"
+                }
+            ]
         }
     ],
     "key": ${known_PUBLIC_KEY_JSON},
@@ -860,18 +831,18 @@ Error: success criteria not met
         "sources": [
             {
                 "policy": [
-                    "git::https://${GITHOST}/git/mismatched-image-digest.git"
+                    "git::https://${GITHOST}/git/future-deny-policy.git"
                 ]
             }
         ],
+        "rekorUrl": "${REKOR}",
         "publicKey": "${known_PUBLIC_KEY}"
     },
     "ec-version": "${EC_VERSION}"
 }
 ---
 
-[mismatched image digest in attestation:stderr - 1]
-Error: success criteria not met
+[future failure is converted to a warning:stderr - 1]
 
 ---
 
@@ -933,26 +904,246 @@ Error: success criteria not met
 
 ---
 
-[multiple policy sources with multiple source groups:stdout - 1]
+[successes are not duplicated:stdout - 1]
 {
     "success": false,
     "components": [
         {
             "name": "Unnamed",
-            "containerImage": "${REGISTRY}/acceptance/ec-multiple-sources@${REGISTRY_acceptance/ec-multiple-sources:latest_HASH}",
+            "containerImage": "${REGISTRY}/acceptance/unique-successes@${REGISTRY_acceptance/unique-successes:latest_HASH}",
+            "violations": [
+                {
+                    "msg": "Always fails",
+                    "metadata": {
+                        "code": "gloomy.sad"
+                    }
+                }
+            ],
+            "successes": [
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "builtin.attestation.signature_check"
+                    }
+                },
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "builtin.attestation.syntax_check"
+                    }
+                },
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "builtin.image.signature_check"
+                    }
+                },
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "gloomy.happy"
+                    }
+                },
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "main.acceptor"
+                    }
+                }
+            ],
+            "success": false,
+            "signatures": [
+                {
+                    "keyid": "",
+                    "sig": "MEUCIQDq0kh5IQ8OHBL399v2e21OOxZ5cBFuHqdlheE3ELTdngIgbUJvzEjWcaFPZmb/iLzjZkzE1yj9Ba0hO6ohActtgyE="
+                }
+            ]
+        }
+    ],
+    "key": ${known_PUBLIC_KEY_JSON},
+    "policy": {
+        "sources": [
+            {
+                "policy": [
+                    "git::https://${GITHOST}/git/unique-successes.git"
+                ]
+            }
+        ],
+        "rekorUrl": "${REKOR}",
+        "publicKey": "${known_PUBLIC_KEY}"
+    },
+    "ec-version": "${EC_VERSION}"
+}
+---
+
+[successes are not duplicated:stderr - 1]
+
+---
+
+[detailed failures output:stdout - 1]
+{
+    "success": false,
+    "components": [
+        {
+            "name": "Unnamed",
+            "containerImage": "${REGISTRY}/acceptance/image@${REGISTRY_acceptance/image:latest_HASH}",
             "violations": [
                 {
                     "msg": "Fails always",
                     "metadata": {
-                        "code": "main.rejector"
+                        "code": "main.rejector",
+                        "collections": [
+                            "A"
+                        ],
+                        "description": "This rule will always fail",
+                        "solution": "None",
+                        "title": "Reject rule"
+                    }
+                }
+            ],
+            "successes": [
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "builtin.attestation.signature_check",
+                        "title": "Attestation signature check passed"
+                    }
+                },
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "builtin.attestation.syntax_check",
+                        "title": "Attestation syntax check passed"
+                    }
+                },
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "builtin.image.signature_check",
+                        "title": "Image signature check passed"
+                    }
+                },
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "main.acceptor",
+                        "collections": [
+                            "A"
+                        ],
+                        "description": "This rule will never fail",
+                        "title": "Allow rule"
+                    }
+                }
+            ],
+            "success": false,
+            "signatures": [
+                {
+                    "keyid": "",
+                    "sig": "MEUCID1ZcBySn8IyA+2ndP9nOnIZ7gD3s+rLDSGdTnjg0MNfAiEAsp87sm4ruIpcbJpKgsITxmsL33WEjSlGsfHYu07NvpU="
+                }
+            ]
+        }
+    ],
+    "key": ${known_PUBLIC_KEY_JSON},
+    "policy": {
+        "sources": [
+            {
+                "policy": [
+                    "git::https://${GITHOST}/git/happy-day-policy.git"
+                ]
+            }
+        ],
+        "publicKey": "${known_PUBLIC_KEY}"
+    },
+    "ec-version": "${EC_VERSION}"
+}
+---
+
+[detailed failures output:stderr - 1]
+Error: success criteria not met
+
+---
+
+[rule dependencies:stdout - 1]
+{
+    "success": false,
+    "components": [
+        {
+            "name": "Unnamed",
+            "containerImage": "${REGISTRY}/acceptance/image@${REGISTRY_acceptance/image:latest_HASH}",
+            "violations": [
+                {
+                    "msg": "Failure",
+                    "metadata": {
+                        "code": "pkg.fails"
                     }
                 }
             ],
             "warnings": [
                 {
-                    "msg": "Has a warning"
+                    "msg": "Warning",
+                    "metadata": {
+                        "code": "pkg.warns"
+                    }
                 }
             ],
+            "successes": [
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "builtin.attestation.signature_check"
+                    }
+                },
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "builtin.attestation.syntax_check"
+                    }
+                },
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "builtin.image.signature_check"
+                    }
+                }
+            ],
+            "success": false,
+            "signatures": [
+                {
+                    "keyid": "",
+                    "sig": "MEUCIQDetTrFVLasC9QlTFRz9FBQoIFf5gHvnxJH6FqJk6Uv2gIgNbxFEOAnZZvYKUFnzAeUxIFHr4z2NVSwRQp9pD+YKC0="
+                }
+            ]
+        }
+    ],
+    "key": ${known_PUBLIC_KEY_JSON},
+    "policy": {
+        "sources": [
+            {
+                "policy": [
+                    "git::https://${GITHOST}/git/with-dependencies.git"
+                ]
+            }
+        ],
+        "publicKey": "${known_PUBLIC_KEY}"
+    },
+    "ec-version": "${EC_VERSION}"
+}
+---
+
+[rule dependencies:stderr - 1]
+Error: success criteria not met
+
+---
+
+[application snapshot reference:stdout - 1]
+{
+    "success": true,
+    "snapshot": "acceptance/happy",
+    "components": [
+        {
+            "name": "Happy",
+            "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
             "successes": [
                 {
                     "msg": "Pass",
@@ -979,11 +1170,11 @@ Error: success criteria not met
                     }
                 }
             ],
-            "success": false,
+            "success": true,
             "signatures": [
                 {
                     "keyid": "",
-                    "sig": "MEYCIQCCBJf4U3L1FPTFc0ED1m0CK2GW8Gz/2zaDL/lSvb0SDgIhAIVQPDZDy/0rDY2Z593Qsw4ZuXFjL47m3apBdpXIQbCW"
+                    "sig": "MEQCIBvf5ZF8ZBxG90VgAQ6ysUetJQpw+vmf25jszmIfwsVBAiBV7GxG7gSDvn3FN0DZqHtpwUJl0r7nADoLZmPAAosIqg=="
                 }
             ]
         }
@@ -993,28 +1184,80 @@ Error: success criteria not met
         "sources": [
             {
                 "policy": [
-                    "git::https://${GITHOST}/git/repository1.git"
-                ]
-            },
-            {
-                "policy": [
-                    "git::https://${GITHOST}/git/repository2.git"
-                ]
-            },
-            {
-                "policy": [
-                    "git::https://${GITHOST}/git/repository3.git"
+                    "git::https://${GITHOST}/git/happy-day-policy.git"
                 ]
             }
         ],
-        "rekorUrl": "${REKOR}",
         "publicKey": "${known_PUBLIC_KEY}"
     },
     "ec-version": "${EC_VERSION}"
 }
 ---
 
-[multiple policy sources with multiple source groups:stderr - 1]
+[application snapshot reference:stderr - 1]
+
+---
+
+[using attestation time as effective time:stdout - 1]
+{
+    "success": false,
+    "components": [
+        {
+            "name": "Unnamed",
+            "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
+            "violations": [
+                {
+                    "msg": "Fails in 2099",
+                    "metadata": {
+                        "effective_on": "2099-01-01T00:00:00Z"
+                    }
+                }
+            ],
+            "successes": [
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "builtin.attestation.signature_check"
+                    }
+                },
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "builtin.attestation.syntax_check"
+                    }
+                },
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "builtin.image.signature_check"
+                    }
+                }
+            ],
+            "success": false,
+            "signatures": [
+                {
+                    "keyid": "",
+                    "sig": "MEQCIAjG1xaJqSnu3Vn9+LUWh+cUNYMJ+lrgvfYfeMUjb/5oAiAFw2yFLmZn+PDuoD8nFJVrN1Vu0T/uXDCTZBNkGsRQZA=="
+                }
+            ]
+        }
+    ],
+    "key": ${known_PUBLIC_KEY_JSON},
+    "policy": {
+        "sources": [
+            {
+                "policy": [
+                    "git::https://${GITHOST}/git/future-deny-policy.git"
+                ]
+            }
+        ],
+        "publicKey": "${known_PUBLIC_KEY}"
+    },
+    "ec-version": "${EC_VERSION}"
+}
+---
+
+[using attestation time as effective time:stderr - 1]
 Error: success criteria not met
 
 ---
@@ -1069,7 +1312,7 @@ Error: success criteria not met
             "signatures": [
                 {
                     "keyid": "",
-                    "sig": "MEUCIC7GPj2wbFzlnQmmIHqebHg+TKJi5arzdvkDZcV2jJSIAiEAo3+IOBZjLZvXO/titW+qjTTU29oJLH7ojXwUa3bCtUs="
+                    "sig": "MEUCIQD1hD5lMCGq/KhRlBvuTewW67a/JuOzM7Eqtqu1AxN/cwIgSwNtFab2RZ45MSjgPg+xKZ3iMeBMNTm9JL3UPwA3MTw="
                 }
             ]
         }
@@ -1094,6 +1337,292 @@ Error: success criteria not met
 
 [multiple policy sources with one source group:stderr - 1]
 Error: success criteria not met
+
+---
+
+[JUnit output format:stdout - 1]
+<testsuites tests="5" failures="1"><testsuite name="Unnamed (${REGISTRY}/acceptance/image@${REGISTRY_acceptance/image:latest_HASH})" tests="5" failures="1" errors="0" id="0" time="" timestamp="${TIMESTAMP}"><properties><property name="image" value="${REGISTRY}/acceptance/image@${REGISTRY_acceptance/image:latest_HASH}"></property><property name="key" value="${known_PUBLIC_KEY_XML}"></property><property name="success" value="false"></property>${IMAGE_SIGNATURES_XML_acceptance/image}</properties><testcase name="builtin.attestation.signature_check: Pass" classname="builtin.attestation.signature_check: Pass"></testcase><testcase name="builtin.attestation.syntax_check: Pass" classname="builtin.attestation.syntax_check: Pass"></testcase><testcase name="builtin.image.signature_check: Pass" classname="builtin.image.signature_check: Pass"></testcase><testcase name="main.acceptor: Pass" classname="main.acceptor: Pass"></testcase><testcase name="main.rejector: Fails always" classname="main.rejector: Fails always"><failure message="Fails always"><![CDATA[Fails always]]></failure></testcase></testsuite></testsuites>
+---
+
+[JUnit output format:stderr - 1]
+Error: success criteria not met
+
+---
+
+[Custom rule data:stdout - 1]
+{
+    "success": true,
+    "components": [
+        {
+            "name": "Unnamed",
+            "containerImage": "${REGISTRY}/acceptance/image@${REGISTRY_acceptance/image:latest_HASH}",
+            "successes": [
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "builtin.attestation.signature_check"
+                    }
+                },
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "builtin.attestation.syntax_check"
+                    }
+                },
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "builtin.image.signature_check"
+                    }
+                }
+            ],
+            "success": true,
+            "signatures": [
+                {
+                    "keyid": "",
+                    "sig": "MEUCIQDWmyNxmG0O40LJ9zhQwkT7vCh0veKzi9cp1usfvOcYeQIgE7MYWmlNKsHBLzfmoxS72p7p6pB+ILh1vrRTxESrBdM="
+                }
+            ]
+        }
+    ],
+    "key": ${known_PUBLIC_KEY_JSON},
+    "policy": {
+        "sources": [
+            {
+                "policy": [
+                    "git::https://${GITHOST}/git/my-policy1.git"
+                ],
+                "ruleData": {
+                    "custom": "data1"
+                }
+            },
+            {
+                "policy": [
+                    "git::https://${GITHOST}/git/my-policy2.git"
+                ],
+                "ruleData": {
+                    "other": "data2"
+                }
+            }
+        ],
+        "publicKey": "${known_PUBLIC_KEY}"
+    },
+    "ec-version": "${EC_VERSION}"
+}
+---
+
+[Custom rule data:stderr - 1]
+
+---
+
+[Custom rule data:${TMPDIR}/custom-rule-data.yaml - 1]
+- - config:
+      policy:
+        when_ns: 1401494400000000000
+    rule_data__configuration__:
+      custom: data1
+  - config:
+      policy:
+        when_ns: 1401494400000000000
+    rule_data__configuration__:
+      other: data2
+
+---
+
+[inline policy:stdout - 1]
+{
+    "success": true,
+    "components": [
+        {
+            "name": "Unnamed",
+            "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
+            "successes": [
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "builtin.attestation.signature_check"
+                    }
+                },
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "builtin.attestation.syntax_check"
+                    }
+                },
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "builtin.image.signature_check"
+                    }
+                },
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "main.acceptor"
+                    }
+                }
+            ],
+            "success": true,
+            "signatures": [
+                {
+                    "keyid": "",
+                    "sig": "MEYCIQD4IfRLLK0FSYhV4ajQrIzjDXi8oR6uuX/CXk1kZLJgkQIhAJ71qH+zi5eYfHqco8SfPZglY4oIP3/4lRwn3/gxa3jq"
+                }
+            ]
+        }
+    ],
+    "key": ${known_PUBLIC_KEY_JSON},
+    "policy": {
+        "sources": [
+            {
+                "policy": [
+                    "git::https://${GITHOST}/git/happy-day-policy.git"
+                ]
+            }
+        ],
+        "rekorUrl": "${REKOR}",
+        "publicKey": "${known_PUBLIC_KEY}"
+    },
+    "ec-version": "${EC_VERSION}"
+}
+---
+
+[inline policy:stderr - 1]
+
+---
+
+[happy day with missing git config:stdout - 1]
+
+---
+
+[happy day with missing git config:stderr - 1]
+Error: 1 error occurred:
+    * No suitable config file found at git::https://${GITHOST}/git/happy-config.git
+
+
+
+---
+
+[happy day with git config and yaml:stdout - 1]
+{
+    "success": true,
+    "components": [
+        {
+            "name": "Unnamed",
+            "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
+            "successes": [
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "builtin.attestation.signature_check"
+                    }
+                },
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "builtin.attestation.syntax_check"
+                    }
+                },
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "builtin.image.signature_check"
+                    }
+                },
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "main.acceptor"
+                    }
+                }
+            ],
+            "success": true,
+            "signatures": [
+                {
+                    "keyid": "",
+                    "sig": "MEQCIFdmAQwQ24FqPZ9RPDYXIuk6AcWqMP2Atk5ZhRMBPqQeAiAWRDR19XNwN1SZP4NcQ5nbG0oItq8bWhrKGty5zzqcYg=="
+                }
+            ]
+        }
+    ],
+    "key": ${known_PUBLIC_KEY_JSON},
+    "policy": {
+        "sources": [
+            {
+                "policy": [
+                    "git::https://${GITHOST}/git/happy-day-policy.git"
+                ]
+            }
+        ],
+        "rekorUrl": "${REKOR}",
+        "publicKey": "${known_PUBLIC_KEY}"
+    },
+    "ec-version": "${EC_VERSION}"
+}
+---
+
+[happy day with git config and yaml:stderr - 1]
+
+---
+
+[inline application snapshot:stdout - 1]
+{
+    "success": true,
+    "components": [
+        {
+            "name": "Happy",
+            "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
+            "successes": [
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "builtin.attestation.signature_check"
+                    }
+                },
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "builtin.attestation.syntax_check"
+                    }
+                },
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "builtin.image.signature_check"
+                    }
+                },
+                {
+                    "msg": "Pass",
+                    "metadata": {
+                        "code": "main.acceptor"
+                    }
+                }
+            ],
+            "success": true,
+            "signatures": [
+                {
+                    "keyid": "",
+                    "sig": "MEUCIQDBDDx7StD2yGyei3hN8QhFnaXYaV6YidOF1sJsrciSTQIgXkH7A5NQqYkCmUvYlKA7unrcLFYY/phNjwHSxTBZss4="
+                }
+            ]
+        }
+    ],
+    "key": ${known_PUBLIC_KEY_JSON},
+    "policy": {
+        "sources": [
+            {
+                "policy": [
+                    "git::https://${GITHOST}/git/happy-day-policy.git"
+                ]
+            }
+        ],
+        "publicKey": "${known_PUBLIC_KEY}"
+    },
+    "ec-version": "${EC_VERSION}"
+}
+---
+
+[inline application snapshot:stderr - 1]
 
 ---
 
@@ -1136,7 +1665,7 @@ Error: success criteria not met
             "signatures": [
                 {
                     "keyid": "",
-                    "sig": "MEYCIQC8g0BxUS+YDQezXlnbB7+ZPr4+P3Xu3yf+QwiPd9FBZgIhAL52ubtilnSjVpMQwVFK6XNSq1jpq/P/rcBH9VF6VnCw"
+                    "sig": "MEQCIHjwQYuesH5FI+GgfyEj/Zs3JdxhKk/KVUVssiI8hNQRAiBcYXyX3k9LOa74Elfoq5CFAgtUlp6Xgo4HzRiRPL79gw=="
                 }
             ]
         }
@@ -1170,534 +1699,5 @@ Error: success criteria not met
 
 [policy and data sources:stderr - 1]
 Error: success criteria not met
-
----
-
-[policy rule filtering:stdout - 1]
-{
-    "success": true,
-    "components": [
-        {
-            "name": "Unnamed",
-            "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
-            "successes": [
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "builtin.attestation.signature_check"
-                    }
-                },
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "builtin.attestation.syntax_check"
-                    }
-                },
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "builtin.image.signature_check"
-                    }
-                },
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "filtering.always_pass"
-                    }
-                },
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "filtering.always_pass_with_collection"
-                    }
-                }
-            ],
-            "success": true,
-            "signatures": [
-                {
-                    "keyid": "",
-                    "sig": "MEUCIQCxaIvNGjpexAVazmVwF7hTf96QwkTkkmfue/YJoTu9+gIgAczlcpKBEV/Yc1lXG4BkBloipNOrj2XmLPgzHguXdsg="
-                }
-            ]
-        }
-    ],
-    "key": ${known_PUBLIC_KEY_JSON},
-    "policy": {
-        "sources": [
-            {
-                "policy": [
-                    "git::https://${GITHOST}/git/happy-day-policy.git"
-                ]
-            }
-        ],
-        "configuration": {
-            "exclude": [
-                "filtering.always_fail",
-                "filtering.always_fail_with_collection"
-            ],
-            "include": [
-                "@stamps",
-                "filtering.always_pass"
-            ]
-        },
-        "rekorUrl": "${REKOR}",
-        "publicKey": "${known_PUBLIC_KEY}"
-    },
-    "ec-version": "${EC_VERSION}"
-}
----
-
-[policy rule filtering:stderr - 1]
-
----
-
-[policy rule filtering for successes:stdout - 1]
-{
-    "success": true,
-    "components": [
-        {
-            "name": "Unnamed",
-            "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
-            "successes": [
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "builtin.attestation.signature_check"
-                    }
-                },
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "builtin.attestation.syntax_check"
-                    }
-                },
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "builtin.image.signature_check"
-                    }
-                },
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "filtering.always_pass"
-                    }
-                }
-            ],
-            "success": true,
-            "signatures": [
-                {
-                    "keyid": "",
-                    "sig": "MEUCIQDZkfHYWNjbcmxpvWYI5So1E2s8/biPLckpRWEpIdAG+AIgIB2L7/8EH+Mgk/E/EvVb5snRf8BzrcrRW15t6d3Dl9I="
-                }
-            ]
-        }
-    ],
-    "key": ${known_PUBLIC_KEY_JSON},
-    "policy": {
-        "sources": [
-            {
-                "policy": [
-                    "git::https://${GITHOST}/git/happy-day-policy.git"
-                ]
-            }
-        ],
-        "configuration": {
-            "exclude": [
-                "filtering.always_pass_with_collection",
-                "filtering.always_fail_with_collection"
-            ],
-            "include": [
-                "@stamps",
-                "filtering.always_pass"
-            ]
-        },
-        "publicKey": "${known_PUBLIC_KEY}"
-    },
-    "ec-version": "${EC_VERSION}"
-}
----
-
-[policy rule filtering for successes:stderr - 1]
-
----
-
-[rule dependencies:stdout - 1]
-{
-    "success": false,
-    "components": [
-        {
-            "name": "Unnamed",
-            "containerImage": "${REGISTRY}/acceptance/image@${REGISTRY_acceptance/image:latest_HASH}",
-            "violations": [
-                {
-                    "msg": "Failure",
-                    "metadata": {
-                        "code": "pkg.fails"
-                    }
-                }
-            ],
-            "warnings": [
-                {
-                    "msg": "Warning",
-                    "metadata": {
-                        "code": "pkg.warns"
-                    }
-                }
-            ],
-            "successes": [
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "builtin.attestation.signature_check"
-                    }
-                },
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "builtin.attestation.syntax_check"
-                    }
-                },
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "builtin.image.signature_check"
-                    }
-                }
-            ],
-            "success": false,
-            "signatures": [
-                {
-                    "keyid": "",
-                    "sig": "MEUCIHG321Rg7eGPnGtfNU25z43ZYhTmY0rmtYaK6XE9gni6AiEAxvq0PiB/GxRUFUQGvsKkDkhq61U1WzeADYQ91vEUqlw="
-                }
-            ]
-        }
-    ],
-    "key": ${known_PUBLIC_KEY_JSON},
-    "policy": {
-        "sources": [
-            {
-                "policy": [
-                    "git::https://${GITHOST}/git/with-dependencies.git"
-                ]
-            }
-        ],
-        "publicKey": "${known_PUBLIC_KEY}"
-    },
-    "ec-version": "${EC_VERSION}"
-}
----
-
-[rule dependencies:stderr - 1]
-Error: success criteria not met
-
----
-
-[unexpected image signature cert:stdout - 1]
-{
-    "success": false,
-    "components": [
-        {
-            "name": "Unnamed",
-            "containerImage": "${REGISTRY}/acceptance/unexpected-keyless-cert@${REGISTRY_acceptance/unexpected-keyless-cert:latest_HASH}",
-            "violations": [
-                {
-                    "msg": "Image attestation check failed: no matching attestations:\nnone of the expected identities matched what was in the certificate, got subjects [${CERT_IDENTITY}] with issuer ${CERT_ISSUER}",
-                    "metadata": {
-                        "code": "builtin.attestation.signature_check"
-                    }
-                },
-                {
-                    "msg": "Image signature check failed: no matching signatures:\nnone of the expected identities matched what was in the certificate, got subjects [${CERT_IDENTITY}] with issuer ${CERT_ISSUER}",
-                    "metadata": {
-                        "code": "builtin.image.signature_check"
-                    }
-                }
-            ],
-            "success": false
-        }
-    ],
-    "key": "",
-    "policy": {
-        "sources": [
-            {
-                "policy": [
-                    "git::https://${GITHOST}/git/unexpected-keyless-cert.git"
-                ]
-            }
-        ],
-        "rekorUrl": "http://this.is.ignored"
-    },
-    "ec-version": "${EC_VERSION}"
-}
----
-
-[unexpected image signature cert:stderr - 1]
-Error: success criteria not met
-
----
-
-[using attestation time as effective time:stdout - 1]
-{
-    "success": false,
-    "components": [
-        {
-            "name": "Unnamed",
-            "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
-            "violations": [
-                {
-                    "msg": "Fails in 2099",
-                    "metadata": {
-                        "effective_on": "2099-01-01T00:00:00Z"
-                    }
-                }
-            ],
-            "successes": [
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "builtin.attestation.signature_check"
-                    }
-                },
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "builtin.attestation.syntax_check"
-                    }
-                },
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "builtin.image.signature_check"
-                    }
-                }
-            ],
-            "success": false,
-            "signatures": [
-                {
-                    "keyid": "",
-                    "sig": "MEYCIQDGcj2ibpYktz8bp62CSZyG4Iakp/xnExm+yRqsLIbU6QIhALt4ySPsm8lhAxsQdCLjhQ4mY8Pyy2edgXpOrS/+udmC"
-                }
-            ]
-        }
-    ],
-    "key": ${known_PUBLIC_KEY_JSON},
-    "policy": {
-        "sources": [
-            {
-                "policy": [
-                    "git::https://${GITHOST}/git/future-deny-policy.git"
-                ]
-            }
-        ],
-        "publicKey": "${known_PUBLIC_KEY}"
-    },
-    "ec-version": "${EC_VERSION}"
-}
----
-
-[using attestation time as effective time:stderr - 1]
-Error: success criteria not met
-
----
-
-[Using OCI bundles:stdout - 1]
-{
-    "success": true,
-    "components": [
-        {
-            "name": "Unnamed",
-            "containerImage": "${REGISTRY}/acceptance/my-image@${REGISTRY_acceptance/my-image:latest_HASH}",
-            "successes": [
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "builtin.attestation.signature_check"
-                    }
-                },
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "builtin.attestation.syntax_check"
-                    }
-                },
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "builtin.image.signature_check"
-                    }
-                },
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "main.acceptor"
-                    }
-                }
-            ],
-            "success": true,
-            "signatures": [
-                {
-                    "keyid": "",
-                    "sig": "MEYCIQD5pyvgBZ8RAkTb7vuax48IRmemN59mH8ZjEpw7Q5Bp4QIhAPkbbrMwt5eODvGwKkSQnwCskPHEvoWYM37V86KndLBt"
-                }
-            ]
-        }
-    ],
-    "key": ${known_PUBLIC_KEY_JSON},
-    "policy": {
-        "sources": [
-            {
-                "policy": [
-                    "oci::https://${REGISTRY}/acceptance/happy-day-policy:tag",
-                    "oci::${REGISTRY}/acceptance/allow-all:latest"
-                ]
-            }
-        ],
-        "publicKey": "${known_PUBLIC_KEY}"
-    },
-    "ec-version": "${EC_VERSION}"
-}
----
-
-[Using OCI bundles:stderr - 1]
-
----
-
-[application snapshot reference:stdout - 1]
-{
-    "success": true,
-    "snapshot": "acceptance/happy",
-    "components": [
-        {
-            "name": "Happy",
-            "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
-            "successes": [
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "builtin.attestation.signature_check"
-                    }
-                },
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "builtin.attestation.syntax_check"
-                    }
-                },
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "builtin.image.signature_check"
-                    }
-                },
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "main.acceptor"
-                    }
-                }
-            ],
-            "success": true,
-            "signatures": [
-                {
-                    "keyid": "",
-                    "sig": "MEUCIHIk6AKBEwR+Bqn2+7KPCpjecdEOLYoL4peRsnQpubRBAiEApNT7K9Tb9sRO+GTEjI51zy/egzmkIMEUfW0fsVwzYqI="
-                }
-            ]
-        }
-    ],
-    "key": ${known_PUBLIC_KEY_JSON},
-    "policy": {
-        "sources": [
-            {
-                "policy": [
-                    "git::https://${GITHOST}/git/happy-day-policy.git"
-                ]
-            }
-        ],
-        "publicKey": "${known_PUBLIC_KEY}"
-    },
-    "ec-version": "${EC_VERSION}"
-}
----
-
-[application snapshot reference:stderr - 1]
-
----
-
-[successes are not duplicated:stdout - 1]
-{
-    "success": false,
-    "components": [
-        {
-            "name": "Unnamed",
-            "containerImage": "${REGISTRY}/acceptance/unique-successes@${REGISTRY_acceptance/unique-successes:latest_HASH}",
-            "violations": [
-                {
-                    "msg": "Always fails",
-                    "metadata": {
-                        "code": "gloomy.sad"
-                    }
-                }
-            ],
-            "successes": [
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "builtin.attestation.signature_check"
-                    }
-                },
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "builtin.attestation.syntax_check"
-                    }
-                },
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "builtin.image.signature_check"
-                    }
-                },
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "gloomy.happy"
-                    }
-                },
-                {
-                    "msg": "Pass",
-                    "metadata": {
-                        "code": "main.acceptor"
-                    }
-                }
-            ],
-            "success": false,
-            "signatures": [
-                {
-                    "keyid": "",
-                    "sig": "MEQCIBZJ0QHQATX6H7NmFvSbqr0fOzSGhAJ/MFivNd7GC+o6AiA9unPUqkwsy7ffU9wxT3czUK7abVUOq1qCfsCHW+5jZA=="
-                }
-            ]
-        }
-    ],
-    "key": ${known_PUBLIC_KEY_JSON},
-    "policy": {
-        "sources": [
-            {
-                "policy": [
-                    "git::https://${GITHOST}/git/unique-successes.git"
-                ]
-            }
-        ],
-        "rekorUrl": "${REKOR}",
-        "publicKey": "${known_PUBLIC_KEY}"
-    },
-    "ec-version": "${EC_VERSION}"
-}
----
-
-[successes are not duplicated:stderr - 1]
 
 ---
