@@ -1,4 +1,4 @@
-// Copyright 2023 Red Hat, Inc.
+// Copyright The Enterprise Contract Contributors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,11 +27,11 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
-func TestFetchSourcesFromPolicy(t *testing.T) {
+func TestInitializeNoError(t *testing.T) {
 	fs := afero.NewMemMapFs()
 	ctx := utils.WithFS(context.Background(), fs)
 
-	cmd := initCmd()
+	cmd := initPoliciesCmd()
 	cmd.SetContext(ctx)
 	buffy := bytes.Buffer{}
 	cmd.SetOut(&buffy)
@@ -43,6 +43,4 @@ func TestFetchSourcesFromPolicy(t *testing.T) {
 
 	err := cmd.Execute()
 	assert.NoError(t, err)
-
-	//TODO: assert.Equal(t, "[one,two,three]", cmd.Flag("source").Value.String())
 }

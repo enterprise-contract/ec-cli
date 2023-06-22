@@ -69,22 +69,24 @@ func initPoliciesCmd() *cobra.Command {
 				return err
 			}
 			defer file.Close()
-			fmt.Fprintf(file, "%s", hd.Doc(`# Simplest never-failing policy
-			package policy.release.my_package
+			fmt.Fprintf(file, "%s", hd.Doc(`
+				# Simplest never-failing policy
+				package policy.release.my_package
 
-			# METADATA
-			# title: Allow rule
-			# description: This rule will never fail
-			# custom:
-			#   short_name: acceptor
-			#   failure_msg: Always succeeds
-			#   solution: Easy
-			#   collections:
-			#   - A
-			deny[result] {
-			  false
-			  result := "Never denies"
-			}`))
+				# METADATA
+				# title: Allow rule
+				# description: This rule will never fail
+				# custom:
+				#   short_name: acceptor
+				#   failure_msg: Always succeeds
+				#   solution: Easy
+				#   collections:
+				#   - A
+				deny[result] {
+					false
+					result := "Never denies"
+				}
+			`))
 
 			return nil
 		},
