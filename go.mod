@@ -23,7 +23,7 @@ require (
 	github.com/redhat-appstudio/application-api v0.0.0-20230309195839-6e0986f52132
 	github.com/secure-systems-lab/go-securesystemslib v0.6.0
 	github.com/sigstore/cosign/v2 v2.0.3-0.20230505201329-3121a17d136e
-	github.com/sigstore/sigstore v1.7.0
+	github.com/sigstore/sigstore v1.7.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/afero v1.9.5
 	github.com/spf13/cobra v1.7.0
