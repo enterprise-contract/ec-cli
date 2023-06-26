@@ -720,27 +720,8 @@ func matchSnapshot(ctx context.Context) error {
 		return err
 	}
 
-	var stdout, stderr error
-
-   formatJSON := true
-   var jsonOutput json.RawMessage
-   if err := json.Unmarshal(status.stdout.Bytes(), &jsonOutput); err != nil {
-	   formatJSON = false
-   }
-
-   if formatJSON {
-	   prettyOutput, err := json.MarshalIndent(jsonOutput, "", "    ")
-		if err != nil {
-			return err		
-		}		
-		stdout = snaps.MatchSnapshot(ctx, "stdout", string(prettyOutput), status.vars)
-		stderr = snaps.MatchSnapshot(ctx, "stderr", status.stderr.String(), status.vars)
-
-
-   } else {
-		stdout = snaps.MatchSnapshot(ctx, "stdout", status.stdout.String(), status.vars)
-		stderr = snaps.MatchSnapshot(ctx, "stderr", status.stderr.String(), status.vars)
-	}
+	stdout := snaps.MatchSnapshot(ctx, "stdout", status.stdout.String(), status.vars)
+	stderr := snaps.MatchSnapshot(ctx, "stderr", status.stderr.String(), status.vars)
 
 	if stdout == nil && stderr == nil {
 		return nil
