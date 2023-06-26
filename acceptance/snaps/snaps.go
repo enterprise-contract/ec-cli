@@ -18,6 +18,7 @@ package snaps
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -141,6 +142,21 @@ func MatchSnapshot(ctx context.Context, qualifier, text string, vars map[string]
 	scenario := ctx.Value(testenv.Scenario).(*godog.Scenario)
 
 	snapshot := strings.TrimSuffix(filepath.Base(scenario.Uri), filepath.Ext(scenario.Uri))
+
+	formatText := true
+	var textOutput json.RawMessage
+	if err := json.Unmarshal([]byte(text), &textOutput); err != nil {
+		formatText = false
+	}
+
+	if formatText{
+		formattedText, err := json.MarshalIndent(textOutput, "", "  ")
+		if err != nil {
+			return err
+		}
+		text = string(formattedText)
+	}
+
 
 	snaps.WithConfig(snaps.Dir(path.Join(wd, "features", "__snapshots__")), snaps.Filename(snapshot)).MatchSnapshot(&errs, text)
 
