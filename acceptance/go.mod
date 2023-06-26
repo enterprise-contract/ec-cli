@@ -9,7 +9,7 @@ require (
 	github.com/doiit/picocolors v1.0.1
 	github.com/enterprise-contract/enterprise-contract-controller/api v0.0.0-20230327185456-5befd172d558
 	github.com/evanphx/json-patch/v5 v5.6.0
-	github.com/gkampitakis/go-snaps v0.4.6 // we need custom snapshot directory & file support from https://github.com/gkampitakis/go-snaps/pull/60
+	github.com/gkampitakis/go-snaps v0.4.7 // we need custom snapshot directory & file support from https://github.com/gkampitakis/go-snaps/pull/60
 	github.com/go-git/go-billy/v5 v5.4.1
 	github.com/go-git/go-git/v5 v5.7.0
 	github.com/go-openapi/strfmt v0.21.7
