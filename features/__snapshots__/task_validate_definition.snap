@@ -1,6 +1,17 @@
 
 [Verifying a simple task definition:validate - 1]
-{"definitions":[{"filename":"${TEMP}/definition-file-${RANDOM}","violations":[],"warnings":[],"success":true}],"success":true,"ec-version":"${EC_VERSION}"}
+{
+  "definitions": [
+    {
+      "filename": "${TEMP}/definition-file-${RANDOM}",
+      "violations": [],
+      "warnings": [],
+      "success": true
+    }
+  ],
+  "success": true,
+  "ec-version": "${EC_VERSION}"
+}
 ---
 
 [Verifying a simple task definition:results - 1]
