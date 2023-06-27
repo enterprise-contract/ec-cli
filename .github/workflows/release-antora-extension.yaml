@@ -40,14 +40,14 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
 
       # we don't want to restore 3+ GB of cache when we can fetch much less from npmjs.com
       - name: Download NPM dependencies
         run: npm ci
 
       - name: Setup Node.js environment
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
         with:
           node-version-file: '${{ matrix.path }}/package.json'
 
