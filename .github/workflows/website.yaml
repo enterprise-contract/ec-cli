@@ -25,6 +25,9 @@ name: Website
       - 'docs/**'
       - 'website/**'
 
+permissions:
+  contents: read
+
 jobs:
   website_update:
     runs-on: ubuntu-latest
@@ -34,6 +37,11 @@ jobs:
           - APP_INSTALL_ID: 29980719
             REPOSITORY: enterprise-contract/enterprise-contract.github.io
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@55d479fb1c5bcad5a4f9099a5d9f37c8857b2845 # v2.4.1
+        with:
+          egress-policy: audit
+
       - name: Trigger website update
         env:
           EC_AUTOMATION_KEY: ${{ secrets.EC_AUTOMATION_KEY }}
