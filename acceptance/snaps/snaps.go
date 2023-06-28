@@ -149,14 +149,13 @@ func MatchSnapshot(ctx context.Context, qualifier, text string, vars map[string]
 		formatText = false
 	}
 
-	if formatText{
+	if formatText {
 		formattedText, err := json.MarshalIndent(textOutput, "", "  ")
 		if err != nil {
 			return err
 		}
 		text = string(formattedText)
 	}
-
 
 	snaps.WithConfig(snaps.Dir(path.Join(wd, "features", "__snapshots__")), snaps.Filename(snapshot)).MatchSnapshot(&errs, text)
 
