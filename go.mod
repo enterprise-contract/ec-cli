@@ -16,7 +16,7 @@ require (
 	github.com/in-toto/in-toto-golang v0.9.0
 	github.com/jstemmer/go-junit-report/v2 v2.0.0
 	github.com/leanovate/gopter v0.2.9
-	github.com/open-policy-agent/conftest v0.39.1-0.20230309145322-347708d2fd13
+	github.com/open-policy-agent/conftest v0.43.1
 	github.com/open-policy-agent/opa v0.54.0
 	github.com/qri-io/jsonpointer v0.1.1
 	github.com/qri-io/jsonschema v0.2.1
@@ -99,9 +99,9 @@ require (
 	github.com/basgys/goxml2json v1.1.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d // indirect
-	github.com/bitly/go-simplejson v0.5.0 // indirect
 	github.com/blang/semver v3.5.1+incompatible // indirect
 	github.com/blendle/zapdriver v1.3.1 // indirect
+	github.com/bufbuild/protocompile v0.5.1 // indirect
 	github.com/census-instrumentation/opencensus-proto v0.4.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/chrismellard/docker-credential-acr-env v0.0.0-20221002210726-e883f69e0206 // indirect
@@ -305,7 +305,3 @@ require (
 	sigs.k8s.io/release-utils v0.7.4 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 )
-
-// This is needed until this is accepted upstream:
-// https://github.com/open-policy-agent/conftest/pull/796
-replace github.com/open-policy-agent/conftest => github.com/zregvart/conftest v0.0.0-20230328131211-40a00f729400
