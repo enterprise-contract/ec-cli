@@ -130,6 +130,7 @@ lint: tekton-lint ## Run linter
 # piping to sed above looses the exit code, luckily addlicense is fast so we invoke it for the second time to exit 1 in case of issues
 	@go run -modfile tools/go.mod github.com/google/addlicense -c $(COPY) -s -check $(LICENSE_IGNORE) . >/dev/null 2>&1
 	@go run -modfile tools/go.mod github.com/golangci/golangci-lint/cmd/golangci-lint run --sort-results $(if $(GITHUB_ACTIONS), --out-format=github-actions --timeout=10m0s)
+	@(cd acceptance && go run -modfile ../tools/go.mod github.com/golangci/golangci-lint/cmd/golangci-lint run --path-prefix acceptance --sort-results $(if $(GITHUB_ACTIONS), --out-format=github-actions --timeout=10m0s))
 # We don't fail on the internal (error handling) linter, we just report the
 # issues for now.
 # TODO: resolve the error handling issues and enable the linter failure
@@ -139,6 +140,7 @@ lint: tekton-lint ## Run linter
 lint-fix: ## Fix linting issues automagically
 	@go run -modfile tools/go.mod github.com/google/addlicense -c $(COPY) -s $(LICENSE_IGNORE) .
 	@go run -modfile tools/go.mod github.com/golangci/golangci-lint/cmd/golangci-lint run --fix
+	@(cd acceptance && go run -modfile ../tools/go.mod github.com/golangci/golangci-lint/cmd/golangci-lint run --path-prefix acceptance --fix)
 # We don't apply the fixes from the internal (error handling) linter.
 # TODO: fix the outstanding error handling lint issues and enable the fixer
 #	@go run -modfile tools/go.mod ./internal/lint -fix $$(go list ./... | grep -v '/acceptance/')

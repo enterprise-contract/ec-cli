@@ -58,7 +58,7 @@ var URLPathEqualTo = wiremock.URLPathEqualTo
 type client struct {
 	*wiremock.Client
 
-	url string
+	unmatchedURL string
 }
 
 // newClient creates a new WireMock client, delegating to the wiremock.Client
@@ -66,7 +66,7 @@ type client struct {
 func newClient(url string) *client {
 	w := *wiremock.NewClient(url)
 
-	return &client{url: url, Client: &w}
+	return &client{unmatchedURL: fmt.Sprintf("%s/__admin/requests/unmatched", url), Client: &w}
 }
 
 // The result of /__admin/requests/unmatched endpoint
@@ -155,20 +155,19 @@ wiremock.StubFor(ctx, wiremock.%s(wiremock.URLPathEqualTo("%s")).
 // i.e. those that have been received but no stubbing was defined and returns
 // them
 func (c *client) UnmatchedRequests() ([]unmatchedRequest, error) {
-	unmatchedUrl := fmt.Sprintf("%s/__admin/requests/unmatched", c.url)
-	res, err := http.Get(unmatchedUrl)
+	res, err := http.Get(c.unmatchedURL)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch unmatched requests via `%s`: %s", unmatchedUrl, err.Error())
+		return nil, fmt.Errorf("failed to fetch unmatched requests via `%s`: %s", c.unmatchedURL, err.Error())
 	}
 	defer res.Body.Close()
 
 	bodyBytes, err := io.ReadAll(res.Body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch unmatched requests via `%s`: failed to read the response, error: %s", unmatchedUrl, err.Error())
+		return nil, fmt.Errorf("failed to fetch unmatched requests via `%s`: failed to read the response, error: %s", c.unmatchedURL, err.Error())
 	}
 
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("failed to fetch unmatched requests via `%s`: bad response status: %d, response: %s", unmatchedUrl, res.StatusCode, string(bodyBytes))
+		return nil, fmt.Errorf("failed to fetch unmatched requests via `%s`: bad response status: %d, response: %s", c.unmatchedURL, res.StatusCode, string(bodyBytes))
 	}
 
 	var unmatchedRequestsResponse struct {
@@ -177,7 +176,7 @@ func (c *client) UnmatchedRequests() ([]unmatchedRequest, error) {
 
 	err = json.Unmarshal(bodyBytes, &unmatchedRequestsResponse)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch unmatched requests via `%s`: unable to unmarshal JSON error: %s, given JSON: `%s`", unmatchedUrl, err.Error(), string(bodyBytes))
+		return nil, fmt.Errorf("failed to fetch unmatched requests via `%s`: unable to unmarshal JSON error: %s, given JSON: `%s`", c.unmatchedURL, err.Error(), string(bodyBytes))
 	}
 
 	return unmatchedRequestsResponse.Requests, nil

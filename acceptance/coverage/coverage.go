@@ -213,6 +213,7 @@ func instrumentFilesInPackage(packageName string) (cInfo *coverInfo, err error) 
 		// 1) Generate the instrumented source code using the `go tool cover`
 		// functionality. The instrumented file is created in the temporary dir,
 		// tdir.
+		/* #nosec */
 		cmd := exec.Command(
 			"go", "tool", "cover",
 			"-mode=set",

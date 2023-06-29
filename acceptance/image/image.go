@@ -791,7 +791,9 @@ func applyPatches(statement *in_toto.ProvenanceStatement, patches *godog.Table) 
 	}
 
 	var modified in_toto.ProvenanceStatement
-	json.Unmarshal(stmt, &modified)
+	if err := json.Unmarshal(stmt, &modified); err != nil {
+		return nil, err
+	}
 
 	return &modified, nil
 }

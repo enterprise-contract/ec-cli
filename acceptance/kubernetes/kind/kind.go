@@ -20,13 +20,14 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"crypto/rand"
 	"fmt"
 	"io"
-	"math/rand"
+	"math"
+	"math/big"
 	"os"
 	"path"
 	"sync"
-	"time"
 
 	"github.com/phayes/freeport"
 	appsv1 "k8s.io/api/apps/v1"
@@ -106,10 +107,6 @@ type kindCluster struct {
 	mapper         meta.RESTMapper
 }
 
-func init() {
-	rand.Seed(time.Now().UnixNano())
-}
-
 func (k *kindCluster) Up(_ context.Context) bool {
 	if k == nil || k.provider == nil || k.name == "" {
 		return false
@@ -142,8 +139,9 @@ func Start(givenCtx context.Context) (ctx context.Context, kCluster types.Cluste
 			return
 		}
 
+		id, err := rand.Int(rand.Reader, big.NewInt(math.MaxUint32))
 		kCluster := kindCluster{
-			name:     fmt.Sprintf("acceptance-%d", rand.Uint64()),
+			name:     fmt.Sprintf("acceptance-%d", id.Uint64()),
 			provider: k.NewProvider(k.ProviderWithLogger(logger)),
 		}
 		kCluster.kubeconfigPath = path.Join(configDir, "kubeconfig")
@@ -152,7 +150,9 @@ func Start(givenCtx context.Context) (ctx context.Context, kCluster types.Cluste
 			if err != nil {
 				logger.Infof("An error occured creating the cluster: %v", err)
 				// an error happened we need to cleanup
-				kCluster.provider.Delete(kCluster.name, kCluster.kubeconfigPath)
+				if err := kCluster.provider.Delete(kCluster.name, kCluster.kubeconfigPath); err != nil {
+					logger.Infof("An error occured creating deleting the cluster: %v", err)
+				}
 			}
 		}()
 

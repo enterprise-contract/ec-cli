@@ -254,7 +254,9 @@ func CLIVersion(ctx context.Context) (string, error) {
 		ver := struct {
 			Version string
 		}{}
-		json.Unmarshal(stdout.Bytes(), &ver)
+		if err := json.Unmarshal(stdout.Bytes(), &ver); err != nil {
+			panic(err)
+		}
 
 		ecVersion = ver.Version
 	})
