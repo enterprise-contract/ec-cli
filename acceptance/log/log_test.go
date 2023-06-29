@@ -31,11 +31,11 @@ type mockDelegateLogger struct {
 	mock.Mock
 }
 
-func (m mockDelegateLogger) Log(args ...any) {
+func (m *mockDelegateLogger) Log(args ...any) {
 	m.Called(args)
 }
 
-func (m mockDelegateLogger) Logf(format string, args ...any) {
+func (m *mockDelegateLogger) Logf(format string, args ...any) {
 	m.Called(format, args)
 }
 

@@ -92,7 +92,7 @@ func startStubGitServer(ctx context.Context) (context.Context, error) {
 	if err = os.Mkdir(nginxConfDir, 0755); err != nil {
 		return ctx, err
 	}
-	if err = os.WriteFile(path.Join(nginxConfDir, "nginx.conf"), nginxConf, 0444); err != nil {
+	if err = os.WriteFile(path.Join(nginxConfDir, "nginx.conf"), nginxConf, 0400); err != nil {
 		return ctx, err
 	}
 
@@ -111,7 +111,7 @@ func startStubGitServer(ctx context.Context) (context.Context, error) {
 			Bytes: keyBytes,
 		})
 
-		if err = os.WriteFile(path.Join(tlsDir, "server.key"), keyPem, 0444); err != nil {
+		if err = os.WriteFile(path.Join(tlsDir, "server.key"), keyPem, 0400); err != nil {
 			return ctx, err
 		}
 
@@ -139,7 +139,7 @@ func startStubGitServer(ctx context.Context) (context.Context, error) {
 				Bytes: cert,
 			})
 
-			if err = os.WriteFile(certificate, certPEM, 0444); err != nil {
+			if err = os.WriteFile(certificate, certPEM, 0400); err != nil {
 				return ctx, err
 			}
 
@@ -258,7 +258,7 @@ func createGitRepository(ctx context.Context, repositoryName string, files *godo
 			}))
 		}
 
-		err = os.WriteFile(dest, b, 0644)
+		err = os.WriteFile(dest, b, 0600)
 		if err != nil {
 			return err
 		}

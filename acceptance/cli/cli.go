@@ -220,7 +220,9 @@ func setupKeys(ctx context.Context, vars map[string]string, environment []string
 		vars[name+"_PUBLIC_KEY_JSON"] = string(publicKeyJson)
 
 		publicKeyXML := bytes.Buffer{}
-		xml.EscapeText(&publicKeyXML, []byte(publicKey))
+		if err := xml.EscapeText(&publicKeyXML, []byte(publicKey)); err != nil {
+			return environment, vars, err
+		}
 		vars[name+"_PUBLIC_KEY_XML"] = publicKeyXML.String()
 	}
 

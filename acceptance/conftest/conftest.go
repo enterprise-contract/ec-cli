@@ -20,7 +20,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -110,7 +109,7 @@ func runConftest(ctx context.Context, command, produces string, content *godog.D
 		return fmt.Errorf("failure running conftest: %w", err)
 	}
 
-	buff, err := ioutil.ReadFile(path.Join(dir, produces))
+	buff, err := os.ReadFile(path.Join(dir, produces))
 	if err != nil {
 		return err
 	}

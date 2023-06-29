@@ -24,7 +24,7 @@ import (
 )
 
 func writePipelineDefinition(ctx context.Context, name string, data string) (context.Context, error) {
-	err := os.WriteFile(name, []byte(data), 0644)
+	err := os.WriteFile(name, []byte(data), 0600)
 	if err != nil {
 		return ctx, err
 	}
