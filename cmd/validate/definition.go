@@ -22,6 +22,7 @@ import (
 
 	hd "github.com/MakeNowJust/heredoc"
 	"github.com/hashicorp/go-multierror"
+	coutput "github.com/open-policy-agent/conftest/output"
 	"github.com/spf13/cobra"
 
 	"github.com/enterprise-contract/ec-cli/internal/definition"
@@ -93,10 +94,17 @@ func validateDefinitionCmd(validate definitionValidationFn) *cobra.Command {
 					sources = append(sources, &source.PolicyUrl{Url: url, Kind: source.DataKind})
 				}
 				ctx := cmd.Context()
-				if o, err := validate(ctx, fpath, sources, data.namespaces); err != nil {
+				if out, err := validate(ctx, fpath, sources, data.namespaces); err != nil {
 					allErrors = multierror.Append(allErrors, err)
 				} else {
-					report.Add(*o)
+					showSuccesses, _ := cmd.Flags().GetBool("show-successes")
+					if !showSuccesses {
+						for i := range out.PolicyCheck {
+							out.PolicyCheck[i].Successes = make([]coutput.Result, 0)
+						}
+
+					}
+					report.Add(*out)
 				}
 			}
 			p := format.NewTargetParser(definition.JSONReport, cmd.OutOrStdout(), utils.FS(cmd.Context()))

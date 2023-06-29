@@ -6,7 +6,7 @@
       "filename": "${TEMP}/definition-file-${RANDOM}",
       "violations": [],
       "warnings": [],
-      "success": true
+      "successes": []
     }
   ],
   "success": true,

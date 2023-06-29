@@ -108,6 +108,20 @@
                 "--output",
                 "data=data.yaml"
             ]
+        },
+        {
+            "name": "ec validate definition",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/main.go",
+            "args": [
+                "validate",
+                "definition",
+                "--file",
+                "${workspaceFolder}/tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml",
+                "--show-successes"
+            ]
         }
     ]
 }

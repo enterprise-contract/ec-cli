@@ -32,7 +32,7 @@ type ReportItem struct {
 	Filename   string           `json:"filename"`
 	Violations []cOutput.Result `json:"violations"`
 	Warnings   []cOutput.Result `json:"warnings"`
-	Success    bool             `json:"success"`
+	Successes  []cOutput.Result `json:"successes"`
 }
 
 type ReportFormat string
@@ -67,19 +67,19 @@ func (r *Report) Add(o output.Output) {
 			itemsByFile[check.FileName] = ReportItem{
 				Violations: []cOutput.Result{},
 				Warnings:   []cOutput.Result{},
+				Successes:  []cOutput.Result{},
 			}
 		}
 		item := itemsByFile[check.FileName]
 		item.Violations = append(item.Violations, check.Failures...)
 		item.Warnings = append(item.Warnings, check.Warnings...)
+		item.Successes = append(item.Successes, check.Successes...)
 		item.Filename = check.FileName
 		itemsByFile[check.FileName] = item
 	}
 
 	for _, value := range itemsByFile {
-		value.Success = true
 		if len(value.Violations) > 0 {
-			value.Success = false
 			// set Report.Success to false if any violations
 			r.Success = false
 		}

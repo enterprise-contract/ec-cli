@@ -44,7 +44,7 @@ func TestReport(t *testing.T) {
 				"filename": "/path/to/pipeline.json",
 				"violations": [],
 				"warnings": [],
-				"success": true,
+				"successes": [],
 			}],
 			"ec-version": "development",
 			"success": true
@@ -71,7 +71,7 @@ func TestReport(t *testing.T) {
 				"filename": "/path/to/pipeline.json",
 				"violations": [],
 				"warnings": [{"msg": "running low in spam"},{"msg": "not all like spam"}],
-				"success": true,
+				"successes": [],
 			}],
 			"ec-version": "development",
 			"success": true
@@ -98,10 +98,37 @@ func TestReport(t *testing.T) {
 				"filename": "/path/to/pipeline.json",
 				"violations": [{"msg": "out of spam!"},{"msg": "spam 💔"}],
 				"warnings": [],
-				"success": false,
+				"successes": [],
 			}],
 			"ec-version": "development",
 			"success": false
+			}`,
+		},
+		{
+			name: "successes",
+			output: []output.Output{
+				{
+					PolicyCheck: evaluator.CheckResults{
+						{
+							CheckResult: conftest.CheckResult{
+								FileName: "/path/to/pipeline.json",
+							},
+							Successes: []conftest.Result{
+								{Message: "Nice"},
+								{Message: "Day"},
+							},
+						},
+					},
+				},
+			},
+			expect: `{"definitions": [{
+				"filename": "/path/to/pipeline.json",
+				"violations": [],
+				"warnings": [],
+				"successes": [{"msg": "Nice"},{"msg": "Day"}],
+			}],
+			"ec-version": "development",
+			"success": true
 			}`,
 		},
 		{
