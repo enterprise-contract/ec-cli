@@ -14,7 +14,9 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package application_snapshot_image
+//go:build unit
+
+package signature
 
 import (
 	"crypto/x509"
@@ -23,23 +25,20 @@ import (
 	"testing"
 
 	"github.com/gkampitakis/go-snaps/snaps"
+	"github.com/google/go-containerregistry/pkg/v1/types"
+	"github.com/sigstore/cosign/v2/pkg/oci/static"
+	cosignTypes "github.com/sigstore/cosign/v2/pkg/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-//go:embed other_name_san.cer
-var otherNameSAN []byte
-
-//go:embed chainguard_release.cer
-var cosignReleaseCert []byte
 
 func TestAddCertificateMetadata(t *testing.T) {
 	cases := []struct {
 		name string
 		cert []byte
 	}{
-		{name: "Chainguard Cosign release", cert: cosignReleaseCert},
-		{name: "OtherName SAN", cert: otherNameSAN},
+		{name: "Chainguard Cosign release", cert: ChainguardReleaseCert},
+		{name: "OtherName SAN", cert: OtherNameSAN},
 	}
 
 	for _, c := range cases {
@@ -57,4 +56,22 @@ func TestAddCertificateMetadata(t *testing.T) {
 
 		})
 	}
+}
+
+func TestNewEntitySignature(t *testing.T) {
+	signature, err := static.NewSignature(
+		[]byte(`image`),
+		"signature",
+		static.WithLayerMediaType(types.MediaType((cosignTypes.DssePayloadType))),
+		static.WithCertChain(
+			ChainguardReleaseCert,
+			SigstoreChainCert,
+		),
+	)
+	require.NoError(t, err)
+
+	es, err := NewEntitySignature(signature)
+	require.NoError(t, err)
+
+	snaps.MatchSnapshot(t, es)
 }
