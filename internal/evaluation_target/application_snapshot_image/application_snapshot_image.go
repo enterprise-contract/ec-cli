@@ -28,7 +28,6 @@ import (
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
-	"github.com/in-toto/in-toto-golang/in_toto"
 	"github.com/qri-io/jsonschema"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
 	log "github.com/sirupsen/logrus"
@@ -67,7 +66,7 @@ type ApplicationSnapshotImage struct {
 	reference    name.Reference
 	checkOpts    cosign.CheckOpts
 	signatures   []output.EntitySignature
-	attestations []attestation.Attestation[in_toto.ProvenanceStatementSLSA02]
+	attestations []attestation.Attestation[attestation.ProvenanceStatementSLSA02]
 	Evaluators   []evaluator.Evaluator
 }
 
@@ -162,7 +161,7 @@ func (a *ApplicationSnapshotImage) SetImageURL(url string) error {
 	a.reference = ref
 
 	// Reset internal state relevant to the image
-	a.attestations = []attestation.Attestation[in_toto.ProvenanceStatementSLSA02]{}
+	a.attestations = []attestation.Attestation[attestation.ProvenanceStatementSLSA02]{}
 	a.signatures = []output.EntitySignature{}
 
 	return nil
@@ -203,7 +202,7 @@ func (a *ApplicationSnapshotImage) ValidateAttestationSignature(ctx context.Cont
 	// the signatures do exist in the expected format.
 
 	for _, att := range layers {
-		sp, err := attestation.SLSAProvenanceFromLayer(att)
+		sp, err := attestation.SLSAProvenanceFromSignature(att)
 		if err != nil {
 			log.Debugf("Ignoring non SLSA Provenance attestation: %s", err)
 			continue
@@ -264,7 +263,7 @@ func (a ApplicationSnapshotImage) ValidateAttestationSyntax(ctx context.Context)
 }
 
 // Attestations returns the value of the attestations field of the ApplicationSnapshotImage struct
-func (a *ApplicationSnapshotImage) Attestations() []attestation.Attestation[in_toto.ProvenanceStatementSLSA02] {
+func (a *ApplicationSnapshotImage) Attestations() []attestation.Attestation[attestation.ProvenanceStatementSLSA02] {
 	return a.attestations
 }
 
@@ -276,10 +275,12 @@ func (a *ApplicationSnapshotImage) Signatures() []output.EntitySignature {
 func (a *ApplicationSnapshotImage) WriteInputFile(ctx context.Context) (string, error) {
 	log.Debugf("Attempting to write %d attestations to input file", len(a.attestations))
 
-	var statements []in_toto.ProvenanceStatementSLSA02
+	var statements []attestation.ProvenanceStatementSLSA02
 	for _, sp := range a.attestations {
 		statements = append(statements, sp.Statement())
 	}
+
+	// var richStatements []
 
 	type Image struct {
 		Ref        string                   `json:"ref"`
@@ -287,8 +288,8 @@ func (a *ApplicationSnapshotImage) WriteInputFile(ctx context.Context) (string, 
 	}
 
 	input := struct {
-		Attestations []in_toto.ProvenanceStatementSLSA02 `json:"attestations"`
-		Image        Image                               `json:"image"`
+		Attestations []attestation.ProvenanceStatementSLSA02 `json:"attestations"`
+		Image        Image                                   `json:"image"`
 	}{
 		Attestations: statements,
 		Image: Image{

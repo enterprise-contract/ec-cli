@@ -19,13 +19,12 @@ package image
 import (
 	"encoding/json"
 
-	"github.com/in-toto/in-toto-golang/in_toto"
-
+	"github.com/enterprise-contract/ec-cli/internal/attestation"
 	"github.com/enterprise-contract/ec-cli/internal/output"
 )
 
 type fakeAtt struct {
-	statement in_toto.ProvenanceStatementSLSA02
+	statement attestation.ProvenanceStatementSLSA02
 }
 
 func (f fakeAtt) Data() []byte {
@@ -36,7 +35,7 @@ func (f fakeAtt) Data() []byte {
 	return bytes
 }
 
-func (f fakeAtt) Statement() in_toto.ProvenanceStatementSLSA02 {
+func (f fakeAtt) Statement() attestation.ProvenanceStatementSLSA02 {
 	return f.statement
 }
 
