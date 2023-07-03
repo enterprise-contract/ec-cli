@@ -18,9 +18,7 @@ package application_snapshot_image
 
 import (
 	"context"
-	"encoding/hex"
 	"encoding/json"
-	"encoding/pem"
 	"errors"
 	"fmt"
 	"os"
@@ -41,6 +39,7 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/output"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/policy/source"
+	"github.com/enterprise-contract/ec-cli/internal/signature"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 	ece "github.com/enterprise-contract/ec-cli/pkg/error"
 	"github.com/enterprise-contract/ec-cli/pkg/schema"
@@ -180,43 +179,10 @@ func (a *ApplicationSnapshotImage) ValidateImageSignature(ctx context.Context) e
 	}
 
 	for _, s := range signatures {
-		sig, err := s.Base64Signature()
+		es, err := signature.NewEntitySignature(s)
 		if err != nil {
 			return err
 		}
-
-		es := output.EntitySignature{
-			Signature: sig,
-			Metadata:  map[string]string{},
-		}
-
-		cert, err := s.Cert()
-		if err != nil {
-			return err
-		}
-		if cert != nil {
-			es.Certificate = string(pem.EncodeToMemory(&pem.Block{
-				Type:  "CERTIFICATE",
-				Bytes: cert.Raw,
-			}))
-			es.KeyID = hex.EncodeToString(cert.SubjectKeyId)
-
-			if err := addCertificateMetadataTo(&es.Metadata, cert); err != nil {
-				return err
-			}
-		}
-
-		chain, err := s.Chain()
-		if err != nil {
-			return err
-		}
-		for _, c := range chain {
-			es.Chain = append(es.Chain, string(pem.EncodeToMemory(&pem.Block{
-				Type:  "CERTIFICATE",
-				Bytes: c.Raw,
-			})))
-		}
-
 		a.signatures = append(a.signatures, es)
 	}
 

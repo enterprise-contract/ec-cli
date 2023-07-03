@@ -51,6 +51,7 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 	"github.com/enterprise-contract/ec-cli/internal/mocks"
 	"github.com/enterprise-contract/ec-cli/internal/output"
+	"github.com/enterprise-contract/ec-cli/internal/signature"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
@@ -623,12 +624,6 @@ func TestValidateAttestationSignatureClaims(t *testing.T) {
 	}
 }
 
-//go:embed chainguard_release.cer
-var chainguard_release_cert string
-
-//go:embed sigstore_chain.cer
-var chain string
-
 func TestValidateImageSignatureWithCertificates(t *testing.T) {
 	ref := name.MustParseReference("registry.io/repository/image:tag")
 	a := ApplicationSnapshotImage{
@@ -639,25 +634,25 @@ func TestValidateImageSignatureWithCertificates(t *testing.T) {
 
 	ctx := WithClient(context.Background(), &c)
 
-	signature, err := static.NewSignature(
+	sig, err := static.NewSignature(
 		[]byte(`image`),
 		"signature",
 		static.WithLayerMediaType(types.MediaType((cosignTypes.DssePayloadType))),
 		static.WithCertChain(
-			[]byte(chainguard_release_cert),
-			[]byte(chain),
+			signature.ChainguardReleaseCert,
+			signature.SigstoreChainCert,
 		),
 	)
 	require.NoError(t, err)
 
-	c.On("VerifyImageSignatures", ctx, ref, mock.Anything).Return([]oci.Signature{signature}, false, nil)
+	c.On("VerifyImageSignatures", ctx, ref, mock.Anything).Return([]oci.Signature{sig}, false, nil)
 
 	err = a.ValidateImageSignature(ctx)
 	require.NoError(t, err)
 
 	// split the chain into individual PEM certificates and restore the removed
 	// separator chars
-	chainAry := strings.Split(chain, "-\n-")
+	chainAry := strings.Split(string(signature.SigstoreChainCert), "-\n-")
 	for i, cer := range chainAry {
 		switch {
 		case i == 0:
