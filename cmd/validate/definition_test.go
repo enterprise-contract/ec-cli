@@ -58,13 +58,13 @@ func TestValidateDefinitionFileCommandOutput(t *testing.T) {
 	assert.JSONEq(t, `{"definitions": [
 		{
 		  "filename": "/path/file1.yaml",
-		  "success": true,
+		  "successes": [],
 		  "violations": [],
 		  "warnings": []
 		},
 		{
 		  "filename": "/path/file2.yaml",
-		  "success": true,
+		  "successes": [],
 		  "violations": [],
 		  "warnings": []
 		}
@@ -109,12 +109,12 @@ func TestValidateDefinitionFilePolicySources(t *testing.T) {
 }
 
 func TestDefinitionFileOutputFormats(t *testing.T) {
-	testJSONText := `{"definitions":[{"filename":"/path/file1.yaml","violations":[],"warnings":[],"success":true}],"success":true,"ec-version":"development"}`
+	testJSONText := `{"definitions":[{"filename":"/path/file1.yaml","violations":[],"warnings":[],"successes":[]}],"success":true,"ec-version":"development"}`
 
 	testYAMLTest := hd.Doc(`
 	definitions:
 	- filename: /path/file1.yaml
-	  success: true
+	  successes: []
 	  violations: []
 	  warnings: []
 	ec-version: development

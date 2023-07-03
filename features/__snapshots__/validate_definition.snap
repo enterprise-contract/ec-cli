@@ -6,7 +6,7 @@
       "filename": "pipeline_definition.yaml",
       "violations": [],
       "warnings": [],
-      "success": true
+      "successes": []
     }
   ],
   "success": true,
@@ -15,5 +15,33 @@
 ---
 
 [:stderr - 1]
+
+---
+
+[Showing successes:stdout - 1]
+{
+  "definitions": [
+    {
+      "filename": "pipeline_definition.yaml",
+      "violations": [],
+      "warnings": [],
+      "successes": [
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "main.expected_kind",
+            "description": "Check that the pipeline is a kind of \"Pipeline\"",
+            "title": "Pipeline kind is expected"
+          }
+        }
+      ]
+    }
+  ],
+  "success": true,
+  "ec-version": "${EC_VERSION}"
+}
+---
+
+[Showing successes:stderr - 1]
 
 ---
