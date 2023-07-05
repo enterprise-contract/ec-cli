@@ -27,7 +27,6 @@ import (
 	"github.com/sigstore/cosign/v2/pkg/oci"
 	"github.com/sigstore/cosign/v2/pkg/types"
 
-	"github.com/enterprise-contract/ec-cli/internal/output"
 	"github.com/enterprise-contract/ec-cli/internal/signature"
 )
 
@@ -101,7 +100,7 @@ func SLSAProvenanceFromSignature(sig oci.Signature) (Attestation[ProvenanceState
 	return slsaProvenance{statement: statement, payload: payload, bytes: embeded}, nil
 }
 
-func createEntitySignatures(sig oci.Signature, statement ProvenanceStatementSLSA02, payload cosign.AttestationPayload) ([]output.EntitySignature, error) {
+func createEntitySignatures(sig oci.Signature, statement ProvenanceStatementSLSA02, payload cosign.AttestationPayload) ([]signature.EntitySignature, error) {
 	es, err := signature.NewEntitySignature(sig)
 	if err != nil {
 		return nil, err
@@ -113,7 +112,7 @@ func createEntitySignatures(sig oci.Signature, statement ProvenanceStatementSLSA
 		es.Metadata["predicateBuildType"] = statement.Predicate.BuildType
 	}
 
-	var out []output.EntitySignature
+	var out []signature.EntitySignature
 	for _, s := range payload.Signatures {
 		esNew := es
 		// The Signature and KeyID can come from two locations, the oci.Signature or
@@ -147,6 +146,6 @@ func (a slsaProvenance) Statement() ProvenanceStatementSLSA02 {
 	return a.statement
 }
 
-func (a slsaProvenance) Signatures() []output.EntitySignature {
+func (a slsaProvenance) Signatures() []signature.EntitySignature {
 	return a.statement.Extra.Signatures
 }

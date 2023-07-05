@@ -28,6 +28,7 @@ import (
 
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
+	"github.com/enterprise-contract/ec-cli/internal/signature"
 )
 
 const missingSignatureMessage = "No image signatures found matching the given public key. " +
@@ -72,27 +73,19 @@ func (v VerificationStatus) addToSuccesses(successes []output.Result) []output.R
 	return result
 }
 
-type EntitySignature struct {
-	KeyID       string            `json:"keyid"`
-	Signature   string            `json:"sig"`
-	Certificate string            `json:"certificate,omitempty"`
-	Chain       []string          `json:"chain,omitempty"`
-	Metadata    map[string]string `json:"metadata,omitempty"`
-}
-
 // Output is a struct representing checks and exit code.
 type Output struct {
-	ImageAccessibleCheck      VerificationStatus     `json:"imageAccessibleCheck"`
-	ImageSignatureCheck       VerificationStatus     `json:"imageSignatureCheck"`
-	AttestationSignatureCheck VerificationStatus     `json:"attestationSignatureCheck"`
-	AttestationSyntaxCheck    VerificationStatus     `json:"attestationSyntaxCheck"`
-	PolicyCheck               evaluator.CheckResults `json:"policyCheck"`
-	ExitCode                  int                    `json:"-"`
-	Signatures                []EntitySignature      `json:"signatures,omitempty"`
-	ImageURL                  string                 `json:"-"`
-	Detailed                  bool                   `json:"-"`
-	Data                      []evaluator.Data       `json:"-"`
-	Policy                    policy.Policy          `json:"-"`
+	ImageAccessibleCheck      VerificationStatus          `json:"imageAccessibleCheck"`
+	ImageSignatureCheck       VerificationStatus          `json:"imageSignatureCheck"`
+	AttestationSignatureCheck VerificationStatus          `json:"attestationSignatureCheck"`
+	AttestationSyntaxCheck    VerificationStatus          `json:"attestationSyntaxCheck"`
+	PolicyCheck               evaluator.CheckResults      `json:"policyCheck"`
+	ExitCode                  int                         `json:"-"`
+	Signatures                []signature.EntitySignature `json:"signatures,omitempty"`
+	ImageURL                  string                      `json:"-"`
+	Detailed                  bool                        `json:"-"`
+	Data                      []evaluator.Data            `json:"-"`
+	Policy                    policy.Policy               `json:"-"`
 }
 
 // SetImageAccessibleCheck sets the passed and result.message fields of the ImageAccessibleCheck to the given values.

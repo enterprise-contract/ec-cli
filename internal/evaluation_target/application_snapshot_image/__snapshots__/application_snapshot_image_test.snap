@@ -1,6 +1,6 @@
 
 [TestValidateImageSignatureWithCertificates - 1]
-[]output.EntitySignature{
+[]signature.EntitySignature{
     {
         KeyID:       "6add046e38418d021a562c6a8633d5eca7379595",
         Signature:   "signature",

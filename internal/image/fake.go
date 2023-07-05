@@ -20,7 +20,7 @@ import (
 	"encoding/json"
 
 	"github.com/enterprise-contract/ec-cli/internal/attestation"
-	"github.com/enterprise-contract/ec-cli/internal/output"
+	"github.com/enterprise-contract/ec-cli/internal/signature"
 )
 
 type fakeAtt struct {
@@ -39,6 +39,6 @@ func (f fakeAtt) Statement() attestation.ProvenanceStatementSLSA02 {
 	return f.statement
 }
 
-func (f fakeAtt) Signatures() []output.EntitySignature {
+func (f fakeAtt) Signatures() []signature.EntitySignature {
 	return nil
 }

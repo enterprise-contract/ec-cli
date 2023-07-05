@@ -35,7 +35,6 @@ import (
 
 	"github.com/enterprise-contract/ec-cli/internal/attestation"
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
-	"github.com/enterprise-contract/ec-cli/internal/output"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/policy/source"
 	"github.com/enterprise-contract/ec-cli/internal/signature"
@@ -65,7 +64,7 @@ var attestationSchemas = map[string]jsonschema.Schema{
 type ApplicationSnapshotImage struct {
 	reference    name.Reference
 	checkOpts    cosign.CheckOpts
-	signatures   []output.EntitySignature
+	signatures   []signature.EntitySignature
 	attestations []attestation.Attestation[attestation.ProvenanceStatementSLSA02]
 	Evaluators   []evaluator.Evaluator
 }
@@ -162,7 +161,7 @@ func (a *ApplicationSnapshotImage) SetImageURL(url string) error {
 
 	// Reset internal state relevant to the image
 	a.attestations = []attestation.Attestation[attestation.ProvenanceStatementSLSA02]{}
-	a.signatures = []output.EntitySignature{}
+	a.signatures = []signature.EntitySignature{}
 
 	return nil
 }
@@ -267,7 +266,7 @@ func (a *ApplicationSnapshotImage) Attestations() []attestation.Attestation[atte
 	return a.attestations
 }
 
-func (a *ApplicationSnapshotImage) Signatures() []output.EntitySignature {
+func (a *ApplicationSnapshotImage) Signatures() []signature.EntitySignature {
 	return a.signatures
 }
 
@@ -283,8 +282,8 @@ func (a *ApplicationSnapshotImage) WriteInputFile(ctx context.Context) (string, 
 	// var richStatements []
 
 	type Image struct {
-		Ref        string                   `json:"ref"`
-		Signatures []output.EntitySignature `json:"signatures,omitempty"`
+		Ref        string                      `json:"ref"`
+		Signatures []signature.EntitySignature `json:"signatures,omitempty"`
 	}
 
 	input := struct {
