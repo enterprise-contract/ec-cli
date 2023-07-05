@@ -290,6 +290,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 							res.component.Successes = out.Successes()
 						}
 						res.component.Signatures = out.Signatures
+						res.component.Attestations = out.Attestations
 						res.component.ContainerImage = out.ImageURL
 						res.data = out.Data
 					}

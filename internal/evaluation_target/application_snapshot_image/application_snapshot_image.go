@@ -35,6 +35,7 @@ import (
 
 	"github.com/enterprise-contract/ec-cli/internal/attestation"
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
+	"github.com/enterprise-contract/ec-cli/internal/output"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/policy/source"
 	"github.com/enterprise-contract/ec-cli/internal/signature"
@@ -264,6 +265,14 @@ func (a ApplicationSnapshotImage) ValidateAttestationSyntax(ctx context.Context)
 // Attestations returns the value of the attestations field of the ApplicationSnapshotImage struct
 func (a *ApplicationSnapshotImage) Attestations() []attestation.Attestation {
 	return a.attestations
+}
+
+func (a *ApplicationSnapshotImage) AttestationsOutput() []output.Attestation {
+	var attestations []output.Attestation
+	for _, att := range a.attestations {
+		attestations = append(attestations, att.Output())
+	}
+	return attestations
 }
 
 func (a *ApplicationSnapshotImage) Signatures() []signature.EntitySignature {

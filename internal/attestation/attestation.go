@@ -17,6 +17,7 @@
 package attestation
 
 import (
+	"github.com/enterprise-contract/ec-cli/internal/output"
 	"github.com/enterprise-contract/ec-cli/internal/signature"
 	e "github.com/enterprise-contract/ec-cli/pkg/error"
 )
@@ -35,7 +36,7 @@ var (
 type Attestation interface {
 	Data() []byte
 	Statement() any
-	Signatures() []signature.EntitySignature
+	Output() output.Attestation
 }
 
 // extra holds the signatures associated with an attestation. It is meant

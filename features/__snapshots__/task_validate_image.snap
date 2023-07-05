@@ -47,7 +47,14 @@ success: false
 
 [Non strict with warnings:report - 1]
 components:
-- containerImage: ${REGISTRY}/acceptance/non-strict-with-warnings@${REGISTRY_acceptance/non-strict-with-warnings:latest_HASH}
+- attestations:
+  - predicateBuildType: https://tekton.dev/attestations/chains/pipelinerun@v2
+    predicateType: https://slsa.dev/provenance/v0.2
+    signatures:
+    - keyid: ""
+      sig: ${ATTESTATION_SIGNATURE_acceptance/non-strict-with-warnings}
+    type: https://in-toto.io/Statement/v0.1
+  containerImage: ${REGISTRY}/acceptance/non-strict-with-warnings@${REGISTRY_acceptance/non-strict-with-warnings:latest_HASH}
   name: ""
   signatures:
   - keyid: ""
@@ -97,7 +104,14 @@ success: true
 
 [Strict with warnings:report - 1]
 components:
-- containerImage: ${REGISTRY}/acceptance/strict-with-warnings@${REGISTRY_acceptance/strict-with-warnings:latest_HASH}
+- attestations:
+  - predicateBuildType: https://tekton.dev/attestations/chains/pipelinerun@v2
+    predicateType: https://slsa.dev/provenance/v0.2
+    signatures:
+    - keyid: ""
+      sig: ${ATTESTATION_SIGNATURE_acceptance/strict-with-warnings}
+    type: https://in-toto.io/Statement/v0.1
+  containerImage: ${REGISTRY}/acceptance/strict-with-warnings@${REGISTRY_acceptance/strict-with-warnings:latest_HASH}
   name: ""
   signatures:
   - keyid: ""
@@ -147,7 +161,26 @@ success: true
 
 [Golden container image:report - 1]
 components:
-- containerImage: quay.io/hacbs-contract-demo/golden-container@sha256:e76a4ae9dd8a52a0d191fd34ca133af5b4f2609536d32200a4a40a09fdc93a0d
+- attestations:
+  - predicateBuildType: tekton.dev/v1beta1/TaskRun
+    predicateType: https://slsa.dev/provenance/v0.2
+    signatures:
+    - keyid: SHA256:RHajkr+wMEtGfT2CRFrQEhg/8MY2bDLXVg3F8IuI5nE
+      sig: MEUCIHFVZeVR59n9UvN1dwF9Lh3Gv8XWLPDPIIJcnQ8e3TtvAiEA0z/5v6ggvmQyQ1EnYTJo9rwxOYuve4th4P/0639orLg=
+    type: https://in-toto.io/Statement/v0.1
+  - predicateBuildType: tekton.dev/v1beta1/PipelineRun
+    predicateType: https://slsa.dev/provenance/v0.2
+    signatures:
+    - keyid: SHA256:RHajkr+wMEtGfT2CRFrQEhg/8MY2bDLXVg3F8IuI5nE
+      sig: MEUCIQClx1zvZGvyRu5gCHiC+oWVZTmWJGQlocSZMnzx/5omZAIgUiLQuMm+USYE+H0PDn/xPSVVQjkhWjDc3fulkxVzlC0=
+    type: https://in-toto.io/Statement/v0.1
+  - predicateBuildType: tekton.dev/v1beta1/PipelineRun
+    predicateType: https://slsa.dev/provenance/v0.2
+    signatures:
+    - keyid: SHA256:RHajkr+wMEtGfT2CRFrQEhg/8MY2bDLXVg3F8IuI5nE
+      sig: MEUCIGS176zN5aoorLQMukjoCkHm7ocu7UhnKXLhzEdsgp4BAiEAviub3Lf4thLmSTU6ZqnEjw02kkrb9LKBBa1t8hVgAM4=
+    type: https://in-toto.io/Statement/v0.1
+  containerImage: quay.io/hacbs-contract-demo/golden-container@sha256:e76a4ae9dd8a52a0d191fd34ca133af5b4f2609536d32200a4a40a09fdc93a0d
   name: ""
   signatures:
   - keyid: ""
@@ -216,7 +249,26 @@ main.go:74: error during command execution: Get "http://tuf.invalid/root.json": 
 
 [Initialize TUF succeeds:report - 1]
 components:
-- containerImage: quay.io/hacbs-contract-demo/golden-container@sha256:e76a4ae9dd8a52a0d191fd34ca133af5b4f2609536d32200a4a40a09fdc93a0d
+- attestations:
+  - predicateBuildType: tekton.dev/v1beta1/TaskRun
+    predicateType: https://slsa.dev/provenance/v0.2
+    signatures:
+    - keyid: SHA256:RHajkr+wMEtGfT2CRFrQEhg/8MY2bDLXVg3F8IuI5nE
+      sig: MEUCIHFVZeVR59n9UvN1dwF9Lh3Gv8XWLPDPIIJcnQ8e3TtvAiEA0z/5v6ggvmQyQ1EnYTJo9rwxOYuve4th4P/0639orLg=
+    type: https://in-toto.io/Statement/v0.1
+  - predicateBuildType: tekton.dev/v1beta1/PipelineRun
+    predicateType: https://slsa.dev/provenance/v0.2
+    signatures:
+    - keyid: SHA256:RHajkr+wMEtGfT2CRFrQEhg/8MY2bDLXVg3F8IuI5nE
+      sig: MEUCIQClx1zvZGvyRu5gCHiC+oWVZTmWJGQlocSZMnzx/5omZAIgUiLQuMm+USYE+H0PDn/xPSVVQjkhWjDc3fulkxVzlC0=
+    type: https://in-toto.io/Statement/v0.1
+  - predicateBuildType: tekton.dev/v1beta1/PipelineRun
+    predicateType: https://slsa.dev/provenance/v0.2
+    signatures:
+    - keyid: SHA256:RHajkr+wMEtGfT2CRFrQEhg/8MY2bDLXVg3F8IuI5nE
+      sig: MEUCIGS176zN5aoorLQMukjoCkHm7ocu7UhnKXLhzEdsgp4BAiEAviub3Lf4thLmSTU6ZqnEjw02kkrb9LKBBa1t8hVgAM4=
+    type: https://in-toto.io/Statement/v0.1
+  containerImage: quay.io/hacbs-contract-demo/golden-container@sha256:e76a4ae9dd8a52a0d191fd34ca133af5b4f2609536d32200a4a40a09fdc93a0d
   name: ""
   signatures:
   - keyid: ""
