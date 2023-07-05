@@ -141,46 +141,52 @@ func TestDetermineAttestationTime(t *testing.T) {
 	time1 := time.Date(2001, 2, 3, 4, 5, 6, 7, time.UTC)
 	time2 := time.Date(2010, 11, 12, 13, 14, 15, 16, time.UTC)
 	att1 := fakeAtt{
-		statement: in_toto.ProvenanceStatementSLSA02{
-			StatementHeader: in_toto.StatementHeader{
-				PredicateType: v02.PredicateSLSAProvenance,
-			},
-			Predicate: v02.ProvenancePredicate{
-				Metadata: &v02.ProvenanceMetadata{
-					BuildFinishedOn: &time1,
+		statement: attestation.ProvenanceStatementSLSA02{
+			ProvenanceStatementSLSA02: in_toto.ProvenanceStatementSLSA02{
+				StatementHeader: in_toto.StatementHeader{
+					PredicateType: v02.PredicateSLSAProvenance,
+				},
+				Predicate: v02.ProvenancePredicate{
+					Metadata: &v02.ProvenanceMetadata{
+						BuildFinishedOn: &time1,
+					},
 				},
 			},
 		},
 	}
 	att2 := fakeAtt{
-		statement: in_toto.ProvenanceStatementSLSA02{
-			StatementHeader: in_toto.StatementHeader{
-				PredicateType: v02.PredicateSLSAProvenance,
-			},
-			Predicate: v02.ProvenancePredicate{
-				Metadata: &v02.ProvenanceMetadata{
-					BuildFinishedOn: &time2,
+		statement: attestation.ProvenanceStatementSLSA02{
+			ProvenanceStatementSLSA02: in_toto.ProvenanceStatementSLSA02{
+				StatementHeader: in_toto.StatementHeader{
+					PredicateType: v02.PredicateSLSAProvenance,
+				},
+				Predicate: v02.ProvenancePredicate{
+					Metadata: &v02.ProvenanceMetadata{
+						BuildFinishedOn: &time2,
+					},
 				},
 			},
 		},
 	}
 	att3 := fakeAtt{
-		statement: in_toto.ProvenanceStatementSLSA02{
-			StatementHeader: in_toto.StatementHeader{
-				PredicateType: v02.PredicateSLSAProvenance,
+		statement: attestation.ProvenanceStatementSLSA02{
+			ProvenanceStatementSLSA02: in_toto.ProvenanceStatementSLSA02{
+				StatementHeader: in_toto.StatementHeader{
+					PredicateType: v02.PredicateSLSAProvenance,
+				},
 			},
 		},
 	}
 
 	cases := []struct {
 		name         string
-		attestations []attestation.Attestation[in_toto.ProvenanceStatementSLSA02]
+		attestations []attestation.Attestation[attestation.ProvenanceStatementSLSA02]
 		expected     *time.Time
 	}{
 		{name: "no attestations"},
-		{name: "one attestation", attestations: []attestation.Attestation[in_toto.ProvenanceStatementSLSA02]{att1}, expected: &time1},
-		{name: "two attestations", attestations: []attestation.Attestation[in_toto.ProvenanceStatementSLSA02]{att1, att2}, expected: &time2},
-		{name: "two attestations and one without time", attestations: []attestation.Attestation[in_toto.ProvenanceStatementSLSA02]{att1, att2, att3}, expected: &time2},
+		{name: "one attestation", attestations: []attestation.Attestation[attestation.ProvenanceStatementSLSA02]{att1}, expected: &time1},
+		{name: "two attestations", attestations: []attestation.Attestation[attestation.ProvenanceStatementSLSA02]{att1, att2}, expected: &time2},
+		{name: "two attestations and one without time", attestations: []attestation.Attestation[attestation.ProvenanceStatementSLSA02]{att1, att2, att3}, expected: &time2},
 	}
 
 	for _, c := range cases {

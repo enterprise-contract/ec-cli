@@ -26,6 +26,7 @@ var (
 	AT002 = e.NewError("AT002", "Malformed attestation data", e.ErrorExitStatus)
 	AT003 = e.NewError("AT003", "Unsupported attestation type", e.ErrorExitStatus)
 	AT004 = e.NewError("AT004", "Unsupported attestation predicate type", e.ErrorExitStatus)
+	AT005 = e.NewError("AT005", "Cannot create signed entity", e.ErrorExitStatus)
 )
 
 // Attestation holds the raw attestation data, usually fetched from the
@@ -35,4 +36,10 @@ type Attestation[T any] interface {
 	Data() []byte
 	Statement() T
 	Signatures() []output.EntitySignature
+}
+
+// extra holds the signatures associated with an attestation. It is meant
+// to facilitate embedding signatures in the result of Attestation.Statement().
+type extra struct {
+	Signatures []output.EntitySignature `json:"signatures"`
 }

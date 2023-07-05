@@ -21,23 +21,31 @@ import (
 	"encoding/json"
 	"io"
 
-	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/in-toto/in-toto-golang/in_toto"
 	v02 "github.com/in-toto/in-toto-golang/in_toto/slsa_provenance/v0.2"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
+	"github.com/sigstore/cosign/v2/pkg/oci"
 	"github.com/sigstore/cosign/v2/pkg/types"
 
 	"github.com/enterprise-contract/ec-cli/internal/output"
+	"github.com/enterprise-contract/ec-cli/internal/signature"
 )
 
-// SLSAProvenanceFromLayer parses the SLSA Provenance v0.2 from the provided OCI
+// ProvenanceStatementSLSA02 extends in_toto.ProvenanceStatementSLSA02 to provide the
+// Extra attribute.
+type ProvenanceStatementSLSA02 struct {
+	in_toto.ProvenanceStatementSLSA02
+	Extra extra `json:"extra"`
+}
+
+// SLSAProvenanceFromSignature parses the SLSA Provenance v0.2 from the provided OCI
 // layer. Expects that the layer contains DSSE JSON with the embeded SLSA
 // Provenance v0.2 payload.
-func SLSAProvenanceFromLayer(layer v1.Layer) (Attestation[in_toto.ProvenanceStatementSLSA02], error) {
-	if layer == nil {
+func SLSAProvenanceFromSignature(sig oci.Signature) (Attestation[ProvenanceStatementSLSA02], error) {
+	if sig == nil {
 		return nil, AT001
 	}
-	typ, err := layer.MediaType()
+	typ, err := sig.MediaType()
 	if err != nil {
 		return nil, AT002.CausedBy(err)
 	}
@@ -46,7 +54,7 @@ func SLSAProvenanceFromLayer(layer v1.Layer) (Attestation[in_toto.ProvenanceStat
 		return nil, AT002.CausedByF("Expecting media type of `%s`, received: `%s`", types.DssePayloadType, typ)
 	}
 
-	reader, err := layer.Uncompressed()
+	reader, err := sig.Uncompressed()
 	if err != nil {
 		return nil, AT002.CausedBy(err)
 	}
@@ -72,7 +80,7 @@ func SLSAProvenanceFromLayer(layer v1.Layer) (Attestation[in_toto.ProvenanceStat
 		return nil, AT002.CausedBy(err)
 	}
 
-	var statement in_toto.ProvenanceStatementSLSA02
+	var statement ProvenanceStatementSLSA02
 	if err := json.Unmarshal(embeded, &statement); err != nil {
 		return nil, AT002.CausedBy(err)
 	}
@@ -85,11 +93,48 @@ func SLSAProvenanceFromLayer(layer v1.Layer) (Attestation[in_toto.ProvenanceStat
 		return nil, AT004.CausedByF(statement.PredicateType)
 	}
 
+	statement.Extra.Signatures, err = createEntitySignatures(sig, statement, payload)
+	if err != nil {
+		return nil, AT005.CausedBy(err)
+	}
+
 	return slsaProvenance{statement: statement, payload: payload, bytes: embeded}, nil
 }
 
+func createEntitySignatures(sig oci.Signature, statement ProvenanceStatementSLSA02, payload cosign.AttestationPayload) ([]output.EntitySignature, error) {
+	es, err := signature.NewEntitySignature(sig)
+	if err != nil {
+		return nil, err
+	}
+
+	es.Metadata["predicateType"] = statement.PredicateType
+	es.Metadata["type"] = statement.Type
+	if statement.Predicate.BuildType != "" {
+		es.Metadata["predicateBuildType"] = statement.Predicate.BuildType
+	}
+
+	var out []output.EntitySignature
+	for _, s := range payload.Signatures {
+		esNew := es
+		// The Signature and KeyID can come from two locations, the oci.Signature or
+		// the cosign.Signature. In some cases, both are filled in, while in others
+		// only one location contains the value. The discrepancy can be seen when
+		// comparing signatures created via keyless vs long-lived key workflows. Here
+		// we prioritize the information from oci.Signature, but fallback when needed
+		// to cosign.Signature. (This inconsistency is likely a bug in cosign)
+		if esNew.Signature == "" {
+			esNew.Signature = s.Sig
+		}
+		if esNew.KeyID == "" {
+			esNew.KeyID = s.KeyID
+		}
+		out = append(out, esNew)
+	}
+	return out, nil
+}
+
 type slsaProvenance struct {
-	statement in_toto.ProvenanceStatementSLSA02
+	statement ProvenanceStatementSLSA02
 	payload   cosign.AttestationPayload
 	bytes     []byte
 }
@@ -98,34 +143,10 @@ func (a slsaProvenance) Data() []byte {
 	return a.bytes
 }
 
-func (a slsaProvenance) Statement() in_toto.ProvenanceStatementSLSA02 {
+func (a slsaProvenance) Statement() ProvenanceStatementSLSA02 {
 	return a.statement
 }
 
 func (a slsaProvenance) Signatures() []output.EntitySignature {
-	metadata := describeStatement(a.statement)
-
-	var sigs []output.EntitySignature
-	for _, sig := range a.payload.Signatures {
-		sigs = append(sigs, output.EntitySignature{
-			KeyID:     sig.KeyID,
-			Signature: sig.Sig,
-			Metadata:  metadata,
-		})
-	}
-
-	return sigs
-}
-
-func describeStatement(statement in_toto.ProvenanceStatementSLSA02) map[string]string {
-	description := map[string]string{
-		"predicateType": statement.PredicateType,
-		"type":          statement.Type,
-	}
-
-	if statement.Predicate.BuildType != "" {
-		description["predicateBuildType"] = statement.Predicate.BuildType
-	}
-
-	return description
+	return a.statement.Extra.Signatures
 }

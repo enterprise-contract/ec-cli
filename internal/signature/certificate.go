@@ -173,7 +173,7 @@ func NewEntitySignature(sig oci.Signature) (output.EntitySignature, error) {
 	if err != nil {
 		return output.EntitySignature{}, err
 	}
-	if cert != nil {
+	if cert != nil && len(cert.Raw) > 0 {
 		es.Certificate = string(pem.EncodeToMemory(&pem.Block{
 			Type:  "CERTIFICATE",
 			Bytes: cert.Raw,
@@ -190,6 +190,9 @@ func NewEntitySignature(sig oci.Signature) (output.EntitySignature, error) {
 		return output.EntitySignature{}, err
 	}
 	for _, c := range chain {
+		if len(c.Raw) == 0 {
+			continue
+		}
 		es.Chain = append(es.Chain, string(pem.EncodeToMemory(&pem.Block{
 			Type:  "CERTIFICATE",
 			Bytes: c.Raw,

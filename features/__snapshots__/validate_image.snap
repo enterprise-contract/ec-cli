@@ -220,6 +220,18 @@ Error: success criteria not met
         {
           "msg": "Pass",
           "metadata": {
+            "code": "keyless.no_attestation_signature_info"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "keyless.no_attestation_signer_certificate"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
             "code": "keyless.no_signature_info"
           }
         },
@@ -227,6 +239,12 @@ Error: success criteria not met
           "msg": "Pass",
           "metadata": {
             "code": "keyless.no_signer_certificate"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "keyless.unexpected_attestation_signer"
           }
         },
         {
