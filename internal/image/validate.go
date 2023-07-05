@@ -140,7 +140,7 @@ func resolveAndSetImageUrl(url string, asi *application_snapshot_image.Applicati
 	return resolved, nil
 }
 
-func determineAttestationTime(ctx context.Context, attestations []attestation.Attestation[attestation.ProvenanceStatementSLSA02]) *time.Time {
+func determineAttestationTime(ctx context.Context, attestations []attestation.Attestation) *time.Time {
 	if len(attestations) == 0 {
 		log.Debug("No attestations provided to determine attestation time")
 		return nil

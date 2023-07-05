@@ -180,13 +180,13 @@ func TestDetermineAttestationTime(t *testing.T) {
 
 	cases := []struct {
 		name         string
-		attestations []attestation.Attestation[attestation.ProvenanceStatementSLSA02]
+		attestations []attestation.Attestation
 		expected     *time.Time
 	}{
 		{name: "no attestations"},
-		{name: "one attestation", attestations: []attestation.Attestation[attestation.ProvenanceStatementSLSA02]{att1}, expected: &time1},
-		{name: "two attestations", attestations: []attestation.Attestation[attestation.ProvenanceStatementSLSA02]{att1, att2}, expected: &time2},
-		{name: "two attestations and one without time", attestations: []attestation.Attestation[attestation.ProvenanceStatementSLSA02]{att1, att2, att3}, expected: &time2},
+		{name: "one attestation", attestations: []attestation.Attestation{att1}, expected: &time1},
+		{name: "two attestations", attestations: []attestation.Attestation{att1, att2}, expected: &time2},
+		{name: "two attestations and one without time", attestations: []attestation.Attestation{att1, att2, att3}, expected: &time2},
 	}
 
 	for _, c := range cases {
