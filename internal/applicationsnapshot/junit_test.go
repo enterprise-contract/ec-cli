@@ -24,7 +24,7 @@ import (
 	"github.com/redhat-appstudio/application-api/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
 
-	o "github.com/enterprise-contract/ec-cli/internal/output"
+	"github.com/enterprise-contract/ec-cli/internal/signature"
 )
 
 func TestMapResults(t *testing.T) {
@@ -105,7 +105,7 @@ func TestToJunit(t *testing.T) {
 							Name:           "Name",
 							ContainerImage: "registry.io/repository/image:tag",
 						},
-						Signatures: []o.EntitySignature{
+						Signatures: []signature.EntitySignature{
 							{
 								KeyID:     "keyID1",
 								Signature: "signature1",

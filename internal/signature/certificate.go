@@ -20,8 +20,6 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/asn1"
-	"encoding/hex"
-	"encoding/pem"
 	"fmt"
 	"net"
 	"net/url"
@@ -29,10 +27,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sigstore/cosign/v2/pkg/oci"
 	"github.com/sigstore/sigstore/pkg/cryptoutils"
-
-	"github.com/enterprise-contract/ec-cli/internal/output"
 )
 
 type extract func(*x509.Certificate) (string, error)
@@ -155,48 +150,4 @@ func addCertificateMetadataTo(where *map[string]string, cer *x509.Certificate) e
 	}
 
 	return nil
-}
-
-// NewEntitySignature creates a new EntitySignature from the given Signature.
-func NewEntitySignature(sig oci.Signature) (output.EntitySignature, error) {
-	es := output.EntitySignature{
-		Metadata: map[string]string{},
-	}
-
-	var err error
-	es.Signature, err = sig.Base64Signature()
-	if err != nil {
-		return output.EntitySignature{}, err
-	}
-
-	cert, err := sig.Cert()
-	if err != nil {
-		return output.EntitySignature{}, err
-	}
-	if cert != nil && len(cert.Raw) > 0 {
-		es.Certificate = string(pem.EncodeToMemory(&pem.Block{
-			Type:  "CERTIFICATE",
-			Bytes: cert.Raw,
-		}))
-		es.KeyID = hex.EncodeToString(cert.SubjectKeyId)
-
-		if err := addCertificateMetadataTo(&es.Metadata, cert); err != nil {
-			return output.EntitySignature{}, err
-		}
-	}
-
-	chain, err := sig.Chain()
-	if err != nil {
-		return output.EntitySignature{}, err
-	}
-	for _, c := range chain {
-		if len(c.Raw) == 0 {
-			continue
-		}
-		es.Chain = append(es.Chain, string(pem.EncodeToMemory(&pem.Block{
-			Type:  "CERTIFICATE",
-			Bytes: c.Raw,
-		})))
-	}
-	return es, nil
 }

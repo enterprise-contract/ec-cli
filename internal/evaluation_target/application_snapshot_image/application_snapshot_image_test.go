@@ -50,7 +50,6 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/attestation"
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 	"github.com/enterprise-contract/ec-cli/internal/mocks"
-	"github.com/enterprise-contract/ec-cli/internal/output"
 	"github.com/enterprise-contract/ec-cli/internal/signature"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
@@ -134,7 +133,7 @@ func (f fakeAtt) Statement() attestation.ProvenanceStatementSLSA02 {
 	return f.statement
 }
 
-func (f fakeAtt) Signatures() []output.EntitySignature {
+func (f fakeAtt) Signatures() []signature.EntitySignature {
 	return nil
 }
 
@@ -201,7 +200,7 @@ func TestWriteInputFile(t *testing.T) {
 			name: "image signatures",
 			snapshot: ApplicationSnapshotImage{
 				reference: name.MustParseReference("registry.io/repository/image:tag"),
-				signatures: []output.EntitySignature{
+				signatures: []signature.EntitySignature{
 					{
 						KeyID:     "keyId1",
 						Signature: "signature1",

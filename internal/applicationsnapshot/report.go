@@ -29,18 +29,18 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/enterprise-contract/ec-cli/internal/format"
-	"github.com/enterprise-contract/ec-cli/internal/output"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
+	"github.com/enterprise-contract/ec-cli/internal/signature"
 	"github.com/enterprise-contract/ec-cli/internal/version"
 )
 
 type Component struct {
 	app.SnapshotComponent
-	Violations []conftestOutput.Result  `json:"violations,omitempty"`
-	Warnings   []conftestOutput.Result  `json:"warnings,omitempty"`
-	Successes  []conftestOutput.Result  `json:"successes,omitempty"`
-	Success    bool                     `json:"success"`
-	Signatures []output.EntitySignature `json:"signatures,omitempty"`
+	Violations []conftestOutput.Result     `json:"violations,omitempty"`
+	Warnings   []conftestOutput.Result     `json:"warnings,omitempty"`
+	Successes  []conftestOutput.Result     `json:"successes,omitempty"`
+	Success    bool                        `json:"success"`
+	Signatures []signature.EntitySignature `json:"signatures,omitempty"`
 }
 
 type Report struct {

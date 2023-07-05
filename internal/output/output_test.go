@@ -31,6 +31,7 @@ import (
 
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
+	"github.com/enterprise-contract/ec-cli/internal/signature"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
@@ -90,7 +91,7 @@ func Test_PrintExpectedJSON(t *testing.T) {
 				},
 			},
 		},
-		Signatures: []EntitySignature{
+		Signatures: []signature.EntitySignature{
 			{KeyID: "key-id", Signature: "signature"},
 		},
 		ExitCode: 42,
