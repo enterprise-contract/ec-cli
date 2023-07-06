@@ -32,9 +32,9 @@ var (
 // Attestation holds the raw attestation data, usually fetched from the
 // signature envelope's payload; statement of a particular type and any
 // signing information.
-type Attestation[T any] interface {
+type Attestation interface {
 	Data() []byte
-	Statement() T
+	Statement() any
 	Signatures() []signature.EntitySignature
 }
 

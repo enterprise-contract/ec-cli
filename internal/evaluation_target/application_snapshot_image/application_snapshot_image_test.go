@@ -61,7 +61,7 @@ func TestApplicationSnapshotImage_ValidateImageAccess(t *testing.T) {
 	type fields struct {
 		reference    name.Reference
 		checkOpts    cosign.CheckOpts
-		attestations []attestation.Attestation[attestation.ProvenanceStatementSLSA02]
+		attestations []attestation.Attestation
 		Evaluator    evaluator.Evaluator
 	}
 	type args struct {
@@ -129,7 +129,7 @@ func (f fakeAtt) Data() []byte {
 	return bytes
 }
 
-func (f fakeAtt) Statement() attestation.ProvenanceStatementSLSA02 {
+func (f fakeAtt) Statement() any {
 	return f.statement
 }
 
@@ -137,7 +137,7 @@ func (f fakeAtt) Signatures() []signature.EntitySignature {
 	return nil
 }
 
-func createSimpleAttestation(statement *attestation.ProvenanceStatementSLSA02) attestation.Attestation[attestation.ProvenanceStatementSLSA02] {
+func createSimpleAttestation(statement *attestation.ProvenanceStatementSLSA02) attestation.Attestation {
 	if statement == nil {
 		statement = &attestation.ProvenanceStatementSLSA02{
 			ProvenanceStatementSLSA02: in_toto.ProvenanceStatementSLSA02{
@@ -181,7 +181,7 @@ func TestWriteInputFile(t *testing.T) {
 			name: "single attestations",
 			snapshot: ApplicationSnapshotImage{
 				reference:    name.MustParseReference("registry.io/repository/image:tag"),
-				attestations: []attestation.Attestation[attestation.ProvenanceStatementSLSA02]{createSimpleAttestation(nil)},
+				attestations: []attestation.Attestation{createSimpleAttestation(nil)},
 			},
 			want: `{"attestations": [` + simpleAttestationJSONText + `], "image": {"ref": "registry.io/repository/image:tag"}}`,
 		},
@@ -189,7 +189,7 @@ func TestWriteInputFile(t *testing.T) {
 			name: "multiple attestations",
 			snapshot: ApplicationSnapshotImage{
 				reference: name.MustParseReference("registry.io/repository/image:tag"),
-				attestations: []attestation.Attestation[attestation.ProvenanceStatementSLSA02]{
+				attestations: []attestation.Attestation{
 					createSimpleAttestation(nil),
 					createSimpleAttestation(nil),
 				},
@@ -211,7 +211,7 @@ func TestWriteInputFile(t *testing.T) {
 						Signature: "signature2",
 					},
 				},
-				attestations: []attestation.Attestation[attestation.ProvenanceStatementSLSA02]{
+				attestations: []attestation.Attestation{
 					createSimpleAttestation(nil),
 				},
 			},
@@ -243,7 +243,7 @@ func TestWriteInputFileMultipleAttestations(t *testing.T) {
 	att := createSimpleAttestation(nil)
 	a := ApplicationSnapshotImage{
 		reference:    name.MustParseReference("registry.io/repository/image:tag"),
-		attestations: []attestation.Attestation[attestation.ProvenanceStatementSLSA02]{att},
+		attestations: []attestation.Attestation{att},
 	}
 
 	fs := afero.NewMemMapFs()
@@ -320,32 +320,32 @@ func TestSyntaxValidation(t *testing.T) {
 
 	cases := []struct {
 		name         string
-		attestations []attestation.Attestation[attestation.ProvenanceStatementSLSA02]
+		attestations []attestation.Attestation
 		err          *regexp.Regexp
 	}{
 		{
 			name: "invalid",
-			attestations: []attestation.Attestation[attestation.ProvenanceStatementSLSA02]{
+			attestations: []attestation.Attestation{
 				invalid,
 			},
 			err: regexp.MustCompile(`EV003: Attestation syntax validation failed, .*, caused by:\nSchema ID: https://slsa.dev/provenance/v0.2\n - /predicate/builder/id: "invalid" invalid uri: uri missing scheme prefix`),
 		},
 		{
 			name: "valid",
-			attestations: []attestation.Attestation[attestation.ProvenanceStatementSLSA02]{
+			attestations: []attestation.Attestation{
 				valid,
 			},
 		},
 		{
 			name: "empty",
-			attestations: []attestation.Attestation[attestation.ProvenanceStatementSLSA02]{
+			attestations: []attestation.Attestation{
 				createSimpleAttestation(&attestation.ProvenanceStatementSLSA02{}),
 			},
 			err: regexp.MustCompile(`EV002: Unable to decode attestation data from attestation image, .*, caused by: unexpected end of JSON input`),
 		},
 		{
 			name: "valid and invalid",
-			attestations: []attestation.Attestation[attestation.ProvenanceStatementSLSA02]{
+			attestations: []attestation.Attestation{
 				valid,
 				invalid,
 			},

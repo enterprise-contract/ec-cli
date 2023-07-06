@@ -40,7 +40,7 @@ type ProvenanceStatementSLSA02 struct {
 // SLSAProvenanceFromSignature parses the SLSA Provenance v0.2 from the provided OCI
 // layer. Expects that the layer contains DSSE JSON with the embeded SLSA
 // Provenance v0.2 payload.
-func SLSAProvenanceFromSignature(sig oci.Signature) (Attestation[ProvenanceStatementSLSA02], error) {
+func SLSAProvenanceFromSignature(sig oci.Signature) (Attestation, error) {
 	if sig == nil {
 		return nil, AT001
 	}
@@ -142,7 +142,7 @@ func (a slsaProvenance) Data() []byte {
 	return a.bytes
 }
 
-func (a slsaProvenance) Statement() ProvenanceStatementSLSA02 {
+func (a slsaProvenance) Statement() any {
 	return a.statement
 }
 

@@ -35,7 +35,7 @@ func (f fakeAtt) Data() []byte {
 	return bytes
 }
 
-func (f fakeAtt) Statement() attestation.ProvenanceStatementSLSA02 {
+func (f fakeAtt) Statement() any {
 	return f.statement
 }
 

@@ -65,7 +65,7 @@ type ApplicationSnapshotImage struct {
 	reference    name.Reference
 	checkOpts    cosign.CheckOpts
 	signatures   []signature.EntitySignature
-	attestations []attestation.Attestation[attestation.ProvenanceStatementSLSA02]
+	attestations []attestation.Attestation
 	Evaluators   []evaluator.Evaluator
 }
 
@@ -160,7 +160,7 @@ func (a *ApplicationSnapshotImage) SetImageURL(url string) error {
 	a.reference = ref
 
 	// Reset internal state relevant to the image
-	a.attestations = []attestation.Attestation[attestation.ProvenanceStatementSLSA02]{}
+	a.attestations = []attestation.Attestation{}
 	a.signatures = []signature.EntitySignature{}
 
 	return nil
@@ -262,7 +262,7 @@ func (a ApplicationSnapshotImage) ValidateAttestationSyntax(ctx context.Context)
 }
 
 // Attestations returns the value of the attestations field of the ApplicationSnapshotImage struct
-func (a *ApplicationSnapshotImage) Attestations() []attestation.Attestation[attestation.ProvenanceStatementSLSA02] {
+func (a *ApplicationSnapshotImage) Attestations() []attestation.Attestation {
 	return a.attestations
 }
 
@@ -274,12 +274,10 @@ func (a *ApplicationSnapshotImage) Signatures() []signature.EntitySignature {
 func (a *ApplicationSnapshotImage) WriteInputFile(ctx context.Context) (string, error) {
 	log.Debugf("Attempting to write %d attestations to input file", len(a.attestations))
 
-	var statements []attestation.ProvenanceStatementSLSA02
+	var statements []any
 	for _, sp := range a.attestations {
 		statements = append(statements, sp.Statement())
 	}
-
-	// var richStatements []
 
 	type Image struct {
 		Ref        string                      `json:"ref"`
@@ -287,8 +285,8 @@ func (a *ApplicationSnapshotImage) WriteInputFile(ctx context.Context) (string, 
 	}
 
 	input := struct {
-		Attestations []attestation.ProvenanceStatementSLSA02 `json:"attestations"`
-		Image        Image                                   `json:"image"`
+		Attestations []any `json:"attestations"`
+		Image        Image `json:"image"`
 	}{
 		Attestations: statements,
 		Image: Image{
