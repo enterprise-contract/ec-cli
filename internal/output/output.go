@@ -73,6 +73,13 @@ func (v VerificationStatus) addToSuccesses(successes []output.Result) []output.R
 	return result
 }
 
+type Attestation struct {
+	Type               string                      `json:"type"`
+	PredicateType      string                      `json:"predicateType"`
+	PredicateBuildType string                      `json:"predicateBuildType,omitempty"`
+	Signatures         []signature.EntitySignature `json:"signatures"`
+}
+
 // Output is a struct representing checks and exit code.
 type Output struct {
 	ImageAccessibleCheck      VerificationStatus          `json:"imageAccessibleCheck"`
@@ -82,6 +89,7 @@ type Output struct {
 	PolicyCheck               evaluator.CheckResults      `json:"policyCheck"`
 	ExitCode                  int                         `json:"-"`
 	Signatures                []signature.EntitySignature `json:"signatures,omitempty"`
+	Attestations              []Attestation               `json:"attestations,omitempty"`
 	ImageURL                  string                      `json:"-"`
 	Detailed                  bool                        `json:"-"`
 	Data                      []evaluator.Data            `json:"-"`

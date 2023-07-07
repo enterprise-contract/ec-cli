@@ -265,7 +265,6 @@ func createAndPushAttestationWithPatches(ctx context.Context, imageName, keyName
 	if err != nil {
 		return ctx, err
 	}
-	signatureBase64 := base64.StdEncoding.EncodeToString(signedAttestation)
 
 	if sig, err := unmarshallSignatures(signedAttestation); err != nil {
 		return ctx, err
@@ -289,7 +288,11 @@ func createAndPushAttestationWithPatches(ctx context.Context, imageName, keyName
 		MediaType: cosigntypes.DssePayloadType,
 		Layer:     attestationLayer,
 		Annotations: map[string]string{
-			static.SignatureAnnotationKey: signatureBase64,
+			// When cosign creates an attestation, it sets this annotation to an empty
+			// string, as seen here:
+			// https://github.com/sigstore/cosign/blob/34afd5240ce8490a4fa427c3f46523246643047c/pkg/oci/static/signature.go#L52-L55
+			// We choose to mimic the cosign behavior to avoid inconsistencies in the tests.
+			static.SignatureAnnotationKey: "",
 		},
 	})
 	if err != nil {

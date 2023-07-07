@@ -50,6 +50,7 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/attestation"
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 	"github.com/enterprise-contract/ec-cli/internal/mocks"
+	"github.com/enterprise-contract/ec-cli/internal/output"
 	"github.com/enterprise-contract/ec-cli/internal/signature"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
@@ -133,8 +134,8 @@ func (f fakeAtt) Statement() any {
 	return f.statement
 }
 
-func (f fakeAtt) Signatures() []signature.EntitySignature {
-	return nil
+func (f fakeAtt) Output() output.Attestation {
+	return output.Attestation{}
 }
 
 func createSimpleAttestation(statement *attestation.ProvenanceStatementSLSA02) attestation.Attestation {

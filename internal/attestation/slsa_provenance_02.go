@@ -27,6 +27,7 @@ import (
 	"github.com/sigstore/cosign/v2/pkg/oci"
 	"github.com/sigstore/cosign/v2/pkg/types"
 
+	"github.com/enterprise-contract/ec-cli/internal/output"
 	"github.com/enterprise-contract/ec-cli/internal/signature"
 )
 
@@ -92,7 +93,7 @@ func SLSAProvenanceFromSignature(sig oci.Signature) (Attestation, error) {
 		return nil, AT004.CausedByF(statement.PredicateType)
 	}
 
-	statement.Extra.Signatures, err = createEntitySignatures(sig, statement, payload)
+	statement.Extra.Signatures, err = createEntitySignatures(sig, payload)
 	if err != nil {
 		return nil, AT005.CausedBy(err)
 	}
@@ -100,16 +101,10 @@ func SLSAProvenanceFromSignature(sig oci.Signature) (Attestation, error) {
 	return slsaProvenance{statement: statement, payload: payload, bytes: embeded}, nil
 }
 
-func createEntitySignatures(sig oci.Signature, statement ProvenanceStatementSLSA02, payload cosign.AttestationPayload) ([]signature.EntitySignature, error) {
+func createEntitySignatures(sig oci.Signature, payload cosign.AttestationPayload) ([]signature.EntitySignature, error) {
 	es, err := signature.NewEntitySignature(sig)
 	if err != nil {
 		return nil, err
-	}
-
-	es.Metadata["predicateType"] = statement.PredicateType
-	es.Metadata["type"] = statement.Type
-	if statement.Predicate.BuildType != "" {
-		es.Metadata["predicateBuildType"] = statement.Predicate.BuildType
 	}
 
 	var out []signature.EntitySignature
@@ -146,6 +141,11 @@ func (a slsaProvenance) Statement() any {
 	return a.statement
 }
 
-func (a slsaProvenance) Signatures() []signature.EntitySignature {
-	return a.statement.Extra.Signatures
+func (a slsaProvenance) Output() output.Attestation {
+	return output.Attestation{
+		Type:               a.statement.Type,
+		PredicateType:      a.statement.PredicateType,
+		PredicateBuildType: a.statement.Predicate.BuildType,
+		Signatures:         a.statement.Extra.Signatures,
+	}
 }
