@@ -73,6 +73,21 @@ func (v VerificationStatus) addToSuccesses(successes []output.Result) []output.R
 	return result
 }
 
+// addToWarnings appends the failure result to the warnings slice. Use this for
+// checks that are optional.
+func (v VerificationStatus) addToWarnings(warnings []output.Result) []output.Result {
+	if v.Passed {
+		return warnings
+	}
+
+	result := warnings
+	if v.Result != nil {
+		result = append(warnings, *v.Result)
+	}
+
+	return result
+}
+
 type Attestation struct {
 	Type               string                      `json:"type"`
 	PredicateType      string                      `json:"predicateType"`
@@ -82,18 +97,20 @@ type Attestation struct {
 
 // Output is a struct representing checks and exit code.
 type Output struct {
-	ImageAccessibleCheck      VerificationStatus          `json:"imageAccessibleCheck"`
-	ImageSignatureCheck       VerificationStatus          `json:"imageSignatureCheck"`
-	AttestationSignatureCheck VerificationStatus          `json:"attestationSignatureCheck"`
-	AttestationSyntaxCheck    VerificationStatus          `json:"attestationSyntaxCheck"`
-	PolicyCheck               evaluator.CheckResults      `json:"policyCheck"`
-	ExitCode                  int                         `json:"-"`
-	Signatures                []signature.EntitySignature `json:"signatures,omitempty"`
-	Attestations              []Attestation               `json:"attestations,omitempty"`
-	ImageURL                  string                      `json:"-"`
-	Detailed                  bool                        `json:"-"`
-	Data                      []evaluator.Data            `json:"-"`
-	Policy                    policy.Policy               `json:"-"`
+	ImageAccessibleCheck             VerificationStatus          `json:"imageAccessibleCheck"`
+	ImageConfigAccessibleCheck       VerificationStatus          `json:"imageConfigAccessibleCheck"`
+	ParentImageConfigAccessibleCheck VerificationStatus          `json:"parentImageConfigAccessibleCheck"`
+	ImageSignatureCheck              VerificationStatus          `json:"imageSignatureCheck"`
+	AttestationSignatureCheck        VerificationStatus          `json:"attestationSignatureCheck"`
+	AttestationSyntaxCheck           VerificationStatus          `json:"attestationSyntaxCheck"`
+	PolicyCheck                      evaluator.CheckResults      `json:"policyCheck"`
+	ExitCode                         int                         `json:"-"`
+	Signatures                       []signature.EntitySignature `json:"signatures,omitempty"`
+	Attestations                     []Attestation               `json:"attestations,omitempty"`
+	ImageURL                         string                      `json:"-"`
+	Detailed                         bool                        `json:"-"`
+	Data                             []evaluator.Data            `json:"-"`
+	Policy                           policy.Policy               `json:"-"`
 }
 
 // SetImageAccessibleCheck sets the passed and result.message fields of the ImageAccessibleCheck to the given values.
@@ -117,6 +134,52 @@ func (o *Output) SetImageAccessibleCheckFromError(err error) {
 		keepSomeMetadataSingle(*result)
 	}
 	o.ImageAccessibleCheck.Result = result
+}
+
+// SetImageAccessibleCheck sets the passed and result.message fields of the ImageAccessibleCheck to the given values.
+func (o *Output) SetImageConfigAccessibleCheckFromError(err error) {
+	metadata := map[string]interface{}{
+		"code":  "builtin.image.config_check",
+		"title": "Image config is accessible",
+	}
+	var message string
+	if err == nil {
+		o.ImageConfigAccessibleCheck.Passed = true
+		message = "Pass"
+		log.Debug("Image config is accessible")
+	} else {
+		o.ImageConfigAccessibleCheck.Passed = false
+		message = fmt.Sprintf("Image config is not accessible: %s", err)
+		log.Debugf("%s. Error: %s", message, err.Error())
+	}
+	result := &output.Result{Message: message, Metadata: metadata}
+	if !o.Detailed {
+		keepSomeMetadataSingle(*result)
+	}
+	o.ImageConfigAccessibleCheck.Result = result
+}
+
+// SetImageAccessibleCheck sets the passed and result.message fields of the ImageAccessibleCheck to the given values.
+func (o *Output) SetParentImageConfigAccessibleCheckFromError(err error) {
+	metadata := map[string]interface{}{
+		"code":  "builtin.parent_image.config_check",
+		"title": "Parent image config is accessible",
+	}
+	var message string
+	if err == nil {
+		o.ParentImageConfigAccessibleCheck.Passed = true
+		message = "Pass"
+		log.Debug("Parent image config is accessible")
+	} else {
+		o.ParentImageConfigAccessibleCheck.Passed = false
+		message = fmt.Sprintf("Parent image config is not accessible: %s", err)
+		log.Debugf("%s. Error: %s", message, err.Error())
+	}
+	result := &output.Result{Message: message, Metadata: metadata}
+	if !o.Detailed {
+		keepSomeMetadataSingle(*result)
+	}
+	o.ParentImageConfigAccessibleCheck.Result = result
 }
 
 // SetImageSignatureCheck sets the passed and result.message fields of the ImageSignatureCheck to the given values.
@@ -241,6 +304,7 @@ func (o Output) Violations() []output.Result {
 	violations := make([]output.Result, 0, 10)
 	violations = o.ImageSignatureCheck.addToViolations(violations)
 	violations = o.ImageAccessibleCheck.addToViolations(violations)
+	violations = o.ImageConfigAccessibleCheck.addToViolations(violations)
 	violations = o.AttestationSignatureCheck.addToViolations(violations)
 	violations = o.AttestationSyntaxCheck.addToViolations(violations)
 	violations = o.addCheckResultsToViolations(violations)
@@ -255,6 +319,7 @@ func (o Output) Warnings() []output.Result {
 	for _, result := range o.PolicyCheck {
 		warnings = append(warnings, result.Warnings...)
 	}
+	warnings = o.ParentImageConfigAccessibleCheck.addToWarnings(warnings)
 
 	warnings = sortResults(warnings)
 	return warnings
@@ -268,6 +333,8 @@ func (o Output) Successes() []output.Result {
 	}
 
 	successes = o.ImageSignatureCheck.addToSuccesses(successes)
+	successes = o.ImageConfigAccessibleCheck.addToSuccesses(successes)
+	successes = o.ParentImageConfigAccessibleCheck.addToSuccesses(successes)
 	successes = o.AttestationSignatureCheck.addToSuccesses(successes)
 	successes = o.AttestationSyntaxCheck.addToSuccesses(successes)
 

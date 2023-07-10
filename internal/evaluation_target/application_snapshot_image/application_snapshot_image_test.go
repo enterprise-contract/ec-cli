@@ -49,6 +49,7 @@ import (
 
 	"github.com/enterprise-contract/ec-cli/internal/attestation"
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
+	"github.com/enterprise-contract/ec-cli/internal/fetcher/image_config"
 	"github.com/enterprise-contract/ec-cli/internal/mocks"
 	"github.com/enterprise-contract/ec-cli/internal/output"
 	"github.com/enterprise-contract/ec-cli/internal/signature"
@@ -217,6 +218,34 @@ func TestWriteInputFile(t *testing.T) {
 				},
 			},
 			want: `{"attestations": [` + simpleAttestationJSONText + `], "image": {"ref": "registry.io/repository/image:tag", "signatures": [{"keyid": "keyId1", "sig": "signature1", "chain": ["certificate1", "certificate2"]}, {"keyid": "keyId2", "sig": "signature2"}]}}`,
+		},
+		{
+			name: "image config",
+			snapshot: ApplicationSnapshotImage{
+				reference:  name.MustParseReference("registry.io/repository/image:tag"),
+				configJSON: json.RawMessage(`{"Labels":{"io.k8s.display-name":"Test Image"}}`),
+			},
+			want: `{
+				"attestations": null,
+				"image": {
+					"ref": "registry.io/repository/image:tag",
+					"config": {"Labels":{"io.k8s.display-name":"Test Image"}}
+				}
+			}`,
+		},
+		{
+			name: "parent image config",
+			snapshot: ApplicationSnapshotImage{
+				reference:        name.MustParseReference("registry.io/repository/image:tag"),
+				parentConfigJSON: json.RawMessage(`{"Labels":{"io.k8s.display-name":"Base Image"}}`),
+			},
+			want: `{
+				"attestations": null,
+				"image": {
+					"ref": "registry.io/repository/image:tag",
+					"parent_config": {"Labels":{"io.k8s.display-name":"Base Image"}}
+				}
+			}`,
 		},
 	}
 
@@ -672,4 +701,34 @@ func TestValidateImageSignatureWithCertificates(t *testing.T) {
 	}
 
 	snaps.MatchSnapshot(t, a.signatures)
+}
+
+func TestFetchImageConfig(t *testing.T) {
+	url := utils.WithDigest("registry.local/test-image")
+	ctx := context.Background()
+	ctx = image_config.WithTestImageConfig(ctx, url)
+
+	ref, err := name.ParseReference(url)
+	require.NoError(t, err)
+	a := ApplicationSnapshotImage{reference: ref}
+
+	err = a.FetchImageConfig(ctx)
+	require.NoError(t, err)
+
+	require.Equal(t, string(a.configJSON), `{"Labels":{"io.k8s.display-name":"Test Image"}}`)
+}
+
+func TestFetchParentImageConfig(t *testing.T) {
+	url := utils.WithDigest("registry.local/test-image")
+	ctx := context.Background()
+	ctx = image_config.WithTestImageConfig(ctx, url)
+
+	ref, err := name.ParseReference(url)
+	require.NoError(t, err)
+	a := ApplicationSnapshotImage{reference: ref}
+
+	err = a.FetchParentImageConfig(ctx)
+	require.NoError(t, err)
+
+	require.Equal(t, string(a.parentConfigJSON), `{"Labels":{"io.k8s.display-name":"Base Image"}}`)
 }

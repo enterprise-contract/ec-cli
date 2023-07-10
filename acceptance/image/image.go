@@ -34,6 +34,7 @@ import (
 
 	"github.com/cucumber/godog"
 	jsonpatch "github.com/evanphx/json-patch/v5"
+	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/empty"
@@ -325,34 +326,65 @@ func createAndPushAttestationWithPatches(ctx context.Context, imageName, keyName
 	return ctx, nil
 }
 
+// createAndPushImage creates a parent image and a test image for the given imageName.
+func createAndPushImage(ctx context.Context, imageName string) (context.Context, error) {
+	var err error
+
+	parentName := fmt.Sprintf("%s/parent", imageName)
+	ctx, parentRef, err := createAndPushPlainImage(ctx, parentName, nil)
+	if err != nil {
+		return ctx, err
+	}
+
+	parentURL, err := resolveDigest(parentRef)
+	if err != nil {
+		return ctx, err
+	}
+
+	ctx, _, err = createAndPushPlainImage(ctx, imageName, func(img v1.Image) v1.Image {
+		return mutate.Annotations(img, map[string]string{
+			"org.opencontainers.image.base.name": parentURL,
+		}).(v1.Image)
+	})
+	if err != nil {
+		return ctx, err
+	}
+
+	return ctx, nil
+}
+
 // createAndPushImage creates a small 4K random image with 2 layers and pushes it to
 // the stub image registry
-func createAndPushImage(ctx context.Context, imageName string) (context.Context, error) {
+func createAndPushPlainImage(ctx context.Context, imageName string, patch func(v1.Image) v1.Image) (context.Context, string, error) {
 	var state *imageState
 	ctx, err := testenv.SetupState(ctx, &state)
 	if err != nil {
-		return ctx, err
+		return ctx, "", err
 	}
 
 	if state.Attestations[imageName] != "" {
 		// we already created the image
-		return ctx, nil
+		return ctx, state.Images[imageName], nil
 	}
 
 	img, err := random.Image(4096, 2)
 	if err != nil {
-		return ctx, err
+		return ctx, "", err
+	}
+
+	if patch != nil {
+		img = patch(img)
 	}
 
 	ref, err := registry.ImageReferenceInStubRegistry(ctx, imageName)
 	if err != nil {
-		return ctx, err
+		return ctx, "", err
 	}
 
 	// push to the registry
 	err = remote.Write(ref, img)
 	if err != nil {
-		return ctx, err
+		return ctx, "", err
 	}
 
 	if state.Images == nil {
@@ -361,7 +393,25 @@ func createAndPushImage(ctx context.Context, imageName string) (context.Context,
 
 	state.Images[imageName] = ref.String()
 
-	return ctx, nil
+	return ctx, ref.String(), nil
+}
+
+// resolveDigest returns an image reference that is guaranteed to have a digest.
+func resolveDigest(url string) (string, error) {
+	ref, err := name.ParseReference(url)
+	if err != nil {
+		return "", err
+	}
+	descriptor, err := remote.Head(ref, remote.WithAuthFromKeychain(authn.DefaultKeychain))
+	if err != nil {
+		return "", err
+	}
+	digest := descriptor.Digest.String()
+	if digest == "" {
+		return "", fmt.Errorf("digest for image %q is empty", url)
+	}
+
+	return fmt.Sprintf("%s@%s", ref.Name(), digest), nil
 }
 
 // createAndPushKeylessImage loads an existing image from disk, along its signature and attestation

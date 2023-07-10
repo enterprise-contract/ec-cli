@@ -35,6 +35,7 @@ import (
 
 	"github.com/enterprise-contract/ec-cli/internal/attestation"
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
+	"github.com/enterprise-contract/ec-cli/internal/fetcher/image_config"
 	"github.com/enterprise-contract/ec-cli/internal/output"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/policy/source"
@@ -63,11 +64,13 @@ var attestationSchemas = map[string]jsonschema.Schema{
 
 // ApplicationSnapshotImage represents the structure needed to evaluate an Application Snapshot Image
 type ApplicationSnapshotImage struct {
-	reference    name.Reference
-	checkOpts    cosign.CheckOpts
-	signatures   []signature.EntitySignature
-	attestations []attestation.Attestation
-	Evaluators   []evaluator.Evaluator
+	reference        name.Reference
+	checkOpts        cosign.CheckOpts
+	signatures       []signature.EntitySignature
+	configJSON       json.RawMessage
+	parentConfigJSON json.RawMessage
+	attestations     []attestation.Attestation
+	Evaluators       []evaluator.Evaluator
 }
 
 // NewApplicationSnapshotImage returns an ApplicationSnapshotImage struct with reference, checkOpts, and evaluator ready to use.
@@ -164,6 +167,36 @@ func (a *ApplicationSnapshotImage) SetImageURL(url string) error {
 	a.attestations = []attestation.Attestation{}
 	a.signatures = []signature.EntitySignature{}
 
+	return nil
+}
+
+func (a *ApplicationSnapshotImage) FetchImageConfig(ctx context.Context) error {
+	opts := []remote.Option{
+		imageRefTransport,
+		remote.WithContext(ctx),
+		remote.WithAuthFromKeychain(authn.DefaultKeychain),
+	}
+	f := image_config.Fetcher{}
+	var err error
+	a.configJSON, err = f.Fetch(ctx, a.reference, opts...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (a *ApplicationSnapshotImage) FetchParentImageConfig(ctx context.Context) error {
+	opts := []remote.Option{
+		imageRefTransport,
+		remote.WithContext(ctx),
+		remote.WithAuthFromKeychain(authn.DefaultKeychain),
+	}
+	f := image_config.ParentFetcher{}
+	var err error
+	a.parentConfigJSON, err = f.Fetch(ctx, a.reference, opts...)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -289,8 +322,10 @@ func (a *ApplicationSnapshotImage) WriteInputFile(ctx context.Context) (string, 
 	}
 
 	type Image struct {
-		Ref        string                      `json:"ref"`
-		Signatures []signature.EntitySignature `json:"signatures,omitempty"`
+		Ref          string                      `json:"ref"`
+		Signatures   []signature.EntitySignature `json:"signatures,omitempty"`
+		Config       json.RawMessage             `json:"config,omitempty"`
+		ParentConfig json.RawMessage             `json:"parent_config,omitempty"`
 	}
 
 	input := struct {
@@ -299,8 +334,10 @@ func (a *ApplicationSnapshotImage) WriteInputFile(ctx context.Context) (string, 
 	}{
 		Attestations: statements,
 		Image: Image{
-			Ref:        a.reference.String(),
-			Signatures: a.signatures,
+			Ref:          a.reference.String(),
+			Signatures:   a.signatures,
+			Config:       a.configJSON,
+			ParentConfig: a.parentConfigJSON,
 		},
 	}
 

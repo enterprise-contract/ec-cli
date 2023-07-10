@@ -14,6 +14,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+//go:build unit
+
 package image
 
 import (
@@ -41,6 +43,7 @@ import (
 
 	"github.com/enterprise-contract/ec-cli/internal/attestation"
 	"github.com/enterprise-contract/ec-cli/internal/evaluation_target/application_snapshot_image"
+	"github.com/enterprise-contract/ec-cli/internal/fetcher/image_config"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
@@ -126,6 +129,7 @@ func TestValidateImage(t *testing.T) {
 			assert.NoError(t, err)
 
 			ctx = application_snapshot_image.WithClient(ctx, c.client)
+			ctx = withImageConfig(ctx, c.url)
 
 			actual, err := ValidateImage(ctx, c.url, p, false)
 			assert.NoError(t, err)
@@ -268,3 +272,16 @@ var validAttestation = sign(&in_toto.Statement{
 		},
 	},
 })
+
+func withImageConfig(ctx context.Context, url string) context.Context {
+	// Internally, ValidateImage strips off the tag from the image reference and
+	// leaves just the digest. Do the same here so mock matching works.
+	refWithTag, err := ParseAndResolve(url)
+	if err != nil {
+		panic(err)
+	}
+	refWithTag.Tag = ""
+	resolved := refWithTag.String()
+
+	return image_config.WithTestImageConfig(ctx, resolved)
+}

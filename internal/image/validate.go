@@ -56,6 +56,9 @@ func ValidateImage(ctx context.Context, url string, p policy.Policy, detailed bo
 		out.ImageURL = resolved
 	}
 
+	out.SetImageConfigAccessibleCheckFromError(a.FetchImageConfig(ctx))
+	out.SetParentImageConfigAccessibleCheckFromError(a.FetchParentImageConfig(ctx))
+
 	out.SetImageSignatureCheckFromError(a.ValidateImageSignature(ctx))
 
 	out.SetAttestationSignatureCheckFromError(a.ValidateAttestationSignature(ctx))
