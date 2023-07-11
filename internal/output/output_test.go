@@ -53,14 +53,6 @@ func Test_PrintExpectedJSON(t *testing.T) {
 			Passed: false,
 			Result: &output.Result{Message: "message4"},
 		},
-		ImageConfigAccessibleCheck: VerificationStatus{
-			Passed: false,
-			Result: &output.Result{Message: "message5"},
-		},
-		ParentImageConfigAccessibleCheck: VerificationStatus{
-			Passed: false,
-			Result: &output.Result{Message: "message6"},
-		},
 		PolicyCheck: evaluator.CheckResults{
 			{
 				CheckResult: output.CheckResult{
@@ -131,18 +123,6 @@ func Test_PrintExpectedJSON(t *testing.T) {
 		  "passed": false,
 		  "result": {
 		    "msg": "message4"
-		  }
-		},
-		"imageConfigAccessibleCheck": {
-		  "passed": false,
-		  "result": {
-		    "msg": "message5"
-		  }
-		},
-		"parentImageConfigAccessibleCheck": {
-		  "passed": false,
-		  "result": {
-		    "msg": "message6"
 		  }
 		},
 		"policyCheck": [
@@ -217,12 +197,6 @@ func Test_PrintOutputsExpectedJSON(t *testing.T) {
 		  "imageAccessibleCheck": {
 			"passed": false
 		  },
-		  "imageConfigAccessibleCheck": {
-			"passed": false
-		  },
-		  "parentImageConfigAccessibleCheck": {
-			"passed": false
-		  },
 		  "attestationSignatureCheck": {
 			"passed": false
 		  },
@@ -236,12 +210,6 @@ func Test_PrintOutputsExpectedJSON(t *testing.T) {
 			"passed": false
 		  },
 		  "imageAccessibleCheck": {
-			"passed": false
-		  },
-		  "imageConfigAccessibleCheck": {
-			"passed": false
-		  },
-		  "parentImageConfigAccessibleCheck": {
 			"passed": false
 		  },
 		  "attestationSignatureCheck": {
@@ -435,16 +403,11 @@ func Test_Violations(t *testing.T) {
 					Passed: false,
 					Result: &output.Result{Message: "invalid attestation syntax"},
 				},
-				ImageConfigAccessibleCheck: VerificationStatus{
-					Passed: false,
-					Result: &output.Result{Message: "image config check failed"},
-				},
 			},
 			expected: []output.Result{
 				{Message: "attestation signature failed"},
 				{Message: "failed policy check 1"},
 				{Message: "failed policy check 2"},
-				{Message: "image config check failed"},
 				{Message: "image signature failed"},
 				{Message: "invalid attestation syntax"},
 			},
@@ -560,20 +523,6 @@ func Test_Successes(t *testing.T) {
 						"title": "Attestation syntax check passed",
 					}},
 				},
-				ImageConfigAccessibleCheck: VerificationStatus{
-					Passed: true,
-					Result: &output.Result{Message: "Pass", Metadata: map[string]interface{}{
-						"code":  "builtin.image.config_check",
-						"title": "Image config is accessible",
-					}},
-				},
-				ParentImageConfigAccessibleCheck: VerificationStatus{
-					Passed: true,
-					Result: &output.Result{Message: "Pass", Metadata: map[string]interface{}{
-						"code":  "builtin.parent_image.config_check",
-						"title": "Parent image config is accessible",
-					}},
-				},
 				PolicyCheck: evaluator.CheckResults{
 					{
 						Successes: []output.Result{
@@ -595,16 +544,8 @@ func Test_Successes(t *testing.T) {
 					"title": "Attestation syntax check passed",
 				}},
 				{Message: "Pass", Metadata: map[string]interface{}{
-					"code":  "builtin.image.config_check",
-					"title": "Image config is accessible",
-				}},
-				{Message: "Pass", Metadata: map[string]interface{}{
 					"code":  "builtin.image.signature_check",
 					"title": "Image signature check passed",
-				}},
-				{Message: "Pass", Metadata: map[string]interface{}{
-					"code":  "builtin.parent_image.config_check",
-					"title": "Parent image config is accessible",
 				}},
 			},
 		},
@@ -791,24 +732,6 @@ func Test_Warnings(t *testing.T) {
 			},
 		},
 		{
-			name: "parent image config check warning",
-			output: Output{
-				ParentImageConfigAccessibleCheck: VerificationStatus{
-					Passed: false,
-					Result: &output.Result{Message: "Pass", Metadata: map[string]interface{}{
-						"code":  "builtin.parent_image.config_check",
-						"title": "Parent image config is accessible",
-					}},
-				},
-			},
-			expected: []output.Result{
-				{Message: "Pass", Metadata: map[string]interface{}{
-					"code":  "builtin.parent_image.config_check",
-					"title": "Parent image config is accessible",
-				}},
-			},
-		},
-		{
 			name: "multiple warnings",
 			output: Output{
 				PolicyCheck: evaluator.CheckResults{
@@ -925,140 +848,6 @@ func TestSetImageAccessibleCheckFromError(t *testing.T) {
 
 			assert.Equal(t, c.expectedPassed, o.ImageAccessibleCheck.Passed)
 			assert.Equal(t, c.expectedResult, o.ImageAccessibleCheck.Result)
-		})
-	}
-}
-
-func TestSetImageConfigAccessibleCheckFromError(t *testing.T) {
-	cases := []struct {
-		name           string
-		detailed       bool
-		err            error
-		expectedPassed bool
-		expectedResult *output.Result
-	}{
-		{
-			name:           "success",
-			expectedPassed: true,
-			expectedResult: &output.Result{
-				Message: "Pass",
-				Metadata: map[string]interface{}{
-					"code": "builtin.image.config_check",
-				},
-			},
-		},
-		{
-			name:           "detailed success",
-			detailed:       true,
-			expectedPassed: true,
-			expectedResult: &output.Result{
-				Message: "Pass",
-				Metadata: map[string]interface{}{
-					"code":  "builtin.image.config_check",
-					"title": "Image config is accessible",
-				},
-			},
-		},
-		{
-			name:           "failure",
-			expectedPassed: false,
-			err:            errors.New("kaboom!"),
-			expectedResult: &output.Result{
-				Message: "Image config is not accessible: kaboom!",
-				Metadata: map[string]interface{}{
-					"code": "builtin.image.config_check",
-				},
-			},
-		},
-		{
-			name:           "detailed failure",
-			detailed:       true,
-			expectedPassed: false,
-			err:            errors.New("kaboom!"),
-			expectedResult: &output.Result{
-				Message: "Image config is not accessible: kaboom!",
-				Metadata: map[string]interface{}{
-					"code":  "builtin.image.config_check",
-					"title": "Image config is accessible",
-				},
-			},
-		},
-	}
-
-	for _, c := range cases {
-		t.Run(c.name, func(t *testing.T) {
-			o := Output{Detailed: c.detailed}
-			o.SetImageConfigAccessibleCheckFromError(c.err)
-
-			assert.Equal(t, c.expectedPassed, o.ImageConfigAccessibleCheck.Passed)
-			assert.Equal(t, c.expectedResult, o.ImageConfigAccessibleCheck.Result)
-		})
-	}
-}
-
-func TestSetParentImageConfigAccessibleCheckFromError(t *testing.T) {
-	cases := []struct {
-		name           string
-		detailed       bool
-		err            error
-		expectedPassed bool
-		expectedResult *output.Result
-	}{
-		{
-			name:           "success",
-			expectedPassed: true,
-			expectedResult: &output.Result{
-				Message: "Pass",
-				Metadata: map[string]interface{}{
-					"code": "builtin.parent_image.config_check",
-				},
-			},
-		},
-		{
-			name:           "detailed success",
-			detailed:       true,
-			expectedPassed: true,
-			expectedResult: &output.Result{
-				Message: "Pass",
-				Metadata: map[string]interface{}{
-					"code":  "builtin.parent_image.config_check",
-					"title": "Parent image config is accessible",
-				},
-			},
-		},
-		{
-			name:           "failure",
-			expectedPassed: false,
-			err:            errors.New("kaboom!"),
-			expectedResult: &output.Result{
-				Message: "Parent image config is not accessible: kaboom!",
-				Metadata: map[string]interface{}{
-					"code": "builtin.parent_image.config_check",
-				},
-			},
-		},
-		{
-			name:           "detailed failure",
-			detailed:       true,
-			expectedPassed: false,
-			err:            errors.New("kaboom!"),
-			expectedResult: &output.Result{
-				Message: "Parent image config is not accessible: kaboom!",
-				Metadata: map[string]interface{}{
-					"code":  "builtin.parent_image.config_check",
-					"title": "Parent image config is accessible",
-				},
-			},
-		},
-	}
-
-	for _, c := range cases {
-		t.Run(c.name, func(t *testing.T) {
-			o := Output{Detailed: c.detailed}
-			o.SetParentImageConfigAccessibleCheckFromError(c.err)
-
-			assert.Equal(t, c.expectedPassed, o.ParentImageConfigAccessibleCheck.Passed)
-			assert.Equal(t, c.expectedResult, o.ParentImageConfigAccessibleCheck.Result)
 		})
 	}
 }

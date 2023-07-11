@@ -70,21 +70,10 @@ components:
       title: Attestation syntax check passed
     msg: Pass
   - metadata:
-      code: builtin.image.config_check
-      title: Image config is accessible
-    msg: Pass
-  - metadata:
       code: builtin.image.signature_check
       title: Image signature check passed
     msg: Pass
   warnings:
-  - metadata:
-      code: builtin.parent_image.config_check
-      title: Parent image config is accessible
-    msg: 'Parent image config is not accessible: unable to fetch parent image: Get
-      "https://localhost:37957/v2/": dial tcp [::1]:37957: connect: connection refused;
-      Get "http://localhost:37957/v2/": dial tcp [::1]:37957: connect: connection
-      refused'
   - metadata:
       code: test.no_skipped_tests
       collections:
@@ -140,21 +129,10 @@ components:
       title: Attestation syntax check passed
     msg: Pass
   - metadata:
-      code: builtin.image.config_check
-      title: Image config is accessible
-    msg: Pass
-  - metadata:
       code: builtin.image.signature_check
       title: Image signature check passed
     msg: Pass
   warnings:
-  - metadata:
-      code: builtin.parent_image.config_check
-      title: Parent image config is accessible
-    msg: 'Parent image config is not accessible: unable to fetch parent image: Get
-      "https://localhost:37957/v2/": dial tcp [::1]:37957: connect: connection refused;
-      Get "http://localhost:37957/v2/": dial tcp [::1]:37957: connect: connection
-      refused'
   - metadata:
       code: test.no_skipped_tests
       collections:
@@ -222,10 +200,6 @@ components:
       title: Attestation syntax check passed
     msg: Pass
   - metadata:
-      code: builtin.image.config_check
-      title: Image config is accessible
-    msg: Pass
-  - metadata:
       code: builtin.image.signature_check
       title: Image signature check passed
     msg: Pass
@@ -243,13 +217,6 @@ components:
         SLSA Provenance format was used to attest the PipelineRun.
       title: Expected attestation predicate type found
     msg: Pass
-  warnings:
-  - metadata:
-      code: builtin.parent_image.config_check
-      title: Parent image config is accessible
-    msg: 'Parent image config is not accessible: unable to parse parent image ref:
-      a digest must contain exactly one ''@'' separator (e.g. registry/repository@digest)
-      saw: registry.access.redhat.com/ubi9/ubi-micro:latest'
 ec-version: ${EC_VERSION}
 effective-time: "${TIMESTAMP}"
 key: |
@@ -322,10 +289,6 @@ components:
       title: Attestation syntax check passed
     msg: Pass
   - metadata:
-      code: builtin.image.config_check
-      title: Image config is accessible
-    msg: Pass
-  - metadata:
       code: builtin.image.signature_check
       title: Image signature check passed
     msg: Pass
@@ -343,13 +306,6 @@ components:
         SLSA Provenance format was used to attest the PipelineRun.
       title: Expected attestation predicate type found
     msg: Pass
-  warnings:
-  - metadata:
-      code: builtin.parent_image.config_check
-      title: Parent image config is accessible
-    msg: 'Parent image config is not accessible: unable to parse parent image ref:
-      a digest must contain exactly one ''@'' separator (e.g. registry/repository@digest)
-      saw: registry.access.redhat.com/ubi9/ubi-micro:latest'
 ec-version: ${EC_VERSION}
 effective-time: "${TIMESTAMP}"
 key: |
@@ -394,24 +350,24 @@ TUF_MIRROR not set. Skipping TUF root initialization.
 
 [Strict with warnings:results - 1]
 {
-  "TEST_OUTPUT": "{\"timestamp\":\"${TIMESTAMP}\",\"namespace\":\"\",\"successes\":1,\"failures\":0,\"warnings\":2,\"result\":\"WARNING\"}"
+  "TEST_OUTPUT": "{\"timestamp\":\"${TIMESTAMP}\",\"namespace\":\"\",\"successes\":1,\"failures\":0,\"warnings\":1,\"result\":\"WARNING\"}"
 }
 ---
 
 [Non strict with warnings:results - 1]
 {
-  "TEST_OUTPUT": "{\"timestamp\":\"${TIMESTAMP}\",\"namespace\":\"\",\"successes\":1,\"failures\":0,\"warnings\":2,\"result\":\"WARNING\"}"
+  "TEST_OUTPUT": "{\"timestamp\":\"${TIMESTAMP}\",\"namespace\":\"\",\"successes\":1,\"failures\":0,\"warnings\":1,\"result\":\"WARNING\"}"
 }
 ---
 
 [Golden container image:results - 1]
 {
-  "TEST_OUTPUT": "{\"timestamp\":\"${TIMESTAMP}\",\"namespace\":\"\",\"successes\":1,\"failures\":0,\"warnings\":1,\"result\":\"WARNING\"}"
+  "TEST_OUTPUT": "{\"timestamp\":\"${TIMESTAMP}\",\"namespace\":\"\",\"successes\":1,\"failures\":0,\"warnings\":0,\"result\":\"SUCCESS\"}"
 }
 ---
 
 [Initialize TUF succeeds:results - 1]
 {
-  "TEST_OUTPUT": "{\"timestamp\":\"${TIMESTAMP}\",\"namespace\":\"\",\"successes\":1,\"failures\":0,\"warnings\":1,\"result\":\"WARNING\"}"
+  "TEST_OUTPUT": "{\"timestamp\":\"${TIMESTAMP}\",\"namespace\":\"\",\"successes\":1,\"failures\":0,\"warnings\":0,\"result\":\"SUCCESS\"}"
 }
 ---
