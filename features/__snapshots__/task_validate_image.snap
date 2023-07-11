@@ -7,6 +7,7 @@ components:
   violations:
   - metadata:
       code: builtin.image.accessible
+      description: The image URL is available and accessible.
       title: Image URL is accessible
     msg: 'Image URL is not accessible: HEAD http://${REGISTRY}/v2/acceptance/does-not-exist/manifests/latest:
       unexpected status code 404 Not Found (HEAD responses have no body, use GET for
@@ -30,6 +31,7 @@ components:
   violations:
   - metadata:
       code: builtin.image.accessible
+      description: The image URL is available and accessible.
       title: Image URL is accessible
     msg: 'Image URL is not accessible: HEAD http://${REGISTRY}/v2/acceptance/does-not-exist/manifests/latest:
       unexpected status code 404 Not Found (HEAD responses have no body, use GET for
@@ -63,14 +65,17 @@ components:
   successes:
   - metadata:
       code: builtin.attestation.signature_check
+      description: The attestation signature matches available signing materials.
       title: Attestation signature check passed
     msg: Pass
   - metadata:
       code: builtin.attestation.syntax_check
+      description: The attestation has correct syntax.
       title: Attestation syntax check passed
     msg: Pass
   - metadata:
       code: builtin.image.signature_check
+      description: The image signature matches available signing materials.
       title: Image signature check passed
     msg: Pass
   warnings:
@@ -122,14 +127,17 @@ components:
   successes:
   - metadata:
       code: builtin.attestation.signature_check
+      description: The attestation signature matches available signing materials.
       title: Attestation signature check passed
     msg: Pass
   - metadata:
       code: builtin.attestation.syntax_check
+      description: The attestation has correct syntax.
       title: Attestation syntax check passed
     msg: Pass
   - metadata:
       code: builtin.image.signature_check
+      description: The image signature matches available signing materials.
       title: Image signature check passed
     msg: Pass
   warnings:
@@ -193,14 +201,17 @@ components:
   successes:
   - metadata:
       code: builtin.attestation.signature_check
+      description: The attestation signature matches available signing materials.
       title: Attestation signature check passed
     msg: Pass
   - metadata:
       code: builtin.attestation.syntax_check
+      description: The attestation has correct syntax.
       title: Attestation syntax check passed
     msg: Pass
   - metadata:
       code: builtin.image.signature_check
+      description: The image signature matches available signing materials.
       title: Image signature check passed
     msg: Pass
   - metadata:
@@ -282,14 +293,17 @@ components:
   successes:
   - metadata:
       code: builtin.attestation.signature_check
+      description: The attestation signature matches available signing materials.
       title: Attestation signature check passed
     msg: Pass
   - metadata:
       code: builtin.attestation.syntax_check
+      description: The attestation has correct syntax.
       title: Attestation syntax check passed
     msg: Pass
   - metadata:
       code: builtin.image.signature_check
+      description: The image signature matches available signing materials.
       title: Image signature check passed
     msg: Pass
   - metadata:

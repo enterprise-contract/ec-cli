@@ -99,8 +99,9 @@ type Output struct {
 // SetImageAccessibleCheck sets the passed and result.message fields of the ImageAccessibleCheck to the given values.
 func (o *Output) SetImageAccessibleCheckFromError(err error) {
 	metadata := map[string]interface{}{
-		"code":  "builtin.image.accessible",
-		"title": "Image URL is accessible",
+		"code":        "builtin.image.accessible",
+		"title":       "Image URL is accessible",
+		"description": "The image URL is available and accessible.",
 	}
 	var message string
 	if err == nil {
@@ -122,8 +123,9 @@ func (o *Output) SetImageAccessibleCheckFromError(err error) {
 // SetImageSignatureCheck sets the passed and result.message fields of the ImageSignatureCheck to the given values.
 func (o *Output) SetImageSignatureCheckFromError(err error) {
 	metadata := map[string]interface{}{
-		"code":  "builtin.image.signature_check",
-		"title": "Image signature check passed",
+		"code":        "builtin.image.signature_check",
+		"title":       "Image signature check passed",
+		"description": "The image signature matches available signing materials.",
 	}
 	var message string
 
@@ -146,8 +148,9 @@ func (o *Output) SetImageSignatureCheckFromError(err error) {
 // SetAttestationSignatureCheck sets the passed and result.message fields of the AttestationSignatureCheck to the given values.
 func (o *Output) SetAttestationSignatureCheckFromError(err error) {
 	metadata := map[string]interface{}{
-		"code":  "builtin.attestation.signature_check",
-		"title": "Attestation signature check passed",
+		"code":        "builtin.attestation.signature_check",
+		"title":       "Attestation signature check passed",
+		"description": "The attestation signature matches available signing materials.",
 	}
 	var message string
 
@@ -170,8 +173,9 @@ func (o *Output) SetAttestationSignatureCheckFromError(err error) {
 // SetAttestationSyntaxCheck sets the passed and result.message fields of the AttestationSyntaxCheck to the given values.
 func (o *Output) SetAttestationSyntaxCheckFromError(err error) {
 	metadata := map[string]interface{}{
-		"code":  "builtin.attestation.syntax_check",
-		"title": "Attestation syntax check passed",
+		"code":        "builtin.attestation.syntax_check",
+		"title":       "Attestation syntax check passed",
+		"description": "The attestation has correct syntax.",
 	}
 	var message string
 
