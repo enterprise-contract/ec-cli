@@ -28,12 +28,12 @@ type key string
 
 const clientKey key = "ec.fetcher.config.client"
 
-type Client interface {
+type client interface {
 	Image(name.Reference, ...remote.Option) (v1.Image, error)
 }
 
-func NewClient(ctx context.Context) Client {
-	c, ok := ctx.Value(clientKey).(Client)
+func NewClient(ctx context.Context) client {
+	c, ok := ctx.Value(clientKey).(client)
 	if ok && c != nil {
 		return c
 	}
@@ -41,8 +41,8 @@ func NewClient(ctx context.Context) Client {
 	return &remoteClient{}
 }
 
-func WithClient(ctx context.Context, client Client) context.Context {
-	return context.WithValue(ctx, clientKey, client)
+func WithClient(ctx context.Context, c client) context.Context {
+	return context.WithValue(ctx, clientKey, c)
 }
 
 type remoteClient struct {

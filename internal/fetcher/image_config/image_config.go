@@ -25,10 +25,8 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 )
 
-// Fetcher retrieves the config for an image from its OCI registry.
-type Fetcher struct{}
-
-func (*Fetcher) Fetch(ctx context.Context, ref name.Reference, opts ...remote.Option) (json.RawMessage, error) {
+// FetchImageConfig retrieves the config for an image from its OCI registry.
+func FetchImageConfig(ctx context.Context, ref name.Reference, opts ...remote.Option) (json.RawMessage, error) {
 	image, err := NewClient(ctx).Image(ref, opts...)
 	if err != nil {
 		return nil, err
@@ -48,10 +46,8 @@ func (*Fetcher) Fetch(ctx context.Context, ref name.Reference, opts ...remote.Op
 
 const BaseImageAnnotation = "org.opencontainers.image.base.name"
 
-// Fetcher retrieves the config for the base image of an image from its OCI registry.
-type ParentFetcher struct{}
-
-func (*ParentFetcher) Fetch(ctx context.Context, ref name.Reference, opts ...remote.Option) (json.RawMessage, error) {
+// FetchParentImage retrieves the reference to an image's parent image from its OCI registry.
+func FetchParentImage(ctx context.Context, ref name.Reference, opts ...remote.Option) (name.Reference, error) {
 	image, err := NewClient(ctx).Image(ref, opts...)
 	if err != nil {
 		return nil, err
@@ -72,11 +68,5 @@ func (*ParentFetcher) Fetch(ctx context.Context, ref name.Reference, opts ...rem
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse parent image ref: %w", err)
 	}
-
-	f := Fetcher{}
-	out, err := f.Fetch(ctx, parentRef, opts...)
-	if err != nil {
-		return nil, fmt.Errorf("unable to fetch parent image: %w", err)
-	}
-	return out, nil
+	return parentRef, nil
 }

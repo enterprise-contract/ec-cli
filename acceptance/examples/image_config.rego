@@ -22,7 +22,7 @@ deny contains err(rego.metadata.rule()) {
 #   short_name: parent_image_title_set
 #   failure_msg: Missing parent image title label
 deny contains err(rego.metadata.rule()) {
-    not input.image.parent_config.Labels["org.opencontainers.image.title"]
+    not input.image.parent.config.Labels["org.opencontainers.image.title"]
 }
 
 # METADATA
@@ -35,7 +35,7 @@ deny contains err(rego.metadata.rule()) {
 #   failure_msg: Image does not have a distinct title
 deny contains err(rego.metadata.rule()) {
     l1 := input.image.config.Labels["org.opencontainers.image.title"]
-    l2 := input.image.parent_config.Labels["org.opencontainers.image.title"]
+    l2 := input.image.parent.config.Labels["org.opencontainers.image.title"]
     l1 == l2
 }
 

@@ -712,6 +712,6 @@ Feature: evaluate enterprise contract
     """
     {"sources": [{"policy": ["git::https://${GITHOST}/git/image-config-policy.git"]}]}
     """
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/image-config --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --strict --show-successes --info"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/image-config --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --show-successes --info"
     Then the exit status should be 0
     Then the output should match the snapshot

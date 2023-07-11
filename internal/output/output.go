@@ -73,21 +73,6 @@ func (v VerificationStatus) addToSuccesses(successes []output.Result) []output.R
 	return result
 }
 
-// addToWarnings appends the failure result to the warnings slice. Use this for
-// checks that are optional.
-func (v VerificationStatus) addToWarnings(warnings []output.Result) []output.Result {
-	if v.Passed {
-		return warnings
-	}
-
-	result := warnings
-	if v.Result != nil {
-		result = append(warnings, *v.Result)
-	}
-
-	return result
-}
-
 type Attestation struct {
 	Type               string                      `json:"type"`
 	PredicateType      string                      `json:"predicateType"`

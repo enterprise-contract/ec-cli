@@ -238,12 +238,16 @@ func TestWriteInputFile(t *testing.T) {
 			snapshot: ApplicationSnapshotImage{
 				reference:        name.MustParseReference("registry.io/repository/image:tag"),
 				parentConfigJSON: json.RawMessage(`{"Labels":{"io.k8s.display-name":"Base Image"}}`),
+				parentRef:        name.MustParseReference("registry.io/repository/image/parent:tag"),
 			},
 			want: `{
 				"attestations": null,
 				"image": {
 					"ref": "registry.io/repository/image:tag",
-					"parent_config": {"Labels":{"io.k8s.display-name":"Base Image"}}
+					"parent": {
+						"ref": "registry.io/repository/image/parent:tag",
+						"config": {"Labels":{"io.k8s.display-name":"Base Image"}}
+					}
 				}
 			}`,
 		},

@@ -85,8 +85,7 @@ func TestFetchImageConfig(t *testing.T) {
 			}
 			ctx = WithClient(ctx, &client)
 
-			f := Fetcher{}
-			out, err := f.Fetch(ctx, ref, opts...)
+			out, err := FetchImageConfig(ctx, ref, opts...)
 			if tt.err != "" {
 				require.ErrorContains(t, err, tt.err)
 				require.Nil(t, out)
@@ -99,8 +98,9 @@ func TestFetchImageConfig(t *testing.T) {
 	}
 }
 
-func TestFetchBaseImageConfig(t *testing.T) {
+func TestFetchParentImage(t *testing.T) {
 	ref := name.MustParseReference("registry.local/test-image:latest")
+	parentURL := utils.WithDigest("registry.local/base-image")
 
 	opts := []remote.Option{
 		remote.WithTransport(remote.DefaultTransport),
@@ -115,30 +115,14 @@ func TestFetchBaseImageConfig(t *testing.T) {
 		{
 			name: "success",
 			setup: func(client *mockClient) {
-				// Setup parent/base image mock
-				parentURL := utils.WithDigest("registry.local/base-image")
-				parentRef, err := name.ParseReference(parentURL)
-				if err != nil {
-					panic(err)
-				}
-				parentImage := &mockImage{}
-				parentImage.On("ConfigFile").Return(&v1.ConfigFile{
-					Config: v1.Config{
-						Labels: map[string]string{"io.k8s.display-name": "Base Image"},
-					},
-				}, nil)
-
-				// Setup child image mock
 				image := &mockImage{}
 				image.On("Manifest").Return(&v1.Manifest{
 					Annotations: map[string]string{BaseImageAnnotation: parentURL},
 				}, nil)
 
-				// Setup client
 				client.On("Image", ref, opts).Return(image, nil)
-				client.On("Image", parentRef, opts).Return(parentImage, nil)
 			},
-			expected: `{"Labels":{"io.k8s.display-name":"Base Image"}}`,
+			expected: parentURL,
 		},
 		{
 			name: "error fetching image",
@@ -150,11 +134,9 @@ func TestFetchBaseImageConfig(t *testing.T) {
 		{
 			name: "error fetching manifest",
 			setup: func(client *mockClient) {
-				// Setup child image mock
 				image := &mockImage{}
 				image.On("Manifest").Return(&v1.Manifest{}, errors.New("kaboom!"))
 
-				// Setup client
 				client.On("Image", ref, opts).Return(image, nil)
 			},
 			err: "kaboom!",
@@ -162,13 +144,11 @@ func TestFetchBaseImageConfig(t *testing.T) {
 		{
 			name: "missing parent image annotation",
 			setup: func(client *mockClient) {
-				// Setup child image mock
 				image := &mockImage{}
 				image.On("Manifest").Return(&v1.Manifest{
 					Annotations: map[string]string{},
 				}, nil)
 
-				// Setup client
 				client.On("Image", ref, opts).Return(image, nil)
 			},
 			err: "unable to determine parent image",
@@ -176,11 +156,9 @@ func TestFetchBaseImageConfig(t *testing.T) {
 		{
 			name: "missing all annotations",
 			setup: func(client *mockClient) {
-				// Setup child image mock
 				image := &mockImage{}
 				image.On("Manifest").Return(&v1.Manifest{}, nil)
 
-				// Setup client
 				client.On("Image", ref, opts).Return(image, nil)
 			},
 			err: "unable to determine parent image",
@@ -213,28 +191,6 @@ func TestFetchBaseImageConfig(t *testing.T) {
 			},
 			err: "unable to parse parent image ref: a digest must contain exactly one '@' separator",
 		},
-		{
-			name: "error fetching parent image",
-			setup: func(client *mockClient) {
-				// Setup parent/base image mock
-				parentURL := utils.WithDigest("registry.local/base-image")
-				parentRef, err := name.ParseReference(parentURL)
-				if err != nil {
-					panic(err)
-				}
-
-				// Setup child image mock
-				image := &mockImage{}
-				image.On("Manifest").Return(&v1.Manifest{
-					Annotations: map[string]string{BaseImageAnnotation: parentURL},
-				}, nil)
-
-				// Setup client
-				client.On("Image", ref, opts).Return(image, nil)
-				client.On("Image", parentRef, opts).Return(&mockImage{}, errors.New("kaboom!"))
-			},
-			err: "unable to fetch parent image: kaboom!",
-		},
 	}
 
 	for _, tt := range testcases {
@@ -247,15 +203,14 @@ func TestFetchBaseImageConfig(t *testing.T) {
 			}
 			ctx = WithClient(ctx, &client)
 
-			f := ParentFetcher{}
-			out, err := f.Fetch(ctx, ref, opts...)
+			out, err := FetchParentImage(ctx, ref, opts...)
 			if tt.err != "" {
 				require.ErrorContains(t, err, tt.err)
 				require.Nil(t, out)
 				return
 			}
 			require.NoError(t, err)
-			require.Equal(t, tt.expected, string(out))
+			require.Equal(t, tt.expected, out.String())
 
 		})
 	}

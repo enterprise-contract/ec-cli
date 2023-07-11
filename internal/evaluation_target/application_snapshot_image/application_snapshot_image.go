@@ -69,6 +69,7 @@ type ApplicationSnapshotImage struct {
 	signatures       []signature.EntitySignature
 	configJSON       json.RawMessage
 	parentConfigJSON json.RawMessage
+	parentRef        name.Reference
 	attestations     []attestation.Attestation
 	Evaluators       []evaluator.Evaluator
 }
@@ -176,13 +177,9 @@ func (a *ApplicationSnapshotImage) FetchImageConfig(ctx context.Context) error {
 		remote.WithContext(ctx),
 		remote.WithAuthFromKeychain(authn.DefaultKeychain),
 	}
-	f := image_config.Fetcher{}
 	var err error
-	a.configJSON, err = f.Fetch(ctx, a.reference, opts...)
-	if err != nil {
-		return err
-	}
-	return nil
+	a.configJSON, err = image_config.FetchImageConfig(ctx, a.reference, opts...)
+	return err
 }
 
 func (a *ApplicationSnapshotImage) FetchParentImageConfig(ctx context.Context) error {
@@ -191,13 +188,14 @@ func (a *ApplicationSnapshotImage) FetchParentImageConfig(ctx context.Context) e
 		remote.WithContext(ctx),
 		remote.WithAuthFromKeychain(authn.DefaultKeychain),
 	}
-	f := image_config.ParentFetcher{}
+
 	var err error
-	a.parentConfigJSON, err = f.Fetch(ctx, a.reference, opts...)
+	a.parentRef, err = image_config.FetchParentImage(ctx, a.reference, opts...)
 	if err != nil {
 		return err
 	}
-	return nil
+	a.parentConfigJSON, err = image_config.FetchImageConfig(ctx, a.parentRef, opts...)
+	return err
 }
 
 // ValidateImageSignature executes the cosign.VerifyImageSignature method on the ApplicationSnapshotImage image ref.
@@ -322,10 +320,10 @@ func (a *ApplicationSnapshotImage) WriteInputFile(ctx context.Context) (string, 
 	}
 
 	type Image struct {
-		Ref          string                      `json:"ref"`
-		Signatures   []signature.EntitySignature `json:"signatures,omitempty"`
-		Config       json.RawMessage             `json:"config,omitempty"`
-		ParentConfig json.RawMessage             `json:"parent_config,omitempty"`
+		Ref        string                      `json:"ref"`
+		Signatures []signature.EntitySignature `json:"signatures,omitempty"`
+		Config     json.RawMessage             `json:"config,omitempty"`
+		Parent     any                         `json:"parent,omitempty"`
 	}
 
 	input := struct {
@@ -334,11 +332,17 @@ func (a *ApplicationSnapshotImage) WriteInputFile(ctx context.Context) (string, 
 	}{
 		Attestations: statements,
 		Image: Image{
-			Ref:          a.reference.String(),
-			Signatures:   a.signatures,
-			Config:       a.configJSON,
-			ParentConfig: a.parentConfigJSON,
+			Ref:        a.reference.String(),
+			Signatures: a.signatures,
+			Config:     a.configJSON,
 		},
+	}
+
+	if a.parentRef != nil {
+		input.Image.Parent = Image{
+			Ref:    a.parentRef.String(),
+			Config: a.parentConfigJSON,
+		}
 	}
 
 	fs := utils.FS(ctx)
