@@ -376,6 +376,15 @@ func createAndPushPlainImage(ctx context.Context, imageName string, patch func(v
 		img = patch(img)
 	}
 
+	img, err = mutate.Config(img, v1.Config{
+		Labels: map[string]string{
+			"org.opencontainers.image.title": imageName,
+		},
+	})
+	if err != nil {
+		return ctx, "", err
+	}
+
 	ref, err := registry.ImageReferenceInStubRegistry(ctx, imageName)
 	if err != nil {
 		return ctx, "", err
