@@ -21,6 +21,7 @@ package image_config
 import (
 	"context"
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/google/go-containerregistry/pkg/name"
@@ -101,6 +102,8 @@ func TestFetchImageConfig(t *testing.T) {
 func TestFetchParentImage(t *testing.T) {
 	ref := name.MustParseReference("registry.local/test-image:latest")
 	parentURL := utils.WithDigest("registry.local/base-image")
+	parentName, parentDigest, found := strings.Cut(parentURL, "@")
+	require.True(t, found)
 
 	opts := []remote.Option{
 		remote.WithTransport(remote.DefaultTransport),
@@ -113,11 +116,26 @@ func TestFetchParentImage(t *testing.T) {
 		err      string
 	}{
 		{
-			name: "success",
+			name: "success with name annotation",
 			setup: func(client *mockClient) {
 				image := &mockImage{}
 				image.On("Manifest").Return(&v1.Manifest{
-					Annotations: map[string]string{BaseImageAnnotation: parentURL},
+					Annotations: map[string]string{BaseImageNameAnnotation: parentURL},
+				}, nil)
+
+				client.On("Image", ref, opts).Return(image, nil)
+			},
+			expected: parentURL,
+		},
+		{
+			name: "success with name and digest annotations",
+			setup: func(client *mockClient) {
+				image := &mockImage{}
+				image.On("Manifest").Return(&v1.Manifest{
+					Annotations: map[string]string{
+						BaseImageNameAnnotation:   parentName,
+						BaseImageDigestAnnotation: parentDigest,
+					},
 				}, nil)
 
 				client.On("Image", ref, opts).Return(image, nil)
@@ -142,11 +160,27 @@ func TestFetchParentImage(t *testing.T) {
 			err: "kaboom!",
 		},
 		{
-			name: "missing parent image annotation",
+			name: "missing name annotation",
 			setup: func(client *mockClient) {
 				image := &mockImage{}
 				image.On("Manifest").Return(&v1.Manifest{
-					Annotations: map[string]string{},
+					Annotations: map[string]string{
+						BaseImageDigestAnnotation: parentDigest,
+					},
+				}, nil)
+
+				client.On("Image", ref, opts).Return(image, nil)
+			},
+			err: "unable to determine parent image",
+		},
+		{
+			name: "missing digest annotation",
+			setup: func(client *mockClient) {
+				image := &mockImage{}
+				image.On("Manifest").Return(&v1.Manifest{
+					Annotations: map[string]string{
+						BaseImageNameAnnotation: parentName,
+					},
 				}, nil)
 
 				client.On("Image", ref, opts).Return(image, nil)
@@ -164,21 +198,34 @@ func TestFetchParentImage(t *testing.T) {
 			err: "unable to determine parent image",
 		},
 		{
-			name: "base image not pinned",
+			name: "invalid name annoation",
 			setup: func(client *mockClient) {
-				// Parent image without a digest
-				parentURL := "registry.local/base-image:latest"
-
-				// Setup child image mock
 				image := &mockImage{}
 				image.On("Manifest").Return(&v1.Manifest{
-					Annotations: map[string]string{BaseImageAnnotation: parentURL},
+					Annotations: map[string]string{
+						BaseImageNameAnnotation:   "inv@lid",
+						BaseImageDigestAnnotation: parentDigest,
+					},
 				}, nil)
 
-				// Setup client
 				client.On("Image", ref, opts).Return(image, nil)
 			},
-			err: "unable to parse parent image ref: a digest must contain exactly one '@' separator",
+			err: "unable to parse parent image ref",
+		},
+		{
+			name: "invalid digest annoation",
+			setup: func(client *mockClient) {
+				image := &mockImage{}
+				image.On("Manifest").Return(&v1.Manifest{
+					Annotations: map[string]string{
+						BaseImageNameAnnotation:   parentName,
+						BaseImageDigestAnnotation: "invalid",
+					},
+				}, nil)
+
+				client.On("Image", ref, opts).Return(image, nil)
+			},
+			err: "unable to parse parent image ref",
 		},
 	}
 
