@@ -56,6 +56,13 @@ func ValidateImage(ctx context.Context, url string, p policy.Policy, detailed bo
 		out.ImageURL = resolved
 	}
 
+	if err := a.FetchImageConfig(ctx); err != nil {
+		log.Debugf("Unable to fetch image config: %s", err)
+	}
+	if err := a.FetchParentImageConfig(ctx); err != nil {
+		log.Debugf("Unable to fetch parent's image config: %s", err)
+	}
+
 	out.SetImageSignatureCheckFromError(a.ValidateImageSignature(ctx))
 
 	out.SetAttestationSignatureCheckFromError(a.ValidateAttestationSignature(ctx))

@@ -120,11 +120,11 @@ func Test_PrintExpectedJSON(t *testing.T) {
 		  }
 		},
 		"attestationSyntaxCheck": {
-			"passed": false,
-			"result": {
-			  "msg": "message4"
-			}
-		  },
+		  "passed": false,
+		  "result": {
+		    "msg": "message4"
+		  }
+		},
 		"policyCheck": [
 		  {
 			"filename": "file1.json",

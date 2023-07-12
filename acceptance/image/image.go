@@ -34,6 +34,7 @@ import (
 
 	"github.com/cucumber/godog"
 	jsonpatch "github.com/evanphx/json-patch/v5"
+	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/empty"
@@ -325,34 +326,78 @@ func createAndPushAttestationWithPatches(ctx context.Context, imageName, keyName
 	return ctx, nil
 }
 
+// createAndPushImageWithParent creates a parent image and a test image for the given imageName.
+func createAndPushImageWithParent(ctx context.Context, imageName string) (context.Context, error) {
+	var err error
+
+	parentName := fmt.Sprintf("%s/parent", imageName)
+	ctx, parentRef, err := createAndPushPlainImage(ctx, parentName, nil)
+	if err != nil {
+		return ctx, err
+	}
+
+	parentURL, err := resolveRefDigest(parentRef)
+	if err != nil {
+		return ctx, err
+	}
+
+	ctx, _, err = createAndPushPlainImage(ctx, imageName, func(img v1.Image) v1.Image {
+		return mutate.Annotations(img, map[string]string{
+			"org.opencontainers.image.base.name": parentURL,
+		}).(v1.Image)
+	})
+	if err != nil {
+		return ctx, err
+	}
+
+	return ctx, nil
+}
+
+type patchFn func(v1.Image) v1.Image
+
 // createAndPushImage creates a small 4K random image with 2 layers and pushes it to
-// the stub image registry
-func createAndPushImage(ctx context.Context, imageName string) (context.Context, error) {
+// the stub image registry. It returns a new context with an updated state containing
+// information about the newly created image, the image URL, and an error if any are
+// encountered.
+func createAndPushPlainImage(ctx context.Context, imageName string, patch patchFn) (context.Context, string, error) {
 	var state *imageState
 	ctx, err := testenv.SetupState(ctx, &state)
 	if err != nil {
-		return ctx, err
+		return ctx, "", err
 	}
 
 	if state.Attestations[imageName] != "" {
 		// we already created the image
-		return ctx, nil
+		return ctx, state.Images[imageName], nil
 	}
 
 	img, err := random.Image(4096, 2)
 	if err != nil {
-		return ctx, err
+		return ctx, "", err
+	}
+
+	if patch != nil {
+		img = patch(img)
+	}
+
+	img, err = mutate.Config(img, v1.Config{
+		Labels: map[string]string{
+			"org.opencontainers.image.title": imageName,
+		},
+	})
+	if err != nil {
+		return ctx, "", err
 	}
 
 	ref, err := registry.ImageReferenceInStubRegistry(ctx, imageName)
 	if err != nil {
-		return ctx, err
+		return ctx, "", err
 	}
 
 	// push to the registry
 	err = remote.Write(ref, img)
 	if err != nil {
-		return ctx, err
+		return ctx, "", err
 	}
 
 	if state.Images == nil {
@@ -361,7 +406,30 @@ func createAndPushImage(ctx context.Context, imageName string) (context.Context,
 
 	state.Images[imageName] = ref.String()
 
-	return ctx, nil
+	return ctx, ref.String(), nil
+}
+
+// resolveRefDigest returns an image reference that is guaranteed to have a digest.
+func resolveRefDigest(url string) (string, error) {
+	ref, err := name.ParseReference(url)
+	if err != nil {
+		return "", err
+	}
+
+	if d, ok := ref.(name.Digest); ok {
+		return d.String(), nil
+	}
+
+	descriptor, err := remote.Head(ref, remote.WithAuthFromKeychain(authn.DefaultKeychain))
+	if err != nil {
+		return "", err
+	}
+	digest := descriptor.Digest.String()
+	if digest == "" {
+		return "", fmt.Errorf("digest for image %q is empty", url)
+	}
+
+	return fmt.Sprintf("%s@%s", ref.Name(), digest), nil
 }
 
 // createAndPushKeylessImage loads an existing image from disk, along its signature and attestation
@@ -805,7 +873,7 @@ func applyPatches(statement *in_toto.ProvenanceStatement, patches *godog.Table) 
 // ("sig") or attestation ("att")
 func steal(what string) func(context.Context, string, string) (context.Context, error) {
 	return func(ctx context.Context, imageName string, signatureFrom string) (context.Context, error) {
-		ctx, err := createAndPushImage(ctx, imageName)
+		ctx, err := createAndPushImageWithParent(ctx, imageName)
 		if err != nil {
 			return ctx, err
 		}
@@ -892,7 +960,7 @@ func copyAllImages(ctx context.Context, source, destination string) (context.Con
 
 // AddStepsTo adds Gherkin steps to the godog ScenarioContext
 func AddStepsTo(sc *godog.ScenarioContext) {
-	sc.Step(`^an image named "([^"]*)"$`, createAndPushImage)
+	sc.Step(`^an image named "([^"]*)"$`, createAndPushImageWithParent)
 	sc.Step(`^a valid image signature of "([^"]*)" image signed by the "([^"]*)" key$`, createAndPushImageSignature)
 	sc.Step(`^a valid attestation of "([^"]*)" signed by the "([^"]*)" key$`, createAndPushAttestation)
 	sc.Step(`^a valid attestation of "([^"]*)" signed by the "([^"]*)" key, patched with$`, createAndPushAttestationWithPatches)
