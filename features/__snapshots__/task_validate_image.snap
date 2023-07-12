@@ -76,6 +76,8 @@ components:
   warnings:
   - metadata:
       code: test.no_skipped_tests
+      collections:
+      - redhat
       depends_on:
       - test.test_data_found
       description: Reports any test that has its result set to "SKIPPED".
@@ -133,6 +135,8 @@ components:
   warnings:
   - metadata:
       code: test.no_skipped_tests
+      collections:
+      - redhat
       depends_on:
       - test.test_data_found
       description: Reports any test that has its result set to "SKIPPED".
@@ -206,6 +210,7 @@ components:
       - slsa1
       - slsa2
       - slsa3
+      - redhat
       depends_on:
       - attestation_type.known_attestation_type
       description: The predicateType field of the attestation must indicate the in-toto
@@ -294,6 +299,7 @@ components:
       - slsa1
       - slsa2
       - slsa3
+      - redhat
       depends_on:
       - attestation_type.known_attestation_type
       description: The predicateType field of the attestation must indicate the in-toto
