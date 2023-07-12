@@ -166,18 +166,8 @@ func TestFetchParentImage(t *testing.T) {
 		{
 			name: "base image not pinned",
 			setup: func(client *mockClient) {
-				// Setup parent/base image mock
+				// Parent image without a digest
 				parentURL := "registry.local/base-image:latest"
-				parentRef, err := name.ParseReference(parentURL)
-				if err != nil {
-					panic(err)
-				}
-				parentImage := &mockImage{}
-				parentImage.On("ConfigFile").Return(&v1.ConfigFile{
-					Config: v1.Config{
-						Labels: map[string]string{"io.k8s.display-name": "Base Image"},
-					},
-				}, nil)
 
 				// Setup child image mock
 				image := &mockImage{}
@@ -187,7 +177,6 @@ func TestFetchParentImage(t *testing.T) {
 
 				// Setup client
 				client.On("Image", ref, opts).Return(image, nil)
-				client.On("Image", parentRef, opts).Return(parentImage, nil)
 			},
 			err: "unable to parse parent image ref: a digest must contain exactly one '@' separator",
 		},
