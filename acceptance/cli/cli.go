@@ -230,26 +230,26 @@ func setupKeys(ctx context.Context, vars map[string]string, environment []string
 }
 
 func setupSigs(ctx context.Context, vars map[string]string, environment []string) ([]string, map[string]string, error) {
-	type valFunc func(context.Context) (map[string]string, error)
+	type valFunc func(string, context.Context) (map[string]string, error)
 
 	setVar := func(name string, v valFunc) error {
-		val, err := v(ctx)
+		vals, err := v(name, ctx)
 		if err != nil {
 			return err
 		}
 
-		for n, v := range val {
-			vars[fmt.Sprintf("%s_%s", name, n)] = v
+		for n, v := range vals {
+			vars[n] = v
 		}
 
 		return nil
 	}
 
 	for n, v := range map[string]valFunc{
-		"ATTESTATION_SIGNATURES_JSON": image.JSONAttestationSignaturesFrom,
-		"ATTESTATION_SIGNATURES_XML":  image.XMLAttestationSignaturesFrom,
-		"IMAGE_SIGNATURES_JSON":       image.JSONImageSignaturesFrom,
-		"IMAGE_SIGNATURES_XML":        image.XMLImageSignaturesFrom,
+		"ATTESTATION_SIGNATURE":      image.JSONAttestationSignaturesFrom,
+		"ATTESTATION_SIGNATURES_XML": image.XMLAttestationSignaturesFrom,
+		"IMAGE_SIGNATURE":            image.JSONImageSignaturesFrom,
+		"IMAGE_SIGNATURES_XML":       image.XMLImageSignaturesFrom,
 	} {
 		if err := setVar(n, v); err != nil {
 			return environment, vars, err
