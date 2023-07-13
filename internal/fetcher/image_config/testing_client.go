@@ -54,7 +54,7 @@ func WithTestImageConfig(ctx context.Context, url string) context.Context {
 	// Setup child image mock
 	image := &mockImage{}
 	image.On("Manifest").Return(&v1.Manifest{
-		Annotations: map[string]string{BaseImageAnnotation: parentURL},
+		Annotations: map[string]string{BaseImageNameAnnotation: parentURL},
 	}, nil)
 	image.On("ConfigFile").Return(&v1.ConfigFile{
 		Config: v1.Config{

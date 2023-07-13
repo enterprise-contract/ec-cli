@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
@@ -44,7 +45,12 @@ func FetchImageConfig(ctx context.Context, ref name.Reference, opts ...remote.Op
 	return config, nil
 }
 
-const BaseImageAnnotation = "org.opencontainers.image.base.name"
+const (
+	// These annotations are defined here:
+	// https://github.com/opencontainers/image-spec/blob/main/annotations.md#pre-defined-annotation-keys
+	BaseImageNameAnnotation   = "org.opencontainers.image.base.name"
+	BaseImageDigestAnnotation = "org.opencontainers.image.base.digest"
+)
 
 // FetchParentImage retrieves the reference to an image's parent image from its OCI registry.
 func FetchParentImage(ctx context.Context, ref name.Reference, opts ...remote.Option) (name.Reference, error) {
@@ -58,12 +64,20 @@ func FetchParentImage(ctx context.Context, ref name.Reference, opts ...remote.Op
 		return nil, err
 	}
 
-	parentName := manifest.Annotations[BaseImageAnnotation]
+	parentName := manifest.Annotations[BaseImageNameAnnotation]
 	if parentName == "" {
 		return nil, fmt.Errorf(
-			"unable to determine parent image, make sure %s annotation is set", BaseImageAnnotation)
+			"unable to determine parent image, make sure %s annotation is set", BaseImageNameAnnotation)
 	}
 
+	if !strings.Contains(parentName, "@") {
+		parentDigest := manifest.Annotations[BaseImageDigestAnnotation]
+		if parentDigest == "" {
+			return nil, fmt.Errorf(
+				"unable to determine parent image, make sure %s annotation is set", BaseImageDigestAnnotation)
+		}
+		parentName = fmt.Sprintf("%s@%s", parentName, parentDigest)
+	}
 	parentRef, err := name.NewDigest(parentName)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse parent image ref: %w", err)
