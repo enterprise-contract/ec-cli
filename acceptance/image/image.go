@@ -633,11 +633,8 @@ func JSONAttestationSignaturesFrom(ctx context.Context) (map[string]string, erro
 
 	signatures := map[string]string{}
 	for name, signature := range state.AttestationSignatures {
-		json, err := json.Marshal(signature)
-		if err != nil {
-			return nil, err
-		}
-		signatures[name] = string(json)
+		signatures[fmt.Sprintf("_%s_KEY_ID_%s", name, signature.KeyID)] = signature.KeyID
+		signatures[fmt.Sprintf("_%s_%s", name, signature.Signature)] = signature.Signature
 	}
 
 	return signatures, nil
@@ -706,11 +703,8 @@ func JSONImageSignaturesFrom(ctx context.Context) (map[string]string, error) {
 
 	ret := map[string]string{}
 	for name, signature := range state.ImageSignatures {
-		json, err := json.Marshal(signature)
-		if err != nil {
-			return nil, err
-		}
-		ret[name] = string(json)
+		ret[fmt.Sprintf("_%s_KEY_ID_%s", name, signature.KeyID)] = signature.KeyID
+		ret[fmt.Sprintf("_%s_%s", name, signature.Signature)] = signature.Signature
 	}
 
 	return ret, nil
