@@ -701,8 +701,12 @@ func JSONAttestationSignaturesFrom(ctx context.Context, prefix string) (map[stri
 
 	signatures := map[string]string{}
 	for name, signature := range state.AttestationSignatures {
-		signatures[fmt.Sprintf("%s_KEY_ID_%s", prefix, name)] = signature.KeyID
-		signatures[fmt.Sprintf("%s_%s", prefix, name)] = signature.Signature
+		if signature.KeyID != "" {
+			signatures[fmt.Sprintf("%s_KEY_ID_%s", prefix, name)] = signature.KeyID
+		}
+		if signature.Signature != "" {
+			signatures[fmt.Sprintf("%s_%s", prefix, name)] = signature.Signature
+		}
 	}
 
 	return signatures, nil
@@ -771,8 +775,12 @@ func JSONImageSignaturesFrom(ctx context.Context, prefix string) (map[string]str
 
 	ret := map[string]string{}
 	for name, signature := range state.ImageSignatures {
-		ret[fmt.Sprintf("%s_KEY_ID_%s", prefix, name)] = signature.KeyID
-		ret[fmt.Sprintf("%s_%s", prefix, name)] = signature.Signature
+		if signature.KeyID != "" {
+			ret[fmt.Sprintf("%s_KEY_ID_%s", prefix, name)] = signature.KeyID
+		}
+		if signature.Signature != "" {
+			ret[fmt.Sprintf("%s_%s", prefix, name)] = signature.Signature
+		}
 	}
 
 	return ret, nil
