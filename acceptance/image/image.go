@@ -692,7 +692,7 @@ func unmarshallSignatures(rawCosignSignature []byte) (*cosign.Signatures, error)
 
 // JSONAttestationSignaturesFrom returns the list of attestation signatures found in the context in
 // JSON format. If not found, and empty JSON array is returned.
-func JSONAttestationSignaturesFrom(prefix string, ctx context.Context) (map[string]string, error) {
+func JSONAttestationSignaturesFrom(ctx context.Context, prefix string) (map[string]string, error) {
 	if !testenv.HasState[imageState](ctx) {
 		return nil, nil
 	}
@@ -708,7 +708,7 @@ func JSONAttestationSignaturesFrom(prefix string, ctx context.Context) (map[stri
 	return signatures, nil
 }
 
-func XMLAttestationSignaturesFrom(prefix string, ctx context.Context) (map[string]string, error) {
+func XMLAttestationSignaturesFrom(ctx context.Context, prefix string) (map[string]string, error) {
 	if !testenv.HasState[imageState](ctx) {
 		return nil, nil
 	}
@@ -762,7 +762,7 @@ func RawAttestationSignaturesFrom(ctx context.Context) map[string]string {
 	return ret
 }
 
-func JSONImageSignaturesFrom(prefix string, ctx context.Context) (map[string]string, error) {
+func JSONImageSignaturesFrom(ctx context.Context, prefix string) (map[string]string, error) {
 	if !testenv.HasState[imageState](ctx) {
 		return nil, nil
 	}
@@ -778,7 +778,7 @@ func JSONImageSignaturesFrom(prefix string, ctx context.Context) (map[string]str
 	return ret, nil
 }
 
-func XMLImageSignaturesFrom(prefix string, ctx context.Context) (map[string]string, error) {
+func XMLImageSignaturesFrom(ctx context.Context, prefix string) (map[string]string, error) {
 	if !testenv.HasState[imageState](ctx) {
 		return nil, nil
 	}

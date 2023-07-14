@@ -230,10 +230,10 @@ func setupKeys(ctx context.Context, vars map[string]string, environment []string
 }
 
 func setupSigs(ctx context.Context, vars map[string]string, environment []string) ([]string, map[string]string, error) {
-	type valFunc func(string, context.Context) (map[string]string, error)
+	type valFunc func(context.Context, string) (map[string]string, error)
 
 	setVar := func(name string, v valFunc) error {
-		vals, err := v(name, ctx)
+		vals, err := v(ctx, name)
 		if err != nil {
 			return err
 		}
