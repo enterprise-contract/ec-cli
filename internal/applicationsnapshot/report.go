@@ -28,8 +28,8 @@ import (
 	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 	"sigs.k8s.io/yaml"
 
+	"github.com/enterprise-contract/ec-cli/internal/attestation"
 	"github.com/enterprise-contract/ec-cli/internal/format"
-	"github.com/enterprise-contract/ec-cli/internal/output"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/signature"
 	"github.com/enterprise-contract/ec-cli/internal/version"
@@ -42,7 +42,7 @@ type Component struct {
 	Successes    []conftestOutput.Result     `json:"successes,omitempty"`
 	Success      bool                        `json:"success"`
 	Signatures   []signature.EntitySignature `json:"signatures,omitempty"`
-	Attestations []output.Attestation        `json:"attestations,omitempty"`
+	Attestations []attestation.Attestation   `json:"attestations,omitempty"`
 }
 
 type Report struct {

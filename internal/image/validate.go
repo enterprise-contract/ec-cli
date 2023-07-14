@@ -72,7 +72,7 @@ func ValidateImage(ctx context.Context, url string, p policy.Policy, detailed bo
 
 	out.Signatures = a.Signatures()
 
-	out.Attestations = a.AttestationsOutput()
+	out.Attestations = a.Attestations()
 
 	out.SetAttestationSyntaxCheckFromError(a.ValidateAttestationSyntax(ctx))
 

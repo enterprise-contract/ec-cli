@@ -51,7 +51,6 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 	"github.com/enterprise-contract/ec-cli/internal/fetcher/image_config"
 	"github.com/enterprise-contract/ec-cli/internal/mocks"
-	"github.com/enterprise-contract/ec-cli/internal/output"
 	"github.com/enterprise-contract/ec-cli/internal/signature"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
@@ -120,7 +119,9 @@ func TestApplicationSnapshotImage_ValidateImageAccess(t *testing.T) {
 }
 
 type fakeAtt struct {
-	statement attestation.ProvenanceStatementSLSA02
+	statement  in_toto.ProvenanceStatementSLSA02
+	metadata   map[string]string
+	signatures []signature.EntitySignature
 }
 
 func (f fakeAtt) Data() []byte {
@@ -135,49 +136,46 @@ func (f fakeAtt) Statement() any {
 	return f.statement
 }
 
-func (f fakeAtt) Output() output.Attestation {
-	return output.Attestation{}
+func (f fakeAtt) Type() string {
+	return v02.PredicateSLSAProvenance
 }
 
-func createSimpleAttestation(statement *attestation.ProvenanceStatementSLSA02) attestation.Attestation {
+func (f fakeAtt) Metadata() attestation.Metadata {
+	return f.metadata
+}
+
+func (f fakeAtt) Signatures() []signature.EntitySignature {
+	return f.signatures
+}
+
+type opts func(*fakeAtt)
+
+func createSimpleAttestation(statement *in_toto.ProvenanceStatementSLSA02, o ...opts) attestation.Attestation {
 	if statement == nil {
-		statement = &attestation.ProvenanceStatementSLSA02{
-			ProvenanceStatementSLSA02: in_toto.ProvenanceStatementSLSA02{
-				StatementHeader: in_toto.StatementHeader{
-					Type:          in_toto.StatementInTotoV01,
-					PredicateType: v02.PredicateSLSAProvenance,
-				},
-				Predicate: v02.ProvenancePredicate{
-					BuildType: pipelineRunBuildType,
-				},
+		statement = &in_toto.ProvenanceStatementSLSA02{
+			StatementHeader: in_toto.StatementHeader{
+				Type:          in_toto.StatementInTotoV01,
+				PredicateType: v02.PredicateSLSAProvenance,
+			},
+			Predicate: v02.ProvenancePredicate{
+				BuildType: pipelineRunBuildType,
 			},
 		}
 	}
 
-	return fakeAtt{statement: *statement}
-}
+	a := fakeAtt{statement: *statement}
 
-const simpleAttestationJSONText = `{
-	"_type": "https://in-toto.io/Statement/v0.1",
-	"predicateType": "https://slsa.dev/provenance/v0.2",
-	"subject": null,
-	"predicate": {
-		"buildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
-		"builder": {
-			"id": ""
-		},
-		"invocation": {
-			"configSource": {}
-		}
-	},
-	"extra": {"signatures": null}
-}`
+	for _, f := range o {
+		f(&a)
+	}
+
+	return a
+}
 
 func TestWriteInputFile(t *testing.T) {
 	cases := []struct {
 		name     string
 		snapshot ApplicationSnapshotImage
-		want     string
 	}{
 		{
 			name: "single attestations",
@@ -185,7 +183,6 @@ func TestWriteInputFile(t *testing.T) {
 				reference:    name.MustParseReference("registry.io/repository/image:tag"),
 				attestations: []attestation.Attestation{createSimpleAttestation(nil)},
 			},
-			want: `{"attestations": [` + simpleAttestationJSONText + `], "image": {"ref": "registry.io/repository/image:tag"}}`,
 		},
 		{
 			name: "multiple attestations",
@@ -196,7 +193,6 @@ func TestWriteInputFile(t *testing.T) {
 					createSimpleAttestation(nil),
 				},
 			},
-			want: `{"attestations": [` + simpleAttestationJSONText + "," + simpleAttestationJSONText + `], "image": {"ref": "registry.io/repository/image:tag"}}`,
 		},
 		{
 			name: "image signatures",
@@ -217,7 +213,6 @@ func TestWriteInputFile(t *testing.T) {
 					createSimpleAttestation(nil),
 				},
 			},
-			want: `{"attestations": [` + simpleAttestationJSONText + `], "image": {"ref": "registry.io/repository/image:tag", "signatures": [{"keyid": "keyId1", "sig": "signature1", "chain": ["certificate1", "certificate2"]}, {"keyid": "keyId2", "sig": "signature2"}]}}`,
 		},
 		{
 			name: "image config",
@@ -225,13 +220,6 @@ func TestWriteInputFile(t *testing.T) {
 				reference:  name.MustParseReference("registry.io/repository/image:tag"),
 				configJSON: json.RawMessage(`{"Labels":{"io.k8s.display-name":"Test Image"}}`),
 			},
-			want: `{
-				"attestations": null,
-				"image": {
-					"ref": "registry.io/repository/image:tag",
-					"config": {"Labels":{"io.k8s.display-name":"Test Image"}}
-				}
-			}`,
 		},
 		{
 			name: "parent image config",
@@ -240,16 +228,24 @@ func TestWriteInputFile(t *testing.T) {
 				parentConfigJSON: json.RawMessage(`{"Labels":{"io.k8s.display-name":"Base Image"}}`),
 				parentRef:        name.MustParseReference("registry.io/repository/image/parent:tag"),
 			},
-			want: `{
-				"attestations": null,
-				"image": {
-					"ref": "registry.io/repository/image:tag",
-					"parent": {
-						"ref": "registry.io/repository/image/parent:tag",
-						"config": {"Labels":{"io.k8s.display-name":"Base Image"}}
-					}
-				}
-			}`,
+		},
+		{
+			name: "attestation with signature",
+			snapshot: ApplicationSnapshotImage{
+				reference: name.MustParseReference("registry.io/repository/image:tag"),
+				attestations: []attestation.Attestation{createSimpleAttestation(nil, func(a *fakeAtt) {
+					a.signatures = append(a.signatures, signature.EntitySignature{
+						KeyID:       "keyId",
+						Signature:   "signature",
+						Certificate: "certificate",
+						Chain:       []string{"a", "b", "c"},
+						Metadata: map[string]string{
+							"k1": "v1",
+							"k2": "v2",
+						},
+					})
+				})},
+			},
 		},
 	}
 
@@ -268,7 +264,7 @@ func TestWriteInputFile(t *testing.T) {
 
 			bytes, err := afero.ReadFile(fs, input)
 			assert.NoError(t, err)
-			assert.JSONEq(t, tt.want, string(bytes))
+			snaps.MatchJSON(t, bytes)
 		})
 	}
 }
@@ -293,7 +289,7 @@ func TestWriteInputFileMultipleAttestations(t *testing.T) {
 
 	bytes, err := afero.ReadFile(fs, input)
 	assert.NoError(t, err)
-	assert.JSONEq(t, `{"attestations": [`+simpleAttestationJSONText+`], "image": {"ref": "registry.io/repository/image:tag"}}`, string(bytes))
+	snaps.MatchJSON(t, bytes)
 }
 
 func TestSyntaxValidationWithoutAttestations(t *testing.T) {
@@ -306,48 +302,44 @@ func TestSyntaxValidationWithoutAttestations(t *testing.T) {
 }
 
 func TestSyntaxValidation(t *testing.T) {
-	valid := createSimpleAttestation(&attestation.ProvenanceStatementSLSA02{
-		ProvenanceStatementSLSA02: in_toto.ProvenanceStatementSLSA02{
-			StatementHeader: in_toto.StatementHeader{
-				Type:          in_toto.StatementInTotoV01,
-				PredicateType: v02.PredicateSLSAProvenance,
-				Subject: []in_toto.Subject{
-					{
-						Name: "hello",
-						Digest: common.DigestSet{
-							"sha1": "abcdef0123456789",
-						},
+	valid := createSimpleAttestation(&in_toto.ProvenanceStatementSLSA02{
+		StatementHeader: in_toto.StatementHeader{
+			Type:          in_toto.StatementInTotoV01,
+			PredicateType: v02.PredicateSLSAProvenance,
+			Subject: []in_toto.Subject{
+				{
+					Name: "hello",
+					Digest: common.DigestSet{
+						"sha1": "abcdef0123456789",
 					},
 				},
 			},
-			Predicate: v02.ProvenancePredicate{
-				BuildType: pipelineRunBuildType,
-				Builder: common.ProvenanceBuilder{
-					ID: "scheme:uri",
-				},
+		},
+		Predicate: v02.ProvenancePredicate{
+			BuildType: pipelineRunBuildType,
+			Builder: common.ProvenanceBuilder{
+				ID: "scheme:uri",
 			},
 		},
 	})
 
-	invalid := createSimpleAttestation(&attestation.ProvenanceStatementSLSA02{
-		ProvenanceStatementSLSA02: in_toto.ProvenanceStatementSLSA02{
-			StatementHeader: in_toto.StatementHeader{
-				Type:          in_toto.StatementInTotoV01,
-				PredicateType: v02.PredicateSLSAProvenance,
-				Subject: []in_toto.Subject{
-					{
-						Name: "hello",
-						Digest: common.DigestSet{
-							"sha1": "abcdef0123456789",
-						},
+	invalid := createSimpleAttestation(&in_toto.ProvenanceStatementSLSA02{
+		StatementHeader: in_toto.StatementHeader{
+			Type:          in_toto.StatementInTotoV01,
+			PredicateType: v02.PredicateSLSAProvenance,
+			Subject: []in_toto.Subject{
+				{
+					Name: "hello",
+					Digest: common.DigestSet{
+						"sha1": "abcdef0123456789",
 					},
 				},
 			},
-			Predicate: v02.ProvenancePredicate{
-				BuildType: pipelineRunBuildType,
-				Builder: common.ProvenanceBuilder{
-					ID: "invalid", // must be in URI syntax
-				},
+		},
+		Predicate: v02.ProvenancePredicate{
+			BuildType: pipelineRunBuildType,
+			Builder: common.ProvenanceBuilder{
+				ID: "invalid", // must be in URI syntax
 			},
 		},
 	})
@@ -373,7 +365,7 @@ func TestSyntaxValidation(t *testing.T) {
 		{
 			name: "empty",
 			attestations: []attestation.Attestation{
-				createSimpleAttestation(&attestation.ProvenanceStatementSLSA02{}),
+				createSimpleAttestation(&in_toto.ProvenanceStatementSLSA02{}),
 			},
 			err: regexp.MustCompile(`EV002: Unable to decode attestation data from attestation image, .*, caused by: unexpected end of JSON input`),
 		},

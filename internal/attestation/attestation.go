@@ -17,7 +17,6 @@
 package attestation
 
 import (
-	"github.com/enterprise-contract/ec-cli/internal/output"
 	"github.com/enterprise-contract/ec-cli/internal/signature"
 	e "github.com/enterprise-contract/ec-cli/pkg/error"
 )
@@ -30,17 +29,20 @@ var (
 	AT005 = e.NewError("AT005", "Cannot create signed entity", e.ErrorExitStatus)
 )
 
+const (
+	PredicateType = "predicateType"
+	BuildType     = "predicateBuildType"
+)
+
+type Metadata map[string]string
+
 // Attestation holds the raw attestation data, usually fetched from the
 // signature envelope's payload; statement of a particular type and any
 // signing information.
 type Attestation interface {
+	Type() string
 	Data() []byte
 	Statement() any
-	Output() output.Attestation
-}
-
-// extra holds the signatures associated with an attestation. It is meant
-// to facilitate embedding signatures in the result of Attestation.Statement().
-type extra struct {
-	Signatures []signature.EntitySignature `json:"signatures"`
+	Signatures() []signature.EntitySignature
+	Metadata() Metadata
 }
