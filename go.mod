@@ -16,7 +16,7 @@ require (
 	github.com/in-toto/in-toto-golang v0.9.0
 	github.com/jstemmer/go-junit-report/v2 v2.0.0
 	github.com/leanovate/gopter v0.2.9
-	github.com/open-policy-agent/conftest v0.43.1
+	github.com/open-policy-agent/conftest v0.44.1
 	github.com/open-policy-agent/opa v0.54.0
 	github.com/qri-io/jsonpointer v0.1.1
 	github.com/qri-io/jsonschema v0.2.1
