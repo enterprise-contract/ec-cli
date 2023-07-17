@@ -425,3 +425,19 @@ Error: success criteria not met
 [image config:stderr - 1]
 
 ---
+
+[Output attestations:stdout - 1]
+{"success":true,"components":[{"name":"Unnamed","containerImage":"${REGISTRY}/acceptance/image@${REGISTRY_acceptance/image:latest_HASH}","success":true,"signatures":[${IMAGE_SIGNATURES_JSON_acceptance/image}],"attestations":[{"type":"https://in-toto.io/Statement/v0.1","predicateType":"https://slsa.dev/provenance/v0.2","predicateBuildType":"https://tekton.dev/attestations/chains/pipelinerun@v2","signatures":[${ATTESTATION_SIGNATURES_JSON_acceptance/image}]}]}],"key":${known_PUBLIC_KEY_JSON},"policy":{"sources":[{"policy":["git::https://${GITHOST}/git/my-policy.git"]}],"publicKey":"${known_PUBLIC_KEY}"},"ec-version":"${EC_VERSION}","effective-time":"${TIMESTAMP}"}
+---
+
+[Output attestations:stderr - 1]
+
+---
+
+[Output attestations:${TMPDIR}/attestation.mime - 1]
+${MIME_boundary}\r
+Content-Disposition: attachment; name="${REGISTRY}/acceptance/image@${REGISTRY_acceptance/image:latest_HASH}#0"\r
+Content-Type: application/json\r
+\r
+{"_type":"https://in-toto.io/Statement/v0.1","predicateType":"https://slsa.dev/provenance/v0.2","subject":[{"name":"acceptance/image","digest":${REGISTRY_acceptance/image:latest_JSON_HASH}}],"predicate":{"builder":{"id":"https://tekton.dev/chains/v2"},"buildType":"https://tekton.dev/attestations/chains/pipelinerun@v2","invocation":{"configSource":{}}}}
+---

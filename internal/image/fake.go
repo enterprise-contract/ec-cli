@@ -48,3 +48,7 @@ func (f fakeAtt) PredicateType() string {
 func (f fakeAtt) Signatures() []signature.EntitySignature {
 	return []signature.EntitySignature{}
 }
+
+func (f fakeAtt) ContentType() string {
+	return "text/plain"
+}

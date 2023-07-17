@@ -43,6 +43,7 @@ var logTimestampRegex = regexp.MustCompile(`^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{
 var tempPathRegex = regexp.MustCompile(`\$\{TEMP\}([^: \\"]+)[: ]?`)                                                 // starts with "${TEMP}" and ends with something not in path, perhaps breaks on Windows due to the colon
 var randomBitsRegex = regexp.MustCompile(`([a-f0-9]+)$`)                                                             // in general, we add random bits to paths as suffixes
 var unixTimestamp = regexp.MustCompile(`("| )(?:\d{10})(\\"|"|$)`)                                                   // Recent Unix timestamp in second resolution
+var mimeBoundary = regexp.MustCompile(`^--[a-f0-9]{60}`)                                                             // MIME boundary
 
 type errCapture struct {
 	t         *testing.T
@@ -94,6 +95,9 @@ func capture(ctx context.Context, qualifier string) errCapture {
 func MatchSnapshot(ctx context.Context, qualifier, text string, vars map[string]string) error {
 	errs := capture(ctx, qualifier)
 
+	// snaps normalizes, but again reports this as a diff
+	text = strings.ReplaceAll(text, "\r", "\\r")
+
 	for k, v := range vars {
 		text = strings.ReplaceAll(text, v, "${"+k+"}")
 	}
@@ -109,6 +113,9 @@ func MatchSnapshot(ctx context.Context, qualifier, text string, vars map[string]
 
 	// more timestamps, Unix here
 	text = unixTimestamp.ReplaceAllString(text, "$1$${TIMESTAMP}$2")
+
+	// handle random MIME boundaries
+	text = mimeBoundary.ReplaceAllString(text, "$${MIME_boundary}")
 
 	// handle temp directories, replace local temp path with "${TEMP}"
 	text = strings.ReplaceAll(text, os.TempDir(), "${TEMP}")

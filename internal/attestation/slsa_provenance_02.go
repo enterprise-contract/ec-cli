@@ -133,6 +133,10 @@ func (a slsaProvenance) PredicateType() string {
 	return v02.PredicateSLSAProvenance
 }
 
+func (a slsaProvenance) ContentType() string {
+	return "application/json"
+}
+
 func (a slsaProvenance) Statement() []byte {
 	return a.data
 }

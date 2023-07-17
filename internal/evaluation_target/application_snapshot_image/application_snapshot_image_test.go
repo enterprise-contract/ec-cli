@@ -139,6 +139,10 @@ func (f fakeAtt) PredicateType() string {
 	return v02.PredicateSLSAProvenance
 }
 
+func (f fakeAtt) ContentType() string {
+	return "application/json"
+}
+
 func (f fakeAtt) Signatures() []signature.EntitySignature {
 	return f.signatures
 }

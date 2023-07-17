@@ -35,6 +35,7 @@ var (
 type Attestation interface {
 	Type() string
 	PredicateType() string
+	ContentType() string
 	Statement() []byte
 	Signatures() []signature.EntitySignature
 }
