@@ -1,22 +1,6 @@
 
 [TestSLSAProvenanceFromSignature/valid_with_signature_from_payload - 1]
 https://slsa.dev/provenance/v0.2
-in_toto.ProvenanceStatementSLSA02{
-    StatementHeader: in_toto.StatementHeader{
-        Type:          "https://in-toto.io/Statement/v0.1",
-        PredicateType: "https://slsa.dev/provenance/v0.2",
-        Subject:       nil,
-    },
-    Predicate: v02.ProvenancePredicate{
-        Builder:     common.ProvenanceBuilder{},
-        BuildType:   "https://my.build.type",
-        Invocation:  v02.ProvenanceInvocation{},
-        BuildConfig: nil,
-        Metadata:    (*v02.ProvenanceMetadata)(nil),
-        Materials:   nil,
-    },
-}
-attestation.Metadata{"predicateBuildType":"https://my.build.type", "predicateType":"https://slsa.dev/provenance/v0.2"}
 []signature.EntitySignature{
     {
         KeyID:       "key-id-1",
@@ -37,22 +21,6 @@ attestation.Metadata{"predicateBuildType":"https://my.build.type", "predicateTyp
 
 [TestSLSAProvenanceFromSignature/valid_with_signature_from_certificate - 1]
 https://slsa.dev/provenance/v0.2
-in_toto.ProvenanceStatementSLSA02{
-    StatementHeader: in_toto.StatementHeader{
-        Type:          "https://in-toto.io/Statement/v0.1",
-        PredicateType: "https://slsa.dev/provenance/v0.2",
-        Subject:       nil,
-    },
-    Predicate: v02.ProvenancePredicate{
-        Builder:     common.ProvenanceBuilder{},
-        BuildType:   "https://my.build.type",
-        Invocation:  v02.ProvenanceInvocation{},
-        BuildConfig: nil,
-        Metadata:    (*v02.ProvenanceMetadata)(nil),
-        Materials:   nil,
-    },
-}
-attestation.Metadata{"predicateBuildType":"https://my.build.type", "predicateType":"https://slsa.dev/provenance/v0.2"}
 []signature.EntitySignature{
     {
         KeyID:       "6add046e38418d021a562c6a8633d5eca7379595",

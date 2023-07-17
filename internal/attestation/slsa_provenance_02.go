@@ -129,19 +129,8 @@ func (a slsaProvenance) Type() string {
 	return v02.PredicateSLSAProvenance
 }
 
-func (a slsaProvenance) Data() []byte {
+func (a slsaProvenance) Statement() []byte {
 	return a.data
-}
-
-func (a slsaProvenance) Statement() any {
-	return a.statement
-}
-
-func (a slsaProvenance) Metadata() Metadata {
-	return map[string]string{
-		PredicateType: a.statement.PredicateType,
-		BuildType:     a.statement.Predicate.BuildType,
-	}
 }
 
 func (a slsaProvenance) Signatures() []signature.EntitySignature {

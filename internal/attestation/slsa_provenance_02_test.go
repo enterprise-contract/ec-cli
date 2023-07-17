@@ -322,11 +322,11 @@ func TestSLSAProvenanceFromSignature(t *testing.T) {
 			}
 
 			if c.data == "" {
-				assert.Nil(t, sp.Data())
+				assert.Nil(t, sp.Statement())
 			} else {
-				assert.JSONEq(t, c.data, string(sp.Data()))
+				assert.JSONEq(t, c.data, string(sp.Statement()))
 			}
-			snaps.MatchSnapshot(t, sp.Type(), sp.Statement(), sp.Metadata(), sp.Signatures())
+			snaps.MatchSnapshot(t, sp.Type(), sp.Signatures())
 		})
 	}
 }

@@ -163,7 +163,7 @@ func determineAttestationTime(ctx context.Context, attestations []attestation.At
 
 	times := make([]time.Time, 0, len(attestations))
 	for i, attestation := range attestations {
-		data := attestation.Data()
+		data := attestation.Statement()
 		obj := map[string]any{}
 		if err := json.Unmarshal(data, &obj); err != nil {
 			continue

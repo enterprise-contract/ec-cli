@@ -120,11 +120,10 @@ func TestApplicationSnapshotImage_ValidateImageAccess(t *testing.T) {
 
 type fakeAtt struct {
 	statement  in_toto.ProvenanceStatementSLSA02
-	metadata   map[string]string
 	signatures []signature.EntitySignature
 }
 
-func (f fakeAtt) Data() []byte {
+func (f fakeAtt) Statement() []byte {
 	bytes, err := json.Marshal(f.statement)
 	if err != nil {
 		panic(err)
@@ -132,16 +131,8 @@ func (f fakeAtt) Data() []byte {
 	return bytes
 }
 
-func (f fakeAtt) Statement() any {
-	return f.statement
-}
-
 func (f fakeAtt) Type() string {
 	return v02.PredicateSLSAProvenance
-}
-
-func (f fakeAtt) Metadata() attestation.Metadata {
-	return f.metadata
 }
 
 func (f fakeAtt) Signatures() []signature.EntitySignature {

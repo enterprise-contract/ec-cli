@@ -257,7 +257,7 @@ func (a ApplicationSnapshotImage) ValidateAttestationSyntax(ctx context.Context)
 	for _, sp := range a.attestations {
 		// at least one of the schemas needs to pass validation
 		for id, schema := range attestationSchemas {
-			if errs, err := schema.ValidateBytes(ctx, sp.Data()); err != nil {
+			if errs, err := schema.ValidateBytes(ctx, sp.Statement()); err != nil {
 				return EV002.CausedBy(err)
 			} else {
 				if len(errs) == 0 {
@@ -353,7 +353,7 @@ func (a *ApplicationSnapshotImage) WriteInputFile(ctx context.Context) (string, 
 	var attestations []attestationData
 	for _, a := range a.attestations {
 		attestations = append(attestations, attestationData{
-			RawMessage: a.Data(),
+			RawMessage: a.Statement(),
 			Extra:      attestationExtraData{Signatures: a.Signatures()},
 		})
 	}

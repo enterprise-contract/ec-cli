@@ -29,20 +29,11 @@ var (
 	AT005 = e.NewError("AT005", "Cannot create signed entity", e.ErrorExitStatus)
 )
 
-const (
-	PredicateType = "predicateType"
-	BuildType     = "predicateBuildType"
-)
-
-type Metadata map[string]string
-
 // Attestation holds the raw attestation data, usually fetched from the
 // signature envelope's payload; statement of a particular type and any
 // signing information.
 type Attestation interface {
 	Type() string
-	Data() []byte
-	Statement() any
+	Statement() []byte
 	Signatures() []signature.EntitySignature
-	Metadata() Metadata
 }
