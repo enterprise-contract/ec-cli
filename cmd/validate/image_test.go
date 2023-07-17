@@ -41,9 +41,10 @@ import (
 )
 
 type data struct {
-	imageRef string
-	input    string
-	filePath string
+	imageRef       string
+	input          string
+	filePath       string
+	snapshotSource string
 }
 
 func Test_determineInputSpec(t *testing.T) {
@@ -79,7 +80,29 @@ func Test_determineInputSpec(t *testing.T) {
 			arguments: data{
 				input: "{",
 			},
-			err: "unable to parse Snapshot specification from input: error converting YAML to JSON: yaml: line 1: did not find expected node content",
+			err: "unable to parse Snapshot specification from {: error converting YAML to JSON: yaml: line 1: did not find expected node content",
+		},
+		{
+			name: "ApplicationSnapshot JSON string - snapshotSource",
+			arguments: data{
+				snapshotSource: `{
+					"components": [
+					  {
+						"name": "nodejs",
+						"containerImage": "quay.io/hacbs-contract-demo/single-nodejs-app:877418e"
+					  }
+					]
+				}`,
+			},
+			spec: &app.SnapshotSpec{
+				Application: "",
+				Components: []app.SnapshotComponent{
+					{
+						Name:           "nodejs",
+						ContainerImage: "quay.io/hacbs-contract-demo/single-nodejs-app:877418e",
+					},
+				},
+			},
 		},
 		{
 			name: "ApplicationSnapshot JSON string",
@@ -176,14 +199,38 @@ func Test_determineInputSpec(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "ApplicationSnapshot file - snapshotSource",
+			arguments: data{
+				snapshotSource: "test_application_snapshot.json",
+			},
+			spec: &app.SnapshotSpec{
+				Application: "app1",
+				Components: []app.SnapshotComponent{
+					{
+						Name:           "nodejs",
+						ContainerImage: "quay.io/hacbs-contract-demo/single-nodejs-app:877418e",
+					},
+					{
+						Name:           "petclinic",
+						ContainerImage: "quay.io/hacbs-contract-demo/spring-petclinic:dc80a7f",
+					},
+					{
+						Name:           "single-container-app",
+						ContainerImage: "quay.io/hacbs-contract-demo/single-container-app:62c06bf",
+					},
+				},
+			},
+		},
 	}
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			s, err := applicationsnapshot.DetermineInputSpec(context.Background(), applicationsnapshot.Input{
-				File:  c.arguments.filePath,
-				JSON:  c.arguments.input,
-				Image: c.arguments.imageRef,
+				File:           c.arguments.filePath,
+				JSON:           c.arguments.input,
+				Image:          c.arguments.imageRef,
+				SnapshotSource: c.arguments.snapshotSource,
 			})
 			if c.err != "" {
 				assert.EqualError(t, err, c.err)
@@ -566,7 +613,7 @@ func Test_ValidateErrorCommand(t *testing.T) {
 				fmt.Sprintf(`{"publicKey": %s}`, utils.TestPublicKeyJSON),
 			},
 			expected: `1 error occurred:
-	* unable to parse Snapshot specification from input: error converting YAML to JSON: yaml: found unexpected end of stream
+	* unable to parse Snapshot specification from {"invalid": "json""}: error converting YAML to JSON: yaml: found unexpected end of stream
 
 `,
 		},
@@ -579,7 +626,7 @@ func Test_ValidateErrorCommand(t *testing.T) {
 				`{"invalid": "json""}`,
 			},
 			expected: `2 errors occurred:
-	* unable to parse Snapshot specification from input: error converting YAML to JSON: yaml: found unexpected end of stream
+	* unable to parse Snapshot specification from {"invalid": "json""}: error converting YAML to JSON: yaml: found unexpected end of stream
 	* unable to parse EnterpriseContractPolicySpec: error converting YAML to JSON: yaml: found unexpected end of stream
 
 `,

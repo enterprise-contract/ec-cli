@@ -61,6 +61,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		snapshot                    string
 		spec                        *app.SnapshotSpec
 		strict                      bool
+		snapshotSource              string
 	}{
 
 		// Default policy from an ECP cluster resource
@@ -177,10 +178,11 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		PreRunE: func(cmd *cobra.Command, args []string) (allErrors error) {
 			ctx := cmd.Context()
 			if s, err := applicationsnapshot.DetermineInputSpec(ctx, applicationsnapshot.Input{
-				File:     data.filePath,
-				JSON:     data.input,
-				Image:    data.imageRef,
-				Snapshot: data.snapshot,
+				File:           data.filePath,
+				JSON:           data.input,
+				Image:          data.imageRef,
+				Snapshot:       data.snapshot,
+				SnapshotSource: data.snapshotSource,
 			}); err != nil {
 				allErrors = multierror.Append(allErrors, err)
 			} else {
@@ -373,6 +375,9 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 
 	cmd.Flags().StringVarP(&data.input, "json-input", "j", data.input,
 		"JSON representation of an ApplicationSnapshot Spec")
+
+	cmd.Flags().StringVarP(&data.snapshotSource, "snapshot-source", "a", data.snapshotSource,
+		"path to ApplicationSnapshot Spec JSON file or JSON representation of an ApplicationSnapshot Spec")
 
 	cmd.Flags().StringSliceVar(&data.output, "output", data.output, hd.Doc(`
 		write output to a file in a specific format. Use empty string path for stdout.
