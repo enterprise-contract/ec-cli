@@ -126,6 +126,10 @@ type slsaProvenance struct {
 }
 
 func (a slsaProvenance) Type() string {
+	return in_toto.StatementInTotoV01
+}
+
+func (a slsaProvenance) PredicateType() string {
 	return v02.PredicateSLSAProvenance
 }
 

@@ -132,6 +132,10 @@ func (f fakeAtt) Statement() []byte {
 }
 
 func (f fakeAtt) Type() string {
+	return in_toto.StatementInTotoV01
+}
+
+func (f fakeAtt) PredicateType() string {
 	return v02.PredicateSLSAProvenance
 }
 
