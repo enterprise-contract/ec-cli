@@ -192,3 +192,27 @@ Feature: Verify Enterprise Contract Tekton Tasks
     Then the task should fail
      And the task logs for step "report" should match the snapshot
      And the task results should match the snapshot
+
+  Scenario: Outputs are there
+    Given a working namespace
+      And a key pair named "known"
+      And an image named "acceptance/okayish"
+      And a valid image signature of "acceptance/okayish" image signed by the "known" key
+      And a valid attestation of "acceptance/okayish" signed by the "known" key
+      And a cluster policy with content:
+      ```
+      {
+        "publicKey": ${known_PUBLIC_KEY}
+      }
+      ```
+    When version 0.1 of the task named "verify-enterprise-contract" is run with parameters:
+      | IMAGES               | {"components": [{"containerImage": "${REGISTRY}/acceptance/okayish"}]} |
+      | POLICY_CONFIGURATION | ${NAMESPACE}/${POLICY_NAME}                                                   |
+    Then the task should succeed
+    And the task logs for step "initialize-tuf" should match the snapshot
+     And the task logs for step "report" should match the snapshot
+     And the task logs for step "data" should match the snapshot
+     And the task logs for step "attestations" should match the snapshot
+     And the task logs for step "summary" should match the snapshot
+     And the task logs for step "assert" should match the snapshot
+     And the task results should match the snapshot

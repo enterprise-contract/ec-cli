@@ -391,3 +391,84 @@ TUF_MIRROR not set. Skipping TUF root initialization.
   "TEST_OUTPUT": "{\"timestamp\":\"${TIMESTAMP}\",\"namespace\":\"\",\"successes\":1,\"failures\":0,\"warnings\":0,\"result\":\"SUCCESS\"}"
 }
 ---
+
+[Outputs are there:initialize-tuf - 1]
+TUF_MIRROR not set. Skipping TUF root initialization.
+
+---
+
+[Outputs are there:report - 1]
+components:
+- attestations:
+  - predicateBuildType: https://tekton.dev/attestations/chains/pipelinerun@v2
+    predicateType: https://slsa.dev/provenance/v0.2
+    signatures:
+    - keyid: ""
+      sig: ${ATTESTATION_SIGNATURE_acceptance/okayish}
+    type: https://in-toto.io/Statement/v0.1
+  containerImage: ${REGISTRY}/acceptance/okayish@${REGISTRY_acceptance/okayish:latest_HASH}
+  name: ""
+  signatures:
+  - keyid: ""
+    sig: ${IMAGE_SIGNATURE_acceptance/okayish}
+  success: true
+  successes:
+  - metadata:
+      code: builtin.attestation.signature_check
+      description: The attestation signature matches available signing materials.
+      title: Attestation signature check passed
+    msg: Pass
+  - metadata:
+      code: builtin.attestation.syntax_check
+      description: The attestation has correct syntax.
+      title: Attestation syntax check passed
+    msg: Pass
+  - metadata:
+      code: builtin.image.signature_check
+      description: The image signature matches available signing materials.
+      title: Image signature check passed
+    msg: Pass
+ec-version: ${EC_VERSION}
+effective-time: "${TIMESTAMP}"
+key: |
+${__known_PUBLIC_KEY}
+policy:
+  publicKey: |
+${____known_PUBLIC_KEY}
+success: true
+
+---
+
+[Outputs are there:data - 1]
+- null
+
+---
+
+[Outputs are there:attestations - 1]
+${MIME_boundary}
+Content-Disposition: attachment; name="${REGISTRY}/acceptance/okayish@${REGISTRY_acceptance/okayish:latest_HASH}#0"
+Content-Type: application/json
+
+{"_type":"https://in-toto.io/Statement/v0.1","predicateType":"https://slsa.dev/provenance/v0.2","subject":[{"name":"acceptance/okayish","digest":${REGISTRY_acceptance/okayish:latest_JSON_HASH}}],"predicate":{"builder":{"id":"https://tekton.dev/chains/v2"},"buildType":"https://tekton.dev/attestations/chains/pipelinerun@v2","invocation":{"configSource":{}}}}
+---
+
+[Outputs are there:summary - 1]
+{
+  "timestamp": "${TIMESTAMP}",
+  "namespace": "",
+  "successes": 1,
+  "failures": 0,
+  "warnings": 0,
+  "result": "SUCCESS"
+}
+---
+
+[Outputs are there:assert - 1]
+true
+---
+
+[Outputs are there:results - 1]
+{
+  "TEST_OUTPUT": "{\"timestamp\":\"${TIMESTAMP}\",\"namespace\":\"\",\"successes\":1,\"failures\":0,\"warnings\":0,\"result\":\"SUCCESS\"}"
+}
+---
