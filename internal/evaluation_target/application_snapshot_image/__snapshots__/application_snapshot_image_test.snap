@@ -212,3 +212,27 @@
  }
 }
 ---
+
+[TestAttestationDataJSONMarshal - 1]
+{
+ "extra": {
+  "signatures": [
+   {
+    "certificate": "certificate",
+    "chain": [
+     "c1",
+     "c2",
+     "c3"
+    ],
+    "keyid": "key-id",
+    "metadata": {
+     "m1": "v1",
+     "m2": "v2"
+    },
+    "sig": "signature"
+   }
+  ]
+ },
+ "json": "here"
+}
+---

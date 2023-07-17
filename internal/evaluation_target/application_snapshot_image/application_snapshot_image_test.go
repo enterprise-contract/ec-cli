@@ -723,3 +723,25 @@ func TestFetchParentImageConfig(t *testing.T) {
 
 	require.Equal(t, string(a.parentConfigJSON), `{"Labels":{"io.k8s.display-name":"Base Image"}}`)
 }
+
+func TestAttestationDataJSONMarshal(t *testing.T) {
+	data := attestationData{
+		RawMessage: []byte(`{"json": "here"}`),
+		Extra: attestationExtraData{
+			Signatures: []signature.EntitySignature{
+				{
+					KeyID:       "key-id",
+					Signature:   "signature",
+					Certificate: "certificate",
+					Chain:       []string{"c1", "c2", "c3"},
+					Metadata: map[string]string{
+						"m1": "v1",
+						"m2": "v2",
+					},
+				},
+			},
+		},
+	}
+
+	snaps.MatchJSON(t, data)
+}
