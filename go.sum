@@ -939,8 +939,8 @@ github.com/onsi/gomega v1.10.1/go.mod h1:iN09h71vgCQne3DLsj+A5owkum+a2tYe+TOCB1y
 github.com/onsi/gomega v1.17.0/go.mod h1:HnhC7FXeEQY45zxNK3PPoIUhzk/80Xly9PcubAlGdZY=
 github.com/onsi/gomega v1.19.0/go.mod h1:LY+I3pBVzYsTBU1AnDwOSxaYi9WoWiqgwooUqq9yPro=
 github.com/onsi/gomega v1.27.4 h1:Z2AnStgsdSayCMDiCU42qIz+HLqEPcgiOCXjAU/w+8E=
-github.com/open-policy-agent/conftest v0.43.1 h1:F5JdvpK15mFcso0H6SJ/metRaNbF6Jatiu2EZ8T/MFY=
-github.com/open-policy-agent/conftest v0.43.1/go.mod h1:/JEtAR0QajtkDRuFx2Z753eTf8CZ1IxSqPCT8L0/Kag=
+github.com/open-policy-agent/conftest v0.44.1 h1:M+8MhSgyYn43JpNPGQNuYrb6x2NugyF3l/gTIeYardA=
+github.com/open-policy-agent/conftest v0.44.1/go.mod h1:n7MU+Vt2yIKpinOjAZu8Wsl5mpswQfgjPW4IgzKj0dg=
 github.com/open-policy-agent/opa v0.54.0 h1:mGEsK+R5ZTMV8fzzbNzmYDGbTmY30wmRCIHmtm2VqWs=
 github.com/open-policy-agent/opa v0.54.0/go.mod h1:d8I8jWygKGi4+T4H07qrbeCdH1ITLsEfT0M+bsvxWw0=
 github.com/opencontainers/go-digest v1.0.0 h1:apOUWs51W5PlhuyGyz9FCeeBIOUDA/6nW8Oi/yOhh5U=
