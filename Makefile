@@ -251,3 +251,16 @@ task-bundle: ## Push the Tekton Task bundle an image repository
 .PHONY: task-bundle-snapshot
 task-bundle-snapshot: task-bundle ## Push task bundle and then tag with "snapshot"
 	@skopeo copy "docker://$(TASK_REPO):$(TASK_TAG)" "docker://$(TASK_REPO):snapshot" $(SKOPEO_ARGS)
+
+# Useful to compare the `ec test` command source with the `conftest test`
+# command source. They should be almost identical.
+ifndef DIFF_TOOL
+  # I like to use vimdiff for this
+  DIFF_TOOL=diff --color=always
+endif
+.PHONY: conftest-test-cmd-diff
+conftest-test-cmd-diff:
+	@CONFTEST_VER=$$( go list -m -f '{{ .Version }}' github.com/open-policy-agent/conftest ) && \
+	$(DIFF_TOOL) \
+	  <(curl -s https://raw.githubusercontent.com/open-policy-agent/conftest/$${CONFTEST_VER}/internal/commands/test.go) \
+	  cmd/test/test.go

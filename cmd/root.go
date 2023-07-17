@@ -26,6 +26,7 @@ import (
 
 	"github.com/enterprise-contract/ec-cli/cmd/fetch"
 	"github.com/enterprise-contract/ec-cli/cmd/inspect"
+	"github.com/enterprise-contract/ec-cli/cmd/test"
 	"github.com/enterprise-contract/ec-cli/cmd/track"
 	"github.com/enterprise-contract/ec-cli/cmd/validate"
 	"github.com/enterprise-contract/ec-cli/cmd/version"
@@ -93,4 +94,5 @@ func init() {
 	RootCmd.AddCommand(track.TrackCmd)
 	RootCmd.AddCommand(validate.ValidateCmd)
 	RootCmd.AddCommand(version.VersionCmd)
+	RootCmd.AddCommand(test.TestCmd)
 }
