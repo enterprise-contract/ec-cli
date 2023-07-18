@@ -338,18 +338,11 @@ func wrapCosignErrorMessage(err error, checkType string, p policy.Policy) string
 	// any useful information. Only in such case, change the error message to something more
 	// helpful.
 	if p == nil || !p.Keyless() {
-		var noMatchingErr string
-		var msg string
-		switch checkType {
-		case "signature":
-			noMatchingErr = cosign.ErrNoMatchingSignaturesType
-			msg = missingSignatureMessage
-		case "attestation":
-			noMatchingErr = cosign.ErrNoMatchingAttestationsType
-			msg = missingAttestationMessage
-		}
-		if vErr, ok := err.(*cosign.VerificationError); ok && vErr.ErrorType() == noMatchingErr && msg != "" {
-			return msg
+		switch err.(type) {
+		case *cosign.ErrNoMatchingSignatures:
+			return missingSignatureMessage
+		case *cosign.ErrNoMatchingAttestations:
+			return missingAttestationMessage
 		}
 	}
 	return fmt.Sprintf("Image %s check failed: %s", checkType, err)
