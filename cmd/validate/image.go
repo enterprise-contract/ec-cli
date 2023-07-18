@@ -373,11 +373,11 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 
 	// Deprecated: images replaced this
 	cmd.Flags().StringVarP(&data.filePath, "file-path", "f", data.filePath,
-		"path to ApplicationSnapshot Spec JSON file")
+		"DEPRECATED - use --images: path to ApplicationSnapshot Spec JSON file")
 
 	// Deprecated: images replaced this
 	cmd.Flags().StringVarP(&data.input, "json-input", "j", data.input,
-		"JSON representation of an ApplicationSnapshot Spec")
+		"DEPRECATED - use --images: JSON representation of an ApplicationSnapshot Spec")
 
 	cmd.Flags().StringVar(&data.images, "images", data.images,
 		"path to ApplicationSnapshot Spec JSON file or JSON representation of an ApplicationSnapshot Spec")
