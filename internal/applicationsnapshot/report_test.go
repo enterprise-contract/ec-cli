@@ -65,6 +65,7 @@ func Test_ReportJson(t *testing.T) {
         {
           "name": "spam",
           "containerImage": "quay.io/caf/spam@sha256:123…",
+		  "source": {},
           "violations": [{"msg": "violation1"}],
           "warnings": [{"msg": "warning1"}],
 		  "successes": [{"msg": "success1"}],
@@ -73,12 +74,14 @@ func Test_ReportJson(t *testing.T) {
         {
           "name": "bacon",
           "containerImage": "quay.io/caf/bacon@sha256:234…",
+		  "source": {},
           "violations": [{"msg": "violation2"}],
           "success": false
         },
         {
 			"name": "eggs",
 			"containerImage": "quay.io/caf/eggs@sha256:345…",
+			"source": {},
 			"successes": [{"msg": "success3"}],
 			"success": true
         }
@@ -118,6 +121,7 @@ snapshot: snappy
 components:
   - name: spam
     containerImage: quay.io/caf/spam@sha256:123…
+    source: {}
     violations:
       - msg: violation1
     warnings:
@@ -127,11 +131,13 @@ components:
     success: false
   - name: bacon
     containerImage: quay.io/caf/bacon@sha256:234…
+    source: {}
     violations:
       - msg: violation2
     success: false
   - name: eggs
     containerImage: quay.io/caf/eggs@sha256:345…
+    source: {}
     successes:
       - msg: success3
     success: true

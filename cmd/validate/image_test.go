@@ -308,6 +308,7 @@ func Test_ValidateImageCommand(t *testing.T) {
 		  {
 			"name": "Unnamed",
 			"containerImage": "registry/image:tag",
+			"source": {},
 			"success": true
 		  }
 		],
@@ -704,6 +705,7 @@ func Test_FailureImageAccessibility(t *testing.T) {
 		  {
 			"name": "Unnamed",
 			"containerImage": "registry/image:tag",
+			"source": {},
 			"violations": [
 			  {"msg": "image ref not accessible. HEAD registry/image:tag: unexpected status code 404 Not Found (HEAD responses have no body, use GET for details)"},
 			  {"msg": "skipped due to inaccessible image ref"},
@@ -765,6 +767,7 @@ func Test_FailureOutput(t *testing.T) {
 		  {
 			"name": "Unnamed",
 			"containerImage": "registry/image:tag",
+			"source": {},
 			"violations": [
 			  {"msg": "failed attestation signature check"},
 			  {"msg": "failed image signature check"}
@@ -833,6 +836,7 @@ func Test_WarningOutput(t *testing.T) {
 		  {
 			"name": "Unnamed",
 			"containerImage": "registry/image:tag",
+			"source": {},
 			"warnings": [
 				{"msg": "warning for policy check 1"},
 				{"msg": "warning for policy check 2"}

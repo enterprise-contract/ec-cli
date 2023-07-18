@@ -22,7 +22,9 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"reflect"
 	"testing"
+	"unsafe"
 
 	"github.com/open-policy-agent/conftest/output"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
@@ -853,8 +855,10 @@ func TestSetImageAccessibleCheckFromError(t *testing.T) {
 }
 
 func TestSetImageSignatureCheckFromError(t *testing.T) {
-	noMatchingSignatures := cosign.NewVerificationError("kaboom!")
-	noMatchingSignatures.(*cosign.VerificationError).SetErrorType(cosign.ErrNoMatchingSignaturesType)
+	noMatchingSignatures := cosign.ErrNoMatchingSignatures{}
+	f := reflect.ValueOf(&noMatchingSignatures).Elem().Field(0)
+	f = reflect.NewAt(f.Type(), unsafe.Pointer(f.UnsafeAddr())).Elem()
+	f.Set(reflect.ValueOf(errors.New("kaboom!")))
 
 	cases := []struct {
 		name           string
@@ -888,7 +892,7 @@ func TestSetImageSignatureCheckFromError(t *testing.T) {
 		{
 			name:           "missing signatures failure",
 			expectedPassed: false,
-			err:            noMatchingSignatures,
+			err:            &noMatchingSignatures,
 			expectedResult: &output.Result{
 				Message: missingSignatureMessage,
 				Metadata: map[string]interface{}{
@@ -899,7 +903,7 @@ func TestSetImageSignatureCheckFromError(t *testing.T) {
 		{
 			name:           "missing signatures failure with keyless",
 			expectedPassed: false,
-			err:            noMatchingSignatures,
+			err:            &noMatchingSignatures,
 			expectedResult: &output.Result{
 				Message: "Image signature check failed: kaboom!",
 				Metadata: map[string]interface{}{
@@ -942,8 +946,10 @@ func TestSetImageSignatureCheckFromError(t *testing.T) {
 	}
 }
 func TestSetAttestationSignatureCheckFromError(t *testing.T) {
-	noMatchingAttestations := cosign.NewVerificationError("kaboom!")
-	noMatchingAttestations.(*cosign.VerificationError).SetErrorType(cosign.ErrNoMatchingAttestationsType)
+	noMatchingAttestations := cosign.ErrNoMatchingAttestations{}
+	f := reflect.ValueOf(&noMatchingAttestations).Elem().Field(0)
+	f = reflect.NewAt(f.Type(), unsafe.Pointer(f.UnsafeAddr())).Elem()
+	f.Set(reflect.ValueOf(errors.New("kaboom!")))
 
 	cases := []struct {
 		name           string
@@ -977,7 +983,7 @@ func TestSetAttestationSignatureCheckFromError(t *testing.T) {
 		{
 			name:           "missing attestations failure",
 			expectedPassed: false,
-			err:            noMatchingAttestations,
+			err:            &noMatchingAttestations,
 			expectedResult: &output.Result{
 				Message: missingAttestationMessage,
 				Metadata: map[string]interface{}{
@@ -988,7 +994,7 @@ func TestSetAttestationSignatureCheckFromError(t *testing.T) {
 		{
 			name:           "missing attestations failure with keyless",
 			expectedPassed: false,
-			err:            noMatchingAttestations,
+			err:            &noMatchingAttestations,
 			expectedResult: &output.Result{
 				Message: "Image attestation check failed: kaboom!",
 				Metadata: map[string]interface{}{
