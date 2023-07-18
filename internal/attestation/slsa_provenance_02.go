@@ -27,16 +27,8 @@ import (
 	"github.com/sigstore/cosign/v2/pkg/oci"
 	"github.com/sigstore/cosign/v2/pkg/types"
 
-	"github.com/enterprise-contract/ec-cli/internal/output"
 	"github.com/enterprise-contract/ec-cli/internal/signature"
 )
-
-// ProvenanceStatementSLSA02 extends in_toto.ProvenanceStatementSLSA02 to provide the
-// Extra attribute.
-type ProvenanceStatementSLSA02 struct {
-	in_toto.ProvenanceStatementSLSA02
-	Extra extra `json:"extra"`
-}
 
 // SLSAProvenanceFromSignature parses the SLSA Provenance v0.2 from the provided OCI
 // layer. Expects that the layer contains DSSE JSON with the embeded SLSA
@@ -80,7 +72,7 @@ func SLSAProvenanceFromSignature(sig oci.Signature) (Attestation, error) {
 		return nil, AT002.CausedBy(err)
 	}
 
-	var statement ProvenanceStatementSLSA02
+	var statement in_toto.ProvenanceStatementSLSA02
 	if err := json.Unmarshal(embeded, &statement); err != nil {
 		return nil, AT002.CausedBy(err)
 	}
@@ -93,12 +85,12 @@ func SLSAProvenanceFromSignature(sig oci.Signature) (Attestation, error) {
 		return nil, AT004.CausedByF(statement.PredicateType)
 	}
 
-	statement.Extra.Signatures, err = createEntitySignatures(sig, payload)
+	signatures, err := createEntitySignatures(sig, payload)
 	if err != nil {
 		return nil, AT005.CausedBy(err)
 	}
 
-	return slsaProvenance{statement: statement, payload: payload, bytes: embeded}, nil
+	return slsaProvenance{statement: statement, data: embeded, signatures: signatures}, nil
 }
 
 func createEntitySignatures(sig oci.Signature, payload cosign.AttestationPayload) ([]signature.EntitySignature, error) {
@@ -128,24 +120,39 @@ func createEntitySignatures(sig oci.Signature, payload cosign.AttestationPayload
 }
 
 type slsaProvenance struct {
-	statement ProvenanceStatementSLSA02
-	payload   cosign.AttestationPayload
-	bytes     []byte
+	statement  in_toto.ProvenanceStatementSLSA02
+	data       []byte
+	signatures []signature.EntitySignature
 }
 
-func (a slsaProvenance) Data() []byte {
-	return a.bytes
+func (a slsaProvenance) Type() string {
+	return in_toto.StatementInTotoV01
 }
 
-func (a slsaProvenance) Statement() any {
-	return a.statement
+func (a slsaProvenance) PredicateType() string {
+	return v02.PredicateSLSAProvenance
 }
 
-func (a slsaProvenance) Output() output.Attestation {
-	return output.Attestation{
+func (a slsaProvenance) Statement() []byte {
+	return a.data
+}
+
+func (a slsaProvenance) Signatures() []signature.EntitySignature {
+	return a.signatures
+}
+
+func (a slsaProvenance) MarshalJSON() ([]byte, error) {
+	val := struct {
+		Type               string                      `json:"type"`
+		PredicateType      string                      `json:"predicateType"`
+		PredicateBuildType string                      `json:"predicateBuildType"`
+		Signatures         []signature.EntitySignature `json:"signatures"`
+	}{
 		Type:               a.statement.Type,
 		PredicateType:      a.statement.PredicateType,
 		PredicateBuildType: a.statement.Predicate.BuildType,
-		Signatures:         a.statement.Extra.Signatures,
+		Signatures:         a.signatures,
 	}
+
+	return json.Marshal(val)
 }

@@ -72,7 +72,7 @@ func ValidateImage(ctx context.Context, url string, p policy.Policy, detailed bo
 
 	out.Signatures = a.Signatures()
 
-	out.Attestations = a.AttestationsOutput()
+	out.Attestations = a.Attestations()
 
 	out.SetAttestationSyntaxCheckFromError(a.ValidateAttestationSyntax(ctx))
 
@@ -163,7 +163,7 @@ func determineAttestationTime(ctx context.Context, attestations []attestation.At
 
 	times := make([]time.Time, 0, len(attestations))
 	for i, attestation := range attestations {
-		data := attestation.Data()
+		data := attestation.Statement()
 		obj := map[string]any{}
 		if err := json.Unmarshal(data, &obj); err != nil {
 			continue

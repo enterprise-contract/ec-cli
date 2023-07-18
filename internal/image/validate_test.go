@@ -145,39 +145,33 @@ func TestDetermineAttestationTime(t *testing.T) {
 	time1 := time.Date(2001, 2, 3, 4, 5, 6, 7, time.UTC)
 	time2 := time.Date(2010, 11, 12, 13, 14, 15, 16, time.UTC)
 	att1 := fakeAtt{
-		statement: attestation.ProvenanceStatementSLSA02{
-			ProvenanceStatementSLSA02: in_toto.ProvenanceStatementSLSA02{
-				StatementHeader: in_toto.StatementHeader{
-					PredicateType: v02.PredicateSLSAProvenance,
-				},
-				Predicate: v02.ProvenancePredicate{
-					Metadata: &v02.ProvenanceMetadata{
-						BuildFinishedOn: &time1,
-					},
+		statement: in_toto.ProvenanceStatementSLSA02{
+			StatementHeader: in_toto.StatementHeader{
+				PredicateType: v02.PredicateSLSAProvenance,
+			},
+			Predicate: v02.ProvenancePredicate{
+				Metadata: &v02.ProvenanceMetadata{
+					BuildFinishedOn: &time1,
 				},
 			},
 		},
 	}
 	att2 := fakeAtt{
-		statement: attestation.ProvenanceStatementSLSA02{
-			ProvenanceStatementSLSA02: in_toto.ProvenanceStatementSLSA02{
-				StatementHeader: in_toto.StatementHeader{
-					PredicateType: v02.PredicateSLSAProvenance,
-				},
-				Predicate: v02.ProvenancePredicate{
-					Metadata: &v02.ProvenanceMetadata{
-						BuildFinishedOn: &time2,
-					},
+		statement: in_toto.ProvenanceStatementSLSA02{
+			StatementHeader: in_toto.StatementHeader{
+				PredicateType: v02.PredicateSLSAProvenance,
+			},
+			Predicate: v02.ProvenancePredicate{
+				Metadata: &v02.ProvenanceMetadata{
+					BuildFinishedOn: &time2,
 				},
 			},
 		},
 	}
 	att3 := fakeAtt{
-		statement: attestation.ProvenanceStatementSLSA02{
-			ProvenanceStatementSLSA02: in_toto.ProvenanceStatementSLSA02{
-				StatementHeader: in_toto.StatementHeader{
-					PredicateType: v02.PredicateSLSAProvenance,
-				},
+		statement: in_toto.ProvenanceStatementSLSA02{
+			StatementHeader: in_toto.StatementHeader{
+				PredicateType: v02.PredicateSLSAProvenance,
 			},
 		},
 	}

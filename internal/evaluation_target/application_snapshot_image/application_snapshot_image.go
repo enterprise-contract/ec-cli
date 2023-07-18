@@ -17,6 +17,7 @@
 package application_snapshot_image
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -36,7 +37,6 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/attestation"
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 	"github.com/enterprise-contract/ec-cli/internal/fetcher/image_config"
-	"github.com/enterprise-contract/ec-cli/internal/output"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/policy/source"
 	"github.com/enterprise-contract/ec-cli/internal/signature"
@@ -257,7 +257,7 @@ func (a ApplicationSnapshotImage) ValidateAttestationSyntax(ctx context.Context)
 	for _, sp := range a.attestations {
 		// at least one of the schemas needs to pass validation
 		for id, schema := range attestationSchemas {
-			if errs, err := schema.ValidateBytes(ctx, sp.Data()); err != nil {
+			if errs, err := schema.ValidateBytes(ctx, sp.Statement()); err != nil {
 				return EV002.CausedBy(err)
 			} else {
 				if len(errs) == 0 {
@@ -298,40 +298,72 @@ func (a *ApplicationSnapshotImage) Attestations() []attestation.Attestation {
 	return a.attestations
 }
 
-func (a *ApplicationSnapshotImage) AttestationsOutput() []output.Attestation {
-	var attestations []output.Attestation
-	for _, att := range a.attestations {
-		attestations = append(attestations, att.Output())
-	}
-	return attestations
-}
-
 func (a *ApplicationSnapshotImage) Signatures() []signature.EntitySignature {
 	return a.signatures
+}
+
+type attestationData struct {
+	json.RawMessage
+	Extra attestationExtraData `json:"extra"`
+}
+
+type attestationExtraData struct {
+	Signatures []signature.EntitySignature `json:"signatures,omitempty"`
+}
+
+func (a attestationData) MarshalJSON() ([]byte, error) {
+	buffy := bytes.Buffer{}
+	raw, err := a.RawMessage.MarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = buffy.Write(raw[0 : len(raw)-1])
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = buffy.WriteString(`,"extra":`)
+	if err != nil {
+		return nil, err
+	}
+
+	extra, err := json.Marshal(a.Extra)
+	if err != nil {
+		return nil, err
+	}
+
+	buffy.Write(extra)
+	buffy.WriteByte('}')
+
+	return buffy.Bytes(), nil
+}
+
+type image struct {
+	Ref        string                      `json:"ref"`
+	Signatures []signature.EntitySignature `json:"signatures,omitempty"`
+	Config     json.RawMessage             `json:"config,omitempty"`
+	Parent     any                         `json:"parent,omitempty"`
 }
 
 // WriteInputFile writes the JSON from the attestations to input.json in a random temp dir
 func (a *ApplicationSnapshotImage) WriteInputFile(ctx context.Context) (string, error) {
 	log.Debugf("Attempting to write %d attestations to input file", len(a.attestations))
 
-	var statements []any
-	for _, sp := range a.attestations {
-		statements = append(statements, sp.Statement())
-	}
-
-	type Image struct {
-		Ref        string                      `json:"ref"`
-		Signatures []signature.EntitySignature `json:"signatures,omitempty"`
-		Config     json.RawMessage             `json:"config,omitempty"`
-		Parent     any                         `json:"parent,omitempty"`
+	var attestations []attestationData
+	for _, a := range a.attestations {
+		attestations = append(attestations, attestationData{
+			RawMessage: a.Statement(),
+			Extra:      attestationExtraData{Signatures: a.Signatures()},
+		})
 	}
 
 	input := struct {
-		Attestations []any `json:"attestations"`
-		Image        Image `json:"image"`
+		Attestations []attestationData `json:"attestations"`
+		Image        image             `json:"image"`
 	}{
-		Attestations: statements,
-		Image: Image{
+		Attestations: attestations,
+		Image: image{
 			Ref:        a.reference.String(),
 			Signatures: a.signatures,
 			Config:     a.configJSON,
@@ -339,7 +371,7 @@ func (a *ApplicationSnapshotImage) WriteInputFile(ctx context.Context) (string, 
 	}
 
 	if a.parentRef != nil {
-		input.Image.Parent = Image{
+		input.Image.Parent = image{
 			Ref:    a.parentRef.String(),
 			Config: a.parentConfigJSON,
 		}

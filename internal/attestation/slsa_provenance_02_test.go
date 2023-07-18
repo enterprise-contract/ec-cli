@@ -22,6 +22,7 @@ import (
 	"bytes"
 	"crypto/x509"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -322,13 +323,42 @@ func TestSLSAProvenanceFromSignature(t *testing.T) {
 			}
 
 			if c.data == "" {
-				assert.Nil(t, sp.Data())
+				assert.Nil(t, sp.Statement())
 			} else {
-				assert.JSONEq(t, c.data, string(sp.Data()))
+				assert.JSONEq(t, c.data, string(sp.Statement()))
 			}
-			snaps.MatchSnapshot(t, sp.Statement(), sp.Output())
+			snaps.MatchSnapshot(t, sp.Type(), sp.Signatures())
 		})
 	}
+}
+
+func TestMarshal(t *testing.T) {
+	sig := mockSignature{&mock.Mock{}}
+
+	sig1 := `{"keyid": "ignored-1", "sig": "ignored-1"}`
+	sig2 := `{"keyid": "ignored-2", "sig": "ignored-2"}`
+	payload := encode(`{
+		"_type": "https://in-toto.io/Statement/v0.1",
+		"predicateType": "https://slsa.dev/provenance/v0.2",
+		"predicate": {"buildType": "https://my.build.type"}
+	}`)
+	sig.On("MediaType").Return(types.MediaType(ct.DssePayloadType), nil)
+	sig.On("Uncompressed").Return(buffy(
+		fmt.Sprintf(`{"payload": "%s", "signatures": [%s, %s]}`, payload, sig1, sig2),
+	), nil)
+	sig.On("Base64Signature").Return("sig-from-cert", nil)
+	sig.On("Cert").Return(signature.ParseChainguardReleaseCert(), nil)
+	sig.On("Chain").Return(signature.ParseSigstoreChainCert(), nil)
+
+	att, err := SLSAProvenanceFromSignature(sig)
+
+	require.NoError(t, err)
+
+	j, err := json.Marshal(att)
+
+	require.NoError(t, err)
+
+	snaps.MatchJSON(t, j)
 }
 
 func encode(payload string) string {

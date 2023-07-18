@@ -26,6 +26,7 @@ import (
 	"github.com/sigstore/cosign/v2/pkg/cosign"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/enterprise-contract/ec-cli/internal/attestation"
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/signature"
@@ -73,13 +74,6 @@ func (v VerificationStatus) addToSuccesses(successes []output.Result) []output.R
 	return result
 }
 
-type Attestation struct {
-	Type               string                      `json:"type"`
-	PredicateType      string                      `json:"predicateType"`
-	PredicateBuildType string                      `json:"predicateBuildType,omitempty"`
-	Signatures         []signature.EntitySignature `json:"signatures"`
-}
-
 // Output is a struct representing checks and exit code.
 type Output struct {
 	ImageAccessibleCheck      VerificationStatus          `json:"imageAccessibleCheck"`
@@ -89,7 +83,7 @@ type Output struct {
 	PolicyCheck               evaluator.CheckResults      `json:"policyCheck"`
 	ExitCode                  int                         `json:"-"`
 	Signatures                []signature.EntitySignature `json:"signatures,omitempty"`
-	Attestations              []Attestation               `json:"attestations,omitempty"`
+	Attestations              []attestation.Attestation   `json:"attestations,omitempty"`
 	ImageURL                  string                      `json:"-"`
 	Detailed                  bool                        `json:"-"`
 	Data                      []evaluator.Data            `json:"-"`

@@ -17,7 +17,6 @@
 package attestation
 
 import (
-	"github.com/enterprise-contract/ec-cli/internal/output"
 	"github.com/enterprise-contract/ec-cli/internal/signature"
 	e "github.com/enterprise-contract/ec-cli/pkg/error"
 )
@@ -34,13 +33,8 @@ var (
 // signature envelope's payload; statement of a particular type and any
 // signing information.
 type Attestation interface {
-	Data() []byte
-	Statement() any
-	Output() output.Attestation
-}
-
-// extra holds the signatures associated with an attestation. It is meant
-// to facilitate embedding signatures in the result of Attestation.Statement().
-type extra struct {
-	Signatures []signature.EntitySignature `json:"signatures"`
+	Type() string
+	PredicateType() string
+	Statement() []byte
+	Signatures() []signature.EntitySignature
 }

@@ -10,3 +10,229 @@
     },
 }
 ---
+
+[TestWriteInputFile/single_attestations - 1]
+{
+ "attestations": [
+  {
+   "_type": "https://in-toto.io/Statement/v0.1",
+   "extra": {},
+   "predicate": {
+    "buildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+    "builder": {
+     "id": ""
+    },
+    "invocation": {
+     "configSource": {}
+    }
+   },
+   "predicateType": "https://slsa.dev/provenance/v0.2",
+   "subject": null
+  }
+ ],
+ "image": {
+  "ref": "registry.io/repository/image:tag"
+ }
+}
+---
+
+[TestWriteInputFile/multiple_attestations - 1]
+{
+ "attestations": [
+  {
+   "_type": "https://in-toto.io/Statement/v0.1",
+   "extra": {},
+   "predicate": {
+    "buildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+    "builder": {
+     "id": ""
+    },
+    "invocation": {
+     "configSource": {}
+    }
+   },
+   "predicateType": "https://slsa.dev/provenance/v0.2",
+   "subject": null
+  },
+  {
+   "_type": "https://in-toto.io/Statement/v0.1",
+   "extra": {},
+   "predicate": {
+    "buildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+    "builder": {
+     "id": ""
+    },
+    "invocation": {
+     "configSource": {}
+    }
+   },
+   "predicateType": "https://slsa.dev/provenance/v0.2",
+   "subject": null
+  }
+ ],
+ "image": {
+  "ref": "registry.io/repository/image:tag"
+ }
+}
+---
+
+[TestWriteInputFile/image_signatures - 1]
+{
+ "attestations": [
+  {
+   "_type": "https://in-toto.io/Statement/v0.1",
+   "extra": {},
+   "predicate": {
+    "buildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+    "builder": {
+     "id": ""
+    },
+    "invocation": {
+     "configSource": {}
+    }
+   },
+   "predicateType": "https://slsa.dev/provenance/v0.2",
+   "subject": null
+  }
+ ],
+ "image": {
+  "ref": "registry.io/repository/image:tag",
+  "signatures": [
+   {
+    "chain": [
+     "certificate1",
+     "certificate2"
+    ],
+    "keyid": "keyId1",
+    "sig": "signature1"
+   },
+   {
+    "keyid": "keyId2",
+    "sig": "signature2"
+   }
+  ]
+ }
+}
+---
+
+[TestWriteInputFile/image_config - 1]
+{
+ "attestations": null,
+ "image": {
+  "config": {
+   "Labels": {
+    "io.k8s.display-name": "Test Image"
+   }
+  },
+  "ref": "registry.io/repository/image:tag"
+ }
+}
+---
+
+[TestWriteInputFile/parent_image_config - 1]
+{
+ "attestations": null,
+ "image": {
+  "parent": {
+   "config": {
+    "Labels": {
+     "io.k8s.display-name": "Base Image"
+    }
+   },
+   "ref": "registry.io/repository/image/parent:tag"
+  },
+  "ref": "registry.io/repository/image:tag"
+ }
+}
+---
+
+[TestWriteInputFile/attestation_with_signature - 1]
+{
+ "attestations": [
+  {
+   "_type": "https://in-toto.io/Statement/v0.1",
+   "extra": {
+    "signatures": [
+     {
+      "certificate": "certificate",
+      "chain": [
+       "a",
+       "b",
+       "c"
+      ],
+      "keyid": "keyId",
+      "metadata": {
+       "k1": "v1",
+       "k2": "v2"
+      },
+      "sig": "signature"
+     }
+    ]
+   },
+   "predicate": {
+    "buildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+    "builder": {
+     "id": ""
+    },
+    "invocation": {
+     "configSource": {}
+    }
+   },
+   "predicateType": "https://slsa.dev/provenance/v0.2",
+   "subject": null
+  }
+ ],
+ "image": {
+  "ref": "registry.io/repository/image:tag"
+ }
+}
+---
+
+[TestWriteInputFileMultipleAttestations - 1]
+{
+ "attestations": [
+  {
+   "_type": "https://in-toto.io/Statement/v0.1",
+   "extra": {},
+   "predicate": {
+    "buildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+    "builder": {
+     "id": ""
+    },
+    "invocation": {
+     "configSource": {}
+    }
+   },
+   "predicateType": "https://slsa.dev/provenance/v0.2",
+   "subject": null
+  }
+ ],
+ "image": {
+  "ref": "registry.io/repository/image:tag"
+ }
+}
+---
+
+[TestAttestationDataJSONMarshal - 1]
+{
+ "extra": {
+  "signatures": [
+   {
+    "certificate": "certificate",
+    "chain": [
+     "c1",
+     "c2",
+     "c3"
+    ],
+    "keyid": "key-id",
+    "metadata": {
+     "m1": "v1",
+     "m2": "v2"
+    },
+    "sig": "signature"
+   }
+  ]
+ },
+ "json": "here"
+}
+---

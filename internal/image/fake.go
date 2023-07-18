@@ -19,15 +19,17 @@ package image
 import (
 	"encoding/json"
 
-	"github.com/enterprise-contract/ec-cli/internal/attestation"
-	"github.com/enterprise-contract/ec-cli/internal/output"
+	"github.com/in-toto/in-toto-golang/in_toto"
+	v02 "github.com/in-toto/in-toto-golang/in_toto/slsa_provenance/v0.2"
+
+	"github.com/enterprise-contract/ec-cli/internal/signature"
 )
 
 type fakeAtt struct {
-	statement attestation.ProvenanceStatementSLSA02
+	statement in_toto.ProvenanceStatementSLSA02
 }
 
-func (f fakeAtt) Data() []byte {
+func (f fakeAtt) Statement() []byte {
 	bytes, err := json.Marshal(f.statement)
 	if err != nil {
 		panic(err)
@@ -35,10 +37,14 @@ func (f fakeAtt) Data() []byte {
 	return bytes
 }
 
-func (f fakeAtt) Statement() any {
-	return f.statement
+func (f fakeAtt) Type() string {
+	return in_toto.StatementInTotoV01
 }
 
-func (f fakeAtt) Output() output.Attestation {
-	return output.Attestation{}
+func (f fakeAtt) PredicateType() string {
+	return v02.PredicateSLSAProvenance
+}
+
+func (f fakeAtt) Signatures() []signature.EntitySignature {
+	return []signature.EntitySignature{}
 }
