@@ -20,7 +20,7 @@ require (
 	github.com/open-policy-agent/opa v0.54.1-0.20230630073603-1fc95f43f8b1
 	github.com/qri-io/jsonpointer v0.1.1
 	github.com/qri-io/jsonschema v0.2.1
-	github.com/redhat-appstudio/application-api v0.0.0-20230309195839-6e0986f52132
+	github.com/redhat-appstudio/application-api v0.0.0-20230717140139-e5cd9a23e669
 	github.com/secure-systems-lab/go-securesystemslib v0.7.0
 	github.com/sigstore/cosign/v2 v2.1.1
 	github.com/sigstore/sigstore v1.7.1

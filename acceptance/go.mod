@@ -21,7 +21,7 @@ require (
 	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
 	github.com/pkg/diff v0.0.0-20210226163009-20ebb0f2a09e
 	github.com/pkg/errors v0.9.1
-	github.com/redhat-appstudio/application-api v0.0.0-20230309195839-6e0986f52132
+	github.com/redhat-appstudio/application-api v0.0.0-20230717140139-e5cd9a23e669
 	github.com/sigstore/cosign/v2 v2.1.1
 	github.com/sigstore/rekor v1.2.2
 	github.com/sigstore/sigstore v1.7.1
@@ -240,6 +240,3 @@ require (
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 )
-
-// We need to include the controller-runtime update
-replace github.com/redhat-appstudio/application-api => github.com/zregvart/application-api v0.0.0-20230630104611-185d03306f1d

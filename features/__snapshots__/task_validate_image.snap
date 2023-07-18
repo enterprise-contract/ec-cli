@@ -3,6 +3,7 @@
 components:
 - containerImage: ${REGISTRY}/acceptance/does-not-exist
   name: ""
+  source: {}
   success: false
   violations:
   - metadata:
@@ -27,6 +28,7 @@ success: false
 components:
 - containerImage: ${REGISTRY}/acceptance/does-not-exist
   name: ""
+  source: {}
   success: false
   violations:
   - metadata:
@@ -61,6 +63,7 @@ components:
   signatures:
   - keyid: ""
     sig: ${IMAGE_SIGNATURE_acceptance/non-strict-with-warnings}
+  source: {}
   success: true
   successes:
   - metadata:
@@ -123,6 +126,7 @@ components:
   signatures:
   - keyid: ""
     sig: ${IMAGE_SIGNATURE_acceptance/strict-with-warnings}
+  source: {}
   success: true
   successes:
   - metadata:
@@ -197,6 +201,7 @@ components:
   signatures:
   - keyid: ""
     sig: MEUCIFPod1d9HhGt+TEQPG4j+LINjkifCFFOFrE4jbkvexGGAiEAqSp3ROZUsIOwWro6Tv+lRiR7sdMR0U6Crs1ISuQhHtA=
+  source: {}
   success: true
   successes:
   - metadata:
@@ -289,6 +294,7 @@ components:
   signatures:
   - keyid: ""
     sig: MEUCIFPod1d9HhGt+TEQPG4j+LINjkifCFFOFrE4jbkvexGGAiEAqSp3ROZUsIOwWro6Tv+lRiR7sdMR0U6Crs1ISuQhHtA=
+  source: {}
   success: true
   successes:
   - metadata:
