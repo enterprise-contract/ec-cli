@@ -34,10 +34,11 @@ import (
 const unnamed = "Unnamed"
 
 type Input struct {
-	File     string
-	JSON     string
+	File     string // Deprecated: replaced by images
+	JSON     string // Deprecated: replaced by images
 	Image    string
 	Snapshot string
+	Images   string
 }
 
 type snapshot struct {
@@ -81,37 +82,46 @@ func DetermineInputSpec(ctx context.Context, input Input) (*app.SnapshotSpec, er
 	var snapshot snapshot
 	provided := false
 
+	if input.Images != "" {
+		var content []byte
+		var err error
+		fs := utils.FS(ctx)
+		content, err = afero.ReadFile(fs, input.Images)
+		if err != nil {
+			log.Debugf("could not read images from file: %v", err)
+			// could not read as file so expecting string
+			content = []byte(input.Images)
+		}
+
+		file, err := readSnapshotSource(content)
+		if err != nil {
+			return nil, err
+		}
+		snapshot.merge(file)
+		provided = true
+	}
+
 	// read Snapshot provided as a file
 	if input.File != "" {
 		fs := utils.FS(ctx)
 		content, err := afero.ReadFile(fs, input.File)
 		if err != nil {
-			log.Debugf("Problem reading application snapshot from file %s", input.File)
 			return nil, err
 		}
-
-		var file app.SnapshotSpec
-		err = yaml.Unmarshal(content, &file)
+		file, err := readSnapshotSource(content)
 		if err != nil {
-			log.Debugf("Problem parsing application snapshot from file %s", input.File)
-			return nil, fmt.Errorf("unable to parse Snapshot specification from %s: %w", input.File, err)
+			return nil, err
 		}
-
-		log.Debugf("Read application snapshot from file %s", input.File)
 		snapshot.merge(file)
 		provided = true
 	}
 
 	// read Snapshot provided as a string
 	if input.JSON != "" {
-		var json app.SnapshotSpec
-		// Unmarshall YAML into struct, exit on failure
-		if err := yaml.Unmarshal([]byte(input.JSON), &json); err != nil {
-			log.Debugf("Problem parsing application snapshot from input param %s", input.JSON)
-			return nil, fmt.Errorf("unable to parse Snapshot specification from input: %w", err)
+		json, err := readSnapshotSource([]byte(input.JSON))
+		if err != nil {
+			return nil, err
 		}
-
-		log.Debug("Read application snapshot from input param")
 		snapshot.merge(json)
 		provided = true
 	}
@@ -153,4 +163,16 @@ func DetermineInputSpec(ctx context.Context, input Input) (*app.SnapshotSpec, er
 	}
 
 	return &snapshot.SnapshotSpec, nil
+}
+
+func readSnapshotSource(input []byte) (app.SnapshotSpec, error) {
+	var file app.SnapshotSpec
+	err := yaml.Unmarshal(input, &file)
+	if err != nil {
+		log.Debugf("Problem parsing application snapshot from file %s", input)
+		return app.SnapshotSpec{}, fmt.Errorf("unable to parse Snapshot specification from %s: %w", input, err)
+	}
+
+	log.Debugf("Read application snapshot from file %s", input)
+	return file, nil
 }

@@ -21,6 +21,8 @@ package applicationsnapshot
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"testing"
 
 	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
@@ -76,6 +78,16 @@ func Test_DetermineInputSpec(t *testing.T) {
 		{
 			name: "nothing",
 			want: nil,
+		},
+		{
+			name:  "snapShotSource as a string",
+			input: Input{Images: string(testJson)},
+			want:  snapshot,
+		},
+		{
+			name:  "snapShotSource as a file",
+			input: Input{Images: "/home/list-of-images.json"},
+			want:  snapshot,
 		},
 		{
 			name: "combined (all same)",
@@ -146,6 +158,12 @@ func Test_DetermineInputSpec(t *testing.T) {
 				}
 			}
 
+			if tc.input.Images == "/home/list-of-images.json" {
+				if err := afero.WriteFile(fs, tc.input.Images, []byte(testJson), 0400); err != nil {
+					panic(err)
+				}
+			}
+
 			got, err := DetermineInputSpec(ctx, tc.input)
 			// expect an error so check for nil
 			if tc.want != nil {
@@ -154,4 +172,53 @@ func Test_DetermineInputSpec(t *testing.T) {
 			assert.Equal(t, tc.want, got)
 		})
 	}
+}
+
+func TestReadSnapshotFile(t *testing.T) {
+
+	t.Run("Successful file read and unmarshal", func(t *testing.T) {
+		snapshotSpec := app.SnapshotSpec{
+			Components: []app.SnapshotComponent{
+				{
+					Name:           "Named",
+					ContainerImage: "",
+				},
+				{
+					Name:           "Set name",
+					ContainerImage: "registry.io/repository/image:another",
+				},
+			},
+		}
+		fs := afero.NewMemMapFs()
+		spec := `{"components":[{"name": "Named", "containerImage":""},{"name": "Set name", "containerImage":"registry.io/repository/image:another"}]}`
+
+		err := afero.WriteFile(fs, "/correct.json", []byte(spec), 0644)
+		if err != nil {
+			t.Fatalf("Setup failure: could not write file: %v", err)
+		}
+
+		content, err := afero.ReadFile(fs, "/correct.json")
+		assert.NoError(t, err)
+		got, err := readSnapshotSource(content)
+		assert.Equal(t, snapshotSpec, got)
+		assert.NoError(t, err)
+	})
+
+	t.Run("Invalid Spec", func(t *testing.T) {
+		fs := afero.NewMemMapFs()
+		spec := `bad spec`
+		specFile := "/badSpec.json"
+
+		err := afero.WriteFile(fs, specFile, []byte(spec), 0644)
+		if err != nil {
+			t.Fatalf("Setup failure: could not write file: %v", err)
+		}
+
+		content, err := afero.ReadFile(fs, specFile)
+		assert.NoError(t, err)
+		_, err = readSnapshotSource(content)
+		expected := errors.New("error unmarshaling JSON: while decoding JSON: json: cannot unmarshal string into Go value of type v1alpha1.SnapshotSpec")
+		assert.Equal(t, fmt.Errorf("unable to parse Snapshot specification from %s: %w", spec, expected), err)
+	})
+
 }
