@@ -81,12 +81,12 @@ func Test_DetermineInputSpec(t *testing.T) {
 		},
 		{
 			name:  "snapShotSource as a string",
-			input: Input{SnapshotSource: string(testJson)},
+			input: Input{Images: string(testJson)},
 			want:  snapshot,
 		},
 		{
 			name:  "snapShotSource as a file",
-			input: Input{SnapshotSource: "/home/list-of-images.json"},
+			input: Input{Images: "/home/list-of-images.json"},
 			want:  snapshot,
 		},
 		{
@@ -158,8 +158,8 @@ func Test_DetermineInputSpec(t *testing.T) {
 				}
 			}
 
-			if tc.input.SnapshotSource == "/home/list-of-images.json" {
-				if err := afero.WriteFile(fs, tc.input.SnapshotSource, []byte(testJson), 0400); err != nil {
+			if tc.input.Images == "/home/list-of-images.json" {
+				if err := afero.WriteFile(fs, tc.input.Images, []byte(testJson), 0400); err != nil {
 					panic(err)
 				}
 			}
@@ -199,7 +199,7 @@ func TestReadSnapshotFile(t *testing.T) {
 
 		content, err := afero.ReadFile(fs, "/correct.json")
 		assert.NoError(t, err)
-		got, err := readSnapshotFile(content)
+		got, err := readSnapshotSource(content)
 		assert.Equal(t, snapshotSpec, got)
 		assert.NoError(t, err)
 	})
@@ -216,7 +216,7 @@ func TestReadSnapshotFile(t *testing.T) {
 
 		content, err := afero.ReadFile(fs, specFile)
 		assert.NoError(t, err)
-		_, err = readSnapshotFile(content)
+		_, err = readSnapshotSource(content)
 		expected := errors.New("error unmarshaling JSON: while decoding JSON: json: cannot unmarshal string into Go value of type v1alpha1.SnapshotSpec")
 		assert.Equal(t, fmt.Errorf("unable to parse Snapshot specification from %s: %w", spec, expected), err)
 	})

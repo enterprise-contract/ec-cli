@@ -41,10 +41,10 @@ import (
 )
 
 type data struct {
-	imageRef       string
-	input          string
-	filePath       string
-	snapshotSource string
+	imageRef string
+	input    string
+	filePath string
+	images   string
 }
 
 func Test_determineInputSpec(t *testing.T) {
@@ -83,9 +83,9 @@ func Test_determineInputSpec(t *testing.T) {
 			err: "unable to parse Snapshot specification from {: error converting YAML to JSON: yaml: line 1: did not find expected node content",
 		},
 		{
-			name: "ApplicationSnapshot JSON string - snapshotSource",
+			name: "ApplicationSnapshot JSON string - images",
 			arguments: data{
-				snapshotSource: `{
+				images: `{
 					"components": [
 					  {
 						"name": "nodejs",
@@ -200,9 +200,9 @@ func Test_determineInputSpec(t *testing.T) {
 			},
 		},
 		{
-			name: "ApplicationSnapshot file - snapshotSource",
+			name: "ApplicationSnapshot file - images",
 			arguments: data{
-				snapshotSource: "test_application_snapshot.json",
+				images: "test_application_snapshot.json",
 			},
 			spec: &app.SnapshotSpec{
 				Application: "app1",
@@ -227,10 +227,10 @@ func Test_determineInputSpec(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			s, err := applicationsnapshot.DetermineInputSpec(context.Background(), applicationsnapshot.Input{
-				File:           c.arguments.filePath,
-				JSON:           c.arguments.input,
-				Image:          c.arguments.imageRef,
-				SnapshotSource: c.arguments.snapshotSource,
+				File:   c.arguments.filePath,
+				JSON:   c.arguments.input,
+				Image:  c.arguments.imageRef,
+				Images: c.arguments.images,
 			})
 			if c.err != "" {
 				assert.EqualError(t, err, c.err)

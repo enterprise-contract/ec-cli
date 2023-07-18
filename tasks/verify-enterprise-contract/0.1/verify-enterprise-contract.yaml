@@ -142,7 +142,7 @@ spec:
         - validate
         - image
         - "--verbose"
-        - "--snapshot-source"
+        - "--images"
         - "$(params.IMAGES)"
         - "--policy"
         - "$(params.POLICY_CONFIGURATION)"

@@ -34,11 +34,11 @@ import (
 const unnamed = "Unnamed"
 
 type Input struct {
-	File           string
-	JSON           string
-	Image          string
-	Snapshot       string
-	SnapshotSource string
+	File     string
+	JSON     string
+	Image    string
+	Snapshot string
+	Images   string
 }
 
 type snapshot struct {
@@ -82,18 +82,18 @@ func DetermineInputSpec(ctx context.Context, input Input) (*app.SnapshotSpec, er
 	var snapshot snapshot
 	provided := false
 
-	if input.SnapshotSource != "" {
+	if input.Images != "" {
 		var content []byte
 		var err error
 		fs := utils.FS(ctx)
-		content, err = afero.ReadFile(fs, input.SnapshotSource)
+		content, err = afero.ReadFile(fs, input.Images)
 		if err != nil {
-			log.Debugf("could not read --snapshot-source as a file: %v", err)
+			log.Debugf("could not read images from file: %v", err)
 			// could not read as file so expecting string
-			content = []byte(input.SnapshotSource)
+			content = []byte(input.Images)
 		}
 
-		file, err := readSnapshotFile(content)
+		file, err := readSnapshotSource(content)
 		if err != nil {
 			return nil, err
 		}
@@ -108,7 +108,7 @@ func DetermineInputSpec(ctx context.Context, input Input) (*app.SnapshotSpec, er
 		if err != nil {
 			return nil, err
 		}
-		file, err := readSnapshotFile(content)
+		file, err := readSnapshotSource(content)
 		if err != nil {
 			return nil, err
 		}
@@ -118,7 +118,7 @@ func DetermineInputSpec(ctx context.Context, input Input) (*app.SnapshotSpec, er
 
 	// read Snapshot provided as a string
 	if input.JSON != "" {
-		json, err := readSnapshotFile([]byte(input.JSON))
+		json, err := readSnapshotSource([]byte(input.JSON))
 		if err != nil {
 			return nil, err
 		}
@@ -165,7 +165,7 @@ func DetermineInputSpec(ctx context.Context, input Input) (*app.SnapshotSpec, er
 	return &snapshot.SnapshotSpec, nil
 }
 
-func readSnapshotFile(input []byte) (app.SnapshotSpec, error) {
+func readSnapshotSource(input []byte) (app.SnapshotSpec, error) {
 	var file app.SnapshotSpec
 	err := yaml.Unmarshal(input, &file)
 	if err != nil {
