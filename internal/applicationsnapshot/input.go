@@ -34,8 +34,8 @@ import (
 const unnamed = "Unnamed"
 
 type Input struct {
-	File     string
-	JSON     string
+	File     string // Deprecated: replaced by images
+	JSON     string // Deprecated: replaced by images
 	Image    string
 	Snapshot string
 	Images   string

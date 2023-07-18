@@ -48,10 +48,10 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		certificateOIDCIssuer       string
 		certificateOIDCIssuerRegExp string
 		effectiveTime               string
-		filePath                    string
+		filePath                    string // Deprecated: images replaced this
 		imageRef                    string
 		info                        bool
-		input                       string
+		input                       string // Deprecated: images replaced this
 		output                      []string
 		outputFile                  string
 		policy                      policy.Policy
@@ -102,11 +102,11 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 
 			Validate multiple images from an ApplicationSnapshot Spec file:
 
-			  ec validate image --file-path my-app.yaml
+			  ec validate image --images my-app.yaml
 
 			Validate attestation of images from an inline ApplicationSnapshot Spec:
 
-			  ec validate image --json-input '{"components":[{"containerImage":"<image url>"}]}'
+			  ec validate image --images '{"components":[{"containerImage":"<image url>"}]}'
 
 			Use a different public key than the one from the EnterpriseContractPolicy resource:
 
@@ -156,6 +156,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 			Write the data used in the policy evaluation to a file in YAML format
 
 			  ec validate image --image registry/name:tag --output data=<path>
+			  
 
 
 			Validate a single image with keyless workflow. This is an experimental feature
@@ -370,9 +371,11 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 	cmd.Flags().StringVar(&data.certificateOIDCIssuerRegExp, "certificate-oidc-issuer-regexp", data.certificateOIDCIssuerRegExp,
 		"EXPERIMENTAL. Regular expresssion for the URL of the certificate OIDC issuer for keyless verification")
 
+	// Deprecated: images replaced this
 	cmd.Flags().StringVarP(&data.filePath, "file-path", "f", data.filePath,
 		"path to ApplicationSnapshot Spec JSON file")
 
+	// Deprecated: images replaced this
 	cmd.Flags().StringVarP(&data.input, "json-input", "j", data.input,
 		"JSON representation of an ApplicationSnapshot Spec")
 
@@ -407,7 +410,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		violations, include the title and the description of the failed policy
 		rule.`))
 
-	if len(data.input) > 0 || len(data.filePath) > 0 {
+	if len(data.input) > 0 || len(data.filePath) > 0 || len(data.images) > 0 {
 		if err := cmd.MarkFlagRequired("image"); err != nil {
 			panic(err)
 		}
