@@ -23,6 +23,7 @@
 package test
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 
@@ -31,6 +32,8 @@ import (
 	"github.com/open-policy-agent/conftest/runner"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
+	"github.com/enterprise-contract/ec-cli/internal/applicationsnapshot"
 )
 
 const testDesc = `
@@ -90,6 +93,8 @@ the output will include a detailed trace of how the policy was evaluated, e.g.
 
 	$ ec test --trace <input-file>
 `
+
+const OutputAppstudio = "appstudio"
 
 // newTestCommand creates a new test command.
 func newTestCommand() *cobra.Command {
@@ -154,14 +159,26 @@ func newTestCommand() *cobra.Command {
 			}
 
 			if !runner.Quiet || exitCode != 0 {
-				outputter := output.Get(runner.Output, output.Options{
-					NoColor:            runner.NoColor,
-					SuppressExceptions: runner.SuppressExceptions,
-					Tracing:            runner.Trace,
-					JUnitHideMessage:   viper.GetBool("junit-hide-message"),
-				})
-				if err := outputter.Output(results); err != nil {
-					return fmt.Errorf("output results: %w", err)
+				if runner.Output == OutputAppstudio {
+					// The appstudio format is unknown to Conftest so we handle it ourselves
+					report := applicationsnapshot.AppstudioReportFromCheckResults(results, runner.Namespace)
+					reportOutput, err := json.Marshal(report)
+					if err != nil {
+						return fmt.Errorf("output results: %w", err)
+					}
+					fmt.Printf("%s\n", reportOutput)
+
+				} else {
+					// Conftest handles the output
+					outputter := output.Get(runner.Output, output.Options{
+						NoColor:            runner.NoColor,
+						SuppressExceptions: runner.SuppressExceptions,
+						Tracing:            runner.Trace,
+						JUnitHideMessage:   viper.GetBool("junit-hide-message"),
+					})
+					if err := outputter.Output(results); err != nil {
+						return fmt.Errorf("output results: %w", err)
+					}
 				}
 
 				// When the no-fail parameter is set, there is no need to figure out the error code
@@ -191,7 +208,7 @@ func newTestCommand() *cobra.Command {
 	cmd.Flags().String("parser", "", fmt.Sprintf("Parser to use to parse the configurations. Valid parsers: %s", parser.Parsers()))
 	cmd.Flags().String("capabilities", "", "Path to JSON file that can restrict opa functionality against a given policy. Default: all operations allowed")
 
-	cmd.Flags().StringP("output", "o", output.OutputStandard, fmt.Sprintf("Output format for conftest results - valid options are: %s", output.Outputs()))
+	cmd.Flags().StringP("output", "o", output.OutputStandard, fmt.Sprintf("Output format for conftest results - valid options are: %s", append(output.Outputs(), OutputAppstudio)))
 	cmd.Flags().Bool("junit-hide-message", false, "Do not include the violation message in the JUnit test name")
 
 	cmd.Flags().StringSliceP("policy", "p", []string{"policy"}, "Path to the Rego policy files directory")

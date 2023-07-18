@@ -12,6 +12,20 @@
 [success:stderr - 1]
 
 ---
+[appstudio success:stdout - 1]
+{
+  "timestamp": "${TIMESTAMP}",
+  "namespace": "main",
+  "successes": 1,
+  "failures": 0,
+  "warnings": 0,
+  "result": "SUCCESS"
+}
+---
+
+[appstudio success:stderr - 1]
+
+---
 [a warning:stdout - 1]
 [
   {
@@ -25,6 +39,20 @@
     ]
   }
 ]
+---
+[appstudio warning:stdout - 1]
+{
+  "timestamp": "${TIMESTAMP}",
+  "namespace": "main",
+  "successes": 0,
+  "failures": 0,
+  "warnings": 1,
+  "result": "WARNING"
+}
+---
+
+[appstudio warning:stderr - 1]
+
 ---
 
 [a warning:stderr - 1]
@@ -92,5 +120,19 @@ FAIL - acceptance/examples/empty_input.json - main - Failure due to overripeness
 ---
 
 [plain text deny:stderr - 1]
+
+---
+[appstudio deny:stdout - 1]
+{
+  "timestamp": "${TIMESTAMP}",
+  "namespace": "main",
+  "successes": 0,
+  "failures": 1,
+  "warnings": 0,
+  "result": "FAILURE"
+}
+---
+
+[appstudio deny:stderr - 1]
 
 ---
