@@ -19,6 +19,7 @@
 package applicationsnapshot
 
 import (
+	"bufio"
 	"context"
 	_ "embed"
 	"encoding/json"
@@ -31,6 +32,7 @@ import (
 	"github.com/sigstore/cosign/v2/pkg/cosign"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/enterprise-contract/ec-cli/internal/format"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
@@ -49,7 +51,7 @@ func Test_ReportJson(t *testing.T) {
 
 	ctx := context.Background()
 	testPolicy := createTestPolicy(t, ctx)
-	report, err := NewReport("snappy", components, testPolicy, "data here")
+	report, err := NewReport("snappy", components, testPolicy, "data here", nil)
 	assert.NoError(t, err)
 
 	testEffectiveTime := testPolicy.EffectiveTime().UTC().Format(time.RFC3339Nano)
@@ -107,7 +109,7 @@ func Test_ReportYaml(t *testing.T) {
 
 	ctx := context.Background()
 	testPolicy := createTestPolicy(t, ctx)
-	report, err := NewReport("snappy", components, testPolicy, "data here")
+	report, err := NewReport("snappy", components, testPolicy, "data here", nil)
 	assert.NoError(t, err)
 
 	testEffectiveTime := testPolicy.EffectiveTime().UTC().Format(time.RFC3339Nano)
@@ -385,7 +387,7 @@ func Test_ReportSummary(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("NewReport=%s", tc.name), func(t *testing.T) {
 			ctx := context.Background()
-			report, err := NewReport(tc.snapshot, []Component{tc.input}, createTestPolicy(t, ctx), "data here")
+			report, err := NewReport(tc.snapshot, []Component{tc.input}, createTestPolicy(t, ctx), "data here", nil)
 			assert.NoError(t, err)
 			assert.Equal(t, tc.want, report.toSummary())
 		})
@@ -519,7 +521,7 @@ func Test_ReportAppstudio(t *testing.T) {
 			assert.NoError(t, err)
 
 			ctx := context.Background()
-			report, err := NewReport(c.snapshot, c.components, createTestPolicy(t, ctx), nil)
+			report, err := NewReport(c.snapshot, c.components, createTestPolicy(t, ctx), nil, nil)
 			assert.NoError(t, err)
 			assert.False(t, report.created.IsZero())
 			assert.Equal(t, c.success, report.Success)
@@ -667,7 +669,7 @@ func Test_ReportHACBS(t *testing.T) {
 			assert.NoError(t, err)
 
 			ctx := context.Background()
-			report, err := NewReport(c.snapshot, c.components, createTestPolicy(t, ctx), "data here")
+			report, err := NewReport(c.snapshot, c.components, createTestPolicy(t, ctx), "data here", nil)
 			assert.NoError(t, err)
 			assert.False(t, report.created.IsZero())
 			assert.Equal(t, c.success, report.Success)
@@ -685,6 +687,38 @@ func Test_ReportHACBS(t *testing.T) {
 			assert.NoError(t, err)
 			assert.JSONEq(t, c.expected, string(defaultReportText))
 		})
+	}
+}
+
+func Test_ReportPolicyInput(t *testing.T) {
+	fs := afero.NewMemMapFs()
+	defaultWriter, err := fs.Create("default")
+	require.NoError(t, err)
+
+	policyInput := [][]byte{
+		[]byte(`{"ref": "one"}`),
+		[]byte(`{"ref": "two"}`),
+	}
+
+	ctx := context.Background()
+	report, err := NewReport("snapshot", nil, createTestPolicy(t, ctx), "data", policyInput)
+	require.NoError(t, err)
+
+	p := format.NewTargetParser(JSON, defaultWriter, fs)
+	require.NoError(t, report.WriteAll([]string{"policy-input=policy-input.yaml", "policy-input"}, p))
+
+	matchesJSONLFile(t, fs, policyInput, "policy-input.yaml")
+	matchesJSONLFile(t, fs, policyInput, "default")
+}
+
+func matchesJSONLFile(t *testing.T, fs afero.Fs, expected [][]byte, filename string) {
+	f, err := fs.Open(filename)
+	require.NoError(t, err)
+	defer f.Close()
+
+	scanner := bufio.NewScanner(f)
+	for i := 0; scanner.Scan(); i++ {
+		require.JSONEq(t, string(expected[i]), scanner.Text())
 	}
 }
 
