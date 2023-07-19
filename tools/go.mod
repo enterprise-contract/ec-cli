@@ -17,13 +17,6 @@ require (
 // until https://github.com/grafeas/grafeas/pull/565 is merged/released
 replace github.com/grafeas/grafeas => github.com/zregvart/grafeas v0.0.0-20230102130750-341817cf5037
 
-// Helm v3 is using ORAS 1.2.2 which needs an older version of docker, this
-// helps with:
-//   packages/pkg/mod/oras.land/oras-go@v1.2.2/pkg/auth/docker/login_tls.go:181:30:
-//   assignment mismatch: 3 variables but registry.PingV2Registry returns 2 values
-// See https://www.github.com/helm/helm/issues/11821
-replace github.com/docker/docker => github.com/docker/docker v20.10.24+incompatible
-
 require (
 	4d63.com/gocheckcompilerdirectives v1.2.1 // indirect
 	4d63.com/gochecknoglobals v0.2.1 // indirect
@@ -359,7 +352,7 @@ require (
 	github.com/nunnatsa/ginkgolinter v0.12.1 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
-	github.com/open-policy-agent/opa v0.54.0 // indirect
+	github.com/open-policy-agent/opa v0.54.1-0.20230630073603-1fc95f43f8b1 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.0-rc2.0.20221005185240-3a7f492d3f1b // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
@@ -465,9 +458,10 @@ require (
 	gitlab.com/bosi/decorder v0.2.3 // indirect
 	go.mongodb.org/mongo-driver v1.11.4 // indirect
 	go.opencensus.io v0.24.0 // indirect
-	go.opentelemetry.io/otel v1.14.0 // indirect
-	go.opentelemetry.io/otel/sdk v1.14.0 // indirect
-	go.opentelemetry.io/otel/trace v1.14.0 // indirect
+	go.opentelemetry.io/otel v1.16.0 // indirect
+	go.opentelemetry.io/otel/metric v1.16.0 // indirect
+	go.opentelemetry.io/otel/sdk v1.16.0 // indirect
+	go.opentelemetry.io/otel/trace v1.16.0 // indirect
 	go.starlark.net v0.0.0-20200306205701-8dd3e2ee1dd5 // indirect
 	go.step.sm/crypto v0.30.0 // indirect
 	go.tmz.dev/musttag v0.7.0 // indirect
