@@ -692,7 +692,7 @@ func unmarshallSignatures(rawCosignSignature []byte) (*cosign.Signatures, error)
 
 // JSONAttestationSignaturesFrom returns the list of attestation signatures found in the context in
 // JSON format. If not found, and empty JSON array is returned.
-func JSONAttestationSignaturesFrom(ctx context.Context) (map[string]string, error) {
+func JSONAttestationSignaturesFrom(ctx context.Context, prefix string) (map[string]string, error) {
 	if !testenv.HasState[imageState](ctx) {
 		return nil, nil
 	}
@@ -701,17 +701,18 @@ func JSONAttestationSignaturesFrom(ctx context.Context) (map[string]string, erro
 
 	signatures := map[string]string{}
 	for name, signature := range state.AttestationSignatures {
-		json, err := json.Marshal(signature)
-		if err != nil {
-			return nil, err
+		if signature.KeyID != "" {
+			signatures[fmt.Sprintf("%s_KEY_ID_%s", prefix, name)] = signature.KeyID
 		}
-		signatures[name] = string(json)
+		if signature.Signature != "" {
+			signatures[fmt.Sprintf("%s_%s", prefix, name)] = signature.Signature
+		}
 	}
 
 	return signatures, nil
 }
 
-func XMLAttestationSignaturesFrom(ctx context.Context) (map[string]string, error) {
+func XMLAttestationSignaturesFrom(ctx context.Context, prefix string) (map[string]string, error) {
 	if !testenv.HasState[imageState](ctx) {
 		return nil, nil
 	}
@@ -744,7 +745,7 @@ func XMLAttestationSignaturesFrom(ctx context.Context) (map[string]string, error
 		if err != nil {
 			return nil, err
 		}
-		ret[name] = string(xml)
+		ret[fmt.Sprintf("%s_%s", prefix, name)] = string(xml)
 	}
 
 	return ret, nil
@@ -765,7 +766,7 @@ func RawAttestationSignaturesFrom(ctx context.Context) map[string]string {
 	return ret
 }
 
-func JSONImageSignaturesFrom(ctx context.Context) (map[string]string, error) {
+func JSONImageSignaturesFrom(ctx context.Context, prefix string) (map[string]string, error) {
 	if !testenv.HasState[imageState](ctx) {
 		return nil, nil
 	}
@@ -774,17 +775,18 @@ func JSONImageSignaturesFrom(ctx context.Context) (map[string]string, error) {
 
 	ret := map[string]string{}
 	for name, signature := range state.ImageSignatures {
-		json, err := json.Marshal(signature)
-		if err != nil {
-			return nil, err
+		if signature.KeyID != "" {
+			ret[fmt.Sprintf("%s_KEY_ID_%s", prefix, name)] = signature.KeyID
 		}
-		ret[name] = string(json)
+		if signature.Signature != "" {
+			ret[fmt.Sprintf("%s_%s", prefix, name)] = signature.Signature
+		}
 	}
 
 	return ret, nil
 }
 
-func XMLImageSignaturesFrom(ctx context.Context) (map[string]string, error) {
+func XMLImageSignaturesFrom(ctx context.Context, prefix string) (map[string]string, error) {
 	if !testenv.HasState[imageState](ctx) {
 		return nil, nil
 	}
@@ -817,7 +819,7 @@ func XMLImageSignaturesFrom(ctx context.Context) (map[string]string, error) {
 		if err != nil {
 			return nil, err
 		}
-		ret[name] = string(xml)
+		ret[fmt.Sprintf("%s_%s", prefix, name)] = string(xml)
 	}
 
 	return ret, nil
