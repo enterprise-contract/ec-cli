@@ -36,7 +36,7 @@
       "success": true,
       "signatures": [
         {
-          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+          "keyid": "",
           "sig": "${IMAGE_SIGNATURE_acceptance/ec-happy-day}"
         }
       ],
@@ -47,7 +47,7 @@
           "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
           "signatures": [
             {
-              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+              "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"
             }
           ]
@@ -77,7 +77,7 @@
 ---
 
 [JUnit output format:stdout - 1]
-<testsuites tests="5" failures="1"><testsuite name="Unnamed (${REGISTRY}/acceptance/image@${REGISTRY_acceptance/image:latest_HASH})" tests="5" failures="1" errors="0" id="0" time="" timestamp="${TIMESTAMP}"><properties><property name="image" value="${REGISTRY}/acceptance/image@${REGISTRY_acceptance/image:latest_HASH}"></property><property name="key" value="${known_PUBLIC_KEY_XML}"></property><property name="success" value="false"></property>${IMAGE_SIGNATURES_XML_acceptance/image}</properties><testcase name="builtin.attestation.signature_check: Pass" classname="builtin.attestation.signature_check: Pass"></testcase><testcase name="builtin.attestation.syntax_check: Pass" classname="builtin.attestation.syntax_check: Pass"></testcase><testcase name="builtin.image.signature_check: Pass" classname="builtin.image.signature_check: Pass"></testcase><testcase name="main.acceptor: Pass" classname="main.acceptor: Pass"></testcase><testcase name="main.rejector: Fails always" classname="main.rejector: Fails always"><failure message="Fails always"><![CDATA[Fails always]]></failure></testcase></testsuite></testsuites>
+<testsuites tests="5" failures="1"><testsuite name="Unnamed (${REGISTRY}/acceptance/image@${REGISTRY_acceptance/image:latest_HASH})" tests="5" failures="1" errors="0" id="0" time="" timestamp="${TIMESTAMP}"><properties><property name="image" value="${REGISTRY}/acceptance/image@${REGISTRY_acceptance/image:latest_HASH}"></property><property name="key" value="${known_PUBLIC_KEY_XML}"></property><property name="success" value="false"></property><property name="keyId" values=""><property name="signature" value="${IMAGE_SIGNATURE_acceptance/image}"></property></properties><testcase name="builtin.attestation.signature_check: Pass" classname="builtin.attestation.signature_check: Pass"></testcase><testcase name="builtin.attestation.syntax_check: Pass" classname="builtin.attestation.syntax_check: Pass"></testcase><testcase name="builtin.image.signature_check: Pass" classname="builtin.image.signature_check: Pass"></testcase><testcase name="main.acceptor: Pass" classname="main.acceptor: Pass"></testcase><testcase name="main.rejector: Fails always" classname="main.rejector: Fails always"><failure message="Fails always"><![CDATA[Fails always]]></failure></testcase></testsuite></testsuites>
 ---
 
 [JUnit output format:stderr - 1]
@@ -124,7 +124,7 @@ Error: success criteria not met
       "success": false,
       "signatures": [
         {
-          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+          "keyid": "",
           "sig": "${IMAGE_SIGNATURE_acceptance/ec-happy-day}"
         }
       ],
@@ -135,7 +135,7 @@ Error: success criteria not met
           "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
           "signatures": [
             {
-              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+              "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"
             }
           ]
@@ -213,7 +213,7 @@ Error: success criteria not met
       "success": true,
       "signatures": [
         {
-          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+          "keyid": "",
           "sig": "${IMAGE_SIGNATURE_acceptance/ec-happy-day}"
         }
       ],
@@ -224,7 +224,7 @@ Error: success criteria not met
           "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
           "signatures": [
             {
-              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+              "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"
             }
           ]
@@ -290,7 +290,7 @@ Error: success criteria not met
       "success": true,
       "signatures": [
         {
-          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+          "keyid": "",
           "sig": "${IMAGE_SIGNATURE_acceptance/ec-happy-day}"
         }
       ],
@@ -301,7 +301,7 @@ Error: success criteria not met
           "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
           "signatures": [
             {
-              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+              "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"
             }
           ]
@@ -369,7 +369,7 @@ Error: success criteria not met
       "success": true,
       "signatures": [
         {
-          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+          "keyid": "",
           "sig": "${IMAGE_SIGNATURE_acceptance/ec-happy-day}"
         }
       ],
@@ -380,7 +380,7 @@ Error: success criteria not met
           "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
           "signatures": [
             {
-              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+              "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"
             }
           ]
@@ -440,7 +440,7 @@ Error: success criteria not met
       "success": true,
       "signatures": [
         {
-          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/image}",
+          "keyid": "",
           "sig": "${IMAGE_SIGNATURE_acceptance/image}"
         }
       ],
@@ -451,7 +451,7 @@ Error: success criteria not met
           "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
           "signatures": [
             {
-              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/image}",
+              "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/image}"
             }
           ]
@@ -540,7 +540,7 @@ Error: success criteria not met
       "success": false,
       "signatures": [
         {
-          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-multiple-sources}",
+          "keyid": "",
           "sig": "${IMAGE_SIGNATURE_acceptance/ec-multiple-sources}"
         }
       ],
@@ -551,7 +551,7 @@ Error: success criteria not met
           "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
           "signatures": [
             {
-              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-multiple-sources}",
+              "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-multiple-sources}"
             }
           ]
@@ -635,7 +635,7 @@ Error: success criteria not met
           "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
           "signatures": [
             {
-              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/bad-actor}",
+              "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/bad-actor}"
             }
           ]
@@ -707,7 +707,7 @@ Error: success criteria not met
       "success": true,
       "signatures": [
         {
-          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+          "keyid": "",
           "sig": "${IMAGE_SIGNATURE_acceptance/ec-happy-day}"
         }
       ],
@@ -718,7 +718,7 @@ Error: success criteria not met
           "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
           "signatures": [
             {
-              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+              "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"
             }
           ]
@@ -795,7 +795,7 @@ Error: success criteria not met
       "success": true,
       "signatures": [
         {
-          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+          "keyid": "",
           "sig": "${IMAGE_SIGNATURE_acceptance/ec-happy-day}"
         }
       ],
@@ -806,7 +806,7 @@ Error: success criteria not met
           "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
           "signatures": [
             {
-              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+              "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"
             }
           ]
@@ -884,7 +884,7 @@ Error: success criteria not met
       "success": false,
       "signatures": [
         {
-          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-multiple-sources}",
+          "keyid": "",
           "sig": "${IMAGE_SIGNATURE_acceptance/ec-multiple-sources}"
         }
       ],
@@ -895,7 +895,7 @@ Error: success criteria not met
           "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
           "signatures": [
             {
-              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-multiple-sources}",
+              "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-multiple-sources}"
             }
           ]
@@ -974,7 +974,45 @@ Error: success criteria not met
 ---
 
 [invalid image signature:stdout - 1]
-{"success":false,"components":[{"name":"Unnamed","containerImage":"${REGISTRY}/acceptance/invalid-image-signature@${REGISTRY_acceptance/invalid-image-signature:latest_HASH}","source":{},"violations":[{"msg":"No image attestations found matching the given public key. Verify the correct public key was provided, and one or more attestations were created.","metadata":{"code":"builtin.attestation.signature_check"}},{"msg":"No image signatures found matching the given public key. Verify the correct public key was provided, and a signature was created.","metadata":{"code":"builtin.image.signature_check"}}],"success":false}],"key":${unknown_PUBLIC_KEY_JSON},"policy":{"sources":[{"policy":["git::https://${GITHOST}/git/invalid-image-signature.git"]}],"rekorUrl":"${REKOR}","publicKey":"${unknown_PUBLIC_KEY}"},"ec-version":"${EC_VERSION}","effective-time":"${TIMESTAMP}"}
+{
+  "success": false,
+  "components": [
+    {
+      "name": "Unnamed",
+      "containerImage": "${REGISTRY}/acceptance/invalid-image-signature@${REGISTRY_acceptance/invalid-image-signature:latest_HASH}",
+      "source": {},
+      "violations": [
+        {
+          "msg": "No image attestations found matching the given public key. Verify the correct public key was provided, and one or more attestations were created.",
+          "metadata": {
+            "code": "builtin.attestation.signature_check"
+          }
+        },
+        {
+          "msg": "No image signatures found matching the given public key. Verify the correct public key was provided, and a signature was created.",
+          "metadata": {
+            "code": "builtin.image.signature_check"
+          }
+        }
+      ],
+      "success": false
+    }
+  ],
+  "key": "${unknown_PUBLIC_KEY_JSON}",
+  "policy": {
+    "sources": [
+      {
+        "policy": [
+          "git::https://${GITHOST}/git/invalid-image-signature.git"
+        ]
+      }
+    ],
+    "rekorUrl": "${REKOR}",
+    "publicKey": "${unknown_PUBLIC_KEY}"
+  },
+  "ec-version": "${EC_VERSION}",
+  "effective-time": "${TIMESTAMP}"
+}
 ---
 
 [invalid image signature:stderr - 1]
@@ -1019,7 +1057,7 @@ Error: success criteria not met
       "success": true,
       "signatures": [
         {
-          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+          "keyid": "",
           "sig": "${IMAGE_SIGNATURE_acceptance/ec-happy-day}"
         }
       ],
@@ -1030,7 +1068,7 @@ Error: success criteria not met
           "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
           "signatures": [
             {
-              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+              "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"
             }
           ]
@@ -1119,7 +1157,7 @@ Error: 1 error occurred:
       "success": false,
       "signatures": [
         {
-          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+          "keyid": "",
           "sig": "${IMAGE_SIGNATURE_acceptance/ec-happy-day}"
         }
       ],
@@ -1130,7 +1168,7 @@ Error: 1 error occurred:
           "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
           "signatures": [
             {
-              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+              "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"
             }
           ]
@@ -1196,7 +1234,7 @@ Error: success criteria not met
       "success": true,
       "signatures": [
         {
-          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+          "keyid": "",
           "sig": "${IMAGE_SIGNATURE_acceptance/ec-happy-day}"
         }
       ],
@@ -1207,7 +1245,7 @@ Error: success criteria not met
           "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
           "signatures": [
             {
-              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+              "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"
             }
           ]
@@ -1302,8 +1340,8 @@ Error: success criteria not met
       "success": true,
       "signatures": [
         {
-          "keyid": "00c419e4c566a0c1b7ae9f41e7934148b370f706",
-          "sig": "MEQCIFjxwmv6sDVVuz7aqt9Jx9qdLgzXjKZVaXSR8L5tUEwDAiAf6fK5o9dIGdrb/h0IE8+9edv66ZNrj78TawfN4TiBJw==",
+          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-happy-day-keyless}",
+          "sig": "${IMAGE_SIGNATURE_acceptance/ec-happy-day-keyless}",
           "certificate": "-----BEGIN CERTIFICATE-----\nMIIExDCCAqygAwIBAgIUBP+rZIG1OH9giEpjRxN4qascyOIwDQYJKoZIhvcNAQEL\nBQAwfjEMMAoGA1UEBhMDVVNBMRMwEQYDVQQIEwpDYWxpZm9ybmlhMRYwFAYDVQQH\nEw1TYW4gRnJhbmNpc2NvMRYwFAYDVQQJEw01NDggTWFya2V0IFN0MQ4wDAYDVQQR\nEwU1NzI3NDEZMBcGA1UEChMQTGludXggRm91bmRhdGlvbjAeFw0yMzA0MjcxMzA2\nMDlaFw0yMzA0MjcxMzE2MDlaMAAwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAASo\n1+wIUXyJnqaO85BCyNPC2BaQrEF4l9s8ww/UUxi7Hp4pwHkKnbqB0DbjD3lx9cp3\nx6fvzfhW3LMPh88+hRMfo4IBgTCCAX0wDgYDVR0PAQH/BAQDAgeAMBMGA1UdJQQM\nMAoGCCsGAQUFBwMDMB0GA1UdDgQWBBQAxBnkxWagwbeun0Hnk0FIs3D3BjAfBgNV\nHSMEGDAWgBSWazEzGwTVRmprEcQdOXantR/gOzBOBgNVHREBAf8ERDBChkBodHRw\nczovL2t1YmVybmV0ZXMuaW8vbmFtZXNwYWNlcy9kZWZhdWx0L3NlcnZpY2VhY2Nv\ndW50cy9kZWZhdWx0MDoGCisGAQQBg78wAQEELGh0dHBzOi8va3ViZXJuZXRlcy5k\nZWZhdWx0LnN2Yy5jbHVzdGVyLmxvY2FsMIGJBgorBgEEAdZ5AgQCBHsEeQB3AHUA\n0ctyz2UuetifxNgApDrtbAuCICVChqleKIABaN3/g4QAAAGHwtI3PwAABAMARjBE\nAiAxBIitdLSizRTHBlwJ4lxfb/J2ZuJtVFCnxclcl43LcQIgJJWhdlosvbIuWDPt\nC2RK4Zokx3LoQiViSgL4lJOMNz0wDQYJKoZIhvcNAQELBQADggIBAB0lxL/jSpCm\n03miCWEPP2cEBq1hRFJXYFIIRPn13hx6++2DZASnITFYQ1EzyV3XsV9DHpEXAN+O\nMjhpNlRWXPRV5V32vrHy6orSY0qGUvselhoyX4J8wQUESp4QXMrcbrt3GKNi/P+I\nkXKCHrpyQ3HsyUYWqeGCxQyGKtbqlYYJr/6YHiidtJZHxqMrQBDZe/Ia66LD1Xwb\nyYePs0CWJkvDCC9ho64Sz7Z+dW8LDlUZkpwVv/A83TrY/lLg8X6K5De75FAGJ3Fr\nc2a9u6ns1effhdYAHDJ17kHnqjrQpw6MdzBAF2NJlXZLzkvWtqqBWek4ySiXVxUT\n4KwLb2My9pgHvGYXh3cyoCWIanESUaShnz6VZ6YTfSJkFoodfMI44+kwNevJal8L\nIcR7ZPUAEgLKfIiFcQvug+lZI7NRXGAaotGKRboYWkXe3+E0UkdF5vDKPLth1Eyx\n+ZEoW3WRRRo9JF6ylXEFhaqjwisZsU6d7bE1wIkyuFyvs5cWj4C3/8emWuA28AQT\nyF3BijYlQUd6N88X77+PyQJSx45yt1EEiGRnjc4RGmNIqNPwbLaypepZPxXUeo0B\ngwgjlKYUe8vm33ve07m2y3o1numC6sTnRsa8rif2yQIa92wqPPXJhb8RyPKzgA9t\nSvWmpUTT1chAjMKhTk+Qwls0l6zGQ3v2\n-----END CERTIFICATE-----\n",
           "chain": [
             "-----BEGIN CERTIFICATE-----\n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\n-----END CERTIFICATE-----\n"
@@ -1325,8 +1363,8 @@ Error: success criteria not met
           "predicateBuildType": "tekton.dev/v1beta1/PipelineRun",
           "signatures": [
             {
-              "keyid": "0f72f6db76966f1917a793e742bc01780cbbc7f8",
-              "sig": "MEUCIQDvnjj8F5B2PFLk85BNvFZpg7sN0njFV0LdwC9ix/gXzwIgAWc00KaPdFHo1DkvK8c1/+zAgrmYNLvf+bbmTl/pY2A=",
+              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-happy-day-keyless}",
+              "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-happy-day-keyless}",
               "certificate": "-----BEGIN CERTIFICATE-----\nMIIExTCCAq2gAwIBAgIUdYQ1VxUJzOBcTR31+5HFDZMlEf4wDQYJKoZIhvcNAQEL\nBQAwfjEMMAoGA1UEBhMDVVNBMRMwEQYDVQQIEwpDYWxpZm9ybmlhMRYwFAYDVQQH\nEw1TYW4gRnJhbmNpc2NvMRYwFAYDVQQJEw01NDggTWFya2V0IFN0MQ4wDAYDVQQR\nEwU1NzI3NDEZMBcGA1UEChMQTGludXggRm91bmRhdGlvbjAeFw0yMzA0MjcxMzA2\nMTFaFw0yMzA0MjcxMzE2MTFaMAAwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAARq\nSq0mSHtXN67A+gUsg3VmH3wk80K35z0lKSQi2T6c9JTqErlF/jbbjVLnYy5HW2hv\nRm/BX8UJ5JN5DNTB8xFwo4IBgjCCAX4wDgYDVR0PAQH/BAQDAgeAMBMGA1UdJQQM\nMAoGCCsGAQUFBwMDMB0GA1UdDgQWBBQPcvbbdpZvGRenk+dCvAF4DLvH+DAfBgNV\nHSMEGDAWgBSWazEzGwTVRmprEcQdOXantR/gOzBOBgNVHREBAf8ERDBChkBodHRw\nczovL2t1YmVybmV0ZXMuaW8vbmFtZXNwYWNlcy9kZWZhdWx0L3NlcnZpY2VhY2Nv\ndW50cy9kZWZhdWx0MDoGCisGAQQBg78wAQEELGh0dHBzOi8va3ViZXJuZXRlcy5k\nZWZhdWx0LnN2Yy5jbHVzdGVyLmxvY2FsMIGKBgorBgEEAdZ5AgQCBHwEegB4AHYA\n0ctyz2UuetifxNgApDrtbAuCICVChqleKIABaN3/g4QAAAGHwtJBiwAABAMARzBF\nAiEA3q1AbBNTd4oH53Xlym1DSKerp3yg8cGyxZMNcfvKDT8CIB9CJp3VtNBV+LFG\nEHMJpS+A2BpAnDbviNCwDgEUnPiSMA0GCSqGSIb3DQEBCwUAA4ICAQAPBEOVqFTw\nimmxxpWx+xAggvzId7Edcj+j+vB15h6fXIYajhz2+yNiUoiX8N9MRKhYmT8fDJQB\nUReobZYDKFPS8mNFxnCK7yfOSLdhWx+TJs71tZF4R8ULGX0H1ZOIkhLiDA0pVmN6\n6aLR8OEfdvwTFIVccIWWXUBqQtx8JOaww9LTF6Hfr+hJEvpY/YBeguAWsmv6O4J1\nSdmwT/FOFyVbRqcBxcSM/Nm45uQqst8USs+rw4wlm+s8KIcr1r0hjILom6G1qEyi\n7trQ3JvZLH3C18i77nowSzaluHQG9APXGfTXYyzUS5Kj6mPc5zhhwVoDcbD1VFzE\n9ay5AL9Fy3IwkKtKNfxW4ZG26dZTuRVMTbP4Uz2drSDmENbzYvT5HF41fjt5I9fU\nKnUpJNoxthCluYsHbGVplmzsslY5h9dKHWIjAFyCqS1obdJ3PoIgdYvSGnMtIpsG\n0wEI/w1Yq1iATdrxEGTVmzxX0g/kcpEEItAugNS4Sp13lRowTT3muxtkc4FvcO6k\nLBCxmkGR0Ww1dkKJeaAKB9Ftt01MVDfNlsvfrU89QzCa55aqAUp9ycbzvFTWVfgJ\niWv6Nb3R2mVhy2p+r/6Q7g9jC8H3LN3e+xKTwMX+CTTJ8x1yWfIqrvzudYaKDvjK\nvR3LCBJibMDXt2vtFQRTQt944euIxKvR4w==\n-----END CERTIFICATE-----\n",
               "chain": [
                 "-----BEGIN CERTIFICATE-----\n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\n-----END CERTIFICATE-----\n"
@@ -1450,7 +1488,7 @@ Error: success criteria not met
       "success": true,
       "signatures": [
         {
-          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/source}",
+          "keyid": "",
           "sig": "${IMAGE_SIGNATURE_acceptance/source}"
         }
       ],
@@ -1461,7 +1499,7 @@ Error: success criteria not met
           "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
           "signatures": [
             {
-              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/source}",
+              "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/source}"
             }
           ]
@@ -1551,7 +1589,7 @@ Error: success criteria not met
       "success": false,
       "signatures": [
         {
-          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/image}",
+          "keyid": "",
           "sig": "${IMAGE_SIGNATURE_acceptance/image}"
         }
       ],
@@ -1562,7 +1600,7 @@ Error: success criteria not met
           "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
           "signatures": [
             {
-              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/image}",
+              "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/image}"
             }
           ]
@@ -1630,7 +1668,7 @@ Error: success criteria not met
       "success": false,
       "signatures": [
         {
-          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+          "keyid": "",
           "sig": "${IMAGE_SIGNATURE_acceptance/ec-happy-day}"
         }
       ],
@@ -1641,7 +1679,7 @@ Error: success criteria not met
           "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
           "signatures": [
             {
-              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+              "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"
             }
           ]
@@ -1708,7 +1746,7 @@ Error: success criteria not met
       "success": true,
       "signatures": [
         {
-          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/my-image}",
+          "keyid": "",
           "sig": "${IMAGE_SIGNATURE_acceptance/my-image}"
         }
       ],
@@ -1719,7 +1757,7 @@ Error: success criteria not met
           "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
           "signatures": [
             {
-              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/my-image}",
+              "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/my-image}"
             }
           ]
@@ -1800,7 +1838,7 @@ ${TEMP}/ec-work-${RANDOM}/policy/${RANDOM}/main.rego:29: rego_type_error: undefi
       "success": true,
       "signatures": [
         {
-          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+          "keyid": "",
           "sig": "${IMAGE_SIGNATURE_acceptance/ec-happy-day}"
         }
       ],
@@ -1811,7 +1849,7 @@ ${TEMP}/ec-work-${RANDOM}/policy/${RANDOM}/main.rego:29: rego_type_error: undefi
           "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
           "signatures": [
             {
-              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+              "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"
             }
           ]
@@ -1887,7 +1925,7 @@ ${TEMP}/ec-work-${RANDOM}/policy/${RANDOM}/main.rego:29: rego_type_error: undefi
       "success": false,
       "signatures": [
         {
-          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/image}",
+          "keyid": "",
           "sig": "${IMAGE_SIGNATURE_acceptance/image}"
         }
       ],
@@ -1898,7 +1936,7 @@ ${TEMP}/ec-work-${RANDOM}/policy/${RANDOM}/main.rego:29: rego_type_error: undefi
           "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
           "signatures": [
             {
-              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/image}",
+              "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/image}"
             }
           ]
@@ -1978,7 +2016,7 @@ Error: success criteria not met
       "success": false,
       "signatures": [
         {
-          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/unique-successes}",
+          "keyid": "",
           "sig": "${IMAGE_SIGNATURE_acceptance/unique-successes}"
         }
       ],
@@ -1989,7 +2027,7 @@ Error: success criteria not met
           "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
           "signatures": [
             {
-              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/unique-successes}",
+              "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/unique-successes}"
             }
           ]
@@ -2093,7 +2131,7 @@ Error: success criteria not met
       "success": true,
       "signatures": [
         {
-          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/image-config}",
+          "keyid": "",
           "sig": "${IMAGE_SIGNATURE_acceptance/image-config}"
         }
       ],
@@ -2104,7 +2142,7 @@ Error: success criteria not met
           "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
           "signatures": [
             {
-              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/image-config}",
+              "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/image-config}"
             }
           ]
