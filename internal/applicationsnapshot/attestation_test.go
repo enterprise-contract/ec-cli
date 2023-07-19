@@ -141,10 +141,6 @@ func (a mockAttestation) Signatures() []signature.EntitySignature {
 	return nil
 }
 
-func (a mockAttestation) ContentType() string {
-	return "text/plain"
-}
-
 func att(data string) attestation.Attestation {
 	return &mockAttestation{
 		data: data,
