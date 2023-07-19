@@ -21,25 +21,13 @@ import (
 )
 
 func (r *Report) renderAttestations() ([]byte, error) {
-	buffy := bytes.Buffer{}
+	byts := make([][]byte, 0, len(r.Components)*2)
 
-	for i, c := range r.Components {
-		if i > 0 && len(c.Attestations) > 0 {
-			if err := buffy.WriteByte('\n'); err != nil {
-				return nil, err
-			}
-		}
-		for j, a := range c.Attestations {
-			if j > 0 {
-				if err := buffy.WriteByte('\n'); err != nil {
-					return nil, err
-				}
-			}
-			if _, err := buffy.Write(a.Statement()); err != nil {
-				return nil, err
-			}
+	for _, c := range r.Components {
+		for _, a := range c.Attestations {
+			byts = append(byts, a.Statement())
 		}
 	}
 
-	return buffy.Bytes(), nil
+	return bytes.Join(byts, []byte{'\n'}), nil
 }
