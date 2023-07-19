@@ -17,24 +17,17 @@
 package applicationsnapshot
 
 import (
-	"mime/multipart"
-	"strings"
 	"testing"
 
 	"github.com/gkampitakis/go-snaps/snaps"
 	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 
 	"github.com/enterprise-contract/ec-cli/internal/attestation"
 	"github.com/enterprise-contract/ec-cli/internal/signature"
 )
 
 func TestAttestationReport(t *testing.T) {
-	adapt = func(w *multipart.Writer) {
-		require.NoError(t, w.SetBoundary("test-boundary"))
-	}
-
 	cases := []struct {
 		name       string
 		components []Component
@@ -123,7 +116,7 @@ func TestAttestationReport(t *testing.T) {
 			b, err := r.renderAttestations()
 			assert.NoError(t, err)
 
-			snaps.MatchSnapshot(t, strings.ReplaceAll(string(b), "\r", "\\r"))
+			snaps.MatchSnapshot(t, string(b))
 		})
 	}
 }

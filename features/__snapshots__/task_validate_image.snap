@@ -411,6 +411,7 @@ components:
   signatures:
   - keyid: ""
     sig: ${IMAGE_SIGNATURE_acceptance/okayish}
+  source: {}
   success: true
   successes:
   - metadata:
@@ -445,10 +446,6 @@ success: true
 ---
 
 [Outputs are there:attestations - 1]
-${MIME_boundary}
-Content-Disposition: attachment; name="${REGISTRY}/acceptance/okayish@${REGISTRY_acceptance/okayish:latest_HASH}#0"
-Content-Type: application/json
-
 {"_type":"https://in-toto.io/Statement/v0.1","predicateType":"https://slsa.dev/provenance/v0.2","subject":[{"name":"acceptance/okayish","digest":${REGISTRY_acceptance/okayish:latest_JSON_HASH}}],"predicate":{"builder":{"id":"https://tekton.dev/chains/v2"},"buildType":"https://tekton.dev/attestations/chains/pipelinerun@v2","invocation":{"configSource":{}}}}
 ---
 

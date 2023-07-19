@@ -18,33 +18,24 @@ package applicationsnapshot
 
 import (
 	"bytes"
-	"fmt"
-	"mime/multipart"
-	"net/textproto"
 )
-
-var adapt = func(_ *multipart.Writer) {
-	// hook for tests
-}
 
 func (r *Report) renderAttestations() ([]byte, error) {
 	buffy := bytes.Buffer{}
 
-	w := multipart.NewWriter(&buffy)
-	adapt(w)
-	defer w.Close()
-
-	for _, c := range r.Components {
-		for i, a := range c.Attestations {
-			pw, err := w.CreatePart(textproto.MIMEHeader{
-				"Content-Disposition": []string{fmt.Sprintf(`attachment; name=%q`, fmt.Sprintf("%s#%d", c.ContainerImage, i))},
-				"Content-Type":        []string{a.ContentType()},
-			})
-			if err != nil {
+	for i, c := range r.Components {
+		if i > 0 && len(c.Attestations) > 0 {
+			if err := buffy.WriteByte('\n'); err != nil {
 				return nil, err
 			}
-
-			if _, err := pw.Write(a.Statement()); err != nil {
+		}
+		for j, a := range c.Attestations {
+			if j > 0 {
+				if err := buffy.WriteByte('\n'); err != nil {
+					return nil, err
+				}
+			}
+			if _, err := buffy.Write(a.Statement()); err != nil {
 				return nil, err
 			}
 		}
