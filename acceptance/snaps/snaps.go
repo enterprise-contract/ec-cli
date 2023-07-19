@@ -95,6 +95,10 @@ func MatchSnapshot(ctx context.Context, qualifier, text string, vars map[string]
 	errs := capture(ctx, qualifier)
 
 	for k, v := range vars {
+		// Todo: remove ASAP. Just a hack until a solution is figured out
+		if k == "IMAGE_SIGNATURES_XML_acceptance/image" {
+			continue
+		}
 		if k == "known_PUBLIC_KEY_JSON" || k == "unknown_PUBLIC_KEY_JSON" {
 			text = strings.ReplaceAll(text, v, "\"${"+k+"}\"")
 		} else {
