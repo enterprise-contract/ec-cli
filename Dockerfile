@@ -19,7 +19,7 @@ FROM registry.access.redhat.com/ubi9/ubi-minimal:9.2@sha256:8bf03cbc3aedde6e9490
 ARG TARGETOS
 ARG TARGETARCH
 
-ENV COSIGN_VERSION="v2.0.2"
+ARG COSIGN_VERSION
 
 ADD https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign-${TARGETOS}-${TARGETARCH} /opt/
 ADD https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign_checksums.txt /opt/
