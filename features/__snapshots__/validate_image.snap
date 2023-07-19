@@ -434,6 +434,6 @@ Error: success criteria not met
 
 ---
 
-[Output attestations:${TMPDIR}/attestation.mime - 1]
+[Output attestations:${TMPDIR}/attestation.jsonl - 1]
 {"_type":"https://in-toto.io/Statement/v0.1","predicateType":"https://slsa.dev/provenance/v0.2","subject":[{"name":"acceptance/image","digest":${REGISTRY_acceptance/image:latest_JSON_HASH}}],"predicate":{"builder":{"id":"https://tekton.dev/chains/v2"},"buildType":"https://tekton.dev/attestations/chains/pipelinerun@v2","invocation":{"configSource":{}}}}
 ---

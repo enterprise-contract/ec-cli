@@ -735,7 +735,7 @@ Feature: evaluate enterprise contract
       ]
     }
     """
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/image --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --output=json --output attestation=${TMPDIR}/attestation.mime --strict"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/image --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --output=json --output attestation=${TMPDIR}/attestation.jsonl --strict"
     Then the exit status should be 0
     And the output should match the snapshot
-    And the "${TMPDIR}/attestation.mime" file should match the snapshot
+    And the "${TMPDIR}/attestation.jsonl" file should match the snapshot
