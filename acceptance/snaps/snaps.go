@@ -95,7 +95,11 @@ func MatchSnapshot(ctx context.Context, qualifier, text string, vars map[string]
 	errs := capture(ctx, qualifier)
 
 	for k, v := range vars {
-		text = strings.ReplaceAll(text, v, "${"+k+"}")
+		if k == "known_PUBLIC_KEY_JSON" || k == "unknown_PUBLIC_KEY_JSON" {
+			text = strings.ReplaceAll(text, v, "\"${"+k+"}\"")
+		} else {
+			text = strings.ReplaceAll(text, v, "${"+k+"}")
+		}
 	}
 
 	// replace any remaining timestamps
