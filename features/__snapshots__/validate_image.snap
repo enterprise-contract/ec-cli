@@ -1,6 +1,75 @@
 
 [happy day with git config and yaml:stdout - 1]
-{"success":true,"components":[{"name":"Unnamed","containerImage":"${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}","source":{},"successes":[{"msg":"Pass","metadata":{"code":"builtin.attestation.signature_check"}},{"msg":"Pass","metadata":{"code":"builtin.attestation.syntax_check"}},{"msg":"Pass","metadata":{"code":"builtin.image.signature_check"}},{"msg":"Pass","metadata":{"code":"main.acceptor"}}],"success":true,"signatures":[{"keyid":"${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-happy-day}","sig": "${IMAGE_SIGNATURE_acceptance/ec-happy-day}"}],"attestations":[{"type":"https://in-toto.io/Statement/v0.1","predicateType":"https://slsa.dev/provenance/v0.2","predicateBuildType":"https://tekton.dev/attestations/chains/pipelinerun@v2","signatures":[{"keyid":"${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-happy-day}","sig":"${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"}]}]}],"key":${known_PUBLIC_KEY_JSON},"policy":{"sources":[{"policy":["git::https://${GITHOST}/git/happy-day-policy.git"]}],"rekorUrl":"${REKOR}","publicKey":"${known_PUBLIC_KEY}"},"ec-version":"${EC_VERSION}","effective-time":"${TIMESTAMP}"}
+{
+  "success": true,
+  "components": [
+    {
+      "name": "Unnamed",
+      "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
+      "source": {},
+      "successes": [
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.syntax_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.image.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "main.acceptor"
+          }
+        }
+      ],
+      "success": true,
+      "signatures": [
+        {
+          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+          "sig": "${IMAGE_SIGNATURE_acceptance/ec-happy-day}"
+        }
+      ],
+      "attestations": [
+        {
+          "type": "https://in-toto.io/Statement/v0.1",
+          "predicateType": "https://slsa.dev/provenance/v0.2",
+          "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+          "signatures": [
+            {
+              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+              "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "key": "${known_PUBLIC_KEY_JSON}",
+  "policy": {
+    "sources": [
+      {
+        "policy": [
+          "git::https://${GITHOST}/git/happy-day-policy.git"
+        ]
+      }
+    ],
+    "rekorUrl": "${REKOR}",
+    "publicKey": "${known_PUBLIC_KEY}"
+  },
+  "ec-version": "${EC_VERSION}",
+  "effective-time": "${TIMESTAMP}"
+}
 ---
 
 [happy day with git config and yaml:stderr - 1]
@@ -17,7 +86,89 @@ Error: success criteria not met
 ---
 
 [policy and data sources:stdout - 1]
-{"success":false,"components":[{"name":"Unnamed","containerImage":"${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}","source":{},"violations":[{"msg":"Failure due to overripeness"},{"msg":"Failure due to spider attack"}],"successes":[{"msg":"Pass","metadata":{"code":"builtin.attestation.signature_check"}},{"msg":"Pass","metadata":{"code":"builtin.attestation.syntax_check"}},{"msg":"Pass","metadata":{"code":"builtin.image.signature_check"}}],"success":false,"signatures":[{"keyid":"${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-happy-day}","sig":"${IMAGE_SIGNATURE_acceptance/ec-happy-day}"}],"attestations":[{"type":"https://in-toto.io/Statement/v0.1","predicateType":"https://slsa.dev/provenance/v0.2","predicateBuildType":"https://tekton.dev/attestations/chains/pipelinerun@v2","signatures":[{"keyid":"${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-happy-day}","sig":"${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"}]}]}],"key":${known_PUBLIC_KEY_JSON},"policy":{"sources":[{"policy":["git::https://${GITHOST}/git/banana_check.git"],"data":["git::https://${GITHOST}/git/banana_data_1.git"]},{"policy":["git::https://${GITHOST}/git/banana_check.git"],"data":["git::https://${GITHOST}/git/banana_data_2.git"]}],"rekorUrl":"${REKOR}","publicKey":"${known_PUBLIC_KEY}"},"ec-version":"${EC_VERSION}","effective-time":"${TIMESTAMP}"}
+{
+  "success": false,
+  "components": [
+    {
+      "name": "Unnamed",
+      "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
+      "source": {},
+      "violations": [
+        {
+          "msg": "Failure due to overripeness"
+        },
+        {
+          "msg": "Failure due to spider attack"
+        }
+      ],
+      "successes": [
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.syntax_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.image.signature_check"
+          }
+        }
+      ],
+      "success": false,
+      "signatures": [
+        {
+          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+          "sig": "${IMAGE_SIGNATURE_acceptance/ec-happy-day}"
+        }
+      ],
+      "attestations": [
+        {
+          "type": "https://in-toto.io/Statement/v0.1",
+          "predicateType": "https://slsa.dev/provenance/v0.2",
+          "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+          "signatures": [
+            {
+              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+              "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "key": "${known_PUBLIC_KEY_JSON}",
+  "policy": {
+    "sources": [
+      {
+        "policy": [
+          "git::https://${GITHOST}/git/banana_check.git"
+        ],
+        "data": [
+          "git::https://${GITHOST}/git/banana_data_1.git"
+        ]
+      },
+      {
+        "policy": [
+          "git::https://${GITHOST}/git/banana_check.git"
+        ],
+        "data": [
+          "git::https://${GITHOST}/git/banana_data_2.git"
+        ]
+      }
+    ],
+    "rekorUrl": "${REKOR}",
+    "publicKey": "${known_PUBLIC_KEY}"
+  },
+  "ec-version": "${EC_VERSION}",
+  "effective-time": "${TIMESTAMP}"
+}
 ---
 
 [policy and data sources:stderr - 1]
@@ -26,7 +177,76 @@ Error: success criteria not met
 ---
 
 [inline policy:stdout - 1]
-{"success":true,"components":[{"name":"Unnamed","containerImage":"${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}","source":{},"successes":[{"msg":"Pass","metadata":{"code":"builtin.attestation.signature_check"}},{"msg":"Pass","metadata":{"code":"builtin.attestation.syntax_check"}},{"msg":"Pass","metadata":{"code":"builtin.image.signature_check"}},{"msg":"Pass","metadata":{"code":"main.acceptor"}}],"success":true,"signatures":[{"keyid":"${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-happy-day}","sig":"${IMAGE_SIGNATURE_acceptance/ec-happy-day}"}],"attestations":[{"type":"https://in-toto.io/Statement/v0.1","predicateType":"https://slsa.dev/provenance/v0.2","predicateBuildType":"https://tekton.dev/attestations/chains/pipelinerun@v2","signatures":[{"keyid":"${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-happy-day}","sig":"${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"}]}]}],"key":${known_PUBLIC_KEY_JSON},"policy":{"sources":[{"policy":["git::https://${GITHOST}/git/happy-day-policy.git"]}],"rekorUrl":"${REKOR}","publicKey":"${known_PUBLIC_KEY}"},"ec-version":"${EC_VERSION}","effective-time":"${TIMESTAMP}"}
+{
+  "success": true,
+  "components": [
+    {
+      "name": "Unnamed",
+      "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
+      "source": {},
+      "successes": [
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.syntax_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.image.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "main.acceptor"
+          }
+        }
+      ],
+      "success": true,
+      "signatures": [
+        {
+          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+          "sig": "${IMAGE_SIGNATURE_acceptance/ec-happy-day}"
+        }
+      ],
+      "attestations": [
+        {
+          "type": "https://in-toto.io/Statement/v0.1",
+          "predicateType": "https://slsa.dev/provenance/v0.2",
+          "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+          "signatures": [
+            {
+              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+              "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "key": "${known_PUBLIC_KEY_JSON}",
+  "policy": {
+    "sources": [
+      {
+        "policy": [
+          "git::https://${GITHOST}/git/happy-day-policy.git"
+        ]
+      }
+    ],
+    "rekorUrl": "${REKOR}",
+    "publicKey": "${known_PUBLIC_KEY}"
+  },
+  "ec-version": "${EC_VERSION}",
+  "effective-time": "${TIMESTAMP}"
+}
 ---
 
 [inline policy:stderr - 1]
@@ -34,7 +254,76 @@ Error: success criteria not met
 ---
 
 [happy day with git config and json:stdout - 1]
-{"success":true,"components":[{"name":"Unnamed","containerImage":"${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}","source":{},"successes":[{"msg":"Pass","metadata":{"code":"builtin.attestation.signature_check"}},{"msg":"Pass","metadata":{"code":"builtin.attestation.syntax_check"}},{"msg":"Pass","metadata":{"code":"builtin.image.signature_check"}},{"msg":"Pass","metadata":{"code":"main.acceptor"}}],"success":true,"signatures":[{"keyid":"${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-happy-day}","sig":"${IMAGE_SIGNATURE_acceptance/ec-happy-day}"}],"attestations":[{"type":"https://in-toto.io/Statement/v0.1","predicateType":"https://slsa.dev/provenance/v0.2","predicateBuildType":"https://tekton.dev/attestations/chains/pipelinerun@v2","signatures":[{"keyid":"${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-happy-day}","sig":"${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"}]}]}],"key":${known_PUBLIC_KEY_JSON},"policy":{"sources":[{"policy":["git::https://${GITHOST}/git/happy-day-policy.git"]}],"rekorUrl":"${REKOR}","publicKey":"${known_PUBLIC_KEY}"},"ec-version":"${EC_VERSION}","effective-time":"${TIMESTAMP}"}
+{
+  "success": true,
+  "components": [
+    {
+      "name": "Unnamed",
+      "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
+      "source": {},
+      "successes": [
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.syntax_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.image.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "main.acceptor"
+          }
+        }
+      ],
+      "success": true,
+      "signatures": [
+        {
+          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+          "sig": "${IMAGE_SIGNATURE_acceptance/ec-happy-day}"
+        }
+      ],
+      "attestations": [
+        {
+          "type": "https://in-toto.io/Statement/v0.1",
+          "predicateType": "https://slsa.dev/provenance/v0.2",
+          "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+          "signatures": [
+            {
+              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+              "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "key": "${known_PUBLIC_KEY_JSON}",
+  "policy": {
+    "sources": [
+      {
+        "policy": [
+          "git::https://${GITHOST}/git/happy-day-policy.git"
+        ]
+      }
+    ],
+    "rekorUrl": "${REKOR}",
+    "publicKey": "${known_PUBLIC_KEY}"
+  },
+  "ec-version": "${EC_VERSION}",
+  "effective-time": "${TIMESTAMP}"
+}
 ---
 
 [happy day with git config and json:stderr - 1]
@@ -42,7 +331,78 @@ Error: success criteria not met
 ---
 
 [future failure is converted to a warning:stdout - 1]
-{"success":true,"components":[{"name":"Unnamed","containerImage":"${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}","source":{},"warnings":[{"msg":"Fails in 2099","metadata":{"effective_on":"2099-01-01T00:00:00Z"}}],"successes":[{"msg":"Pass","metadata":{"code":"builtin.attestation.signature_check"}},{"msg":"Pass","metadata":{"code":"builtin.attestation.syntax_check"}},{"msg":"Pass","metadata":{"code":"builtin.image.signature_check"}}],"success":true,"signatures":[{"keyid":"${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-happy-day}","sig":"${IMAGE_SIGNATURE_acceptance/ec-happy-day}"}],"attestations":[{"type":"https://in-toto.io/Statement/v0.1","predicateType":"https://slsa.dev/provenance/v0.2","predicateBuildType":"https://tekton.dev/attestations/chains/pipelinerun@v2","signatures":[{"keyid":"${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-happy-day}","sig":"${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"}]}]}],"key":${known_PUBLIC_KEY_JSON},"policy":{"sources":[{"policy":["git::https://${GITHOST}/git/future-deny-policy.git"]}],"rekorUrl":"${REKOR}","publicKey":"${known_PUBLIC_KEY}"},"ec-version":"${EC_VERSION}","effective-time":"${TIMESTAMP}"}
+{
+  "success": true,
+  "components": [
+    {
+      "name": "Unnamed",
+      "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
+      "source": {},
+      "warnings": [
+        {
+          "msg": "Fails in 2099",
+          "metadata": {
+            "effective_on": "2099-01-01T00:00:00Z"
+          }
+        }
+      ],
+      "successes": [
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.syntax_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.image.signature_check"
+          }
+        }
+      ],
+      "success": true,
+      "signatures": [
+        {
+          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+          "sig": "${IMAGE_SIGNATURE_acceptance/ec-happy-day}"
+        }
+      ],
+      "attestations": [
+        {
+          "type": "https://in-toto.io/Statement/v0.1",
+          "predicateType": "https://slsa.dev/provenance/v0.2",
+          "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+          "signatures": [
+            {
+              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+              "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "key": "${known_PUBLIC_KEY_JSON}",
+  "policy": {
+    "sources": [
+      {
+        "policy": [
+          "git::https://${GITHOST}/git/future-deny-policy.git"
+        ]
+      }
+    ],
+    "rekorUrl": "${REKOR}",
+    "publicKey": "${known_PUBLIC_KEY}"
+  },
+  "ec-version": "${EC_VERSION}",
+  "effective-time": "${TIMESTAMP}"
+}
 ---
 
 [future failure is converted to a warning:stderr - 1]
@@ -50,7 +410,80 @@ Error: success criteria not met
 ---
 
 [Custom rule data:stdout - 1]
-{"success":true,"components":[{"name":"Unnamed","containerImage":"${REGISTRY}/acceptance/image@${REGISTRY_acceptance/image:latest_HASH}","source":{},"successes":[{"msg":"Pass","metadata":{"code":"builtin.attestation.signature_check"}},{"msg":"Pass","metadata":{"code":"builtin.attestation.syntax_check"}},{"msg":"Pass","metadata":{"code":"builtin.image.signature_check"}}],"success":true,"signatures":[{"keyid":"${IMAGE_SIGNATURE_KEY_ID_acceptance/image}","sig":"${IMAGE_SIGNATURE_acceptance/image}"}],"attestations":[{"type":"https://in-toto.io/Statement/v0.1","predicateType":"https://slsa.dev/provenance/v0.2","predicateBuildType":"https://tekton.dev/attestations/chains/pipelinerun@v2","signatures":[{"keyid":"${ATTESTATION_SIGNATURE_KEY_ID_acceptance/image}","sig":"${ATTESTATION_SIGNATURE_acceptance/image}"}]}]}],"key":${known_PUBLIC_KEY_JSON},"policy":{"sources":[{"policy":["git::https://${GITHOST}/git/my-policy1.git"],"ruleData":{"custom":"data1"}},{"policy":["git::https://${GITHOST}/git/my-policy2.git"],"ruleData":{"other":"data2"}}],"publicKey":"${known_PUBLIC_KEY}"},"ec-version":"${EC_VERSION}","effective-time":"2014-05-31T00:00:00Z"}
+{
+  "success": true,
+  "components": [
+    {
+      "name": "Unnamed",
+      "containerImage": "${REGISTRY}/acceptance/image@${REGISTRY_acceptance/image:latest_HASH}",
+      "source": {},
+      "successes": [
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.syntax_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.image.signature_check"
+          }
+        }
+      ],
+      "success": true,
+      "signatures": [
+        {
+          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/image}",
+          "sig": "${IMAGE_SIGNATURE_acceptance/image}"
+        }
+      ],
+      "attestations": [
+        {
+          "type": "https://in-toto.io/Statement/v0.1",
+          "predicateType": "https://slsa.dev/provenance/v0.2",
+          "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+          "signatures": [
+            {
+              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/image}",
+              "sig": "${ATTESTATION_SIGNATURE_acceptance/image}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "key": "${known_PUBLIC_KEY_JSON}",
+  "policy": {
+    "sources": [
+      {
+        "policy": [
+          "git::https://${GITHOST}/git/my-policy1.git"
+        ],
+        "ruleData": {
+          "custom": "data1"
+        }
+      },
+      {
+        "policy": [
+          "git::https://${GITHOST}/git/my-policy2.git"
+        ],
+        "ruleData": {
+          "other": "data2"
+        }
+      }
+    ],
+    "publicKey": "${known_PUBLIC_KEY}"
+  },
+  "ec-version": "${EC_VERSION}",
+  "effective-time": "2014-05-31T00:00:00Z"
+}
 ---
 
 [Custom rule data:stderr - 1]
@@ -58,7 +491,99 @@ Error: success criteria not met
 ---
 
 [multiple policy sources with multiple source groups:stdout - 1]
-{"success":false,"components":[{"name":"Unnamed","containerImage":"${REGISTRY}/acceptance/ec-multiple-sources@${REGISTRY_acceptance/ec-multiple-sources:latest_HASH}","source":{},"violations":[{"msg":"Fails always","metadata":{"code":"main.rejector"}}],"warnings":[{"msg":"Has a warning"}],"successes":[{"msg":"Pass","metadata":{"code":"builtin.attestation.signature_check"}},{"msg":"Pass","metadata":{"code":"builtin.attestation.syntax_check"}},{"msg":"Pass","metadata":{"code":"builtin.image.signature_check"}},{"msg":"Pass","metadata":{"code":"main.acceptor"}}],"success":false,"signatures":[{"keyid":"${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-multiple-sources}","sig":"${IMAGE_SIGNATURE_acceptance/ec-multiple-sources}"}],"attestations":[{"type":"https://in-toto.io/Statement/v0.1","predicateType":"https://slsa.dev/provenance/v0.2","predicateBuildType":"https://tekton.dev/attestations/chains/pipelinerun@v2","signatures":[{"keyid":"${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-multiple-sources}","sig":"${ATTESTATION_SIGNATURE_acceptance/ec-multiple-sources}"}]}]}],"key":${known_PUBLIC_KEY_JSON},"policy":{"sources":[{"policy":["git::https://${GITHOST}/git/repository1.git"]},{"policy":["git::https://${GITHOST}/git/repository2.git"]},{"policy":["git::https://${GITHOST}/git/repository3.git"]}],"rekorUrl":"${REKOR}","publicKey":"${known_PUBLIC_KEY}"},"ec-version":"${EC_VERSION}","effective-time":"${TIMESTAMP}"}
+{
+  "success": false,
+  "components": [
+    {
+      "name": "Unnamed",
+      "containerImage": "${REGISTRY}/acceptance/ec-multiple-sources@${REGISTRY_acceptance/ec-multiple-sources:latest_HASH}",
+      "source": {},
+      "violations": [
+        {
+          "msg": "Fails always",
+          "metadata": {
+            "code": "main.rejector"
+          }
+        }
+      ],
+      "warnings": [
+        {
+          "msg": "Has a warning"
+        }
+      ],
+      "successes": [
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.syntax_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.image.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "main.acceptor"
+          }
+        }
+      ],
+      "success": false,
+      "signatures": [
+        {
+          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-multiple-sources}",
+          "sig": "${IMAGE_SIGNATURE_acceptance/ec-multiple-sources}"
+        }
+      ],
+      "attestations": [
+        {
+          "type": "https://in-toto.io/Statement/v0.1",
+          "predicateType": "https://slsa.dev/provenance/v0.2",
+          "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+          "signatures": [
+            {
+              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-multiple-sources}",
+              "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-multiple-sources}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "key": "${known_PUBLIC_KEY_JSON}",
+  "policy": {
+    "sources": [
+      {
+        "policy": [
+          "git::https://${GITHOST}/git/repository1.git"
+        ]
+      },
+      {
+        "policy": [
+          "git::https://${GITHOST}/git/repository2.git"
+        ]
+      },
+      {
+        "policy": [
+          "git::https://${GITHOST}/git/repository3.git"
+        ]
+      }
+    ],
+    "rekorUrl": "${REKOR}",
+    "publicKey": "${known_PUBLIC_KEY}"
+  },
+  "ec-version": "${EC_VERSION}",
+  "effective-time": "${TIMESTAMP}"
+}
 ---
 
 [multiple policy sources with multiple source groups:stderr - 1]
@@ -67,7 +592,71 @@ Error: success criteria not met
 ---
 
 [mismatched image digest in signature:stdout - 1]
-{"success":false,"components":[{"name":"Unnamed","containerImage":"${REGISTRY}/acceptance/bad-actor@${REGISTRY_acceptance/bad-actor:latest_HASH}","source":{},"violations":[{"msg":"No image signatures found matching the given public key. Verify the correct public key was provided, and a signature was created.","metadata":{"code":"builtin.image.signature_check"}}],"successes":[{"msg":"Pass","metadata":{"code":"builtin.attestation.signature_check"}},{"msg":"Pass","metadata":{"code":"builtin.attestation.syntax_check"}},{"msg":"Pass","metadata":{"code":"main.acceptor"}}],"success":false,"attestations":[{"type":"https://in-toto.io/Statement/v0.1","predicateType":"https://slsa.dev/provenance/v0.2","predicateBuildType":"https://tekton.dev/attestations/chains/pipelinerun@v2","signatures":[{"keyid":"${ATTESTATION_SIGNATURE_KEY_ID_acceptance/bad-actor}","sig":"${ATTESTATION_SIGNATURE_acceptance/bad-actor}"}]}]}],"key":${known_PUBLIC_KEY_JSON},"policy":{"sources":[{"policy":["git::https://${GITHOST}/git/mismatched-image-digest.git"]}],"publicKey":"${known_PUBLIC_KEY}"},"ec-version":"${EC_VERSION}","effective-time":"${TIMESTAMP}"}
+{
+  "success": false,
+  "components": [
+    {
+      "name": "Unnamed",
+      "containerImage": "${REGISTRY}/acceptance/bad-actor@${REGISTRY_acceptance/bad-actor:latest_HASH}",
+      "source": {},
+      "violations": [
+        {
+          "msg": "No image signatures found matching the given public key. Verify the correct public key was provided, and a signature was created.",
+          "metadata": {
+            "code": "builtin.image.signature_check"
+          }
+        }
+      ],
+      "successes": [
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.syntax_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "main.acceptor"
+          }
+        }
+      ],
+      "success": false,
+      "attestations": [
+        {
+          "type": "https://in-toto.io/Statement/v0.1",
+          "predicateType": "https://slsa.dev/provenance/v0.2",
+          "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+          "signatures": [
+            {
+              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/bad-actor}",
+              "sig": "${ATTESTATION_SIGNATURE_acceptance/bad-actor}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "key": "${known_PUBLIC_KEY_JSON}",
+  "policy": {
+    "sources": [
+      {
+        "policy": [
+          "git::https://${GITHOST}/git/mismatched-image-digest.git"
+        ]
+      }
+    ],
+    "publicKey": "${known_PUBLIC_KEY}"
+  },
+  "ec-version": "${EC_VERSION}",
+  "effective-time": "${TIMESTAMP}"
+}
 ---
 
 [mismatched image digest in signature:stderr - 1]
@@ -76,7 +665,92 @@ Error: success criteria not met
 ---
 
 [policy rule filtering:stdout - 1]
-{"success":true,"components":[{"name":"Unnamed","containerImage":"${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}","source":{},"successes":[{"msg":"Pass","metadata":{"code":"builtin.attestation.signature_check"}},{"msg":"Pass","metadata":{"code":"builtin.attestation.syntax_check"}},{"msg":"Pass","metadata":{"code":"builtin.image.signature_check"}},{"msg":"Pass","metadata":{"code":"filtering.always_pass"}},{"msg":"Pass","metadata":{"code":"filtering.always_pass_with_collection"}}],"success":true,"signatures":[{"keyid":"${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-happy-day}","sig":"${IMAGE_SIGNATURE_acceptance/ec-happy-day}"}],"attestations":[{"type":"https://in-toto.io/Statement/v0.1","predicateType":"https://slsa.dev/provenance/v0.2","predicateBuildType":"https://tekton.dev/attestations/chains/pipelinerun@v2","signatures":[{"keyid":"${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-happy-day}","sig":"${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"}]}]}],"key":${known_PUBLIC_KEY_JSON},"policy":{"sources":[{"policy":["git::https://${GITHOST}/git/happy-day-policy.git"]}],"configuration":{"exclude":["filtering.always_fail","filtering.always_fail_with_collection"],"include":["@stamps","filtering.always_pass"]},"rekorUrl":"${REKOR}","publicKey":"${known_PUBLIC_KEY}"},"ec-version":"${EC_VERSION}","effective-time":"${TIMESTAMP}"}
+{
+  "success": true,
+  "components": [
+    {
+      "name": "Unnamed",
+      "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
+      "source": {},
+      "successes": [
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.syntax_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.image.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "filtering.always_pass"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "filtering.always_pass_with_collection"
+          }
+        }
+      ],
+      "success": true,
+      "signatures": [
+        {
+          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+          "sig": "${IMAGE_SIGNATURE_acceptance/ec-happy-day}"
+        }
+      ],
+      "attestations": [
+        {
+          "type": "https://in-toto.io/Statement/v0.1",
+          "predicateType": "https://slsa.dev/provenance/v0.2",
+          "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+          "signatures": [
+            {
+              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+              "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "key": "${known_PUBLIC_KEY_JSON}",
+  "policy": {
+    "sources": [
+      {
+        "policy": [
+          "git::https://${GITHOST}/git/happy-day-policy.git"
+        ]
+      }
+    ],
+    "configuration": {
+      "exclude": [
+        "filtering.always_fail",
+        "filtering.always_fail_with_collection"
+      ],
+      "include": [
+        "@stamps",
+        "filtering.always_pass"
+      ]
+    },
+    "rekorUrl": "${REKOR}",
+    "publicKey": "${known_PUBLIC_KEY}"
+  },
+  "ec-version": "${EC_VERSION}",
+  "effective-time": "${TIMESTAMP}"
+}
 ---
 
 [policy rule filtering:stderr - 1]
@@ -84,7 +758,76 @@ Error: success criteria not met
 ---
 
 [application snapshot reference:stdout - 1]
-{"success":true,"snapshot":"acceptance/happy","components":[{"name":"Happy","containerImage":"${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}","source":{},"successes":[{"msg":"Pass","metadata":{"code":"builtin.attestation.signature_check"}},{"msg":"Pass","metadata":{"code":"builtin.attestation.syntax_check"}},{"msg":"Pass","metadata":{"code":"builtin.image.signature_check"}},{"msg":"Pass","metadata":{"code":"main.acceptor"}}],"success":true,"signatures":[{"keyid":"${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-happy-day}","sig":"${IMAGE_SIGNATURE_acceptance/ec-happy-day}"}],"attestations":[{"type":"https://in-toto.io/Statement/v0.1","predicateType":"https://slsa.dev/provenance/v0.2","predicateBuildType":"https://tekton.dev/attestations/chains/pipelinerun@v2","signatures":[{"keyid":"${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-happy-day}","sig":"${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"}]}]}],"key":${known_PUBLIC_KEY_JSON},"policy":{"sources":[{"policy":["git::https://${GITHOST}/git/happy-day-policy.git"]}],"publicKey":"${known_PUBLIC_KEY}"},"ec-version":"${EC_VERSION}","effective-time":"${TIMESTAMP}"}
+{
+  "success": true,
+  "snapshot": "acceptance/happy",
+  "components": [
+    {
+      "name": "Happy",
+      "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
+      "source": {},
+      "successes": [
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.syntax_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.image.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "main.acceptor"
+          }
+        }
+      ],
+      "success": true,
+      "signatures": [
+        {
+          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+          "sig": "${IMAGE_SIGNATURE_acceptance/ec-happy-day}"
+        }
+      ],
+      "attestations": [
+        {
+          "type": "https://in-toto.io/Statement/v0.1",
+          "predicateType": "https://slsa.dev/provenance/v0.2",
+          "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+          "signatures": [
+            {
+              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+              "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "key": "${known_PUBLIC_KEY_JSON}",
+  "policy": {
+    "sources": [
+      {
+        "policy": [
+          "git::https://${GITHOST}/git/happy-day-policy.git"
+        ]
+      }
+    ],
+    "publicKey": "${known_PUBLIC_KEY}"
+  },
+  "ec-version": "${EC_VERSION}",
+  "effective-time": "${TIMESTAMP}"
+}
 ---
 
 [application snapshot reference:stderr - 1]
@@ -92,7 +835,91 @@ Error: success criteria not met
 ---
 
 [multiple policy sources with one source group:stdout - 1]
-{"success":false,"components":[{"name":"Unnamed","containerImage":"${REGISTRY}/acceptance/ec-multiple-sources@${REGISTRY_acceptance/ec-multiple-sources:latest_HASH}","source":{},"violations":[{"msg":"Fails always","metadata":{"code":"main.rejector"}}],"warnings":[{"msg":"Has a warning"}],"successes":[{"msg":"Pass","metadata":{"code":"builtin.attestation.signature_check"}},{"msg":"Pass","metadata":{"code":"builtin.attestation.syntax_check"}},{"msg":"Pass","metadata":{"code":"builtin.image.signature_check"}},{"msg":"Pass","metadata":{"code":"main.acceptor"}}],"success":false,"signatures":[{"keyid":"${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-multiple-sources}","sig":"${IMAGE_SIGNATURE_acceptance/ec-multiple-sources}"}],"attestations":[{"type":"https://in-toto.io/Statement/v0.1","predicateType":"https://slsa.dev/provenance/v0.2","predicateBuildType":"https://tekton.dev/attestations/chains/pipelinerun@v2","signatures":[{"keyid":"${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-multiple-sources}","sig":"${ATTESTATION_SIGNATURE_acceptance/ec-multiple-sources}"}]}]}],"key":${known_PUBLIC_KEY_JSON},"policy":{"sources":[{"policy":["git::https://${GITHOST}/git/repository1.git","git::https://${GITHOST}/git/repository2.git","git::https://${GITHOST}/git/repository3.git"]}],"rekorUrl":"${REKOR}","publicKey":"${known_PUBLIC_KEY}"},"ec-version":"${EC_VERSION}","effective-time":"${TIMESTAMP}"}
+{
+  "success": false,
+  "components": [
+    {
+      "name": "Unnamed",
+      "containerImage": "${REGISTRY}/acceptance/ec-multiple-sources@${REGISTRY_acceptance/ec-multiple-sources:latest_HASH}",
+      "source": {},
+      "violations": [
+        {
+          "msg": "Fails always",
+          "metadata": {
+            "code": "main.rejector"
+          }
+        }
+      ],
+      "warnings": [
+        {
+          "msg": "Has a warning"
+        }
+      ],
+      "successes": [
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.syntax_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.image.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "main.acceptor"
+          }
+        }
+      ],
+      "success": false,
+      "signatures": [
+        {
+          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-multiple-sources}",
+          "sig": "${IMAGE_SIGNATURE_acceptance/ec-multiple-sources}"
+        }
+      ],
+      "attestations": [
+        {
+          "type": "https://in-toto.io/Statement/v0.1",
+          "predicateType": "https://slsa.dev/provenance/v0.2",
+          "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+          "signatures": [
+            {
+              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-multiple-sources}",
+              "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-multiple-sources}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "key": "${known_PUBLIC_KEY_JSON}",
+  "policy": {
+    "sources": [
+      {
+        "policy": [
+          "git::https://${GITHOST}/git/repository1.git",
+          "git::https://${GITHOST}/git/repository2.git",
+          "git::https://${GITHOST}/git/repository3.git"
+        ]
+      }
+    ],
+    "rekorUrl": "${REKOR}",
+    "publicKey": "${known_PUBLIC_KEY}"
+  },
+  "ec-version": "${EC_VERSION}",
+  "effective-time": "${TIMESTAMP}"
+}
 ---
 
 [multiple policy sources with one source group:stderr - 1]
@@ -156,7 +983,85 @@ Error: success criteria not met
 ---
 
 [policy rule filtering for successes:stdout - 1]
-{"success":true,"components":[{"name":"Unnamed","containerImage":"${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}","source":{},"successes":[{"msg":"Pass","metadata":{"code":"builtin.attestation.signature_check"}},{"msg":"Pass","metadata":{"code":"builtin.attestation.syntax_check"}},{"msg":"Pass","metadata":{"code":"builtin.image.signature_check"}},{"msg":"Pass","metadata":{"code":"filtering.always_pass"}}],"success":true,"signatures":[{"keyid":"${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-happy-day}","sig":"${IMAGE_SIGNATURE_acceptance/ec-happy-day}"}],"attestations":[{"type":"https://in-toto.io/Statement/v0.1","predicateType":"https://slsa.dev/provenance/v0.2","predicateBuildType":"https://tekton.dev/attestations/chains/pipelinerun@v2","signatures":[{"keyid":"${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-happy-day}","sig":"${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"}]}]}],"key":${known_PUBLIC_KEY_JSON},"policy":{"sources":[{"policy":["git::https://${GITHOST}/git/happy-day-policy.git"]}],"configuration":{"exclude":["filtering.always_pass_with_collection","filtering.always_fail_with_collection"],"include":["@stamps","filtering.always_pass"]},"publicKey":"${known_PUBLIC_KEY}"},"ec-version":"${EC_VERSION}","effective-time":"${TIMESTAMP}"}
+{
+  "success": true,
+  "components": [
+    {
+      "name": "Unnamed",
+      "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
+      "source": {},
+      "successes": [
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.syntax_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.image.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "filtering.always_pass"
+          }
+        }
+      ],
+      "success": true,
+      "signatures": [
+        {
+          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+          "sig": "${IMAGE_SIGNATURE_acceptance/ec-happy-day}"
+        }
+      ],
+      "attestations": [
+        {
+          "type": "https://in-toto.io/Statement/v0.1",
+          "predicateType": "https://slsa.dev/provenance/v0.2",
+          "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+          "signatures": [
+            {
+              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+              "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "key": "${known_PUBLIC_KEY_JSON}",
+  "policy": {
+    "sources": [
+      {
+        "policy": [
+          "git::https://${GITHOST}/git/happy-day-policy.git"
+        ]
+      }
+    ],
+    "configuration": {
+      "exclude": [
+        "filtering.always_pass_with_collection",
+        "filtering.always_fail_with_collection"
+      ],
+      "include": [
+        "@stamps",
+        "filtering.always_pass"
+      ]
+    },
+    "publicKey": "${known_PUBLIC_KEY}"
+  },
+  "ec-version": "${EC_VERSION}",
+  "effective-time": "${TIMESTAMP}"
+}
 ---
 
 [policy rule filtering for successes:stderr - 1]
@@ -176,7 +1081,77 @@ Error: 1 error occurred:
 ---
 
 [using attestation time as effective time:stdout - 1]
-{"success":false,"components":[{"name":"Unnamed","containerImage":"${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}","source":{},"violations":[{"msg":"Fails in 2099","metadata":{"effective_on":"2099-01-01T00:00:00Z"}}],"successes":[{"msg":"Pass","metadata":{"code":"builtin.attestation.signature_check"}},{"msg":"Pass","metadata":{"code":"builtin.attestation.syntax_check"}},{"msg":"Pass","metadata":{"code":"builtin.image.signature_check"}}],"success":false,"signatures":[{"keyid":"${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-happy-day}","sig":"${IMAGE_SIGNATURE_acceptance/ec-happy-day}"}],"attestations":[{"type":"https://in-toto.io/Statement/v0.1","predicateType":"https://slsa.dev/provenance/v0.2","predicateBuildType":"https://tekton.dev/attestations/chains/pipelinerun@v2","signatures":[{"keyid":"${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-happy-day}","sig":"${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"}]}]}],"key":${known_PUBLIC_KEY_JSON},"policy":{"sources":[{"policy":["git::https://${GITHOST}/git/future-deny-policy.git"]}],"publicKey":"${known_PUBLIC_KEY}"},"ec-version":"${EC_VERSION}","effective-time":"2100-01-01T00:00:00Z"}
+{
+  "success": false,
+  "components": [
+    {
+      "name": "Unnamed",
+      "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
+      "source": {},
+      "violations": [
+        {
+          "msg": "Fails in 2099",
+          "metadata": {
+            "effective_on": "2099-01-01T00:00:00Z"
+          }
+        }
+      ],
+      "successes": [
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.syntax_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.image.signature_check"
+          }
+        }
+      ],
+      "success": false,
+      "signatures": [
+        {
+          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+          "sig": "${IMAGE_SIGNATURE_acceptance/ec-happy-day}"
+        }
+      ],
+      "attestations": [
+        {
+          "type": "https://in-toto.io/Statement/v0.1",
+          "predicateType": "https://slsa.dev/provenance/v0.2",
+          "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+          "signatures": [
+            {
+              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+              "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "key": "${known_PUBLIC_KEY_JSON}",
+  "policy": {
+    "sources": [
+      {
+        "policy": [
+          "git::https://${GITHOST}/git/future-deny-policy.git"
+        ]
+      }
+    ],
+    "publicKey": "${known_PUBLIC_KEY}"
+  },
+  "ec-version": "${EC_VERSION}",
+  "effective-time": "2100-01-01T00:00:00Z"
+}
 ---
 
 [using attestation time as effective time:stderr - 1]
@@ -185,7 +1160,75 @@ Error: success criteria not met
 ---
 
 [inline application snapshot:stdout - 1]
-{"success":true,"components":[{"name":"Happy","containerImage":"${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}","source":{},"successes":[{"msg":"Pass","metadata":{"code":"builtin.attestation.signature_check"}},{"msg":"Pass","metadata":{"code":"builtin.attestation.syntax_check"}},{"msg":"Pass","metadata":{"code":"builtin.image.signature_check"}},{"msg":"Pass","metadata":{"code":"main.acceptor"}}],"success":true,"signatures":[{"keyid":"${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-happy-day}","sig":"${IMAGE_SIGNATURE_acceptance/ec-happy-day}"}],"attestations":[{"type":"https://in-toto.io/Statement/v0.1","predicateType":"https://slsa.dev/provenance/v0.2","predicateBuildType":"https://tekton.dev/attestations/chains/pipelinerun@v2","signatures":[{"keyid":"${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-happy-day}","sig":"${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"}]}]}],"key":${known_PUBLIC_KEY_JSON},"policy":{"sources":[{"policy":["git::https://${GITHOST}/git/happy-day-policy.git"]}],"publicKey":"${known_PUBLIC_KEY}"},"ec-version":"${EC_VERSION}","effective-time":"${TIMESTAMP}"}
+{
+  "success": true,
+  "components": [
+    {
+      "name": "Happy",
+      "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
+      "source": {},
+      "successes": [
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.syntax_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.image.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "main.acceptor"
+          }
+        }
+      ],
+      "success": true,
+      "signatures": [
+        {
+          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+          "sig": "${IMAGE_SIGNATURE_acceptance/ec-happy-day}"
+        }
+      ],
+      "attestations": [
+        {
+          "type": "https://in-toto.io/Statement/v0.1",
+          "predicateType": "https://slsa.dev/provenance/v0.2",
+          "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+          "signatures": [
+            {
+              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+              "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "key": "${known_PUBLIC_KEY_JSON}",
+  "policy": {
+    "sources": [
+      {
+        "policy": [
+          "git::https://${GITHOST}/git/happy-day-policy.git"
+        ]
+      }
+    ],
+    "publicKey": "${known_PUBLIC_KEY}"
+  },
+  "ec-version": "${EC_VERSION}",
+  "effective-time": "${TIMESTAMP}"
+}
 ---
 
 [inline application snapshot:stderr - 1]
@@ -323,7 +1366,46 @@ Error: success criteria not met
 ---
 
 [mismatched image digest in attestation:stdout - 1]
-{"success":false,"components":[{"name":"Unnamed","containerImage":"${REGISTRY}/acceptance/bad-actor@${REGISTRY_acceptance/bad-actor:latest_HASH}","source":{},"violations":[{"msg":"No image attestations found matching the given public key. Verify the correct public key was provided, and one or more attestations were created.","metadata":{"code":"builtin.attestation.signature_check"}}],"successes":[{"msg":"Pass","metadata":{"code":"builtin.image.signature_check"}}],"success":false}],"key":${known_PUBLIC_KEY_JSON},"policy":{"sources":[{"policy":["git::https://${GITHOST}/git/mismatched-image-digest.git"]}],"publicKey":"${known_PUBLIC_KEY}"},"ec-version":"${EC_VERSION}","effective-time":"${TIMESTAMP}"}
+{
+  "success": false,
+  "components": [
+    {
+      "name": "Unnamed",
+      "containerImage": "${REGISTRY}/acceptance/bad-actor@${REGISTRY_acceptance/bad-actor:latest_HASH}",
+      "source": {},
+      "violations": [
+        {
+          "msg": "No image attestations found matching the given public key. Verify the correct public key was provided, and one or more attestations were created.",
+          "metadata": {
+            "code": "builtin.attestation.signature_check"
+          }
+        }
+      ],
+      "successes": [
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.image.signature_check"
+          }
+        }
+      ],
+      "success": false
+    }
+  ],
+  "key": "${known_PUBLIC_KEY_JSON}",
+  "policy": {
+    "sources": [
+      {
+        "policy": [
+          "git::https://${GITHOST}/git/mismatched-image-digest.git"
+        ]
+      }
+    ],
+    "publicKey": "${known_PUBLIC_KEY}"
+  },
+  "ec-version": "${EC_VERSION}",
+  "effective-time": "${TIMESTAMP}"
+}
 ---
 
 [mismatched image digest in attestation:stderr - 1]
@@ -332,14 +1414,176 @@ Error: success criteria not met
 ---
 
 [artifact relocation:stdout - 1]
-{"success":true,"components":[{"name":"Unnamed","containerImage":"${REGISTRY}/acceptance/destination@${REGISTRY_IMAGE_acceptance/destination:latest|acceptance/source:latest_HASH}","source":{},"successes":[{"msg":"Pass","metadata":{"code":"builtin.attestation.signature_check"}},{"msg":"Pass","metadata":{"code":"builtin.attestation.syntax_check"}},{"msg":"Pass","metadata":{"code":"builtin.image.signature_check"}},{"msg":"Pass","metadata":{"code":"main.acceptor"}}],"success":true,"signatures":[{"keyid":"${IMAGE_SIGNATURE_KEY_ID_acceptance/source}","sig":"${IMAGE_SIGNATURE_acceptance/source}"}],"attestations":[{"type":"https://in-toto.io/Statement/v0.1","predicateType":"https://slsa.dev/provenance/v0.2","predicateBuildType":"https://tekton.dev/attestations/chains/pipelinerun@v2","signatures":[{"keyid":"${ATTESTATION_SIGNATURE_KEY_ID_acceptance/source}","sig":"${ATTESTATION_SIGNATURE_acceptance/source}"}]}]}],"key":${known_PUBLIC_KEY_JSON},"policy":{"sources":[{"policy":["git::https://${GITHOST}/git/happy-day-policy.git"]}],"rekorUrl":"${REKOR}","publicKey":"${known_PUBLIC_KEY}"},"ec-version":"${EC_VERSION}","effective-time":"${TIMESTAMP}"}
+{
+  "success": true,
+  "components": [
+    {
+      "name": "Unnamed",
+      "containerImage": "${REGISTRY}/acceptance/destination@${REGISTRY_IMAGE_acceptance/destination:latest|acceptance/source:latest_HASH}",
+      "source": {},
+      "successes": [
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.syntax_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.image.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "main.acceptor"
+          }
+        }
+      ],
+      "success": true,
+      "signatures": [
+        {
+          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/source}",
+          "sig": "${IMAGE_SIGNATURE_acceptance/source}"
+        }
+      ],
+      "attestations": [
+        {
+          "type": "https://in-toto.io/Statement/v0.1",
+          "predicateType": "https://slsa.dev/provenance/v0.2",
+          "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+          "signatures": [
+            {
+              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/source}",
+              "sig": "${ATTESTATION_SIGNATURE_acceptance/source}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "key": "${known_PUBLIC_KEY_JSON}",
+  "policy": {
+    "sources": [
+      {
+        "policy": [
+          "git::https://${GITHOST}/git/happy-day-policy.git"
+        ]
+      }
+    ],
+    "rekorUrl": "${REKOR}",
+    "publicKey": "${known_PUBLIC_KEY}"
+  },
+  "ec-version": "${EC_VERSION}",
+  "effective-time": "${TIMESTAMP}"
+}
 ---
 
 [artifact relocation:stderr - 1]
 
 ---
 [detailed failures output:stdout - 1]
-{"success":false,"components":[{"name":"Unnamed","containerImage":"${REGISTRY}/acceptance/image@${REGISTRY_acceptance/image:latest_HASH}","source":{},"violations":[{"msg":"Fails always","metadata":{"code":"main.rejector","collections":["A"],"description":"This rule will always fail","solution":"None","title":"Reject rule"}}],"successes":[{"msg":"Pass","metadata":{"code":"builtin.attestation.signature_check","description":"The attestation signature matches available signing materials.","title":"Attestation signature check passed"}},{"msg":"Pass","metadata":{"code":"builtin.attestation.syntax_check","description":"The attestation has correct syntax.","title":"Attestation syntax check passed"}},{"msg":"Pass","metadata":{"code":"builtin.image.signature_check","description":"The image signature matches available signing materials.","title":"Image signature check passed"}},{"msg":"Pass","metadata":{"code":"main.acceptor","collections":["A"],"description":"This rule will never fail","title":"Allow rule"}}],"success":false,"signatures":[{"keyid":"${IMAGE_SIGNATURE_KEY_ID_acceptance/image}","sig":"${IMAGE_SIGNATURE_acceptance/image}"}],"attestations":[{"type":"https://in-toto.io/Statement/v0.1","predicateType":"https://slsa.dev/provenance/v0.2","predicateBuildType":"https://tekton.dev/attestations/chains/pipelinerun@v2","signatures":[{"keyid":"${ATTESTATION_SIGNATURE_KEY_ID_acceptance/image}","sig":"${ATTESTATION_SIGNATURE_acceptance/image}"}]}]}],"key":${known_PUBLIC_KEY_JSON},"policy":{"sources":[{"policy":["git::https://${GITHOST}/git/happy-day-policy.git"]}],"publicKey":"${known_PUBLIC_KEY}"},"ec-version":"${EC_VERSION}","effective-time":"${TIMESTAMP}"}
+{
+  "success": false,
+  "components": [
+    {
+      "name": "Unnamed",
+      "containerImage": "${REGISTRY}/acceptance/image@${REGISTRY_acceptance/image:latest_HASH}",
+      "source": {},
+      "violations": [
+        {
+          "msg": "Fails always",
+          "metadata": {
+            "code": "main.rejector",
+            "collections": [
+              "A"
+            ],
+            "description": "This rule will always fail",
+            "solution": "None",
+            "title": "Reject rule"
+          }
+        }
+      ],
+      "successes": [
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.signature_check",
+            "description": "The attestation signature matches available signing materials.",
+            "title": "Attestation signature check passed"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.syntax_check",
+            "description": "The attestation has correct syntax.",
+            "title": "Attestation syntax check passed"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.image.signature_check",
+            "description": "The image signature matches available signing materials.",
+            "title": "Image signature check passed"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "main.acceptor",
+            "collections": [
+              "A"
+            ],
+            "description": "This rule will never fail",
+            "title": "Allow rule"
+          }
+        }
+      ],
+      "success": false,
+      "signatures": [
+        {
+          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/image}",
+          "sig": "${IMAGE_SIGNATURE_acceptance/image}"
+        }
+      ],
+      "attestations": [
+        {
+          "type": "https://in-toto.io/Statement/v0.1",
+          "predicateType": "https://slsa.dev/provenance/v0.2",
+          "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+          "signatures": [
+            {
+              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/image}",
+              "sig": "${ATTESTATION_SIGNATURE_acceptance/image}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "key": "${known_PUBLIC_KEY_JSON}",
+  "policy": {
+    "sources": [
+      {
+        "policy": [
+          "git::https://${GITHOST}/git/happy-day-policy.git"
+        ]
+      }
+    ],
+    "publicKey": "${known_PUBLIC_KEY}"
+  },
+  "ec-version": "${EC_VERSION}",
+  "effective-time": "${TIMESTAMP}"
+}
 ---
 
 [detailed failures output:stderr - 1]
@@ -348,7 +1592,78 @@ Error: success criteria not met
 ---
 
 [future failure is a deny when using effective-date flag:stdout - 1]
-{"success":false,"components":[{"name":"Unnamed","containerImage":"${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}","source":{},"violations":[{"msg":"Fails in 2099","metadata":{"effective_on":"2099-01-01T00:00:00Z"}}],"successes":[{"msg":"Pass","metadata":{"code":"builtin.attestation.signature_check"}},{"msg":"Pass","metadata":{"code":"builtin.attestation.syntax_check"}},{"msg":"Pass","metadata":{"code":"builtin.image.signature_check"}}],"success":false,"signatures":[{"keyid":"${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-happy-day}","sig":"${IMAGE_SIGNATURE_acceptance/ec-happy-day}"}],"attestations":[{"type":"https://in-toto.io/Statement/v0.1","predicateType":"https://slsa.dev/provenance/v0.2","predicateBuildType":"https://tekton.dev/attestations/chains/pipelinerun@v2","signatures":[{"keyid":"${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-happy-day}","sig":"${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"}]}]}],"key":${known_PUBLIC_KEY_JSON},"policy":{"sources":[{"policy":["git::https://${GITHOST}/git/future-deny-policy.git"]}],"rekorUrl":"${REKOR}","publicKey":"${known_PUBLIC_KEY}"},"ec-version":"${EC_VERSION}","effective-time":"2100-01-01T12:00:00Z"}
+{
+  "success": false,
+  "components": [
+    {
+      "name": "Unnamed",
+      "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
+      "source": {},
+      "violations": [
+        {
+          "msg": "Fails in 2099",
+          "metadata": {
+            "effective_on": "2099-01-01T00:00:00Z"
+          }
+        }
+      ],
+      "successes": [
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.syntax_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.image.signature_check"
+          }
+        }
+      ],
+      "success": false,
+      "signatures": [
+        {
+          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+          "sig": "${IMAGE_SIGNATURE_acceptance/ec-happy-day}"
+        }
+      ],
+      "attestations": [
+        {
+          "type": "https://in-toto.io/Statement/v0.1",
+          "predicateType": "https://slsa.dev/provenance/v0.2",
+          "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+          "signatures": [
+            {
+              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+              "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "key": "${known_PUBLIC_KEY_JSON}",
+  "policy": {
+    "sources": [
+      {
+        "policy": [
+          "git::https://${GITHOST}/git/future-deny-policy.git"
+        ]
+      }
+    ],
+    "rekorUrl": "${REKOR}",
+    "publicKey": "${known_PUBLIC_KEY}"
+  },
+  "ec-version": "${EC_VERSION}",
+  "effective-time": "2100-01-01T12:00:00Z"
+}
 ---
 
 [future failure is a deny when using effective-date flag:stderr - 1]
@@ -357,7 +1672,76 @@ Error: success criteria not met
 ---
 
 [Using OCI bundles:stdout - 1]
-{"success":true,"components":[{"name":"Unnamed","containerImage":"${REGISTRY}/acceptance/my-image@${REGISTRY_acceptance/my-image:latest_HASH}","source":{},"successes":[{"msg":"Pass","metadata":{"code":"builtin.attestation.signature_check"}},{"msg":"Pass","metadata":{"code":"builtin.attestation.syntax_check"}},{"msg":"Pass","metadata":{"code":"builtin.image.signature_check"}},{"msg":"Pass","metadata":{"code":"main.acceptor"}}],"success":true,"signatures":[{"keyid":"${IMAGE_SIGNATURE_KEY_ID_acceptance/my-image}","sig":"${IMAGE_SIGNATURE_acceptance/my-image}"}],"attestations":[{"type":"https://in-toto.io/Statement/v0.1","predicateType":"https://slsa.dev/provenance/v0.2","predicateBuildType":"https://tekton.dev/attestations/chains/pipelinerun@v2","signatures":[{"keyid":"${ATTESTATION_SIGNATURE_KEY_ID_acceptance/my-image}","sig":"${ATTESTATION_SIGNATURE_acceptance/my-image}"}]}]}],"key":${known_PUBLIC_KEY_JSON},"policy":{"sources":[{"policy":["oci::https://${REGISTRY}/acceptance/happy-day-policy:tag","oci::${REGISTRY}/acceptance/allow-all:latest"]}],"publicKey":"${known_PUBLIC_KEY}"},"ec-version":"${EC_VERSION}","effective-time":"${TIMESTAMP}"}
+{
+  "success": true,
+  "components": [
+    {
+      "name": "Unnamed",
+      "containerImage": "${REGISTRY}/acceptance/my-image@${REGISTRY_acceptance/my-image:latest_HASH}",
+      "source": {},
+      "successes": [
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.syntax_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.image.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "main.acceptor"
+          }
+        }
+      ],
+      "success": true,
+      "signatures": [
+        {
+          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/my-image}",
+          "sig": "${IMAGE_SIGNATURE_acceptance/my-image}"
+        }
+      ],
+      "attestations": [
+        {
+          "type": "https://in-toto.io/Statement/v0.1",
+          "predicateType": "https://slsa.dev/provenance/v0.2",
+          "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+          "signatures": [
+            {
+              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/my-image}",
+              "sig": "${ATTESTATION_SIGNATURE_acceptance/my-image}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "key": "${known_PUBLIC_KEY_JSON}",
+  "policy": {
+    "sources": [
+      {
+        "policy": [
+          "oci::https://${REGISTRY}/acceptance/happy-day-policy:tag",
+          "oci::${REGISTRY}/acceptance/allow-all:latest"
+        ]
+      }
+    ],
+    "publicKey": "${known_PUBLIC_KEY}"
+  },
+  "ec-version": "${EC_VERSION}",
+  "effective-time": "${TIMESTAMP}"
+}
 ---
 
 [Using OCI bundles:stderr - 1]
@@ -380,7 +1764,76 @@ ${TEMP}/ec-work-${RANDOM}/policy/${RANDOM}/main.rego:29: rego_type_error: undefi
 ---
 
 [happy day:stdout - 1]
-{"success":true,"components":[{"name":"Unnamed","containerImage":"${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}","source":{},"successes":[{"msg":"Pass","metadata":{"code":"builtin.attestation.signature_check"}},{"msg":"Pass","metadata":{"code":"builtin.attestation.syntax_check"}},{"msg":"Pass","metadata":{"code":"builtin.image.signature_check"}},{"msg":"Pass","metadata":{"code":"main.acceptor"}}],"success":true,"signatures":[{"keyid":"${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-happy-day}","sig":"${IMAGE_SIGNATURE_acceptance/ec-happy-day}"}],"attestations":[{"type":"https://in-toto.io/Statement/v0.1","predicateType":"https://slsa.dev/provenance/v0.2","predicateBuildType":"https://tekton.dev/attestations/chains/pipelinerun@v2","signatures":[{"keyid":"${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-happy-day}","sig":"${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"}]}]}],"key":${known_PUBLIC_KEY_JSON},"policy":{"sources":[{"policy":["git::https://${GITHOST}/git/happy-day-policy.git"]}],"rekorUrl":"${REKOR}","publicKey":"${known_PUBLIC_KEY}"},"ec-version":"${EC_VERSION}","effective-time":"${TIMESTAMP}"}
+{
+  "success": true,
+  "components": [
+    {
+      "name": "Unnamed",
+      "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
+      "source": {},
+      "successes": [
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.syntax_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.image.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "main.acceptor"
+          }
+        }
+      ],
+      "success": true,
+      "signatures": [
+        {
+          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+          "sig": "${IMAGE_SIGNATURE_acceptance/ec-happy-day}"
+        }
+      ],
+      "attestations": [
+        {
+          "type": "https://in-toto.io/Statement/v0.1",
+          "predicateType": "https://slsa.dev/provenance/v0.2",
+          "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+          "signatures": [
+            {
+              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/ec-happy-day}",
+              "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "key": "${known_PUBLIC_KEY_JSON}",
+  "policy": {
+    "sources": [
+      {
+        "policy": [
+          "git::https://${GITHOST}/git/happy-day-policy.git"
+        ]
+      }
+    ],
+    "rekorUrl": "${REKOR}",
+    "publicKey": "${known_PUBLIC_KEY}"
+  },
+  "ec-version": "${EC_VERSION}",
+  "effective-time": "${TIMESTAMP}"
+}
 ---
 
 [happy day:stderr - 1]
@@ -388,7 +1841,85 @@ ${TEMP}/ec-work-${RANDOM}/policy/${RANDOM}/main.rego:29: rego_type_error: undefi
 ---
 
 [rule dependencies:stdout - 1]
-{"success":false,"components":[{"name":"Unnamed","containerImage":"${REGISTRY}/acceptance/image@${REGISTRY_acceptance/image:latest_HASH}","source":{},"violations":[{"msg":"Failure","metadata":{"code":"pkg.fails"}}],"warnings":[{"msg":"Warning","metadata":{"code":"pkg.warns"}}],"successes":[{"msg":"Pass","metadata":{"code":"builtin.attestation.signature_check"}},{"msg":"Pass","metadata":{"code":"builtin.attestation.syntax_check"}},{"msg":"Pass","metadata":{"code":"builtin.image.signature_check"}}],"success":false,"signatures":[{"keyid":"${IMAGE_SIGNATURE_KEY_ID_acceptance/image}","sig": "${IMAGE_SIGNATURE_acceptance/image}"}],"attestations":[{"type":"https://in-toto.io/Statement/v0.1","predicateType":"https://slsa.dev/provenance/v0.2","predicateBuildType":"https://tekton.dev/attestations/chains/pipelinerun@v2","signatures":[{"keyid":"${ATTESTATION_SIGNATURE_KEY_ID_acceptance/image}","sig":"${ATTESTATION_SIGNATURE_acceptance/image}"}]}]}],"key":${known_PUBLIC_KEY_JSON},"policy":{"sources":[{"policy":["git::https://${GITHOST}/git/with-dependencies.git"]}],"publicKey":"${known_PUBLIC_KEY}"},"ec-version":"${EC_VERSION}","effective-time":"${TIMESTAMP}"}
+{
+  "success": false,
+  "components": [
+    {
+      "name": "Unnamed",
+      "containerImage": "${REGISTRY}/acceptance/image@${REGISTRY_acceptance/image:latest_HASH}",
+      "source": {},
+      "violations": [
+        {
+          "msg": "Failure",
+          "metadata": {
+            "code": "pkg.fails"
+          }
+        }
+      ],
+      "warnings": [
+        {
+          "msg": "Warning",
+          "metadata": {
+            "code": "pkg.warns"
+          }
+        }
+      ],
+      "successes": [
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.syntax_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.image.signature_check"
+          }
+        }
+      ],
+      "success": false,
+      "signatures": [
+        {
+          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/image}",
+          "sig": "${IMAGE_SIGNATURE_acceptance/image}"
+        }
+      ],
+      "attestations": [
+        {
+          "type": "https://in-toto.io/Statement/v0.1",
+          "predicateType": "https://slsa.dev/provenance/v0.2",
+          "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+          "signatures": [
+            {
+              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/image}",
+              "sig": "${ATTESTATION_SIGNATURE_acceptance/image}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "key": "${known_PUBLIC_KEY_JSON}",
+  "policy": {
+    "sources": [
+      {
+        "policy": [
+          "git::https://${GITHOST}/git/with-dependencies.git"
+        ]
+      }
+    ],
+    "publicKey": "${known_PUBLIC_KEY}"
+  },
+  "ec-version": "${EC_VERSION}",
+  "effective-time": "${TIMESTAMP}"
+}
 ---
 
 [rule dependencies:stderr - 1]
@@ -397,7 +1928,90 @@ Error: success criteria not met
 ---
 
 [successes are not duplicated:stdout - 1]
-{"success":false,"components":[{"name":"Unnamed","containerImage":"${REGISTRY}/acceptance/unique-successes@${REGISTRY_acceptance/unique-successes:latest_HASH}","source":{},"violations":[{"msg":"Always fails","metadata":{"code":"gloomy.sad"}}],"successes":[{"msg":"Pass","metadata":{"code":"builtin.attestation.signature_check"}},{"msg":"Pass","metadata":{"code":"builtin.attestation.syntax_check"}},{"msg":"Pass","metadata":{"code":"builtin.image.signature_check"}},{"msg":"Pass","metadata":{"code":"gloomy.happy"}},{"msg":"Pass","metadata":{"code":"main.acceptor"}}],"success":false,"signatures":[{"keyid":"${IMAGE_SIGNATURE_KEY_ID_acceptance/unique-successes}","sig":"${IMAGE_SIGNATURE_acceptance/unique-successes}"}],"attestations":[{"type":"https://in-toto.io/Statement/v0.1","predicateType":"https://slsa.dev/provenance/v0.2","predicateBuildType":"https://tekton.dev/attestations/chains/pipelinerun@v2","signatures":[{"keyid":"${ATTESTATION_SIGNATURE_KEY_ID_acceptance/unique-successes}","sig":"${ATTESTATION_SIGNATURE_acceptance/unique-successes}"}]}]}],"key":${known_PUBLIC_KEY_JSON},"policy":{"sources":[{"policy":["git::https://${GITHOST}/git/unique-successes.git"]}],"rekorUrl":"${REKOR}","publicKey":"${known_PUBLIC_KEY}"},"ec-version":"${EC_VERSION}","effective-time":"${TIMESTAMP}"}
+{
+  "success": false,
+  "components": [
+    {
+      "name": "Unnamed",
+      "containerImage": "${REGISTRY}/acceptance/unique-successes@${REGISTRY_acceptance/unique-successes:latest_HASH}",
+      "source": {},
+      "violations": [
+        {
+          "msg": "Always fails",
+          "metadata": {
+            "code": "gloomy.sad"
+          }
+        }
+      ],
+      "successes": [
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.syntax_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.image.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "gloomy.happy"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "main.acceptor"
+          }
+        }
+      ],
+      "success": false,
+      "signatures": [
+        {
+          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/unique-successes}",
+          "sig": "${IMAGE_SIGNATURE_acceptance/unique-successes}"
+        }
+      ],
+      "attestations": [
+        {
+          "type": "https://in-toto.io/Statement/v0.1",
+          "predicateType": "https://slsa.dev/provenance/v0.2",
+          "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+          "signatures": [
+            {
+              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/unique-successes}",
+              "sig": "${ATTESTATION_SIGNATURE_acceptance/unique-successes}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "key": "${known_PUBLIC_KEY_JSON}",
+  "policy": {
+    "sources": [
+      {
+        "policy": [
+          "git::https://${GITHOST}/git/unique-successes.git"
+        ]
+      }
+    ],
+    "rekorUrl": "${REKOR}",
+    "publicKey": "${known_PUBLIC_KEY}"
+  },
+  "ec-version": "${EC_VERSION}",
+  "effective-time": "${TIMESTAMP}"
+}
 ---
 
 [successes are not duplicated:stderr - 1]
@@ -419,7 +2033,100 @@ Error: success criteria not met
 ---
 
 [image config:stdout - 1]
-{"success":true,"components":[{"name":"Unnamed","containerImage":"${REGISTRY}/acceptance/image-config@${REGISTRY_acceptance/image-config:latest_HASH}","source":{},"successes":[{"msg":"Pass","metadata":{"code":"builtin.attestation.signature_check","description":"The attestation signature matches available signing materials.","title":"Attestation signature check passed"}},{"msg":"Pass","metadata":{"code":"builtin.attestation.syntax_check","description":"The attestation has correct syntax.","title":"Attestation syntax check passed"}},{"msg":"Pass","metadata":{"code":"builtin.image.signature_check","description":"The image signature matches available signing materials.","title":"Image signature check passed"}},{"msg":"Pass","metadata":{"code":"image_config.image_distinct_title_set","description":"Check if the image has a different value than its parent image for the org.opencontainers.image.title label.","title":"Image Distinct Title Label"}},{"msg":"Pass","metadata":{"code":"image_config.image_title_set","description":"Check if the image has the org.opencontainers.image.title label set.","title":"Image Title Label"}},{"msg":"Pass","metadata":{"code":"image_config.parent_image_title_set","description":"Check if the parent image has the org.opencontainers.image.title label set.","title":"Parent Image Title Label"}}],"success":true,"signatures":[{"keyid":"${IMAGE_SIGNATURE_KEY_ID_acceptance/image-config}","sig":"${IMAGE_SIGNATURE_acceptance/image-config}"}],"attestations":[{"type":"https://in-toto.io/Statement/v0.1","predicateType":"https://slsa.dev/provenance/v0.2","predicateBuildType":"https://tekton.dev/attestations/chains/pipelinerun@v2","signatures":[{"keyid":"${ATTESTATION_SIGNATURE_KEY_ID_acceptance/image-config}","sig":"${ATTESTATION_SIGNATURE_acceptance/image-config}"}]}]}],"key":${known_PUBLIC_KEY_JSON},"policy":{"sources":[{"policy":["git::https://${GITHOST}/git/image-config-policy.git"]}],"rekorUrl":"${REKOR}","publicKey":"${known_PUBLIC_KEY}"},"ec-version":"${EC_VERSION}","effective-time":"${TIMESTAMP}"}
+{
+  "success": true,
+  "components": [
+    {
+      "name": "Unnamed",
+      "containerImage": "${REGISTRY}/acceptance/image-config@${REGISTRY_acceptance/image-config:latest_HASH}",
+      "source": {},
+      "successes": [
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.signature_check",
+            "description": "The attestation signature matches available signing materials.",
+            "title": "Attestation signature check passed"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.syntax_check",
+            "description": "The attestation has correct syntax.",
+            "title": "Attestation syntax check passed"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.image.signature_check",
+            "description": "The image signature matches available signing materials.",
+            "title": "Image signature check passed"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "image_config.image_distinct_title_set",
+            "description": "Check if the image has a different value than its parent image for the org.opencontainers.image.title label.",
+            "title": "Image Distinct Title Label"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "image_config.image_title_set",
+            "description": "Check if the image has the org.opencontainers.image.title label set.",
+            "title": "Image Title Label"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "image_config.parent_image_title_set",
+            "description": "Check if the parent image has the org.opencontainers.image.title label set.",
+            "title": "Parent Image Title Label"
+          }
+        }
+      ],
+      "success": true,
+      "signatures": [
+        {
+          "keyid": "${IMAGE_SIGNATURE_KEY_ID_acceptance/image-config}",
+          "sig": "${IMAGE_SIGNATURE_acceptance/image-config}"
+        }
+      ],
+      "attestations": [
+        {
+          "type": "https://in-toto.io/Statement/v0.1",
+          "predicateType": "https://slsa.dev/provenance/v0.2",
+          "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+          "signatures": [
+            {
+              "keyid": "${ATTESTATION_SIGNATURE_KEY_ID_acceptance/image-config}",
+              "sig": "${ATTESTATION_SIGNATURE_acceptance/image-config}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "key": "${known_PUBLIC_KEY_JSON}",
+  "policy": {
+    "sources": [
+      {
+        "policy": [
+          "git::https://${GITHOST}/git/image-config-policy.git"
+        ]
+      }
+    ],
+    "rekorUrl": "${REKOR}",
+    "publicKey": "${known_PUBLIC_KEY}"
+  },
+  "ec-version": "${EC_VERSION}",
+  "effective-time": "${TIMESTAMP}"
+}
 ---
 
 [image config:stderr - 1]
