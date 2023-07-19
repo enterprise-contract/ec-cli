@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright 2022 Red Hat, Inc.
+# Copyright Red Hat.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 
