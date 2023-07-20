@@ -98,15 +98,7 @@ func MatchSnapshot(ctx context.Context, qualifier, text string, vars map[string]
 	text = strings.ReplaceAll(text, "\r", "\\r")
 
 	for k, v := range vars {
-		// Todo: remove ASAP. Just a hack until a solution is figured out
-		if k == "IMAGE_SIGNATURES_XML_acceptance/image" {
-			continue
-		}
-		if k == "known_PUBLIC_KEY_JSON" || k == "unknown_PUBLIC_KEY_JSON" {
-			text = strings.ReplaceAll(text, v, "\"${"+k+"}\"")
-		} else {
-			text = strings.ReplaceAll(text, v, "${"+k+"}")
-		}
+		text = strings.ReplaceAll(text, v, "${"+k+"}")
 	}
 
 	// replace any remaining timestamps

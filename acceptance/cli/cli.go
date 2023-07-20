@@ -213,11 +213,7 @@ func setupKeys(ctx context.Context, vars map[string]string, environment []string
 
 		vars[name+"_PUBLIC_KEY"] = key.Name()
 
-		publicKeyJson, err := json.Marshal(publicKey)
-		if err != nil {
-			return environment, vars, err
-		}
-		vars[name+"_PUBLIC_KEY_JSON"] = string(publicKeyJson)
+		vars[name+"_PUBLIC_KEY_JSON"] = strings.ReplaceAll(publicKey, "\n", "\\n")
 
 		publicKeyXML := bytes.Buffer{}
 		if err := xml.EscapeText(&publicKeyXML, []byte(publicKey)); err != nil {
@@ -246,10 +242,8 @@ func setupSigs(ctx context.Context, vars map[string]string, environment []string
 	}
 
 	for n, v := range map[string]valFunc{
-		"ATTESTATION_SIGNATURE":      image.JSONAttestationSignaturesFrom,
-		"ATTESTATION_SIGNATURES_XML": image.XMLAttestationSignaturesFrom,
-		"IMAGE_SIGNATURE":            image.JSONImageSignaturesFrom,
-		"IMAGE_SIGNATURES_XML":       image.XMLImageSignaturesFrom,
+		"ATTESTATION_SIGNATURE": image.AttestationSignaturesFrom,
+		"IMAGE_SIGNATURE":       image.ImageSignaturesFrom,
 	} {
 		if err := setVar(n, v); err != nil {
 			return environment, vars, err
