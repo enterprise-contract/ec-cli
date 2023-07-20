@@ -76,7 +76,7 @@ jobs:
           flags: integration
 
   Acceptance:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       # Disabled until we figure out the "Could not resolve host: github.com" in
       # acceptance tests
