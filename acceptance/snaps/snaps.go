@@ -94,6 +94,9 @@ func capture(ctx context.Context, qualifier string) errCapture {
 func MatchSnapshot(ctx context.Context, qualifier, text string, vars map[string]string) error {
 	errs := capture(ctx, qualifier)
 
+	// snaps normalizes, but again reports this as a diff
+	text = strings.ReplaceAll(text, "\r", "\\r")
+
 	for k, v := range vars {
 		// Todo: remove ASAP. Just a hack until a solution is figured out
 		if k == "IMAGE_SIGNATURES_XML_acceptance/image" {

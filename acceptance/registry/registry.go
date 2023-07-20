@@ -29,6 +29,7 @@ import (
 
 	"github.com/cucumber/godog"
 	"github.com/google/go-containerregistry/pkg/name"
+	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/pkg/diff"
 	"github.com/pkg/errors"
@@ -164,7 +165,7 @@ func AllHashes(ctx context.Context) (map[string]string, error) {
 		return nil, err
 	}
 
-	all := map[string]string{}
+	all := map[string]v1.Hash{}
 	refsByDigest := map[string][]string{}
 	for _, repository := range repositories {
 		r, err := name.NewRepository(repository, name.WithDefaultRegistry(url))
@@ -188,10 +189,11 @@ func AllHashes(ctx context.Context) (map[string]string, error) {
 				return nil, err
 			}
 
-			digest := descriptor.Digest.String()
+			digest := descriptor.Digest
 			imgRef := repository + ":" + tag
 			all[imgRef] = digest
-			refsByDigest[digest] = append(refsByDigest[digest], imgRef)
+			digestStr := digest.String()
+			refsByDigest[digestStr] = append(refsByDigest[digestStr], imgRef)
 		}
 	}
 
@@ -200,21 +202,29 @@ func AllHashes(ctx context.Context) (map[string]string, error) {
 	// we remove the references with the same digest and map to a synthetic
 	// "IMAGE_ref1|ref2|..." reference
 	for _, digest := range all {
-		if len(refsByDigest[digest]) == 1 {
+		digestStr := digest.String()
+
+		if len(refsByDigest[digestStr]) == 1 {
 			// unique digest
 			continue
 		}
 
-		for _, sameDigestRef := range refsByDigest[digest] {
+		for _, sameDigestRef := range refsByDigest[digestStr] {
 			delete(all, sameDigestRef)
 		}
 
-		sort.Strings(refsByDigest[digest])
-		refs := strings.Join(refsByDigest[digest], "|")
+		sort.Strings(refsByDigest[digestStr])
+		refs := strings.Join(refsByDigest[digestStr], "|")
 		all["IMAGE_"+refs] = digest
 	}
 
-	return all, nil
+	vars := map[string]string{}
+	for v, d := range all {
+		vars[v] = d.String()
+		vars[v+"_JSON"] = fmt.Sprintf(`{"%s":"%s"}`, d.Algorithm, d.Hex)
+	}
+
+	return vars, nil
 }
 
 func assertImageContent(ctx context.Context, imageRef string, data *godog.DocString) error {

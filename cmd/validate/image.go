@@ -296,6 +296,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 						res.component.Attestations = out.Attestations
 						res.component.ContainerImage = out.ImageURL
 						res.data = out.Data
+						res.component.Attestations = out.Attestations
 					}
 					res.component.Success = err == nil && len(res.component.Violations) == 0
 

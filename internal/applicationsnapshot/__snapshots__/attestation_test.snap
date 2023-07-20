@@ -1,0 +1,25 @@
+
+[TestAttestationReport/no_components - 1]
+
+---
+
+[TestAttestationReport/no_attestations - 1]
+
+---
+
+[TestAttestationReport/one_attestation - 1]
+attestation1
+---
+
+[TestAttestationReport/two_components_two_attestations - 1]
+attestation1
+attestation2
+attestation3
+attestation4
+---
+
+[TestAttestationReport/mix_of_components_and_attestations - 1]
+attestation1
+attestation2
+attestation3
+---

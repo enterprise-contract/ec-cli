@@ -80,7 +80,9 @@ func ValidateImage(ctx context.Context, url string, p policy.Policy, detailed bo
 		p.AttestationTime(*attestationTime)
 	}
 
-	attCount := len(a.Attestations())
+	att := a.Attestations()
+	attCount := len(att)
+	out.Attestations = att
 	log.Debugf("Found %d attestations", attCount)
 	if attCount == 0 {
 		// This is very much a corner case.

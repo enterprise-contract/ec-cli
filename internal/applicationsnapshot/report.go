@@ -94,10 +94,11 @@ const (
 	YAML      = "yaml"
 	APPSTUDIO = "appstudio"
 	// Deprecated. Remove when hacbs output is removed
-	HACBS   = "hacbs"
-	Summary = "summary"
-	JUNIT   = "junit"
-	DATA    = "data"
+	HACBS       = "hacbs"
+	Summary     = "summary"
+	JUNIT       = "junit"
+	DATA        = "data"
+	ATTESTATION = "attestation"
 )
 
 // WriteReport returns a new instance of Report representing the state of
@@ -170,6 +171,8 @@ func (r *Report) toFormat(format string) (data []byte, err error) {
 		data, err = xml.Marshal(r.toJUnit())
 	case DATA:
 		data, err = yaml.Marshal(r.Data)
+	case ATTESTATION:
+		data, err = r.renderAttestations()
 	default:
 		return nil, fmt.Errorf("%q is not a valid report format", format)
 	}

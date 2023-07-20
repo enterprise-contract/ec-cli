@@ -161,6 +161,8 @@ spec:
         - "appstudio=$(results.TEST_OUTPUT.path)"
         - "--output"
         - "data=$(params.HOMEDIR)/data.yaml"
+        - "--output"
+        - "attestation=$(params.HOMEDIR)/attestations.jsonl"
       env:
         - name: SSL_CERT_DIR
           # The Tekton Operator automatically sets the SSL_CERT_DIR env to the value below but,
@@ -181,6 +183,11 @@ spec:
       command: [cat]
       args:
         - "$(params.HOMEDIR)/data.yaml"
+    - name: attestations
+      image: quay.io/hacbs-contract/ec-cli:snapshot
+      command: [cat]
+      args:
+        - "$(params.HOMEDIR)/attestations.jsonl"
     - name: summary
       image: quay.io/hacbs-contract/ec-cli:snapshot
       command: [jq]
