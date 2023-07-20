@@ -24,7 +24,6 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/pem"
-	"encoding/xml"
 	"errors"
 	"fmt"
 	"io"
@@ -44,7 +43,6 @@ import (
 	s "github.com/google/go-containerregistry/pkg/v1/static"
 	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/in-toto/in-toto-golang/in_toto"
-	"github.com/jstemmer/go-junit-report/v2/junit"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
 	"github.com/sigstore/cosign/v2/pkg/oci"
 	"github.com/sigstore/cosign/v2/pkg/oci/layout"
@@ -690,9 +688,9 @@ func unmarshallSignatures(rawCosignSignature []byte) (*cosign.Signatures, error)
 	}
 }
 
-// JSONAttestationSignaturesFrom returns the list of attestation signatures found in the context in
+// AttestationSignaturesFrom returns the list of attestation signatures found in the context in
 // JSON format. If not found, and empty JSON array is returned.
-func JSONAttestationSignaturesFrom(ctx context.Context, prefix string) (map[string]string, error) {
+func AttestationSignaturesFrom(ctx context.Context, prefix string) (map[string]string, error) {
 	if !testenv.HasState[imageState](ctx) {
 		return nil, nil
 	}
@@ -712,45 +710,6 @@ func JSONAttestationSignaturesFrom(ctx context.Context, prefix string) (map[stri
 	return signatures, nil
 }
 
-func XMLAttestationSignaturesFrom(ctx context.Context, prefix string) (map[string]string, error) {
-	if !testenv.HasState[imageState](ctx) {
-		return nil, nil
-	}
-
-	state := testenv.FetchState[imageState](ctx)
-
-	type property struct {
-		XMLName xml.Name `xml:"property"`
-		junit.Property
-	}
-
-	ret := map[string]string{}
-	for name, signature := range state.AttestationSignatures {
-		properties := []property{
-			{
-				Property: junit.Property{
-					Name:  "keyId",
-					Value: signature.KeyID,
-				},
-			},
-			{
-				Property: junit.Property{
-					Name:  "signature",
-					Value: signature.Signature,
-				},
-			},
-		}
-
-		xml, err := xml.Marshal(properties)
-		if err != nil {
-			return nil, err
-		}
-		ret[fmt.Sprintf("%s_%s", prefix, name)] = string(xml)
-	}
-
-	return ret, nil
-}
-
 func RawAttestationSignaturesFrom(ctx context.Context) map[string]string {
 	if !testenv.HasState[imageState](ctx) {
 		return nil
@@ -766,7 +725,7 @@ func RawAttestationSignaturesFrom(ctx context.Context) map[string]string {
 	return ret
 }
 
-func JSONImageSignaturesFrom(ctx context.Context, prefix string) (map[string]string, error) {
+func ImageSignaturesFrom(ctx context.Context, prefix string) (map[string]string, error) {
 	if !testenv.HasState[imageState](ctx) {
 		return nil, nil
 	}
@@ -781,45 +740,6 @@ func JSONImageSignaturesFrom(ctx context.Context, prefix string) (map[string]str
 		if signature.Signature != "" {
 			ret[fmt.Sprintf("%s_%s", prefix, name)] = signature.Signature
 		}
-	}
-
-	return ret, nil
-}
-
-func XMLImageSignaturesFrom(ctx context.Context, prefix string) (map[string]string, error) {
-	if !testenv.HasState[imageState](ctx) {
-		return nil, nil
-	}
-
-	state := testenv.FetchState[imageState](ctx)
-
-	type property struct {
-		XMLName xml.Name `xml:"property"`
-		junit.Property
-	}
-
-	ret := map[string]string{}
-	for name, signature := range state.ImageSignatures {
-		properties := []property{
-			{
-				Property: junit.Property{
-					Name:  "keyId",
-					Value: signature.KeyID,
-				},
-			},
-			{
-				Property: junit.Property{
-					Name:  "signature",
-					Value: signature.Signature,
-				},
-			},
-		}
-
-		xml, err := xml.Marshal(properties)
-		if err != nil {
-			return nil, err
-		}
-		ret[fmt.Sprintf("%s_%s", prefix, name)] = string(xml)
 	}
 
 	return ret, nil
