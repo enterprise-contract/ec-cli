@@ -10,7 +10,7 @@ ALL_SUPPORTED_IMG_OS_ARCH:=$(filter-out $(UNSUPPORTED_OS_ARCH_IMG),$(subst dist/
 _SHELL := bash
 SHELL=$(if $@,$(info ❱ [1m$@[0m))$(_SHELL)
 ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
-COPY:="Red Hat, Inc."
+COPY:=The Enterprise Contract Contributors
 COSIGN_VERSION=$(shell go list -f '{{.Version}}' -m github.com/sigstore/cosign/v2)
 
 ##@ Information
@@ -127,9 +127,9 @@ LINT_TO_GITHUB_ANNOTATIONS='map(map(.)[])[][] as $$d | $$d.posn | split(":") as 
 .PHONY: lint
 lint: tekton-lint ## Run linter
 # addlicense doesn't give us a nice explanation so we prefix it with one
-	@go run -modfile tools/go.mod github.com/google/addlicense -c $(COPY) -s -check $(LICENSE_IGNORE) . | sed 's/^/Missing license header in: /g'
+	@go run -modfile tools/go.mod github.com/google/addlicense -c '$(COPY)' -y '' -s -check $(LICENSE_IGNORE) . | sed 's/^/Missing license header in: /g'
 # piping to sed above looses the exit code, luckily addlicense is fast so we invoke it for the second time to exit 1 in case of issues
-	@go run -modfile tools/go.mod github.com/google/addlicense -c $(COPY) -s -check $(LICENSE_IGNORE) . >/dev/null 2>&1
+	@go run -modfile tools/go.mod github.com/google/addlicense -c '$(COPY)' -y '' -s -check $(LICENSE_IGNORE) . >/dev/null 2>&1
 	@go run -modfile tools/go.mod github.com/golangci/golangci-lint/cmd/golangci-lint run --sort-results $(if $(GITHUB_ACTIONS), --out-format=github-actions --timeout=10m0s)
 	@(cd acceptance && go run -modfile ../tools/go.mod github.com/golangci/golangci-lint/cmd/golangci-lint run --path-prefix acceptance --sort-results $(if $(GITHUB_ACTIONS), --out-format=github-actions --timeout=10m0s))
 # We don't fail on the internal (error handling) linter, we just report the
@@ -139,7 +139,7 @@ lint: tekton-lint ## Run linter
 
 .PHONY: lint-fix
 lint-fix: ## Fix linting issues automagically
-	@go run -modfile tools/go.mod github.com/google/addlicense -c $(COPY) -s $(LICENSE_IGNORE) .
+	@go run -modfile tools/go.mod github.com/google/addlicense -c '$(COPY)' -y '' -s $(LICENSE_IGNORE) .
 	@go run -modfile tools/go.mod github.com/golangci/golangci-lint/cmd/golangci-lint run --fix
 	@(cd acceptance && go run -modfile ../tools/go.mod github.com/golangci/golangci-lint/cmd/golangci-lint run --path-prefix acceptance --fix)
 # We don't apply the fixes from the internal (error handling) linter.
