@@ -294,16 +294,12 @@ func setupRegistry(ctx context.Context, vars map[string]string, environment []st
 
 	vars["REGISTRY"] = registryURL
 
-	hashes, err := registry.AllHashes(ctx)
+	digests, err := registry.AllDigests(ctx)
 	if err != nil {
 		return environment, vars, err
 	}
 
-	for repositoryAndTag, hash := range hashes {
-		_, digest, found := strings.Cut(hash, ":")
-		if !found {
-			return environment, vars, fmt.Errorf("hash %q does not contain digest", hash)
-		}
+	for repositoryAndTag, digest := range digests {
 		vars[fmt.Sprintf("REGISTRY_%s_DIGEST", repositoryAndTag)] = digest
 	}
 
@@ -687,6 +683,11 @@ func logExecution(ctx context.Context) {
 	outputSegment("Command", s.Cmd)
 	outputSegment("State", fmt.Sprintf("Exit code: %d\nPid: %d", s.ProcessState.ExitCode(), s.ProcessState.Pid()))
 	outputSegment("Environment", strings.Join(s.Env, "\n"))
+	var varsStr []string
+	for k, v := range s.vars {
+		varsStr = append(varsStr, fmt.Sprintf("%s=%s", k, v))
+	}
+	outputSegment("Variables", strings.Join(varsStr, "\n"))
 	if s.stdout.Len() == 0 {
 		outputSegment("Stdout", c.Italic("* No standard output"))
 	} else {

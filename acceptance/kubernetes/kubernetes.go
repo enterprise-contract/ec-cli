@@ -270,13 +270,13 @@ func taskLogsShouldMatchTheSnapshot(ctx context.Context, stepName string) error 
 		vars[fmt.Sprintf("____%s_PUBLIC_KEY", name)] = indent(key, 4)
 	}
 
-	hashes, err := registry.AllHashes(ctx)
+	digests, err := registry.AllDigests(ctx)
 	if err != nil {
 		return err
 	}
 
-	for repositoryAndTag, hash := range hashes {
-		vars[fmt.Sprintf("REGISTRY_%s_HASH", repositoryAndTag)] = hash
+	for repositoryAndTag, digest := range digests {
+		vars[fmt.Sprintf("REGISTRY_%s_DIGEST", repositoryAndTag)] = digest
 	}
 
 	maps.Copy(vars, image.RawAttestationSignaturesFrom(ctx))
