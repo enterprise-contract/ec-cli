@@ -3,12 +3,12 @@
 /-/-/-/
 pipeline-bundles:
   ${REGISTRY}/acceptance/bundle:
-    - digest: ${REGISTRY_acceptance/bundle:tag_HASH}
+    - digest: sha256:${REGISTRY_acceptance/bundle:tag_DIGEST}
       effective_on: "${TIMESTAMP}"
       tag: tag
 task-bundles:
   ${REGISTRY}/acceptance/bundle:
-    - digest: ${REGISTRY_acceptance/bundle:tag_HASH}
+    - digest: sha256:${REGISTRY_acceptance/bundle:tag_DIGEST}
       effective_on: "${TIMESTAMP}"
       tag: tag
 

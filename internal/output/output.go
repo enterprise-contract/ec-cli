@@ -88,6 +88,7 @@ type Output struct {
 	Detailed                  bool                        `json:"-"`
 	Data                      []evaluator.Data            `json:"-"`
 	Policy                    policy.Policy               `json:"-"`
+	PolicyInput               []byte                      `json:"-"`
 }
 
 // SetImageAccessibleCheck sets the passed and result.message fields of the ImageAccessibleCheck to the given values.

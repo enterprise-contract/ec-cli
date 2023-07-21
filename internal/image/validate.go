@@ -99,7 +99,7 @@ func ValidateImage(ctx context.Context, url string, p policy.Policy, detailed bo
 		return out, nil
 	}
 
-	input, err := a.WriteInputFile(ctx)
+	inputPath, inputJSON, err := a.WriteInputFile(ctx)
 	if err != nil {
 		log.Debug("Problem writing input files!")
 		return nil, err
@@ -108,7 +108,7 @@ func ValidateImage(ctx context.Context, url string, p policy.Policy, detailed bo
 	var allResults evaluator.CheckResults
 	for _, e := range a.Evaluators {
 		// Todo maybe: Handle each one concurrently
-		results, data, err := e.Evaluate(ctx, []string{input})
+		results, data, err := e.Evaluate(ctx, []string{inputPath})
 		defer e.Destroy()
 
 		if err != nil {
@@ -118,6 +118,8 @@ func ValidateImage(ctx context.Context, url string, p policy.Policy, detailed bo
 		allResults = append(allResults, results...)
 		out.Data = append(out.Data, data)
 	}
+
+	out.PolicyInput = inputJSON
 
 	log.Debug("Conftest policy check complete")
 	out.SetPolicyCheck(allResults)

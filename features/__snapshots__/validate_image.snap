@@ -4,7 +4,7 @@
   "components": [
     {
       "name": "Unnamed",
-      "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
+      "containerImage": "${REGISTRY}/acceptance/ec-happy-day@sha256:${REGISTRY_acceptance/ec-happy-day:latest_DIGEST}",
       "source": {},
       "successes": [
         {
@@ -76,7 +76,7 @@
 ---
 
 [JUnit output format:stdout - 1]
-<testsuites tests="5" failures="1"><testsuite name="Unnamed (${REGISTRY}/acceptance/image@${REGISTRY_acceptance/image:latest_HASH})" tests="5" failures="1" errors="0" id="0" time="" timestamp="${TIMESTAMP}"><properties><property name="image" value="${REGISTRY}/acceptance/image@${REGISTRY_acceptance/image:latest_HASH}"></property><property name="key" value="${known_PUBLIC_KEY_XML}"></property><property name="success" value="false"></property><property name="keyId" value=""></property><property name="signature" value="${IMAGE_SIGNATURE_acceptance/image}"></property></properties><testcase name="builtin.attestation.signature_check: Pass" classname="builtin.attestation.signature_check: Pass"></testcase><testcase name="builtin.attestation.syntax_check: Pass" classname="builtin.attestation.syntax_check: Pass"></testcase><testcase name="builtin.image.signature_check: Pass" classname="builtin.image.signature_check: Pass"></testcase><testcase name="main.acceptor: Pass" classname="main.acceptor: Pass"></testcase><testcase name="main.rejector: Fails always" classname="main.rejector: Fails always"><failure message="Fails always"><![CDATA[Fails always]]></failure></testcase></testsuite></testsuites>
+<testsuites tests="5" failures="1"><testsuite name="Unnamed (${REGISTRY}/acceptance/image@sha256:${REGISTRY_acceptance/image:latest_DIGEST})" tests="5" failures="1" errors="0" id="0" time="" timestamp="${TIMESTAMP}"><properties><property name="image" value="${REGISTRY}/acceptance/image@sha256:${REGISTRY_acceptance/image:latest_DIGEST}"></property><property name="key" value="${known_PUBLIC_KEY_XML}"></property><property name="success" value="false"></property><property name="keyId" value=""></property><property name="signature" value="${IMAGE_SIGNATURE_acceptance/image}"></property></properties><testcase name="builtin.attestation.signature_check: Pass" classname="builtin.attestation.signature_check: Pass"></testcase><testcase name="builtin.attestation.syntax_check: Pass" classname="builtin.attestation.syntax_check: Pass"></testcase><testcase name="builtin.image.signature_check: Pass" classname="builtin.image.signature_check: Pass"></testcase><testcase name="main.acceptor: Pass" classname="main.acceptor: Pass"></testcase><testcase name="main.rejector: Fails always" classname="main.rejector: Fails always"><failure message="Fails always"><![CDATA[Fails always]]></failure></testcase></testsuite></testsuites>
 ---
 
 [JUnit output format:stderr - 1]
@@ -90,7 +90,7 @@ Error: success criteria not met
   "components": [
     {
       "name": "Unnamed",
-      "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
+      "containerImage": "${REGISTRY}/acceptance/ec-happy-day@sha256:${REGISTRY_acceptance/ec-happy-day:latest_DIGEST}",
       "source": {},
       "violations": [
         {
@@ -181,7 +181,7 @@ Error: success criteria not met
   "components": [
     {
       "name": "Unnamed",
-      "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
+      "containerImage": "${REGISTRY}/acceptance/ec-happy-day@sha256:${REGISTRY_acceptance/ec-happy-day:latest_DIGEST}",
       "source": {},
       "successes": [
         {
@@ -258,7 +258,7 @@ Error: success criteria not met
   "components": [
     {
       "name": "Unnamed",
-      "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
+      "containerImage": "${REGISTRY}/acceptance/ec-happy-day@sha256:${REGISTRY_acceptance/ec-happy-day:latest_DIGEST}",
       "source": {},
       "successes": [
         {
@@ -335,7 +335,7 @@ Error: success criteria not met
   "components": [
     {
       "name": "Unnamed",
-      "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
+      "containerImage": "${REGISTRY}/acceptance/ec-happy-day@sha256:${REGISTRY_acceptance/ec-happy-day:latest_DIGEST}",
       "source": {},
       "warnings": [
         {
@@ -414,7 +414,7 @@ Error: success criteria not met
   "components": [
     {
       "name": "Unnamed",
-      "containerImage": "${REGISTRY}/acceptance/image@${REGISTRY_acceptance/image:latest_HASH}",
+      "containerImage": "${REGISTRY}/acceptance/image@sha256:${REGISTRY_acceptance/image:latest_DIGEST}",
       "source": {},
       "successes": [
         {
@@ -495,7 +495,7 @@ Error: success criteria not met
   "components": [
     {
       "name": "Unnamed",
-      "containerImage": "${REGISTRY}/acceptance/ec-multiple-sources@${REGISTRY_acceptance/ec-multiple-sources:latest_HASH}",
+      "containerImage": "${REGISTRY}/acceptance/ec-multiple-sources@sha256:${REGISTRY_acceptance/ec-multiple-sources:latest_DIGEST}",
       "source": {},
       "violations": [
         {
@@ -596,7 +596,7 @@ Error: success criteria not met
   "components": [
     {
       "name": "Unnamed",
-      "containerImage": "${REGISTRY}/acceptance/bad-actor@${REGISTRY_acceptance/bad-actor:latest_HASH}",
+      "containerImage": "${REGISTRY}/acceptance/bad-actor@sha256:${REGISTRY_acceptance/bad-actor:latest_DIGEST}",
       "source": {},
       "violations": [
         {
@@ -669,7 +669,7 @@ Error: success criteria not met
   "components": [
     {
       "name": "Unnamed",
-      "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
+      "containerImage": "${REGISTRY}/acceptance/ec-happy-day@sha256:${REGISTRY_acceptance/ec-happy-day:latest_DIGEST}",
       "source": {},
       "successes": [
         {
@@ -763,7 +763,7 @@ Error: success criteria not met
   "components": [
     {
       "name": "Happy",
-      "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
+      "containerImage": "${REGISTRY}/acceptance/ec-happy-day@sha256:${REGISTRY_acceptance/ec-happy-day:latest_DIGEST}",
       "source": {},
       "successes": [
         {
@@ -839,7 +839,7 @@ Error: success criteria not met
   "components": [
     {
       "name": "Unnamed",
-      "containerImage": "${REGISTRY}/acceptance/ec-multiple-sources@${REGISTRY_acceptance/ec-multiple-sources:latest_HASH}",
+      "containerImage": "${REGISTRY}/acceptance/ec-multiple-sources@sha256:${REGISTRY_acceptance/ec-multiple-sources:latest_DIGEST}",
       "source": {},
       "violations": [
         {
@@ -932,7 +932,7 @@ Error: success criteria not met
   "components": [
     {
       "name": "Unnamed",
-      "containerImage": "${REGISTRY}/acceptance/unexpected-keyless-cert@${REGISTRY_acceptance/unexpected-keyless-cert:latest_HASH}",
+      "containerImage": "${REGISTRY}/acceptance/unexpected-keyless-cert@sha256:${REGISTRY_acceptance/unexpected-keyless-cert:latest_DIGEST}",
       "source": {},
       "violations": [
         {
@@ -978,7 +978,7 @@ Error: success criteria not met
   "components": [
     {
       "name": "Unnamed",
-      "containerImage": "${REGISTRY}/acceptance/invalid-image-signature@${REGISTRY_acceptance/invalid-image-signature:latest_HASH}",
+      "containerImage": "${REGISTRY}/acceptance/invalid-image-signature@sha256:${REGISTRY_acceptance/invalid-image-signature:latest_DIGEST}",
       "source": {},
       "violations": [
         {
@@ -1025,7 +1025,7 @@ Error: success criteria not met
   "components": [
     {
       "name": "Unnamed",
-      "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
+      "containerImage": "${REGISTRY}/acceptance/ec-happy-day@sha256:${REGISTRY_acceptance/ec-happy-day:latest_DIGEST}",
       "source": {},
       "successes": [
         {
@@ -1123,7 +1123,7 @@ Error: 1 error occurred:
   "components": [
     {
       "name": "Unnamed",
-      "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
+      "containerImage": "${REGISTRY}/acceptance/ec-happy-day@sha256:${REGISTRY_acceptance/ec-happy-day:latest_DIGEST}",
       "source": {},
       "violations": [
         {
@@ -1202,7 +1202,7 @@ Error: success criteria not met
   "components": [
     {
       "name": "Happy",
-      "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
+      "containerImage": "${REGISTRY}/acceptance/ec-happy-day@sha256:${REGISTRY_acceptance/ec-happy-day:latest_DIGEST}",
       "source": {},
       "successes": [
         {
@@ -1278,7 +1278,7 @@ Error: success criteria not met
   "components": [
     {
       "name": "Unnamed",
-      "containerImage": "${REGISTRY}/acceptance/ec-happy-day-keyless@${REGISTRY_acceptance/ec-happy-day-keyless:latest_HASH}",
+      "containerImage": "${REGISTRY}/acceptance/ec-happy-day-keyless@sha256:${REGISTRY_acceptance/ec-happy-day-keyless:latest_DIGEST}",
       "source": {},
       "successes": [
         {
@@ -1408,7 +1408,7 @@ Error: success criteria not met
   "components": [
     {
       "name": "Unnamed",
-      "containerImage": "${REGISTRY}/acceptance/bad-actor@${REGISTRY_acceptance/bad-actor:latest_HASH}",
+      "containerImage": "${REGISTRY}/acceptance/bad-actor@sha256:${REGISTRY_acceptance/bad-actor:latest_DIGEST}",
       "source": {},
       "violations": [
         {
@@ -1456,7 +1456,7 @@ Error: success criteria not met
   "components": [
     {
       "name": "Unnamed",
-      "containerImage": "${REGISTRY}/acceptance/destination@${REGISTRY_IMAGE_acceptance/destination:latest|acceptance/source:latest_HASH}",
+      "containerImage": "${REGISTRY}/acceptance/destination@sha256:${REGISTRY_IMAGE_acceptance/destination:latest|acceptance/source:latest_DIGEST}",
       "source": {},
       "successes": [
         {
@@ -1532,7 +1532,7 @@ Error: success criteria not met
   "components": [
     {
       "name": "Unnamed",
-      "containerImage": "${REGISTRY}/acceptance/image@${REGISTRY_acceptance/image:latest_HASH}",
+      "containerImage": "${REGISTRY}/acceptance/image@sha256:${REGISTRY_acceptance/image:latest_DIGEST}",
       "source": {},
       "violations": [
         {
@@ -1634,7 +1634,7 @@ Error: success criteria not met
   "components": [
     {
       "name": "Unnamed",
-      "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
+      "containerImage": "${REGISTRY}/acceptance/ec-happy-day@sha256:${REGISTRY_acceptance/ec-happy-day:latest_DIGEST}",
       "source": {},
       "violations": [
         {
@@ -1714,7 +1714,7 @@ Error: success criteria not met
   "components": [
     {
       "name": "Unnamed",
-      "containerImage": "${REGISTRY}/acceptance/my-image@${REGISTRY_acceptance/my-image:latest_HASH}",
+      "containerImage": "${REGISTRY}/acceptance/my-image@sha256:${REGISTRY_acceptance/my-image:latest_DIGEST}",
       "source": {},
       "successes": [
         {
@@ -1806,7 +1806,7 @@ ${TEMP}/ec-work-${RANDOM}/policy/${RANDOM}/main.rego:29: rego_type_error: undefi
   "components": [
     {
       "name": "Unnamed",
-      "containerImage": "${REGISTRY}/acceptance/ec-happy-day@${REGISTRY_acceptance/ec-happy-day:latest_HASH}",
+      "containerImage": "${REGISTRY}/acceptance/ec-happy-day@sha256:${REGISTRY_acceptance/ec-happy-day:latest_DIGEST}",
       "source": {},
       "successes": [
         {
@@ -1883,7 +1883,7 @@ ${TEMP}/ec-work-${RANDOM}/policy/${RANDOM}/main.rego:29: rego_type_error: undefi
   "components": [
     {
       "name": "Unnamed",
-      "containerImage": "${REGISTRY}/acceptance/image@${REGISTRY_acceptance/image:latest_HASH}",
+      "containerImage": "${REGISTRY}/acceptance/image@sha256:${REGISTRY_acceptance/image:latest_DIGEST}",
       "source": {},
       "violations": [
         {
@@ -1970,7 +1970,7 @@ Error: success criteria not met
   "components": [
     {
       "name": "Unnamed",
-      "containerImage": "${REGISTRY}/acceptance/unique-successes@${REGISTRY_acceptance/unique-successes:latest_HASH}",
+      "containerImage": "${REGISTRY}/acceptance/unique-successes@sha256:${REGISTRY_acceptance/unique-successes:latest_DIGEST}",
       "source": {},
       "violations": [
         {
@@ -2075,7 +2075,7 @@ Error: success criteria not met
   "components": [
     {
       "name": "Unnamed",
-      "containerImage": "${REGISTRY}/acceptance/image-config@${REGISTRY_acceptance/image-config:latest_HASH}",
+      "containerImage": "${REGISTRY}/acceptance/image-config@sha256:${REGISTRY_acceptance/image-config:latest_DIGEST}",
       "source": {},
       "successes": [
         {
@@ -2176,7 +2176,7 @@ Error: success criteria not met
   "components": [
     {
       "name": "Unnamed",
-      "containerImage": "${REGISTRY}/acceptance/image@${REGISTRY_acceptance/image:latest_HASH}",
+      "containerImage": "${REGISTRY}/acceptance/image@sha256:${REGISTRY_acceptance/image:latest_DIGEST}",
       "source": {},
       "success": true,
       "signatures": [
@@ -2221,5 +2221,87 @@ Error: success criteria not met
 ---
 
 [Output attestations:${TMPDIR}/attestation.jsonl - 1]
-{"_type":"https://in-toto.io/Statement/v0.1","predicateType":"https://slsa.dev/provenance/v0.2","subject":[{"name":"acceptance/image","digest":${REGISTRY_acceptance/image:latest_JSON_HASH}}],"predicate":{"builder":{"id":"https://tekton.dev/chains/v2"},"buildType":"https://tekton.dev/attestations/chains/pipelinerun@v2","invocation":{"configSource":{}}}}
+{
+  "_type": "https://in-toto.io/Statement/v0.1",
+  "predicateType": "https://slsa.dev/provenance/v0.2",
+  "subject": [
+    {
+      "name": "acceptance/image",
+      "digest": {
+        "sha256": "${REGISTRY_acceptance/image:latest_DIGEST}"
+      }
+    }
+  ],
+  "predicate": {
+    "builder": {
+      "id": "https://tekton.dev/chains/v2"
+    },
+    "buildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+    "invocation": {
+      "configSource": {}
+    }
+  }
+}
+---
+
+[policy input output:stdout - 1]
+{
+  "attestations": [
+    {
+      "_type": "https://in-toto.io/Statement/v0.1",
+      "predicateType": "https://slsa.dev/provenance/v0.2",
+      "subject": [
+        {
+          "name": "acceptance/policy-input-output",
+          "digest": {
+            "sha256": "${REGISTRY_acceptance/policy-input-output:latest_DIGEST}"
+          }
+        }
+      ],
+      "predicate": {
+        "builder": {
+          "id": "https://tekton.dev/chains/v2"
+        },
+        "buildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+        "invocation": {
+          "configSource": {}
+        }
+      },
+      "extra": {
+        "signatures": [
+          {
+            "keyid": "",
+            "sig": "${ATTESTATION_SIGNATURE_acceptance/policy-input-output}"
+          }
+        ]
+      }
+    }
+  ],
+  "image": {
+    "ref": "${REGISTRY}/acceptance/policy-input-output@sha256:${REGISTRY_acceptance/policy-input-output:latest_DIGEST}",
+    "signatures": [
+      {
+        "keyid": "",
+        "sig": "${IMAGE_SIGNATURE_acceptance/policy-input-output}"
+      }
+    ],
+    "config": {
+      "Labels": {
+        "org.opencontainers.image.title": "acceptance/policy-input-output"
+      }
+    },
+    "parent": {
+      "ref": "${REGISTRY}/acceptance/policy-input-output/parent:latest@sha256:${REGISTRY_acceptance/policy-input-output/parent:latest_DIGEST}",
+      "config": {
+        "Labels": {
+          "org.opencontainers.image.title": "acceptance/policy-input-output/parent"
+        }
+      }
+    }
+  }
+}
+---
+
+[policy input output:stderr - 1]
+
 ---

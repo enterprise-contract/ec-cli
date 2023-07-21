@@ -739,3 +739,21 @@ Feature: evaluate enterprise contract
     Then the exit status should be 0
     And the output should match the snapshot
     And the "${TMPDIR}/attestation.jsonl" file should match the snapshot
+
+ Scenario: policy input output
+    Given a key pair named "known"
+    Given an image named "acceptance/policy-input-output"
+    Given a valid image signature of "acceptance/policy-input-output" image signed by the "known" key
+    Given a valid Rekor entry for image signature of "acceptance/policy-input-output"
+    Given a valid attestation of "acceptance/policy-input-output" signed by the "known" key
+    Given a valid Rekor entry for attestation of "acceptance/policy-input-output"
+    Given a git repository named "policy-input-output-policy" with
+      | main.rego | examples/happy_day.rego |
+    Given policy configuration named "ec-policy" with specification
+    """
+    {"sources": [{"policy": ["git::https://${GITHOST}/git/policy-input-output-policy.git"]}]}
+    """
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/policy-input-output --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --output policy-input"
+    Then the exit status should be 0
+    Then the output should match the snapshot
+

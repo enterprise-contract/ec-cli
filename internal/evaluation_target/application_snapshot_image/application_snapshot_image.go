@@ -346,8 +346,13 @@ type image struct {
 	Parent     any                         `json:"parent,omitempty"`
 }
 
+type Input struct {
+	Attestations []attestationData `json:"attestations"`
+	Image        image             `json:"image"`
+}
+
 // WriteInputFile writes the JSON from the attestations to input.json in a random temp dir
-func (a *ApplicationSnapshotImage) WriteInputFile(ctx context.Context) (string, error) {
+func (a *ApplicationSnapshotImage) WriteInputFile(ctx context.Context) (string, []byte, error) {
 	log.Debugf("Attempting to write %d attestations to input file", len(a.attestations))
 
 	var attestations []attestationData
@@ -358,10 +363,7 @@ func (a *ApplicationSnapshotImage) WriteInputFile(ctx context.Context) (string, 
 		})
 	}
 
-	input := struct {
-		Attestations []attestationData `json:"attestations"`
-		Image        image             `json:"image"`
-	}{
+	input := Input{
 		Attestations: attestations,
 		Image: image{
 			Ref:        a.reference.String(),
@@ -381,7 +383,7 @@ func (a *ApplicationSnapshotImage) WriteInputFile(ctx context.Context) (string, 
 	inputDir, err := afero.TempDir(fs, "", "ecp_input.")
 	if err != nil {
 		log.Debug("Problem making temp dir!")
-		return "", err
+		return "", nil, err
 	}
 	log.Debugf("Created dir %s", inputDir)
 	inputJSONPath := path.Join(inputDir, "input.json")
@@ -389,17 +391,19 @@ func (a *ApplicationSnapshotImage) WriteInputFile(ctx context.Context) (string, 
 	f, err := fs.OpenFile(inputJSONPath, os.O_CREATE|os.O_WRONLY|os.O_EXCL, 0644)
 	if err != nil {
 		log.Debugf("Problem creating file in %s", inputDir)
-		return "", err
+		return "", nil, err
 	}
 	defer f.Close()
 
-	j := json.NewEncoder(f)
-	err = j.Encode(input)
+	inputJSON, err := json.Marshal(input)
 	if err != nil {
-		log.Debug("Problem encoding attestion JSON!")
-		return "", err
+		return "", nil, fmt.Errorf("input to JSON: %w", err)
+	}
+
+	if _, err := f.Write(inputJSON); err != nil {
+		return "", nil, fmt.Errorf("write input to file: %w", err)
 	}
 
 	log.Debugf("Done preparing input file:\n%s", inputJSONPath)
-	return inputJSONPath, nil
+	return inputJSONPath, inputJSON, nil
 }

@@ -300,7 +300,11 @@ func setupRegistry(ctx context.Context, vars map[string]string, environment []st
 	}
 
 	for repositoryAndTag, hash := range hashes {
-		vars[fmt.Sprintf("REGISTRY_%s_HASH", repositoryAndTag)] = hash
+		_, digest, found := strings.Cut(hash, ":")
+		if !found {
+			return environment, vars, fmt.Errorf("hash %q does not contain digest", hash)
+		}
+		vars[fmt.Sprintf("REGISTRY_%s_DIGEST", repositoryAndTag)] = digest
 	}
 
 	return environment, vars, nil

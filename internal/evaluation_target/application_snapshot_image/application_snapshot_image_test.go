@@ -248,18 +248,20 @@ func TestWriteInputFile(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			fs := afero.NewMemMapFs()
 			ctx := utils.WithFS(context.Background(), fs)
-			input, err := tt.snapshot.WriteInputFile(ctx)
+			inputPath, inputJSON, err := tt.snapshot.WriteInputFile(ctx)
 
 			assert.NoError(t, err)
-			assert.NotEmpty(t, input)
-			assert.Regexp(t, `/ecp_input.\d+/input.json`, input)
-			fileExists, err := afero.Exists(fs, input)
+			assert.NotEmpty(t, inputPath)
+			assert.Regexp(t, `/ecp_input.\d+/input.json`, inputPath)
+			fileExists, err := afero.Exists(fs, inputPath)
 			assert.NoError(t, err)
 			assert.True(t, fileExists)
 
-			bytes, err := afero.ReadFile(fs, input)
+			bytes, err := afero.ReadFile(fs, inputPath)
 			assert.NoError(t, err)
 			snaps.MatchJSON(t, bytes)
+
+			assert.JSONEq(t, string(inputJSON), string(bytes))
 		})
 	}
 }
@@ -273,18 +275,20 @@ func TestWriteInputFileMultipleAttestations(t *testing.T) {
 
 	fs := afero.NewMemMapFs()
 	ctx := utils.WithFS(context.Background(), fs)
-	input, err := a.WriteInputFile(ctx)
+	inputPath, inputJSON, err := a.WriteInputFile(ctx)
 
 	assert.NoError(t, err)
-	assert.NotEmpty(t, input)
-	assert.Regexp(t, `/ecp_input.\d+/input.json`, input)
-	fileExists, err := afero.Exists(fs, input)
+	assert.NotEmpty(t, inputPath)
+	assert.Regexp(t, `/ecp_input.\d+/input.json`, inputPath)
+	fileExists, err := afero.Exists(fs, inputPath)
 	assert.NoError(t, err)
 	assert.True(t, fileExists)
 
-	bytes, err := afero.ReadFile(fs, input)
+	bytes, err := afero.ReadFile(fs, inputPath)
 	assert.NoError(t, err)
 	snaps.MatchJSON(t, bytes)
+
+	assert.JSONEq(t, string(inputJSON), string(bytes))
 }
 
 func TestSyntaxValidationWithoutAttestations(t *testing.T) {

@@ -17,6 +17,7 @@
 package applicationsnapshot
 
 import (
+	"bytes"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
@@ -55,6 +56,7 @@ type Report struct {
 	EcVersion     string                           `json:"ec-version"`
 	Data          any                              `json:"-"`
 	EffectiveTime time.Time                        `json:"effective-time"`
+	PolicyInput   [][]byte                         `json:"-"`
 }
 
 type summary struct {
@@ -99,11 +101,12 @@ const (
 	JUNIT       = "junit"
 	DATA        = "data"
 	ATTESTATION = "attestation"
+	PolicyInput = "policy-input"
 )
 
 // WriteReport returns a new instance of Report representing the state of
 // components from the snapshot.
-func NewReport(snapshot string, components []Component, policy policy.Policy, data any) (Report, error) {
+func NewReport(snapshot string, components []Component, policy policy.Policy, data any, policyInput [][]byte) (Report, error) {
 	success := true
 
 	// Set the report success, remains true if all components are successful
@@ -132,6 +135,7 @@ func NewReport(snapshot string, components []Component, policy policy.Policy, da
 		Policy:        policy.Spec(),
 		EcVersion:     info.Version,
 		Data:          data,
+		PolicyInput:   policyInput,
 		EffectiveTime: policy.EffectiveTime().UTC(),
 	}, nil
 }
@@ -173,6 +177,8 @@ func (r *Report) toFormat(format string) (data []byte, err error) {
 		data, err = yaml.Marshal(r.Data)
 	case ATTESTATION:
 		data, err = r.renderAttestations()
+	case PolicyInput:
+		data = bytes.Join(r.PolicyInput, []byte("\n"))
 	default:
 		return nil, fmt.Errorf("%q is not a valid report format", format)
 	}
