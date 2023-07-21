@@ -2171,7 +2171,49 @@ Error: success criteria not met
 ---
 
 [Output attestations:stdout - 1]
-{"success":true,"components":[{"name":"Unnamed","containerImage":"${REGISTRY}/acceptance/image@${REGISTRY_acceptance/image:latest_HASH}","source":{},"success":true,"signatures":[${IMAGE_SIGNATURES_JSON_acceptance/image}],"attestations":[{"type":"https://in-toto.io/Statement/v0.1","predicateType":"https://slsa.dev/provenance/v0.2","predicateBuildType":"https://tekton.dev/attestations/chains/pipelinerun@v2","signatures":[${ATTESTATION_SIGNATURES_JSON_acceptance/image}]}]}],"key":${known_PUBLIC_KEY_JSON},"policy":{"sources":[{"policy":["git::https://${GITHOST}/git/my-policy.git"]}],"publicKey":"${known_PUBLIC_KEY}"},"ec-version":"${EC_VERSION}","effective-time":"${TIMESTAMP}"}
+{
+  "success": true,
+  "components": [
+    {
+      "name": "Unnamed",
+      "containerImage": "${REGISTRY}/acceptance/image@${REGISTRY_acceptance/image:latest_HASH}",
+      "source": {},
+      "success": true,
+      "signatures": [
+        {
+          "keyid": "",
+          "sig": "${IMAGE_SIGNATURE_acceptance/image}"
+        }
+      ],
+      "attestations": [
+        {
+          "type": "https://in-toto.io/Statement/v0.1",
+          "predicateType": "https://slsa.dev/provenance/v0.2",
+          "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+          "signatures": [
+            {
+              "keyid": "",
+              "sig": "${ATTESTATION_SIGNATURE_acceptance/image}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "key": "${known_PUBLIC_KEY_JSON}",
+  "policy": {
+    "sources": [
+      {
+        "policy": [
+          "git::https://${GITHOST}/git/my-policy.git"
+        ]
+      }
+    ],
+    "publicKey": "${known_PUBLIC_KEY}"
+  },
+  "ec-version": "${EC_VERSION}",
+  "effective-time": "${TIMESTAMP}"
+}
 ---
 
 [Output attestations:stderr - 1]
