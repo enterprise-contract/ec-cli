@@ -11,7 +11,7 @@ require (
 	github.com/evanphx/json-patch/v5 v5.6.0
 	github.com/gkampitakis/go-snaps v0.4.8 // we need custom snapshot directory & file support from https://github.com/gkampitakis/go-snaps/pull/60
 	github.com/go-git/go-billy/v5 v5.4.1
-	github.com/go-git/go-git/v5 v5.7.0
+	github.com/go-git/go-git/v5 v5.8.0
 	github.com/go-openapi/strfmt v0.21.7
 	github.com/google/go-containerregistry v0.15.2
 	github.com/hashicorp/go-multierror v1.1.1
