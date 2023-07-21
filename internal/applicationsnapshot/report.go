@@ -274,3 +274,23 @@ func (r *TestReport) DeriveResult(hasFailures bool) {
 		r.Result = "SUCCESS"
 	}
 }
+
+func OutputAppstudioReport(t TestReport) {
+	out, err := json.Marshal(t)
+	if err != nil {
+		// Unlikely
+		panic(err)
+	}
+	fmt.Printf("%s\n", out)
+}
+
+func AppstudioReportForError() TestReport {
+	return TestReport{
+		Timestamp: fmt.Sprint(time.Now().UTC().Unix()),
+		Namespace: "",
+		Successes: 0,
+		Warnings:  0,
+		Failures:  0,
+		Result:    "ERROR",
+	}
+}

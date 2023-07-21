@@ -35,7 +35,6 @@ import (
 )
 
 const testDesc = `
-
 The 'ec test' command is a thin wrapper for the 'conftest test' command. This
 is an experimental feature that requires setting the EC_EXPERIMENTAL environment
 variable to "1".
@@ -147,11 +146,7 @@ func newTestCommand() *cobra.Command {
 				return fmt.Errorf("unmarshal parameters: %w", err)
 			}
 
-			results, err := runner.Run(ctx, fileList)
-			if err != nil {
-				return fmt.Errorf("running test: %w", err)
-			}
-
+			results, resultsErr := runner.Run(ctx, fileList)
 			var exitCode int
 			if runner.FailOnWarn {
 				exitCode = output.ExitCodeFailOnWarn(results)
@@ -162,15 +157,25 @@ func newTestCommand() *cobra.Command {
 			if !runner.Quiet || exitCode != 0 {
 				if runner.Output == OutputAppstudio {
 					// The appstudio format is unknown to Conftest so we handle it ourselves
+
+					if resultsErr != nil {
+						return appstudioErrorHandler(runner.NoFail, "running test", resultsErr)
+					}
+
 					report := appstudioReport(results, runner.Namespace)
 					reportOutput, err := json.Marshal(report)
 					if err != nil {
-						return fmt.Errorf("output results: %w", err)
+						return appstudioErrorHandler(runner.NoFail, "output results", err)
 					}
 					fmt.Printf("%s\n", reportOutput)
 
 				} else {
 					// Conftest handles the output
+
+					if resultsErr != nil {
+						return fmt.Errorf("running test: %w", resultsErr)
+					}
+
 					outputter := output.Get(runner.Output, output.Options{
 						NoColor:            runner.NoColor,
 						SuppressExceptions: runner.SuppressExceptions,

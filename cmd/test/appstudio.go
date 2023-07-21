@@ -14,16 +14,11 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// -------------------------------------------------------------------------------
-// This file is almost to identical to the conftest version of this command.
-// Use `make conftest-test-cmd-diff` to show a comparison.
-// Note also that the way that flags are handled here is not consistent with how
-// it's done elsewhere. This intentional in order to be consistent with Conftest.
-// -------------------------------------------------------------------------------
 package test
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/open-policy-agent/conftest/output"
@@ -57,4 +52,26 @@ func appstudioReport(results []output.CheckResult, namespaces []string) applicat
 
 	report.DeriveResult(false)
 	return report
+}
+
+// Special error handling for appstudio format only
+func appstudioErrorHandler(noFail bool, prefix string, err error) error {
+	// Output some json to stdout
+	applicationsnapshot.OutputAppstudioReport(applicationsnapshot.AppstudioReportForError())
+
+	// Beware we're effectively changing the meaning of the --no-fail flag here.
+	// Rather than being only about policy failures any more, we're extending
+	// it to also mean don't return a non-zero exit code for an error handled
+	// by this function.
+	if noFail {
+		// Still put the real error in stderr so there is some chance
+		// users can figure out what caused the problem
+		fmt.Fprintf(os.Stderr, "Error: %s: %s\n", prefix, err.Error())
+
+		// So the exit code is zero
+		return nil
+	} else {
+		// "Normal" behavior, return the formatted error
+		return fmt.Errorf("%s: %w", prefix, err)
+	}
 }
