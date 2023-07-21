@@ -1,0 +1,74 @@
+= Policy Input
+
+The policy input refers the variable `input` in rego. This page describes the structure of the input
+available for policy evaluation when using the Enterprise Contract CLI. The input is different for
+each subcommand as each subcommand has a different specialty.
+
+== Validate Image
+
+The input format for the `validate image` command describes all the information related to the image
+being available. Not all information is available for all images. This is noted below in the
+description of each attribute.
+
+It is important to note that this command may proccess multiple images at the same time. In such
+cases, a different input is generated for each image. In other words, policy rules only eve have
+access to the information about a single image.
+
+[,json]
+----
+{
+    "attestations": [
+        {
+            "_type": "https://in-toto.io/Statement/v0.1",
+            "extra": {
+                "signatures": [...#SignatureDescriptor]
+            },
+            "predicate": {...},
+            "predicateType": "https://slsa.dev/provenance/v0.2",
+            "subject": [...],
+        }
+    ],
+    "image": #ImageDescriptor
+}
+
+#ImageDescriptor: {
+    "config": {...},
+    "parent": #ImageDescriptor,
+    "ref": "<STRING>",
+    "signatures": [...#SignatureDescriptor]
+}
+
+#SignatureDescriptor: {
+    "keyid": "<STRING>",
+    "sig": "<STRING>",
+    "certificate": "<STRING>",
+    "chain": [..."<STRING>"],
+    "metadata": {...}
+}
+----
+
+`.attestations` is an array of objects. Each object represents a SLSA Provenance v0.2 statement. See
+https://slsa.dev/provenance/v0.2#schema[schema] for details. An additional attribute, `.extra`, is
+added to provide additional information about the statements. Currently, this means the signatures
+associated with the statement.
+
+`.image` is an object representing the image being validated.
+
+`.image.config` holds the OCI config for the image. It may contain various attributes, such as
+`.Labels`, `Env`, and `Cmd`. The set of attributes available depends on what is set on the OCI image
+config. See the https://github.com/opencontainers/image-spec/blob/main/config.md#properties[config property definition] for more details.
+
+`.image.parent` is an ImageDescriptor for the parent image of the image being validated. This is
+only present if the image being validated contains the
+https://github.com/opencontainers/image-spec/blob/main/annotations.md#pre-defined-annotation-keys[expected annotations]: `org.opencontainers.image.base.name` and
+`org.opencontainers.image.base.digest`.
+
+`.image.ref` is a string containing a reference to the image. A digest is always included, but a tag
+is not.
+
+`.image.signatures` is an array of signature descriptors associated with the image.
+
+The contents of the SignatureDescriptor objects varies depending on the form of signature validation
+used. `.keyid` holds the ID of the key used for signing. `sig` is the signature of the resource.
+`.certificate` and `chain` holds PEM encoded certificates. These two are only available when
+short-lived keys are used, aka keyless workflow.
