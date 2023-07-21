@@ -21,6 +21,7 @@ require (
 	github.com/pkg/diff v0.0.0-20210226163009-20ebb0f2a09e
 	github.com/pkg/errors v0.9.1
 	github.com/redhat-appstudio/application-api v0.0.0-20230717140139-e5cd9a23e669
+	github.com/secure-systems-lab/go-securesystemslib v0.7.0
 	github.com/sigstore/cosign/v2 v2.1.1
 	github.com/sigstore/rekor v1.2.2
 	github.com/sigstore/sigstore v1.7.1
@@ -28,10 +29,10 @@ require (
 	github.com/tektoncd/cli v0.31.1
 	github.com/tektoncd/pipeline v0.47.0
 	github.com/testcontainers/testcontainers-go v0.21.0
-	github.com/theupdateframework/go-tuf v0.6.0
 	github.com/transparency-dev/merkle v0.0.2
 	github.com/walkerus/go-wiremock v1.5.0
 	github.com/yudai/gojsondiff v1.0.0
+	golang.org/x/exp v0.0.0-20230510235704-dd950f8aeaea
 	gopkg.in/square/go-jose.v2 v2.6.0
 	k8s.io/api v0.27.3
 	k8s.io/apimachinery v0.27.4
@@ -41,8 +42,6 @@ require (
 	sigs.k8s.io/kustomize/kyaml v0.14.2
 	sigs.k8s.io/yaml v1.3.0
 )
-
-require golang.org/x/exp v0.0.0-20230510235704-dd950f8aeaea
 
 require (
 	contrib.go.opencensus.io/exporter/ocagent v0.7.1-0.20200907061046-05415f1de66d // indirect
@@ -171,7 +170,6 @@ require (
 	github.com/prometheus/statsd_exporter v0.21.0 // indirect
 	github.com/rogpeppe/go-internal v1.10.0 // indirect
 	github.com/sassoftware/relic v7.2.1+incompatible // indirect
-	github.com/secure-systems-lab/go-securesystemslib v0.7.0 // indirect
 	github.com/sergi/go-diff v1.3.1 // indirect
 	github.com/shibumi/go-pathspec v1.3.0 // indirect
 	github.com/sigstore/timestamp-authority v1.1.1 // indirect
@@ -187,6 +185,7 @@ require (
 	github.com/stretchr/objx v0.5.0 // indirect
 	github.com/subosito/gotenv v1.4.2 // indirect
 	github.com/syndtr/goleveldb v1.0.1-0.20220721030215-126854af5e6d // indirect
+	github.com/theupdateframework/go-tuf v0.6.0 // indirect
 	github.com/tidwall/gjson v1.14.4 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect

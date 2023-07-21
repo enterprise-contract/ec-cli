@@ -33,12 +33,12 @@ import (
 	"github.com/cucumber/godog"
 	"github.com/cyberphone/json-canonicalization/go/src/webpki.org/jsoncanonicalizer"
 	"github.com/go-openapi/strfmt"
+	"github.com/secure-systems-lab/go-securesystemslib/encrypted"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
 	"github.com/sigstore/cosign/v2/pkg/cosign/bundle"
 	"github.com/sigstore/rekor/pkg/generated/models"
 	intoto "github.com/sigstore/rekor/pkg/types/intoto/v0.0.1"
 	"github.com/sigstore/sigstore/pkg/cryptoutils"
-	"github.com/theupdateframework/go-tuf/encrypted"
 	"github.com/transparency-dev/merkle/rfc6962"
 
 	"github.com/enterprise-contract/ec-cli/acceptance/crypto"
