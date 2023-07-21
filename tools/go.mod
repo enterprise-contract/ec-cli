@@ -14,9 +14,6 @@ require (
 	sigs.k8s.io/kustomize/kustomize/v5 v5.0.3
 )
 
-// until https://github.com/grafeas/grafeas/pull/565 is merged/released
-replace github.com/grafeas/grafeas => github.com/zregvart/grafeas v0.0.0-20230102130750-341817cf5037
-
 require (
 	4d63.com/gocheckcompilerdirectives v1.2.1 // indirect
 	4d63.com/gochecknoglobals v0.2.1 // indirect
@@ -248,7 +245,7 @@ require (
 	github.com/gostaticanalysis/forcetypeassert v0.1.0 // indirect
 	github.com/gostaticanalysis/nilerr v0.1.1 // indirect
 	github.com/gosuri/uitable v0.0.4 // indirect
-	github.com/grafeas/grafeas v0.2.2-0.20220620154915-0ec8596e37d3 // indirect
+	github.com/grafeas/grafeas v0.2.2 // indirect
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.15.2 // indirect
 	github.com/hako/durafmt v0.0.0-20210608085754-5c1018a4e16b // indirect
