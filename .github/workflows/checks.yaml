@@ -101,6 +101,9 @@ jobs:
           go-version-file: go.mod
           cache: false
 
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
+
       - name: Acceptance test
         run: make acceptance
 
