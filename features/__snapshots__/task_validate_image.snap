@@ -58,7 +58,7 @@ components:
     - keyid: ""
       sig: ${ATTESTATION_SIGNATURE_acceptance/non-strict-with-warnings}
     type: https://in-toto.io/Statement/v0.1
-  containerImage: ${REGISTRY}/acceptance/non-strict-with-warnings@${REGISTRY_acceptance/non-strict-with-warnings:latest_HASH}
+  containerImage: ${REGISTRY}/acceptance/non-strict-with-warnings@sha256:${REGISTRY_acceptance/non-strict-with-warnings:latest_DIGEST}
   name: ""
   signatures:
   - keyid: ""
@@ -121,7 +121,7 @@ components:
     - keyid: ""
       sig: ${ATTESTATION_SIGNATURE_acceptance/strict-with-warnings}
     type: https://in-toto.io/Statement/v0.1
-  containerImage: ${REGISTRY}/acceptance/strict-with-warnings@${REGISTRY_acceptance/strict-with-warnings:latest_HASH}
+  containerImage: ${REGISTRY}/acceptance/strict-with-warnings@sha256:${REGISTRY_acceptance/strict-with-warnings:latest_DIGEST}
   name: ""
   signatures:
   - keyid: ""
@@ -406,7 +406,7 @@ components:
     - keyid: ""
       sig: ${ATTESTATION_SIGNATURE_acceptance/okayish}
     type: https://in-toto.io/Statement/v0.1
-  containerImage: ${REGISTRY}/acceptance/okayish@${REGISTRY_acceptance/okayish:latest_HASH}
+  containerImage: ${REGISTRY}/acceptance/okayish@sha256:${REGISTRY_acceptance/okayish:latest_DIGEST}
   name: ""
   signatures:
   - keyid: ""
@@ -446,7 +446,27 @@ success: true
 ---
 
 [Outputs are there:attestations - 1]
-{"_type":"https://in-toto.io/Statement/v0.1","predicateType":"https://slsa.dev/provenance/v0.2","subject":[{"name":"acceptance/okayish","digest":${REGISTRY_acceptance/okayish:latest_JSON_HASH}}],"predicate":{"builder":{"id":"https://tekton.dev/chains/v2"},"buildType":"https://tekton.dev/attestations/chains/pipelinerun@v2","invocation":{"configSource":{}}}}
+{
+  "_type": "https://in-toto.io/Statement/v0.1",
+  "predicateType": "https://slsa.dev/provenance/v0.2",
+  "subject": [
+    {
+      "name": "acceptance/okayish",
+      "digest": {
+        "sha256": "${REGISTRY_acceptance/okayish:latest_DIGEST}"
+      }
+    }
+  ],
+  "predicate": {
+    "builder": {
+      "id": "https://tekton.dev/chains/v2"
+    },
+    "buildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+    "invocation": {
+      "configSource": {}
+    }
+  }
+}
 ---
 
 [Outputs are there:summary - 1]

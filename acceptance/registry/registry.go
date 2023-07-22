@@ -29,7 +29,6 @@ import (
 
 	"github.com/cucumber/godog"
 	"github.com/google/go-containerregistry/pkg/name"
-	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/pkg/diff"
 	"github.com/pkg/errors"
@@ -147,9 +146,9 @@ func Url(ctx context.Context) (string, error) {
 	return state.HostAndPort, nil
 }
 
-// AllHashes returns a map of image hashes keyed by `repository:tag` for all
+// AllDigests returns a map of image digests keyed by `repository:tag` for all
 // images stored in the registry
-func AllHashes(ctx context.Context) (map[string]string, error) {
+func AllDigests(ctx context.Context) (map[string]string, error) {
 	url, err := StubRegistry(ctx)
 	if err != nil {
 		return nil, err
@@ -165,7 +164,7 @@ func AllHashes(ctx context.Context) (map[string]string, error) {
 		return nil, err
 	}
 
-	all := map[string]v1.Hash{}
+	vars := map[string]string{}
 	refsByDigest := map[string][]string{}
 	for _, repository := range repositories {
 		r, err := name.NewRepository(repository, name.WithDefaultRegistry(url))
@@ -189,11 +188,10 @@ func AllHashes(ctx context.Context) (map[string]string, error) {
 				return nil, err
 			}
 
-			digest := descriptor.Digest
+			digest := descriptor.Digest.Hex
 			imgRef := repository + ":" + tag
-			all[imgRef] = digest
-			digestStr := digest.String()
-			refsByDigest[digestStr] = append(refsByDigest[digestStr], imgRef)
+			vars[imgRef] = digest
+			refsByDigest[digest] = append(refsByDigest[digest], imgRef)
 		}
 	}
 
@@ -201,27 +199,19 @@ func AllHashes(ctx context.Context) (map[string]string, error) {
 	// reversly map a digest to either of the two or more references, with this
 	// we remove the references with the same digest and map to a synthetic
 	// "IMAGE_ref1|ref2|..." reference
-	for _, digest := range all {
-		digestStr := digest.String()
-
-		if len(refsByDigest[digestStr]) == 1 {
+	for _, digest := range vars {
+		if len(refsByDigest[digest]) == 1 {
 			// unique digest
 			continue
 		}
 
-		for _, sameDigestRef := range refsByDigest[digestStr] {
-			delete(all, sameDigestRef)
+		for _, sameDigestRef := range refsByDigest[digest] {
+			delete(vars, sameDigestRef)
 		}
 
-		sort.Strings(refsByDigest[digestStr])
-		refs := strings.Join(refsByDigest[digestStr], "|")
-		all["IMAGE_"+refs] = digest
-	}
-
-	vars := map[string]string{}
-	for v, d := range all {
-		vars[v] = d.String()
-		vars[v+"_JSON"] = fmt.Sprintf(`{"%s":"%s"}`, d.Algorithm, d.Hex)
+		sort.Strings(refsByDigest[digest])
+		refs := strings.Join(refsByDigest[digest], "|")
+		vars["IMAGE_"+refs] = digest
 	}
 
 	return vars, nil
