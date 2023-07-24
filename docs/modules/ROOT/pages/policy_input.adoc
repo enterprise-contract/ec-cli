@@ -72,3 +72,6 @@ The contents of the SignatureDescriptor objects varies depending on the form of 
 used. `.keyid` holds the ID of the key used for signing. `sig` is the signature of the resource.
 `.certificate` and `chain` holds PEM encoded certificates. These two are only available when
 short-lived keys are used, aka keyless workflow.
+
+NOTE: Use the `policy-input` output format to save the input object to a file, e.g. `ec validate
+image ... --output=input.jsonl`.
