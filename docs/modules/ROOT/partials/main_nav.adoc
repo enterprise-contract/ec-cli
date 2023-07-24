@@ -1,2 +1,3 @@
 * xref:index.adoc[Home]
 * xref:configuration.adoc[Configuration]
+* xref:policy_input.adoc[Policy Input]
