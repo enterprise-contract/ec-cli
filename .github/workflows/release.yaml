@@ -32,6 +32,8 @@ jobs:
 
     permissions:
       contents: write  # for Git to git push & cache write
+      pages: write     # Needed for GitHub Pages deployment
+      id-token: write  # Needed for GitHub Pages deployment
     name: Release
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' || github.event.workflow_dispatch }}
@@ -96,6 +98,22 @@ jobs:
         env:
           TASK: "tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml tasks/verify-definition/0.1/verify-definition.yaml"
         run: make task-bundle-snapshot TASK_TAG=$TAG TASK=<( yq e ".spec.steps[].image? = \"$IMAGE_REPO:$TAG\"" $TASK | yq 'select(. != null)')
+
+      - name: Download statistics
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: hack/stats.sh
+
+      - name: Configure statistics pages
+        uses: actions/configure-pages@f156874f8191504dae5b037505266ed5dda6c382 # v3.0.6
+
+      - name: Upload statistics
+        uses: actions/upload-pages-artifact@a753861a5debcf57bf8b404356158c8e1e33150c # v2.0.0
+        with:
+          path: stats
+
+      - name: Deploy statistics
+        uses: actions/deploy-pages@12ab2b16cf43a7a061fe99da74b6f8f11fb77f5b # v2.0.3
 
       - name: Delete snapshot release and tag
         run: |
