@@ -70,8 +70,7 @@ type policy struct {
 	choosenTime     string
 	effectiveTime   *time.Time
 	attestationTime *time.Time
-	// TODO: Move these to ecc.EnterpriseContractPolicySpec
-	identity cosign.Identity
+	identity        cosign.Identity
 }
 
 // PublicKeyPEM returns the PublicKey in PEM format.
@@ -188,7 +187,19 @@ func NewPolicy(ctx context.Context, opts Options) (Policy, error) {
 		if !keylessEnabled() {
 			return nil, errors.New("policy must provide a public key")
 		}
-		p.identity = opts.Identity
+
+		if opts.Identity != (cosign.Identity{}) {
+			p.identity = opts.Identity
+		} else if p.EnterpriseContractPolicySpec.Identity != nil {
+			identity := cosign.Identity{
+				Issuer:        p.EnterpriseContractPolicySpec.Identity.Issuer,
+				Subject:       p.EnterpriseContractPolicySpec.Identity.Subject,
+				IssuerRegExp:  p.EnterpriseContractPolicySpec.Identity.IssuerRegExp,
+				SubjectRegExp: p.EnterpriseContractPolicySpec.Identity.SubjectRegExp,
+			}
+			p.identity = identity
+		}
+
 		if err := validateIdentity(p.identity); err != nil {
 			return nil, err
 		}

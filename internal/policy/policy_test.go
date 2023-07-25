@@ -224,6 +224,7 @@ func (c *FakeCosignClient) publicKeyFromKeyRef(context.Context, string) (sigstor
 func TestCheckOpts(t *testing.T) {
 	cases := []struct {
 		name            string
+		policyRef       string
 		rekorUrl        string
 		publicKey       string
 		remotePublicKey string
@@ -331,6 +332,18 @@ func TestCheckOpts(t *testing.T) {
 				Issuer: "my-issuer",
 			},
 		},
+		{
+			name:            "keyless missing issuer in ECP",
+			setExperimental: true,
+			err:             "certificate OIDC issuer must be provided for keyless workflow",
+			policyRef:       `{"identity": {"subject": "my-subject"}}`,
+		},
+		{
+			name:            "keyless missing subject in ECP",
+			setExperimental: true,
+			err:             "certificate identity must be provided for keyless workflow",
+			policyRef:       `{"identity": {"issuer": "my-issuer"}}`,
+		},
 	}
 
 	for _, c := range cases {
@@ -346,6 +359,7 @@ func TestCheckOpts(t *testing.T) {
 			}
 
 			p, err := NewPolicy(ctx, Options{
+				PolicyRef:     c.policyRef,
 				RekorURL:      c.rekorUrl,
 				PublicKey:     c.publicKey,
 				EffectiveTime: Now,
@@ -466,7 +480,7 @@ func TestIdentity(t *testing.T) {
 		err              string
 	}{
 		{
-			name: "simple",
+			name: "identity from Options",
 			newPolicy: func(ctx context.Context) (Policy, error) {
 				return NewPolicy(ctx, Options{
 					EffectiveTime: Now,
@@ -476,6 +490,38 @@ func TestIdentity(t *testing.T) {
 				})
 			},
 			expectedIdentity: cosign.Identity{Subject: "my-subject", Issuer: "my-issuer"},
+		},
+		{
+			name: "identity from Options with regexp",
+			newPolicy: func(ctx context.Context) (Policy, error) {
+				return NewPolicy(ctx, Options{
+					EffectiveTime: Now,
+					Identity: cosign.Identity{
+						SubjectRegExp: "subject-.*", IssuerRegExp: "issuer-.*",
+					},
+				})
+			},
+			expectedIdentity: cosign.Identity{SubjectRegExp: "subject-.*", IssuerRegExp: "issuer-.*"},
+		},
+		{
+			name: "identity from ECP",
+			newPolicy: func(ctx context.Context) (Policy, error) {
+				return NewPolicy(ctx, Options{
+					PolicyRef:     `{"identity": {"subject": "my-subject", "issuer": "my-issuer"}}`,
+					EffectiveTime: Now,
+				})
+			},
+			expectedIdentity: cosign.Identity{Subject: "my-subject", Issuer: "my-issuer"},
+		},
+		{
+			name: "identity from ECP with regexp",
+			newPolicy: func(ctx context.Context) (Policy, error) {
+				return NewPolicy(ctx, Options{
+					PolicyRef:     `{"identity": {"subjectRegExp": "subject-.*", "issuerRegExp": "issuer-.*"}}`,
+					EffectiveTime: Now,
+				})
+			},
+			expectedIdentity: cosign.Identity{SubjectRegExp: "subject-.*", IssuerRegExp: "issuer-.*"},
 		},
 	}
 
