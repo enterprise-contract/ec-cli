@@ -188,13 +188,6 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 				data.spec = s
 			}
 
-			identity := cosign.Identity{
-				Issuer:        data.certificateOIDCIssuer,
-				IssuerRegExp:  data.certificateOIDCIssuerRegExp,
-				Subject:       data.certificateIdentity,
-				SubjectRegExp: data.certificateIdentityRegExp,
-			}
-
 			// Check if policyConfiguration is a git url, if so, try to download a config file from git
 			if source.SourceIsGit(data.policyConfiguration) {
 				log.Debugf("Fetching policy config from git url %s", data.policyConfiguration)
@@ -240,10 +233,18 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 				data.policyConfiguration = string(policyBytes)
 			}
 
-			if p, err := policy.NewPolicy(
-				cmd.Context(), data.policyConfiguration, data.rekorURL, data.publicKey,
-				data.effectiveTime, identity,
-			); err != nil {
+			if p, err := policy.NewPolicy(cmd.Context(), policy.Options{
+				EffectiveTime: data.effectiveTime,
+				Identity: cosign.Identity{
+					Issuer:        data.certificateOIDCIssuer,
+					IssuerRegExp:  data.certificateOIDCIssuerRegExp,
+					Subject:       data.certificateIdentity,
+					SubjectRegExp: data.certificateIdentityRegExp,
+				},
+				PolicyRef: data.policyConfiguration,
+				PublicKey: data.publicKey,
+				RekorURL:  data.rekorURL,
+			}); err != nil {
 				allErrors = multierror.Append(allErrors, err)
 			} else {
 				data.policy = p

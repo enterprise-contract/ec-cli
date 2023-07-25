@@ -70,8 +70,7 @@ type policy struct {
 	choosenTime     string
 	effectiveTime   *time.Time
 	attestationTime *time.Time
-	// TODO: Move these to ecc.EnterpriseContractPolicySpec
-	identity cosign.Identity
+	identity        cosign.Identity
 }
 
 // PublicKeyPEM returns the PublicKey in PEM format.
@@ -109,6 +108,14 @@ func (p *policy) Identity() cosign.Identity {
 // Keyless returns whether or not the Policy uses the keyless workflow for verification.
 func (p *policy) Keyless() bool {
 	return keylessEnabled() && p.PublicKey == ""
+}
+
+type Options struct {
+	EffectiveTime string
+	Identity      cosign.Identity
+	PolicyRef     string
+	PublicKey     string
+	RekorURL      string
 }
 
 // NewOfflinePolicy construct and return a new instance of Policy that is used
@@ -157,36 +164,48 @@ func NewInertPolicy(ctx context.Context, policyRef string) (Policy, error) {
 //
 // The public key is resolved as part of object construction. If the public key is a reference
 // to a kubernetes resource, for example, the cluster will be contacted.
-func NewPolicy(ctx context.Context, policyRef, rekorUrl, publicKey, effectiveTime string, identity cosign.Identity) (Policy, error) {
+func NewPolicy(ctx context.Context, opts Options) (Policy, error) {
 	p := policy{
-		choosenTime: effectiveTime,
+		choosenTime: opts.EffectiveTime,
 	}
 
-	if err := p.loadPolicy(ctx, policyRef); err != nil {
+	if err := p.loadPolicy(ctx, opts.PolicyRef); err != nil {
 		return nil, err
 	}
 
-	if rekorUrl != "" && rekorUrl != p.RekorUrl {
-		p.RekorUrl = rekorUrl
-		log.Debugf("Updated rekor URL in policy to %q", rekorUrl)
+	if opts.RekorURL != "" && opts.RekorURL != p.RekorUrl {
+		p.RekorUrl = opts.RekorURL
+		log.Debugf("Updated rekor URL in policy to %q", opts.RekorURL)
 	}
 
-	if publicKey != "" && publicKey != p.PublicKey {
-		p.PublicKey = publicKey
-		log.Debugf("Updated public key in policy to %q", publicKey)
+	if opts.PublicKey != "" && opts.PublicKey != p.PublicKey {
+		p.PublicKey = opts.PublicKey
+		log.Debugf("Updated public key in policy to %q", opts.PublicKey)
 	}
 
 	if p.PublicKey == "" {
 		if !keylessEnabled() {
 			return nil, errors.New("policy must provide a public key")
 		}
-		p.identity = identity
+
+		if opts.Identity != (cosign.Identity{}) {
+			p.identity = opts.Identity
+		} else if p.EnterpriseContractPolicySpec.Identity != nil {
+			identity := cosign.Identity{
+				Issuer:        p.EnterpriseContractPolicySpec.Identity.Issuer,
+				Subject:       p.EnterpriseContractPolicySpec.Identity.Subject,
+				IssuerRegExp:  p.EnterpriseContractPolicySpec.Identity.IssuerRegExp,
+				SubjectRegExp: p.EnterpriseContractPolicySpec.Identity.SubjectRegExp,
+			}
+			p.identity = identity
+		}
+
 		if err := validateIdentity(p.identity); err != nil {
 			return nil, err
 		}
 	}
 
-	if efn, err := parseEffectiveTime(effectiveTime); err != nil {
+	if efn, err := parseEffectiveTime(opts.EffectiveTime); err != nil {
 		return nil, err
 	} else {
 		p.effectiveTime = efn

@@ -29,7 +29,6 @@ import (
 
 	"github.com/open-policy-agent/conftest/output"
 	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
-	"github.com/sigstore/cosign/v2/pkg/cosign"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -766,7 +765,10 @@ func testComponentsFor(snapshot app.SnapshotSpec) []Component {
 }
 
 func createTestPolicy(t *testing.T, ctx context.Context) policy.Policy {
-	p, err := policy.NewPolicy(ctx, "", "", utils.TestPublicKey, policy.Now, cosign.Identity{})
+	p, err := policy.NewPolicy(ctx, policy.Options{
+		PublicKey:     utils.TestPublicKey,
+		EffectiveTime: policy.Now,
+	})
 	assert.NoError(t, err)
 	return p
 }

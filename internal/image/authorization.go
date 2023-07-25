@@ -22,7 +22,6 @@ import (
 	"fmt"
 
 	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
-	"github.com/sigstore/cosign/v2/pkg/cosign"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/enterprise-contract/ec-cli/internal/policy"
@@ -80,7 +79,7 @@ func GetK8sResource(ecp *ecc.EnterpriseContractPolicySpec) (authorizationGetter,
 }
 
 func fetchECSource(ctx context.Context, policyConfiguration string) (policy.Policy, error) {
-	p, err := policy.NewPolicy(ctx, policyConfiguration, "", "", "", cosign.Identity{})
+	p, err := policy.NewPolicy(ctx, policy.Options{PolicyRef: policyConfiguration})
 	if err != nil {
 		log.Debug("Failed to fetch the enterprise contract policy from the cluster!")
 		return nil, err
