@@ -36,7 +36,7 @@ import (
 
 	"github.com/enterprise-contract/ec-cli/internal/attestation"
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
-	"github.com/enterprise-contract/ec-cli/internal/fetcher/image_config"
+	"github.com/enterprise-contract/ec-cli/internal/fetchers/oci/config"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/policy/source"
 	"github.com/enterprise-contract/ec-cli/internal/signature"
@@ -178,7 +178,7 @@ func (a *ApplicationSnapshotImage) FetchImageConfig(ctx context.Context) error {
 		remote.WithAuthFromKeychain(authn.DefaultKeychain),
 	}
 	var err error
-	a.configJSON, err = image_config.FetchImageConfig(ctx, a.reference, opts...)
+	a.configJSON, err = config.FetchImageConfig(ctx, a.reference, opts...)
 	return err
 }
 
@@ -190,11 +190,11 @@ func (a *ApplicationSnapshotImage) FetchParentImageConfig(ctx context.Context) e
 	}
 
 	var err error
-	a.parentRef, err = image_config.FetchParentImage(ctx, a.reference, opts...)
+	a.parentRef, err = config.FetchParentImage(ctx, a.reference, opts...)
 	if err != nil {
 		return err
 	}
-	a.parentConfigJSON, err = image_config.FetchImageConfig(ctx, a.parentRef, opts...)
+	a.parentConfigJSON, err = config.FetchImageConfig(ctx, a.parentRef, opts...)
 	return err
 }
 

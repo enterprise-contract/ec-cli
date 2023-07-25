@@ -14,7 +14,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package image_config
+package config
 
 import (
 	"context"
@@ -24,11 +24,13 @@ import (
 
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
+
+	"github.com/enterprise-contract/ec-cli/internal/fetchers/oci"
 )
 
 // FetchImageConfig retrieves the config for an image from its OCI registry.
 func FetchImageConfig(ctx context.Context, ref name.Reference, opts ...remote.Option) (json.RawMessage, error) {
-	image, err := NewClient(ctx).Image(ref, opts...)
+	image, err := oci.NewClient(ctx).Image(ref, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -45,16 +47,9 @@ func FetchImageConfig(ctx context.Context, ref name.Reference, opts ...remote.Op
 	return config, nil
 }
 
-const (
-	// These annotations are defined here:
-	// https://github.com/opencontainers/image-spec/blob/main/annotations.md#pre-defined-annotation-keys
-	BaseImageNameAnnotation   = "org.opencontainers.image.base.name"
-	BaseImageDigestAnnotation = "org.opencontainers.image.base.digest"
-)
-
 // FetchParentImage retrieves the reference to an image's parent image from its OCI registry.
 func FetchParentImage(ctx context.Context, ref name.Reference, opts ...remote.Option) (name.Reference, error) {
-	image, err := NewClient(ctx).Image(ref, opts...)
+	image, err := oci.NewClient(ctx).Image(ref, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -64,17 +59,17 @@ func FetchParentImage(ctx context.Context, ref name.Reference, opts ...remote.Op
 		return nil, err
 	}
 
-	parentName := manifest.Annotations[BaseImageNameAnnotation]
+	parentName := manifest.Annotations[oci.BaseImageNameAnnotation]
 	if parentName == "" {
 		return nil, fmt.Errorf(
-			"unable to determine parent image, make sure %s annotation is set", BaseImageNameAnnotation)
+			"unable to determine parent image, make sure %s annotation is set", oci.BaseImageNameAnnotation)
 	}
 
 	if !strings.Contains(parentName, "@") {
-		parentDigest := manifest.Annotations[BaseImageDigestAnnotation]
+		parentDigest := manifest.Annotations[oci.BaseImageDigestAnnotation]
 		if parentDigest == "" {
 			return nil, fmt.Errorf(
-				"unable to determine parent image, make sure %s annotation is set", BaseImageDigestAnnotation)
+				"unable to determine parent image, make sure %s annotation is set", oci.BaseImageDigestAnnotation)
 		}
 		parentName = fmt.Sprintf("%s@%s", parentName, parentDigest)
 	}

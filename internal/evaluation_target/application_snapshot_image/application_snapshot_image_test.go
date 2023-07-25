@@ -49,7 +49,7 @@ import (
 
 	"github.com/enterprise-contract/ec-cli/internal/attestation"
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
-	"github.com/enterprise-contract/ec-cli/internal/fetcher/image_config"
+	"github.com/enterprise-contract/ec-cli/internal/fetchers/oci/fake"
 	"github.com/enterprise-contract/ec-cli/internal/mocks"
 	"github.com/enterprise-contract/ec-cli/internal/signature"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
@@ -701,7 +701,7 @@ func TestValidateImageSignatureWithCertificates(t *testing.T) {
 func TestFetchImageConfig(t *testing.T) {
 	url := utils.WithDigest("registry.local/test-image")
 	ctx := context.Background()
-	ctx = image_config.WithTestImageConfig(ctx, url)
+	ctx = fake.WithTestImageConfig(ctx, url)
 
 	ref, err := name.ParseReference(url)
 	require.NoError(t, err)
@@ -716,7 +716,7 @@ func TestFetchImageConfig(t *testing.T) {
 func TestFetchParentImageConfig(t *testing.T) {
 	url := utils.WithDigest("registry.local/test-image")
 	ctx := context.Background()
-	ctx = image_config.WithTestImageConfig(ctx, url)
+	ctx = fake.WithTestImageConfig(ctx, url)
 
 	ref, err := name.ParseReference(url)
 	require.NoError(t, err)
