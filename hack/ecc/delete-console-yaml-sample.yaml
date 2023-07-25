@@ -14,15 +14,11 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+# Remove resources that are specific to OpenShift and do not exist in a kind cluster.
+# NOTE: The $patch syntax requires that apiVersion, kind, and metadata.name are provided.
 ---
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-
-resources:
-  - permissions.yaml
-
-generators:
-  - ecc.yaml
-
-patches:
-  - path: delete-console-yaml-sample.yaml
+$patch: delete
+apiVersion: console.openshift.io/v1
+kind: ConsoleYAMLSample
+metadata:
+  name: ecp-example
