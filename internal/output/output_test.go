@@ -911,9 +911,10 @@ func TestSetImageSignatureCheckFromError(t *testing.T) {
 				},
 			},
 			policy: func(ctx context.Context) policy.Policy {
-				p, err := policy.NewPolicy(
-					ctx, "", "", "", policy.Now,
-					cosign.Identity{Issuer: "issuer", Subject: "subject"})
+				p, err := policy.NewPolicy(ctx, policy.Options{
+					EffectiveTime: policy.Now,
+					Identity:      cosign.Identity{Issuer: "issuer", Subject: "subject"},
+				})
 				require.NoError(t, err)
 				return p
 			},
@@ -1002,9 +1003,10 @@ func TestSetAttestationSignatureCheckFromError(t *testing.T) {
 				},
 			},
 			policy: func(ctx context.Context) policy.Policy {
-				p, err := policy.NewPolicy(
-					ctx, "", "", "", policy.Now,
-					cosign.Identity{Issuer: "issuer", Subject: "subject"})
+				p, err := policy.NewPolicy(ctx, policy.Options{
+					EffectiveTime: policy.Now,
+					Identity:      cosign.Identity{Issuer: "issuer", Subject: "subject"},
+				})
 				require.NoError(t, err)
 				return p
 			},

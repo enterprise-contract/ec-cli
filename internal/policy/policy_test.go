@@ -150,7 +150,12 @@ func TestNewPolicy(t *testing.T) {
 				ctx = kubernetes.WithClient(ctx, &FakeKubernetesClient{Policy: *c.k8sResource})
 			}
 			utils.SetTestRekorPublicKey(t)
-			got, err := NewPolicy(ctx, c.policyRef, c.rekorUrl, c.publicKey, timeNowStr, cosign.Identity{})
+			got, err := NewPolicy(ctx, Options{
+				PolicyRef:     c.policyRef,
+				RekorURL:      c.rekorUrl,
+				PublicKey:     c.publicKey,
+				EffectiveTime: timeNowStr,
+			})
 			assert.NoError(t, err)
 			// CheckOpts is more thoroughly checked in TestCheckOpts.
 			got.(*policy).checkOpts = nil
@@ -201,7 +206,7 @@ func TestNewPolicyFailures(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			ctx := context.Background()
 			ctx = kubernetes.WithClient(ctx, &FakeKubernetesClient{FetchError: c.k8sError})
-			got, err := NewPolicy(ctx, c.policyRef, "", "", "", cosign.Identity{})
+			got, err := NewPolicy(ctx, Options{PolicyRef: c.policyRef})
 			assert.Nil(t, got)
 			assert.ErrorContains(t, err, c.errorCause)
 		})
@@ -340,7 +345,12 @@ func TestCheckOpts(t *testing.T) {
 				t.Setenv("EC_EXPERIMENTAL", "1")
 			}
 
-			p, err := NewPolicy(ctx, "", c.rekorUrl, c.publicKey, Now, c.identity)
+			p, err := NewPolicy(ctx, Options{
+				RekorURL:      c.rekorUrl,
+				PublicKey:     c.publicKey,
+				EffectiveTime: Now,
+				Identity:      c.identity,
+			})
 			if c.err != "" {
 				assert.Empty(t, p)
 				assert.ErrorContains(t, err, c.err)
@@ -396,7 +406,7 @@ func TestPublicKeyPEM(t *testing.T) {
 		{
 			name: "public key",
 			newPolicy: func(ctx context.Context) (Policy, error) {
-				return NewPolicy(ctx, "", "", utils.TestPublicKey, Now, cosign.Identity{})
+				return NewPolicy(ctx, Options{PublicKey: utils.TestPublicKey, EffectiveTime: Now})
 			},
 			expectedPublicKey: utils.TestPublicKey,
 		},
@@ -411,8 +421,11 @@ func TestPublicKeyPEM(t *testing.T) {
 			name:            "keyless",
 			setExperimental: true,
 			newPolicy: func(ctx context.Context) (Policy, error) {
-				return NewPolicy(ctx, "", "", "", Now, cosign.Identity{
-					Subject: "my-subject", Issuer: "my-issuer"})
+				return NewPolicy(ctx, Options{
+					EffectiveTime: Now,
+					Identity: cosign.Identity{
+						Subject: "my-subject", Issuer: "my-issuer"},
+				})
 			},
 		},
 	}
@@ -455,8 +468,11 @@ func TestIdentity(t *testing.T) {
 		{
 			name: "simple",
 			newPolicy: func(ctx context.Context) (Policy, error) {
-				return NewPolicy(ctx, "", "", "", Now, cosign.Identity{
-					Subject: "my-subject", Issuer: "my-issuer",
+				return NewPolicy(ctx, Options{
+					EffectiveTime: Now,
+					Identity: cosign.Identity{
+						Subject: "my-subject", Issuer: "my-issuer",
+					},
 				})
 			},
 			expectedIdentity: cosign.Identity{Subject: "my-subject", Issuer: "my-issuer"},
