@@ -43,7 +43,7 @@ import (
 
 	"github.com/enterprise-contract/ec-cli/internal/attestation"
 	"github.com/enterprise-contract/ec-cli/internal/evaluation_target/application_snapshot_image"
-	"github.com/enterprise-contract/ec-cli/internal/fetcher/image_config"
+	"github.com/enterprise-contract/ec-cli/internal/fetchers/oci/fake"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
@@ -277,5 +277,5 @@ func withImageConfig(ctx context.Context, url string) context.Context {
 	refWithTag.Tag = ""
 	resolved := refWithTag.String()
 
-	return image_config.WithTestImageConfig(ctx, resolved)
+	return fake.WithTestImageConfig(ctx, resolved)
 }

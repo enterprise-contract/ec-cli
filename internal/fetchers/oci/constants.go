@@ -14,4 +14,11 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package fetcher
+package oci
+
+const (
+	// These annotations are defined here:
+	// https://github.com/opencontainers/image-spec/blob/main/annotations.md#pre-defined-annotation-keys
+	BaseImageNameAnnotation   = "org.opencontainers.image.base.name"
+	BaseImageDigestAnnotation = "org.opencontainers.image.base.digest"
+)

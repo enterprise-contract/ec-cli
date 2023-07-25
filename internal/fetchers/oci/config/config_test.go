@@ -16,7 +16,7 @@
 
 //go:build unit
 
-package image_config
+package config
 
 import (
 	"context"
@@ -29,6 +29,8 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/stretchr/testify/require"
 
+	"github.com/enterprise-contract/ec-cli/internal/fetchers/oci"
+	"github.com/enterprise-contract/ec-cli/internal/fetchers/oci/fake"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
@@ -41,14 +43,14 @@ func TestFetchImageConfig(t *testing.T) {
 
 	testcases := []struct {
 		name     string
-		setup    func(*mockClient)
+		setup    func(*fake.FakeClient)
 		expected string
 		err      string
 	}{
 		{
 			name: "success",
-			setup: func(client *mockClient) {
-				image := &mockImage{}
+			setup: func(client *fake.FakeClient) {
+				image := &fake.FakeImage{}
 				image.On("ConfigFile").Return(&v1.ConfigFile{
 					Config: v1.Config{
 						Labels: map[string]string{"io.k8s.display-name": "Test Image"},
@@ -60,15 +62,15 @@ func TestFetchImageConfig(t *testing.T) {
 		},
 		{
 			name: "error fetching image",
-			setup: func(client *mockClient) {
-				client.On("Image", ref, opts).Return(&mockImage{}, errors.New("kaboom!"))
+			setup: func(client *fake.FakeClient) {
+				client.On("Image", ref, opts).Return(&fake.FakeImage{}, errors.New("kaboom!"))
 			},
 			err: "kaboom!",
 		},
 		{
 			name: "error fetching config file",
-			setup: func(client *mockClient) {
-				image := &mockImage{}
+			setup: func(client *fake.FakeClient) {
+				image := &fake.FakeImage{}
 				image.On("ConfigFile").Return(&v1.ConfigFile{}, errors.New("kaboom!"))
 				client.On("Image", ref, opts).Return(image, nil)
 			},
@@ -80,11 +82,11 @@ func TestFetchImageConfig(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			client := mockClient{}
+			client := fake.FakeClient{}
 			if tt.setup != nil {
 				tt.setup(&client)
 			}
-			ctx = WithClient(ctx, &client)
+			ctx = oci.WithClient(ctx, &client)
 
 			out, err := FetchImageConfig(ctx, ref, opts...)
 			if tt.err != "" {
@@ -111,16 +113,16 @@ func TestFetchParentImage(t *testing.T) {
 
 	testcases := []struct {
 		name     string
-		setup    func(*mockClient)
+		setup    func(*fake.FakeClient)
 		expected string
 		err      string
 	}{
 		{
 			name: "success with name annotation",
-			setup: func(client *mockClient) {
-				image := &mockImage{}
+			setup: func(client *fake.FakeClient) {
+				image := &fake.FakeImage{}
 				image.On("Manifest").Return(&v1.Manifest{
-					Annotations: map[string]string{BaseImageNameAnnotation: parentURL},
+					Annotations: map[string]string{oci.BaseImageNameAnnotation: parentURL},
 				}, nil)
 
 				client.On("Image", ref, opts).Return(image, nil)
@@ -129,12 +131,12 @@ func TestFetchParentImage(t *testing.T) {
 		},
 		{
 			name: "success with name and digest annotations",
-			setup: func(client *mockClient) {
-				image := &mockImage{}
+			setup: func(client *fake.FakeClient) {
+				image := &fake.FakeImage{}
 				image.On("Manifest").Return(&v1.Manifest{
 					Annotations: map[string]string{
-						BaseImageNameAnnotation:   parentName,
-						BaseImageDigestAnnotation: parentDigest,
+						oci.BaseImageNameAnnotation:   parentName,
+						oci.BaseImageDigestAnnotation: parentDigest,
 					},
 				}, nil)
 
@@ -144,15 +146,15 @@ func TestFetchParentImage(t *testing.T) {
 		},
 		{
 			name: "error fetching image",
-			setup: func(client *mockClient) {
-				client.On("Image", ref, opts).Return(&mockImage{}, errors.New("kaboom!"))
+			setup: func(client *fake.FakeClient) {
+				client.On("Image", ref, opts).Return(&fake.FakeImage{}, errors.New("kaboom!"))
 			},
 			err: "kaboom!",
 		},
 		{
 			name: "error fetching manifest",
-			setup: func(client *mockClient) {
-				image := &mockImage{}
+			setup: func(client *fake.FakeClient) {
+				image := &fake.FakeImage{}
 				image.On("Manifest").Return(&v1.Manifest{}, errors.New("kaboom!"))
 
 				client.On("Image", ref, opts).Return(image, nil)
@@ -161,11 +163,11 @@ func TestFetchParentImage(t *testing.T) {
 		},
 		{
 			name: "missing name annotation",
-			setup: func(client *mockClient) {
-				image := &mockImage{}
+			setup: func(client *fake.FakeClient) {
+				image := &fake.FakeImage{}
 				image.On("Manifest").Return(&v1.Manifest{
 					Annotations: map[string]string{
-						BaseImageDigestAnnotation: parentDigest,
+						oci.BaseImageDigestAnnotation: parentDigest,
 					},
 				}, nil)
 
@@ -175,11 +177,11 @@ func TestFetchParentImage(t *testing.T) {
 		},
 		{
 			name: "missing digest annotation",
-			setup: func(client *mockClient) {
-				image := &mockImage{}
+			setup: func(client *fake.FakeClient) {
+				image := &fake.FakeImage{}
 				image.On("Manifest").Return(&v1.Manifest{
 					Annotations: map[string]string{
-						BaseImageNameAnnotation: parentName,
+						oci.BaseImageNameAnnotation: parentName,
 					},
 				}, nil)
 
@@ -189,8 +191,8 @@ func TestFetchParentImage(t *testing.T) {
 		},
 		{
 			name: "missing all annotations",
-			setup: func(client *mockClient) {
-				image := &mockImage{}
+			setup: func(client *fake.FakeClient) {
+				image := &fake.FakeImage{}
 				image.On("Manifest").Return(&v1.Manifest{}, nil)
 
 				client.On("Image", ref, opts).Return(image, nil)
@@ -199,12 +201,12 @@ func TestFetchParentImage(t *testing.T) {
 		},
 		{
 			name: "invalid name annoation",
-			setup: func(client *mockClient) {
-				image := &mockImage{}
+			setup: func(client *fake.FakeClient) {
+				image := &fake.FakeImage{}
 				image.On("Manifest").Return(&v1.Manifest{
 					Annotations: map[string]string{
-						BaseImageNameAnnotation:   "inv@lid",
-						BaseImageDigestAnnotation: parentDigest,
+						oci.BaseImageNameAnnotation:   "inv@lid",
+						oci.BaseImageDigestAnnotation: parentDigest,
 					},
 				}, nil)
 
@@ -214,12 +216,12 @@ func TestFetchParentImage(t *testing.T) {
 		},
 		{
 			name: "invalid digest annoation",
-			setup: func(client *mockClient) {
-				image := &mockImage{}
+			setup: func(client *fake.FakeClient) {
+				image := &fake.FakeImage{}
 				image.On("Manifest").Return(&v1.Manifest{
 					Annotations: map[string]string{
-						BaseImageNameAnnotation:   parentName,
-						BaseImageDigestAnnotation: "invalid",
+						oci.BaseImageNameAnnotation:   parentName,
+						oci.BaseImageDigestAnnotation: "invalid",
 					},
 				}, nil)
 
@@ -233,11 +235,11 @@ func TestFetchParentImage(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			client := mockClient{}
+			client := fake.FakeClient{}
 			if tt.setup != nil {
 				tt.setup(&client)
 			}
-			ctx = WithClient(ctx, &client)
+			ctx = oci.WithClient(ctx, &client)
 
 			out, err := FetchParentImage(ctx, ref, opts...)
 			if tt.err != "" {
