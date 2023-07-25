@@ -28,7 +28,7 @@ mkdir -p stats
     repository(owner: "enterprise-contract", name: "ec-cli") {
         release(tagName: "snapshot") {
         createdAt
-        releaseAssets(first: 10) {
+        releaseAssets(first: 50) {
             nodes {
             name
             downloadCount
