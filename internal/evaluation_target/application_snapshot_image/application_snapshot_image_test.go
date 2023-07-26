@@ -29,6 +29,7 @@ import (
 	"testing"
 
 	"github.com/gkampitakis/go-snaps/snaps"
+	"github.com/google/go-containerregistry/pkg/crane"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
@@ -49,6 +50,7 @@ import (
 
 	"github.com/enterprise-contract/ec-cli/internal/attestation"
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
+	o "github.com/enterprise-contract/ec-cli/internal/fetchers/oci"
 	"github.com/enterprise-contract/ec-cli/internal/fetchers/oci/fake"
 	"github.com/enterprise-contract/ec-cli/internal/mocks"
 	"github.com/enterprise-contract/ec-cli/internal/signature"
@@ -748,4 +750,28 @@ func TestAttestationDataJSONMarshal(t *testing.T) {
 	}
 
 	snaps.MatchJSON(t, data)
+}
+
+func TestFetchImageManifests(t *testing.T) {
+	ref := name.MustParseReference("registry.io/repository/image:tag")
+	a := ApplicationSnapshotImage{reference: ref}
+
+	image, err := crane.Image(map[string][]byte{
+		"manifests/csv.yaml": []byte(
+			`apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion`),
+	})
+	require.NoError(t, err)
+
+	client := fake.FakeClient{}
+	client.On("Image", ref, mock.Anything).Return(image, nil)
+
+	ctx := o.WithClient(context.Background(), &client)
+
+	err = a.FetchImageManifests(ctx)
+	require.NoError(t, err)
+
+	require.Equal(t, map[string]json.RawMessage{
+		"manifests/csv.yaml": json.RawMessage(`{"apiVersion":"operators.coreos.com/v1alpha1","kind":"ClusterServiceVersion"}`),
+	}, a.manifests)
 }

@@ -806,3 +806,21 @@ Feature: evaluate enterprise contract
     When ec command is run with "validate image --image ${REGISTRY}/acceptance/rekor-by-default --rekor-url ${REKOR} --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --strict"
     Then the exit status should be 1
     Then the output should match the snapshot
+
+  Scenario: OLM manifests
+    Given a key pair named "known"
+      And an image named "acceptance/image" containing a layer with:
+      | manifests/some.crd.yaml                   | examples/some.crd.yaml                   |
+      | manifests/some.clusterserviceversion.yaml | examples/some.clusterserviceversion.yaml |
+      And a valid image signature of "acceptance/image" image signed by the "known" key
+      And a valid attestation of "acceptance/image" signed by the "known" key
+      And a git repository named "olm-manifests" with
+      | image_config.rego | examples/olm_manifests.rego |
+      And policy configuration named "policy" with specification
+      """
+      {"sources": [{"policy": ["git::https://${GITHOST}/git/olm-manifests.git"]}]}
+      """
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/image --policy acceptance/policy --public-key ${known_PUBLIC_KEY} --output=json --output=policy-input=${TMPDIR}/input.json"
+    Then the exit status should be 0
+     And the output should match the snapshot
+     And the "${TMPDIR}/input.json" file should match the snapshot

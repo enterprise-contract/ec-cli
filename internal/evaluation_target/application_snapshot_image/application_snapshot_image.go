@@ -37,6 +37,7 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/attestation"
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 	"github.com/enterprise-contract/ec-cli/internal/fetchers/oci/config"
+	"github.com/enterprise-contract/ec-cli/internal/fetchers/oci/manifest"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/policy/source"
 	"github.com/enterprise-contract/ec-cli/internal/signature"
@@ -72,6 +73,7 @@ type ApplicationSnapshotImage struct {
 	parentRef        name.Reference
 	attestations     []attestation.Attestation
 	Evaluators       []evaluator.Evaluator
+	manifests        map[string]json.RawMessage
 }
 
 // NewApplicationSnapshotImage returns an ApplicationSnapshotImage struct with reference, checkOpts, and evaluator ready to use.
@@ -195,6 +197,17 @@ func (a *ApplicationSnapshotImage) FetchParentImageConfig(ctx context.Context) e
 		return err
 	}
 	a.parentConfigJSON, err = config.FetchImageConfig(ctx, a.parentRef, opts...)
+	return err
+}
+
+func (a *ApplicationSnapshotImage) FetchImageManifests(ctx context.Context) error {
+	opts := []remote.Option{
+		imageRefTransport,
+		remote.WithContext(ctx),
+		remote.WithAuthFromKeychain(authn.DefaultKeychain),
+	}
+	var err error
+	a.manifests, err = manifest.ImageManifests(ctx, a.reference, opts...)
 	return err
 }
 
@@ -344,6 +357,7 @@ type image struct {
 	Signatures []signature.EntitySignature `json:"signatures,omitempty"`
 	Config     json.RawMessage             `json:"config,omitempty"`
 	Parent     any                         `json:"parent,omitempty"`
+	Manifests  map[string]json.RawMessage  `json:"manifests,omitempty"`
 }
 
 type Input struct {
@@ -369,6 +383,7 @@ func (a *ApplicationSnapshotImage) WriteInputFile(ctx context.Context) (string, 
 			Ref:        a.reference.String(),
 			Signatures: a.signatures,
 			Config:     a.configJSON,
+			Manifests:  a.manifests,
 		},
 	}
 

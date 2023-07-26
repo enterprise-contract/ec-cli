@@ -19,6 +19,8 @@
 package image
 
 import (
+	"archive/tar"
+	"bytes"
 	"context"
 	"crypto/x509"
 	"encoding/base64"
@@ -339,10 +341,10 @@ func createAndPushImageWithParent(ctx context.Context, imageName string) (contex
 		return ctx, err
 	}
 
-	ctx, _, err = createAndPushPlainImage(ctx, imageName, func(img v1.Image) v1.Image {
+	ctx, _, err = createAndPushPlainImage(ctx, imageName, func(img v1.Image) (v1.Image, error) {
 		return mutate.Annotations(img, map[string]string{
 			"org.opencontainers.image.base.name": parentURL,
-		}).(v1.Image)
+		}).(v1.Image), nil
 	})
 	if err != nil {
 		return ctx, err
@@ -351,7 +353,52 @@ func createAndPushImageWithParent(ctx context.Context, imageName string) (contex
 	return ctx, nil
 }
 
-type patchFn func(v1.Image) v1.Image
+// createAndPushImageWithLayer creates a image containing a layer with the
+// provided files
+func createAndPushImageWithLayer(ctx context.Context, imageName string, files *godog.Table) (context.Context, error) {
+	ctx, _, err := createAndPushPlainImage(ctx, imageName, func(img v1.Image) (v1.Image, error) {
+		if files == nil || len(files.Rows) == 0 {
+			return img, nil
+		}
+
+		buffy := bytes.Buffer{}
+		t := tar.NewWriter(&buffy)
+
+		for _, r := range files.Rows {
+			f := r.Cells[1].Value
+			content, err := os.ReadFile(path.Join("acceptance", f))
+			if err != nil {
+				return nil, err
+			}
+
+			name := r.Cells[0].Value
+			if err := t.WriteHeader(&tar.Header{
+				Name: name,
+				Mode: 0644,
+				Size: int64(len(content)),
+			}); err != nil {
+				return nil, err
+			}
+
+			if _, err := t.Write(content); err != nil {
+				return nil, err
+			}
+		}
+
+		if err := t.Close(); err != nil {
+			return nil, err
+		}
+
+		return mutate.AppendLayers(img, s.NewLayer(buffy.Bytes(), types.OCIUncompressedLayer))
+	})
+	if err != nil {
+		return ctx, err
+	}
+
+	return ctx, nil
+}
+
+type patchFn func(v1.Image) (v1.Image, error)
 
 // createAndPushImage creates a small 4K random image with 2 layers and pushes it to
 // the stub image registry. It returns a new context with an updated state containing
@@ -375,7 +422,9 @@ func createAndPushPlainImage(ctx context.Context, imageName string, patch patchF
 	}
 
 	if patch != nil {
-		img = patch(img)
+		if img, err = patch(img); err != nil {
+			return ctx, "", err
+		}
 	}
 
 	img, err = mutate.Config(img, v1.Config{
@@ -883,6 +932,7 @@ func copyAllImages(ctx context.Context, source, destination string) (context.Con
 // AddStepsTo adds Gherkin steps to the godog ScenarioContext
 func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^an image named "([^"]*)"$`, createAndPushImageWithParent)
+	sc.Step(`^an image named "([^"]*)" containing a layer with:$`, createAndPushImageWithLayer)
 	sc.Step(`^a valid image signature of "([^"]*)" image signed by the "([^"]*)" key$`, createAndPushImageSignature)
 	sc.Step(`^a valid attestation of "([^"]*)" signed by the "([^"]*)" key$`, createAndPushAttestation)
 	sc.Step(`^a valid attestation of "([^"]*)" signed by the "([^"]*)" key, patched with$`, createAndPushAttestationWithPatches)
