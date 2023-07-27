@@ -26,6 +26,20 @@
 [appstudio success:stderr - 1]
 
 ---
+[appstudio skipped:stdout - 1]
+{
+  "timestamp": "${TIMESTAMP}",
+  "namespace": "main",
+  "successes": 0,
+  "failures": 0,
+  "warnings": 0,
+  "result": "SKIPPED"
+}
+---
+
+[appstudio skipped:stderr - 1]
+
+---
 [a warning:stdout - 1]
 [
   {

@@ -14,6 +14,11 @@ Feature: conftest test mode
     Then the exit status should be 0
     Then the output should match the snapshot
 
+  Scenario: appstudio skipped
+    When ec command is run with "test --policy acceptance/examples/empty.rego acceptance/examples/empty_input.json -o appstudio"
+    Then the exit status should be 0
+    Then the output should match the snapshot
+
   Scenario: a warning
     When ec command is run with "test --policy acceptance/examples/warn.rego acceptance/examples/empty_input.json -o json"
     Then the exit status should be 0
