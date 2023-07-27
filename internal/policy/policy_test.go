@@ -456,6 +456,7 @@ func TestPublicKeyPEM(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			ctx := context.Background()
+			utils.SetTestRekorPublicKey(t)
 			utils.SetTestFulcioRoots(t)
 			utils.SetTestCTLogPublicKey(t)
 
@@ -537,6 +538,7 @@ func TestIdentity(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			ctx := context.Background()
+			utils.SetTestRekorPublicKey(t)
 			utils.SetTestFulcioRoots(t)
 			utils.SetTestCTLogPublicKey(t)
 
