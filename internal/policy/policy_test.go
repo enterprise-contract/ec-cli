@@ -226,6 +226,7 @@ func TestCheckOpts(t *testing.T) {
 		name            string
 		policyRef       string
 		rekorUrl        string
+		ignoreRekor     bool
 		publicKey       string
 		remotePublicKey string
 		setExperimental bool
@@ -253,6 +254,11 @@ func TestCheckOpts(t *testing.T) {
 			publicKey: utils.TestPublicKey,
 		},
 		{
+			name:        "without rekor",
+			ignoreRekor: true,
+			publicKey:   utils.TestPublicKey,
+		},
+		{
 			name: "missing public key",
 			err:  "policy must provide a public key",
 		},
@@ -268,6 +274,7 @@ func TestCheckOpts(t *testing.T) {
 		},
 		{
 			name:            "keyless without rekor",
+			ignoreRekor:     true,
 			setExperimental: true,
 			expectKeyless:   true,
 			identity: cosign.Identity{
@@ -361,6 +368,7 @@ func TestCheckOpts(t *testing.T) {
 			p, err := NewPolicy(ctx, Options{
 				PolicyRef:     c.policyRef,
 				RekorURL:      c.rekorUrl,
+				IgnoreRekor:   c.ignoreRekor,
 				PublicKey:     c.publicKey,
 				EffectiveTime: Now,
 				Identity:      c.identity,
@@ -375,20 +383,21 @@ func TestCheckOpts(t *testing.T) {
 			opts, err := p.CheckOpts()
 			assert.NoError(t, err)
 
-			if c.rekorUrl != "" {
-				assert.NotNil(t, opts.RekorClient)
-				assert.False(t, opts.IgnoreTlog)
-			} else {
+			if c.ignoreRekor {
+				assert.Nil(t, opts.RekorPubKeys)
 				assert.Nil(t, opts.RekorClient)
 				assert.True(t, opts.IgnoreTlog)
-			}
-
-			if c.rekorUrl != "" {
+			} else {
+				assert.False(t, opts.IgnoreTlog)
 				assert.NotNil(t, opts.RekorPubKeys)
 				_, present := opts.RekorPubKeys.Keys[utils.TestRekorURLLogID]
 				assert.True(t, present, "Expecting specific log id based on the provided public key")
-			} else {
-				assert.Nil(t, opts.RekorPubKeys)
+
+				if c.rekorUrl != "" {
+					assert.NotNil(t, opts.RekorClient)
+				} else {
+					assert.Nil(t, opts.RekorClient)
+				}
 			}
 
 			if c.expectKeyless {

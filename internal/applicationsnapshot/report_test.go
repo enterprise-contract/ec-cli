@@ -765,6 +765,8 @@ func testComponentsFor(snapshot app.SnapshotSpec) []Component {
 }
 
 func createTestPolicy(t *testing.T, ctx context.Context) policy.Policy {
+	utils.SetTestRekorPublicKey(t)
+
 	p, err := policy.NewPolicy(ctx, policy.Options{
 		PublicKey:     utils.TestPublicKey,
 		EffectiveTime: policy.Now,

@@ -478,6 +478,7 @@ Error: success criteria not met
         }
       }
     ],
+    "rekorUrl": "${REKOR}",
     "publicKey": "${known_PUBLIC_KEY}"
   },
   "ec-version": "${EC_VERSION}",
@@ -651,6 +652,7 @@ Error: success criteria not met
         ]
       }
     ],
+    "rekorUrl": "${REKOR}",
     "publicKey": "${known_PUBLIC_KEY}"
   },
   "ec-version": "${EC_VERSION}",
@@ -822,6 +824,7 @@ Error: success criteria not met
         ]
       }
     ],
+    "rekorUrl": "${REKOR}",
     "publicKey": "${known_PUBLIC_KEY}"
   },
   "ec-version": "${EC_VERSION}",
@@ -959,8 +962,7 @@ Error: success criteria not met
           "git::https://${GITHOST}/git/unexpected-keyless-cert.git"
         ]
       }
-    ],
-    "rekorUrl": "http://this.is.ignored"
+    ]
   },
   "ec-version": "${EC_VERSION}",
   "effective-time": "${TIMESTAMP}"
@@ -1094,6 +1096,7 @@ Error: success criteria not met
         "filtering.always_pass"
       ]
     },
+    "rekorUrl": "${REKOR}",
     "publicKey": "${known_PUBLIC_KEY}"
   },
   "ec-version": "${EC_VERSION}",
@@ -1184,6 +1187,7 @@ Error: 1 error occurred:
         ]
       }
     ],
+    "rekorUrl": "${REKOR}",
     "publicKey": "${known_PUBLIC_KEY}"
   },
   "ec-version": "${EC_VERSION}",
@@ -1261,6 +1265,7 @@ Error: success criteria not met
         ]
       }
     ],
+    "rekorUrl": "${REKOR}",
     "publicKey": "${known_PUBLIC_KEY}"
   },
   "ec-version": "${EC_VERSION}",
@@ -1390,8 +1395,7 @@ Error: success criteria not met
           "git::https://${GITHOST}/git/happy-day-policy.git"
         ]
       }
-    ],
-    "rekorUrl": "http://this.is.ignored"
+    ]
   },
   "ec-version": "${EC_VERSION}",
   "effective-time": "${TIMESTAMP}"
@@ -1438,6 +1442,7 @@ Error: success criteria not met
         ]
       }
     ],
+    "rekorUrl": "${REKOR}",
     "publicKey": "${known_PUBLIC_KEY}"
   },
   "ec-version": "${EC_VERSION}",
@@ -1616,6 +1621,7 @@ Error: success criteria not met
         ]
       }
     ],
+    "rekorUrl": "${REKOR}",
     "publicKey": "${known_PUBLIC_KEY}"
   },
   "ec-version": "${EC_VERSION}",
@@ -1774,6 +1780,7 @@ Error: success criteria not met
         ]
       }
     ],
+    "rekorUrl": "${REKOR}",
     "publicKey": "${known_PUBLIC_KEY}"
   },
   "ec-version": "${EC_VERSION}",
@@ -1952,6 +1959,7 @@ ${TEMP}/ec-work-${RANDOM}/policy/${RANDOM}/main.rego:29: rego_type_error: undefi
         ]
       }
     ],
+    "rekorUrl": "${REKOR}",
     "publicKey": "${known_PUBLIC_KEY}"
   },
   "ec-version": "${EC_VERSION}",
@@ -2209,6 +2217,7 @@ Error: success criteria not met
         ]
       }
     ],
+    "rekorUrl": "${REKOR}",
     "publicKey": "${known_PUBLIC_KEY}"
   },
   "ec-version": "${EC_VERSION}",
@@ -2303,5 +2312,102 @@ Error: success criteria not met
 ---
 
 [policy input output:stderr - 1]
+
+---
+
+[ignore rekor:stdout - 1]
+{
+  "success": true,
+  "components": [
+    {
+      "name": "Unnamed",
+      "containerImage": "${REGISTRY}/acceptance/ignore-rekor@sha256:${REGISTRY_acceptance/ignore-rekor:latest_DIGEST}",
+      "source": {},
+      "success": true,
+      "signatures": [
+        {
+          "keyid": "",
+          "sig": "${IMAGE_SIGNATURE_acceptance/ignore-rekor}"
+        }
+      ],
+      "attestations": [
+        {
+          "type": "https://in-toto.io/Statement/v0.1",
+          "predicateType": "https://slsa.dev/provenance/v0.2",
+          "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+          "signatures": [
+            {
+              "keyid": "",
+              "sig": "${ATTESTATION_SIGNATURE_acceptance/ignore-rekor}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "key": "${known_PUBLIC_KEY_JSON}",
+  "policy": {
+    "sources": [
+      {
+        "policy": [
+          "git::https://${GITHOST}/git/ignore-rekor.git"
+        ]
+      }
+    ],
+    "publicKey": "${known_PUBLIC_KEY}"
+  },
+  "ec-version": "${EC_VERSION}",
+  "effective-time": "${TIMESTAMP}"
+}
+---
+
+[ignore rekor:stderr - 1]
+
+---
+
+[rekor entries required:stdout - 1]
+{
+  "success": false,
+  "components": [
+    {
+      "name": "Unnamed",
+      "containerImage": "${REGISTRY}/acceptance/rekor-by-default@sha256:${REGISTRY_acceptance/rekor-by-default:latest_DIGEST}",
+      "source": {},
+      "violations": [
+        {
+          "msg": "No image attestations found matching the given public key. Verify the correct public key was provided, and one or more attestations were created.",
+          "metadata": {
+            "code": "builtin.attestation.signature_check"
+          }
+        },
+        {
+          "msg": "No image signatures found matching the given public key. Verify the correct public key was provided, and a signature was created.",
+          "metadata": {
+            "code": "builtin.image.signature_check"
+          }
+        }
+      ],
+      "success": false
+    }
+  ],
+  "key": "${known_PUBLIC_KEY_JSON}",
+  "policy": {
+    "sources": [
+      {
+        "policy": [
+          "git::https://${GITHOST}/git/rekor-by-default.git"
+        ]
+      }
+    ],
+    "rekorUrl": "${REKOR}",
+    "publicKey": "${known_PUBLIC_KEY}"
+  },
+  "ec-version": "${EC_VERSION}",
+  "effective-time": "${TIMESTAMP}"
+}
+---
+
+[rekor entries required:stderr - 1]
+Error: success criteria not met
 
 ---

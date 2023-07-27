@@ -72,6 +72,7 @@ type policy struct {
 	effectiveTime   *time.Time
 	attestationTime *time.Time
 	identity        cosign.Identity
+	ignoreRekor     bool
 }
 
 // PublicKeyPEM returns the PublicKey in PEM format.
@@ -114,6 +115,7 @@ func (p *policy) Keyless() bool {
 type Options struct {
 	EffectiveTime string
 	Identity      cosign.Identity
+	IgnoreRekor   bool
 	PolicyRef     string
 	PublicKey     string
 	RekorURL      string
@@ -178,6 +180,8 @@ func NewPolicy(ctx context.Context, opts Options) (Policy, error) {
 		p.RekorUrl = opts.RekorURL
 		log.Debugf("Updated rekor URL in policy to %q", opts.RekorURL)
 	}
+
+	p.ignoreRekor = opts.IgnoreRekor
 
 	if opts.PublicKey != "" && opts.PublicKey != p.PublicKey {
 		p.PublicKey = opts.PublicKey
@@ -322,24 +326,6 @@ func checkOpts(ctx context.Context, p *policy) (*cosign.CheckOpts, error) {
 	var err error
 	opts := cosign.CheckOpts{}
 
-	if p.RekorUrl == "" {
-		// TODO: Rethink this? Maybe have an explicit flag to do ignore rekor. That
-		// way we can provide a default value.
-		opts.IgnoreTlog = true
-		log.Debug("Transparency log verification disabled")
-	} else {
-		if opts.RekorClient, err = rekor.NewClient(p.RekorUrl); err != nil {
-			log.Debugf("Problem creating a rekor client using url %q", p.RekorUrl)
-			return nil, err
-		}
-		log.Debug("Rekor client created")
-
-		if opts.RekorPubKeys, err = cosign.GetRekorPubs(ctx); err != nil {
-			return nil, err
-		}
-		log.Debug("Retrieved Rekor public keys")
-	}
-
 	if p.PublicKey != "" {
 		log.Debug("Using long-lived key workflow")
 		if opts.SigVerifier, err = signatureVerifier(ctx, p); err != nil {
@@ -360,6 +346,34 @@ func checkOpts(ctx context.Context, p *policy) (*cosign.CheckOpts, error) {
 
 		// Get Certificate Transparency Log public keys
 		if opts.CTLogPubKeys, err = cosign.GetCTLogPubs(ctx); err != nil {
+			return nil, err
+		}
+		log.Debug("Retrieved Rekor public keys")
+	}
+
+	opts.IgnoreTlog = p.ignoreRekor
+
+	if !opts.IgnoreTlog {
+		// NOTE: The value of the RekorURL may not be used by cosign during verification.
+		// If the image signature/attestation contains a SignedEntryTimestamp, then cosign
+		// takes on an offline verification approach. In this case, it does not query Rekor
+		// for the existence of records. Instead, it ensures the SignedEntryTimestamp maps
+		// to the Rekor public keys. The Rekor public keys may be already loaded on the
+		// local copy of the TUF root. Otherwise, they are fetched from the TUF mirror.
+		// In either case, the RekorURL is completely ignored. cosign always adds a
+		// SignedEntryTimestamp to the signatures and attestations it creates.
+		rekorURL := p.RekorUrl
+		// NOTE: A Rekor client is only needed when a SignedEntryTimestamp is not available
+		// on the signature/attestation.
+		if rekorURL != "" {
+			if opts.RekorClient, err = rekor.NewClient(rekorURL); err != nil {
+				log.Debugf("Problem creating a rekor client using url %q", rekorURL)
+				return nil, err
+			}
+			log.Debugf("Rekor client created, url %q", rekorURL)
+		}
+
+		if opts.RekorPubKeys, err = cosign.GetRekorPubs(ctx); err != nil {
 			return nil, err
 		}
 		log.Debug("Retrieved Rekor public keys")

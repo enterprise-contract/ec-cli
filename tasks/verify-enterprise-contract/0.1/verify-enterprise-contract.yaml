@@ -63,6 +63,14 @@ spec:
       description: Rekor host for transparency log lookups
       default: ""
 
+    - name: IGNORE_REKOR
+      type: string
+      description: >-
+        Skip Rekor transparency log checks during validation. NOTE: The default value will change to
+        "false" in the near future as that is a more secure default value. It is currently "true" to
+        retain temporary backwards compatibility.
+      default: "true"
+
     - name: TUF_MIRROR
       type: string
       description: TUF mirror URL. Provide a value when NOT using public sigstore deployment.
@@ -150,6 +158,7 @@ spec:
         - "$(params.PUBLIC_KEY)"
         - "--rekor-url"
         - "$(params.REKOR_HOST)"
+        - "--ignore-rekor=$(params.IGNORE_REKOR)"
         # NOTE: The syntax below is required to negate boolean parameters
         - "--info=$(params.INFO)"
         - "--strict=false"
