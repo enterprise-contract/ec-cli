@@ -11,7 +11,7 @@ require (
 	github.com/go-logr/logr v1.2.4
 	github.com/google/go-containerregistry v0.15.2
 	github.com/hako/durafmt v0.0.0-20210608085754-5c1018a4e16b
-	github.com/hashicorp/go-getter v1.7.1
+	github.com/hashicorp/go-getter v1.7.2
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/in-toto/in-toto-golang v0.9.0
 	github.com/jstemmer/go-junit-report/v2 v2.0.0
