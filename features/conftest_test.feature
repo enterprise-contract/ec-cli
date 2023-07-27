@@ -1,6 +1,9 @@
 Feature: conftest test mode
   The ec test command should work as expected
 
+  Background:
+    Given the environment variable is set "EC_EXPERIMENTAL=1"
+
   Scenario: success
     When ec command is run with "test --policy acceptance/examples/happy_day.rego acceptance/examples/empty_input.json -o json"
     Then the exit status should be 0

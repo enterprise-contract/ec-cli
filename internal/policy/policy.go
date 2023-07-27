@@ -37,6 +37,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/enterprise-contract/ec-cli/internal/kubernetes"
+	"github.com/enterprise-contract/ec-cli/internal/utils"
 	e "github.com/enterprise-contract/ec-cli/pkg/error"
 )
 
@@ -430,9 +431,5 @@ func validateIdentity(identity cosign.Identity) error {
 }
 
 func keylessEnabled() bool {
-	return experimental()
-}
-
-func experimental() bool {
-	return os.Getenv("EC_EXPERIMENTAL") == "1"
+	return utils.Experimental()
 }

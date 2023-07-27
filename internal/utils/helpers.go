@@ -21,6 +21,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 	"unicode"
@@ -115,6 +116,11 @@ func WriteTempFile(ctx context.Context, data, prefix string) (string, error) {
 		return "", err
 	}
 	return path, nil
+}
+
+// detect if the EC_EXPERIMENTAL env var is set to enable experimental features
+func Experimental() bool {
+	return os.Getenv("EC_EXPERIMENTAL") == "1"
 }
 
 // detect if the string is json

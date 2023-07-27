@@ -32,6 +32,7 @@ import (
 	"github.com/enterprise-contract/ec-cli/cmd/version"
 	"github.com/enterprise-contract/ec-cli/internal/kubernetes"
 	"github.com/enterprise-contract/ec-cli/internal/logging"
+	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
 var cancel context.CancelFunc
@@ -94,5 +95,7 @@ func init() {
 	RootCmd.AddCommand(track.TrackCmd)
 	RootCmd.AddCommand(validate.ValidateCmd)
 	RootCmd.AddCommand(version.VersionCmd)
-	RootCmd.AddCommand(test.TestCmd)
+	if utils.Experimental() {
+		RootCmd.AddCommand(test.TestCmd)
+	}
 }

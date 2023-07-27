@@ -37,7 +37,10 @@ import (
 )
 
 const testDesc = `
-The 'ec test' command is a thin wrapper for the 'conftest test' command.
+
+The 'ec test' command is a thin wrapper for the 'conftest test' command. This
+is an experimental feature that requires setting the EC_EXPERIMENTAL environment
+variable to "1".
 
 This command tests your configuration files using the Open Policy Agent.
 
@@ -52,7 +55,7 @@ https://www.openpolicyagent.org/docs/latest/policy-language/
 The policy location defaults to the policy directory in the local folder.
 The location can be overridden with the '--policy' flag, e.g.:
 
-	$ ec test --policy <my-directory> <input-file(s)/input-folder>
+	$ EC_EXPERIMENTAL=1 ec test --policy <my-directory> <input-file(s)/input-folder>
 
 Some policies are dependant on external data. This data is loaded in separately
 from policies. The location of any data directory or file can be specified with
@@ -62,13 +65,13 @@ and made available in the Rego policies. Data will be made available in Rego bas
 the file path where the data was found. For example, if data is stored
 under 'policy/exceptions/my_data.yaml', and we execute the following command:
 
-	$ ec test --data policy <input-file>
+	$ EC_EXPERIMENTAL=1 ec test --data policy <input-file>
 
 The data is available under 'import data.exceptions'.
 
 The test command supports the '--output' flag to specify the type, e.g.:
 
-	$ ec test -o table -p examples/kubernetes/policy examples/kubernetes/deployment.yaml
+	$ EC_EXPERIMENTAL=1 ec test -o table -p examples/kubernetes/policy examples/kubernetes/deployment.yaml
 
 Which will return the following output:
 +---------+----------------------------------+--------------------------------+
@@ -84,14 +87,14 @@ By default, it will use the regular stdout output. For a full list of available 
 The test command supports the '--update' flag to fetch the latest version of the policy at the given url.
 It expects one or more urls to fetch the latest policies from, e.g.:
 
-	$ ec test --update opa.azurecr.io/test
+	$ EC_EXPERIMENTAL=1 ec test --update opa.azurecr.io/test
 
 See the pull command for more details on supported protocols for fetching policies.
 
 When debugging policies it can be useful to use a more verbose policy evaluation output. By using the '--trace' flag
 the output will include a detailed trace of how the policy was evaluated, e.g.
 
-	$ ec test --trace <input-file>
+	$ EC_EXPERIMENTAL=1 ec test --trace <input-file>
 `
 
 const OutputAppstudio = "appstudio"
