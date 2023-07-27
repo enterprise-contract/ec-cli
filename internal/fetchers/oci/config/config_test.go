@@ -26,6 +26,9 @@ import (
 
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
+	"github.com/google/go-containerregistry/pkg/v1/empty"
+	v1fake "github.com/google/go-containerregistry/pkg/v1/fake"
+	"github.com/google/go-containerregistry/pkg/v1/mutate"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/stretchr/testify/require"
 
@@ -50,12 +53,12 @@ func TestFetchImageConfig(t *testing.T) {
 		{
 			name: "success",
 			setup: func(client *fake.FakeClient) {
-				image := &fake.FakeImage{}
-				image.On("ConfigFile").Return(&v1.ConfigFile{
-					Config: v1.Config{
-						Labels: map[string]string{"io.k8s.display-name": "Test Image"},
+				image, err := mutate.Config(empty.Image, v1.Config{
+					Labels: map[string]string{
+						"io.k8s.display-name": "Test Image",
 					},
-				}, nil)
+				})
+				require.NoError(t, err)
 				client.On("Image", ref, opts).Return(image, nil)
 			},
 			expected: `{"Labels":{"io.k8s.display-name":"Test Image"}}`,
@@ -63,16 +66,16 @@ func TestFetchImageConfig(t *testing.T) {
 		{
 			name: "error fetching image",
 			setup: func(client *fake.FakeClient) {
-				client.On("Image", ref, opts).Return(&fake.FakeImage{}, errors.New("kaboom!"))
+				client.On("Image", ref, opts).Return(empty.Image, errors.New("kaboom!"))
 			},
 			err: "kaboom!",
 		},
 		{
 			name: "error fetching config file",
 			setup: func(client *fake.FakeClient) {
-				image := &fake.FakeImage{}
-				image.On("ConfigFile").Return(&v1.ConfigFile{}, errors.New("kaboom!"))
-				client.On("Image", ref, opts).Return(image, nil)
+				image := v1fake.FakeImage{}
+				image.ConfigFileReturns(nil, errors.New("kaboom!"))
+				client.On("Image", ref, opts).Return(&image, nil)
 			},
 			err: "kaboom!",
 		},
@@ -120,10 +123,9 @@ func TestFetchParentImage(t *testing.T) {
 		{
 			name: "success with name annotation",
 			setup: func(client *fake.FakeClient) {
-				image := &fake.FakeImage{}
-				image.On("Manifest").Return(&v1.Manifest{
-					Annotations: map[string]string{oci.BaseImageNameAnnotation: parentURL},
-				}, nil)
+				image := mutate.Annotations(empty.Image, map[string]string{
+					oci.BaseImageNameAnnotation: parentURL,
+				})
 
 				client.On("Image", ref, opts).Return(image, nil)
 			},
@@ -132,13 +134,10 @@ func TestFetchParentImage(t *testing.T) {
 		{
 			name: "success with name and digest annotations",
 			setup: func(client *fake.FakeClient) {
-				image := &fake.FakeImage{}
-				image.On("Manifest").Return(&v1.Manifest{
-					Annotations: map[string]string{
-						oci.BaseImageNameAnnotation:   parentName,
-						oci.BaseImageDigestAnnotation: parentDigest,
-					},
-				}, nil)
+				image := mutate.Annotations(empty.Image, map[string]string{
+					oci.BaseImageNameAnnotation:   parentName,
+					oci.BaseImageDigestAnnotation: parentDigest,
+				})
 
 				client.On("Image", ref, opts).Return(image, nil)
 			},
@@ -147,29 +146,26 @@ func TestFetchParentImage(t *testing.T) {
 		{
 			name: "error fetching image",
 			setup: func(client *fake.FakeClient) {
-				client.On("Image", ref, opts).Return(&fake.FakeImage{}, errors.New("kaboom!"))
+				client.On("Image", ref, opts).Return(empty.Image, errors.New("kaboom!"))
 			},
 			err: "kaboom!",
 		},
 		{
 			name: "error fetching manifest",
 			setup: func(client *fake.FakeClient) {
-				image := &fake.FakeImage{}
-				image.On("Manifest").Return(&v1.Manifest{}, errors.New("kaboom!"))
+				image := v1fake.FakeImage{}
+				image.ManifestReturns(nil, errors.New("kaboom!"))
 
-				client.On("Image", ref, opts).Return(image, nil)
+				client.On("Image", ref, opts).Return(&image, nil)
 			},
 			err: "kaboom!",
 		},
 		{
 			name: "missing name annotation",
 			setup: func(client *fake.FakeClient) {
-				image := &fake.FakeImage{}
-				image.On("Manifest").Return(&v1.Manifest{
-					Annotations: map[string]string{
-						oci.BaseImageDigestAnnotation: parentDigest,
-					},
-				}, nil)
+				image := mutate.Annotations(empty.Image, map[string]string{
+					oci.BaseImageDigestAnnotation: parentDigest,
+				})
 
 				client.On("Image", ref, opts).Return(image, nil)
 			},
@@ -178,12 +174,9 @@ func TestFetchParentImage(t *testing.T) {
 		{
 			name: "missing digest annotation",
 			setup: func(client *fake.FakeClient) {
-				image := &fake.FakeImage{}
-				image.On("Manifest").Return(&v1.Manifest{
-					Annotations: map[string]string{
-						oci.BaseImageNameAnnotation: parentName,
-					},
-				}, nil)
+				image := mutate.Annotations(empty.Image, map[string]string{
+					oci.BaseImageNameAnnotation: parentName,
+				})
 
 				client.On("Image", ref, opts).Return(image, nil)
 			},
@@ -192,23 +185,17 @@ func TestFetchParentImage(t *testing.T) {
 		{
 			name: "missing all annotations",
 			setup: func(client *fake.FakeClient) {
-				image := &fake.FakeImage{}
-				image.On("Manifest").Return(&v1.Manifest{}, nil)
-
-				client.On("Image", ref, opts).Return(image, nil)
+				client.On("Image", ref, opts).Return(empty.Image, nil)
 			},
 			err: "unable to determine parent image",
 		},
 		{
 			name: "invalid name annoation",
 			setup: func(client *fake.FakeClient) {
-				image := &fake.FakeImage{}
-				image.On("Manifest").Return(&v1.Manifest{
-					Annotations: map[string]string{
-						oci.BaseImageNameAnnotation:   "inv@lid",
-						oci.BaseImageDigestAnnotation: parentDigest,
-					},
-				}, nil)
+				image := mutate.Annotations(empty.Image, map[string]string{
+					oci.BaseImageNameAnnotation:   "inv@lid",
+					oci.BaseImageDigestAnnotation: parentDigest,
+				})
 
 				client.On("Image", ref, opts).Return(image, nil)
 			},
@@ -217,13 +204,10 @@ func TestFetchParentImage(t *testing.T) {
 		{
 			name: "invalid digest annoation",
 			setup: func(client *fake.FakeClient) {
-				image := &fake.FakeImage{}
-				image.On("Manifest").Return(&v1.Manifest{
-					Annotations: map[string]string{
-						oci.BaseImageNameAnnotation:   parentName,
-						oci.BaseImageDigestAnnotation: "invalid",
-					},
-				}, nil)
+				image := mutate.Annotations(empty.Image, map[string]string{
+					oci.BaseImageNameAnnotation:   parentName,
+					oci.BaseImageDigestAnnotation: "invalid",
+				})
 
 				client.On("Image", ref, opts).Return(image, nil)
 			},

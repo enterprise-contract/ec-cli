@@ -25,8 +25,9 @@ import (
 
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
+	"github.com/google/go-containerregistry/pkg/v1/empty"
+	"github.com/google/go-containerregistry/pkg/v1/mutate"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
-	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/stretchr/testify/mock"
 
 	"github.com/enterprise-contract/ec-cli/internal/fetchers/oci"
@@ -45,34 +46,32 @@ func WithTestImageConfig(ctx context.Context, url string) context.Context {
 	if err != nil {
 		panic(err)
 	}
-	parentImage := &FakeImage{}
-	parentImage.On("ConfigFile").Return(&v1.ConfigFile{
-		Config: v1.Config{
-			Labels: map[string]string{"io.k8s.display-name": "Base Image"},
+	parentImage, err := mutate.Config(empty.Image, v1.Config{
+		Labels: map[string]string{
+			"io.k8s.display-name": "Base Image",
 		},
-	}, nil)
+	})
+	if err != nil {
+		panic(err)
+	}
 
 	// Setup child image mock
-	image := &FakeImage{}
-	image.On("Manifest").Return(&v1.Manifest{
-		Annotations: map[string]string{oci.BaseImageNameAnnotation: parentURL},
-	}, nil)
-	image.On("ConfigFile").Return(&v1.ConfigFile{
-		Config: v1.Config{
-			Labels: map[string]string{"io.k8s.display-name": "Test Image"},
+	image := mutate.Annotations(empty.Image, map[string]string{
+		oci.BaseImageNameAnnotation: parentURL,
+	}).(v1.Image)
+	image, err = mutate.Config(image, v1.Config{
+		Labels: map[string]string{
+			"io.k8s.display-name": "Test Image",
 		},
-	}, nil)
-
-	// Options are functions that cannot be easily compared. We simply ignore
-	// them here.
-	opts := mock.MatchedBy(func([]remote.Option) bool {
-		return true
 	})
+	if err != nil {
+		panic(err)
+	}
 
 	// Setup client
 	client := &FakeClient{}
-	client.On("Image", ref, opts).Return(image, nil)
-	client.On("Image", parentRef, opts).Return(parentImage, nil)
+	client.On("Image", ref, mock.Anything).Return(image, nil)
+	client.On("Image", parentRef, mock.Anything).Return(parentImage, nil)
 
 	return oci.WithClient(ctx, client)
 }
@@ -84,63 +83,4 @@ type FakeClient struct {
 func (m *FakeClient) Image(ref name.Reference, opts ...remote.Option) (v1.Image, error) {
 	args := m.Called(ref, opts)
 	return args.Get(0).(v1.Image), args.Error(1)
-}
-
-type FakeImage struct {
-	mock.Mock
-}
-
-func (m *FakeImage) Layers() ([]v1.Layer, error) {
-	args := m.Called()
-	return args.Get(0).([]v1.Layer), args.Error(1)
-}
-
-func (m *FakeImage) MediaType() (types.MediaType, error) {
-	args := m.Called()
-	return args.Get(0).(types.MediaType), args.Error(1)
-}
-
-func (m *FakeImage) Size() (int64, error) {
-	args := m.Called()
-	return args.Get(0).(int64), args.Error(1)
-}
-
-func (m *FakeImage) ConfigName() (v1.Hash, error) {
-	args := m.Called()
-	return args.Get(0).(v1.Hash), args.Error(1)
-}
-
-func (m *FakeImage) ConfigFile() (*v1.ConfigFile, error) {
-	args := m.Called()
-	return args.Get(0).(*v1.ConfigFile), args.Error(1)
-}
-
-func (m *FakeImage) RawConfigFile() ([]byte, error) {
-	args := m.Called()
-	return args.Get(0).([]byte), args.Error(1)
-}
-
-func (m *FakeImage) Digest() (v1.Hash, error) {
-	args := m.Called()
-	return args.Get(0).(v1.Hash), args.Error(1)
-}
-
-func (m *FakeImage) Manifest() (*v1.Manifest, error) {
-	args := m.Called()
-	return args.Get(0).(*v1.Manifest), args.Error(1)
-}
-
-func (m *FakeImage) RawManifest() ([]byte, error) {
-	args := m.Called()
-	return args.Get(0).([]byte), args.Error(1)
-}
-
-func (m *FakeImage) LayerByDigest(v1.Hash) (v1.Layer, error) {
-	args := m.Called()
-	return args.Get(0).(v1.Layer), args.Error(1)
-}
-
-func (m *FakeImage) LayerByDiffID(v1.Hash) (v1.Layer, error) {
-	args := m.Called()
-	return args.Get(0).(v1.Layer), args.Error(1)
 }
