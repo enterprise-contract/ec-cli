@@ -175,18 +175,19 @@ func filterRecords(records []bundleRecord, prune bool) []bundleRecord {
 	now := time.Now().UTC()
 
 	unique := make([]bundleRecord, 0, len(records))
-	keys := map[string]bool{}
-	for i := len(records) - 1; i >= 0; i-- {
+	last_index := len(records) - 1
+	for i := last_index; i >= 0; i-- {
 		r := records[i]
 		// NOTE: Newly added records will have a repository, but existing ones
 		// will not. This is expected because the output does not persist the
 		// repository for each record. Instead, the repository is the attribute
 		// which references the list of records.
-		key := r.Digest
-		if _, ok := keys[key]; ok {
-			continue
+		if i < last_index {
+			previous := records[i+1]
+			if previous.Digest == r.Digest {
+				continue
+			}
 		}
-		keys[key] = true
 		unique = append([]bundleRecord{r}, unique...)
 	}
 

@@ -264,6 +264,144 @@ func TestTrack(t *testing.T) {
 				      tag: "0.3"
 			`),
 		},
+		{
+			name: "prune entries with same digest if adjacent",
+			urls: []string{
+				"registry.com/mixed:1.0@" + sampleHashOne.String(),
+			},
+			prune: true,
+			input: []byte(hd.Doc(`
+				---
+				pipeline-bundles:
+				  registry.com/mixed:
+				    - digest: ` + sampleHashThree.String() + `
+				      effective_on: "` + expectedEffectiveOn + `"
+				      tag: "0.3"
+				    - digest: ` + sampleHashThree.String() + `
+				      effective_on: "` + expectedEffectiveOn + `"
+				      tag: "0.3"
+				    - digest: ` + sampleHashTwo.String() + `
+				      effective_on: "` + expectedEffectiveOn + `"
+				      tag: "0.2"
+				    - digest: ` + sampleHashTwo.String() + `
+				      effective_on: "` + expectedEffectiveOn + `"
+				      tag: "0.2"
+				task-bundles:
+				  registry.com/mixed:
+				    - digest: ` + sampleHashThree.String() + `
+				      effective_on: "` + expectedEffectiveOn + `"
+				      tag: "0.3"
+				    - digest: ` + sampleHashThree.String() + `
+				      effective_on: "` + expectedEffectiveOn + `"
+				      tag: "0.3"
+				    - digest: ` + sampleHashTwo.String() + `
+				      effective_on: "` + expectedEffectiveOn + `"
+				      tag: "0.2"
+				    - digest: ` + sampleHashTwo.String() + `
+				      effective_on: "` + expectedEffectiveOn + `"
+				      tag: "0.2"
+			`)),
+			output: hd.Doc(`
+				---
+				pipeline-bundles:
+				  registry.com/mixed:
+				    - digest: ` + sampleHashOne.String() + `
+				      effective_on: "` + expectedEffectiveOn + `"
+				      tag: "1.0"
+				    - digest: ` + sampleHashThree.String() + `
+				      effective_on: "` + expectedEffectiveOn + `"
+				      tag: "0.3"
+				    - digest: ` + sampleHashTwo.String() + `
+				      effective_on: "` + expectedEffectiveOn + `"
+				      tag: "0.2"
+				task-bundles:
+				  registry.com/mixed:
+				    - digest: ` + sampleHashOne.String() + `
+				      effective_on: "` + expectedEffectiveOn + `"
+				      tag: "1.0"
+				    - digest: ` + sampleHashThree.String() + `
+				      effective_on: "` + expectedEffectiveOn + `"
+				      tag: "0.3"
+				    - digest: ` + sampleHashTwo.String() + `
+				      effective_on: "` + expectedEffectiveOn + `"
+				      tag: "0.2"
+			`),
+		},
+		{
+			name: "don't prune entries with same digest if not adjacent",
+			urls: []string{
+				"registry.com/mixed:1.0@" + sampleHashOne.String(),
+			},
+			prune: true,
+			input: []byte(hd.Doc(`
+				---
+				pipeline-bundles:
+				  registry.com/mixed:
+				    - digest: ` + sampleHashThree.String() + `
+				      effective_on: "` + expectedEffectiveOn + `"
+				      tag: "0.3"
+				    - digest: ` + sampleHashTwo.String() + `
+				      effective_on: "` + expectedEffectiveOn + `"
+				      tag: "0.2"
+				    - digest: ` + sampleHashThree.String() + `
+				      effective_on: "` + expectedEffectiveOn + `"
+				      tag: "0.3"
+				    - digest: ` + sampleHashTwo.String() + `
+				      effective_on: "` + expectedEffectiveOn + `"
+				      tag: "0.2"
+				task-bundles:
+				  registry.com/mixed:
+				    - digest: ` + sampleHashThree.String() + `
+				      effective_on: "` + expectedEffectiveOn + `"
+				      tag: "0.3"
+				    - digest: ` + sampleHashTwo.String() + `
+				      effective_on: "` + expectedEffectiveOn + `"
+				      tag: "0.2"
+				    - digest: ` + sampleHashThree.String() + `
+				      effective_on: "` + expectedEffectiveOn + `"
+				      tag: "0.3"
+				    - digest: ` + sampleHashTwo.String() + `
+				      effective_on: "` + expectedEffectiveOn + `"
+				      tag: "0.2"
+			`)),
+			output: hd.Doc(`
+				---
+				pipeline-bundles:
+				  registry.com/mixed:
+				    - digest: ` + sampleHashOne.String() + `
+				      effective_on: "` + expectedEffectiveOn + `"
+				      tag: "1.0"
+				    - digest: ` + sampleHashThree.String() + `
+				      effective_on: "` + expectedEffectiveOn + `"
+				      tag: "0.3"
+				    - digest: ` + sampleHashTwo.String() + `
+				      effective_on: "` + expectedEffectiveOn + `"
+				      tag: "0.2"
+				    - digest: ` + sampleHashThree.String() + `
+				      effective_on: "` + expectedEffectiveOn + `"
+				      tag: "0.3"
+				    - digest: ` + sampleHashTwo.String() + `
+				      effective_on: "` + expectedEffectiveOn + `"
+				      tag: "0.2"
+				task-bundles:
+				  registry.com/mixed:
+				    - digest: ` + sampleHashOne.String() + `
+				      effective_on: "` + expectedEffectiveOn + `"
+				      tag: "1.0"
+				    - digest: ` + sampleHashThree.String() + `
+				      effective_on: "` + expectedEffectiveOn + `"
+				      tag: "0.3"
+				    - digest: ` + sampleHashTwo.String() + `
+				      effective_on: "` + expectedEffectiveOn + `"
+				      tag: "0.2"
+				    - digest: ` + sampleHashThree.String() + `
+				      effective_on: "` + expectedEffectiveOn + `"
+				      tag: "0.3"
+				    - digest: ` + sampleHashTwo.String() + `
+				      effective_on: "` + expectedEffectiveOn + `"
+				      tag: "0.2"
+			`),
+		},
 	}
 
 	for _, tt := range tests {
