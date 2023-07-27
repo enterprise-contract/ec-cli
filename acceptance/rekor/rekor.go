@@ -28,6 +28,7 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/cucumber/godog"
@@ -54,14 +55,6 @@ const rekorStateKey = key(0) // we store the gitState struct under this key in C
 type rekorState struct {
 	KeyPair *cosign.KeysBytes
 }
-
-type rekorImpl struct{}
-
-func (r rekorImpl) StubRekorEntryFor(ctx context.Context, data []byte) error {
-	return stubRekorEntryFor(ctx, data)
-}
-
-var impl testenv.Rekor = rekorImpl{}
 
 func (r rekorState) Key() any {
 	return rekorStateKey
@@ -99,7 +92,7 @@ func stubRekordRunning(ctx context.Context) (context.Context, error) {
 		return ctx, err
 	}
 
-	return context.WithValue(ctx, testenv.RekorImpl, impl), nil
+	return ctx, nil
 }
 
 // randomHex generates a random hex string of the given length
@@ -254,7 +247,7 @@ func computeEntryTimestamp(privateKey, password []byte, logEntry models.LogEntry
 // for the given bytes, the entry is timestamped using the key stored in
 // state.KeyPair and a fake Merkle tree is created with an empty root
 // and this entries' hash
-func stubRekorEntryFor(ctx context.Context, data []byte) error {
+func stubRekorEntryFor(ctx context.Context, data []byte, fn jsonPathExtractor) error {
 	state := testenv.FetchState[rekorState](ctx)
 
 	logEntry, entryUUID, err := computeLogEntry(ctx, state.KeyPair.PublicBytes, data)
@@ -280,15 +273,41 @@ func stubRekorEntryFor(ctx context.Context, data []byte) error {
 		return err
 	}
 
-	dataBase64 := base64.StdEncoding.EncodeToString(data)
+	jsonPath, err := fn(data)
+	if err != nil {
+		return fmt.Errorf("failed to extract JSON path: %w", err)
+	}
 
 	// return this entry for any lookup in Rekor
 	return wiremock.StubFor(ctx, wiremock.Post(wiremock.URLPathEqualTo("/api/v1/log/entries/retrieve")).
-		WithBodyPattern(wiremock.Contains(dataBase64)).
+		WithBodyPattern(wiremock.MatchingJsonPath(jsonPath)).
 		WillReturn(string(body),
 			map[string]string{"Content-Type": "application/json"},
 			200,
 		))
+}
+
+type jsonPathExtractor func([]byte) (string, error)
+
+// jsonPathFromSignature returns the JSON Path expression to be used in the wiremock stub
+// for a signature query. The expression matches the value of the signature's content.
+func jsonPathFromSignature(data []byte) (string, error) {
+	signature := cosign.Signatures{}
+	if err := json.Unmarshal(data, &signature); err != nil {
+		return "", fmt.Errorf("unmarshalling signature: %w", err)
+	}
+
+	if signature.Sig == "" {
+		return "", fmt.Errorf("data missing 'sig' key: %s", data)
+	}
+
+	return fmt.Sprintf("$..[?(@.content=='%s')]", signature.Sig), nil
+}
+
+// jsonPathFromSignature returns the JSON Path expression to be used in the wiremock stub
+// for an attestaion query. The expression matches the value of the attestation's digest.
+func jsonPathFromAttestation(data []byte) (string, error) {
+	return fmt.Sprintf("$..[?(@.value=='%x')]", sha256.Sum256(data)), nil
 }
 
 // rekorEntryForAttestation given an image name for which attestation has been
@@ -300,7 +319,7 @@ func rekorEntryForAttestation(ctx context.Context, imageName string) error {
 		return err
 	}
 
-	return stubRekorEntryFor(ctx, attestation)
+	return stubRekorEntryFor(ctx, attestation, jsonPathFromAttestation)
 }
 
 // rekorEntryForImageSignature given an image name for which signature has been
@@ -312,7 +331,7 @@ func rekorEntryForImageSignature(ctx context.Context, imageName string) error {
 		return err
 	}
 
-	return stubRekorEntryFor(ctx, signature)
+	return stubRekorEntryFor(ctx, signature, jsonPathFromSignature)
 }
 
 // StubRekor returns the `http://host:port` of the stubbed Rekord

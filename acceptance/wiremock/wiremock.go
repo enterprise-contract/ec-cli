@@ -52,8 +52,8 @@ const (
 
 var Get = wiremock.Get
 var Post = wiremock.Post
-var Contains = wiremock.Contains
 var URLPathEqualTo = wiremock.URLPathEqualTo
+var MatchingJsonPath = wiremock.MatchingJsonPath
 
 type client struct {
 	*wiremock.Client

@@ -55,10 +55,6 @@ var version sync.Once
 var ecVersion = "undefined"
 var ecVersionErr error
 
-type Rekor interface {
-	StubRekorEntryFor(context.Context, []byte) error
-}
-
 // Persist persists the environment stored in context in a ".persisted" file as JSON
 func Persist(ctx context.Context) (bool, error) {
 	if !Persisted(ctx) {
