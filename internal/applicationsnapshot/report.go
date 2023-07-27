@@ -235,11 +235,15 @@ func condensedMsg(results []conftestOutput.Result) map[string][]string {
 }
 
 // toAppstudioReport returns a version of the report that conforms to the
-// TEST_OUTPUT format.
-// (Note: the name of the Tekton task result where this generally
-// gets written is now TEST_OUTPUT instead of TEST_OUTPUT)
+// TEST_OUTPUT format, usually written to the TEST_OUTPUT Tekton task result
 func (r *Report) toAppstudioReport() testReport {
-	result := testReport{Timestamp: fmt.Sprint(r.created.UTC().Unix())}
+	result := testReport{
+		Timestamp: fmt.Sprint(r.created.UTC().Unix()),
+		// EC generally runs with the AllNamespaces flag set to true
+		// and policies from many namespaces. Rather than try to list
+		// them all in this string field we just leave it blank.
+		Namespace: "",
+	}
 
 	hasFailures := false
 	for _, component := range r.Components {
@@ -254,16 +258,47 @@ func (r *Report) toAppstudioReport() testReport {
 		}
 	}
 
-	switch {
-	case result.Failures > 0 || hasFailures:
-		result.Result = "FAILURE"
-	case result.Warnings > 0:
-		result.Result = "WARNING"
-	case result.Successes == 0:
-		result.Result = "SKIPPED"
-	default:
-		result.Result = "SUCCESS"
+	result.deriveResult(hasFailures)
+	return result
+}
+
+// Used in cmd/test/test
+func AppstudioReportFromCheckResults(results []conftestOutput.CheckResult, namespaces []string) testReport {
+	// This is may need revising in future. It does not handle multiple namespaces
+	// accurately. We could consider using a string delimited list of namespaces
+	// but I'm being cautious about breaking consumers of this data. The
+	// testReport.Namespace field might need to be converted to a list of strings
+	// in future but we need to coordinate that change carefully.
+	// Also, we might prefer to extract the namespaces from results rather than
+	// use whatever the user provided on the command line.
+	useNamespace := ""
+	if len(namespaces) > 0 {
+		// The first namespace only
+		useNamespace = namespaces[0]
+	}
+	report := testReport{
+		Timestamp: fmt.Sprint(time.Now().UTC().Unix()),
+		Namespace: useNamespace,
 	}
 
-	return result
+	for _, result := range results {
+		report.Successes += result.Successes
+		report.Failures += len(result.Failures)
+		report.Warnings += len(result.Warnings)
+	}
+	report.deriveResult(false)
+	return report
+}
+
+func (r *testReport) deriveResult(hasFailures bool) {
+	switch {
+	case r.Failures > 0 || hasFailures:
+		r.Result = "FAILURE"
+	case r.Warnings > 0:
+		r.Result = "WARNING"
+	case r.Successes == 0:
+		r.Result = "SKIPPED"
+	default:
+		r.Result = "SUCCESS"
+	}
 }

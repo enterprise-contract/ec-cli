@@ -1,0 +1,152 @@
+
+[success:stdout - 1]
+[
+  {
+    "filename": "acceptance/examples/empty_input.json",
+    "namespace": "main",
+    "successes": 1
+  }
+]
+---
+
+[success:stderr - 1]
+
+---
+[appstudio success:stdout - 1]
+{
+  "timestamp": "${TIMESTAMP}",
+  "namespace": "main",
+  "successes": 1,
+  "failures": 0,
+  "warnings": 0,
+  "result": "SUCCESS"
+}
+---
+
+[appstudio success:stderr - 1]
+
+---
+[appstudio skipped:stdout - 1]
+{
+  "timestamp": "${TIMESTAMP}",
+  "namespace": "main",
+  "successes": 0,
+  "failures": 0,
+  "warnings": 0,
+  "result": "SKIPPED"
+}
+---
+
+[appstudio skipped:stderr - 1]
+
+---
+[a warning:stdout - 1]
+[
+  {
+    "filename": "acceptance/examples/empty_input.json",
+    "namespace": "main",
+    "successes": 0,
+    "warnings": [
+      {
+        "msg": "Has a warning"
+      }
+    ]
+  }
+]
+---
+[appstudio warning:stdout - 1]
+{
+  "timestamp": "${TIMESTAMP}",
+  "namespace": "main",
+  "successes": 0,
+  "failures": 0,
+  "warnings": 1,
+  "result": "WARNING"
+}
+---
+
+[appstudio warning:stderr - 1]
+
+---
+
+[a warning:stderr - 1]
+
+---
+[a warning with fail-on-warn:stdout - 1]
+[
+  {
+    "filename": "acceptance/examples/empty_input.json",
+    "namespace": "main",
+    "successes": 0,
+    "warnings": [
+      {
+        "msg": "Has a warning"
+      }
+    ]
+  }
+]
+---
+
+[a warning with fail-on-warn:stderr - 1]
+
+---
+[a deny:stdout - 1]
+[
+  {
+    "filename": "acceptance/examples/empty_input.json",
+    "namespace": "main",
+    "successes": 0,
+    "failures": [
+      {
+        "msg": "Failure due to overripeness"
+      }
+    ]
+  }
+]
+---
+
+[a deny:stderr - 1]
+
+---
+[a deny with no-fail:stdout - 1]
+[
+  {
+    "filename": "acceptance/examples/empty_input.json",
+    "namespace": "main",
+    "successes": 0,
+    "failures": [
+      {
+        "msg": "Failure due to overripeness"
+      }
+    ]
+  }
+]
+---
+
+[a deny with no-fail:stderr - 1]
+
+---
+[plain text deny:stdout - 1]
+FAIL - acceptance/examples/empty_input.json - main - Failure due to overripeness
+
+1 test, 0 passed, 0 warnings, 1 failure, 0 exceptions
+
+---
+
+[plain text deny:stderr - 1]
+
+---
+[appstudio deny:stdout - 1]
+{
+  "timestamp": "${TIMESTAMP}",
+  "namespace": "main",
+  "successes": 0,
+  "failures": 1,
+  "warnings": 0,
+  "result": "FAILURE"
+}
+---
+
+[appstudio deny:stderr - 1]
+
+---
