@@ -1,0 +1,84 @@
+= Signing
+
+The Enterprise Contract relies on https://www.sigstore.dev/[Sigstore] signatures to verify the
+authenticity of content being verified. Currently, this is integrated with the `ec validate image`
+command.
+
+== Sigstore Levels
+
+There are different levels of Sigstore adoption. These can be done
+https://www.linuxfoundation.org/blog/blog/adopting-sigstore-incrementally[incrementally]. The
+Enterprise Contract can be used to validate artifacts regardless of the level.
+
+=== Long-Lived Keys
+
+Using long-lived keys is the easiest and simplest way to adopt Sigstore. For verification, there are
+two requirements. The public key itself and a flag to indicate that Rekor integration should be
+disabled:
+
+[,bash]
+----
+ec validate image --public-key=cosign.pub --ignore-rekor --image $IMAGE
+----
+
+=== Long-Lived Keys with Auditability
+
+This approach uses https://docs.sigstore.dev/rekor/overview/[Rekor] to track when the signing key is
+used. When using the public instance of Rekor, the only requirement is the public key:
+
+[,bash]
+----
+ec validate image --public-key=cosign.pub --image $IMAGE
+----
+
+Using an <<Alternative Rekor>> instance is also supported.
+
+=== Identity-Based Short-Lived Keys ("keyless")
+
+This is the strongest and most sophisticated Sigstore level. Here a complete Sigstore deployment is
+required. Verification is no longer based on a key. Instead, it is based on the signer's identity.
+There are two pieces of information required, the certificate identity and the certificate OIDC
+issuer:
+
+[,bash]
+----
+ec validate image --certificate-identity=$IDENTITY --certificate-oidc-issuer=$ISSUER --image $IMAGE
+----
+
+NOTE: `--certificate-identity` and `--certificate-oidc-issue` flags perform an exact value match.
+Use `--certificate-identity-regexp` and `--certificate-oidc-issuer-regexp` to perform a regular
+expression match if additional flexibility is needed.
+
+Any certificate involved in the signature is also provided as xref:policy_input.adoc[policy input].
+Use this data to establish a fine-grained verification process by leveraging rego policies. See the
+xref:ec-policies:ROOT:release_policy.adoc#github_certificate_package[GitHub Certificate Checks] as
+an example.
+
+As with the previous level, it is also possible to use an <<Alternative Rekor>> instance during
+verification.
+
+== Alternative Rekor
+
+By default, the `ec validate image` command uses the production https://rekor.sigstore.dev/[public
+instance] of Rekor. This section describes different ways to use an alternative Rekor instance
+during validation.
+
+The simplest, and preferred method, is to use `cosign initialize` to populate the Sigstore root from
+an alternative TUF mirror:
+
+[,bash]
+----
+cosign initialize -mirror $TUF_MIRROR -root $TUF_ROOT
+ec validate image ...
+----
+
+NOTE: See `cosign initialize --help` for details on initializing the Sigstore root.
+
+If the Sigstore deployment does not include a TUF mirror, first delete the Sigstore root, then use
+the `--rekor-url` flag:
+
+[,bash]
+----
+rm -rf ~/.sigstore/root
+ec validate image --rekor-url $REKOR_URL ...
+----
