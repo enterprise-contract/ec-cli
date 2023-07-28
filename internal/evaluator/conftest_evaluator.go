@@ -55,34 +55,17 @@ const (
 	effectiveTimeKey contextKey = "ec.evaluator.effective_time"
 )
 
-type CheckResult struct {
-	output.CheckResult
-	Successes []output.Result `json:"successes,omitempty"`
-}
-
-type CheckResults []CheckResult
-
-func (c CheckResults) ToConftestResults() []output.CheckResult {
-	results := make([]output.CheckResult, 0, len(c))
-
-	for _, r := range c {
-		results = append(results, r.CheckResult)
-	}
-
-	return results
-}
-
 // trim removes all failure, warning, success or skipped results that depend on
 // a result reported as failure, warning or skipped. Dependencies are declared
 // by setting the metadata via metadataDependsOn.
-func (c *CheckResults) trim() {
+func trim(results *[]Outcome) {
 	// holds codes for all failures, warnings or skipped rules, as a map to ease
 	// the lookup, any rule that depends on a reported code will be removed from
 	// the results
 	reported := map[string]bool{}
 
-	for _, checks := range *c {
-		for _, results := range [][]output.Result{checks.Failures, checks.Warnings, checks.Skipped} {
+	for _, checks := range *results {
+		for _, results := range [][]Result{checks.Failures, checks.Warnings, checks.Skipped} {
 			for _, result := range results {
 				if code, ok := result.Metadata[metadataCode].(string); ok {
 					reported[code] = true
@@ -93,7 +76,7 @@ func (c *CheckResults) trim() {
 
 	// helper function inlined for ecapsulation, removes any results that depend
 	// on a reported rule, by code
-	trimOutput := func(what []output.Result) []output.Result {
+	trimOutput := func(what []Result) []Result {
 		if what == nil {
 			// nil might get passed in, while this would not cause an issue, the
 			// function would return empty array and that would needlessly
@@ -103,7 +86,7 @@ func (c *CheckResults) trim() {
 
 		// holds leftover results, i.e. the ones that do not depend on a rule
 		// reported as failure, warning or skipped
-		trimmed := make([]output.Result, 0, len(what))
+		trimmed := make([]Result, 0, len(what))
 		for _, result := range what {
 			if dependancy, ok := result.Metadata[metadataDependsOn].([]string); ok {
 				for _, d := range dependancy {
@@ -119,18 +102,16 @@ func (c *CheckResults) trim() {
 		return trimmed
 	}
 
-	for i, checks := range *c {
-		(*c)[i].Failures = trimOutput(checks.Failures)
-		(*c)[i].Warnings = trimOutput(checks.Warnings)
-		(*c)[i].Skipped = trimOutput(checks.Skipped)
-		(*c)[i].Successes = trimOutput(checks.Successes)
+	for i, checks := range *results {
+		(*results)[i].Failures = trimOutput(checks.Failures)
+		(*results)[i].Warnings = trimOutput(checks.Warnings)
+		(*results)[i].Skipped = trimOutput(checks.Skipped)
+		(*results)[i].Successes = trimOutput(checks.Successes)
 	}
 }
 
-type Data map[string]any
-
 type testRunner interface {
-	Run(context.Context, []string) ([]output.CheckResult, Data, error)
+	Run(context.Context, []string) ([]Outcome, Data, error)
 }
 
 const (
@@ -162,10 +143,25 @@ type conftestRunner struct {
 	runner.TestRunner
 }
 
-func (r conftestRunner) Run(ctx context.Context, fileList []string) (result []output.CheckResult, data Data, err error) {
-	result, err = r.TestRunner.Run(ctx, fileList)
+func (r conftestRunner) Run(ctx context.Context, fileList []string) (result []Outcome, data Data, err error) {
+	var conftestResult []output.CheckResult
+	conftestResult, err = r.TestRunner.Run(ctx, fileList)
 	if err != nil {
 		return
+	}
+
+	for _, r := range conftestResult {
+		result = append(result, Outcome{
+			FileName:  r.FileName,
+			Namespace: r.Namespace,
+			// Conftest doesn't give us a list of successes, just a count. Here we turn that count
+			// into a placeholder slice of that size to make processing easier later on.
+			Successes:  make([]Result, r.Successes),
+			Skipped:    toRules(r.Skipped),
+			Warnings:   toRules(r.Warnings),
+			Failures:   toRules(r.Failures),
+			Exceptions: toRules(r.Exceptions),
+		})
 	}
 
 	// we can't reference the engine from the test runner or from the results so
@@ -279,8 +275,8 @@ func (r *policyRules) collect(a *ast.AnnotationsRef) error {
 	return nil
 }
 
-func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (CheckResults, Data, error) {
-	results := CheckResults{}
+func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) ([]Outcome, Data, error) {
+	var results []Outcome
 
 	// hold all rule annotations from all policy sources
 	// NOTE: emphasis on _all rules from all sources_; meaning that if two rules
@@ -347,14 +343,18 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (Check
 	effectiveTime := c.policy.EffectiveTime()
 	ctx = context.WithValue(ctx, effectiveTimeKey, effectiveTime)
 
+	// Track how many rules have been processed. This is used later on to determine if anything
+	// at all was processed.
+	totalRules := 0
+
 	// loop over each policy (namespace) evaluation
 	// effectively replacing the results returned from conftest
 	for i, result := range runResults {
 		log.Debugf("Evaluation result at %d: %#v", i, result)
-		warnings := []output.Result{}
-		failures := []output.Result{}
-		exceptions := []output.Result{}
-		skipped := []output.Result{}
+		warnings := []Result{}
+		failures := []Result{}
+		exceptions := []Result{}
+		skipped := []Result{}
 
 		for i := range result.Warnings {
 			warning := result.Warnings[i]
@@ -401,28 +401,19 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (Check
 		result.Exceptions = exceptions
 		result.Skipped = skipped
 
-		result := CheckResult{CheckResult: result}
+		totalRules += len(result.Warnings) + len(result.Failures) + len(result.Successes)
+
+		// Replace the placeholder successes slice with the actual successes.
 		result.Successes = c.computeSuccesses(result, rules, effectiveTime)
 
 		results = append(results, result)
 	}
 
-	results.trim()
+	trim(&results)
 
-	// Evaluate total successes, warnings, and failures. If all are 0, then
-	// we have effectively failed, because no tests were actually ran due to
-	// input error, etc.
-	var total int
-
-	for _, res := range results {
-		// we could use len(res.Successes), but that is not correct as some of
-		// the successes might not follow the conventions used, i.e. have
-		// short_name annotation, so we use the number calculated by Conftest
-		total += res.CheckResult.Successes
-		total += len(res.Warnings)
-		total += len(res.Failures)
-	}
-	if total == 0 {
+	// If no rules were checked, then we have effectively failed, because no tests were actually
+	// ran due to input error, etc.
+	if totalRules == 0 {
 		log.Error("no successes, warnings, or failures, check input")
 		return nil, nil, fmt.Errorf("no successes, warnings, or failures, check input")
 	}
@@ -430,14 +421,27 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) (Check
 	return results, data, nil
 }
 
+func toRules(results []output.Result) []Result {
+	var eResults []Result
+	for _, r := range results {
+		eResults = append(eResults, Result{
+			Message:  r.Message,
+			Metadata: r.Metadata,
+			Outputs:  r.Outputs,
+		})
+	}
+
+	return eResults
+}
+
 // computeSuccesses generates success results, these are not provided in the
 // Conftest results, so we reconstruct these from the parsed rules, any rule
 // that hasn't been touched by adding metadata must have succeeded
-func (c conftestEvaluator) computeSuccesses(result CheckResult, rules policyRules, effectiveTime time.Time) []output.Result {
+func (c conftestEvaluator) computeSuccesses(result Outcome, rules policyRules, effectiveTime time.Time) []Result {
 	// what rules, by code, have we seen in the Conftest results, use map to
 	// take advantage of hashing for quicker lookup
 	seenRules := map[string]bool{}
-	for _, o := range [][]output.Result{result.Failures, result.Warnings, result.Skipped, result.Exceptions} {
+	for _, o := range [][]Result{result.Failures, result.Warnings, result.Skipped, result.Exceptions} {
 		for _, r := range o {
 			if code, ok := r.Metadata[metadataCode].(string); ok {
 				seenRules[code] = true
@@ -445,9 +449,9 @@ func (c conftestEvaluator) computeSuccesses(result CheckResult, rules policyRule
 		}
 	}
 
-	var successes []output.Result
+	var successes []Result
 	if l := len(rules); l > 0 {
-		successes = make([]output.Result, 0, l)
+		successes = make([]Result, 0, l)
 	}
 
 	// any rule left DID NOT get metadata added so it's a success
@@ -462,7 +466,7 @@ func (c conftestEvaluator) computeSuccesses(result CheckResult, rules policyRule
 			continue
 		}
 
-		success := output.Result{
+		success := Result{
 			Message: "Pass",
 			Metadata: map[string]interface{}{
 				metadataCode: code,
@@ -513,14 +517,14 @@ func (c conftestEvaluator) computeSuccesses(result CheckResult, rules policyRule
 	return successes
 }
 
-func addRuleMetadata(ctx context.Context, result *output.Result, rules policyRules) {
+func addRuleMetadata(ctx context.Context, result *Result, rules policyRules) {
 	code, ok := (*result).Metadata[metadataCode].(string)
 	if ok {
 		addMetadataToResults(ctx, result, rules[code])
 	}
 }
 
-func addMetadataToResults(ctx context.Context, r *output.Result, rule rule.Info) {
+func addMetadataToResults(ctx context.Context, r *Result, rule rule.Info) {
 	// Note that r.Metadata already includes some fields that we get from
 	// the real conftest violation and warning results, (as provided by
 	// lib.result_helper in the ec-policies rego). Here we augment it with
@@ -682,7 +686,7 @@ func (c *conftestEvaluator) createCapabilitiesFile(ctx context.Context) error {
 
 // isResultEffective returns whether or not the given result's effective date is before now.
 // Failure to determine the effective date is reported as the result being effective.
-func isResultEffective(failure output.Result, now time.Time) bool {
+func isResultEffective(failure Result, now time.Time) bool {
 	raw, ok := failure.Metadata[metadataEffectiveOn]
 	if !ok {
 		return true
@@ -702,7 +706,7 @@ func isResultEffective(failure output.Result, now time.Time) bool {
 
 // isResultIncluded returns whether or not the result should be included or
 // discarded based on the policy configuration.
-func (c conftestEvaluator) isResultIncluded(result output.Result) bool {
+func (c conftestEvaluator) isResultIncluded(result Result) bool {
 	ruleMatchers := makeMatchers(result)
 	var includes, excludes []string
 
@@ -772,7 +776,7 @@ func score(name string) int {
 }
 
 // makeMatchers returns the possible matching strings for the result.
-func makeMatchers(result output.Result) []string {
+func makeMatchers(result Result) []string {
 	code := ExtractStringFromMetadata(result, metadataCode)
 	term := ExtractStringFromMetadata(result, metadataTerm)
 	parts := strings.Split(code, ".")
@@ -803,7 +807,7 @@ func makeMatchers(result output.Result) []string {
 }
 
 // extractCollections returns the collections encoded in the result metadata.
-func extractCollections(result output.Result) []string {
+func extractCollections(result Result) []string {
 	var collections []string
 	if maybeCollections, exists := result.Metadata[metadataCollections]; exists {
 		if ruleCollections, ok := maybeCollections.([]string); ok {
@@ -818,7 +822,7 @@ func extractCollections(result output.Result) []string {
 }
 
 // ExtractStringFromMetadata returns the string value from the result metadata at the given key.
-func ExtractStringFromMetadata(result output.Result, key string) string {
+func ExtractStringFromMetadata(result Result, key string) string {
 	if maybeValue, exists := result.Metadata[key]; exists {
 		if value, ok := maybeValue.(string); ok {
 			return value

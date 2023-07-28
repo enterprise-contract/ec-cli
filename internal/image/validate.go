@@ -22,7 +22,6 @@ import (
 	"sort"
 	"time"
 
-	conftestOutput "github.com/open-policy-agent/conftest/output"
 	"github.com/qri-io/jsonpointer"
 	log "github.com/sirupsen/logrus"
 
@@ -86,14 +85,11 @@ func ValidateImage(ctx context.Context, url string, p policy.Policy, detailed bo
 	log.Debugf("Found %d attestations", attCount)
 	if attCount == 0 {
 		// This is very much a corner case.
-		out.SetPolicyCheck(evaluator.CheckResults{
+		out.SetPolicyCheck([]evaluator.Outcome{
 			{
-				CheckResult: conftestOutput.CheckResult{
-					Failures: []conftestOutput.Result{{
-						Message: "No attestations contain a subject that match the given image.",
-					},
-					},
-				},
+				Failures: []evaluator.Result{{
+					Message: "No attestations contain a subject that match the given image.",
+				}},
 			},
 		})
 		return out, nil
@@ -105,7 +101,7 @@ func ValidateImage(ctx context.Context, url string, p policy.Policy, detailed bo
 		return nil, err
 	}
 
-	var allResults evaluator.CheckResults
+	var allResults []evaluator.Outcome
 	for _, e := range a.Evaluators {
 		// Todo maybe: Handle each one concurrently
 		results, data, err := e.Evaluate(ctx, []string{inputPath})

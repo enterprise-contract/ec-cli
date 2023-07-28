@@ -27,12 +27,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/open-policy-agent/conftest/output"
 	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 	"github.com/enterprise-contract/ec-cli/internal/format"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
@@ -162,7 +162,7 @@ func Test_ReportSummary(t *testing.T) {
 		{
 			name: "testing one violation and warning",
 			input: Component{
-				Violations: []output.Result{
+				Violations: []evaluator.Result{
 					{
 						Message: "short report",
 						Metadata: map[string]interface{}{
@@ -170,7 +170,7 @@ func Test_ReportSummary(t *testing.T) {
 						},
 					},
 				},
-				Warnings: []output.Result{
+				Warnings: []evaluator.Result{
 					{
 						Message: "short report",
 						Metadata: map[string]interface{}{
@@ -204,12 +204,12 @@ func Test_ReportSummary(t *testing.T) {
 		{
 			name: "testing no metadata",
 			input: Component{
-				Violations: []output.Result{
+				Violations: []evaluator.Result{
 					{
 						Message: "short report",
 					},
 				},
-				Warnings: []output.Result{
+				Warnings: []evaluator.Result{
 					{
 						Message: "short report",
 					},
@@ -236,7 +236,7 @@ func Test_ReportSummary(t *testing.T) {
 		{
 			name: "testing multiple violations and warnings",
 			input: Component{
-				Violations: []output.Result{
+				Violations: []evaluator.Result{
 					{
 						Message: "short report",
 						Metadata: map[string]interface{}{
@@ -250,7 +250,7 @@ func Test_ReportSummary(t *testing.T) {
 						},
 					},
 				},
-				Warnings: []output.Result{
+				Warnings: []evaluator.Result{
 					{
 						Message: "short report",
 						Metadata: map[string]interface{}{
@@ -290,7 +290,7 @@ func Test_ReportSummary(t *testing.T) {
 		{
 			name: "with successes",
 			input: Component{
-				Violations: []output.Result{
+				Violations: []evaluator.Result{
 					{
 						Message: "violation",
 						Metadata: map[string]interface{}{
@@ -298,7 +298,7 @@ func Test_ReportSummary(t *testing.T) {
 						},
 					},
 				},
-				Warnings: []output.Result{
+				Warnings: []evaluator.Result{
 					{
 						Message: "warning",
 						Metadata: map[string]interface{}{
@@ -306,7 +306,7 @@ func Test_ReportSummary(t *testing.T) {
 						},
 					},
 				},
-				Successes: []output.Result{
+				Successes: []evaluator.Result{
 					{
 						Message: "success",
 						Metadata: map[string]interface{}{
@@ -337,7 +337,7 @@ func Test_ReportSummary(t *testing.T) {
 			name:     "with snapshot",
 			snapshot: "snappy",
 			input: Component{
-				Violations: []output.Result{
+				Violations: []evaluator.Result{
 					{
 						Message: "violation",
 						Metadata: map[string]interface{}{
@@ -345,7 +345,7 @@ func Test_ReportSummary(t *testing.T) {
 						},
 					},
 				},
-				Warnings: []output.Result{
+				Warnings: []evaluator.Result{
 					{
 						Message: "warning",
 						Metadata: map[string]interface{}{
@@ -353,7 +353,7 @@ func Test_ReportSummary(t *testing.T) {
 						},
 					},
 				},
-				Successes: []output.Result{
+				Successes: []evaluator.Result{
 					{
 						Message: "success",
 						Metadata: map[string]interface{}{
@@ -429,7 +429,7 @@ func Test_ReportAppstudio(t *testing.T) {
 			}`,
 			components: []Component{
 				{Success: true},
-				{Success: true, Warnings: []output.Result{{Message: "this is a warning"}}},
+				{Success: true, Warnings: []evaluator.Result{{Message: "this is a warning"}}},
 			},
 			success: true,
 		},
@@ -446,7 +446,7 @@ func Test_ReportAppstudio(t *testing.T) {
 			}`,
 			components: []Component{
 				{Success: true},
-				{Success: false, Violations: []output.Result{{Message: "this is a violation"}}},
+				{Success: false, Violations: []evaluator.Result{{Message: "this is a violation"}}},
 			},
 			success: false,
 		},
@@ -477,8 +477,8 @@ func Test_ReportAppstudio(t *testing.T) {
 			}`,
 			components: []Component{
 				{Success: true},
-				{Success: false, Violations: []output.Result{{Message: "this is a violation"}}},
-				{Success: false, Warnings: []output.Result{{Message: "this is a warning"}}},
+				{Success: false, Violations: []evaluator.Result{{Message: "this is a violation"}}},
+				{Success: false, Warnings: []evaluator.Result{{Message: "this is a warning"}}},
 			},
 			success: false,
 		},
@@ -577,7 +577,7 @@ func Test_ReportHACBS(t *testing.T) {
 			}`,
 			components: []Component{
 				{Success: true},
-				{Success: true, Warnings: []output.Result{{Message: "this is a warning"}}},
+				{Success: true, Warnings: []evaluator.Result{{Message: "this is a warning"}}},
 			},
 			success: true,
 		},
@@ -594,7 +594,7 @@ func Test_ReportHACBS(t *testing.T) {
 			}`,
 			components: []Component{
 				{Success: true},
-				{Success: false, Violations: []output.Result{{Message: "this is a violation"}}},
+				{Success: false, Violations: []evaluator.Result{{Message: "this is a violation"}}},
 			},
 			success: false,
 		},
@@ -625,8 +625,8 @@ func Test_ReportHACBS(t *testing.T) {
 			}`,
 			components: []Component{
 				{Success: true},
-				{Success: false, Violations: []output.Result{{Message: "this is a violation"}}},
-				{Success: false, Warnings: []output.Result{{Message: "this is a warning"}}},
+				{Success: false, Violations: []evaluator.Result{{Message: "this is a violation"}}},
+				{Success: false, Warnings: []evaluator.Result{{Message: "this is a warning"}}},
 			},
 			success: false,
 		},
@@ -725,17 +725,17 @@ func testComponentsFor(snapshot app.SnapshotSpec) []Component {
 	components := []Component{
 		{
 			SnapshotComponent: snapshot.Components[0],
-			Violations: []output.Result{
+			Violations: []evaluator.Result{
 				{
 					Message: "violation1",
 				},
 			},
-			Warnings: []output.Result{
+			Warnings: []evaluator.Result{
 				{
 					Message: "warning1",
 				},
 			},
-			Successes: []output.Result{
+			Successes: []evaluator.Result{
 				{
 					Message: "success1",
 				},
@@ -744,7 +744,7 @@ func testComponentsFor(snapshot app.SnapshotSpec) []Component {
 		},
 		{
 			SnapshotComponent: snapshot.Components[1],
-			Violations: []output.Result{
+			Violations: []evaluator.Result{
 				{
 					Message: "violation2",
 				},
@@ -753,7 +753,7 @@ func testComponentsFor(snapshot app.SnapshotSpec) []Component {
 		},
 		{
 			SnapshotComponent: snapshot.Components[2],
-			Successes: []output.Result{
+			Successes: []evaluator.Result{
 				{
 					Message: "success3",
 				},

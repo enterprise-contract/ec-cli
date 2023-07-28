@@ -25,11 +25,11 @@ import (
 
 	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/hashicorp/go-multierror"
-	conftestOutput "github.com/open-policy-agent/conftest/output"
 	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 	"sigs.k8s.io/yaml"
 
 	"github.com/enterprise-contract/ec-cli/internal/attestation"
+	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 	"github.com/enterprise-contract/ec-cli/internal/format"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/signature"
@@ -38,9 +38,9 @@ import (
 
 type Component struct {
 	app.SnapshotComponent
-	Violations   []conftestOutput.Result     `json:"violations,omitempty"`
-	Warnings     []conftestOutput.Result     `json:"warnings,omitempty"`
-	Successes    []conftestOutput.Result     `json:"successes,omitempty"`
+	Violations   []evaluator.Result          `json:"violations,omitempty"`
+	Warnings     []evaluator.Result          `json:"warnings,omitempty"`
+	Successes    []evaluator.Result          `json:"successes,omitempty"`
 	Success      bool                        `json:"success"`
 	Signatures   []signature.EntitySignature `json:"signatures,omitempty"`
 	Attestations []attestation.Attestation   `json:"attestations,omitempty"`
@@ -77,11 +77,11 @@ type componentSummary struct {
 	TotalSuccesses  int                 `json:"total_successes"`
 }
 
-// testReport represents the standardized TEST_OUTPUT format.
+// TestReport represents the standardized TEST_OUTPUT format.
 // The `Namespace` attribute is required for the appstudio results API. However,
 // it is always an empty string from the ec-cli as a way to indicate all
 // namespaces were used.
-type testReport struct {
+type TestReport struct {
 	Timestamp string `json:"timestamp"`
 	Namespace string `json:"namespace"`
 	Successes int    `json:"successes"`
@@ -211,7 +211,7 @@ func (r *Report) toSummary() summary {
 }
 
 // condensedMsg reduces repetitive error messages.
-func condensedMsg(results []conftestOutput.Result) map[string][]string {
+func condensedMsg(results []evaluator.Result) map[string][]string {
 	maxErr := 1
 	shortNames := make(map[string][]string)
 	count := make(map[string]int)
@@ -236,8 +236,8 @@ func condensedMsg(results []conftestOutput.Result) map[string][]string {
 
 // toAppstudioReport returns a version of the report that conforms to the
 // TEST_OUTPUT format, usually written to the TEST_OUTPUT Tekton task result
-func (r *Report) toAppstudioReport() testReport {
-	result := testReport{
+func (r *Report) toAppstudioReport() TestReport {
+	result := TestReport{
 		Timestamp: fmt.Sprint(r.created.UTC().Unix()),
 		// EC generally runs with the AllNamespaces flag set to true
 		// and policies from many namespaces. Rather than try to list
@@ -258,39 +258,11 @@ func (r *Report) toAppstudioReport() testReport {
 		}
 	}
 
-	result.deriveResult(hasFailures)
+	result.DeriveResult(hasFailures)
 	return result
 }
 
-// Used in cmd/test/test
-func AppstudioReportFromCheckResults(results []conftestOutput.CheckResult, namespaces []string) testReport {
-	// This is may need revising in future. It does not handle multiple namespaces
-	// accurately. We could consider using a string delimited list of namespaces
-	// but I'm being cautious about breaking consumers of this data. The
-	// testReport.Namespace field might need to be converted to a list of strings
-	// in future but we need to coordinate that change carefully.
-	// Also, we might prefer to extract the namespaces from results rather than
-	// use whatever the user provided on the command line.
-	useNamespace := ""
-	if len(namespaces) > 0 {
-		// The first namespace only
-		useNamespace = namespaces[0]
-	}
-	report := testReport{
-		Timestamp: fmt.Sprint(time.Now().UTC().Unix()),
-		Namespace: useNamespace,
-	}
-
-	for _, result := range results {
-		report.Successes += result.Successes
-		report.Failures += len(result.Failures)
-		report.Warnings += len(result.Warnings)
-	}
-	report.deriveResult(false)
-	return report
-}
-
-func (r *testReport) deriveResult(hasFailures bool) {
+func (r *TestReport) DeriveResult(hasFailures bool) {
 	switch {
 	case r.Failures > 0 || hasFailures:
 		r.Result = "FAILURE"

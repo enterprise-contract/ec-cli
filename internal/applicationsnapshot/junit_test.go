@@ -20,16 +20,16 @@ import (
 	"testing"
 
 	"github.com/jstemmer/go-junit-report/v2/junit"
-	"github.com/open-policy-agent/conftest/output"
 	"github.com/redhat-appstudio/application-api/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 	"github.com/enterprise-contract/ec-cli/internal/signature"
 )
 
 func TestMapResults(t *testing.T) {
 	s := junit.Testsuite{}
-	mapResults(&s, []output.Result{{Message: "0"}, {Message: "1"}, {Message: "2"}}, func(r output.Result) junit.Testcase {
+	mapResults(&s, []evaluator.Result{{Message: "0"}, {Message: "1"}, {Message: "2"}}, func(r evaluator.Result) junit.Testcase {
 		return junit.Testcase{
 			Name: r.Message,
 		}
@@ -49,7 +49,7 @@ func TestMapResults(t *testing.T) {
 func TestAsTestCase(t *testing.T) {
 	cases := []struct {
 		name     string
-		result   output.Result
+		result   evaluator.Result
 		expected junit.Testcase
 	}{
 		{
@@ -58,22 +58,22 @@ func TestAsTestCase(t *testing.T) {
 		},
 		{
 			name:     "trivial",
-			result:   output.Result{Message: "msg"},
+			result:   evaluator.Result{Message: "msg"},
 			expected: junit.Testcase{Name: "msg", Classname: "msg"},
 		},
 		{
 			name:     "with code",
-			result:   output.Result{Message: "msg", Metadata: map[string]interface{}{"code": "a.b.c"}},
+			result:   evaluator.Result{Message: "msg", Metadata: map[string]interface{}{"code": "a.b.c"}},
 			expected: junit.Testcase{Name: "a.b.c: msg", Classname: "a.b.c: msg"},
 		},
 		{
 			name:     "with metadata",
-			result:   output.Result{Message: "msg", Metadata: map[string]interface{}{"x": "1", "y": "2", "z": "3"}},
+			result:   evaluator.Result{Message: "msg", Metadata: map[string]interface{}{"x": "1", "y": "2", "z": "3"}},
 			expected: junit.Testcase{Name: "msg [x=1, y=2, z=3]", Classname: "msg [x=1, y=2, z=3]"},
 		},
 		{
 			name:     "with code and metadata",
-			result:   output.Result{Message: "msg", Metadata: map[string]interface{}{"code": "a.b.c", "x": "1", "y": "2", "z": "3"}},
+			result:   evaluator.Result{Message: "msg", Metadata: map[string]interface{}{"code": "a.b.c", "x": "1", "y": "2", "z": "3"}},
 			expected: junit.Testcase{Name: "a.b.c: msg [x=1, y=2, z=3]", Classname: "a.b.c: msg [x=1, y=2, z=3]"},
 		},
 	}
@@ -120,7 +120,7 @@ func TestToJunit(t *testing.T) {
 								},
 							},
 						},
-						Violations: []output.Result{
+						Violations: []evaluator.Result{
 							{
 								Message: "violation",
 								Metadata: map[string]interface{}{
@@ -128,7 +128,7 @@ func TestToJunit(t *testing.T) {
 								},
 							},
 						},
-						Warnings: []output.Result{
+						Warnings: []evaluator.Result{
 							{
 								Message: "warning",
 								Metadata: map[string]interface{}{
@@ -136,7 +136,7 @@ func TestToJunit(t *testing.T) {
 								},
 							},
 						},
-						Successes: []output.Result{
+						Successes: []evaluator.Result{
 							{
 								Message: "success",
 								Metadata: map[string]interface{}{

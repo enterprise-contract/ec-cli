@@ -21,12 +21,29 @@ import (
 )
 
 type Evaluator interface {
-	// TODO refactor not to expose Conftest type here
-	Evaluate(ctx context.Context, inputs []string) (CheckResults, Data, error)
+	Evaluate(ctx context.Context, inputs []string) ([]Outcome, Data, error)
 
 	// Destroy performs any cleanup needed
 	Destroy()
 
 	// CapabilitiesPath returns the path to the file where capabilities are defined
 	CapabilitiesPath() string
+}
+
+type Data map[string]any
+
+type Outcome struct {
+	FileName   string   `json:"filename"`
+	Namespace  string   `json:"namespace"`
+	Successes  []Result `json:"successes,omitempty"`
+	Skipped    []Result `json:"skipped,omitempty"`
+	Warnings   []Result `json:"warnings,omitempty"`
+	Failures   []Result `json:"failures,omitempty"`
+	Exceptions []Result `json:"exceptions,omitempty"`
+}
+
+type Result struct {
+	Message  string                 `json:"msg"`
+	Metadata map[string]interface{} `json:"metadata,omitempty"`
+	Outputs  []string               `json:"outputs,omitempty"`
 }

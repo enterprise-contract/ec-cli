@@ -25,7 +25,6 @@ import (
 	"testing"
 
 	hd "github.com/MakeNowJust/heredoc"
-	"github.com/open-policy-agent/conftest/output"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 
@@ -37,7 +36,7 @@ import (
 
 func TestValidateDefinitionFileCommandOutput(t *testing.T) {
 	validate := func(_ context.Context, fpath string, _ []source.PolicySource, _ []string) (*output2.Output, error) {
-		return &output2.Output{PolicyCheck: evaluator.CheckResults{{CheckResult: output.CheckResult{FileName: fpath}}}}, nil
+		return &output2.Output{PolicyCheck: []evaluator.Outcome{{FileName: fpath}}}, nil
 	}
 
 	cmd := validateDefinitionCmd(validate)
@@ -156,7 +155,7 @@ func TestDefinitionFileOutputFormats(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			fs := afero.NewMemMapFs()
 			validate := func(_ context.Context, fpath string, sources []source.PolicySource, _ []string) (*output2.Output, error) {
-				return &output2.Output{PolicyCheck: evaluator.CheckResults{{CheckResult: output.CheckResult{FileName: fpath}}}}, nil
+				return &output2.Output{PolicyCheck: []evaluator.Outcome{{FileName: fpath}}}, nil
 			}
 
 			cmd := validateDefinitionCmd(validate)
@@ -209,15 +208,15 @@ func TestValidateDefinitionFileCommandErrors(t *testing.T) {
 
 func TestStrictOutput(t *testing.T) {
 	validate := func(_ context.Context, fpath string, _ []source.PolicySource, _ []string) (*output2.Output, error) {
-		failureResult := output.CheckResult{
+		failureResult := evaluator.Outcome{
 			FileName: fpath,
-			Failures: []output.Result{
+			Failures: []evaluator.Result{
 				{
 					Message: "failure",
 				},
 			},
 		}
-		return &output2.Output{PolicyCheck: evaluator.CheckResults{{CheckResult: failureResult}}}, nil
+		return &output2.Output{PolicyCheck: []evaluator.Outcome{failureResult}}, nil
 	}
 
 	cases := []struct {
