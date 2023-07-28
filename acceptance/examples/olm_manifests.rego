@@ -10,7 +10,7 @@ import future.keywords.in
 #   short_name: olm_manifests
 #   failure_msg: Missing OLM manifests
 deny contains err(rego.metadata.rule()) if {
-	not input.image.manifests
+	not input.image.files
 }
 
 # METADATA
@@ -19,7 +19,7 @@ deny contains err(rego.metadata.rule()) if {
 #   short_name: olm_manifest_csv
 #   failure_msg: Missing OLM CSV manifest
 deny contains err(rego.metadata.rule()) if {
-	some "manifests/some.clusterserviceversion.yaml", manifest in input.image.manifests
+	some "manifests/some.clusterserviceversion.yaml", manifest in input.image.files
 	not manifest.apiVersion == "operators.coreos.com/v1alpha1"
 	not manifest.kind == "ClusterServiceVersion"
 }

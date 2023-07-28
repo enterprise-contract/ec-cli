@@ -2459,10 +2459,11 @@ Error: success criteria not met
     ],
     "config": {
       "Labels": {
+        "operators.operatorframework.io.bundle.manifests.v1": "manifests/",
         "org.opencontainers.image.title": "acceptance/image"
       }
     },
-    "manifests": {
+    "files": {
       "manifests/some.clusterserviceversion.yaml": {
         "apiVersion": "operators.coreos.com/v1alpha1",
         "kind": "ClusterServiceVersion",
@@ -2658,5 +2659,83 @@ Error: success criteria not met
       }
     }
   }
+}
+---
+
+[OLM manifests:stdout - 1]
+{
+  "success": true,
+  "components": [
+    {
+      "name": "Unnamed",
+      "containerImage": "${REGISTRY}/acceptance/image@sha256:${REGISTRY_acceptance/image:latest_DIGEST}",
+      "source": {},
+      "successes": [
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.syntax_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.image.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "olm_manifests.olm_manifest_csv"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "olm_manifests.olm_manifests"
+          }
+        }
+      ],
+      "success": true,
+      "signatures": [
+        {
+          "keyid": "",
+          "sig": "${IMAGE_SIGNATURE_acceptance/image}"
+        }
+      ],
+      "attestations": [
+        {
+          "type": "https://in-toto.io/Statement/v0.1",
+          "predicateType": "https://slsa.dev/provenance/v0.2",
+          "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+          "signatures": [
+            {
+              "keyid": "",
+              "sig": "${ATTESTATION_SIGNATURE_acceptance/image}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "key": "${known_PUBLIC_KEY_JSON}",
+  "policy": {
+    "sources": [
+      {
+        "policy": [
+          "git::https://${GITHOST}/git/olm-manifests.git"
+        ]
+      }
+    ],
+    "publicKey": "${known_PUBLIC_KEY}"
+  },
+  "ec-version": "${EC_VERSION}",
+  "effective-time": "${TIMESTAMP}"
 }
 ---

@@ -61,7 +61,7 @@ func ValidateImage(ctx context.Context, url string, p policy.Policy, detailed bo
 	if err := a.FetchParentImageConfig(ctx); err != nil {
 		log.Debugf("Unable to fetch parent's image config: %s", err)
 	}
-	if err := a.FetchImageManifests(ctx); err != nil {
+	if err := a.FetchImageFiles(ctx); err != nil {
 		log.Debugf("Unable to fetch image manifests: %s", err)
 	}
 

@@ -398,6 +398,43 @@ func createAndPushImageWithLayer(ctx context.Context, imageName string, files *g
 	return ctx, nil
 }
 
+func labelImage(ctx context.Context, imageName string, labels *godog.Table) (context.Context, error) {
+	state := testenv.FetchState[imageState](ctx)
+
+	imageRef, ok := state.Images[imageName]
+	if !ok {
+		return ctx, fmt.Errorf("no such image exists: %s", imageName)
+	}
+
+	ref, err := name.ParseReference(imageRef)
+	if err != nil {
+		return ctx, err
+	}
+
+	img, err := remote.Image(ref)
+	if err != nil {
+		return ctx, err
+	}
+	config, err := img.ConfigFile()
+	if err != nil {
+		return ctx, err
+	}
+
+	for _, r := range labels.Rows {
+		name := r.Cells[0].Value
+		value := r.Cells[1].Value
+
+		config.Config.Labels[name] = value
+	}
+
+	img, err = mutate.Config(img, config.Config)
+	if err != nil {
+		return ctx, err
+	}
+
+	return ctx, remote.Put(ref, img)
+}
+
 type patchFn func(v1.Image) (v1.Image, error)
 
 // createAndPushImage creates a small 4K random image with 2 layers and pushes it to
@@ -933,6 +970,7 @@ func copyAllImages(ctx context.Context, source, destination string) (context.Con
 func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^an image named "([^"]*)"$`, createAndPushImageWithParent)
 	sc.Step(`^an image named "([^"]*)" containing a layer with:$`, createAndPushImageWithLayer)
+	sc.Step(`^the image "([^"]*)" has labels:$`, labelImage)
 	sc.Step(`^a valid image signature of "([^"]*)" image signed by the "([^"]*)" key$`, createAndPushImageSignature)
 	sc.Step(`^a valid attestation of "([^"]*)" signed by the "([^"]*)" key$`, createAndPushAttestation)
 	sc.Step(`^a valid attestation of "([^"]*)" signed by the "([^"]*)" key, patched with$`, createAndPushAttestationWithPatches)

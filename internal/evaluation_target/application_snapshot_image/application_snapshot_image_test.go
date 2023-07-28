@@ -32,6 +32,7 @@ import (
 	"github.com/google/go-containerregistry/pkg/crane"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
+	"github.com/google/go-containerregistry/pkg/v1/mutate"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/in-toto/in-toto-golang/in_toto"
@@ -752,7 +753,7 @@ func TestAttestationDataJSONMarshal(t *testing.T) {
 	snaps.MatchJSON(t, data)
 }
 
-func TestFetchImageManifests(t *testing.T) {
+func TestFetchImageFiles(t *testing.T) {
 	ref := name.MustParseReference("registry.io/repository/image:tag")
 	a := ApplicationSnapshotImage{reference: ref}
 
@@ -762,16 +763,22 @@ func TestFetchImageManifests(t *testing.T) {
 kind: ClusterServiceVersion`),
 	})
 	require.NoError(t, err)
+	image, err = mutate.Config(image, v1.Config{
+		Labels: map[string]string{
+			"operators.operatorframework.io.bundle.manifests.v1": "manifests/",
+		},
+	})
+	require.NoError(t, err)
 
 	client := fake.FakeClient{}
 	client.On("Image", ref, mock.Anything).Return(image, nil)
 
 	ctx := o.WithClient(context.Background(), &client)
 
-	err = a.FetchImageManifests(ctx)
+	err = a.FetchImageFiles(ctx)
 	require.NoError(t, err)
 
 	require.Equal(t, map[string]json.RawMessage{
 		"manifests/csv.yaml": json.RawMessage(`{"apiVersion":"operators.coreos.com/v1alpha1","kind":"ClusterServiceVersion"}`),
-	}, a.manifests)
+	}, a.files)
 }
