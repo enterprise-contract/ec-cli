@@ -52,6 +52,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		imageRef                    string
 		info                        bool
 		input                       string // Deprecated: images replaced this
+		ignoreRekor                 bool
 		output                      []string
 		outputFile                  string
 		policy                      policy.Policy
@@ -241,9 +242,10 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 					Subject:       data.certificateIdentity,
 					SubjectRegExp: data.certificateIdentityRegExp,
 				},
-				PolicyRef: data.policyConfiguration,
-				PublicKey: data.publicKey,
-				RekorURL:  data.rekorURL,
+				IgnoreRekor: data.ignoreRekor,
+				PolicyRef:   data.policyConfiguration,
+				PublicKey:   data.publicKey,
+				RekorURL:    data.rekorURL,
 			}); err != nil {
 				allErrors = multierror.Append(allErrors, err)
 			} else {
@@ -362,6 +364,9 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 
 	cmd.Flags().StringVarP(&data.rekorURL, "rekor-url", "r", data.rekorURL,
 		"Rekor URL. Overrides rekorURL from EnterpriseContractPolicy")
+
+	cmd.Flags().BoolVar(&data.ignoreRekor, "ignore-rekor", data.ignoreRekor,
+		"Skip Rekor transparency log checks during validation.")
 
 	cmd.Flags().StringVar(&data.certificateIdentity, "certificate-identity", data.certificateIdentity,
 		"EXPERIMENTAL. URL of the certificate identity for keyless verification")

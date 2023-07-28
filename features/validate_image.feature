@@ -96,9 +96,7 @@ Feature: evaluate enterprise contract
     }
     """
     Given the environment variable is set "EC_EXPERIMENTAL=1"
-    # TODO: The Rekor value is ignored here, but it cannot be an empty value because that causes
-    # the ec-cli to ignore the tlog altogether.
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day-keyless --policy acceptance/ec-policy --rekor-url http://this.is.ignored --certificate-oidc-issuer ${CERT_ISSUER} --certificate-identity ${CERT_IDENTITY} --strict --show-successes"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day-keyless --policy acceptance/ec-policy --certificate-oidc-issuer ${CERT_ISSUER} --certificate-identity ${CERT_IDENTITY} --strict --show-successes"
     Then the exit status should be 0
     Then the output should match the snapshot
 
@@ -145,9 +143,7 @@ Feature: evaluate enterprise contract
     }
     """
     Given the environment variable is set "EC_EXPERIMENTAL=1"
-    # TODO: The Rekor value is ignored here, but it cannot be an empty value because that causes
-    # the ec-cli to ignore the tlog altogether.
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/unexpected-keyless-cert --policy acceptance/ec-policy --rekor-url http://this.is.ignored --certificate-oidc-issuer https://spam.cluster.local --certificate-identity https://kubernetes.io/namespaces/bacon/serviceaccounts/eggs --strict --show-successes"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/unexpected-keyless-cert --policy acceptance/ec-policy --certificate-oidc-issuer https://spam.cluster.local --certificate-identity https://kubernetes.io/namespaces/bacon/serviceaccounts/eggs --strict --show-successes"
     Then the exit status should be 1
     Then the output should match the snapshot
 
@@ -326,11 +322,13 @@ Feature: evaluate enterprise contract
     Given a key pair named "known"
     Given an image named "acceptance/ec-happy-day"
     Given a valid image signature of "acceptance/ec-happy-day" image signed by the "known" key
+    Given a valid Rekor entry for image signature of "acceptance/ec-happy-day"
     Given a valid attestation of "acceptance/ec-happy-day" signed by the "known" key, patched with
       | [{"op": "add", "path": "/predicate/metadata", "value": {}}, {"op": "add", "path": "/predicate/metadata/buildFinishedOn", "value": "2100-01-01T00:00:00Z"}] |
+    Given a valid Rekor entry for attestation of "acceptance/ec-happy-day"
     Given a git repository named "future-deny-policy" with
       | main.rego | examples/future_deny.rego |
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy {"sources":[{"policy":["git::https://${GITHOST}/git/future-deny-policy.git"]}]} --public-key ${known_PUBLIC_KEY} --effective-time attestation --strict --show-successes"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy {"sources":[{"policy":["git::https://${GITHOST}/git/future-deny-policy.git"]}]} --rekor-url ${REKOR} --public-key ${known_PUBLIC_KEY} --effective-time attestation --strict --show-successes"
     Then the exit status should be 1
     Then the output should match the snapshot
 
@@ -338,7 +336,9 @@ Feature: evaluate enterprise contract
     Given a key pair named "known"
     Given an image named "acceptance/image"
     Given a valid image signature of "acceptance/image" image signed by the "known" key
+    Given a valid Rekor entry for image signature of "acceptance/image"
     Given a valid attestation of "acceptance/image" signed by the "known" key
+    Given a valid Rekor entry for attestation of "acceptance/image"
     Given a git repository named "happy-day-policy" with
       | happy_day.rego | examples/happy_day.rego      |
       | reject.rego    | examples/reject.rego         |
@@ -354,7 +354,7 @@ Feature: evaluate enterprise contract
       ]
     }
     """
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/image --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --info --strict --show-successes"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/image --policy acceptance/ec-policy --rekor-url ${REKOR} --public-key ${known_PUBLIC_KEY} --info --strict --show-successes"
     Then the exit status should be 1
     Then the output should match the snapshot
 
@@ -391,7 +391,9 @@ Feature: evaluate enterprise contract
     Given a key pair named "known"
     Given an image named "acceptance/ec-happy-day"
     Given a valid image signature of "acceptance/ec-happy-day" image signed by the "known" key
+    Given a valid Rekor entry for image signature of "acceptance/ec-happy-day"
     Given a valid attestation of "acceptance/ec-happy-day" signed by the "known" key
+    Given a valid Rekor entry for attestation of "acceptance/ec-happy-day"
     Given a git repository named "happy-day-policy" with
       | filtering.rego | examples/filtering.rego |
     Given policy configuration named "ec-policy" with specification
@@ -410,7 +412,7 @@ Feature: evaluate enterprise contract
       ]
     }
     """
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --strict --show-successes"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy acceptance/ec-policy --rekor-url ${REKOR} --public-key ${known_PUBLIC_KEY} --strict --show-successes"
     Then the exit status should be 0
     Then the output should match the snapshot
 
@@ -418,7 +420,9 @@ Feature: evaluate enterprise contract
     Given a key pair named "known"
     Given an image named "acceptance/ec-happy-day"
     Given a valid image signature of "acceptance/ec-happy-day" image signed by the "known" key
+    Given a valid Rekor entry for image signature of "acceptance/ec-happy-day"
     Given a valid attestation of "acceptance/ec-happy-day" signed by the "known" key
+    Given a valid Rekor entry for attestation of "acceptance/ec-happy-day"
     Given a git repository named "happy-day-policy" with
       | main.rego | examples/happy_day.rego |
     Given policy configuration named "ec-policy" with specification
@@ -433,7 +437,7 @@ Feature: evaluate enterprise contract
       ]
     }
     """
-    When ec command is run with "validate image --json-input {"components":[{"name":"Happy","containerImage":"${REGISTRY}/acceptance/ec-happy-day"}]} --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --strict  --show-successes"
+    When ec command is run with "validate image --json-input {"components":[{"name":"Happy","containerImage":"${REGISTRY}/acceptance/ec-happy-day"}]} --policy acceptance/ec-policy  --rekor-url ${REKOR} --public-key ${known_PUBLIC_KEY} --strict  --show-successes"
     Then the exit status should be 0
     Then the output should match the snapshot
 
@@ -441,7 +445,9 @@ Feature: evaluate enterprise contract
     Given a key pair named "known"
     Given an image named "acceptance/ec-happy-day"
     Given a valid image signature of "acceptance/ec-happy-day" image signed by the "known" key
+    Given a valid Rekor entry for image signature of "acceptance/ec-happy-day"
     Given a valid attestation of "acceptance/ec-happy-day" signed by the "known" key
+    Given a valid Rekor entry for attestation of "acceptance/ec-happy-day"
     Given a git repository named "happy-day-policy" with
       | main.rego | examples/happy_day.rego |
     Given an Snapshot named "happy" with specification
@@ -467,7 +473,7 @@ Feature: evaluate enterprise contract
       ]
     }
     """
-    When ec command is run with "validate image --snapshot acceptance/happy --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --strict  --show-successes"
+    When ec command is run with "validate image --snapshot acceptance/happy --policy acceptance/ec-policy --rekor-url ${REKOR} --public-key ${known_PUBLIC_KEY} --strict  --show-successes"
     Then the exit status should be 0
     Then the output should match the snapshot
 
@@ -475,7 +481,9 @@ Feature: evaluate enterprise contract
     Given a key pair named "known"
     Given an image named "acceptance/image"
     Given a valid image signature of "acceptance/image" image signed by the "known" key
+    Given a valid Rekor entry for image signature of "acceptance/image"
     Given a valid attestation of "acceptance/image" signed by the "known" key
+    Given a valid Rekor entry for attestation of "acceptance/image"
     Given a git repository named "my-policy" with
       | happy_day.rego | examples/happy_day.rego      |
       | reject.rego    | examples/reject.rego         |
@@ -491,7 +499,7 @@ Feature: evaluate enterprise contract
       ]
     }
     """
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/image --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --output junit --strict  --show-successes"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/image --policy acceptance/ec-policy --rekor-url ${REKOR} --public-key ${known_PUBLIC_KEY} --output junit --strict  --show-successes"
     Then the exit status should be 1
     Then the output should match the snapshot
 
@@ -499,7 +507,9 @@ Feature: evaluate enterprise contract
     Given a key pair named "known"
     Given an image named "acceptance/my-image"
     Given a valid image signature of "acceptance/my-image" image signed by the "known" key
+    Given a valid Rekor entry for image signature of "acceptance/my-image"
     Given a valid attestation of "acceptance/my-image" signed by the "known" key
+    Given a valid Rekor entry for attestation of "acceptance/my-image"
     Given a OCI policy bundle named "acceptance/happy-day-policy:tag" with
       | main.rego | examples/happy_day.rego |
     Given a OCI policy bundle named "acceptance/allow-all:latest" with
@@ -517,7 +527,7 @@ Feature: evaluate enterprise contract
       ]
     }
     """
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/my-image --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --strict  --show-successes"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/my-image --policy acceptance/ec-policy --rekor-url ${REKOR} --public-key ${known_PUBLIC_KEY} --strict  --show-successes"
     Then the exit status should be 0
     Then the output should match the snapshot
 
@@ -550,7 +560,9 @@ Feature: evaluate enterprise contract
     Given a key pair named "known"
     Given an image named "acceptance/image"
     Given a valid image signature of "acceptance/image" image signed by the "known" key
+    Given a valid Rekor entry for image signature of "acceptance/image"
     Given a valid attestation of "acceptance/image" signed by the "known" key
+    Given a valid Rekor entry for attestation of "acceptance/image"
     Given a git repository named "my-policy1" with
       | rule_data.rego | examples/rule_data.rego |
     Given a git repository named "my-policy2" with
@@ -578,7 +590,7 @@ Feature: evaluate enterprise contract
       ]
     }
     """
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/image --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --output=json --output data=${TMPDIR}/custom-rule-data.yaml --effective-time 2014-05-31 --strict --show-successes"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/image --policy acceptance/ec-policy --rekor-url ${REKOR} --public-key ${known_PUBLIC_KEY} --output=json --output data=${TMPDIR}/custom-rule-data.yaml --effective-time 2014-05-31 --strict --show-successes"
     Then the exit status should be 0
     And the output should match the snapshot
     And the "${TMPDIR}/custom-rule-data.yaml" file should match the snapshot
@@ -587,8 +599,10 @@ Feature: evaluate enterprise contract
     Given a key pair named "known"
     Given an image named "acceptance/image"
     Given a valid image signature of "acceptance/image" image signed by the "known" key
+    Given a valid Rekor entry for image signature of "acceptance/image"
     Given an image named "acceptance/bad-actor" with signature from "acceptance/image"
     Given a valid attestation of "acceptance/bad-actor" signed by the "known" key
+    Given a valid Rekor entry for attestation of "acceptance/bad-actor"
     Given a git repository named "mismatched-image-digest" with
       | main.rego | examples/happy_day.rego |
     Given policy configuration named "mismatched-image-digest" with specification
@@ -603,7 +617,7 @@ Feature: evaluate enterprise contract
       ]
     }
     """
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/bad-actor --policy acceptance/mismatched-image-digest --public-key ${known_PUBLIC_KEY} --strict  --show-successes"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/bad-actor --policy acceptance/mismatched-image-digest --rekor-url ${REKOR} --public-key ${known_PUBLIC_KEY} --strict  --show-successes"
     Then the exit status should be 1
     Then the output should match the snapshot
 
@@ -611,8 +625,10 @@ Feature: evaluate enterprise contract
     Given a key pair named "known"
     Given an image named "acceptance/image"
     Given a valid attestation of "acceptance/image" signed by the "known" key
+    Given a valid Rekor entry for attestation of "acceptance/image"
     Given an image named "acceptance/bad-actor" with attestation from "acceptance/image"
     Given a valid image signature of "acceptance/bad-actor" image signed by the "known" key
+    Given a valid Rekor entry for image signature of "acceptance/bad-actor"
     Given a git repository named "mismatched-image-digest" with
       | main.rego | examples/happy_day.rego |
     Given policy configuration named "mismatched-image-digest" with specification
@@ -627,7 +643,7 @@ Feature: evaluate enterprise contract
       ]
     }
     """
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/bad-actor --policy acceptance/mismatched-image-digest --public-key ${known_PUBLIC_KEY} --strict  --show-successes"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/bad-actor --policy acceptance/mismatched-image-digest --rekor-url ${REKOR} --public-key ${known_PUBLIC_KEY} --strict  --show-successes"
     Then the exit status should be 1
     Then the output should match the snapshot
 
@@ -661,7 +677,9 @@ Feature: evaluate enterprise contract
     Given a key pair named "known"
     Given an image named "acceptance/image"
     Given a valid image signature of "acceptance/image" image signed by the "known" key
+    Given a valid Rekor entry for image signature of "acceptance/image"
     Given a valid attestation of "acceptance/image" signed by the "known" key
+    Given a valid Rekor entry for attestation of "acceptance/image"
     Given a git repository named "with-dependencies" with
       | main.rego | examples/rules_with_dependencies.rego |
     Given policy configuration named "ec-policy" with specification
@@ -676,7 +694,7 @@ Feature: evaluate enterprise contract
       ]
     }
     """
-    And ec command is run with "validate image --image ${REGISTRY}/acceptance/image --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --strict --show-successes"
+    And ec command is run with "validate image --image ${REGISTRY}/acceptance/image --policy acceptance/ec-policy --rekor-url ${REKOR} --public-key ${known_PUBLIC_KEY} --strict --show-successes"
     Then the exit status should be 1
     Then the output should match the snapshot
 
@@ -720,7 +738,9 @@ Feature: evaluate enterprise contract
     Given a key pair named "known"
       And an image named "acceptance/image"
       And a valid image signature of "acceptance/image" image signed by the "known" key
+      Given a valid Rekor entry for image signature of "acceptance/image"
       And a valid attestation of "acceptance/image" signed by the "known" key
+      Given a valid Rekor entry for attestation of "acceptance/image"
       And a git repository named "my-policy" with
       | happy.rego  | examples/happy_day.rego   |
       And policy configuration named "ec-policy" with specification
@@ -735,7 +755,7 @@ Feature: evaluate enterprise contract
       ]
     }
     """
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/image --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --output=json --output attestation=${TMPDIR}/attestation.jsonl --strict"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/image --policy acceptance/ec-policy --rekor-url ${REKOR} --public-key ${known_PUBLIC_KEY} --output=json --output attestation=${TMPDIR}/attestation.jsonl --strict"
     Then the exit status should be 0
     And the output should match the snapshot
     And the "${TMPDIR}/attestation.jsonl" file should match the snapshot
@@ -757,3 +777,32 @@ Feature: evaluate enterprise contract
     Then the exit status should be 0
     Then the output should match the snapshot
 
+  Scenario: ignore rekor
+    Given a key pair named "known"
+    Given an image named "acceptance/ignore-rekor"
+    Given a valid image signature of "acceptance/ignore-rekor" image signed by the "known" key
+    Given a valid attestation of "acceptance/ignore-rekor" signed by the "known" key
+    Given a git repository named "ignore-rekor" with
+      | main.rego | examples/happy_day.rego |
+    Given policy configuration named "ec-policy" with specification
+    """
+    {"sources": [{"policy": ["git::https://${GITHOST}/git/ignore-rekor.git"]}]}
+    """
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ignore-rekor --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --ignore-rekor --strict"
+    Then the exit status should be 0
+    Then the output should match the snapshot
+
+  Scenario: rekor entries required
+    Given a key pair named "known"
+    Given an image named "acceptance/rekor-by-default"
+    Given a valid image signature of "acceptance/rekor-by-default" image signed by the "known" key
+    Given a valid attestation of "acceptance/rekor-by-default" signed by the "known" key
+    Given a git repository named "rekor-by-default" with
+      | main.rego | examples/happy_day.rego |
+    Given policy configuration named "ec-policy" with specification
+    """
+    {"sources": [{"policy": ["git::https://${GITHOST}/git/rekor-by-default.git"]}]}
+    """
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/rekor-by-default --rekor-url ${REKOR} --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --strict"
+    Then the exit status should be 1
+    Then the output should match the snapshot

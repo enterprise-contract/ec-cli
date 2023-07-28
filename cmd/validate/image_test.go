@@ -297,6 +297,8 @@ func Test_ValidateImageCommand(t *testing.T) {
 	var out bytes.Buffer
 	cmd.SetOut(&out)
 
+	utils.SetTestRekorPublicKey(t)
+
 	err := cmd.Execute()
 	assert.NoError(t, err)
 	assert.JSONEq(t, fmt.Sprintf(`{
@@ -351,6 +353,8 @@ func Test_ValidateImageCommandKeyless(t *testing.T) {
 	})
 
 	t.Setenv("EC_EXPERIMENTAL", "1")
+
+	utils.SetTestRekorPublicKey(t)
 	utils.SetTestFulcioRoots(t)
 	utils.SetTestCTLogPublicKey(t)
 
@@ -430,6 +434,8 @@ configuration:
 	var out bytes.Buffer
 	cmd.SetOut(&out)
 
+	utils.SetTestRekorPublicKey(t)
+
 	err = cmd.Execute()
 	assert.NoError(t, err)
 }
@@ -506,6 +512,8 @@ configuration:
 	var out bytes.Buffer
 	cmd.SetOut(&out)
 
+	utils.SetTestRekorPublicKey(t)
+
 	err = cmd.Execute()
 	assert.NoError(t, err)
 }
@@ -569,6 +577,8 @@ func Test_ValidateImageCommandEmptyPolicyFile(t *testing.T) {
 
 	var out bytes.Buffer
 	cmd.SetOut(&out)
+
+	utils.SetTestRekorPublicKey(t)
 
 	err = cmd.Execute()
 	assert.EqualError(t, err, "1 error occurred:\n\t* file /policy.yaml is empty\n\n")
@@ -650,6 +660,8 @@ func Test_ValidateErrorCommand(t *testing.T) {
 			cmd.SilenceErrors = true
 			cmd.SilenceUsage = true
 
+			utils.SetTestRekorPublicKey(t)
+
 			err := cmd.Execute()
 			assert.EqualError(t, err, c.expected)
 			assert.Empty(t, out.String())
@@ -693,6 +705,8 @@ func Test_FailureImageAccessibility(t *testing.T) {
 
 	var out bytes.Buffer
 	cmd.SetOut(&out)
+
+	utils.SetTestRekorPublicKey(t)
 
 	err := cmd.Execute()
 	assert.NoError(t, err)
@@ -755,6 +769,8 @@ func Test_FailureOutput(t *testing.T) {
 
 	var out bytes.Buffer
 	cmd.SetOut(&out)
+
+	utils.SetTestRekorPublicKey(t)
 
 	err := cmd.Execute()
 	assert.NoError(t, err)
@@ -824,6 +840,8 @@ func Test_WarningOutput(t *testing.T) {
 
 	var out bytes.Buffer
 	cmd.SetOut(&out)
+
+	utils.SetTestRekorPublicKey(t)
 
 	err := cmd.Execute()
 	assert.NoError(t, err)
