@@ -23,19 +23,20 @@ import (
 
 	"cuelang.org/go/pkg/time"
 	"github.com/jstemmer/go-junit-report/v2/junit"
-	conftestOutput "github.com/open-policy-agent/conftest/output"
 	"golang.org/x/exp/maps"
+
+	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 )
 
 // mapResults maps an slice of Conftest results to a slice of arbitrary types
 // given a mapper function
-func mapResults(suite *junit.Testsuite, results []conftestOutput.Result, m func(conftestOutput.Result) junit.Testcase) {
+func mapResults(suite *junit.Testsuite, results []evaluator.Result, m func(evaluator.Result) junit.Testcase) {
 	for _, r := range results {
 		suite.AddTestcase(m(r))
 	}
 }
 
-func asTestCase(r conftestOutput.Result) junit.Testcase {
+func asTestCase(r evaluator.Result) junit.Testcase {
 	meta := maps.Clone(r.Metadata)
 	delete(meta, "code")
 
@@ -112,7 +113,7 @@ func (r *Report) toJUnit() junit.Testsuites {
 
 		mapResults(&suite, component.Successes, asTestCase)
 
-		mapResults(&suite, component.Violations, func(r conftestOutput.Result) junit.Testcase {
+		mapResults(&suite, component.Violations, func(r evaluator.Result) junit.Testcase {
 			c := asTestCase(r)
 			c.Failure = &junit.Result{
 				Message: r.Message,
@@ -122,7 +123,7 @@ func (r *Report) toJUnit() junit.Testsuites {
 			return c
 		})
 
-		mapResults(&suite, component.Warnings, func(r conftestOutput.Result) junit.Testcase {
+		mapResults(&suite, component.Warnings, func(r evaluator.Result) junit.Testcase {
 			c := asTestCase(r)
 			c.Skipped = &junit.Result{
 				Message: r.Message,

@@ -19,7 +19,6 @@ package definition
 import (
 	"testing"
 
-	conftest "github.com/open-policy-agent/conftest/output"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 
@@ -38,7 +37,9 @@ func TestReport(t *testing.T) {
 		{
 			name: "success",
 			output: []output.Output{
-				{PolicyCheck: evaluator.CheckResults{{CheckResult: conftest.CheckResult{FileName: "/path/to/pipeline.json"}}}},
+				{PolicyCheck: []evaluator.Outcome{
+					evaluator.Outcome{FileName: "/path/to/pipeline.json"},
+				}},
 			},
 			expect: `{"definitions": [{
 				"filename": "/path/to/pipeline.json",
@@ -54,14 +55,12 @@ func TestReport(t *testing.T) {
 			name: "warnings",
 			output: []output.Output{
 				{
-					PolicyCheck: evaluator.CheckResults{
-						{
-							CheckResult: conftest.CheckResult{
-								FileName: "/path/to/pipeline.json",
-								Warnings: []conftest.Result{
-									{Message: "running low in spam"},
-									{Message: "not all like spam"},
-								},
+					PolicyCheck: []evaluator.Outcome{
+						evaluator.Outcome{
+							FileName: "/path/to/pipeline.json",
+							Warnings: []evaluator.Result{
+								{Message: "running low in spam"},
+								{Message: "not all like spam"},
 							},
 						},
 					},
@@ -81,14 +80,12 @@ func TestReport(t *testing.T) {
 			name: "violations",
 			output: []output.Output{
 				{
-					PolicyCheck: evaluator.CheckResults{
-						{
-							CheckResult: conftest.CheckResult{
-								FileName: "/path/to/pipeline.json",
-								Failures: []conftest.Result{
-									{Message: "out of spam!"},
-									{Message: "spam 💔"},
-								},
+					PolicyCheck: []evaluator.Outcome{
+						evaluator.Outcome{
+							FileName: "/path/to/pipeline.json",
+							Failures: []evaluator.Result{
+								{Message: "out of spam!"},
+								{Message: "spam 💔"},
 							},
 						},
 					},
@@ -108,12 +105,10 @@ func TestReport(t *testing.T) {
 			name: "successes",
 			output: []output.Output{
 				{
-					PolicyCheck: evaluator.CheckResults{
-						{
-							CheckResult: conftest.CheckResult{
-								FileName: "/path/to/pipeline.json",
-							},
-							Successes: []conftest.Result{
+					PolicyCheck: []evaluator.Outcome{
+						evaluator.Outcome{
+							FileName: "/path/to/pipeline.json",
+							Successes: []evaluator.Result{
 								{Message: "Nice"},
 								{Message: "Day"},
 							},

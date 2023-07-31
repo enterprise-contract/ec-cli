@@ -20,19 +20,19 @@ import (
 	"encoding/json"
 	"fmt"
 
-	cOutput "github.com/open-policy-agent/conftest/output"
 	"sigs.k8s.io/yaml"
 
+	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 	"github.com/enterprise-contract/ec-cli/internal/format"
 	"github.com/enterprise-contract/ec-cli/internal/output"
 	"github.com/enterprise-contract/ec-cli/internal/version"
 )
 
 type ReportItem struct {
-	Filename   string           `json:"filename"`
-	Violations []cOutput.Result `json:"violations"`
-	Warnings   []cOutput.Result `json:"warnings"`
-	Successes  []cOutput.Result `json:"successes"`
+	Filename   string             `json:"filename"`
+	Violations []evaluator.Result `json:"violations"`
+	Warnings   []evaluator.Result `json:"warnings"`
+	Successes  []evaluator.Result `json:"successes"`
 }
 
 type ReportFormat string
@@ -65,9 +65,9 @@ func (r *Report) Add(o output.Output) {
 	for _, check := range o.PolicyCheck {
 		if _, ok := itemsByFile[check.FileName]; !ok {
 			itemsByFile[check.FileName] = ReportItem{
-				Violations: []cOutput.Result{},
-				Warnings:   []cOutput.Result{},
-				Successes:  []cOutput.Result{},
+				Violations: []evaluator.Result{},
+				Warnings:   []evaluator.Result{},
+				Successes:  []evaluator.Result{},
 			}
 		}
 		item := itemsByFile[check.FileName]

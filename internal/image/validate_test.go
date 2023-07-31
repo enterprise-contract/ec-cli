@@ -33,7 +33,6 @@ import (
 	"github.com/in-toto/in-toto-golang/in_toto"
 	"github.com/in-toto/in-toto-golang/in_toto/slsa_provenance/common"
 	v02 "github.com/in-toto/in-toto-golang/in_toto/slsa_provenance/v0.2"
-	conftestOutput "github.com/open-policy-agent/conftest/output"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
 	"github.com/sigstore/cosign/v2/pkg/oci"
 	"github.com/sigstore/cosign/v2/pkg/oci/static"
@@ -43,6 +42,7 @@ import (
 
 	"github.com/enterprise-contract/ec-cli/internal/attestation"
 	"github.com/enterprise-contract/ec-cli/internal/evaluation_target/application_snapshot_image"
+	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 	"github.com/enterprise-contract/ec-cli/internal/fetchers/oci/fake"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
@@ -60,8 +60,8 @@ func TestValidateImage(t *testing.T) {
 		name               string
 		client             *mockASIClient
 		url                string
-		expectedViolations []conftestOutput.Result
-		expectedWarnings   []conftestOutput.Result
+		expectedViolations []evaluator.Result
+		expectedWarnings   []evaluator.Result
 		expectedImageURL   string
 	}{
 		{
@@ -72,20 +72,20 @@ func TestValidateImage(t *testing.T) {
 				attestations: []oci.Signature{validAttestation},
 			},
 			url:                imageRef,
-			expectedViolations: []conftestOutput.Result{},
-			expectedWarnings:   []conftestOutput.Result{},
+			expectedViolations: []evaluator.Result{},
+			expectedWarnings:   []evaluator.Result{},
 			expectedImageURL:   imageRegistry + "@sha256:" + imageDigest,
 		},
 		{
 			name:   "unaccessible image",
 			client: &mockASIClient{},
 			url:    imageRef,
-			expectedViolations: []conftestOutput.Result{
+			expectedViolations: []evaluator.Result{
 				{Message: "Image URL is not accessible: no response received", Metadata: map[string]interface{}{
 					"code": "builtin.image.accessible",
 				}},
 			},
-			expectedWarnings: []conftestOutput.Result{},
+			expectedWarnings: []evaluator.Result{},
 			expectedImageURL: imageRef,
 		},
 		{
@@ -95,12 +95,12 @@ func TestValidateImage(t *testing.T) {
 				attestations: []oci.Signature{validAttestation},
 			},
 			url: imageRef,
-			expectedViolations: []conftestOutput.Result{
+			expectedViolations: []evaluator.Result{
 				{Message: "Image signature check failed: no image signatures client error", Metadata: map[string]interface{}{
 					"code": "builtin.image.signature_check",
 				}},
 			},
-			expectedWarnings: []conftestOutput.Result{},
+			expectedWarnings: []evaluator.Result{},
 			expectedImageURL: imageRegistry + "@sha256:" + imageDigest,
 		},
 		{
@@ -110,12 +110,12 @@ func TestValidateImage(t *testing.T) {
 				signatures: []oci.Signature{validSignature},
 			},
 			url: imageRef,
-			expectedViolations: []conftestOutput.Result{
+			expectedViolations: []evaluator.Result{
 				{Message: "Image attestation check failed: no image attestations client error", Metadata: map[string]interface{}{
 					"code": "builtin.attestation.signature_check",
 				}},
 			},
-			expectedWarnings: []conftestOutput.Result{},
+			expectedWarnings: []evaluator.Result{},
 			expectedImageURL: imageRegistry + "@sha256:" + imageDigest,
 		},
 	}

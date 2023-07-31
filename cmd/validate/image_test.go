@@ -27,7 +27,6 @@ import (
 	"time"
 
 	hd "github.com/MakeNowJust/heredoc"
-	conftestOutput "github.com/open-policy-agent/conftest/output"
 	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
 	"github.com/spf13/afero"
@@ -257,14 +256,11 @@ func Test_ValidateImageCommand(t *testing.T) {
 			AttestationSyntaxCheck: output.VerificationStatus{
 				Passed: true,
 			},
-			PolicyCheck: evaluator.CheckResults{
+			PolicyCheck: []evaluator.Outcome{
 				{
-					CheckResult: conftestOutput.CheckResult{
-						FileName:  "test.json",
-						Namespace: "test.main",
-						Successes: 1,
-					},
-					Successes: []conftestOutput.Result{
+					FileName:  "test.json",
+					Namespace: "test.main",
+					Successes: []evaluator.Result{
 						{
 							Message: "Pass",
 							Metadata: map[string]interface{}{
@@ -377,14 +373,11 @@ func Test_ValidateImageCommandYAMLPolicyFile(t *testing.T) {
 			AttestationSyntaxCheck: output.VerificationStatus{
 				Passed: true,
 			},
-			PolicyCheck: evaluator.CheckResults{
+			PolicyCheck: []evaluator.Outcome{
 				{
-					CheckResult: conftestOutput.CheckResult{
-						FileName:  "test.json",
-						Namespace: "test.main",
-						Successes: 1,
-					},
-					Successes: []conftestOutput.Result{
+					FileName:  "test.json",
+					Namespace: "test.main",
+					Successes: []evaluator.Result{
 						{
 							Message: "Pass",
 							Metadata: map[string]interface{}{
@@ -455,14 +448,11 @@ func Test_ValidateImageCommandJSONPolicyFile(t *testing.T) {
 			AttestationSyntaxCheck: output.VerificationStatus{
 				Passed: true,
 			},
-			PolicyCheck: evaluator.CheckResults{
+			PolicyCheck: []evaluator.Outcome{
 				{
-					CheckResult: conftestOutput.CheckResult{
-						FileName:  "test.json",
-						Namespace: "test.main",
-						Successes: 1,
-					},
-					Successes: []conftestOutput.Result{
+					FileName:  "test.json",
+					Namespace: "test.main",
+					Successes: []evaluator.Result{
 						{
 							Message: "Pass",
 							Metadata: map[string]interface{}{
@@ -533,14 +523,11 @@ func Test_ValidateImageCommandEmptyPolicyFile(t *testing.T) {
 			AttestationSyntaxCheck: output.VerificationStatus{
 				Passed: true,
 			},
-			PolicyCheck: evaluator.CheckResults{
+			PolicyCheck: []evaluator.Outcome{
 				{
-					CheckResult: conftestOutput.CheckResult{
-						FileName:  "test.json",
-						Namespace: "test.main",
-						Successes: 1,
-					},
-					Successes: []conftestOutput.Result{
+					FileName:  "test.json",
+					Namespace: "test.main",
+					Successes: []evaluator.Result{
 						{
 							Message: "Pass",
 							Metadata: map[string]interface{}{
@@ -674,15 +661,15 @@ func Test_FailureImageAccessibility(t *testing.T) {
 		return &output.Output{
 			ImageSignatureCheck: output.VerificationStatus{
 				Passed: false,
-				Result: &conftestOutput.Result{Message: "skipped due to inaccessible image ref"},
+				Result: &evaluator.Result{Message: "skipped due to inaccessible image ref"},
 			},
 			ImageAccessibleCheck: output.VerificationStatus{
 				Passed: false,
-				Result: &conftestOutput.Result{Message: "image ref not accessible. HEAD registry/image:tag: unexpected status code 404 Not Found (HEAD responses have no body, use GET for details)"},
+				Result: &evaluator.Result{Message: "image ref not accessible. HEAD registry/image:tag: unexpected status code 404 Not Found (HEAD responses have no body, use GET for details)"},
 			},
 			AttestationSignatureCheck: output.VerificationStatus{
 				Passed: false,
-				Result: &conftestOutput.Result{Message: "skipped due to inaccessible image ref"},
+				Result: &evaluator.Result{Message: "skipped due to inaccessible image ref"},
 			},
 			ImageURL: url,
 		}, nil
@@ -739,14 +726,14 @@ func Test_FailureOutput(t *testing.T) {
 		return &output.Output{
 			ImageSignatureCheck: output.VerificationStatus{
 				Passed: false,
-				Result: &conftestOutput.Result{Message: "failed image signature check"},
+				Result: &evaluator.Result{Message: "failed image signature check"},
 			},
 			ImageAccessibleCheck: output.VerificationStatus{
 				Passed: true,
 			},
 			AttestationSignatureCheck: output.VerificationStatus{
 				Passed: false,
-				Result: &conftestOutput.Result{Message: "failed attestation signature check"},
+				Result: &evaluator.Result{Message: "failed attestation signature check"},
 			},
 			ImageURL: url,
 		}, nil
@@ -809,13 +796,11 @@ func Test_WarningOutput(t *testing.T) {
 			AttestationSignatureCheck: output.VerificationStatus{
 				Passed: true,
 			},
-			PolicyCheck: evaluator.CheckResults{
+			PolicyCheck: []evaluator.Outcome{
 				{
-					CheckResult: conftestOutput.CheckResult{
-						Warnings: []conftestOutput.Result{
-							{Message: "warning for policy check 1"},
-							{Message: "warning for policy check 2"},
-						},
+					Warnings: []evaluator.Result{
+						{Message: "warning for policy check 1"},
+						{Message: "warning for policy check 2"},
 					},
 				},
 			},

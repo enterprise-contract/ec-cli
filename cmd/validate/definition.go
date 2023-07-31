@@ -22,10 +22,10 @@ import (
 
 	hd "github.com/MakeNowJust/heredoc"
 	"github.com/hashicorp/go-multierror"
-	coutput "github.com/open-policy-agent/conftest/output"
 	"github.com/spf13/cobra"
 
 	"github.com/enterprise-contract/ec-cli/internal/definition"
+	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 	"github.com/enterprise-contract/ec-cli/internal/format"
 	"github.com/enterprise-contract/ec-cli/internal/output"
 	"github.com/enterprise-contract/ec-cli/internal/policy/source"
@@ -100,7 +100,7 @@ func validateDefinitionCmd(validate definitionValidationFn) *cobra.Command {
 					showSuccesses, _ := cmd.Flags().GetBool("show-successes")
 					if !showSuccesses {
 						for i := range out.PolicyCheck {
-							out.PolicyCheck[i].Successes = make([]coutput.Result, 0)
+							out.PolicyCheck[i].Successes = []evaluator.Result{}
 						}
 
 					}

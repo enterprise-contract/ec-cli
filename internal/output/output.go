@@ -22,7 +22,6 @@ import (
 	"io"
 	"sort"
 
-	"github.com/open-policy-agent/conftest/output"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
 	log "github.com/sirupsen/logrus"
 
@@ -42,12 +41,12 @@ const missingAttestationMessage = "No image attestations found matching the give
 
 // VerificationStatus represents the status of a verification check.
 type VerificationStatus struct {
-	Passed bool           `json:"passed"`
-	Result *output.Result `json:"result,omitempty"`
+	Passed bool              `json:"passed"`
+	Result *evaluator.Result `json:"result,omitempty"`
 }
 
 // addToViolations appends the failure result to the violations slice.
-func (v VerificationStatus) addToViolations(violations []output.Result) []output.Result {
+func (v VerificationStatus) addToViolations(violations []evaluator.Result) []evaluator.Result {
 	if v.Passed {
 		return violations
 	}
@@ -61,7 +60,7 @@ func (v VerificationStatus) addToViolations(violations []output.Result) []output
 }
 
 // addToSuccesses appends the success result to the successes slice.
-func (v VerificationStatus) addToSuccesses(successes []output.Result) []output.Result {
+func (v VerificationStatus) addToSuccesses(successes []evaluator.Result) []evaluator.Result {
 	if !v.Passed {
 		return successes
 	}
@@ -80,7 +79,7 @@ type Output struct {
 	ImageSignatureCheck       VerificationStatus          `json:"imageSignatureCheck"`
 	AttestationSignatureCheck VerificationStatus          `json:"attestationSignatureCheck"`
 	AttestationSyntaxCheck    VerificationStatus          `json:"attestationSyntaxCheck"`
-	PolicyCheck               evaluator.CheckResults      `json:"policyCheck"`
+	PolicyCheck               []evaluator.Outcome         `json:"policyCheck"`
 	ExitCode                  int                         `json:"-"`
 	Signatures                []signature.EntitySignature `json:"signatures,omitempty"`
 	Attestations              []attestation.Attestation   `json:"attestations,omitempty"`
@@ -108,7 +107,7 @@ func (o *Output) SetImageAccessibleCheckFromError(err error) {
 		message = fmt.Sprintf("Image URL is not accessible: %s", err)
 		log.Debugf("%s. Error: %s", message, err.Error())
 	}
-	result := &output.Result{Message: message, Metadata: metadata}
+	result := &evaluator.Result{Message: message, Metadata: metadata}
 	if !o.Detailed {
 		keepSomeMetadataSingle(*result)
 	}
@@ -133,7 +132,7 @@ func (o *Output) SetImageSignatureCheckFromError(err error) {
 		message = wrapCosignErrorMessage(err, "signature", o.Policy)
 		log.Debug(message)
 	}
-	result := &output.Result{Message: message, Metadata: metadata}
+	result := &evaluator.Result{Message: message, Metadata: metadata}
 	if !o.Detailed {
 		keepSomeMetadataSingle(*result)
 	}
@@ -158,7 +157,7 @@ func (o *Output) SetAttestationSignatureCheckFromError(err error) {
 		message = wrapCosignErrorMessage(err, "attestation", o.Policy)
 		log.Debug(message)
 	}
-	result := &output.Result{Message: message, Metadata: metadata}
+	result := &evaluator.Result{Message: message, Metadata: metadata}
 	if !o.Detailed {
 		keepSomeMetadataSingle(*result)
 	}
@@ -183,7 +182,7 @@ func (o *Output) SetAttestationSyntaxCheckFromError(err error) {
 		message = fmt.Sprintf("Attestation syntax check failed: %s", err)
 		log.Debug(message)
 	}
-	result := &output.Result{Message: message, Metadata: metadata}
+	result := &evaluator.Result{Message: message, Metadata: metadata}
 	if !o.Detailed {
 		keepSomeMetadataSingle(*result)
 	}
@@ -191,13 +190,11 @@ func (o *Output) SetAttestationSyntaxCheckFromError(err error) {
 }
 
 // SetPolicyCheck sets the PolicyCheck and ExitCode to the results and exit code of the Results
-func (o *Output) SetPolicyCheck(results evaluator.CheckResults) {
+func (o *Output) SetPolicyCheck(results []evaluator.Outcome) {
 	for r := range results {
 		if results[r].FileName == "-" {
 			results[r].FileName = ""
 		}
-
-		results[r].Queries = nil
 
 		if !o.Detailed {
 			keepSomeMetadata(results[r].Exceptions)
@@ -206,18 +203,21 @@ func (o *Output) SetPolicyCheck(results evaluator.CheckResults) {
 			keepSomeMetadata(results[r].Skipped)
 			keepSomeMetadata(results[r].Warnings)
 		}
+
+		if len(results[r].Failures) > 0 {
+			o.ExitCode = 1
+		}
 	}
 	o.PolicyCheck = results
-	o.ExitCode = output.ExitCode(results.ToConftestResults())
 }
 
-func keepSomeMetadata(results []output.Result) {
+func keepSomeMetadata(results []evaluator.Result) {
 	for i := range results {
 		keepSomeMetadataSingle(results[i])
 	}
 }
 
-func keepSomeMetadataSingle(result output.Result) {
+func keepSomeMetadataSingle(result evaluator.Result) {
 	for key := range result.Metadata {
 		if key == "code" || key == "effective_on" {
 			continue
@@ -227,7 +227,7 @@ func keepSomeMetadataSingle(result output.Result) {
 }
 
 // addCheckResultsToViolations appends the Failures from CheckResult to the violations slice.
-func (o Output) addCheckResultsToViolations(violations []output.Result) []output.Result {
+func (o Output) addCheckResultsToViolations(violations []evaluator.Result) []evaluator.Result {
 	for _, check := range o.PolicyCheck {
 		violations = append(violations, check.Failures...)
 	}
@@ -236,8 +236,8 @@ func (o Output) addCheckResultsToViolations(violations []output.Result) []output
 }
 
 // Violations aggregates and returns all violations.
-func (o Output) Violations() []output.Result {
-	violations := make([]output.Result, 0, 10)
+func (o Output) Violations() []evaluator.Result {
+	violations := make([]evaluator.Result, 0, 10)
 	violations = o.ImageSignatureCheck.addToViolations(violations)
 	violations = o.ImageAccessibleCheck.addToViolations(violations)
 	violations = o.AttestationSignatureCheck.addToViolations(violations)
@@ -249,8 +249,8 @@ func (o Output) Violations() []output.Result {
 }
 
 // Warnings aggregates and returns all warnings.
-func (o Output) Warnings() []output.Result {
-	warnings := make([]output.Result, 0, 10)
+func (o Output) Warnings() []evaluator.Result {
+	warnings := make([]evaluator.Result, 0, 10)
 	for _, result := range o.PolicyCheck {
 		warnings = append(warnings, result.Warnings...)
 	}
@@ -260,8 +260,8 @@ func (o Output) Warnings() []output.Result {
 }
 
 // Successes aggregates and returns all successes.
-func (o Output) Successes() []output.Result {
-	successes := make([]output.Result, 0, 10)
+func (o Output) Successes() []evaluator.Result {
+	successes := make([]evaluator.Result, 0, 10)
 	for _, result := range o.PolicyCheck {
 		successes = append(successes, result.Successes...)
 	}
@@ -275,7 +275,7 @@ func (o Output) Successes() []output.Result {
 }
 
 // sortResults sorts Result slices.
-func sortResults(results []output.Result) []output.Result {
+func sortResults(results []evaluator.Result) []evaluator.Result {
 	sort.Slice(results, func(i, j int) bool {
 		iCode := evaluator.ExtractStringFromMetadata(results[i], "code")
 		jCode := evaluator.ExtractStringFromMetadata(results[j], "code")

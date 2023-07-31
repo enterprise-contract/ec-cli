@@ -32,8 +32,6 @@ import (
 	"github.com/open-policy-agent/conftest/runner"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-
-	"github.com/enterprise-contract/ec-cli/internal/applicationsnapshot"
 )
 
 const testDesc = `
@@ -164,7 +162,7 @@ func newTestCommand() *cobra.Command {
 			if !runner.Quiet || exitCode != 0 {
 				if runner.Output == OutputAppstudio {
 					// The appstudio format is unknown to Conftest so we handle it ourselves
-					report := applicationsnapshot.AppstudioReportFromCheckResults(results, runner.Namespace)
+					report := appstudioReport(results, runner.Namespace)
 					reportOutput, err := json.Marshal(report)
 					if err != nil {
 						return fmt.Errorf("output results: %w", err)

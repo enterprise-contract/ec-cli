@@ -1,76 +1,9 @@
 
 [TestConftestEvaluatorEvaluate - 1]
-evaluator.CheckResults{
+[]evaluator.Outcome{
     {
-        CheckResult: output.CheckResult{
-            FileName:  "$TMPDIR/inputs/data.json",
-            Namespace: "a",
-            Successes: 1,
-            Skipped:   {
-            },
-            Warnings: {
-                {
-                    Message:  "Warning!",
-                    Metadata: {
-                        "code": "a.warning",
-                    },
-                    Outputs: nil,
-                },
-            },
-            Failures: {
-                {
-                    Message:  "Failure!",
-                    Metadata: {
-                        "code": "a.failure",
-                    },
-                    Outputs: nil,
-                },
-            },
-            Exceptions: {
-            },
-            Queries: {
-                {
-                    Query:   "data.a.exception[_][_] == \"\"",
-                    Results: nil,
-                    Traces:  nil,
-                    Outputs: {},
-                },
-                {
-                    Query:   "data.a.deny",
-                    Results: {
-                        {
-                            Message:  "Failure!",
-                            Metadata: {
-                                "code": "a.failure",
-                            },
-                            Outputs: nil,
-                        },
-                    },
-                    Traces:  nil,
-                    Outputs: {},
-                },
-                {
-                    Query:   "data.a.exception[_][_] == \"\"",
-                    Results: nil,
-                    Traces:  nil,
-                    Outputs: {},
-                },
-                {
-                    Query:   "data.a.warn",
-                    Results: {
-                        {
-                            Message:  "Warning!",
-                            Metadata: {
-                                "code": "a.warning",
-                            },
-                            Outputs: nil,
-                        },
-                    },
-                    Traces:  nil,
-                    Outputs: {},
-                },
-            },
-        },
+        FileName:  "$TMPDIR/inputs/data.json",
+        Namespace: "a",
         Successes: {
             {
                 Message:  "Pass",
@@ -80,77 +13,32 @@ evaluator.CheckResults{
                 Outputs: nil,
             },
         },
-    },
-    {
-        CheckResult: output.CheckResult{
-            FileName:  "$TMPDIR/inputs/data.json",
-            Namespace: "b",
-            Successes: 1,
-            Skipped:   {
-            },
-            Warnings: {
-                {
-                    Message:  "Warning!",
-                    Metadata: {
-                        "code": "b.warning",
-                    },
-                    Outputs: nil,
+        Skipped: {
+        },
+        Warnings: {
+            {
+                Message:  "Warning!",
+                Metadata: {
+                    "code": "a.warning",
                 },
-            },
-            Failures: {
-                {
-                    Message:  "Failure!",
-                    Metadata: {
-                        "code": "b.failure",
-                    },
-                    Outputs: nil,
-                },
-            },
-            Exceptions: {
-            },
-            Queries: {
-                {
-                    Query:   "data.b.exception[_][_] == \"\"",
-                    Results: nil,
-                    Traces:  nil,
-                    Outputs: {},
-                },
-                {
-                    Query:   "data.b.deny",
-                    Results: {
-                        {
-                            Message:  "Failure!",
-                            Metadata: {
-                                "code": "b.failure",
-                            },
-                            Outputs: nil,
-                        },
-                    },
-                    Traces:  nil,
-                    Outputs: {},
-                },
-                {
-                    Query:   "data.b.exception[_][_] == \"\"",
-                    Results: nil,
-                    Traces:  nil,
-                    Outputs: {},
-                },
-                {
-                    Query:   "data.b.warn",
-                    Results: {
-                        {
-                            Message:  "Warning!",
-                            Metadata: {
-                                "code": "b.warning",
-                            },
-                            Outputs: nil,
-                        },
-                    },
-                    Traces:  nil,
-                    Outputs: {},
-                },
+                Outputs: nil,
             },
         },
+        Failures: {
+            {
+                Message:  "Failure!",
+                Metadata: {
+                    "code": "a.failure",
+                },
+                Outputs: nil,
+            },
+        },
+        Exceptions: {
+        },
+    },
+    {
+        FileName:  "$TMPDIR/inputs/data.json",
+        Namespace: "b",
         Successes: {
             {
                 Message:  "Pass",
@@ -159,6 +47,28 @@ evaluator.CheckResults{
                 },
                 Outputs: nil,
             },
+        },
+        Skipped: {
+        },
+        Warnings: {
+            {
+                Message:  "Warning!",
+                Metadata: {
+                    "code": "b.warning",
+                },
+                Outputs: nil,
+            },
+        },
+        Failures: {
+            {
+                Message:  "Failure!",
+                Metadata: {
+                    "code": "b.failure",
+                },
+                Outputs: nil,
+            },
+        },
+        Exceptions: {
         },
     },
 }
