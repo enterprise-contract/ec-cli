@@ -150,3 +150,56 @@ FAIL - acceptance/examples/empty_input.json - main - Failure due to overripeness
 [appstudio deny:stderr - 1]
 
 ---
+[normal error:stdout - 1]
+
+---
+
+[normal error:stderr - 1]
+Error: running test: load: loading policies: load: 1 error occurred during loading: stat file/not/exist.rego: no such file or directory
+
+---
+[appstudio error:stdout - 1]
+{
+  "timestamp": "${TIMESTAMP}",
+  "namespace": "",
+  "successes": 0,
+  "failures": 0,
+  "warnings": 0,
+  "result": "ERROR"
+}
+---
+
+[appstudio error:stderr - 1]
+Error: running test: load: loading policies: load: 1 error occurred during loading: stat file/not/exist.rego: no such file or directory
+
+---
+[appstudio error nofail:stdout - 1]
+{
+  "timestamp": "${TIMESTAMP}",
+  "namespace": "",
+  "successes": 0,
+  "failures": 0,
+  "warnings": 0,
+  "result": "ERROR"
+}
+---
+
+[appstudio error nofail:stderr - 1]
+Error: running test: load: loading policies: load: 1 error occurred during loading: stat file/not/exist.rego: no such file or directory
+
+---
+[a different appstudio error:stdout - 1]
+{
+  "timestamp": "${TIMESTAMP}",
+  "namespace": "",
+  "successes": 0,
+  "failures": 0,
+  "warnings": 0,
+  "result": "ERROR"
+}
+---
+
+[a different appstudio error:stderr - 1]
+Error: running test: parse configurations: parser unmarshal: unmarshal json: invalid character '\n' in string literal, path: acceptance/examples/broken_input.json
+
+---

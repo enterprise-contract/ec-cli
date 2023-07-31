@@ -53,3 +53,23 @@ Feature: conftest test mode
     When ec command is run with "test -p acceptance/examples/fail_with_data.rego --data acceptance/examples/rule_data_1.yaml acceptance/examples/empty_input.json -o appstudio"
     Then the exit status should be 1
     Then the output should match the snapshot
+
+  Scenario: normal error
+    When ec command is run with "test -p file/not/exist.rego acceptance/examples/empty_input.json -o json"
+    Then the exit status should be 1
+    Then the output should match the snapshot
+
+  Scenario: appstudio error
+    When ec command is run with "test -p file/not/exist.rego acceptance/examples/empty_input.json -o appstudio"
+    Then the exit status should be 1
+    Then the output should match the snapshot
+
+  Scenario: appstudio error nofail
+    When ec command is run with "test --no-fail -p file/not/exist.rego acceptance/examples/empty_input.json -o appstudio"
+    Then the exit status should be 0
+    Then the output should match the snapshot
+
+  Scenario: a different appstudio error
+    When ec command is run with "test --no-fail -p acceptance/examples/empty.rego acceptance/examples/broken_input.json -o appstudio"
+    Then the exit status should be 0
+    Then the output should match the snapshot
