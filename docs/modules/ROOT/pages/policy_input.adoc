@@ -19,13 +19,13 @@ access to the information about a single image.
 {
     "attestations": [
         {
-            "_type": "https://in-toto.io/Statement/v0.1",
-            "extra": {
-                "signatures": [...#SignatureDescriptor]
+            "statement": {
+                "_type": "https://in-toto.io/Statement/v0.1",
+                "predicate": {...},
+                "predicateType": "https://slsa.dev/provenance/v0.2",
+                "subject": [...],
             },
-            "predicate": {...},
-            "predicateType": "https://slsa.dev/provenance/v0.2",
-            "subject": [...],
+            "signatures": [...#SignatureDescriptor]
         }
     ],
     "image": #ImageDescriptor
@@ -47,8 +47,18 @@ access to the information about a single image.
 }
 ----
 
-`.attestations` is an array of objects. Each object represents a SLSA Provenance v0.2 statement. See
-https://slsa.dev/provenance/v0.2#schema[schema] for details. An additional attribute, `.extra`, is
+`.attestations` is an array of objects. Each object contains the `.statement` and the `.signatures`
+attributes. `.statement` represents a SLSA Provenance v0.2 statement. See
+https://slsa.dev/provenance/v0.2#schema[schema] for details. `.signatures` contains information
+about the signatures associated with the statement.
+
+NOTE: The information from `.attestations[].statement` is accessible directly via `.attestations[]`.
+However, this limits the amount of information that can be provided for each attestation. As a
+result, `.attestations[].extra` was introduced as a workaround to hold additional information such
+as signatures. This created potential collisions with attributes from the statement. For this
+reason, the old format is now marked as deprecated and it will be removed soon.
+
+An additional attribute, `.extra`, is
 added to provide additional information about the statements. Currently, this means the signatures
 associated with the statement.
 
