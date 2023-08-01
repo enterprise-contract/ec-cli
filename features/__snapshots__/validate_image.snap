@@ -2438,3 +2438,331 @@ Error: success criteria not met
 Error: success criteria not met
 
 ---
+
+[OLM manifests:stderr - 1]
+
+---
+
+[OLM manifests:${TMPDIR}/input.json - 1]
+{
+  "attestations": [
+    {
+      "_type": "https://in-toto.io/Statement/v0.1",
+      "predicateType": "https://slsa.dev/provenance/v0.2",
+      "subject": [
+        {
+          "name": "acceptance/image",
+          "digest": {
+            "sha256": "${REGISTRY_acceptance/image:latest_DIGEST}"
+          }
+        }
+      ],
+      "predicate": {
+        "builder": {
+          "id": "https://tekton.dev/chains/v2"
+        },
+        "buildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+        "invocation": {
+          "configSource": {}
+        }
+      },
+      "extra": {
+        "signatures": [
+          {
+            "keyid": "",
+            "sig": "${ATTESTATION_SIGNATURE_acceptance/image}"
+          }
+        ]
+      }
+    }
+  ],
+  "image": {
+    "ref": "${REGISTRY}/acceptance/image@sha256:${REGISTRY_acceptance/image:latest_DIGEST}",
+    "signatures": [
+      {
+        "keyid": "",
+        "sig": "${IMAGE_SIGNATURE_acceptance/image}"
+      }
+    ],
+    "config": {
+      "Labels": {
+        "operators.operatorframework.io.bundle.manifests.v1": "manifests/",
+        "org.opencontainers.image.title": "acceptance/image"
+      }
+    },
+    "files": {
+      "manifests/some.clusterserviceversion.yaml": {
+        "apiVersion": "operators.coreos.com/v1alpha1",
+        "kind": "ClusterServiceVersion",
+        "metadata": {
+          "annotations": null,
+          "name": "memcached-operator.v0.10.0"
+        },
+        "spec": {
+          "customresourcedefinitions": {
+            "owned": [
+              {
+                "kind": "Memcached",
+                "name": "memcacheds.cache.example.com",
+                "version": "v1alpha1"
+              }
+            ],
+            "required": [
+              {
+                "kind": "Other",
+                "name": "others.example.com",
+                "version": "v1alpha1"
+              }
+            ]
+          },
+          "description": "This is an operator for memcached.",
+          "displayName": "Memcached Operator",
+          "install": {
+            "spec": {
+              "clusterPermissions": [
+                {
+                  "rules": [
+                    {
+                      "apiGroups": [
+                        ""
+                      ],
+                      "resources": [
+                        "serviceaccounts"
+                      ],
+                      "verbs": [
+                        "*"
+                      ]
+                    }
+                  ],
+                  "serviceAccountName": "memcached-operator"
+                }
+              ],
+              "deployments": [
+                {
+                  "name": "memcached-operator",
+                  "spec": {
+                    "replicas": 1
+                  }
+                }
+              ],
+              "permissions": [
+                {
+                  "rules": [
+                    {
+                      "apiGroups": [
+                        ""
+                      ],
+                      "resources": [
+                        "pods"
+                      ],
+                      "verbs": [
+                        "*"
+                      ]
+                    }
+                  ],
+                  "serviceAccountName": "memcached-operator"
+                }
+              ]
+            },
+            "strategy": "deployment"
+          },
+          "installModes": [
+            {
+              "supported": true,
+              "type": "OwnNamespace"
+            },
+            {
+              "supported": true,
+              "type": "SingleNamespace"
+            },
+            {
+              "supported": false,
+              "type": "MultiNamespace"
+            },
+            {
+              "supported": true,
+              "type": "AllNamespaces"
+            }
+          ],
+          "keywords": [
+            "memcached",
+            "app"
+          ],
+          "maintainers": [
+            {
+              "email": "corp@example.com",
+              "name": "Some Corp"
+            }
+          ],
+          "maturity": "alpha",
+          "minKubeVersion": "1.16.0",
+          "provider": {
+            "name": "Example",
+            "url": "www.example.com"
+          },
+          "version": "0.10.0"
+        }
+      },
+      "manifests/some.crd.yaml": {
+        "apiVersion": "apiextensions.k8s.io/v1",
+        "kind": "CustomResourceDefinition",
+        "metadata": {
+          "annotations": {
+            "controller-gen.kubebuilder.io/version": "v0.4.1"
+          },
+          "name": "memcacheds.cache.example.com"
+        },
+        "spec": {
+          "group": "cache.example.com",
+          "names": {
+            "kind": "Memcached",
+            "listKind": "MemcachedList",
+            "plural": "memcacheds",
+            "singular": "memcached"
+          },
+          "scope": "Namespaced",
+          "versions": [
+            {
+              "name": "v1alpha1",
+              "schema": {
+                "openAPIV3Schema": {
+                  "description": "Memcached is the Schema for the memcacheds API",
+                  "properties": {
+                    "apiVersion": {
+                      "description": "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",
+                      "type": "string"
+                    },
+                    "kind": {
+                      "description": "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
+                      "type": "string"
+                    },
+                    "metadata": {
+                      "type": "object"
+                    },
+                    "spec": {
+                      "description": "MemcachedSpec defines the desired state of Memcached",
+                      "properties": {
+                        "size": {
+                          "description": "Size defines the number of Memcached instances",
+                          "format": "int32",
+                          "type": "integer"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "status": {
+                      "description": "MemcachedStatus defines the observed state of Memcached",
+                      "properties": {
+                        "nodes": {
+                          "description": "Nodes store the name of the pods which are running Memcached instances",
+                          "items": {
+                            "type": "string"
+                          },
+                          "type": "array"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              },
+              "served": true,
+              "storage": true,
+              "subresources": {
+                "status": {}
+              }
+            }
+          ]
+        },
+        "status": {
+          "acceptedNames": {
+            "kind": "",
+            "plural": ""
+          },
+          "conditions": [],
+          "storedVersions": []
+        }
+      }
+    }
+  }
+}
+---
+
+[OLM manifests:stdout - 1]
+{
+  "success": true,
+  "components": [
+    {
+      "name": "Unnamed",
+      "containerImage": "${REGISTRY}/acceptance/image@sha256:${REGISTRY_acceptance/image:latest_DIGEST}",
+      "source": {},
+      "successes": [
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.syntax_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.image.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "olm_manifests.olm_manifest_csv"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "olm_manifests.olm_manifests"
+          }
+        }
+      ],
+      "success": true,
+      "signatures": [
+        {
+          "keyid": "",
+          "sig": "${IMAGE_SIGNATURE_acceptance/image}"
+        }
+      ],
+      "attestations": [
+        {
+          "type": "https://in-toto.io/Statement/v0.1",
+          "predicateType": "https://slsa.dev/provenance/v0.2",
+          "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+          "signatures": [
+            {
+              "keyid": "",
+              "sig": "${ATTESTATION_SIGNATURE_acceptance/image}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "key": "${known_PUBLIC_KEY_JSON}",
+  "policy": {
+    "sources": [
+      {
+        "policy": [
+          "git::https://${GITHOST}/git/olm-manifests.git"
+        ]
+      }
+    ],
+    "publicKey": "${known_PUBLIC_KEY}"
+  },
+  "ec-version": "${EC_VERSION}",
+  "effective-time": "${TIMESTAMP}"
+}
+---
