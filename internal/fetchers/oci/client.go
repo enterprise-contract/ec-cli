@@ -18,19 +18,50 @@ package oci
 
 import (
 	"context"
+	"os"
+	"path"
+	"strconv"
 
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
+	"github.com/google/go-containerregistry/pkg/v1/cache"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
+	log "github.com/sirupsen/logrus"
 )
 
 type key string
 
 const clientKey key = "ec.fetcher.config.client"
 
+var imgCache cache.Cache
+
+func init() {
+	initCache()
+}
+
+func initCache() {
+	// if a value was set and it is parsed as false, turn the cache off
+	if v, err := strconv.ParseBool(os.Getenv("EC_CACHE")); err == nil && !v {
+		return
+	}
+
+	if userCache, err := os.UserCacheDir(); err != nil {
+		log.Debug("unable to find user cache directory")
+	} else {
+		imgCacheDir := path.Join(userCache, "ec", "images")
+		if err := os.MkdirAll(imgCacheDir, 0700); err != nil {
+			log.Debugf("unable to create temporary directory for image cache in %q: %v", imgCacheDir, err)
+		}
+		log.Debugf("using %q directory to store image cache", imgCacheDir)
+		imgCache = cache.NewFilesystemCache(imgCacheDir)
+	}
+}
+
 type client interface {
 	Image(name.Reference, ...remote.Option) (v1.Image, error)
 }
+
+var defaultClient = remoteClient{}
 
 func NewClient(ctx context.Context) client {
 	c, ok := ctx.Value(clientKey).(client)
@@ -38,7 +69,7 @@ func NewClient(ctx context.Context) client {
 		return c
 	}
 
-	return &remoteClient{}
+	return &defaultClient
 }
 
 func WithClient(ctx context.Context, c client) context.Context {
@@ -49,5 +80,14 @@ type remoteClient struct {
 }
 
 func (*remoteClient) Image(ref name.Reference, opts ...remote.Option) (v1.Image, error) {
-	return remote.Image(ref, opts...)
+	img, err := remote.Image(ref, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	if imgCache != nil {
+		img = cache.Image(img, imgCache)
+	}
+
+	return img, nil
 }
