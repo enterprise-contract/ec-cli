@@ -62,7 +62,8 @@ build-for-test: dist/ec_$(BUILD_IMG_ARCH)
 reference-docs: ## Generate reference documentation input YAML files
 	@mkdir -p dist
 	@rm -rf dist/cli-reference
-	@go run internal/documentation/documentation.go -yaml dist/cli-reference
+# Make sure docs for experimental commands are generated.
+	@EC_EXPERIMENTAL=1 go run internal/documentation/documentation.go -yaml dist/cli-reference
 
 .PHONY: clean
 clean: ## Delete build output
