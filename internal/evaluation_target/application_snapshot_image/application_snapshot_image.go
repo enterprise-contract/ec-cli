@@ -303,14 +303,22 @@ func (a *ApplicationSnapshotImage) Signatures() []signature.EntitySignature {
 }
 
 type attestationData struct {
-	json.RawMessage
-	Extra attestationExtraData `json:"extra"`
+	json.RawMessage                             // Deprecated
+	Extra           attestationExtraData        `json:"extra"` // Deprecated
+	Statement       json.RawMessage             `json:"statement"`
+	Signatures      []signature.EntitySignature `json:"signatures,omitempty"`
 }
 
 type attestationExtraData struct {
 	Signatures []signature.EntitySignature `json:"signatures,omitempty"`
 }
 
+// MarshalJSON returns a JSON representation of the attestationData. It is customized to take into
+// account that attestationData extends json.RawMessage. Leveraging the underlying MarshalJSON from
+// json.RawMessage is problematic because its implementation excludes the additional attributes in
+// attestationData. Instead, this method assumes the data being represented is a JSON object and it
+// adds the additional attributes to it. Once the deprecated options of attestationData are removed,
+// a standard process for Marshaling the JSON can be used, thus removing the need for this method.
 func (a attestationData) MarshalJSON() ([]byte, error) {
 	buffy := bytes.Buffer{}
 	raw, err := a.RawMessage.MarshalJSON()
@@ -318,23 +326,50 @@ func (a attestationData) MarshalJSON() ([]byte, error) {
 		return nil, err
 	}
 
-	_, err = buffy.Write(raw[0 : len(raw)-1])
-	if err != nil {
+	if _, err = buffy.Write(raw[0 : len(raw)-1]); err != nil {
 		return nil, err
 	}
 
-	_, err = buffy.WriteString(`,"extra":`)
-	if err != nil {
-		return nil, err
+	if _, err = buffy.WriteString(`,"extra":`); err != nil {
+		return nil, fmt.Errorf("write extra key: %s", err)
 	}
-
 	extra, err := json.Marshal(a.Extra)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("marshal json extra: %s", err)
+	}
+	if _, err := buffy.Write(extra); err != nil {
+		return nil, fmt.Errorf("write extra value: %s", err)
 	}
 
-	buffy.Write(extra)
-	buffy.WriteByte('}')
+	_, err = buffy.WriteString(`, "statement":`)
+	if err != nil {
+		return nil, fmt.Errorf("write statement key: %w", err)
+	}
+	statement, err := a.Statement.MarshalJSON()
+	if err != nil {
+		return nil, fmt.Errorf("marshal json statement: %w", err)
+	}
+	if _, err := buffy.Write(statement); err != nil {
+		return nil, fmt.Errorf("write statement value: %w", err)
+	}
+
+	if len(a.Signatures) > 0 {
+		_, err = buffy.WriteString(`, "signatures":`)
+		if err != nil {
+			return nil, fmt.Errorf("write signatures key: %w", err)
+		}
+		signatures, err := json.Marshal(a.Signatures)
+		if err != nil {
+			return nil, fmt.Errorf("marshal json signatures: %w", err)
+		}
+		if _, err := buffy.Write(signatures); err != nil {
+			return nil, fmt.Errorf("write signatues value: %w", err)
+		}
+	}
+
+	if err := buffy.WriteByte('}'); err != nil {
+		return nil, fmt.Errorf("close json: %w", err)
+	}
 
 	return buffy.Bytes(), nil
 }
@@ -360,6 +395,8 @@ func (a *ApplicationSnapshotImage) WriteInputFile(ctx context.Context) (string, 
 		attestations = append(attestations, attestationData{
 			RawMessage: a.Statement(),
 			Extra:      attestationExtraData{Signatures: a.Signatures()},
+			Statement:  a.Statement(),
+			Signatures: a.Signatures(),
 		})
 	}
 

@@ -27,6 +27,20 @@
     }
    },
    "predicateType": "https://slsa.dev/provenance/v0.2",
+   "statement": {
+    "_type": "https://in-toto.io/Statement/v0.1",
+    "predicate": {
+     "buildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+     "builder": {
+      "id": ""
+     },
+     "invocation": {
+      "configSource": {}
+     }
+    },
+    "predicateType": "https://slsa.dev/provenance/v0.2",
+    "subject": null
+   },
    "subject": null
   }
  ],
@@ -52,6 +66,20 @@
     }
    },
    "predicateType": "https://slsa.dev/provenance/v0.2",
+   "statement": {
+    "_type": "https://in-toto.io/Statement/v0.1",
+    "predicate": {
+     "buildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+     "builder": {
+      "id": ""
+     },
+     "invocation": {
+      "configSource": {}
+     }
+    },
+    "predicateType": "https://slsa.dev/provenance/v0.2",
+    "subject": null
+   },
    "subject": null
   },
   {
@@ -67,6 +95,20 @@
     }
    },
    "predicateType": "https://slsa.dev/provenance/v0.2",
+   "statement": {
+    "_type": "https://in-toto.io/Statement/v0.1",
+    "predicate": {
+     "buildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+     "builder": {
+      "id": ""
+     },
+     "invocation": {
+      "configSource": {}
+     }
+    },
+    "predicateType": "https://slsa.dev/provenance/v0.2",
+    "subject": null
+   },
    "subject": null
   }
  ],
@@ -92,6 +134,20 @@
     }
    },
    "predicateType": "https://slsa.dev/provenance/v0.2",
+   "statement": {
+    "_type": "https://in-toto.io/Statement/v0.1",
+    "predicate": {
+     "buildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+     "builder": {
+      "id": ""
+     },
+     "invocation": {
+      "configSource": {}
+     }
+    },
+    "predicateType": "https://slsa.dev/provenance/v0.2",
+    "subject": null
+   },
    "subject": null
   }
  ],
@@ -179,6 +235,36 @@
     }
    },
    "predicateType": "https://slsa.dev/provenance/v0.2",
+   "signatures": [
+    {
+     "certificate": "certificate",
+     "chain": [
+      "a",
+      "b",
+      "c"
+     ],
+     "keyid": "keyId",
+     "metadata": {
+      "k1": "v1",
+      "k2": "v2"
+     },
+     "sig": "signature"
+    }
+   ],
+   "statement": {
+    "_type": "https://in-toto.io/Statement/v0.1",
+    "predicate": {
+     "buildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+     "builder": {
+      "id": ""
+     },
+     "invocation": {
+      "configSource": {}
+     }
+    },
+    "predicateType": "https://slsa.dev/provenance/v0.2",
+    "subject": null
+   },
    "subject": null
   }
  ],
@@ -204,6 +290,20 @@
     }
    },
    "predicateType": "https://slsa.dev/provenance/v0.2",
+   "statement": {
+    "_type": "https://in-toto.io/Statement/v0.1",
+    "predicate": {
+     "buildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+     "builder": {
+      "id": ""
+     },
+     "invocation": {
+      "configSource": {}
+     }
+    },
+    "predicateType": "https://slsa.dev/provenance/v0.2",
+    "subject": null
+   },
    "subject": null
   }
  ],
@@ -233,6 +333,7 @@
    }
   ]
  },
- "json": "here"
+ "json": "here",
+ "statement": null
 }
 ---

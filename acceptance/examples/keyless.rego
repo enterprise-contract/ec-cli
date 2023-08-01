@@ -16,7 +16,7 @@ deny contains err(rego.metadata.rule(), "No signature info") if {
 #   short_name: no_attestation_signature_info
 deny contains err(rego.metadata.rule(), "No attestation signature info") if {
 	some att in input.attestations
-	count(att.extra.signatures) == 0
+	count(att.signatures) == 0
 }
 
 # METADATA
@@ -31,7 +31,7 @@ deny contains err(rego.metadata.rule(), "No signer certificate") if {
 #   short_name: no_attestation_signer_certificate
 deny contains err(rego.metadata.rule(), "No attestation signer certificate") if {
 	some att in input.attestations
-	count(crypto.x509.parse_certificates(att.extra.signatures[0].certificate)) == 0
+	count(crypto.x509.parse_certificates(att.signatures[0].certificate)) == 0
 }
 
 # METADATA
@@ -50,7 +50,7 @@ deny contains err(rego.metadata.rule(), "Unexpected signer") if {
 #   short_name: unexpected_attestation_signer
 deny contains err(rego.metadata.rule(), "Unexpected attestation signer") if {
 	some att in input.attestations
-	certs := crypto.x509.parse_certificates(att.extra.signatures[0].certificate)
+	certs := crypto.x509.parse_certificates(att.signatures[0].certificate)
 	cert := certs[0]
 
 	# check a single attribute of SAN:URIs
