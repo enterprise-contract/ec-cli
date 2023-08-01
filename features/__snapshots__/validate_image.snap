@@ -2473,7 +2473,34 @@ Error: success criteria not met
             "sig": "${ATTESTATION_SIGNATURE_acceptance/image}"
           }
         ]
-      }
+      },
+      "statement": {
+        "_type": "https://in-toto.io/Statement/v0.1",
+        "predicateType": "https://slsa.dev/provenance/v0.2",
+        "subject": [
+          {
+            "name": "acceptance/image",
+            "digest": {
+              "sha256": "${REGISTRY_acceptance/image:latest_DIGEST}"
+            }
+          }
+        ],
+        "predicate": {
+          "builder": {
+            "id": "https://tekton.dev/chains/v2"
+          },
+          "buildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+          "invocation": {
+            "configSource": {}
+          }
+        }
+      },
+      "signatures": [
+        {
+          "keyid": "",
+          "sig": "${ATTESTATION_SIGNATURE_acceptance/image}"
+        }
+      ]
     }
   ],
   "image": {
