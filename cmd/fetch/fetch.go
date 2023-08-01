@@ -25,8 +25,7 @@ var FetchCmd *cobra.Command
 func init() {
 	FetchCmd = &cobra.Command{
 		Use:   "fetch",
-		Short: "Fetch policies and authorization data",
+		Short: "Fetch remote resources",
 	}
-	FetchCmd.AddCommand(k8sResourceAuthorizationCmd())
 	FetchCmd.AddCommand(fetchPolicyCmd())
 }

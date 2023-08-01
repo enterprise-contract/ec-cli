@@ -8,7 +8,6 @@ Various sub-commands can be used to assert facts about an artifact such as:
 * Validating container image signature
 * Validating container image provenance
 * Evaluating Enterprise Contract {pol}[policies] over the container image provenance
-* Fetching artifact authorization
 
 This documentation includes xref:ec.adoc[EC Command Line reference
 documentation], and documentation on the
