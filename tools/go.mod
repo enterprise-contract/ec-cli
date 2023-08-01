@@ -470,7 +470,7 @@ require (
 	go.opentelemetry.io/otel/metric v1.16.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.16.0 // indirect
 	go.opentelemetry.io/otel/trace v1.16.0 // indirect
-	go.starlark.net v0.0.0-20200306205701-8dd3e2ee1dd5 // indirect
+	go.starlark.net v0.0.0-20230525235612-a134d8f9ddca // indirect
 	go.step.sm/crypto v0.32.2 // indirect
 	go.tmz.dev/musttag v0.7.0 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
@@ -507,15 +507,15 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	honnef.co/go/tools v0.4.3 // indirect
-	k8s.io/api v0.27.3 // indirect
+	k8s.io/api v0.28.0-rc.0 // indirect
 	k8s.io/apiextensions-apiserver v0.27.2 // indirect
-	k8s.io/apimachinery v0.27.3 // indirect
+	k8s.io/apimachinery v0.28.0-rc.0 // indirect
 	k8s.io/apiserver v0.27.2 // indirect
-	k8s.io/cli-runtime v0.27.2 // indirect
-	k8s.io/client-go v0.27.3 // indirect
+	k8s.io/cli-runtime v0.28.0-rc.0 // indirect
+	k8s.io/client-go v0.28.0-rc.0 // indirect
 	k8s.io/component-base v0.27.2 // indirect
 	k8s.io/klog/v2 v2.100.1 // indirect
-	k8s.io/kube-openapi v0.0.0-20230601164746-7562a1006961 // indirect
+	k8s.io/kube-openapi v0.0.0-20230717233707-2695361300d9 // indirect
 	k8s.io/kubectl v0.27.2 // indirect
 	k8s.io/utils v0.0.0-20230505201702-9f6742963106 // indirect
 	knative.dev/pkg v0.0.0-20230518105712-dfb4bf04635d // indirect
