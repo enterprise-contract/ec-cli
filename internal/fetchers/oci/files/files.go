@@ -42,6 +42,7 @@ type matcher func(*tar.Header) bool
 
 var supported = []extractor{
 	olmManifest{},
+	redHatManifest{},
 }
 
 var supportedExtensions = []string{".yaml", ".yml", ".json"}
