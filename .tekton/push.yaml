@@ -23,7 +23,7 @@ metadata:
     pipelinesascode.tekton.dev/max-keep-runs: "3"
     pipelinesascode.tekton.dev/on-event: '[push]'
     pipelinesascode.tekton.dev/on-target-branch: '[main]'
-  name: task-verify-ec-on-pull-request
+  name: task-verify-ec-on-push
 spec:
   params:
     - name: git-url
