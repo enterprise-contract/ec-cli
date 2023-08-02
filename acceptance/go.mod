@@ -26,7 +26,7 @@ require (
 	github.com/sigstore/rekor v1.2.2
 	github.com/sigstore/sigstore v1.7.1
 	github.com/stretchr/testify v1.8.4
-	github.com/tektoncd/cli v0.31.1
+	github.com/tektoncd/cli v0.31.2
 	github.com/tektoncd/pipeline v0.47.0
 	github.com/testcontainers/testcontainers-go v0.21.0
 	github.com/transparency-dev/merkle v0.0.2
