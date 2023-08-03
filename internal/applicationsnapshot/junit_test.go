@@ -20,9 +20,9 @@ import (
 	"testing"
 
 	"github.com/jstemmer/go-junit-report/v2/junit"
-	"github.com/redhat-appstudio/application-api/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
 
+	app "github.com/enterprise-contract/ec-cli/application/v1alpha1"
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 	"github.com/enterprise-contract/ec-cli/internal/signature"
 )
@@ -101,7 +101,7 @@ func TestToJunit(t *testing.T) {
 			report: Report{
 				Components: []Component{
 					{
-						SnapshotComponent: v1alpha1.SnapshotComponent{
+						SnapshotComponent: app.SnapshotComponent{
 							Name:           "Name",
 							ContainerImage: "registry.io/repository/image:tag",
 						},
