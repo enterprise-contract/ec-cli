@@ -1,0 +1,122 @@
+{
+    "bomFormat": "CycloneDX",
+    "specVersion": "1.4",
+    "serialNumber": "urn:uuid:00c4ffbc-0010-41d5-894a-c0404f691594",
+    "version": 1,
+    "metadata": {
+      "timestamp": "2023-07-14T18:44:55Z",
+      "tools": [
+        {
+          "vendor": "anchore",
+          "name": "syft",
+          "version": "0.47.0"
+        }
+      ],
+      "component": {
+        "bom-ref": "7ec463778bb0fefe",
+        "type": "file",
+        "name": "/var/lib/containers/storage/vfs/dir/d698970a5f3bc0524df49e6ccb4c6845e5183b8ccb95a1a77b43284752de9e19"
+      }
+    },
+    "components": [
+      {
+        "bom-ref": "pkg:rpm/rhel/elfutils-default-yama-scope@0.186-1.el8?arch=noarch&upstream=elfutils-0.186-1.el8.src.rpm&distro=rhel-8.6&package-id=c064acc6509932eb",
+        "type": "library",
+        "publisher": "Red Hat, Inc.",
+        "name": "elfutils-default-yama-scope",
+        "version": "0.186-1.el8",
+        "cpe": "cpe:2.3:a:elfutils-default-yama-scope:elfutils-default-yama-scope:0.186-1.el8:*:*:*:*:*:*:*",
+        "purl": "pkg:rpm/rhel/elfutils-default-yama-scope@0.186-1.el8?arch=noarch&upstream=elfutils-0.186-1.el8.src.rpm&distro=rhel-8.6",
+        "properties": [
+          {
+            "name": "syft:package:foundBy",
+            "value": "rpmdb-cataloger"
+          },
+          {
+            "name": "syft:package:metadataType",
+            "value": "RpmdbMetadata"
+          },
+          {
+            "name": "syft:package:type",
+            "value": "rpm"
+          },
+          {
+            "name": "syft:cpe23",
+            "value": "cpe:2.3:a:elfutils-default-yama-scope:elfutils_default_yama_scope:0.186-1.el8:*:*:*:*:*:*:*"
+          },
+          {
+            "name": "syft:cpe23",
+            "value": "cpe:2.3:a:elfutils_default_yama_scope:elfutils-default-yama-scope:0.186-1.el8:*:*:*:*:*:*:*"
+          },
+          {
+            "name": "syft:cpe23",
+            "value": "cpe:2.3:a:elfutils_default_yama_scope:elfutils_default_yama_scope:0.186-1.el8:*:*:*:*:*:*:*"
+          },
+          {
+            "name": "syft:cpe23",
+            "value": "cpe:2.3:a:elfutils-default-yama:elfutils-default-yama-scope:0.186-1.el8:*:*:*:*:*:*:*"
+          },
+          {
+            "name": "syft:cpe23",
+            "value": "cpe:2.3:a:elfutils-default-yama:elfutils_default_yama_scope:0.186-1.el8:*:*:*:*:*:*:*"
+          },
+          {
+            "name": "syft:cpe23",
+            "value": "cpe:2.3:a:elfutils_default_yama:elfutils-default-yama-scope:0.186-1.el8:*:*:*:*:*:*:*"
+          },
+          {
+            "name": "syft:cpe23",
+            "value": "cpe:2.3:a:elfutils_default_yama:elfutils_default_yama_scope:0.186-1.el8:*:*:*:*:*:*:*"
+          },
+          {
+            "name": "syft:cpe23",
+            "value": "cpe:2.3:a:elfutils-default:elfutils-default-yama-scope:0.186-1.el8:*:*:*:*:*:*:*"
+          },
+          {
+            "name": "syft:cpe23",
+            "value": "cpe:2.3:a:elfutils-default:elfutils_default_yama_scope:0.186-1.el8:*:*:*:*:*:*:*"
+          },
+          {
+            "name": "syft:cpe23",
+            "value": "cpe:2.3:a:elfutils_default:elfutils-default-yama-scope:0.186-1.el8:*:*:*:*:*:*:*"
+          },
+          {
+            "name": "syft:cpe23",
+            "value": "cpe:2.3:a:elfutils_default:elfutils_default_yama_scope:0.186-1.el8:*:*:*:*:*:*:*"
+          },
+          {
+            "name": "syft:cpe23",
+            "value": "cpe:2.3:a:elfutils:elfutils-default-yama-scope:0.186-1.el8:*:*:*:*:*:*:*"
+          },
+          {
+            "name": "syft:cpe23",
+            "value": "cpe:2.3:a:elfutils:elfutils_default_yama_scope:0.186-1.el8:*:*:*:*:*:*:*"
+          },
+          {
+            "name": "syft:cpe23",
+            "value": "cpe:2.3:a:redhat:elfutils-default-yama-scope:0.186-1.el8:*:*:*:*:*:*:*"
+          },
+          {
+            "name": "syft:cpe23",
+            "value": "cpe:2.3:a:redhat:elfutils_default_yama_scope:0.186-1.el8:*:*:*:*:*:*:*"
+          },
+          {
+            "name": "syft:location:0:path",
+            "value": "var/lib/rpm/Packages"
+          },
+          {
+            "name": "syft:metadata:release",
+            "value": "1.el8"
+          },
+          {
+            "name": "syft:metadata:size",
+            "value": "1810"
+          },
+          {
+            "name": "syft:metadata:sourceRpm",
+            "value": "elfutils-0.186-1.el8.src.rpm"
+          }
+        ]
+      }
+    ]
+  }

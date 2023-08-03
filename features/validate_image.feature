@@ -826,3 +826,23 @@ Feature: evaluate enterprise contract
     Then the exit status should be 0
      And the output should match the snapshot
      And the "${TMPDIR}/input.json" file should match the snapshot
+
+  Scenario: Red Hat manifests
+    Given a key pair named "known"
+      And an image named "acceptance/image" containing a layer with:
+      | root/buildinfo/content_manifests/sbom-cyclonedx.json | examples/redhat_sbom_cyclonedx.json |
+      | root/buildinfo/content_manifests/sbom-purl.json | examples/redhat_sbom_purl.json      |
+      And the image "acceptance/image" has labels:
+      | vendor | Red Hat, Inc. |
+      And a valid image signature of "acceptance/image" image signed by the "known" key
+      And a valid attestation of "acceptance/image" signed by the "known" key
+      And a git repository named "redhat-manifests" with
+      | main.rego | examples/redhat_manifests.rego |
+      And policy configuration named "policy" with specification
+      """
+      {"sources": [{"policy": ["git::https://${GITHOST}/git/redhat-manifests.git"]}]}
+      """
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/image --policy acceptance/policy --public-key ${known_PUBLIC_KEY} --ignore-rekor --show-successes --strict --output=json --output=policy-input=${TMPDIR}/input.json"
+    Then the exit status should be 0
+     And the output should match the snapshot
+     And the "${TMPDIR}/input.json" file should match the snapshot
