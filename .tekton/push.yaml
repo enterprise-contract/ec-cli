@@ -23,7 +23,7 @@ metadata:
     pipelinesascode.tekton.dev/max-keep-runs: "3"
     pipelinesascode.tekton.dev/on-event: '[push]'
     pipelinesascode.tekton.dev/on-target-branch: '[main]'
-  name: task-verify-ec-on-pull-request
+  name: task-verify-ec-on-push
 spec:
   params:
     - name: git-url
@@ -35,8 +35,14 @@ spec:
     - name: path-context
       value: "tasks/verify-enterprise-contract/0.1,!tasks/verify-enterprise-contract/0.1/tests"
   pipelineRef:
-    name: tekton-bundle-builder
-    bundle: quay.io/redhat-appstudio-tekton-catalog/pipeline-tekton-bundle-builder:4c203a1b6b05196fdac8916c19a4d1ce918704bd@sha256:655d823e44b8638de3c2c0bf0c0bcbd49d79deaac2c549e3e048f48f7b86c4f8
+    resolver: bundles
+    params:
+      - name: bundle
+        value: quay.io/redhat-appstudio-tekton-catalog/pipeline-tekton-bundle-builder:4c203a1b6b05196fdac8916c19a4d1ce918704bd@sha256:655d823e44b8638de3c2c0bf0c0bcbd49d79deaac2c549e3e048f48f7b86c4f8
+      - name: name
+        value: tekton-bundle-builder
+      - name: kind
+        value: pipeline
   workspaces:
     - name: workspace
       volumeClaimTemplate:
