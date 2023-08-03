@@ -36,6 +36,7 @@ access to the information about a single image.
     "parent": #ImageDescriptor,
     "ref": "<STRING>",
     "signatures": [...#SignatureDescriptor]
+    "files": {...}
 }
 
 #SignatureDescriptor: {
@@ -85,3 +86,11 @@ short-lived keys are used, aka keyless workflow.
 
 NOTE: Use the `policy-input` output format to save the input object to a file, e.g. `ec validate
 image ... --output=input.jsonl`.
+
+`image.files` is an object where each attribute represents the full path of a file within the image,
+and the value is the content of such file converted to JSON format. Paths do *not* start with a
+leading `/`. If the contents of a file cannot be converted to JSON format, that file is skipped.
+Currently, there are two sets of files that may be included. First, if the image contains the label
+`operators.operatorframework.io.bundle.manifests.v1`, all the files within the path specified by the
+label are included. If the image contains the label `vendor` and its value is `Red Hat, Inc.`, then
+all files under `root/buildinfo/content_manifests` are included.
