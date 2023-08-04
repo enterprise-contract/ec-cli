@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sort"
 	"sync"
 
 	hd "github.com/MakeNowJust/heredoc"
@@ -278,11 +279,8 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 					res := result{
 						err: err,
 						component: applicationsnapshot.Component{
-							SnapshotComponent: app.SnapshotComponent{
-								Name:           comp.Name,
-								ContainerImage: comp.ContainerImage,
-							},
-							Success: err == nil,
+							SnapshotComponent: comp,
+							Success:           err == nil,
 						},
 					}
 
@@ -327,6 +325,11 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 			if allErrors != nil {
 				return allErrors
 			}
+
+			// Ensure some consistency in output.
+			sort.Slice(components, func(i, j int) bool {
+				return components[i].ContainerImage > components[j].ContainerImage
+			})
 
 			if len(data.outputFile) > 0 {
 				data.output = append(data.output, fmt.Sprintf("%s=%s", applicationsnapshot.JSON, data.outputFile))

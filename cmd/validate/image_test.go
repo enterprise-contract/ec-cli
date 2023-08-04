@@ -316,6 +316,122 @@ func Test_ValidateImageCommand(t *testing.T) {
 	  }`, effectiveTimeTest, utils.TestPublicKeyJSON, utils.TestPublicKeyJSON), out.String())
 }
 
+func Test_ValidateImageCommandImages(t *testing.T) {
+	validate := func(_ context.Context, url string, _ policy.Policy, _ bool) (*output.Output, error) {
+		return &output.Output{
+			ImageSignatureCheck: output.VerificationStatus{
+				Passed: true,
+			},
+			ImageAccessibleCheck: output.VerificationStatus{
+				Passed: true,
+			},
+			AttestationSignatureCheck: output.VerificationStatus{
+				Passed: true,
+			},
+			AttestationSyntaxCheck: output.VerificationStatus{
+				Passed: true,
+			},
+			PolicyCheck: []evaluator.Outcome{
+				{
+					FileName:  "test.json",
+					Namespace: "test.main",
+					Successes: []evaluator.Result{
+						{
+							Message: "Pass",
+							Metadata: map[string]interface{}{
+								"code": "policy.nice",
+							},
+						},
+					},
+				},
+			},
+			ImageURL: url,
+			ExitCode: 0,
+		}, nil
+	}
+
+	cmd := validateImageCmd(validate)
+
+	cmd.SetContext(utils.WithFS(context.Background(), afero.NewMemMapFs()))
+
+	effectiveTimeTest := time.Now().UTC().Format(time.RFC3339Nano)
+
+	images := `{
+		"components": [
+			{
+				"name": "bacon",
+				"containerImage": "registry.localhost/bacon:v2.0",
+				"source": {
+					"git": {
+						"url": "https://git.localhost/bacon.git",
+						"revision": "8abf15bef376e0e21f1f9e9c3d74483d5018f3d5"
+					}
+				}
+			},
+			{
+				"name": "spam",
+				"containerImage": "registry.localhost/spam:v1.0",
+				"source": {
+					"git": {
+						"url": "https://git.localhost/spam.git",
+						"revision": "ded982e702e07bb7b6effafdc353db3fe172c83f"
+					}
+				}
+			}
+		]
+	}`
+
+	cmd.SetArgs([]string{
+		"--images",
+		images,
+		"--policy",
+		fmt.Sprintf(`{"publicKey": %s}`, utils.TestPublicKeyJSON),
+		"--effective-time",
+		effectiveTimeTest,
+	})
+
+	var out bytes.Buffer
+	cmd.SetOut(&out)
+
+	utils.SetTestRekorPublicKey(t)
+
+	err := cmd.Execute()
+	assert.NoError(t, err)
+	assert.JSONEq(t, fmt.Sprintf(`{
+		"success": true,
+		"ec-version": "development",
+		"effective-time": %q,
+		"key": %s,
+		"components": [
+			{
+				"name": "spam",
+				"containerImage": "registry.localhost/spam:v1.0",
+				"source": {
+					"git": {
+						"url": "https://git.localhost/spam.git",
+						"revision": "ded982e702e07bb7b6effafdc353db3fe172c83f"
+					}
+				},
+				"success": true
+			},
+			{
+				"name": "bacon",
+				"containerImage": "registry.localhost/bacon:v2.0",
+				"source": {
+					"git": {
+						"url": "https://git.localhost/bacon.git",
+						"revision": "8abf15bef376e0e21f1f9e9c3d74483d5018f3d5"
+					}
+				},
+				"success": true
+			}
+		],
+		"policy": {
+			"publicKey": %s
+		}
+	  }`, effectiveTimeTest, utils.TestPublicKeyJSON, utils.TestPublicKeyJSON), out.String())
+}
+
 func Test_ValidateImageCommandKeyless(t *testing.T) {
 	called := false
 	cmd := validateImageCmd(func(_ context.Context, url string, p policy.Policy, _ bool) (*output.Output, error) {
