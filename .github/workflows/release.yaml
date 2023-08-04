@@ -71,8 +71,9 @@ jobs:
       - name: Download go dependencies
         run: |
           go mod download
-          go mod download -modfile tools/go.mod
-          go mod download -modfile acceptance/go.mod
+          (cd tools && go mod download)
+          (cd acceptance && go mod download)
+          (cd application && go mod download)
 
       - name: Setup Node.js environment
         uses: actions/setup-node@e33196f7422957bea03ed53f6fbb155025ffc7b8 # v3.7.0
