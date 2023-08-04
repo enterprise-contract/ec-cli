@@ -159,7 +159,7 @@ github.com/cucumber/messages-go/v16 v16.0.1 h1:fvkpwsLgnIm0qugftrw2YwNlio+ABe2Iu
 github.com/cucumber/messages-go/v16 v16.0.1/go.mod h1:EJcyR5Mm5ZuDsKJnT2N9KRnBK30BGjtYotDKpwQ0v6g=
 github.com/cyberphone/json-canonicalization v0.0.0-20220623050100-57a0ce2678a7 h1:vU+EP9ZuFUCYE0NYLwTSob+3LNEJATzNfP/DC7SWGWI=
 github.com/cyberphone/json-canonicalization v0.0.0-20220623050100-57a0ce2678a7/go.mod h1:uzvlm1mxhHkdfqitSA92i7Se+S9ksOn3a3qmv/kyOCw=
-github.com/danieljoos/wincred v1.1.2 h1:QLdCxFs1/Yl4zduvBdcHB8goaYk9RARS2SgLLRuAyr0=
+github.com/danieljoos/wincred v1.2.0 h1:ozqKHaLK0W/ii4KVbbvluM91W2H3Sh0BncbUNPS7jLE=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -168,14 +168,14 @@ github.com/digitorus/pkcs7 v0.0.0-20221212123742-001c36b64ec3 h1:rjCXeRWazGsbcBl
 github.com/digitorus/pkcs7 v0.0.0-20221212123742-001c36b64ec3/go.mod h1:SKVExuS+vpu2l9IoOc0RwqE7NYnb0JlcFHFnEJkVDzc=
 github.com/digitorus/timestamp v0.0.0-20221019182153-ef3b63b79b31 h1:3go0tpsBpbs9L/oysk3jDwRprlLRRkpSU7YxKlTfU+o=
 github.com/digitorus/timestamp v0.0.0-20221019182153-ef3b63b79b31/go.mod h1:6V2ND8Yf8TOJ4h+9pmUlx8kXvNLBB2QplToVVZQ3rF0=
-github.com/docker/cli v24.0.0+incompatible h1:0+1VshNwBQzQAx9lOl+OYCTCEAD8fKs/qeXMx3O0wqM=
-github.com/docker/cli v24.0.0+incompatible/go.mod h1:JLrzqnKDaYBop7H2jaqPtU4hHvMKP+vjCwu2uszcLI8=
+github.com/docker/cli v24.0.5+incompatible h1:WeBimjvS0eKdH4Ygx+ihVq1Q++xg36M/rMi4aXAvodc=
+github.com/docker/cli v24.0.5+incompatible/go.mod h1:JLrzqnKDaYBop7H2jaqPtU4hHvMKP+vjCwu2uszcLI8=
 github.com/docker/distribution v2.8.2+incompatible h1:T3de5rq0dB1j30rp0sA2rER+m322EBzniBPB6ZIzuh8=
 github.com/docker/distribution v2.8.2+incompatible/go.mod h1:J2gT2udsDAN96Uj4KfcMRqY0/ypR+oyYUYmja8H+y+w=
 github.com/docker/docker v24.0.5+incompatible h1:WmgcE4fxyI6EEXxBRxsHnZXrO1pQ3smi0k/jho4HLeY=
 github.com/docker/docker v24.0.5+incompatible/go.mod h1:eEKB0N0r5NX/I1kEveEz05bcu8tLC/8azJZsviup8Sk=
-github.com/docker/docker-credential-helpers v0.7.0 h1:xtCHsjxogADNZcdv1pKUHXryefjlVRqWqIhk/uXJp0A=
-github.com/docker/docker-credential-helpers v0.7.0/go.mod h1:rETQfLdHNT3foU5kuNkFR1R1V12OJRRO5lzt2D1b5X0=
+github.com/docker/docker-credential-helpers v0.8.0 h1:YQFtbBQb4VrpoPxhFuzEBPQ9E16qz5SpHLS+uswaCp8=
+github.com/docker/docker-credential-helpers v0.8.0/go.mod h1:UGFXcuoQ5TxPiB54nHOZ32AWRqQdECoh/Mg0AlEYb40=
 github.com/docker/go-connections v0.4.0 h1:El9xVISelRB7BuFusrZozjnkIM5YnzCViNKohAFqRJQ=
 github.com/docker/go-connections v0.4.0/go.mod h1:Gbd7IOopHjR8Iph03tsViu4nIes5XhDvyHbTtUxmeec=
 github.com/docker/go-units v0.5.0 h1:69rxXcBk27SvSaaxTtLh/8llcHD8vYHT7WSdRZ/jvr4=
