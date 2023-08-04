@@ -22,6 +22,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"reflect"
 	"testing"
 	"unsafe"
@@ -865,7 +866,7 @@ func TestSetImageSignatureCheckFromError(t *testing.T) {
 			expectedPassed: false,
 			err:            &noMatchingSignatures,
 			expectedResult: &evaluator.Result{
-				Message: missingSignatureMessage,
+				Message: fmt.Sprintf(missingSignatureMessage, &noMatchingSignatures),
 				Metadata: map[string]interface{}{
 					"code": "builtin.image.signature_check",
 				},
@@ -957,7 +958,7 @@ func TestSetAttestationSignatureCheckFromError(t *testing.T) {
 			expectedPassed: false,
 			err:            &noMatchingAttestations,
 			expectedResult: &evaluator.Result{
-				Message: missingAttestationMessage,
+				Message: fmt.Sprintf(missingAttestationMessage, &noMatchingAttestations),
 				Metadata: map[string]interface{}{
 					"code": "builtin.attestation.signature_check",
 				},

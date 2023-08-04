@@ -601,7 +601,7 @@ Error: success criteria not met
       "source": {},
       "violations": [
         {
-          "msg": "No image signatures found matching the given public key. Verify the correct public key was provided, and a signature was created.",
+          "msg": "No image signatures found matching the given public key. Verify the correct public key was provided, and a signature was created. Error: no matching signatures: invalid or missing digest in claim: sha256:${REGISTRY_acceptance/image:latest_DIGEST}",
           "metadata": {
             "code": "builtin.image.signature_check"
           }
@@ -984,13 +984,13 @@ Error: success criteria not met
       "source": {},
       "violations": [
         {
-          "msg": "No image attestations found matching the given public key. Verify the correct public key was provided, and one or more attestations were created.",
+          "msg": "No image attestations found matching the given public key. Verify the correct public key was provided, and one or more attestations were created. Error: no matching attestations: accepted signatures do not match threshold, Found: 0, Expected 1",
           "metadata": {
             "code": "builtin.attestation.signature_check"
           }
         },
         {
-          "msg": "No image signatures found matching the given public key. Verify the correct public key was provided, and a signature was created.",
+          "msg": "No image signatures found matching the given public key. Verify the correct public key was provided, and a signature was created. Error: no matching signatures: searching log query: \u0026{0 } (*models.Error) is not supported by the TextConsumer, can be resolved by supporting TextUnmarshaler interface",
           "metadata": {
             "code": "builtin.image.signature_check"
           }
@@ -1416,7 +1416,7 @@ Error: success criteria not met
       "source": {},
       "violations": [
         {
-          "msg": "No image attestations found matching the given public key. Verify the correct public key was provided, and one or more attestations were created.",
+          "msg": "No image attestations found matching the given public key. Verify the correct public key was provided, and one or more attestations were created. Error: no matching attestations: no matching subject digest found",
           "metadata": {
             "code": "builtin.attestation.signature_check"
           }
@@ -2402,13 +2402,13 @@ Error: success criteria not met
       "source": {},
       "violations": [
         {
-          "msg": "No image attestations found matching the given public key. Verify the correct public key was provided, and one or more attestations were created.",
+          "msg": "No image attestations found matching the given public key. Verify the correct public key was provided, and one or more attestations were created. Error: no matching attestations: searching log query: \u0026{0 } (*models.Error) is not supported by the TextConsumer, can be resolved by supporting TextUnmarshaler interface",
           "metadata": {
             "code": "builtin.attestation.signature_check"
           }
         },
         {
-          "msg": "No image signatures found matching the given public key. Verify the correct public key was provided, and a signature was created.",
+          "msg": "No image signatures found matching the given public key. Verify the correct public key was provided, and a signature was created. Error: no matching signatures: searching log query: \u0026{0 } (*models.Error) is not supported by the TextConsumer, can be resolved by supporting TextUnmarshaler interface",
           "metadata": {
             "code": "builtin.image.signature_check"
           }
