@@ -33,11 +33,11 @@ import (
 
 const missingSignatureMessage = "No image signatures found matching the given public key. " +
 	"Verify the correct public key was provided, " +
-	"and a signature was created."
+	"and a signature was created. Error: %s"
 
 const missingAttestationMessage = "No image attestations found matching the given public key. " +
 	"Verify the correct public key was provided, " +
-	"and one or more attestations were created."
+	"and one or more attestations were created. Error: %s"
 
 // VerificationStatus represents the status of a verification check.
 type VerificationStatus struct {
@@ -341,9 +341,9 @@ func wrapCosignErrorMessage(err error, checkType string, p policy.Policy) string
 	if p == nil || !p.Keyless() {
 		switch err.(type) {
 		case *cosign.ErrNoMatchingSignatures:
-			return missingSignatureMessage
+			return fmt.Sprintf(missingSignatureMessage, err)
 		case *cosign.ErrNoMatchingAttestations:
-			return missingAttestationMessage
+			return fmt.Sprintf(missingAttestationMessage, err)
 		}
 	}
 	return fmt.Sprintf("Image %s check failed: %s", checkType, err)
