@@ -48,7 +48,9 @@ inputs.
 Policies are written in the Rego language. For more
 information on how to write Rego policies, see the documentation:
 https://www.openpolicyagent.org/docs/latest/policy-language/
+`
 
+const testExample = `
 The policy location defaults to the policy directory in the local folder.
 The location can be overridden with the '--policy' flag, e.g.:
 
@@ -71,13 +73,14 @@ The test command supports the '--output' flag to specify the type, e.g.:
 	$ EC_EXPERIMENTAL=1 ec test -o table -p examples/kubernetes/policy examples/kubernetes/deployment.yaml
 
 Which will return the following output:
-+---------+----------------------------------+--------------------------------+
-| RESULT  |               FILE               |            MESSAGE             |
-+---------+----------------------------------+--------------------------------+
-| success | examples/kubernetes/service.yaml |                                |
-| warning | examples/kubernetes/service.yaml | Found service hello-kubernetes |
-|         |                                  | but services are not allowed   |
-+---------+----------------------------------+--------------------------------+
+
+	+---------+----------------------------------+--------------------------------+
+	| RESULT  |               FILE               |            MESSAGE             |
+	+---------+----------------------------------+--------------------------------+
+	| success | examples/kubernetes/service.yaml |                                |
+	| warning | examples/kubernetes/service.yaml | Found service hello-kubernetes |
+	|         |                                  | but services are not allowed   |
+	+---------+----------------------------------+--------------------------------+
 
 By default, it will use the regular stdout output. For a full list of available output types, see the of the '--output' flag.
 
@@ -99,9 +102,10 @@ const OutputAppstudio = "appstudio"
 // newTestCommand creates a new test command.
 func newTestCommand() *cobra.Command {
 	cmd := cobra.Command{
-		Use:   "test <path> [path [...]]",
-		Short: "Test your configuration files using Open Policy Agent",
-		Long:  testDesc,
+		Use:     "test <path> [path [...]]",
+		Short:   "Test your configuration files using Open Policy Agent",
+		Long:    testDesc,
+		Example: testExample,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			flagNames := []string{
 				"all-namespaces",
