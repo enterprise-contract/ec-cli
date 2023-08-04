@@ -88,6 +88,7 @@ type TestReport struct {
 	Failures  int    `json:"failures"`
 	Warnings  int    `json:"warnings"`
 	Result    string `json:"result"`
+	Note      string `json:"note,omitempty"`
 }
 
 // Possible formats the report can be written as.
@@ -284,7 +285,7 @@ func OutputAppstudioReport(t TestReport) {
 	fmt.Printf("%s\n", out)
 }
 
-func AppstudioReportForError() TestReport {
+func AppstudioReportForError(prefix string, err error) TestReport {
 	return TestReport{
 		Timestamp: fmt.Sprint(time.Now().UTC().Unix()),
 		Namespace: "",
@@ -292,5 +293,6 @@ func AppstudioReportForError() TestReport {
 		Warnings:  0,
 		Failures:  0,
 		Result:    "ERROR",
+		Note:      fmt.Sprintf("Error: %s: %s", prefix, err.Error()),
 	}
 }

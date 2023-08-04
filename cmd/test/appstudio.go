@@ -57,7 +57,7 @@ func appstudioReport(results []output.CheckResult, namespaces []string) applicat
 // Special error handling for appstudio format only
 func appstudioErrorHandler(noFail bool, prefix string, err error) error {
 	// Output some json to stdout
-	applicationsnapshot.OutputAppstudioReport(applicationsnapshot.AppstudioReportForError())
+	applicationsnapshot.OutputAppstudioReport(applicationsnapshot.AppstudioReportForError(prefix, err))
 
 	// Beware we're effectively changing the meaning of the --no-fail flag here.
 	// Rather than being only about policy failures any more, we're extending
