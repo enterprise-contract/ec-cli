@@ -159,18 +159,16 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 
 			  ec validate image --image registry/name:tag --output data=<path>
 
-			Validate a single image with keyless workflow. This is an experimental feature
-			that requires setting the EC_EXPERIMENTAL environment variable to "1".
+			Validate a single image with keyless workflow.
 
-			  EC_EXPERIMENTAL="1" ec validate image --image registry/name:tag --policy my-policy \
+			  ec validate image --image registry/name:tag --policy my-policy \
 			    --certificate-identity 'https://github.com/user/repo/.github/workflows/push.yaml@refs/heads/main' \
 			    --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
 			    --rekor-url 'https://rekor.sigstore.dev'
 
-			Use a regular expression to match certificate attributes. This is an experimental
-			feature that requires setting the EC_EXPERIMENTAL environment variable to "1".
+			Use a regular expression to match certificate attributes.
 
-			  EC_EXPERIMENTAL="1" ec validate image --image registry/name:tag --policy my-policy \
+			  ec validate image --image registry/name:tag --policy my-policy \
 			    --certificate-identity-regexp '^https://github\.com' \
 			    --certificate-oidc-issuer-regexp 'githubusercontent' \
 			    --rekor-url 'https://rekor.sigstore.dev'
@@ -372,16 +370,16 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		"Skip Rekor transparency log checks during validation.")
 
 	cmd.Flags().StringVar(&data.certificateIdentity, "certificate-identity", data.certificateIdentity,
-		"EXPERIMENTAL. URL of the certificate identity for keyless verification")
+		"URL of the certificate identity for keyless verification")
 
 	cmd.Flags().StringVar(&data.certificateIdentityRegExp, "certificate-identity-regexp", data.certificateIdentityRegExp,
-		"EXPERIMENTAL. Regular expression for the URL of the certificate identity for keyless verification")
+		"Regular expression for the URL of the certificate identity for keyless verification")
 
 	cmd.Flags().StringVar(&data.certificateOIDCIssuer, "certificate-oidc-issuer", data.certificateOIDCIssuer,
-		"EXPERIMENTAL. URL of the certificate OIDC issuer for keyless verification")
+		"URL of the certificate OIDC issuer for keyless verification")
 
 	cmd.Flags().StringVar(&data.certificateOIDCIssuerRegExp, "certificate-oidc-issuer-regexp", data.certificateOIDCIssuerRegExp,
-		"EXPERIMENTAL. Regular expresssion for the URL of the certificate OIDC issuer for keyless verification")
+		"Regular expresssion for the URL of the certificate OIDC issuer for keyless verification")
 
 	// Deprecated: images replaced this
 	cmd.Flags().StringVarP(&data.filePath, "file-path", "f", data.filePath,
