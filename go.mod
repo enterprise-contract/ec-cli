@@ -5,6 +5,7 @@ go 1.19
 require (
 	cuelang.org/go v0.5.0
 	github.com/MakeNowJust/heredoc v1.0.0
+	github.com/enterprise-contract/ec-cli/application v0.0.0-00010101000000-000000000000
 	github.com/enterprise-contract/enterprise-contract-controller/api v0.0.0-20230725143429-4731fc7d3b41
 	github.com/evanphx/json-patch v5.6.0+incompatible
 	github.com/gkampitakis/go-snaps v0.4.8
@@ -20,7 +21,6 @@ require (
 	github.com/open-policy-agent/opa v0.55.0
 	github.com/qri-io/jsonpointer v0.1.1
 	github.com/qri-io/jsonschema v0.2.1
-	github.com/redhat-appstudio/application-api v0.0.0-20230717140139-e5cd9a23e669
 	github.com/secure-systems-lab/go-securesystemslib v0.7.0
 	github.com/sigstore/cosign/v2 v2.1.1
 	github.com/sigstore/sigstore v1.7.1
@@ -295,7 +295,6 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/api v0.27.4 // indirect
 	k8s.io/apiextensions-apiserver v0.27.4 // indirect
-	k8s.io/component-base v0.27.4 // indirect
 	k8s.io/utils v0.0.0-20230406110748-d93618cff8a2 // indirect
 	knative.dev/pkg v0.0.0-20230404101938-ee73c9355c9d // indirect
 	muzzammil.xyz/jsonc v1.0.0 // indirect
@@ -306,3 +305,5 @@ require (
 	sigs.k8s.io/release-utils v0.7.4 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 )
+
+replace github.com/enterprise-contract/ec-cli/application => ./application

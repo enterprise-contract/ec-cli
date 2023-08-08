@@ -45,6 +45,10 @@ updates:
     directory: "/acceptance/"
     schedule:
       interval: "daily"
+  - package-ecosystem: "gomod"
+    directory: "/application/"
+    schedule:
+      interval: "daily"
   - package-ecosystem: "npm"
     directory: "/"
     schedule:

@@ -27,11 +27,11 @@ import (
 	"time"
 
 	hd "github.com/MakeNowJust/heredoc"
-	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 
+	app "github.com/enterprise-contract/ec-cli/application/v1alpha1"
 	"github.com/enterprise-contract/ec-cli/internal/applicationsnapshot"
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 	"github.com/enterprise-contract/ec-cli/internal/output"
