@@ -33,10 +33,7 @@ components:
 # The key defined here should work, but if it doesn't then you can get a fresh one from the cluster:
 #  - Visit https://oauth-openshift.apps.stone-prd-rh01.pg1f.p1.openshiftapps.com/oauth/token/request
 #  - Authenticate and get a token, then use the oc login to authenticate
-#  - kubectl get -n tekton-chains secret public-key -o json | jq -r '.data."cosign.pub" | @base64d'
-#
-# The key might also be available here but currently it's out of date:
-#   https://raw.githubusercontent.com/redhat-appstudio/infra-deployments/main/components/pipeline-service/public/tekton-chains-signing-secret.pub
+#  - kubectl get -n openshift-pipelines secret public-key -o json | jq -r '.data."cosign.pub" | @base64d'
 #
 PUBLIC_KEY=${PUBLIC_KEY:-"-----BEGIN PUBLIC KEY-----
 MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEZP/0htjhVt2y0ohjgtIIgICOtQtA

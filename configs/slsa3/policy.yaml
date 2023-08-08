@@ -7,7 +7,7 @@ description: >
   two and three of the SLSA v0.1 specification. The minimal and slsa collections are defined in
   https://enterprisecontract.dev/docs/ec-policies/release_policy.html#_available_rule_collections
 
-publicKey: "k8s://tekton-chains/public-key"
+publicKey: "k8s://openshift-pipelines/public-key"
 
 sources:
   - name: Default

@@ -121,4 +121,4 @@ echo "${IMAGES}" > "${HACK_DIR}/images.txt"
 cat <<< "$(jq --rawfile images <(echo "$IMAGES") '.components |= [$images | capture("(?<containerImage>.*\/(?<name>.*)@.*)";"g")]' "${HACK_DIR}/application_snapshot.json")" > "${HACK_DIR}/application_snapshot.json"
 
 # update cosign public key
-kubectl get secret -n tekton-chains signing-secrets -o jsonpath='{.data.cosign\.pub}'|base64 -d > "${HACK_DIR}/work/cosign.pub"
+kubectl get secret -n openshift-pipelines signing-secrets -o jsonpath='{.data.cosign\.pub}'|base64 -d > "${HACK_DIR}/work/cosign.pub"
