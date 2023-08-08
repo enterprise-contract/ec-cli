@@ -95,7 +95,6 @@ Feature: evaluate enterprise contract
       ]
     }
     """
-    Given the environment variable is set "EC_EXPERIMENTAL=1"
     When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day-keyless --policy acceptance/ec-policy --certificate-oidc-issuer ${CERT_ISSUER} --certificate-identity ${CERT_IDENTITY} --strict --show-successes"
     Then the exit status should be 0
     Then the output should match the snapshot
@@ -142,7 +141,6 @@ Feature: evaluate enterprise contract
       ]
     }
     """
-    Given the environment variable is set "EC_EXPERIMENTAL=1"
     When ec command is run with "validate image --image ${REGISTRY}/acceptance/unexpected-keyless-cert --policy acceptance/ec-policy --certificate-oidc-issuer https://spam.cluster.local --certificate-identity https://kubernetes.io/namespaces/bacon/serviceaccounts/eggs --strict --show-successes"
     Then the exit status should be 1
     Then the output should match the snapshot

@@ -838,7 +838,6 @@ func TestSetImageSignatureCheckFromError(t *testing.T) {
 		expectedPassed bool
 		expectedResult *evaluator.Result
 		policy         func(context.Context) policy.Policy
-		experimental   bool
 	}{
 		{
 			name:           "success",
@@ -890,17 +889,12 @@ func TestSetImageSignatureCheckFromError(t *testing.T) {
 				require.NoError(t, err)
 				return p
 			},
-			experimental: true,
 		},
 	}
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			ctx := context.Background()
-
-			if c.experimental {
-				t.Setenv("EC_EXPERIMENTAL", "1")
-			}
 
 			var p policy.Policy
 			if c.policy != nil {
@@ -930,7 +924,6 @@ func TestSetAttestationSignatureCheckFromError(t *testing.T) {
 		expectedPassed bool
 		expectedResult *evaluator.Result
 		policy         func(context.Context) policy.Policy
-		experimental   bool
 	}{
 		{
 			name:           "success",
@@ -982,17 +975,12 @@ func TestSetAttestationSignatureCheckFromError(t *testing.T) {
 				require.NoError(t, err)
 				return p
 			},
-			experimental: true,
 		},
 	}
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			ctx := context.Background()
-
-			if c.experimental {
-				t.Setenv("EC_EXPERIMENTAL", "1")
-			}
 
 			var p policy.Policy
 			if c.policy != nil {

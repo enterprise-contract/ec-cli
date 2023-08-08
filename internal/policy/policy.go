@@ -37,7 +37,6 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/enterprise-contract/ec-cli/internal/kubernetes"
-	"github.com/enterprise-contract/ec-cli/internal/utils"
 	e "github.com/enterprise-contract/ec-cli/pkg/error"
 )
 
@@ -77,12 +76,11 @@ type policy struct {
 
 // PublicKeyPEM returns the PublicKey in PEM format.
 func (p *policy) PublicKeyPEM() ([]byte, error) {
+	// Public key is not involved when using keyless verification
+	if p.Keyless() {
+		return []byte{}, nil
+	}
 	if p.checkOpts == nil || p.checkOpts.SigVerifier == nil {
-		if keylessEnabled() {
-			// When using the experimental keyless functionality, it is not expected
-			// that SigVerifier will be set.
-			return []byte{}, nil
-		}
 		return nil, errors.New("no check options or sig verifier configured")
 	}
 	pk, err := p.checkOpts.SigVerifier.PublicKey()
@@ -109,7 +107,7 @@ func (p *policy) Identity() cosign.Identity {
 
 // Keyless returns whether or not the Policy uses the keyless workflow for verification.
 func (p *policy) Keyless() bool {
-	return keylessEnabled() && p.PublicKey == ""
+	return p.PublicKey == ""
 }
 
 type Options struct {
@@ -189,10 +187,6 @@ func NewPolicy(ctx context.Context, opts Options) (Policy, error) {
 	}
 
 	if p.PublicKey == "" {
-		if !keylessEnabled() {
-			return nil, errors.New("policy must provide a public key")
-		}
-
 		if opts.Identity != (cosign.Identity{}) {
 			p.identity = opts.Identity
 		} else if p.EnterpriseContractPolicySpec.Identity != nil {
@@ -442,8 +436,4 @@ func validateIdentity(identity cosign.Identity) error {
 	}
 
 	return errs
-}
-
-func keylessEnabled() bool {
-	return utils.Experimental()
 }

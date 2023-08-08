@@ -464,8 +464,6 @@ func Test_ValidateImageCommandKeyless(t *testing.T) {
 		"my-certificate-oidc-issuer-regexp",
 	})
 
-	t.Setenv("EC_EXPERIMENTAL", "1")
-
 	utils.SetTestRekorPublicKey(t)
 	utils.SetTestFulcioRoots(t)
 	utils.SetTestCTLogPublicKey(t)

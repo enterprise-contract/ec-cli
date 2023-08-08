@@ -177,10 +177,6 @@ func TestNewPolicyFailures(t *testing.T) {
 		k8sError   bool
 	}{
 		{
-			name:       "public key is required",
-			errorCause: "policy must provide a public key",
-		},
-		{
 			name:       "invalid inline JSON",
 			policyRef:  `{"invalid": "json""}`,
 			errorCause: "unable to parse",
@@ -229,7 +225,6 @@ func TestCheckOpts(t *testing.T) {
 		ignoreRekor     bool
 		publicKey       string
 		remotePublicKey string
-		setExperimental bool
 		identity        cosign.Identity
 		expectKeyless   bool
 		err             string
@@ -259,97 +254,83 @@ func TestCheckOpts(t *testing.T) {
 			publicKey:   utils.TestPublicKey,
 		},
 		{
-			name: "missing public key",
-			err:  "policy must provide a public key",
-		},
-		{
-			name:            "keyless",
-			rekorUrl:        utils.TestRekorURL,
-			setExperimental: true,
-			expectKeyless:   true,
+			name:          "keyless",
+			rekorUrl:      utils.TestRekorURL,
+			expectKeyless: true,
 			identity: cosign.Identity{
 				Issuer:  "my-issuer",
 				Subject: "my-subject",
 			},
 		},
 		{
-			name:            "keyless without rekor",
-			ignoreRekor:     true,
-			setExperimental: true,
-			expectKeyless:   true,
+			name:          "keyless without rekor",
+			ignoreRekor:   true,
+			expectKeyless: true,
 			identity: cosign.Identity{
 				Issuer:  "my-issuer",
 				Subject: "my-subject",
 			},
 		},
 		{
-			name:            "keyless with regexp issuer",
-			rekorUrl:        utils.TestRekorURL,
-			setExperimental: true,
-			expectKeyless:   true,
+			name:          "keyless with regexp issuer",
+			rekorUrl:      utils.TestRekorURL,
+			expectKeyless: true,
 			identity: cosign.Identity{
 				IssuerRegExp: "my-issuer-regexp",
 				Subject:      "my-subject",
 			},
 		},
 		{
-			name:            "keyless with regexp subject",
-			rekorUrl:        utils.TestRekorURL,
-			setExperimental: true,
-			expectKeyless:   true,
+			name:          "keyless with regexp subject",
+			rekorUrl:      utils.TestRekorURL,
+			expectKeyless: true,
 			identity: cosign.Identity{
 				Issuer:        "my-issuer",
 				SubjectRegExp: "my-subject-regexp",
 			},
 		},
 		{
-			name:            "keyless with regexp issuer and subject",
-			rekorUrl:        utils.TestRekorURL,
-			setExperimental: true,
-			expectKeyless:   true,
+			name:          "keyless with regexp issuer and subject",
+			rekorUrl:      utils.TestRekorURL,
+			expectKeyless: true,
 			identity: cosign.Identity{
 				IssuerRegExp:  "my-issuer-regexp",
 				SubjectRegExp: "my-subject-regexp",
 			},
 		},
 		{
-			name:            "prioritize public key worklow",
-			rekorUrl:        utils.TestRekorURL,
-			publicKey:       utils.TestPublicKey,
-			setExperimental: true,
-			expectKeyless:   false,
+			name:          "prioritize public key worklow",
+			rekorUrl:      utils.TestRekorURL,
+			publicKey:     utils.TestPublicKey,
+			expectKeyless: false,
 			identity: cosign.Identity{
 				Issuer:  "my-issuer",
 				Subject: "my-subject",
 			},
 		},
 		{
-			name:            "keyless missing issuer",
-			setExperimental: true,
-			err:             "certificate OIDC issuer must be provided for keyless workflow",
+			name: "keyless missing issuer",
+			err:  "certificate OIDC issuer must be provided for keyless workflow",
 			identity: cosign.Identity{
 				Subject: "my-subject",
 			},
 		},
 		{
-			name:            "keyless missing subject",
-			setExperimental: true,
-			err:             "certificate identity must be provided for keyless workflow",
+			name: "keyless missing subject",
+			err:  "certificate identity must be provided for keyless workflow",
 			identity: cosign.Identity{
 				Issuer: "my-issuer",
 			},
 		},
 		{
-			name:            "keyless missing issuer in ECP",
-			setExperimental: true,
-			err:             "certificate OIDC issuer must be provided for keyless workflow",
-			policyRef:       `{"identity": {"subject": "my-subject"}}`,
+			name:      "keyless missing issuer in ECP",
+			err:       "certificate OIDC issuer must be provided for keyless workflow",
+			policyRef: `{"identity": {"subject": "my-subject"}}`,
 		},
 		{
-			name:            "keyless missing subject in ECP",
-			setExperimental: true,
-			err:             "certificate identity must be provided for keyless workflow",
-			policyRef:       `{"identity": {"issuer": "my-issuer"}}`,
+			name:      "keyless missing subject in ECP",
+			err:       "certificate identity must be provided for keyless workflow",
+			policyRef: `{"identity": {"issuer": "my-issuer"}}`,
 		},
 	}
 
@@ -360,10 +341,6 @@ func TestCheckOpts(t *testing.T) {
 			utils.SetTestRekorPublicKey(t)
 			utils.SetTestFulcioRoots(t)
 			utils.SetTestCTLogPublicKey(t)
-
-			if c.setExperimental {
-				t.Setenv("EC_EXPERIMENTAL", "1")
-			}
 
 			p, err := NewPolicy(ctx, Options{
 				PolicyRef:     c.policyRef,
@@ -421,7 +398,6 @@ func TestPublicKeyPEM(t *testing.T) {
 	cases := []struct {
 		name              string
 		remotePublicKey   string
-		setExperimental   bool
 		newPolicy         func(context.Context) (Policy, error)
 		expectedPublicKey string
 		err               string
@@ -436,13 +412,12 @@ func TestPublicKeyPEM(t *testing.T) {
 		{
 			name: "checkOpts is nil",
 			newPolicy: func(ctx context.Context) (Policy, error) {
-				return NewInertPolicy(ctx, "")
+				return NewInertPolicy(ctx, fmt.Sprintf(`{"publicKey": "%s"}`, utils.TestPublicKey))
 			},
 			err: "no check options or sig verifier configured",
 		},
 		{
-			name:            "keyless",
-			setExperimental: true,
+			name: "keyless",
 			newPolicy: func(ctx context.Context) (Policy, error) {
 				return NewPolicy(ctx, Options{
 					EffectiveTime: Now,
@@ -460,16 +435,11 @@ func TestPublicKeyPEM(t *testing.T) {
 			utils.SetTestFulcioRoots(t)
 			utils.SetTestCTLogPublicKey(t)
 
-			if c.setExperimental {
-				t.Setenv("EC_EXPERIMENTAL", "1")
-			}
-
 			p, err := c.newPolicy(ctx)
 			assert.NoError(t, err)
 
 			publicKeyPEM, err := p.PublicKeyPEM()
 			if c.err != "" {
-				assert.Empty(t, p)
 				assert.ErrorContains(t, err, c.err)
 				return
 			}
@@ -541,8 +511,6 @@ func TestIdentity(t *testing.T) {
 			utils.SetTestRekorPublicKey(t)
 			utils.SetTestFulcioRoots(t)
 			utils.SetTestCTLogPublicKey(t)
-
-			t.Setenv("EC_EXPERIMENTAL", "1")
 
 			p, err := c.newPolicy(ctx)
 			assert.NoError(t, err)
