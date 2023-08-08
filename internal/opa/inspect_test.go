@@ -18,10 +18,15 @@ package opa
 
 import (
 	"encoding/json"
+	"os"
+	"path/filepath"
 	"testing"
 
 	hd "github.com/MakeNowJust/heredoc"
+	"github.com/gkampitakis/go-snaps/snaps"
+	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_InspectMultiple(t *testing.T) {
@@ -76,5 +81,70 @@ func Test_InspectMultiple(t *testing.T) {
 			panic(err)
 		}
 		assert.JSONEq(t, tt.expected, string(jsonResults), tt.expected, tt.name)
+	}
+}
+
+func TestInspectDir(t *testing.T) {
+	files := map[string]string{
+		"spam.rego": hd.Doc(`
+			package spam
+
+			# METADATA
+			# title: Enough spam
+			deny {
+				input.spam_count > 42
+			}
+		`),
+		"spam_test.rego":   "ignored",
+		"spammy_TEST.rego": "ignored",
+		"spam.text":        "ignored",
+		"more/bacon.REGO": hd.Doc(`
+			package more.bacon
+
+			# METADATA
+			# title: Enough bacon
+			deny {
+				input.bacon_count > 42
+			}
+		`),
+	}
+
+	cases := []struct {
+		name    string
+		symlink bool
+	}{
+		{name: "simple"},
+		{name: "symlink", symlink: true},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			// Must use OsFs so we can test symlinks are working as expected
+			fs := afero.NewOsFs()
+			root := t.TempDir()
+
+			policiesDir := filepath.Join(root, "policies")
+
+			// Setup test data
+			for path, value := range files {
+				fullpath := filepath.Join(policiesDir, path)
+				dir := filepath.Dir(fullpath)
+				require.NoError(t, fs.MkdirAll(dir, 0755))
+				require.NoError(t, afero.WriteFile(fs, fullpath, []byte(value), 0660))
+			}
+
+			if c.symlink {
+				symlink := filepath.Join(root, "symlink")
+				require.NoError(t, os.Symlink(policiesDir, symlink))
+				policiesDir = symlink
+			}
+
+			annotations, err := InspectDir(fs, policiesDir)
+			require.NoError(t, err)
+
+			jsonAnnotations, err := json.MarshalIndent(annotations, "", "  ")
+			require.NoError(t, err)
+			snaps.MatchSnapshot(t, string(jsonAnnotations))
+		})
 	}
 }

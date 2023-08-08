@@ -123,7 +123,10 @@ func InspectDir(afs afero.Fs, dir string) ([]*ast.AnnotationsRef, error) {
 	regoContents := []string{}
 
 	// Find all the rego files
-	err := afero.Walk(afs, dir, func(path string, d fs.FileInfo, readErr error) error {
+	// IMPORTANT: Resist the temptation to use afero.WalkDir here. If dir is a symlink, afero.Walk
+	// will not follow it. This is the case if dir was created by go-getter from a local file path.
+	// See afero issue https://github.com/spf13/afero/issues/284.
+	err := fs.WalkDir(wrapperFs{afs: afs}, dir, func(path string, d fs.DirEntry, readErr error) error {
 		if readErr != nil {
 			return readErr
 		}
@@ -132,12 +135,14 @@ func InspectDir(afs afero.Fs, dir string) ([]*ast.AnnotationsRef, error) {
 			return nil
 		}
 
-		if strings.ToLower(filepath.Ext(path)) != ".rego" {
+		pathLower := strings.ToLower(path)
+
+		if filepath.Ext(pathLower) != ".rego" {
 			return nil
 		}
 
 		// Prune out the tests early on
-		if strings.HasSuffix(filepath.Base(path), "_test.rego") {
+		if strings.HasSuffix(filepath.Base(pathLower), "_test.rego") {
 			return nil
 		}
 
@@ -167,4 +172,18 @@ func InspectDir(afs afero.Fs, dir string) ([]*ast.AnnotationsRef, error) {
 	}
 
 	return result, nil
+}
+
+// wrapperFs turns afero.Fs into fs.FS so it can be used in certain functions
+// provided by the fs package, e.g fs.WalkDir.
+type wrapperFs struct {
+	afs afero.Fs
+}
+
+// Open exists to make the aferoFsWrapper conform to the fs.FS interface. It is necessary
+// to do this in order to change the first return type from afero.File to fs.File. Yes,
+// even though afero.File conforms to the fs.File interface, go is not smart enough to
+// detect this indirection.
+func (w wrapperFs) Open(name string) (fs.File, error) {
+	return w.afs.Open(name)
 }
