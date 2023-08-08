@@ -49,6 +49,10 @@ updates:
     directory: "/application/"
     schedule:
       interval: "daily"
+  - package-ecosystem: "gomod"
+    directory: "/application/generator"
+    schedule:
+      interval: "daily"
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
