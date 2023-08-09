@@ -36,9 +36,10 @@ import (
 // `--tls-verify=false` here.
 
 func (k *kindCluster) buildCliImage(ctx context.Context) error {
-	cmd := exec.CommandContext(ctx, "make", "push-image", fmt.Sprintf("IMAGE_REPO=localhost:%d/ec-cli", k.registryPort), "PODMAN_OPTS=--tls-verify=false") /* #nosec */
+	cmd := exec.CommandContext(ctx, "make", "push-image", fmt.Sprintf("IMAGE_REPO=localhost:%d/ec-cli", k.registryPort), "PODMAN_OPTS=--tls-verify=false", "-e", "NO_GENERATE=1") /* #nosec */
 
 	if out, err := cmd.CombinedOutput(); err != nil {
+		fmt.Printf("[ERROR] Unable to build and push the CLI image, %q returned an error: %v\nCommand output:\n", cmd, err)
 		fmt.Print(string(out))
 		return err
 	}
@@ -129,8 +130,9 @@ func (k *kindCluster) buildTaskBundleImage(ctx context.Context) error {
 
 	for version, tasks := range taskBundles {
 		tasksPath := strings.Join(tasks, ",")
-		cmd := exec.CommandContext(ctx, "make", "task-bundle", fmt.Sprintf("TASK_REPO=localhost:%d/ec-task-bundle", k.registryPort), fmt.Sprintf("TASK=%s", tasksPath), fmt.Sprintf("TASK_TAG=%s", version)) /* #nosec */
+		cmd := exec.CommandContext(ctx, "make", "task-bundle", fmt.Sprintf("TASK_REPO=localhost:%d/ec-task-bundle", k.registryPort), fmt.Sprintf("TASK=%s", tasksPath), fmt.Sprintf("TASK_TAG=%s", version), "-e", "NO_GENERATE=1") /* #nosec */
 		if out, err := cmd.CombinedOutput(); err != nil {
+			fmt.Printf("[ERROR] Unable to build and push the Task bundle image, %q returned an error: %v\nCommand output:\n", cmd, err)
 			fmt.Print(string(out))
 			return err
 		}

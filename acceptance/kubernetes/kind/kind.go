@@ -21,6 +21,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/rand"
+	"errors"
 	"fmt"
 	"io"
 	"math"
@@ -139,7 +140,13 @@ func Start(givenCtx context.Context) (ctx context.Context, kCluster types.Cluste
 			return
 		}
 
-		id, err := rand.Int(rand.Reader, big.NewInt(math.MaxUint32))
+		var id *big.Int
+		id, err = rand.Int(rand.Reader, big.NewInt(math.MaxUint32))
+		if err != nil {
+			logger.Errorf("Unable to generate random cluster id: %v", err)
+			return
+		}
+
 		kCluster := kindCluster{
 			name:     fmt.Sprintf("acceptance-%d", id.Uint64()),
 			provider: k.NewProvider(k.ProviderWithLogger(logger)),
@@ -254,7 +261,15 @@ func Start(givenCtx context.Context) (ctx context.Context, kCluster types.Cluste
 	})
 
 	if err != nil {
+		// the Once block above set the error
 		logger.Error("Unable to start the cluster")
+		return
+	}
+
+	if globalCluster == nil {
+		// some other, not this one, goroutine's Once resulted in an error and
+		// didn't set the globalCluster
+		return ctx, nil, errors.New("No cluster available")
 	}
 
 	ctx, err = registry.Register(ctx, fmt.Sprintf("localhost:%d", globalCluster.registryPort))
