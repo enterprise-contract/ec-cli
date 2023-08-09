@@ -3,7 +3,7 @@ module github.com/enterprise-contract/ec-cli
 go 1.19
 
 require (
-	cuelang.org/go v0.5.0
+	cuelang.org/go v0.6.0
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/enterprise-contract/ec-cli/application v0.0.0-00010101000000-000000000000
 	github.com/enterprise-contract/enterprise-contract-controller/api v0.0.0-20230725143429-4731fc7d3b41
@@ -108,7 +108,7 @@ require (
 	github.com/chrismellard/docker-credential-acr-env v0.0.0-20221002210726-e883f69e0206 // indirect
 	github.com/clbanning/mxj/v2 v2.5.6 // indirect
 	github.com/cloudflare/circl v1.3.3 // indirect
-	github.com/cockroachdb/apd/v2 v2.0.2 // indirect
+	github.com/cockroachdb/apd/v3 v3.2.0 // indirect
 	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be // indirect
 	github.com/containerd/stargz-snapshotter/estargz v0.14.3 // indirect
 	github.com/containerd/typeurl v1.0.2 // indirect
