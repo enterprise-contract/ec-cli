@@ -1,0 +1,118 @@
+
+[TestInspectDir/simple - 1]
+[
+  {
+    "annotations": {
+      "scope": "rule",
+      "title": "Enough bacon"
+    },
+    "location": {
+      "file": "more/bacon.REGO",
+      "row": 5,
+      "col": 1
+    },
+    "path": [
+      {
+        "type": "var",
+        "value": "data"
+      },
+      {
+        "type": "string",
+        "value": "more"
+      },
+      {
+        "type": "string",
+        "value": "bacon"
+      },
+      {
+        "type": "string",
+        "value": "deny"
+      }
+    ]
+  },
+  {
+    "annotations": {
+      "scope": "rule",
+      "title": "Enough spam"
+    },
+    "location": {
+      "file": "spam.rego",
+      "row": 5,
+      "col": 1
+    },
+    "path": [
+      {
+        "type": "var",
+        "value": "data"
+      },
+      {
+        "type": "string",
+        "value": "spam"
+      },
+      {
+        "type": "string",
+        "value": "deny"
+      }
+    ]
+  }
+]
+---
+
+[TestInspectDir/symlink - 1]
+[
+  {
+    "annotations": {
+      "scope": "rule",
+      "title": "Enough bacon"
+    },
+    "location": {
+      "file": "more/bacon.REGO",
+      "row": 5,
+      "col": 1
+    },
+    "path": [
+      {
+        "type": "var",
+        "value": "data"
+      },
+      {
+        "type": "string",
+        "value": "more"
+      },
+      {
+        "type": "string",
+        "value": "bacon"
+      },
+      {
+        "type": "string",
+        "value": "deny"
+      }
+    ]
+  },
+  {
+    "annotations": {
+      "scope": "rule",
+      "title": "Enough spam"
+    },
+    "location": {
+      "file": "spam.rego",
+      "row": 5,
+      "col": 1
+    },
+    "path": [
+      {
+        "type": "var",
+        "value": "data"
+      },
+      {
+        "type": "string",
+        "value": "spam"
+      },
+      {
+        "type": "string",
+        "value": "deny"
+      }
+    ]
+  }
+]
+---
