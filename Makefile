@@ -65,7 +65,7 @@ BUILD_IMG_ARCH:=$(shell podman version -f {{.Server.OsArch}} | awk -F/ '{print $
 build-for-test: dist/ec_$(BUILD_IMG_ARCH)
 
 .PHONY: reference-docs
-reference-docs: ## Generate reference documentation input YAML files
+reference-docs: generate ## Generate reference documentation input YAML files
 	@mkdir -p dist
 	@rm -rf dist/cli-reference
 # Make sure docs for experimental commands are generated.
