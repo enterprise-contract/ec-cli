@@ -6,7 +6,7 @@ require (
 	github.com/daixiang0/gci v0.11.0
 	github.com/golangci/golangci-lint v1.54.0
 	github.com/google/addlicense v1.1.1
-	github.com/open-policy-agent/conftest v0.44.1
+	github.com/open-policy-agent/conftest v0.44.2-0.20230809150322-851e66ac9127
 	github.com/tektoncd/chains v0.17.0
 	github.com/tektoncd/cli v0.31.2
 	github.com/wadey/gocovmerge v0.0.0-20160331181800-b5bfa59ec0ad
@@ -133,7 +133,7 @@ require (
 	github.com/cloudflare/circl v1.3.3 // indirect
 	github.com/cockroachdb/apd/v2 v2.0.2 // indirect
 	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be // indirect
-	github.com/containerd/containerd v1.7.0 // indirect
+	github.com/containerd/containerd v1.7.3 // indirect
 	github.com/containerd/stargz-snapshotter/estargz v0.14.3 // indirect
 	github.com/containerd/typeurl v1.0.2 // indirect
 	github.com/coreos/go-oidc/v3 v3.6.0 // indirect
@@ -168,7 +168,7 @@ require (
 	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/firefart/nonamedreturns v1.0.4 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
-	github.com/fvbommel/sortorder v1.0.1 // indirect
+	github.com/fvbommel/sortorder v1.1.0 // indirect
 	github.com/fzipp/gocyclo v0.6.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
 	github.com/gdamore/encoding v1.0.0 // indirect
@@ -225,7 +225,6 @@ require (
 	github.com/google/btree v1.1.2 // indirect
 	github.com/google/cel-go v0.13.0 // indirect
 	github.com/google/certificate-transparency-go v1.1.6 // indirect
-	github.com/google/gnostic v0.6.9 // indirect
 	github.com/google/gnostic-models v0.6.8 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/go-containerregistry v0.15.2 // indirect
@@ -355,9 +354,9 @@ require (
 	github.com/nunnatsa/ginkgolinter v0.13.3 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
-	github.com/open-policy-agent/opa v0.54.1-0.20230630073603-1fc95f43f8b1 // indirect
+	github.com/open-policy-agent/opa v0.55.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
-	github.com/opencontainers/image-spec v1.1.0-rc3 // indirect
+	github.com/opencontainers/image-spec v1.1.0-rc4 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/otiai10/copy v1.6.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
@@ -369,7 +368,7 @@ require (
 	github.com/polyfloyd/go-errorlint v1.4.3 // indirect
 	github.com/prometheus/client_golang v1.16.0 // indirect
 	github.com/prometheus/client_model v0.4.0 // indirect
-	github.com/prometheus/common v0.42.0 // indirect
+	github.com/prometheus/common v0.44.0 // indirect
 	github.com/prometheus/procfs v0.10.1 // indirect
 	github.com/prometheus/statsd_exporter v0.21.0 // indirect
 	github.com/quasilyte/go-ruleguard v0.3.19 // indirect
@@ -507,13 +506,13 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	honnef.co/go/tools v0.4.3 // indirect
-	k8s.io/api v0.28.0-rc.0 // indirect
+	k8s.io/api v0.29.0-alpha.0 // indirect
 	k8s.io/apiextensions-apiserver v0.27.2 // indirect
-	k8s.io/apimachinery v0.28.0-rc.0 // indirect
+	k8s.io/apimachinery v0.29.0-alpha.0 // indirect
 	k8s.io/apiserver v0.27.2 // indirect
-	k8s.io/cli-runtime v0.28.0-rc.0 // indirect
-	k8s.io/client-go v0.28.0-rc.0 // indirect
-	k8s.io/component-base v0.27.2 // indirect
+	k8s.io/cli-runtime v0.29.0-alpha.0 // indirect
+	k8s.io/client-go v0.29.0-alpha.0 // indirect
+	k8s.io/component-base v0.29.0-alpha.0 // indirect
 	k8s.io/klog/v2 v2.100.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20230717233707-2695361300d9 // indirect
 	k8s.io/kubectl v0.27.2 // indirect
@@ -525,8 +524,8 @@ require (
 	mvdan.cc/lint v0.0.0-20170908181259-adc824a0674b // indirect
 	mvdan.cc/unparam v0.0.0-20221223090309-7455f1af531d // indirect
 	olympos.io/encoding/edn v0.0.0-20201019073823-d3554ca0b0a3 // indirect
-	oras.land/oras-go v1.2.3 // indirect
-	oras.land/oras-go/v2 v2.2.0 // indirect
+	oras.land/oras-go v1.2.4-0.20230801060855-932dd06d38af // indirect
+	oras.land/oras-go/v2 v2.2.1 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/kustomize/api v0.14.0 // indirect
 	sigs.k8s.io/kustomize/cmd/config v0.11.3 // indirect
@@ -534,4 +533,9 @@ require (
 	sigs.k8s.io/release-utils v0.7.4 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
+)
+
+replace (
+	k8s.io/kubectl => k8s.io/kubectl v0.29.0-alpha.0 // pull in the gnostic to gnostic-model refactor (https://github.com/kubernetes/kubectl/commit/90ca180ce06151e5bd8ff1e73756ed3d5e03f069)
+	oras.land/oras-go => oras.land/oras-go v1.2.4-0.20230801060855-932dd06d38af // we need a newer version of oras-go v1 to be compatible with github.com/docker/docker (https://github.com/oras-project/oras-go/commit/d12e82ea8d0eb5fc1efa6d0fe32fc414cab2ca94)
 )
