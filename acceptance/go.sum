@@ -787,8 +787,8 @@ github.com/vbatts/tar-split v0.11.3 h1:hLFqsOLQ1SsppQNTMpkpPXClLDfC2A3Zgy9OUU+RV
 github.com/vbatts/tar-split v0.11.3/go.mod h1:9QlHN18E+fEH7RdG+QAJJcuya3rqT7eXSTY7wGrAokY=
 github.com/vmihailenco/msgpack/v5 v5.3.5 h1:5gO0H1iULLWGhs2H5tbAHIZTV8/cYafcFOr9znI5mJU=
 github.com/vmihailenco/tagparser/v2 v2.0.0 h1:y09buUbR+b5aycVFQs/g70pqKVZNBmxwAhO7/IwNM9g=
-github.com/walkerus/go-wiremock v1.6.0 h1:IqHHWMSs7tQTQgVdtEaL0Sras4a9gOomEIOnkfXO1Os=
-github.com/walkerus/go-wiremock v1.6.0/go.mod h1:gMzQpReT5mG5T/PaW8pSFiPhazrcHb1mnf6JHdKwY5w=
+github.com/walkerus/go-wiremock v1.7.0 h1:5J83+bKxR6Pam4+S6VwXPHJk3MC2l3jTgleYpRFsORQ=
+github.com/walkerus/go-wiremock v1.7.0/go.mod h1:gMzQpReT5mG5T/PaW8pSFiPhazrcHb1mnf6JHdKwY5w=
 github.com/xanzy/ssh-agent v0.3.3 h1:+/15pJfg/RsTxqYcX6fHqOXZwwMP+2VyYWJeWM2qQFM=
 github.com/xanzy/ssh-agent v0.3.3/go.mod h1:6dzNDKs0J9rVPHPhaGCukekBHKqfl+L3KghI1Bc68Uw=
 github.com/xdg-go/pbkdf2 v1.0.0/go.mod h1:jrpuAogTd400dnrH08LKmI/xc1MbPOebTwRqcT5RDeI=

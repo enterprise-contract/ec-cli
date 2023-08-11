@@ -54,7 +54,7 @@ func (s stubCluster) CreateNamespace(ctx context.Context) (context.Context, erro
 func (s stubCluster) CreateNamedPolicy(ctx context.Context, name string, specification string) error {
 	ns := "acceptance" // TODO: namespace support
 	return wiremock.StubFor(ctx, wiremock.Get(wiremock.URLPathEqualTo(fmt.Sprintf("/apis/appstudio.redhat.com/v1alpha1/namespaces/%s/enterprisecontractpolicies/%s", ns, name))).
-		WillReturn(fmt.Sprintf(`{
+		WillReturnResponse(wiremock.NewResponse().WithBody(fmt.Sprintf(`{
 				"apiVersion": "appstudio.redhat.com/v1alpha1",
 				"kind": "EnterpriseContractPolicy",
 				"metadata": {
@@ -75,10 +75,7 @@ func (s stubCluster) CreateNamedPolicy(ctx context.Context, name string, specifi
 			}
 
 			return ""
-		})),
-			map[string]string{"Content-Type": "application/json"},
-			200,
-		))
+		}))).WithHeaders(map[string]string{"Content-Type": "application/json"}).WithStatus(200)))
 }
 
 // CreateNamedSnapshot stubs a response from the apiserver to fetch a Snapshot
@@ -86,7 +83,7 @@ func (s stubCluster) CreateNamedPolicy(ctx context.Context, name string, specifi
 func (s stubCluster) CreateNamedSnapshot(ctx context.Context, name string, specification string) error {
 	ns := "acceptance"
 	return wiremock.StubFor(ctx, wiremock.Get(wiremock.URLPathEqualTo(fmt.Sprintf("/apis/appstudio.redhat.com/v1alpha1/namespaces/%s/snapshots/%s", ns, name))).
-		WillReturn(fmt.Sprintf(`{
+		WillReturnResponse(wiremock.NewResponse().WithBody(fmt.Sprintf(`{
 				"apiVersion": "appstudio.redhat.com/v1alpha1",
 				"kind": "Snapshot",
 				"metadata": {
@@ -104,10 +101,7 @@ func (s stubCluster) CreateNamedSnapshot(ctx context.Context, name string, speci
 			}
 
 			return ""
-		})),
-			map[string]string{"Content-Type": "application/json"},
-			200,
-		))
+		}))).WithHeaders(map[string]string{"Content-Type": "application/json"}).WithStatus(200)))
 }
 
 func (s stubCluster) CreatePolicy(_ context.Context, _ string) error {

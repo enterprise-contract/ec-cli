@@ -54,6 +54,7 @@ var Get = wiremock.Get
 var Post = wiremock.Post
 var URLPathEqualTo = wiremock.URLPathEqualTo
 var MatchingJsonPath = wiremock.MatchingJsonPath
+var NewResponse = wiremock.NewResponse
 
 type client struct {
 	*wiremock.Client
@@ -143,9 +144,9 @@ func (u unmatchedRequest) String() string {
 
 	str += fmt.Sprintf(`Stub it by adding:
 wiremock.StubFor(ctx, wiremock.%s(wiremock.URLPathEqualTo("%s")).
-	WillReturn("<body>",
+	WillReturnResponse(wiremock.NewResponse().WithBody("<body>").WithHeaders(
 		map[string]string{"Content-Type": "%s"},
-		200,
+	).WithStatus(200)
 	))`, strings.ToTitle(strings.ToLower(u.Method)), u.URL, contentTypeFrom(u))
 
 	return str
