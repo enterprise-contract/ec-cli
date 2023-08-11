@@ -85,10 +85,12 @@ func stubRekordRunning(ctx context.Context) (context.Context, error) {
 	}
 
 	if err = wiremock.StubFor(ctx, wiremock.Get(wiremock.URLPathEqualTo("/api/v1/log/publicKey")).
-		WillReturn(string(state.KeyPair.PublicBytes),
-			map[string]string{"Content-Type": "application/x-pem-file"},
-			200,
-		)); err != nil {
+		WillReturnResponse(
+			wiremock.NewResponse().WithBody(
+				string(state.KeyPair.PublicBytes),
+			).WithHeaders(
+				map[string]string{"Content-Type": "application/x-pem-file"},
+			).WithStatus(200))); err != nil {
 		return ctx, err
 	}
 
@@ -281,10 +283,9 @@ func stubRekorEntryFor(ctx context.Context, data []byte, fn jsonPathExtractor) e
 	// return this entry for any lookup in Rekor
 	return wiremock.StubFor(ctx, wiremock.Post(wiremock.URLPathEqualTo("/api/v1/log/entries/retrieve")).
 		WithBodyPattern(wiremock.MatchingJsonPath(jsonPath)).
-		WillReturn(string(body),
+		WillReturnResponse(wiremock.NewResponse().WithBody(string(body)).WithHeaders(
 			map[string]string{"Content-Type": "application/json"},
-			200,
-		))
+		).WithStatus(200)))
 }
 
 type jsonPathExtractor func([]byte) (string, error)
