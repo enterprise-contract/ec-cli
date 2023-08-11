@@ -110,3 +110,28 @@ jobs:
         with:
           files: ./coverage-acceptance.out
           flags: acceptance
+
+  Tools:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
+
+      - name: Restore Cache
+        uses: actions/cache/restore@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8 # v3.3.1
+        with:
+          key: main
+          path: '**'
+
+      - name: Setup Go environment
+        uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      - name: Development tools can be run
+        run: |
+          go run -modfile tools/go.mod github.com/tektoncd/cli/cmd/tkn version
+          go run -modfile tools/go.mod sigs.k8s.io/kustomize/kustomize/v5 version
+          go run -modfile tools/go.mod helm.sh/helm/v3/cmd/helm version
+          go run -modfile tools/go.mod github.com/open-policy-agent/conftest --version
