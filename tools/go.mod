@@ -10,7 +10,7 @@ require (
 	github.com/tektoncd/chains v0.17.0
 	github.com/tektoncd/cli v0.31.2
 	github.com/wadey/gocovmerge v0.0.0-20160331181800-b5bfa59ec0ad
-	helm.sh/helm/v3 v3.12.2
+	helm.sh/helm/v3 v3.12.3
 	sigs.k8s.io/kustomize/kustomize/v5 v5.1.1
 )
 
@@ -507,15 +507,15 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	honnef.co/go/tools v0.4.3 // indirect
 	k8s.io/api v0.29.0-alpha.0 // indirect
-	k8s.io/apiextensions-apiserver v0.27.2 // indirect
+	k8s.io/apiextensions-apiserver v0.27.3 // indirect
 	k8s.io/apimachinery v0.29.0-alpha.0 // indirect
-	k8s.io/apiserver v0.27.2 // indirect
+	k8s.io/apiserver v0.27.3 // indirect
 	k8s.io/cli-runtime v0.29.0-alpha.0 // indirect
 	k8s.io/client-go v0.29.0-alpha.0 // indirect
 	k8s.io/component-base v0.29.0-alpha.0 // indirect
 	k8s.io/klog/v2 v2.100.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20230717233707-2695361300d9 // indirect
-	k8s.io/kubectl v0.27.2 // indirect
+	k8s.io/kubectl v0.27.3 // indirect
 	k8s.io/utils v0.0.0-20230505201702-9f6742963106 // indirect
 	knative.dev/pkg v0.0.0-20230518105712-dfb4bf04635d // indirect
 	muzzammil.xyz/jsonc v1.0.0 // indirect
