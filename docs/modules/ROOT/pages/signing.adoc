@@ -4,6 +4,17 @@ The Enterprise Contract relies on https://www.sigstore.dev/[Sigstore] signatures
 authenticity of content being verified. Currently, this is integrated with the `ec validate image`
 command.
 
+== Image Verification
+
+When the Enterprise Contract validates an image, there are certain
+https://enterprisecontract.dev/docs/ec-policies/release_policy.html#builtin_attestation_package[builtin]
+policy rules that are always applied and cannot be skipped. Most of these rely on
+https://github.com/sigstore/cosign[cosign] to fetch and verify image signatures and attestations.
+These meta artifacts are associated to the underlying container image by digest. This has two
+important properties. First, the image and its meta artifacts can be copied to another repository or
+registry without affecting validation. Second, the meta artifact for one image cannot be used to
+fulfill the validation of another image.
+
 == Sigstore Levels
 
 There are different levels of Sigstore adoption. These can be done
