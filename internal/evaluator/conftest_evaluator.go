@@ -501,16 +501,6 @@ func (c conftestEvaluator) computeSuccesses(result Outcome, rules policyRules, e
 		// Let's omit the solution text here because if the rule is passing
 		// already then the user probably doesn't care about the solution.
 
-		if !isResultEffective(success, effectiveTime) {
-			log.Debugf("Skipping result success: %#v", success)
-			continue
-		}
-
-		// Todo maybe: We could also call isResultEffective here for the
-		// success and skip it if the rule is not yet effective. This would
-		// require collecting the effective_on value from the custom annotation
-		// in rule.RuleInfo.
-
 		successes = append(successes, success)
 	}
 
