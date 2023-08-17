@@ -34,6 +34,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 
+	app "github.com/enterprise-contract/ec-cli/application/v1alpha1"
 	"github.com/enterprise-contract/ec-cli/internal/attestation"
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 	"github.com/enterprise-contract/ec-cli/internal/fetchers/oci/config"
@@ -74,19 +75,21 @@ type ApplicationSnapshotImage struct {
 	attestations     []attestation.Attestation
 	Evaluators       []evaluator.Evaluator
 	files            map[string]json.RawMessage
+	component        app.SnapshotComponent
 }
 
 // NewApplicationSnapshotImage returns an ApplicationSnapshotImage struct with reference, checkOpts, and evaluator ready to use.
-func NewApplicationSnapshotImage(ctx context.Context, url string, p policy.Policy) (*ApplicationSnapshotImage, error) {
+func NewApplicationSnapshotImage(ctx context.Context, component app.SnapshotComponent, p policy.Policy) (*ApplicationSnapshotImage, error) {
 	opts, err := p.CheckOpts()
 	if err != nil {
 		return nil, err
 	}
 	a := &ApplicationSnapshotImage{
 		checkOpts: *opts,
+		component: component,
 	}
 
-	if err := a.SetImageURL(url); err != nil {
+	if err := a.SetImageURL(component.ContainerImage); err != nil {
 		return nil, err
 	}
 
@@ -393,6 +396,7 @@ type image struct {
 	Config     json.RawMessage             `json:"config,omitempty"`
 	Parent     any                         `json:"parent,omitempty"`
 	Files      map[string]json.RawMessage  `json:"files,omitempty"`
+	Source     any                         `json:"source,omitempty"`
 }
 
 type Input struct {
@@ -421,6 +425,7 @@ func (a *ApplicationSnapshotImage) WriteInputFile(ctx context.Context) (string, 
 			Signatures: a.signatures,
 			Config:     a.configJSON,
 			Files:      a.files,
+			Source:     a.component.Source,
 		},
 	}
 

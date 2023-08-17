@@ -2333,7 +2333,8 @@ Error: success criteria not met
           "org.opencontainers.image.title": "acceptance/policy-input-output/parent"
         }
       }
-    }
+    },
+    "source": {}
   }
 }
 ---
@@ -2711,7 +2712,8 @@ Error: success criteria not met
           "storedVersions": []
         }
       }
-    }
+    },
+    "source": {}
   }
 }
 ---
@@ -3079,7 +3081,8 @@ Error: success criteria not met
           ]
         }
       }
-    }
+    },
+    "source": {}
   }
 }
 ---

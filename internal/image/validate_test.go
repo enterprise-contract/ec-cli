@@ -40,6 +40,7 @@ import (
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 
+	app "github.com/enterprise-contract/ec-cli/application/v1alpha1"
 	"github.com/enterprise-contract/ec-cli/internal/attestation"
 	"github.com/enterprise-contract/ec-cli/internal/evaluation_target/application_snapshot_image"
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
@@ -59,7 +60,7 @@ func TestValidateImage(t *testing.T) {
 	cases := []struct {
 		name               string
 		client             *mockASIClient
-		url                string
+		component          app.SnapshotComponent
 		expectedViolations []evaluator.Result
 		expectedWarnings   []evaluator.Result
 		expectedImageURL   string
@@ -71,15 +72,15 @@ func TestValidateImage(t *testing.T) {
 				signatures:   []oci.Signature{validSignature},
 				attestations: []oci.Signature{validAttestation},
 			},
-			url:                imageRef,
+			component:          app.SnapshotComponent{ContainerImage: imageRef},
 			expectedViolations: []evaluator.Result{},
 			expectedWarnings:   []evaluator.Result{},
 			expectedImageURL:   imageRegistry + "@sha256:" + imageDigest,
 		},
 		{
-			name:   "unaccessible image",
-			client: &mockASIClient{},
-			url:    imageRef,
+			name:      "unaccessible image",
+			client:    &mockASIClient{},
+			component: app.SnapshotComponent{ContainerImage: imageRef},
 			expectedViolations: []evaluator.Result{
 				{Message: "Image URL is not accessible: no response received", Metadata: map[string]interface{}{
 					"code": "builtin.image.accessible",
@@ -94,7 +95,7 @@ func TestValidateImage(t *testing.T) {
 				head:         &gcr.Descriptor{},
 				attestations: []oci.Signature{validAttestation},
 			},
-			url: imageRef,
+			component: app.SnapshotComponent{ContainerImage: imageRef},
 			expectedViolations: []evaluator.Result{
 				{Message: "Image signature check failed: no image signatures client error", Metadata: map[string]interface{}{
 					"code": "builtin.image.signature_check",
@@ -109,7 +110,7 @@ func TestValidateImage(t *testing.T) {
 				head:       &gcr.Descriptor{},
 				signatures: []oci.Signature{validSignature},
 			},
-			url: imageRef,
+			component: app.SnapshotComponent{ContainerImage: imageRef},
 			expectedViolations: []evaluator.Result{
 				{Message: "Image attestation check failed: no image attestations client error", Metadata: map[string]interface{}{
 					"code": "builtin.attestation.signature_check",
@@ -129,9 +130,9 @@ func TestValidateImage(t *testing.T) {
 			assert.NoError(t, err)
 
 			ctx = application_snapshot_image.WithClient(ctx, c.client)
-			ctx = withImageConfig(ctx, c.url)
+			ctx = withImageConfig(ctx, c.component.ContainerImage)
 
-			actual, err := ValidateImage(ctx, c.url, p, false)
+			actual, err := ValidateImage(ctx, c.component, p, false)
 			assert.NoError(t, err)
 
 			assert.Equal(t, c.expectedWarnings, actual.Warnings())

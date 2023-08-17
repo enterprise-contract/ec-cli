@@ -49,6 +49,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
+	app "github.com/enterprise-contract/ec-cli/application/v1alpha1"
 	"github.com/enterprise-contract/ec-cli/internal/attestation"
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 	o "github.com/enterprise-contract/ec-cli/internal/fetchers/oci"
@@ -243,6 +244,23 @@ func TestWriteInputFile(t *testing.T) {
 						},
 					})
 				})},
+			},
+		},
+		{
+			name: "component with source",
+			snapshot: ApplicationSnapshotImage{
+				reference: name.MustParseReference("registry.io/repository/image:tag"),
+				component: app.SnapshotComponent{
+					ContainerImage: "registry.io/repository/image:tag",
+					Source: app.ComponentSource{
+						ComponentSourceUnion: app.ComponentSourceUnion{
+							GitSource: &app.GitSource{
+								URL:      "git.local/repository",
+								Revision: "main",
+							},
+						},
+					},
+				},
 			},
 		},
 	}

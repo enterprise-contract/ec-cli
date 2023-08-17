@@ -40,7 +40,7 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
-type imageValidationFunc func(context.Context, string, policy.Policy, bool) (*output.Output, error)
+type imageValidationFunc func(context.Context, app.SnapshotComponent, policy.Policy, bool) (*output.Output, error)
 
 func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 	var data = struct {
@@ -273,7 +273,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 					defer lock.Done()
 
 					ctx := cmd.Context()
-					out, err := validate(ctx, comp.ContainerImage, data.policy, data.info)
+					out, err := validate(ctx, comp, data.policy, data.info)
 					res := result{
 						err: err,
 						component: applicationsnapshot.Component{

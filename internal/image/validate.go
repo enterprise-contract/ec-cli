@@ -25,6 +25,7 @@ import (
 	"github.com/qri-io/jsonpointer"
 	log "github.com/sirupsen/logrus"
 
+	app "github.com/enterprise-contract/ec-cli/application/v1alpha1"
 	"github.com/enterprise-contract/ec-cli/internal/attestation"
 	"github.com/enterprise-contract/ec-cli/internal/evaluation_target/application_snapshot_image"
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
@@ -34,11 +35,11 @@ import (
 
 // ValidateImage executes the required method calls to evaluate a given policy
 // against a given image url.
-func ValidateImage(ctx context.Context, url string, p policy.Policy, detailed bool) (*output.Output, error) {
-	log.Debugf("Validating image %s", url)
+func ValidateImage(ctx context.Context, comp app.SnapshotComponent, p policy.Policy, detailed bool) (*output.Output, error) {
+	log.Debugf("Validating image %s", comp.ContainerImage)
 
-	out := &output.Output{ImageURL: url, Detailed: detailed, Policy: p}
-	a, err := application_snapshot_image.NewApplicationSnapshotImage(ctx, url, p)
+	out := &output.Output{ImageURL: comp.ContainerImage, Detailed: detailed, Policy: p}
+	a, err := application_snapshot_image.NewApplicationSnapshotImage(ctx, comp, p)
 	if err != nil {
 		log.Debug("Failed to create application snapshot image!")
 		return nil, err
@@ -49,7 +50,7 @@ func ValidateImage(ctx context.Context, url string, p policy.Policy, detailed bo
 		return out, nil
 	}
 
-	if resolved, err := resolveAndSetImageUrl(url, a); err != nil {
+	if resolved, err := resolveAndSetImageUrl(comp.ContainerImage, a); err != nil {
 		return nil, err
 	} else {
 		out.ImageURL = resolved
