@@ -88,7 +88,7 @@ components:
       - redhat
       depends_on:
       - test.test_data_found
-      description: Reports any test that has its result set to "SKIPPED".
+      description: Produce a warning if any tests have their result set to "SKIPPED".
       solution: There is a test that was skipped. Make sure that each task with a
         result named 'TEST_OUTPUT' was not skipped. You can find which test was skipped
         by examining the 'result' key in the 'TEST_OUTPUT'.
@@ -151,7 +151,7 @@ components:
       - redhat
       depends_on:
       - test.test_data_found
-      description: Reports any test that has its result set to "SKIPPED".
+      description: Produce a warning if any tests have their result set to "SKIPPED".
       solution: There is a test that was skipped. Make sure that each task with a
         result named 'TEST_OUTPUT' was not skipped. You can find which test was skipped
         by examining the 'result' key in the 'TEST_OUTPUT'.
@@ -229,8 +229,8 @@ components:
       - redhat
       depends_on:
       - attestation_type.known_attestation_type
-      description: The predicateType field of the attestation must indicate the in-toto
-        SLSA Provenance format was used to attest the PipelineRun.
+      description: Verify that the predicateType field of the attestation indicates
+        the in-toto SLSA Provenance format was used to attest the PipelineRun.
       title: Expected attestation predicate type found
     msg: Pass
 ec-version: ${EC_VERSION}
@@ -322,8 +322,8 @@ components:
       - redhat
       depends_on:
       - attestation_type.known_attestation_type
-      description: The predicateType field of the attestation must indicate the in-toto
-        SLSA Provenance format was used to attest the PipelineRun.
+      description: Verify that the predicateType field of the attestation indicates
+        the in-toto SLSA Provenance format was used to attest the PipelineRun.
       title: Expected attestation predicate type found
     msg: Pass
 ec-version: ${EC_VERSION}
