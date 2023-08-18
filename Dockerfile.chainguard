@@ -1,0 +1,11 @@
+FROM cgr.dev/chainguard/go AS builder
+ARG VERSION
+COPY . /app
+RUN cd /app && go build \
+  -trimpath \
+  -ldflags="-s -w -X github.com/enterprise-contract/ec-cli/internal/version.Version=${VERSION}" \
+  -o dist/ec
+
+FROM cgr.dev/chainguard/glibc-dynamic
+COPY --from=builder /app/dist/ec /usr/bin/
+ENTRYPOINT ["/usr/bin/ec"]

@@ -229,6 +229,12 @@ ifdef ADD_IMAGE_TAG
 	@podman manifest push $(IMAGE_REPO):$(IMAGE_TAG) $(IMAGE_REPO):$(ADD_IMAGE_TAG)
 endif
 
+# Proof of concept. Currently not pushed anywhere or used for anything.
+# I'm being lazy and ignoring the additional tags and non-default os/arch options.
+.PHONY: build-image-small
+build-image-small: ## Build a small image using Chainguard base images. Experimental.
+	@podman build -f Dockerfile.chainguard -t $(IMAGE_REPO):snapshot-cg --build-arg VERSION=$(VERSION)
+
 .PHONY: dev
 dev: REGISTRY_PORT=5000
 dev: IMAGE_REPO=localhost:$(REGISTRY_PORT)/ec
