@@ -242,7 +242,7 @@ func Test_determineInputSpec(t *testing.T) {
 }
 
 func Test_ValidateImageCommand(t *testing.T) {
-	validate := func(_ context.Context, url string, _ policy.Policy, _ bool) (*output.Output, error) {
+	validate := func(_ context.Context, component app.SnapshotComponent, _ policy.Policy, _ bool) (*output.Output, error) {
 		return &output.Output{
 			ImageSignatureCheck: output.VerificationStatus{
 				Passed: true,
@@ -270,7 +270,7 @@ func Test_ValidateImageCommand(t *testing.T) {
 					},
 				},
 			},
-			ImageURL: url,
+			ImageURL: component.ContainerImage,
 			ExitCode: 0,
 		}, nil
 	}
@@ -317,7 +317,7 @@ func Test_ValidateImageCommand(t *testing.T) {
 }
 
 func Test_ValidateImageCommandImages(t *testing.T) {
-	validate := func(_ context.Context, url string, _ policy.Policy, _ bool) (*output.Output, error) {
+	validate := func(_ context.Context, component app.SnapshotComponent, _ policy.Policy, _ bool) (*output.Output, error) {
 		return &output.Output{
 			ImageSignatureCheck: output.VerificationStatus{
 				Passed: true,
@@ -345,7 +345,7 @@ func Test_ValidateImageCommandImages(t *testing.T) {
 					},
 				},
 			},
-			ImageURL: url,
+			ImageURL: component.ContainerImage,
 			ExitCode: 0,
 		}, nil
 	}
@@ -434,7 +434,7 @@ func Test_ValidateImageCommandImages(t *testing.T) {
 
 func Test_ValidateImageCommandKeyless(t *testing.T) {
 	called := false
-	cmd := validateImageCmd(func(_ context.Context, url string, p policy.Policy, _ bool) (*output.Output, error) {
+	cmd := validateImageCmd(func(_ context.Context, _ app.SnapshotComponent, p policy.Policy, _ bool) (*output.Output, error) {
 		assert.Equal(t, cosign.Identity{
 			Issuer:        "my-certificate-oidc-issuer",
 			Subject:       "my-certificate-identity",
@@ -473,7 +473,7 @@ func Test_ValidateImageCommandKeyless(t *testing.T) {
 	assert.True(t, called)
 }
 func Test_ValidateImageCommandYAMLPolicyFile(t *testing.T) {
-	validate := func(_ context.Context, url string, _ policy.Policy, _ bool) (*output.Output, error) {
+	validate := func(_ context.Context, component app.SnapshotComponent, _ policy.Policy, _ bool) (*output.Output, error) {
 		return &output.Output{
 			ImageSignatureCheck: output.VerificationStatus{
 				Passed: true,
@@ -501,7 +501,7 @@ func Test_ValidateImageCommandYAMLPolicyFile(t *testing.T) {
 					},
 				},
 			},
-			ImageURL: url,
+			ImageURL: component.ContainerImage,
 			ExitCode: 0,
 		}, nil
 	}
@@ -548,7 +548,7 @@ configuration:
 }
 
 func Test_ValidateImageCommandJSONPolicyFile(t *testing.T) {
-	validate := func(_ context.Context, url string, _ policy.Policy, _ bool) (*output.Output, error) {
+	validate := func(_ context.Context, component app.SnapshotComponent, _ policy.Policy, _ bool) (*output.Output, error) {
 		return &output.Output{
 			ImageSignatureCheck: output.VerificationStatus{
 				Passed: true,
@@ -576,7 +576,7 @@ func Test_ValidateImageCommandJSONPolicyFile(t *testing.T) {
 					},
 				},
 			},
-			ImageURL: url,
+			ImageURL: component.ContainerImage,
 			ExitCode: 0,
 		}, nil
 	}
@@ -623,7 +623,7 @@ configuration:
 }
 
 func Test_ValidateImageCommandEmptyPolicyFile(t *testing.T) {
-	validate := func(_ context.Context, url string, _ policy.Policy, _ bool) (*output.Output, error) {
+	validate := func(_ context.Context, component app.SnapshotComponent, _ policy.Policy, _ bool) (*output.Output, error) {
 		return &output.Output{
 			ImageSignatureCheck: output.VerificationStatus{
 				Passed: true,
@@ -651,7 +651,7 @@ func Test_ValidateImageCommandEmptyPolicyFile(t *testing.T) {
 					},
 				},
 			},
-			ImageURL: url,
+			ImageURL: component.ContainerImage,
 			ExitCode: 0,
 		}, nil
 	}
@@ -746,7 +746,7 @@ func Test_ValidateErrorCommand(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			validate := func(context.Context, string, policy.Policy, bool) (*output.Output, error) {
+			validate := func(context.Context, app.SnapshotComponent, policy.Policy, bool) (*output.Output, error) {
 				return nil, errors.New("expected")
 			}
 
@@ -771,7 +771,7 @@ func Test_ValidateErrorCommand(t *testing.T) {
 }
 
 func Test_FailureImageAccessibility(t *testing.T) {
-	validate := func(_ context.Context, url string, _ policy.Policy, _ bool) (*output.Output, error) {
+	validate := func(_ context.Context, component app.SnapshotComponent, _ policy.Policy, _ bool) (*output.Output, error) {
 		return &output.Output{
 			ImageSignatureCheck: output.VerificationStatus{
 				Passed: false,
@@ -785,7 +785,7 @@ func Test_FailureImageAccessibility(t *testing.T) {
 				Passed: false,
 				Result: &evaluator.Result{Message: "skipped due to inaccessible image ref"},
 			},
-			ImageURL: url,
+			ImageURL: component.ContainerImage,
 		}, nil
 	}
 
@@ -836,7 +836,7 @@ func Test_FailureImageAccessibility(t *testing.T) {
 }
 
 func Test_FailureOutput(t *testing.T) {
-	validate := func(_ context.Context, url string, _ policy.Policy, _ bool) (*output.Output, error) {
+	validate := func(_ context.Context, component app.SnapshotComponent, _ policy.Policy, _ bool) (*output.Output, error) {
 		return &output.Output{
 			ImageSignatureCheck: output.VerificationStatus{
 				Passed: false,
@@ -849,7 +849,7 @@ func Test_FailureOutput(t *testing.T) {
 				Passed: false,
 				Result: &evaluator.Result{Message: "failed attestation signature check"},
 			},
-			ImageURL: url,
+			ImageURL: component.ContainerImage,
 		}, nil
 	}
 
@@ -899,7 +899,7 @@ func Test_FailureOutput(t *testing.T) {
 }
 
 func Test_WarningOutput(t *testing.T) {
-	validate := func(_ context.Context, url string, _ policy.Policy, _ bool) (*output.Output, error) {
+	validate := func(_ context.Context, component app.SnapshotComponent, _ policy.Policy, _ bool) (*output.Output, error) {
 		return &output.Output{
 			ImageSignatureCheck: output.VerificationStatus{
 				Passed: true,
@@ -918,7 +918,7 @@ func Test_WarningOutput(t *testing.T) {
 					},
 				},
 			},
-			ImageURL: url,
+			ImageURL: component.ContainerImage,
 		}, nil
 	}
 

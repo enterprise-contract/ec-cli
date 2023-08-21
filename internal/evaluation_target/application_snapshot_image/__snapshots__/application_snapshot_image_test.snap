@@ -45,7 +45,8 @@
   }
  ],
  "image": {
-  "ref": "registry.io/repository/image:tag"
+  "ref": "registry.io/repository/image:tag",
+  "source": {}
  }
 }
 ---
@@ -113,7 +114,8 @@
   }
  ],
  "image": {
-  "ref": "registry.io/repository/image:tag"
+  "ref": "registry.io/repository/image:tag",
+  "source": {}
  }
 }
 ---
@@ -166,7 +168,8 @@
     "keyid": "keyId2",
     "sig": "signature2"
    }
-  ]
+  ],
+  "source": {}
  }
 }
 ---
@@ -180,7 +183,8 @@
     "io.k8s.display-name": "Test Image"
    }
   },
-  "ref": "registry.io/repository/image:tag"
+  "ref": "registry.io/repository/image:tag",
+  "source": {}
  }
 }
 ---
@@ -197,7 +201,8 @@
    },
    "ref": "registry.io/repository/image/parent:tag"
   },
-  "ref": "registry.io/repository/image:tag"
+  "ref": "registry.io/repository/image:tag",
+  "source": {}
  }
 }
 ---
@@ -269,7 +274,8 @@
   }
  ],
  "image": {
-  "ref": "registry.io/repository/image:tag"
+  "ref": "registry.io/repository/image:tag",
+  "source": {}
  }
 }
 ---
@@ -308,7 +314,8 @@
   }
  ],
  "image": {
-  "ref": "registry.io/repository/image:tag"
+  "ref": "registry.io/repository/image:tag",
+  "source": {}
  }
 }
 ---
@@ -335,5 +342,20 @@
  },
  "json": "here",
  "statement": null
+}
+---
+
+[TestWriteInputFile/component_with_source - 1]
+{
+ "attestations": null,
+ "image": {
+  "ref": "registry.io/repository/image:tag",
+  "source": {
+   "git": {
+    "revision": "main",
+    "url": "git.local/repository"
+   }
+  }
+ }
 }
 ---
