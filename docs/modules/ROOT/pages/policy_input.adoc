@@ -35,8 +35,9 @@ access to the information about a single image.
     "config": {...},
     "parent": #ImageDescriptor,
     "ref": "<STRING>",
-    "signatures": [...#SignatureDescriptor]
-    "files": {...}
+    "signatures": [...#SignatureDescriptor],
+    "files": {...},
+    "source": #SourceDescriptor
 }
 
 #SignatureDescriptor: {
@@ -45,6 +46,13 @@ access to the information about a single image.
     "certificate": "<STRING>",
     "chain": [..."<STRING>"],
     "metadata": {...}
+}
+
+#SourceDescriptor: {
+    "git": {
+        "revision": "<STRING>",
+        "url": "<STRING>"
+    }
 }
 ----
 
@@ -87,10 +95,19 @@ short-lived keys are used, aka keyless workflow.
 NOTE: Use the `policy-input` output format to save the input object to a file, e.g. `ec validate
 image ... --output=input.jsonl`.
 
-`image.files` is an object where each attribute represents the full path of a file within the image,
+`.image.files` is an object where each attribute represents the full path of a file within the image,
 and the value is the content of such file converted to JSON format. Paths do *not* start with a
 leading `/`. If the contents of a file cannot be converted to JSON format, that file is skipped.
 Currently, there are two sets of files that may be included. First, if the image contains the label
 `operators.operatorframework.io.bundle.manifests.v1`, all the files within the path specified by the
 label are included. If the image contains the label `vendor` and its value is `Red Hat, Inc.`, then
 all files under `root/buildinfo/content_manifests` are included.
+
+`.image.source` contains information about the source code used to generate the image. Currently, the
+only version control system supported is `git`. This information originates from the
+ApplicationSnapshot provided to the `ec validate image` command. It is empty if the source
+information is not given to the command.
+
+The SourceDescriptor contains the the single `git` attribute which hold an object with information
+about a git repository. `.revision` is a string holding a git reference. This could be a commit ID,
+branch, etc. `url` is the the URL of the git repository.
