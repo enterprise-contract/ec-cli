@@ -46,12 +46,17 @@ diff \
     <(skopeo inspect --raw "docker://quay.io/hacbs-contract/ec-task-bundle@${TASK_BUNDLE_DIGEST}")
 TASK_BUNDLE_REF="quay.io/hacbs-contract/ec-task-bundle:${TASK_BUNDLE_TAG}@${TASK_BUNDLE_DIGEST}"
 echo "Resolved bundle is ${TASK_BUNDLE_REF}"
+echo "Resolved revision is ${REVISION}"
 
 echo 'Updating infra-deployments...'
-REF="${TASK_BUNDLE_REF}" yq e -i \
+REF="${TASK_BUNDLE_REF}" REV="${REVISION}" yq e -i \
     '.configMapGenerator[] |=
-        select(.name == "ec-defaults").literals[] |=
-            select(. == "verify_ec_task_bundle=*") = "verify_ec_task_bundle=" + env(REF)' \
+        select(.name == "ec-defaults").literals[] = {
+            "verify_ec_task_bundle": env(REF),
+            "verify_ec_task_git_url": "https://github.com/enterprise-contract/ec-cli.git",
+            "verify_ec_task_git_revision": env(REV),
+            "verify_ec_task_git_pathInRepo": "tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml"
+        }' \
     components/enterprise-contract/kustomization.yaml
 
 echo 'infra-deployments updated successfully'
