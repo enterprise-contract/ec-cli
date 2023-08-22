@@ -127,7 +127,7 @@ CTeemlLBj+GVwnrnTgS1ow2jxgOgNFs0ADh2UfqHQqxeXFmphmsiAxtOxA==
 const TestRekorURL = "https://example.com/api"
 
 // TestRekorURLLogID is a generated value from the TestRekorPublicKey.
-const TestRekorURLLogID = "5c88613c1a35d9fbf61144a6762502d594d9433c065af8d0b375f4bda16464b8"
+const TestRekorURLLogID = "5c88613c1a35d9fbf61144a6762502d594d9433c065af8d0b375f4bda16464b8" //#nosec G101
 
 // SetTestRekorPublicKey writes the test Rekor public key to disk and sets the corresponding
 // environment variable to make it available to cosign.

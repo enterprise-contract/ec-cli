@@ -1308,9 +1308,9 @@ func TestRuleMetadata(t *testing.T) {
 			},
 		},
 	}
-	for _, tt := range cases {
+	for i, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			addRuleMetadata(ctx, &tt.result, tt.rules)
+			addRuleMetadata(ctx, &cases[i].result, tt.rules)
 			assert.Equal(t, tt.result, tt.want)
 		})
 	}
@@ -1567,9 +1567,9 @@ func TestCheckResultsTrim(t *testing.T) {
 		},
 	}
 
-	for _, c := range cases {
+	for i, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			trim(&c.given)
+			trim(&cases[i].given)
 			assert.Equal(t, c.expected, c.given)
 		})
 	}
