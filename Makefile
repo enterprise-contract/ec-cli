@@ -132,7 +132,7 @@ ci: test lint-fix acceptance ## Run the usual required CI tasks
 LICENSE_IGNORE=-ignore 'dist/cli-reference/*.yaml' -ignore 'acceptance/examples/*.yaml' -ignore 'configs/*/*.yaml' -ignore 'node_modules/**'
 LINT_TO_GITHUB_ANNOTATIONS='map(map(.)[])[][] as $$d | $$d.posn | split(":") as $$posn | "::warning file=\($$posn[0]),line=\($$posn[1]),col=\($$posn[2])::\($$d.message)"'
 .PHONY: lint
-lint: generate tekton-lint ## Run linter
+lint: generate tekton-lint go-mod-lint ## Run linter
 # addlicense doesn't give us a nice explanation so we prefix it with one
 	@go run -modfile tools/go.mod github.com/google/addlicense -c '$(COPY)' -y '' -s -check $(LICENSE_IGNORE) . | sed 's/^/Missing license header in: /g'
 # piping to sed above looses the exit code, luckily addlicense is fast so we invoke it for the second time to exit 1 in case of issues
@@ -164,6 +164,18 @@ tekton-lint: node_modules $(wildcard tasks/*/*/*.yaml) ## Run tekton-lint for 't
 # All warnings are currently considered errors.
 # When running on GitHub Actions, reformat to annotations
 	@npm exec tekton-lint -- --max-warnings=0 --format=$(if $(GITHUB_ACTIONS),json,stylish) $(filter-out node_modules,$^)$(if $(GITHUB_ACTIONS), | jq -r $(TEKTON_LINT_TO_GITHUB_ANNOTATIONS))
+
+.PHONY: go-mod-lint
+go-mod-lint:
+	@echo "Scanning for go.mod files and performing tidy..."
+	@find . -name "go.mod" -execdir go mod tidy >/dev/null 2>&1 \;
+	@echo "Checking for modified go.mod or go.sum files..."
+	@if git status --porcelain | grep -q -e "go.mod" -e "go.sum"; then \
+		echo "Ensure the following go.mod or go.sum files are added to the git commit:"; \
+		git status --porcelain | grep -e "go.mod" -e "go.sum"; \
+	else \
+		echo "No go.mod or go.sum files need to be added to the git commit."; \
+	fi
 
 ##@ Pushing images
 
