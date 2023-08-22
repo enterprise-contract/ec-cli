@@ -52,7 +52,7 @@ import (
 const (
 	imageRegistry = "registry.example/spam"
 	imageTag      = "maps"
-	imageDigest   = "4e388ab32b10dc8dbc7e28144f552830adc74787c1e2c0824032078a79f227fb"
+	imageDigest   = "4e388ab32b10dc8dbc7e28144f552830adc74787c1e2c0824032078a79f227fb" //#nosec G101
 	imageRef      = imageRegistry + ":" + imageTag + "@sha256:" + imageDigest
 )
 
