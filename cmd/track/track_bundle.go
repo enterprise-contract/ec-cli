@@ -51,7 +51,7 @@ func trackBundleCmd(track trackBundleFn, pullImage pullImageFn, pushImage pushIm
 			Record tracking information about Tekton bundles
 
 			Given one or more Tekton Bundles, categorize each as "pipeline-bundles",
-			"tekton-bundles", or both. Then, generate a YAML represenation of this
+			"tekton-bundles", or both. Then, generate a YAML representation of this
 			categorization.
 
 			Each Tekton Bundle is expected to be a proper OCI image reference. They

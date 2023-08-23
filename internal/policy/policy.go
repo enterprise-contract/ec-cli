@@ -270,7 +270,7 @@ func (p *policy) AttestationTime(attestationTime time.Time) {
 func (p policy) EffectiveTime() time.Time {
 	if p.effectiveTime == nil {
 		now := now().UTC()
-		log.Debugf("No effective time choosen using current time: %s", now.Format(time.RFC3339))
+		log.Debugf("No effective time chosen using current time: %s", now.Format(time.RFC3339))
 		p.effectiveTime = &now
 	} else {
 		log.Debugf("Using effective time: %s", p.effectiveTime.Format(time.RFC3339))

@@ -166,7 +166,7 @@ func (t *Tracker) filterBundles(prune bool) {
 	}
 }
 
-// filterRecords reduces the list of records by removing superfulous entries.
+// filterRecords reduces the list of records by removing superfluous entries.
 // It removes records that have the same Repository and Digest. If prune is
 // true, it skips any record that is no longer acceptable. Any record with an
 // EffectiveOn date in the future, and the record with the most recent

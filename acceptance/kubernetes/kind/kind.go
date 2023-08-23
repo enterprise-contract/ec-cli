@@ -155,10 +155,10 @@ func Start(givenCtx context.Context) (ctx context.Context, kCluster types.Cluste
 
 		defer func() {
 			if err != nil {
-				logger.Infof("An error occured creating the cluster: %v", err)
+				logger.Infof("An error occurred creating the cluster: %v", err)
 				// an error happened we need to cleanup
 				if err := kCluster.provider.Delete(kCluster.name, kCluster.kubeconfigPath); err != nil {
-					logger.Infof("An error occured creating deleting the cluster: %v", err)
+					logger.Infof("An error occurred creating deleting the cluster: %v", err)
 				}
 			}
 		}()
@@ -361,7 +361,7 @@ func newAvail() avail {
 }
 
 // allAvailable is invoked by the watcher for each change to the object, the
-// object's availablity is tracked and if all objects are available true is
+// object's availability is tracked and if all objects are available true is
 // returned, stopping the watcher
 func (a *avail) allAvailable(event watch.Event) (bool, error) {
 	deployment := event.Object.(*appsv1.Deployment)

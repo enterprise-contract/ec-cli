@@ -79,7 +79,7 @@ func Persist(ctx context.Context) (bool, error) {
 	return true, nil
 }
 
-// Persisted returns true if the test environment persistes after the test has finished
+// Persisted returns true if the test environment persists after the test has finished
 func Persisted(ctx context.Context) bool {
 	persist, ok := ctx.Value(PersistStubEnvironment).(bool)
 
@@ -96,7 +96,7 @@ func Restored(ctx context.Context) bool {
 	return ok && restore
 }
 
-// RestoreValue returns the value associated with the given key from the last perserved environment
+// RestoreValue returns the value associated with the given key from the last preserved environment
 func restoreInto(key string, val any) error {
 	b, err := loader(persistedFile)
 	if err != nil {

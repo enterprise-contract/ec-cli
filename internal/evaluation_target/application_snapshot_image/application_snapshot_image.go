@@ -261,7 +261,7 @@ func (a *ApplicationSnapshotImage) ValidateAttestationSignature(ctx context.Cont
 
 // ValidateAttestationSyntax validates the attestations against known JSON
 // schemas, errors out if there are no attestations to check to prevent
-// sucessful syntax check of no inputs, must invoke
+// successful syntax check of no inputs, must invoke
 // [ValidateAttestationSignature] to prefill the attestations.
 func (a ApplicationSnapshotImage) ValidateAttestationSyntax(ctx context.Context) error {
 	if len(a.attestations) == 0 {
@@ -277,7 +277,7 @@ func (a ApplicationSnapshotImage) ValidateAttestationSyntax(ctx context.Context)
 				return EV002.CausedBy(err)
 			} else {
 				if len(errs) == 0 {
-					// one schema validation suceeded, consider this a success
+					// one schema validation succeeded, consider this a success
 					// TODO: one possible drawback of this is that JSON schemas
 					// are open by default, e.g. if additionalProperties=true
 					// (the default) properties not defined in the schema are

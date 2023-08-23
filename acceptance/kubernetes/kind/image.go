@@ -49,7 +49,7 @@ func (k *kindCluster) buildCliImage(ctx context.Context) error {
 
 // buildTaskBundleImage runs `make task-bundle` for each version of the Task in
 // the `$REPOSITORY_ROOT/task` directory to push the Tekton Task bundle to the
-// registry runing on the Kind cluster. The image is pushed to image reference:
+// registry running on the Kind cluster. The image is pushed to image reference:
 // `localhost:<registry-port>/ec-task-bundle:<version>`, so each bundle contains
 // only the task of a particular version. The image reference to the ec-cli
 // image is replaced with the image reference from buildCliImage.

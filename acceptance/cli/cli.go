@@ -404,7 +404,7 @@ func theExitStatusIs(ctx context.Context, expected int) error {
 
 // theStandardOutputShouldContain looks at the standard output (stdout) of the last invoked ec
 // command and compares the expected output with the resulted output. Special handling is done
-// for JSON output, it is compared disregaring key order in objects, and values can contain
+// for JSON output, it is compared disregarding key order in objects, and values can contain
 // regular expressions to match the expected to resulted output even when dealing with dynamic
 // values such as port numbers or temporary paths
 func theStandardOutputShouldContain(ctx context.Context, expected *godog.DocString) error {

@@ -21,9 +21,10 @@ run:
     - unit
 linters:
   enable:
-    - goimports
     - gci
+    - goimports
     - gosec
+    - misspell
 linters-settings:
   gci:
     sections:

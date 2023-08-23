@@ -48,7 +48,7 @@ func runConftest(ctx context.Context, command, produces string, content *godog.D
 		return err
 	}
 
-	// we run conftest in a temporary directory so we can independantly check
+	// we run conftest in a temporary directory so we can independently check
 	// any files created there
 	dir, err := os.MkdirTemp("", "conftest")
 	if err != nil {
