@@ -77,10 +77,10 @@ func TestTrackerAddKeepsOrder(t *testing.T) {
 					continue
 				}
 
-				// remove quotes, they're just messing with comparission below,
+				// remove quotes, they're just messing with comparisons below,
 				// i.e. `"y"`` -> "y"
 				line = strings.ReplaceAll(line, `"`, "")
-				// remove trailing colon, it also messes with comparisson below,
+				// remove trailing colon, it also messes with comparisons below,
 				// i.e. "abc:" -> "abc"
 				line = strings.TrimSuffix(line, ":")
 

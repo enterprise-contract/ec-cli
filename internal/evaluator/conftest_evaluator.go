@@ -88,8 +88,8 @@ func trim(results *[]Outcome) {
 		// reported as failure, warning or skipped
 		trimmed := make([]Result, 0, len(what))
 		for _, result := range what {
-			if dependancy, ok := result.Metadata[metadataDependsOn].([]string); ok {
-				for _, d := range dependancy {
+			if dependency, ok := result.Metadata[metadataDependsOn].([]string); ok {
+				for _, d := range dependency {
 					if !reported[d] {
 						trimmed = append(trimmed, result)
 					}

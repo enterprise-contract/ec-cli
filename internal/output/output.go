@@ -332,7 +332,7 @@ func (o Outputs) Print(out io.Writer) error {
 }
 
 // wrapCosignErrorMessage wraps the message from the given error indicating the
-// type of check that was performed. It may also completey change the  message
+// type of check that was performed. It may also completely change the  message
 // with a more helpful one in some cases.
 func wrapCosignErrorMessage(err error, checkType string, p policy.Policy) string {
 	// When NOT using the keyless workflow, the "no matching signatures" error from cosign lacks

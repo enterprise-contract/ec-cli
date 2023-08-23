@@ -31,7 +31,7 @@ import (
 )
 
 // SLSAProvenanceFromSignature parses the SLSA Provenance v0.2 from the provided OCI
-// layer. Expects that the layer contains DSSE JSON with the embeded SLSA
+// layer. Expects that the layer contains DSSE JSON with the embedded SLSA
 // Provenance v0.2 payload.
 func SLSAProvenanceFromSignature(sig oci.Signature) (Attestation, error) {
 	if sig == nil {
@@ -67,13 +67,13 @@ func SLSAProvenanceFromSignature(sig oci.Signature) (Attestation, error) {
 		return nil, AT002.CausedByF("No `payload` data found")
 	}
 
-	embeded, err := base64.StdEncoding.DecodeString(payload.PayLoad)
+	embedded, err := base64.StdEncoding.DecodeString(payload.PayLoad)
 	if err != nil {
 		return nil, AT002.CausedBy(err)
 	}
 
 	var statement in_toto.ProvenanceStatementSLSA02
-	if err := json.Unmarshal(embeded, &statement); err != nil {
+	if err := json.Unmarshal(embedded, &statement); err != nil {
 		return nil, AT002.CausedBy(err)
 	}
 
@@ -90,7 +90,7 @@ func SLSAProvenanceFromSignature(sig oci.Signature) (Attestation, error) {
 		return nil, AT005.CausedBy(err)
 	}
 
-	return slsaProvenance{statement: statement, data: embeded, signatures: signatures}, nil
+	return slsaProvenance{statement: statement, data: embedded, signatures: signatures}, nil
 }
 
 func createEntitySignatures(sig oci.Signature, payload cosign.AttestationPayload) ([]signature.EntitySignature, error) {
