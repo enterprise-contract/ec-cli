@@ -19,7 +19,8 @@
   "successes": 1,
   "failures": 0,
   "warnings": 0,
-  "result": "SUCCESS"
+  "result": "SUCCESS",
+  "note": "All checks passed successfully"
 }
 ---
 
@@ -33,7 +34,8 @@
   "successes": 0,
   "failures": 0,
   "warnings": 0,
-  "result": "SKIPPED"
+  "result": "SKIPPED",
+  "note": "All checks were skipped"
 }
 ---
 
@@ -61,7 +63,8 @@
   "successes": 0,
   "failures": 0,
   "warnings": 1,
-  "result": "WARNING"
+  "result": "WARNING",
+  "note": "Warnings detected"
 }
 ---
 
@@ -143,7 +146,8 @@ FAIL - acceptance/examples/empty_input.json - main - Failure due to overripeness
   "successes": 0,
   "failures": 1,
   "warnings": 0,
-  "result": "FAILURE"
+  "result": "FAILURE",
+  "note": "Failures detected"
 }
 ---
 
