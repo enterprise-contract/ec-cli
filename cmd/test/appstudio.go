@@ -51,6 +51,7 @@ func appstudioReport(results []output.CheckResult, namespaces []string) applicat
 	}
 
 	report.DeriveResult(false)
+	report.DeriveNote()
 	return report
 }
 

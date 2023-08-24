@@ -276,6 +276,22 @@ func (r *TestReport) DeriveResult(hasFailures bool) {
 	}
 }
 
+// It's redundant and perhaps not very useful, but let's produce some kind of
+// a human readable note. We could perhaps make this more sophisticated in future,
+// e.g. by including an abbreviated list of failure or warning messages.
+func (r *TestReport) DeriveNote() {
+	switch {
+	case r.Result == "FAILURE":
+		r.Note = "Failures detected"
+	case r.Result == "WARNING":
+		r.Note = "Warnings detected"
+	case r.Result == "SKIPPED":
+		r.Note = "All checks were skipped"
+	case r.Result == "SUCCESS":
+		r.Note = "All checks passed successfully"
+	}
+}
+
 func OutputAppstudioReport(t TestReport) {
 	out, err := json.Marshal(t)
 	if err != nil {
