@@ -51,12 +51,12 @@ echo "Resolved revision is ${REVISION}"
 echo 'Updating infra-deployments...'
 REF="${TASK_BUNDLE_REF}" REV="${REVISION}" yq e -i \
     '.configMapGenerator[] |=
-        select(.name == "ec-defaults").literals[] = {
-            "verify_ec_task_bundle": env(REF),
-            "verify_ec_task_git_url": "https://github.com/enterprise-contract/ec-cli.git",
-            "verify_ec_task_git_revision": env(REV),
-            "verify_ec_task_git_pathInRepo": "tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml"
-        }' \
+        select(.name == "ec-defaults").literals = [
+            "verify_ec_task_bundle=" + env(REF),
+            "verify_ec_task_git_url=https://github.com/enterprise-contract/ec-cli.git",
+            "verify_ec_task_git_revision=" + env(REV),
+            "verify_ec_task_git_pathInRepo=tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml"
+        ]' \
     components/enterprise-contract/kustomization.yaml
 
 echo 'infra-deployments updated successfully'
