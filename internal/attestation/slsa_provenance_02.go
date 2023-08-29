@@ -17,59 +17,32 @@
 package attestation
 
 import (
-	"encoding/base64"
 	"encoding/json"
-	"io"
 
 	"github.com/in-toto/in-toto-golang/in_toto"
 	v02 "github.com/in-toto/in-toto-golang/in_toto/slsa_provenance/v0.2"
-	"github.com/sigstore/cosign/v2/pkg/cosign"
 	"github.com/sigstore/cosign/v2/pkg/oci"
-	"github.com/sigstore/cosign/v2/pkg/types"
 
 	"github.com/enterprise-contract/ec-cli/internal/signature"
+)
+
+const (
+	// Make it visible elsewhere
+	PredicateSLSAProvenance = v02.PredicateSLSAProvenance
 )
 
 // SLSAProvenanceFromSignature parses the SLSA Provenance v0.2 from the provided OCI
 // layer. Expects that the layer contains DSSE JSON with the embedded SLSA
 // Provenance v0.2 payload.
 func SLSAProvenanceFromSignature(sig oci.Signature) (Attestation, error) {
-	if sig == nil {
-		return nil, AT001
-	}
-	typ, err := sig.MediaType()
+	payload, err := payloadFromSig(sig)
 	if err != nil {
-		return nil, AT002.CausedBy(err)
+		return nil, err
 	}
 
-	if typ != types.DssePayloadType {
-		return nil, AT002.CausedByF("Expecting media type of `%s`, received: `%s`", types.DssePayloadType, typ)
-	}
-
-	reader, err := sig.Uncompressed()
+	embedded, err := decodedPayload(payload)
 	if err != nil {
-		return nil, AT002.CausedBy(err)
-	}
-	defer reader.Close()
-
-	payloadBytes, err := io.ReadAll(reader)
-	if err != nil {
-		return nil, AT002.CausedBy(err)
-	}
-
-	var payload cosign.AttestationPayload
-	err = json.Unmarshal(payloadBytes, &payload)
-	if err != nil {
-		return nil, AT002.CausedBy(err)
-	}
-
-	if payload.PayLoad == "" {
-		return nil, AT002.CausedByF("No `payload` data found")
-	}
-
-	embedded, err := base64.StdEncoding.DecodeString(payload.PayLoad)
-	if err != nil {
-		return nil, AT002.CausedBy(err)
+		return nil, err
 	}
 
 	var statement in_toto.ProvenanceStatementSLSA02
@@ -93,32 +66,6 @@ func SLSAProvenanceFromSignature(sig oci.Signature) (Attestation, error) {
 	return slsaProvenance{statement: statement, data: embedded, signatures: signatures}, nil
 }
 
-func createEntitySignatures(sig oci.Signature, payload cosign.AttestationPayload) ([]signature.EntitySignature, error) {
-	es, err := signature.NewEntitySignature(sig)
-	if err != nil {
-		return nil, err
-	}
-
-	var out []signature.EntitySignature
-	for _, s := range payload.Signatures {
-		esNew := es
-		// The Signature and KeyID can come from two locations, the oci.Signature or
-		// the cosign.Signature. In some cases, both are filled in, while in others
-		// only one location contains the value. The discrepancy can be seen when
-		// comparing signatures created via keyless vs long-lived key workflows. Here
-		// we prioritize the information from oci.Signature, but fallback when needed
-		// to cosign.Signature. (This inconsistency is likely a bug in cosign)
-		if esNew.Signature == "" {
-			esNew.Signature = s.Sig
-		}
-		if esNew.KeyID == "" {
-			esNew.KeyID = s.KeyID
-		}
-		out = append(out, esNew)
-	}
-	return out, nil
-}
-
 type slsaProvenance struct {
 	statement  in_toto.ProvenanceStatementSLSA02
 	data       []byte
@@ -133,6 +80,7 @@ func (a slsaProvenance) PredicateType() string {
 	return v02.PredicateSLSAProvenance
 }
 
+// This returns the raw json, not the content of a.statement
 func (a slsaProvenance) Statement() []byte {
 	return a.data
 }
@@ -141,6 +89,8 @@ func (a slsaProvenance) Signatures() []signature.EntitySignature {
 	return a.signatures
 }
 
+// Todo: It seems odd that this does not contain the statement.
+// (See also the equivalent method in attestation.go)
 func (a slsaProvenance) MarshalJSON() ([]byte, error) {
 	val := struct {
 		Type               string                      `json:"type"`

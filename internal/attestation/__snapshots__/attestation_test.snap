@@ -1,0 +1,28 @@
+
+[TestProvenanceFromSignature/unknown_predicate_type_with_signature_from_payload - 1]
+{
+ "_type": "https://in-toto.io/Statement/v0.1",
+ "predicate": {
+  "hacks": "none",
+  "secure": "very"
+ },
+ "predicateType": "https://cool-type.example.io/Amazing/v2.0"
+}
+---
+[TestProvenanceFromSignature/unknown_predicate_type_with_signature_from_certificate - 1]
+{
+ "_type": "https://in-toto.io/Statement/v0.1",
+ "predicate": {
+  "hacks": "none",
+  "secure": "very"
+ },
+ "predicateType": "https://cool-type.example.io/Amazing/v2.0"
+}
+---
+[TestProvenanceFromSignature/unknown_predicate_type_with_string_predicate_and_signature_from_certificate - 1]
+{
+ "_type": "https://in-toto.io/Statement/v0.1",
+ "predicate": "{\"secure\": \"very\", \"hacks\": \"none\"}",
+ "predicateType": "https://cool-type.example.io/Amazing/v2.0"
+}
+---

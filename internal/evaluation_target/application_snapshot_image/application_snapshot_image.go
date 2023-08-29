@@ -247,14 +247,37 @@ func (a *ApplicationSnapshotImage) ValidateAttestationSignature(ctx context.Cont
 
 	// Extract the signatures from the attestations here in order to also validate that
 	// the signatures do exist in the expected format.
-
-	for _, att := range layers {
-		sp, err := attestation.SLSAProvenanceFromSignature(att)
+	for _, sig := range layers {
+		att, err := attestation.ProvenanceFromSignature(sig)
 		if err != nil {
-			log.Debugf("Ignoring non SLSA Provenance attestation: %s", err)
-			continue
+			return fmt.Errorf("Unable to parse untyped provenance: %w", err)
 		}
-		a.attestations = append(a.attestations, sp)
+		t := att.PredicateType()
+		log.Debugf("Found attestation with predicateType: %s", t)
+		switch t {
+		case attestation.PredicateSLSAProvenance:
+			// SLSAProvenanceFromSignature does the payload extraction
+			// and decoding that was done in ProvenanceFromSignature
+			// over again. We could refactor so we're not doing that twice,
+			// but it's not super important IMO.
+			sp, err := attestation.SLSAProvenanceFromSignature(sig)
+			if err != nil {
+				return fmt.Errorf("Unable to parse as SLSA v0.2: %w", err)
+			}
+			a.attestations = append(a.attestations, sp)
+
+		case attestation.PredicateSpdxDocument:
+			// It's an SPDX format SBOM
+			// Todo maybe: We could unmarshal it into a suitable SPDX struct
+			// similar to how it's done for SLSA above
+			a.attestations = append(a.attestations, att)
+
+		// Todo: CycloneDX format SBOM
+
+		default:
+			// It's some other kind of attestation
+			a.attestations = append(a.attestations, att)
+		}
 	}
 	return nil
 }
@@ -411,8 +434,8 @@ func (a *ApplicationSnapshotImage) WriteInputFile(ctx context.Context) (string, 
 	var attestations []attestationData
 	for _, a := range a.attestations {
 		attestations = append(attestations, attestationData{
-			RawMessage: a.Statement(),
-			Extra:      attestationExtraData{Signatures: a.Signatures()},
+			RawMessage: a.Statement(),                                    // Deprecated, remove soon
+			Extra:      attestationExtraData{Signatures: a.Signatures()}, // Deprecated, remove soon
 			Statement:  a.Statement(),
 			Signatures: a.Signatures(),
 		})
