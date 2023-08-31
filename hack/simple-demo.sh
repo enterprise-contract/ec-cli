@@ -94,4 +94,4 @@ ${CONFIG}
 OPTS=${1:-}
 
 MAIN_GO=$(git rev-parse --show-toplevel)/main.go
-go run $MAIN_GO validate image --json-input "${APPLICATION_SNAPSHOT}" --policy "${POLICY}" --public-key <(echo "${PUBLIC_KEY}") --info=true $OPTS | yq -P
+go run $MAIN_GO validate image --json-input "${APPLICATION_SNAPSHOT}" --policy "${POLICY}" --public-key <(echo "${PUBLIC_KEY}") --ignore-rekor --info $OPTS | yq -P
