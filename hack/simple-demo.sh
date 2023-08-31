@@ -42,8 +42,8 @@ naYJRuLprwIv6FDhZ5yFjYUEtsmoNcW7rx2KM6FOXGsCX3BNc7qhHELT+g==
 
 # Standard default sources for the EC policies
 #
-POLICY_SOURCE="quay.io/hacbs-contract/ec-release-policy:latest"
-DATA_SOURCE="quay.io/hacbs-contract/ec-policy-data:latest"
+POLICY_SOURCE="quay.io/enterprise-contract/ec-release-policy:latest"
+DATA_SOURCE="quay.io/enterprise-contract/ec-policy-data:latest"
 
 # These should work the same if you want to use git sources
 #

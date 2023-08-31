@@ -44,7 +44,7 @@ func validateDefinitionCmd(validate definitionValidationFn) *cobra.Command {
 		strict     bool
 	}{
 		filePaths:  []string{},
-		policyURLs: []string{"oci::quay.io/hacbs-contract/ec-pipeline-policy:latest"},
+		policyURLs: []string{"oci::quay.io/enterprise-contract/ec-pipeline-policy:latest"},
 		dataURLs:   []string{"git::https://github.com/enterprise-contract/ec-policies.git//data"},
 		output:     []string{"json"},
 		namespaces: []string{},

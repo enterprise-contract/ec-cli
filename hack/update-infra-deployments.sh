@@ -34,7 +34,7 @@ function cleanup() {
     rm "${MANIFEST}"
 }
 trap cleanup EXIT
-skopeo inspect "docker://quay.io/hacbs-contract/ec-task-bundle:${TASK_BUNDLE_TAG}" --raw > "${MANIFEST}"
+skopeo inspect "docker://quay.io/enterprise-contract/ec-task-bundle:${TASK_BUNDLE_TAG}" --raw > "${MANIFEST}"
 TASK_BUNDLE_DIGEST="$(skopeo manifest-digest "${MANIFEST}")"
 REVISION="$(jq -r '.annotations["org.opencontainers.image.revision"]' "${MANIFEST}")"
 if [[ -n "${REVISION}" && "${REVISION}" != null ]]; then
@@ -42,9 +42,9 @@ if [[ -n "${REVISION}" && "${REVISION}" != null ]]; then
 fi
 # Sanity check
 diff \
-    <(skopeo inspect --raw "docker://quay.io/hacbs-contract/ec-task-bundle:${TASK_BUNDLE_TAG}") \
-    <(skopeo inspect --raw "docker://quay.io/hacbs-contract/ec-task-bundle@${TASK_BUNDLE_DIGEST}")
-TASK_BUNDLE_REF="quay.io/hacbs-contract/ec-task-bundle:${TASK_BUNDLE_TAG}@${TASK_BUNDLE_DIGEST}"
+    <(skopeo inspect --raw "docker://quay.io/enterprise-contract/ec-task-bundle:${TASK_BUNDLE_TAG}") \
+    <(skopeo inspect --raw "docker://quay.io/enterprise-contract/ec-task-bundle@${TASK_BUNDLE_DIGEST}")
+TASK_BUNDLE_REF="quay.io/enterprise-contract/ec-task-bundle:${TASK_BUNDLE_TAG}@${TASK_BUNDLE_DIGEST}"
 echo "Resolved bundle is ${TASK_BUNDLE_REF}"
 echo "Resolved revision is ${REVISION}"
 

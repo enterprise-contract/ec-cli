@@ -85,7 +85,7 @@ func fetchPolicyCmd() *cobra.Command {
 
 			Fetching policies from an OPA bundle (OCI image):
 
-			  ec fetch policy --source quay.io/hacbs-contract/ec-release-policy:latest
+			  ec fetch policy --source quay.io/enterprise-contract/ec-release-policy:latest
 
 			Notes:
 

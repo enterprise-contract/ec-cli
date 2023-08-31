@@ -180,7 +180,7 @@ go-mod-lint:
 ##@ Pushing images
 
 IMAGE_TAG ?= latest
-IMAGE_REPO ?= quay.io/hacbs-contract/ec-cli
+IMAGE_REPO ?= quay.io/enterprise-contract/ec-cli
 .PHONY: build-image
 build-image: image_$(BUILD_IMG_ARCH) ## Build container image with ec-cli
 
@@ -252,7 +252,7 @@ dev: push-image task-bundle ## Push the ec-cli and v-e-c Task Bundle to the kind
 	@rm "$(TASK)"
 
 TASK_TAG ?= latest
-TASK_REPO ?= quay.io/hacbs-contract/ec-task-bundle
+TASK_REPO ?= quay.io/enterprise-contract/ec-task-bundle
 TASK_VERSION ?= 0.1
 TASK ?= tasks/verify-enterprise-contract/$(TASK_VERSION)/verify-enterprise-contract.yaml tasks/verify-definition/$(TASK_VERSION)/verify-definition.yaml
 ifneq (,$(findstring localhost:,$(TASK_REPO)))

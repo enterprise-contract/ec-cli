@@ -47,10 +47,10 @@ spec:
   description: Demo Enterprise Contract policy configuration
   sources:
   - data:
-    - quay.io/hacbs-contract/ec-policy-data:latest
+    - quay.io/enterprise-contract/ec-policy-data:latest
     name: Default EC policy
     policy:
-    - quay.io/hacbs-contract/ec-release-policy:latest
+    - quay.io/enterprise-contract/ec-release-policy:latest
 EOF
 
 while read -r IMG
