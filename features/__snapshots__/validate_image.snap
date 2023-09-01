@@ -984,7 +984,7 @@ Error: success criteria not met
       "source": {},
       "violations": [
         {
-          "msg": "No image attestations found matching the given public key. Verify the correct public key was provided, and one or more attestations were created. Error: no matching attestations: accepted signatures do not match threshold, Found: 0, Expected 1",
+          "msg": "No image attestations found matching the given public key. Verify the correct public key was provided, and one or more attestations were created. Error: no matching attestations: could not verify envelope: accepted signatures do not match threshold, Found: 0, Expected 1",
           "metadata": {
             "code": "builtin.attestation.signature_check"
           }
