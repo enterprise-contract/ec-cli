@@ -12,8 +12,8 @@ ec validate image --policy '{
     }
     "sources": [
         {
-            "policy": ["oci::quay.io/hacbs-contract/ec-release-policy:latest"],
-            "data": ["oci::quay.io/hacbs-contract/ec-policy-data:latest"]
+            "policy": ["oci::quay.io/enterprise-contract/ec-release-policy:latest"],
+            "data": ["oci::quay.io/enterprise-contract/ec-policy-data:latest"]
         }
     ]
 }' ...

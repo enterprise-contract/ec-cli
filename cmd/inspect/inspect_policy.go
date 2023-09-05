@@ -70,11 +70,11 @@ func inspectPolicyCmd() *cobra.Command {
 		Example: hd.Doc(`
 			Print a list of rules and their descriptions from the latest Enterprise Contract release policy:
 
-			  ec inspect policy --source quay.io/hacbs-contract/ec-release-policy
+			  ec inspect policy --source quay.io/enterprise-contract/ec-release-policy
 
 			Display details about the latest Enterprise Contract release policy in json format:
 
-			  ec inspect policy --source quay.io/hacbs-contract/ec-release-policy -o json | jq
+			  ec inspect policy --source quay.io/enterprise-contract/ec-release-policy -o json | jq
 		`),
 
 		Args: cobra.NoArgs,
