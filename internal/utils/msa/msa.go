@@ -46,6 +46,8 @@ func FromJSON(str string) (MapStringAny, error) {
 }
 
 // Convert back to a plain map[string]any
+// Beware that modifying the result will mutate the original object.
+// Use the Clone method to avoid that.
 func (m MapStringAny) ToMap() map[string]any {
 	return map[string]any(m)
 }
@@ -79,6 +81,17 @@ func (m MapStringAny) ToJSONIndent(indent string) []byte {
 
 func (m MapStringAny) ToJSONIndentStr(indent string) string {
 	return string(m.ToJSONIndent(indent))
+}
+
+// Lazy clone by marshaling and unmarshaling
+func (m MapStringAny) Clone() MapStringAny {
+	result, err := FromJSONBytes(m.ToJSON())
+	if err != nil {
+		// Returning a clean MapStringAny lets you chain other method calls. An error
+		// is unlikely here so let's not make the caller deal with it.
+		panic(fmt.Errorf("Unexpected unmarshaling problem when cloning: %w", err))
+	}
+	return result
 }
 
 // Get a string value from a map with string keys

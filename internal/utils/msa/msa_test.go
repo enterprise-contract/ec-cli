@@ -108,4 +108,33 @@ func Test_MapGet(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "Unexpected type bool for key 'baz' in")
 	})
+
+	t.Run("clone", func(t *testing.T) {
+		c := data.Clone()
+		assert.JSONEq(t, jsonInput, c.ToJSONStr())
+	})
+
+	t.Run("unexpected mutation", func(t *testing.T) {
+		a, err := FromJSON(jsonInput)
+		assert.NoError(t, err)
+		b := a.ToMap()
+
+		// Modify b
+		b["foo"] = "hey"
+
+		// Notice that a was mutated, which might be unexpected
+		assert.Equal(t, "hey", a["foo"])
+	})
+
+	t.Run("using clone to avoid unexpected mutation", func(t *testing.T) {
+		a, err := FromJSON(jsonInput)
+		assert.NoError(t, err)
+		b := a.Clone().ToMap()
+
+		// Modify b
+		b["foo"] = "hey"
+
+		// This time a was not mutated
+		assert.Equal(t, "bar", a["foo"])
+	})
 }
