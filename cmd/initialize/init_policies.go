@@ -57,7 +57,7 @@ func initPoliciesCmd() *cobra.Command {
 			ctx := cmd.Context()
 			samplePolicy := hd.Doc(`
 				# Simplest never-failing policy
-				package policy.release.my_package
+				package main
 
 				# METADATA
 				# title: Allow rule

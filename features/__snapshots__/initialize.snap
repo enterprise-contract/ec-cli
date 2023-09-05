@@ -1,0 +1,29 @@
+
+[success:stdout - 1]
+[
+  {
+    "filename": "acceptance/examples/empty_input.json",
+    "namespace": "main",
+    "successes": 1
+  }
+]
+---
+
+[success:stderr - 1]
+
+---
+[appstudio success:stdout - 1]
+{
+  "timestamp": "${TIMESTAMP}",
+  "namespace": "main",
+  "successes": 1,
+  "failures": 0,
+  "warnings": 0,
+  "result": "SUCCESS",
+  "note": "All checks passed successfully"
+}
+---
+
+[appstudio success:stderr - 1]
+
+---
