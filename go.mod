@@ -8,7 +8,7 @@ require (
 	github.com/enterprise-contract/ec-cli/application v0.0.0-00010101000000-000000000000
 	github.com/enterprise-contract/enterprise-contract-controller/api v0.0.0-20230725143429-4731fc7d3b41
 	github.com/evanphx/json-patch v5.6.0+incompatible
-	github.com/gkampitakis/go-snaps v0.4.8
+	github.com/gkampitakis/go-snaps v0.4.10
 	github.com/go-logr/logr v1.2.4
 	github.com/google/go-containerregistry v0.16.1
 	github.com/hako/durafmt v0.0.0-20210608085754-5c1018a4e16b
@@ -32,8 +32,8 @@ require (
 	github.com/stuart-warren/yamlfmt v0.2.0
 	github.com/tektoncd/pipeline v0.47.0
 	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1
-	golang.org/x/net v0.14.0
-	golang.org/x/tools v0.12.1-0.20230815132531-74c255bcf846
+	golang.org/x/net v0.15.0
+	golang.org/x/tools v0.13.0
 	k8s.io/apimachinery v0.28.1
 	k8s.io/client-go v0.28.1
 	k8s.io/klog/v2 v2.100.1
@@ -130,7 +130,7 @@ require (
 	github.com/evanphx/json-patch/v5 v5.6.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
-	github.com/gkampitakis/ciinfo v0.2.4 // indirect
+	github.com/gkampitakis/ciinfo v0.2.5 // indirect
 	github.com/gkampitakis/go-diff v1.3.2 // indirect
 	github.com/go-akka/configuration v0.0.0-20200606091224-a002c0330665 // indirect
 	github.com/go-chi/chi v4.1.2+incompatible // indirect
@@ -245,7 +245,7 @@ require (
 	github.com/tchap/go-patricia/v2 v2.3.1 // indirect
 	github.com/thales-e-security/pool v0.0.2 // indirect
 	github.com/theupdateframework/go-tuf v0.6.1 // indirect
-	github.com/tidwall/gjson v1.14.4 // indirect
+	github.com/tidwall/gjson v1.16.0 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/tidwall/sjson v1.2.5 // indirect
@@ -270,13 +270,13 @@ require (
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.25.0 // indirect
-	golang.org/x/crypto v0.12.0 // indirect
+	golang.org/x/crypto v0.13.0 // indirect
 	golang.org/x/mod v0.12.0 // indirect
 	golang.org/x/oauth2 v0.11.0 // indirect
 	golang.org/x/sync v0.3.0 // indirect
-	golang.org/x/sys v0.11.0 // indirect
-	golang.org/x/term v0.11.0 // indirect
-	golang.org/x/text v0.12.0 // indirect
+	golang.org/x/sys v0.12.0 // indirect
+	golang.org/x/term v0.12.0 // indirect
+	golang.org/x/text v0.13.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
