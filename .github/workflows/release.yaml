@@ -102,7 +102,7 @@ jobs:
       - name: Create and push the tekton bundle
         env:
           TASK: "tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml tasks/verify-definition/0.1/verify-definition.yaml"
-        run: make task-bundle-snapshot TASK_TAG=$TAG TASK=<( yq e ".spec.steps[].image? = \"$EC_IMAGE_REPO:$TAG\"" $TASK | yq 'select(. != null)')
+        run: make task-bundle-snapshot TASK_REPO=quay.io/hacbs-contract/ec-task-bundle TASK_TAG=$TAG TASK=<( yq e ".spec.steps[].image? = \"$EC_IMAGE_REPO:$TAG\"" $TASK | yq 'select(. != null)')
 
       - name: Registry login (quay.io/enterprise-contract)
         run: podman login -u ${{ secrets.BUNDLE_PUSH_USER_EC  }} -p ${{ secrets.BUNDLE_PUSH_PASS_EC }} quay.io
