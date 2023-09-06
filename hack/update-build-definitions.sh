@@ -61,7 +61,7 @@ function update() {
 
     echo 'Updating build-deployments...'
     REF="${TASK_BUNDLE_REF}" yq e -i \
-        '.spec.tasks[] |= select(.name == "verify").taskRef.bundle |= env(REF)' \
+        '.spec.tasks[] |= select(.name == "verify").taskRef.params[] |= select(.name == "bundle").value |= env(REF)' \
         "${definition}"
     echo
 }
