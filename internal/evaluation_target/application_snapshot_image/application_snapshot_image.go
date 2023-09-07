@@ -294,24 +294,23 @@ func (a ApplicationSnapshotImage) ValidateAttestationSyntax(ctx context.Context)
 
 	allErrors := map[string][]jsonschema.KeyError{}
 	for _, sp := range a.attestations {
-		// at least one of the schemas needs to pass validation
-		for id, schema := range attestationSchemas {
+		pt := sp.PredicateType()
+		if schema, ok := attestationSchemas[pt]; ok {
+			// Found a validator for this predicate type so let's use it
+			log.Debugf("Attempting to validate an attestation with predicateType %s", pt)
 			if errs, err := schema.ValidateBytes(ctx, sp.Statement()); err != nil {
+				// Error while trying to validate
 				return EV002.CausedBy(err)
 			} else {
 				if len(errs) == 0 {
-					// one schema validation succeeded, consider this a success
-					// TODO: one possible drawback of this is that JSON schemas
-					// are open by default, e.g. if additionalProperties=true
-					// (the default) properties not defined in the schema are
-					// allowed, which in turn means that the document might not
-					// contain any of the properties declared in the schema
-					continue
+					log.Debugf("Statement schema was validated successfully against the %s schema", pt)
+				} else {
+					log.Debugf("Validated the statement against %s schema and found the following errors: %v", pt, errs)
+					allErrors[pt] = errs
 				}
-
-				allErrors[id] = errs
-				log.Debugf("Validated the statement against %s schema and found the following errors: %v", id, errs)
 			}
+		} else {
+			log.Debugf("No schema validation found for predicateType %s", pt)
 		}
 	}
 
@@ -321,7 +320,7 @@ func (a ApplicationSnapshotImage) ValidateAttestationSyntax(ctx context.Context)
 		return nil
 	}
 
-	log.Debug("Failed to validate statements from the attastation image against all known schemas")
+	log.Debug("Failed to validate statements from the attestation image against all known schemas")
 	msg := ""
 	for id, errs := range allErrors {
 		msg += fmt.Sprintf("\nSchema ID: %s", id)

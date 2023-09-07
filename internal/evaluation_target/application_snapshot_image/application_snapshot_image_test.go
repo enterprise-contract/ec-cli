@@ -321,6 +321,11 @@ func TestSyntaxValidationWithoutAttestations(t *testing.T) {
 	assert.True(t, strings.HasPrefix(err.Error(), "EV001: No attestation data"))
 }
 
+// Todo: Include some testing here for different attestation types.
+// (I spent some time trying to find a nice way to make fakeAtt and
+// createSimpleAttestation handle in_toto.Statement attestations as
+// well as the original in_toto.ProvenanceStatementSLSA02 attestations
+// but I wasn't able to figure it out.)
 func TestSyntaxValidation(t *testing.T) {
 	valid := createSimpleAttestation(&in_toto.ProvenanceStatementSLSA02{
 		StatementHeader: in_toto.StatementHeader{
