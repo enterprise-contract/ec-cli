@@ -28,8 +28,8 @@ import (
 
 	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/tektoncd/cli/pkg/formatted"
-	tknv1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
-	tekton "github.com/tektoncd/pipeline/pkg/client/clientset/versioned/typed/pipeline/v1beta1"
+	pipeline "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
+	tekton "github.com/tektoncd/pipeline/pkg/client/clientset/versioned/typed/pipeline/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -246,7 +246,7 @@ func (k *kindCluster) CreateNamespace(ctx context.Context) (context.Context, err
 
 // stringParam generates a Tekton Parameter optionally expanding the
 // `${NAMESPACE}` and `${POLICY_NAME}` variables
-func stringParam(name, value string, t *testState) tknv1beta1.Param {
+func stringParam(name, value string, t *testState) pipeline.Param {
 	v := os.Expand(value, func(variable string) string {
 		switch variable {
 		case "NAMESPACE":
@@ -260,10 +260,10 @@ func stringParam(name, value string, t *testState) tknv1beta1.Param {
 		return ""
 	})
 
-	return tknv1beta1.Param{
+	return pipeline.Param{
 		Name: name,
-		Value: tknv1beta1.ParamValue{
-			Type:      tknv1beta1.ParamTypeString,
+		Value: pipeline.ParamValue{
+			Type:      pipeline.ParamTypeString,
 			StringVal: v,
 		},
 	}
@@ -279,7 +279,7 @@ func (k *kindCluster) RunTask(ctx context.Context, version, name, workspace stri
 		return err
 	}
 
-	tknParams := make([]tknv1beta1.Param, 0, len(params))
+	tknParams := make([]pipeline.Param, 0, len(params))
 	for n, v := range params {
 		tknParams = append(tknParams, stringParam(n, v, t))
 	}
@@ -289,26 +289,26 @@ func (k *kindCluster) RunTask(ctx context.Context, version, name, workspace stri
 		return err
 	}
 
-	var wkspace []tknv1beta1.WorkspaceBinding
+	var wkspace []pipeline.WorkspaceBinding
 	if workspace != "" {
-		wkspace = append(wkspace, tknv1beta1.WorkspaceBinding{
+		wkspace = append(wkspace, pipeline.WorkspaceBinding{
 			Name:     workspace,
 			EmptyDir: &v1.EmptyDirVolumeSource{},
 		})
 	}
 
-	tr, err := tkn.TaskRuns(t.namespace).Create(ctx, &tknv1beta1.TaskRun{
+	tr, err := tkn.TaskRuns(t.namespace).Create(ctx, &pipeline.TaskRun{
 		ObjectMeta: metav1.ObjectMeta{
 			GenerateName: "acceptance-taskrun-",
 		},
-		Spec: tknv1beta1.TaskRunSpec{
+		Spec: pipeline.TaskRunSpec{
 			Workspaces:         wkspace,
 			Params:             tknParams,
 			ServiceAccountName: "default",
-			TaskRef: &tknv1beta1.TaskRef{
-				ResolverRef: tknv1beta1.ResolverRef{
+			TaskRef: &pipeline.TaskRef{
+				ResolverRef: pipeline.ResolverRef{
 					Resolver: "bundles",
-					Params: []tknv1beta1.Param{
+					Params: []pipeline.Param{
 						stringParam("bundle", fmt.Sprintf("registry.image-registry.svc.cluster.local:%d/ec-task-bundle:%s", k.registryPort, version), t),
 						stringParam("name", name, t),
 						stringParam("kind", "task", t),
@@ -348,7 +348,7 @@ func (k *kindCluster) AwaitUntilTaskIsDone(ctx context.Context) (bool, error) {
 	}
 
 	for e := range watch.ResultChan() {
-		tr, ok := e.Object.(*tknv1beta1.TaskRun)
+		tr, ok := e.Object.(*pipeline.TaskRun)
 		if !ok {
 			return false, fmt.Errorf("received unexpected object when watching the TaskRun: %v", e.Object.GetObjectKind())
 		}
@@ -377,7 +377,7 @@ func (k *kindCluster) TaskInfo(ctx context.Context) (*types.TaskInfo, error) {
 	}
 
 	results := map[string]any{}
-	for _, r := range tr.Status.TaskRunResults {
+	for _, r := range tr.Status.Results {
 		results[r.Name] = r.Value
 	}
 
@@ -395,7 +395,7 @@ func (k *kindCluster) TaskInfo(ctx context.Context) (*types.TaskInfo, error) {
 
 	info.Steps = make([]types.Step, 0, len(tr.Status.Steps))
 	for _, s := range tr.Status.Steps {
-		logs, err := k.logs(ctx, t.namespace, tr.Status.PodName, s.ContainerName)
+		logs, err := k.logs(ctx, t.namespace, tr.Status.PodName, s.Container)
 		if err != nil {
 			return nil, err
 		}
@@ -410,13 +410,13 @@ func (k *kindCluster) TaskInfo(ctx context.Context) (*types.TaskInfo, error) {
 	return &info, nil
 }
 
-func paramValue(v tknv1beta1.ParamValue) any {
+func paramValue(v pipeline.ParamValue) any {
 	switch v.Type {
-	case tknv1beta1.ParamTypeString:
+	case pipeline.ParamTypeString:
 		return v.StringVal
-	case tknv1beta1.ParamTypeArray:
+	case pipeline.ParamTypeArray:
 		return v.ArrayVal
-	case tknv1beta1.ParamTypeObject:
+	case pipeline.ParamTypeObject:
 		return v.ObjectVal
 	}
 
