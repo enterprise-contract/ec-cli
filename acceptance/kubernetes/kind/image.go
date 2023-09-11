@@ -25,7 +25,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
+	v1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
 	"sigs.k8s.io/yaml"
 )
 
@@ -89,7 +89,7 @@ func (k *kindCluster) buildTaskBundleImage(ctx context.Context) error {
 				return err
 			}
 
-			var taskDefinition v1beta1.Task
+			var taskDefinition v1.Task
 			if err := yaml.Unmarshal(bytes, &taskDefinition); err != nil {
 				return err
 			}

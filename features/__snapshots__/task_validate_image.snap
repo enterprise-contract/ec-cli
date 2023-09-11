@@ -359,7 +359,9 @@ TUF_MIRROR not set. Skipping TUF root initialization.
 ---
 
 [Strict with failures:results - 1]
-{}
+{
+  "TEST_OUTPUT": "{\"timestamp\":\"${TIMESTAMP}\",\"namespace\":\"\",\"successes\":0,\"failures\":1,\"warnings\":0,\"result\":\"FAILURE\"}"
+}
 ---
 
 [Non strict with failures:results - 1]

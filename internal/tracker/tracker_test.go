@@ -32,7 +32,7 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/random"
 	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/stretchr/testify/assert"
-	"github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
+	pipeline "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
 	"github.com/tektoncd/pipeline/pkg/remote/oci"
 	"k8s.io/apimachinery/pkg/runtime"
 )
@@ -519,19 +519,19 @@ func mustCreateFakeBundleImage(defs []fakeDefinition) v1.Image {
 }
 
 func mustCreateFakePipelineObject() runtime.Object {
-	gitCloneTask := v1beta1.PipelineTask{
-		TaskRef: &v1beta1.TaskRef{
+	gitCloneTask := pipeline.PipelineTask{
+		TaskRef: &pipeline.TaskRef{
 			Name: "git-clone",
 		},
 	}
-	buildahTask := v1beta1.PipelineTask{
-		TaskRef: &v1beta1.TaskRef{
-			ResolverRef: v1beta1.ResolverRef{
+	buildahTask := pipeline.PipelineTask{
+		TaskRef: &pipeline.TaskRef{
+			ResolverRef: pipeline.ResolverRef{
 				Resolver: "bundle",
-				Params: []v1beta1.Param{
+				Params: []pipeline.Param{
 					{
 						Name: "name",
-						Value: v1beta1.ParamValue{
+						Value: pipeline.ParamValue{
 							StringVal: "buildah",
 						},
 					},
@@ -539,15 +539,15 @@ func mustCreateFakePipelineObject() runtime.Object {
 			},
 		},
 	}
-	summaryTask := v1beta1.PipelineTask{
-		TaskRef: &v1beta1.TaskRef{
+	summaryTask := pipeline.PipelineTask{
+		TaskRef: &pipeline.TaskRef{
 			Name: "summary",
 		},
 	}
-	pipeline := v1beta1.Pipeline{}
-	pipeline.SetDefaults(context.Background())
-	pipeline.Spec.Tasks = []v1beta1.PipelineTask{gitCloneTask, buildahTask}
-	pipeline.Spec.Finally = []v1beta1.PipelineTask{summaryTask}
+	p := pipeline.Pipeline{}
+	p.SetDefaults(context.Background())
+	p.Spec.Tasks = []pipeline.PipelineTask{gitCloneTask, buildahTask}
+	p.Spec.Finally = []pipeline.PipelineTask{summaryTask}
 
-	return &pipeline
+	return &p
 }
