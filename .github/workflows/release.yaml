@@ -108,7 +108,7 @@ jobs:
         run: podman login -u ${{ secrets.BUNDLE_PUSH_USER  }} -p ${{ secrets.BUNDLE_PUSH_PASS }} quay.io
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@2b82ce82d56a2a04d2637cd93a637ae1b359c0a7 # v2.2.0
+        uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3.0.0
 
       # TODO: Remove this once all references to quay.io/hacbs-contract are removed
       - name: Create and push image
