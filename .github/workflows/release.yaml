@@ -28,6 +28,21 @@ permissions:
   contents: read
 
 jobs:
+  info:
+    name: Info
+    runs-on: ubuntu-latest
+    outputs:
+      head_sha: ${{ steps.head_sha.outputs.head_sha }}
+
+    steps:
+      - name: Git Info
+        id: head_sha
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_COBRA: 1
+        run: |
+          echo head_sha=$(gh api /repos/enterprise-contract/ec-cli/git/matching-refs/heads/main --jq '.[0].object.sha') >> "$GITHUB_OUTPUT"
+
   release:
 
     permissions:
@@ -36,7 +51,8 @@ jobs:
       id-token: write  # Needed for GitHub Pages deployment
     name: Release
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event.workflow_dispatch }}
+    needs: info
+    if: ${{ (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_sha == needs.info.outputs.head_sha) || github.event.workflow_dispatch }}
 
     env:
       IMAGE_REPO: quay.io/hacbs-contract/ec-cli
