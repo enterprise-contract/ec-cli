@@ -6,25 +6,32 @@
 #   test that certain rego functions are not allowed.
 package policy.capabilities
 
+import future.keywords.contains
 import future.keywords.if
 
 # METADATA
 # title: use env var
-deny if {
+deny contains msg if {
     opa.runtime().env.TOP_SECRET
+
+	msg := "boom"
 }
 
 # METADATA
 # title: use http.send
-deny if {
+deny contains msg if {
 	http.send({
 		"url": "http://localhost:8080/theft?secret=top-secret",
 		"method": "GET",
 	})
+
+	msg := "boom"
 }
 
 # METADATA
 # title: use net.lookup_ip_addr
-deny if {
+deny contains msg if {
     net.lookup_ip_addr("foo.bar")
+
+	msg := "boom"
 }
