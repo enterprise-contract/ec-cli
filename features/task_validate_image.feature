@@ -29,6 +29,7 @@ Feature: Verify Enterprise Contract Tekton Tasks
       | IMAGES               | {"components": [{"containerImage": "quay.io/hacbs-contract-demo/golden-container@sha256:e76a4ae9dd8a52a0d191fd34ca133af5b4f2609536d32200a4a40a09fdc93a0d"}]} |
       | POLICY_CONFIGURATION | ${NAMESPACE}/${POLICY_NAME}                                                                                                                                  |
       | STRICT               | true                                                                                                                                                         |
+      | IGNORE_REKOR         | true                                                                                                                                                         |
     Then the task should succeed
      And the task logs for step "report" should match the snapshot
      And the task results should match the snapshot
@@ -58,6 +59,7 @@ Feature: Verify Enterprise Contract Tekton Tasks
       | POLICY_CONFIGURATION | ${NAMESPACE}/${POLICY_NAME}                                                                                                                                  |
       | TUF_MIRROR           | ${TUF}                                                                                                                                                       |
       | STRICT               | true                                                                                                                                                         |
+      | IGNORE_REKOR         | true                                                                                                                                                         |
     Then the task should succeed
      And the task logs for step "report" should match the snapshot
      And the task logs for step "initialize-tuf" should match the snapshot
@@ -88,6 +90,7 @@ Feature: Verify Enterprise Contract Tekton Tasks
       | POLICY_CONFIGURATION | ${NAMESPACE}/${POLICY_NAME}                                                                                                                                  |
       | TUF_MIRROR           | http://tuf.invalid                                                                                                                                           |
       | STRICT               | true                                                                                                                                                         |
+      | IGNORE_REKOR         | true                                                                                                                                                         |
     Then the task should fail
      And the task logs for step "report" should match the snapshot
      And the task logs for step "initialize-tuf" should match the snapshot
@@ -122,6 +125,7 @@ Feature: Verify Enterprise Contract Tekton Tasks
       | IMAGES               | {"components": [{"containerImage": "${REGISTRY}/acceptance/non-strict-with-warnings"}]} |
       | POLICY_CONFIGURATION | ${NAMESPACE}/${POLICY_NAME}                                                             |
       | STRICT               | false                                                                                   |
+      | IGNORE_REKOR         | true                                                                                    |
     Then the task should succeed
     And the task logs for step "report" should match the snapshot
     And the task results should match the snapshot
@@ -155,6 +159,7 @@ Feature: Verify Enterprise Contract Tekton Tasks
       | IMAGES               | {"components": [{"containerImage": "${REGISTRY}/acceptance/strict-with-warnings"}]} |
       | POLICY_CONFIGURATION | ${NAMESPACE}/${POLICY_NAME}                                                         |
       | STRICT               | true                                                                                |
+      | IGNORE_REKOR         | true                                                                                |
     Then the task should succeed
      And the task logs for step "report" should match the snapshot
      And the task results should match the snapshot
@@ -172,6 +177,7 @@ Feature: Verify Enterprise Contract Tekton Tasks
       | IMAGES               | {"components": [{"containerImage": "${REGISTRY}/acceptance/does-not-exist"}]} |
       | POLICY_CONFIGURATION | ${NAMESPACE}/${POLICY_NAME}                                                   |
       | STRICT               | false                                                                         |
+      | IGNORE_REKOR         | true                                                                          |
     Then the task should succeed
      And the task logs for step "report" should match the snapshot
      And the task results should match the snapshot
@@ -189,6 +195,7 @@ Feature: Verify Enterprise Contract Tekton Tasks
       | IMAGES               | {"components": [{"containerImage": "${REGISTRY}/acceptance/does-not-exist"}]} |
       | POLICY_CONFIGURATION | ${NAMESPACE}/${POLICY_NAME}                                                   |
       | STRICT               | true                                                                          |
+      | IGNORE_REKOR         | true                                                                          |
     Then the task should fail
      And the task logs for step "report" should match the snapshot
      And the task results should match the snapshot
@@ -208,6 +215,7 @@ Feature: Verify Enterprise Contract Tekton Tasks
     When version 0.1 of the task named "verify-enterprise-contract" is run with parameters:
       | IMAGES               | {"components": [{"containerImage": "${REGISTRY}/acceptance/okayish"}]} |
       | POLICY_CONFIGURATION | ${NAMESPACE}/${POLICY_NAME}                                                   |
+      | IGNORE_REKOR         | true                                                                          |
     Then the task should succeed
     And the task logs for step "initialize-tuf" should match the snapshot
      And the task logs for step "report" should match the snapshot
