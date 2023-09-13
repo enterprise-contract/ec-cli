@@ -214,7 +214,7 @@ require (
 	golang.org/x/term v0.12.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
-	golang.org/x/tools v0.12.1-0.20230815132531-74c255bcf846 // indirect
+	golang.org/x/tools v0.13.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
 	google.golang.org/api v0.138.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
@@ -232,7 +232,7 @@ require (
 	k8s.io/kube-openapi v0.0.0-20230831192431-0d7b43eda7ba // indirect
 	k8s.io/utils v0.0.0-20230726121419-3b25d923346b // indirect
 	knative.dev/pkg v0.0.0-20230718152110-aef227e72ead // indirect
-	sigs.k8s.io/controller-runtime v0.16.1 // indirect
+	sigs.k8s.io/controller-runtime v0.16.2 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.3.0 // indirect
 )
