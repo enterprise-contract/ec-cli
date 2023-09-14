@@ -846,7 +846,7 @@ func RawImageSignaturesFrom(ctx context.Context) map[string]string {
 	return ret
 }
 
-func applyPatches(statement *in_toto.ProvenanceStatement, patches *godog.Table) (*in_toto.ProvenanceStatement, error) {
+func applyPatches(statement *in_toto.ProvenanceStatementSLSA02, patches *godog.Table) (*in_toto.ProvenanceStatementSLSA02, error) {
 	if statement == nil || patches == nil || len(patches.Rows) == 0 {
 		return statement, nil
 	}
@@ -869,7 +869,7 @@ func applyPatches(statement *in_toto.ProvenanceStatement, patches *godog.Table) 
 		}
 	}
 
-	var modified in_toto.ProvenanceStatement
+	var modified in_toto.ProvenanceStatementSLSA02
 	if err := json.Unmarshal(stmt, &modified); err != nil {
 		return nil, err
 	}

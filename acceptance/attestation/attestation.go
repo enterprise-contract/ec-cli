@@ -42,7 +42,7 @@ const (
 
 // CreateStatementFor creates an empty statement that can be further customized
 // to add and subsequently signed by SignStatement.
-func CreateStatementFor(imageName string, image v1.Image) (*in_toto.ProvenanceStatement, error) {
+func CreateStatementFor(imageName string, image v1.Image) (*in_toto.ProvenanceStatementSLSA02, error) {
 	digest, err := image.Digest()
 	if err != nil {
 		return nil, err
@@ -63,7 +63,7 @@ func CreateStatementFor(imageName string, image v1.Image) (*in_toto.ProvenanceSt
 		return nil, err
 	}
 
-	if statement, ok := obj.(in_toto.ProvenanceStatement); ok {
+	if statement, ok := obj.(in_toto.ProvenanceStatementSLSA02); ok {
 		return &statement, nil
 	}
 
@@ -72,7 +72,7 @@ func CreateStatementFor(imageName string, image v1.Image) (*in_toto.ProvenanceSt
 
 // SignStatement signs the provided statement with the named key. The key needs
 // to be previously generated with the functionality from the crypto package.
-func SignStatement(ctx context.Context, keyName string, statement in_toto.ProvenanceStatement) ([]byte, error) {
+func SignStatement(ctx context.Context, keyName string, statement in_toto.ProvenanceStatementSLSA02) ([]byte, error) {
 	payload, err := json.Marshal(statement)
 	if err != nil {
 		return nil, err
