@@ -35,7 +35,7 @@ require (
 	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63
 	gopkg.in/square/go-jose.v2 v2.6.0
 	k8s.io/api v0.28.1
-	k8s.io/apimachinery v0.28.1
+	k8s.io/apimachinery v0.28.2
 	k8s.io/client-go v0.28.1
 	sigs.k8s.io/kind v0.20.0
 	sigs.k8s.io/kustomize/api v0.14.0
