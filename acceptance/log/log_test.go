@@ -14,6 +14,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+//go:build unit
+
 // Package log forwards logs to testing.T.Log* methods
 package log
 
