@@ -171,7 +171,7 @@ func TestSLSAProvenanceFromSignature(t *testing.T) {
 				l.On("MediaType").Return(types.MediaType(ct.DssePayloadType), nil)
 				l.On("Uncompressed").Return(io.NopCloser(&bytes.Buffer{}), nil)
 			},
-			err: AT002.CausedByF("unexpected end of JSON input"),
+			err: AT002.CausedByF("EOF"),
 		},
 		{
 			name: "empty payload JSON",
@@ -187,11 +187,11 @@ func TestSLSAProvenanceFromSignature(t *testing.T) {
 			name: "invalid attestation payload JSON",
 			setup: func(l *mockSignature) {
 				sig1 := `{"keyid": "key-id-1", "sig": "sig-1"}`
-				payload := fmt.Sprintf(`{"signatures": [%s]}}}}}`, sig1)
+				payload := fmt.Sprintf(`{{"signatures": [%s]}`, sig1)
 				l.On("MediaType").Return(types.MediaType(ct.DssePayloadType), nil)
 				l.On("Uncompressed").Return(buffy(payload), nil)
 			},
-			err: AT002.CausedByF("invalid character '}' after top-level value"),
+			err: AT002.CausedByF("invalid character '{' looking for beginning of object key string"),
 		},
 		{
 			name: "invalid statement JSON",
@@ -208,17 +208,17 @@ func TestSLSAProvenanceFromSignature(t *testing.T) {
 			name: "invalid statement JSON",
 			setup: func(l *mockSignature) {
 				sig1 := `{"keyid": "key-id-1", "sig": "sig-1"}`
-				payload := encode(`{
+				payload := encode(`{{
 					"_type": "https://in-toto.io/Statement/v0.1",
 					"predicateType":"https://slsa.dev/provenance/v0.2",
-					"predicate":{} }}}}}}}}}
+					"predicate":{} }
 				}`)
 				l.On("MediaType").Return(types.MediaType(ct.DssePayloadType), nil)
 				l.On("Uncompressed").Return(buffy(
 					fmt.Sprintf(`{"signatures": [%s], "payload": "%s"}`, sig1, payload),
 				), nil)
 			},
-			err: AT002.CausedByF("invalid character '}' after top-level value"),
+			err: AT002.CausedByF("invalid character '{' looking for beginning of object key string"),
 		},
 		{
 			name: "unexpected predicate type",
