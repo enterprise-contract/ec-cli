@@ -25,9 +25,13 @@ import (
 var TrackCmd *cobra.Command
 
 func init() {
-	TrackCmd = &cobra.Command{
+	TrackCmd = NewTrackCmd()
+	TrackCmd.AddCommand(trackBundleCmd(tracker.Track, tracker.PullImage, tracker.PushImage))
+}
+
+func NewTrackCmd() *cobra.Command {
+	return &cobra.Command{
 		Use:   "track",
 		Short: "Record resource references for tracking purposes",
 	}
-	TrackCmd.AddCommand(trackBundleCmd(tracker.Track, tracker.PullImage, tracker.PushImage))
 }

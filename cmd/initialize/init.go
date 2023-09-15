@@ -23,9 +23,13 @@ import (
 var InitCmd *cobra.Command
 
 func init() {
-	InitCmd = &cobra.Command{
+	InitCmd = NewInitCmd()
+	InitCmd.AddCommand(initPoliciesCmd())
+}
+
+func NewInitCmd() *cobra.Command {
+	return &cobra.Command{
 		Use:   "init",
 		Short: "Initialize a directory for use",
 	}
-	InitCmd.AddCommand(initPoliciesCmd())
 }

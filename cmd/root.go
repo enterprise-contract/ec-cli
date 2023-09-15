@@ -21,51 +21,22 @@ import (
 	"os"
 	"time"
 
-	hd "github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 
 	"github.com/enterprise-contract/ec-cli/cmd/fetch"
 	"github.com/enterprise-contract/ec-cli/cmd/initialize"
 	"github.com/enterprise-contract/ec-cli/cmd/inspect"
+	"github.com/enterprise-contract/ec-cli/cmd/root"
 	"github.com/enterprise-contract/ec-cli/cmd/test"
 	"github.com/enterprise-contract/ec-cli/cmd/track"
 	"github.com/enterprise-contract/ec-cli/cmd/validate"
 	"github.com/enterprise-contract/ec-cli/cmd/version"
 	"github.com/enterprise-contract/ec-cli/internal/kubernetes"
-	"github.com/enterprise-contract/ec-cli/internal/logging"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
-var cancel context.CancelFunc
-
 // RootCmd represents the base command when called without any subcommands
-var RootCmd = &cobra.Command{
-	Use:   "ec",
-	Short: "Enterprise Contract CLI",
-
-	Long: hd.Doc(`
-		Enterprise Contract CLI
-
-		Set of commands to help validate resources with the Enterprise Contract.
-	`),
-
-	SilenceUsage: true,
-
-	PersistentPreRun: func(cmd *cobra.Command, _ []string) {
-		logging.InitLogging(verbose, quiet, debug, trace)
-
-		// Create a new context now that flags have been parsed so a custom timeout can be used.
-		ctx := cmd.Context()
-		ctx, cancel = context.WithTimeout(ctx, globalTimeout)
-		cmd.SetContext(ctx)
-	},
-
-	PersistentPostRun: func(cmd *cobra.Command, _ []string) {
-		if cancel != nil {
-			cancel()
-		}
-	},
-}
+var RootCmd = root.NewRootCmd(quiet, verbose, debug, trace, globalTimeout)
 
 var quiet bool = false
 var verbose bool = false
@@ -74,12 +45,16 @@ var trace bool = false
 var globalTimeout = 5 * time.Minute
 
 func init() {
-	RootCmd.PersistentFlags().BoolVar(&quiet, "quiet", quiet, "less verbose output")
-	RootCmd.PersistentFlags().BoolVar(&verbose, "verbose", verbose, "more verbose output")
-	RootCmd.PersistentFlags().BoolVar(&debug, "debug", debug, "same as verbose but also show function names and line numbers")
-	RootCmd.PersistentFlags().BoolVar(&trace, "trace", trace, "enable trace logging")
-	RootCmd.PersistentFlags().DurationVar(&globalTimeout, "timeout", globalTimeout, "max overall execution duration")
-	kubernetes.AddKubeconfigFlag(RootCmd)
+	setFlags(RootCmd)
+}
+
+func setFlags(rootCmd *cobra.Command) {
+	rootCmd.PersistentFlags().BoolVar(&quiet, "quiet", quiet, "less verbose output")
+	rootCmd.PersistentFlags().BoolVar(&verbose, "verbose", verbose, "more verbose output")
+	rootCmd.PersistentFlags().BoolVar(&debug, "debug", debug, "same as verbose but also show function names and line numbers")
+	rootCmd.PersistentFlags().BoolVar(&trace, "trace", trace, "enable trace logging")
+	rootCmd.PersistentFlags().DurationVar(&globalTimeout, "timeout", globalTimeout, "max overall execution duration")
+	kubernetes.AddKubeconfigFlag(rootCmd)
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

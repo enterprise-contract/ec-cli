@@ -23,9 +23,13 @@ import (
 var FetchCmd *cobra.Command
 
 func init() {
-	FetchCmd = &cobra.Command{
+	FetchCmd = NewFetchCmd()
+	FetchCmd.AddCommand(fetchPolicyCmd())
+}
+
+func NewFetchCmd() *cobra.Command {
+	return &cobra.Command{
 		Use:   "fetch",
 		Short: "Fetch remote resources",
 	}
-	FetchCmd.AddCommand(fetchPolicyCmd())
 }
