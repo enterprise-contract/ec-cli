@@ -55,21 +55,7 @@ func initPoliciesCmd() *cobra.Command {
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
-			fs := utils.FS(ctx)
-			workDir := destDir
-			err := fs.MkdirAll(workDir, 0755)
-			if err != nil {
-				log.Debug("Failed to create policy directory!")
-				return err
-			}
-			policyPath := filepath.Join(workDir, "sample.rego")
-			file, err := fs.Create(policyPath)
-			if err != nil {
-				log.Debug("Failed to create sample policy!")
-				return err
-			}
-			defer file.Close()
-			fmt.Fprintf(file, "%s", hd.Doc(`
+			samplePolicy := hd.Doc(`
 				# Simplest never-failing policy
 				package policy.release.my_package
 
@@ -86,16 +72,30 @@ func initPoliciesCmd() *cobra.Command {
 					false
 					result := "Never denies"
 				}
-			`))
-
+			`)
+			if destDir == "" {
+				fmt.Fprintf(cmd.OutOrStdout(), "%s", samplePolicy)
+				return nil
+			}
+			fs := utils.FS(ctx)
+			workDir := destDir
+			err := fs.MkdirAll(workDir, 0755)
+			if err != nil {
+				log.Debug("Failed to create policy directory!")
+				return err
+			}
+			policyPath := filepath.Join(workDir, "sample.rego")
+			file, err := fs.Create(policyPath)
+			if err != nil {
+				log.Debug("Failed to create sample policy!")
+				return err
+			}
+			defer file.Close()
+			fmt.Fprintf(file, "%s", samplePolicy)
 			return nil
 		},
 	}
 
-	cmd.Flags().StringVarP(&destDir, "dest-dir", "d", "", "Directory to use when creating EC policy scaffolding")
-	if err := cmd.MarkFlagRequired("dest-dir"); err != nil {
-		panic(err)
-	}
-
+	cmd.Flags().StringVarP(&destDir, "dest-dir", "d", "", "Directory to use when creating EC policy scaffolding. If not specified stdout will be used.")
 	return cmd
 }

@@ -18,11 +18,11 @@ package initialize
 
 import (
 	"bytes"
+	"context"
 	"testing"
 
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
-	"golang.org/x/net/context"
 
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
@@ -33,14 +33,51 @@ func TestInitializeNoError(t *testing.T) {
 
 	cmd := initPoliciesCmd()
 	cmd.SetContext(ctx)
-	buffy := bytes.Buffer{}
-	cmd.SetOut(&buffy)
+	buffy := new(bytes.Buffer)
+	cmd.SetOut(buffy)
 
 	cmd.SetArgs([]string{
 		"--dest-dir",
-		"todo",
+		"sample",
 	})
 
 	err := cmd.Execute()
 	assert.NoError(t, err)
+}
+
+func TestInitializeSamplePolicy(t *testing.T) {
+	fs := afero.NewMemMapFs()
+	ctx := utils.WithFS(context.Background(), fs)
+
+	cmd := initPoliciesCmd()
+	cmd.SetContext(ctx)
+	buffy := new(bytes.Buffer)
+	cmd.SetOut(buffy)
+
+	cmd.SetArgs([]string{
+		"--dest-dir",
+		"sample",
+	})
+
+	err := cmd.Execute()
+	assert.NoError(t, err)
+	samplePolicy, err := afero.ReadFile(fs, "sample/sample.rego")
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Contains(t, string(samplePolicy), "Simplest never-failing policy")
+}
+
+func TestInitializeStdOut(t *testing.T) {
+	fs := afero.NewMemMapFs()
+	ctx := utils.WithFS(context.Background(), fs)
+
+	cmd := initPoliciesCmd()
+	cmd.SetContext(ctx)
+	buffy := bytes.Buffer{}
+	cmd.SetOut(&buffy)
+
+	err := cmd.Execute()
+	assert.NoError(t, err)
+	assert.Contains(t, buffy.String(), "Simplest never-failing policy")
 }
