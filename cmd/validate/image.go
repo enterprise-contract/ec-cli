@@ -68,6 +68,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 
 		// Default policy from an ECP cluster resource
 		policyConfiguration: "enterprise-contract-service/default",
+		strict:              true,
 	}
 	cmd := &cobra.Command{
 		Use:   "image",
@@ -120,7 +121,11 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 
 			Return a non-zero status code on validation failure:
 
-			  ec validate image --image registry/name:tag --strict
+			  ec validate image --image registry/name:tag 
+			
+		  	Return a zero status code even if there are validation failures:
+			
+			  ec validate image --image registry/name:tag --strict=false
 
 			Use an EnterpriseContractPolicy resource from the currently active kubernetes context:
 
@@ -402,7 +407,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		"[DEPRECATED] write output to a file. Use empty string for stdout, default behavior")
 
 	cmd.Flags().BoolVarP(&data.strict, "strict", "s", data.strict,
-		"return non-zero status on non-successful validation")
+		"Return non-zero status on non-successful validation. Defaults to true. Use --strict=false to return a zero status code.")
 
 	cmd.Flags().StringVar(&data.effectiveTime, "effective-time", policy.Now, hd.Doc(`
 		Run policy checks with the provided time. Useful for testing rules with

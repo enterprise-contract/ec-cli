@@ -790,6 +790,7 @@ func Test_FailureImageAccessibility(t *testing.T) {
 	}
 
 	cmd := validateImageCmd(validate)
+	cmd.SilenceUsage = true // The root command is set to prevent usage printouts when running the CLI directly. This setup is temporary workaround.
 
 	cmd.SetContext(utils.WithFS(context.TODO(), afero.NewMemMapFs()))
 
@@ -810,7 +811,7 @@ func Test_FailureImageAccessibility(t *testing.T) {
 	utils.SetTestRekorPublicKey(t)
 
 	err := cmd.Execute()
-	assert.NoError(t, err)
+	assert.Error(t, err)
 	assert.JSONEq(t, fmt.Sprintf(`{
 		"success": false,
 		"ec-version": "development",
@@ -854,6 +855,7 @@ func Test_FailureOutput(t *testing.T) {
 	}
 
 	cmd := validateImageCmd(validate)
+	cmd.SilenceUsage = true // The root command is set to prevent usage printouts when running the CLI directly. This setup is temporary workaround.
 
 	cmd.SetContext(utils.WithFS(context.TODO(), afero.NewMemMapFs()))
 
@@ -874,7 +876,7 @@ func Test_FailureOutput(t *testing.T) {
 	utils.SetTestRekorPublicKey(t)
 
 	err := cmd.Execute()
-	assert.NoError(t, err)
+	assert.Error(t, err)
 	assert.JSONEq(t, fmt.Sprintf(`{
 		"success": false,
 		"ec-version": "development",
