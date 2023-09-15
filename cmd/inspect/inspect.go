@@ -23,10 +23,14 @@ import (
 var InspectCmd *cobra.Command
 
 func init() {
-	InspectCmd = &cobra.Command{
+	InspectCmd = NewInspectCmd()
+	InspectCmd.AddCommand(inspectPolicyCmd())
+	InspectCmd.AddCommand(inspectPolicyDataCmd())
+}
+
+func NewInspectCmd() *cobra.Command {
+	return &cobra.Command{
 		Use:   "inspect",
 		Short: "Inspect policy rules",
 	}
-	InspectCmd.AddCommand(inspectPolicyCmd())
-	InspectCmd.AddCommand(inspectPolicyDataCmd())
 }

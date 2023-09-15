@@ -26,14 +26,19 @@ import (
 var ValidateCmd *cobra.Command
 
 func init() {
-	ValidateCmd = &cobra.Command{
-		Use:   "validate",
-		Short: "Validate conformance with the Enterprise Contract",
-	}
-	ValidateCmd.PersistentFlags().Bool("show-successes", false, "")
+	ValidateCmd = NewValidateCmd()
 }
 
 func init() {
 	ValidateCmd.AddCommand(validateImageCmd(image.ValidateImage))
 	ValidateCmd.AddCommand(validateDefinitionCmd(definition.ValidateDefinition))
+}
+
+func NewValidateCmd() *cobra.Command {
+	validateCmd := &cobra.Command{
+		Use:   "validate",
+		Short: "Validate conformance with the Enterprise Contract",
+	}
+	validateCmd.PersistentFlags().Bool("show-successes", false, "")
+	return validateCmd
 }
