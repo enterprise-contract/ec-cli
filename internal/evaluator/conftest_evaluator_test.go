@@ -196,7 +196,7 @@ func TestConftestEvaluatorEvaluateTimeBased(t *testing.T) {
 
 	evaluator, err := NewConftestEvaluator(ctx, []source.PolicySource{
 		testPolicySource{},
-	}, pol)
+	}, pol, nil)
 
 	assert.NoError(t, err)
 	actualResults, data, err := evaluator.Evaluate(ctx, inputs)
@@ -236,7 +236,7 @@ func TestConftestEvaluatorCapabilities(t *testing.T) {
 
 	evaluator, err := NewConftestEvaluator(ctx, []source.PolicySource{
 		testPolicySource{},
-	}, p)
+	}, p, nil)
 	assert.NoError(t, err)
 
 	blob, err := afero.ReadFile(fs, evaluator.CapabilitiesPath())
@@ -285,7 +285,7 @@ func TestConftestEvaluatorEvaluateNoSuccessWarningsOrFailures(t *testing.T) {
 
 	evaluator, err := NewConftestEvaluator(ctx, []source.PolicySource{
 		testPolicySource{},
-	}, p)
+	}, p, nil)
 
 	assert.NoError(t, err)
 	actualResults, data, err := evaluator.Evaluate(ctx, inputs)
@@ -1107,7 +1107,7 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 
 			evaluator, err := NewConftestEvaluator(ctx, []source.PolicySource{
 				testPolicySource{},
-			}, p)
+			}, p, nil)
 
 			assert.NoError(t, err)
 			got, data, err := evaluator.Evaluate(ctx, inputs)
@@ -1604,7 +1604,7 @@ func TestConftestEvaluatorEvaluate(t *testing.T) {
 			Url:  rules,
 			Kind: source.PolicyKind,
 		},
-	}, p)
+	}, p, nil)
 	require.NoError(t, err)
 
 	results, data, err := evaluator.Evaluate(ctx, []string{path.Join(dir, "inputs")})
@@ -1648,11 +1648,93 @@ func TestUnconformingRule(t *testing.T) {
 			Url:  rules,
 			Kind: source.PolicyKind,
 		},
-	}, p)
+	}, p, nil)
 	require.NoError(t, err)
 
 	_, _, err = evaluator.Evaluate(ctx, []string{path.Join(dir, "inputs")})
 	assert.EqualError(t, err, `the rule "deny = true { true }" returns an unsupported value, at no_msg.rego:3`)
+}
+
+func TestNewConftestEvaluatorComputeIncludeExclude(t *testing.T) {
+	cases := []struct {
+		name            string
+		globalConfig    *ecc.EnterpriseContractPolicyConfiguration
+		sourceConfig    *ecc.SourceConfig
+		expectedInclude []string
+		expectedExclude []string
+	}{
+		{name: "no config", expectedInclude: []string{"*"}},
+		{
+			name:            "empty global config",
+			globalConfig:    &ecc.EnterpriseContractPolicyConfiguration{},
+			expectedInclude: []string{"*"},
+		},
+		{
+			name: "global config",
+			globalConfig: &ecc.EnterpriseContractPolicyConfiguration{
+				Include:     []string{"include-me"},
+				Exclude:     []string{"exclude-me"},
+				Collections: []string{"collect-me"},
+			},
+			expectedInclude: []string{"include-me", "@collect-me"},
+			expectedExclude: []string{"exclude-me"},
+		},
+		{
+			name:            "empty source config",
+			sourceConfig:    &ecc.SourceConfig{},
+			expectedInclude: []string{"*"},
+		},
+		{
+			name: "source config",
+			sourceConfig: &ecc.SourceConfig{
+				Include: []string{"include-me"},
+				Exclude: []string{"exclude-me"},
+			},
+			expectedInclude: []string{"include-me"},
+			expectedExclude: []string{"exclude-me"},
+		},
+		{
+			name: "source config over global config",
+			globalConfig: &ecc.EnterpriseContractPolicyConfiguration{
+				Include:     []string{"include-ignored"},
+				Exclude:     []string{"exclude-ignored"},
+				Collections: []string{"collection-ignored"},
+			},
+			sourceConfig: &ecc.SourceConfig{
+				Include: []string{"include-me"},
+				Exclude: []string{"exclude-me"},
+			},
+			expectedInclude: []string{"include-me"},
+			expectedExclude: []string{"exclude-me"},
+		},
+	}
+
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			dir := t.TempDir()
+			ctx := withCapabilities(context.Background(), testCapabilities)
+
+			p, err := policy.NewOfflinePolicy(ctx, "2014-05-31")
+			require.NoError(t, err)
+
+			p = p.WithSpec(ecc.EnterpriseContractPolicySpec{
+				Configuration: tt.globalConfig,
+			})
+
+			evaluator, err := NewConftestEvaluator(ctx, []source.PolicySource{
+				&source.PolicyUrl{
+					Url:  path.Join(dir, "policy", "rules.tar"),
+					Kind: source.PolicyKind,
+				},
+			}, p, tt.sourceConfig)
+			require.NoError(t, err)
+
+			ce := evaluator.(conftestEvaluator)
+			require.Equal(t, tt.expectedInclude, ce.include)
+			require.Equal(t, tt.expectedExclude, ce.exclude)
+		})
+	}
+
 }
 
 var testCapabilities string
