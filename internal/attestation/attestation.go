@@ -19,7 +19,6 @@ package attestation
 import (
 	"encoding/base64"
 	"encoding/json"
-	"io"
 
 	"github.com/in-toto/in-toto-golang/in_toto"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
@@ -71,12 +70,7 @@ func payloadFromSig(sig oci.Signature) (cosign.AttestationPayload, error) {
 	}
 	defer reader.Close()
 
-	payloadBytes, err := io.ReadAll(reader)
-	if err != nil {
-		return payload, AT002.CausedBy(err)
-	}
-
-	err = json.Unmarshal(payloadBytes, &payload)
+	err = json.NewDecoder(reader).Decode(&payload)
 	if err != nil {
 		return payload, AT002.CausedBy(err)
 	}
