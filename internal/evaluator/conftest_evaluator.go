@@ -26,6 +26,7 @@ import (
 	"strings"
 	"time"
 
+	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/open-policy-agent/conftest/output"
 	conftest "github.com/open-policy-agent/conftest/policy"
 	"github.com/open-policy-agent/conftest/runner"
@@ -135,6 +136,8 @@ type conftestEvaluator struct {
 	dataDir       string
 	policyDir     string
 	policy        policy.Policy
+	include       []string
+	exclude       []string
 	fs            afero.Fs
 	namespace     []string
 }
@@ -199,13 +202,13 @@ func (r conftestRunner) Run(ctx context.Context, fileList []string) (result []Ou
 
 // NewConftestEvaluator returns initialized conftestEvaluator implementing
 // Evaluator interface
-func NewConftestEvaluator(ctx context.Context, policySources []source.PolicySource, p policy.Policy) (Evaluator, error) {
-	return NewConftestEvaluatorWithNamespace(ctx, policySources, p, nil)
+func NewConftestEvaluator(ctx context.Context, policySources []source.PolicySource, p policy.Policy, sc *ecc.SourceConfig) (Evaluator, error) {
+	return NewConftestEvaluatorWithNamespace(ctx, policySources, p, sc, nil)
 
 }
 
 // set the policy namespace
-func NewConftestEvaluatorWithNamespace(ctx context.Context, policySources []source.PolicySource, p policy.Policy, namespace []string) (Evaluator, error) {
+func NewConftestEvaluatorWithNamespace(ctx context.Context, policySources []source.PolicySource, p policy.Policy, sc *ecc.SourceConfig, namespace []string) (Evaluator, error) {
 	fs := utils.FS(ctx)
 	c := conftestEvaluator{
 		policySources: policySources,
@@ -214,6 +217,8 @@ func NewConftestEvaluatorWithNamespace(ctx context.Context, policySources []sour
 		fs:            fs,
 		namespace:     namespace,
 	}
+
+	c.include, c.exclude = computeIncludeExclude(sc, p)
 
 	dir, err := utils.CreateWorkDir(fs)
 	if err != nil {
@@ -698,26 +703,8 @@ func isResultEffective(failure Result, now time.Time) bool {
 // discarded based on the policy configuration.
 func (c conftestEvaluator) isResultIncluded(result Result) bool {
 	ruleMatchers := makeMatchers(result)
-	var includes, excludes []string
-
-	spec := c.policy.Spec()
-	cfg := spec.Configuration
-	if cfg != nil {
-		for _, c := range cfg.Collections {
-			// If the old way of specifying collections are used, convert them.
-			includes = append(includes, "@"+c)
-		}
-		includes = append(includes, cfg.Include...)
-		excludes = append(excludes, cfg.Exclude...)
-	}
-
-	if len(includes) == 0 {
-		includes = []string{"*"}
-	}
-
-	includeScore := scoreMatches(ruleMatchers, includes)
-	excludeScore := scoreMatches(ruleMatchers, excludes)
-
+	includeScore := scoreMatches(ruleMatchers, c.include)
+	excludeScore := scoreMatches(ruleMatchers, c.exclude)
 	return includeScore > excludeScore
 }
 
@@ -867,4 +854,28 @@ func strictCapabilities(ctx context.Context) (string, error) {
 		return "", err
 	}
 	return string(blob), nil
+}
+
+func computeIncludeExclude(sc *ecc.SourceConfig, p policy.Policy) ([]string, []string) {
+	var include, exclude []string
+
+	// The lines below take care to make a copy of the includes/excludes slices in order
+	// to ensure mutations are not unexpectedly propagated.
+	if sc != nil && (len(sc.Include) != 0 || len(sc.Exclude) != 0) {
+		include = append(include, sc.Include...)
+		exclude = append(exclude, sc.Exclude...)
+	} else if policyConfig := p.Spec().Configuration; policyConfig != nil {
+		include = append(include, policyConfig.Include...)
+		exclude = append(exclude, policyConfig.Exclude...)
+		// If the old way of specifying collections are used, convert them.
+		for _, collection := range policyConfig.Collections {
+			include = append(include, fmt.Sprintf("@%s", collection))
+		}
+	}
+
+	if len(include) == 0 {
+		include = []string{"*"}
+	}
+
+	return include, exclude
 }

@@ -107,7 +107,7 @@ func NewApplicationSnapshotImage(ctx context.Context, component app.SnapshotComp
 			log.Debugf("policySource: %#v", policySource)
 		}
 
-		c, err := newConftestEvaluator(ctx, policySources, p)
+		c, err := newConftestEvaluator(ctx, policySources, p, sourceGroup.Config)
 		if err != nil {
 			log.Debug("Failed to initialize the conftest evaluator!")
 			return nil, err
