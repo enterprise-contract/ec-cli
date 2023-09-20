@@ -24,6 +24,7 @@ import (
 	"embed"
 	"encoding/json"
 	"io"
+	"io/fs"
 	"os"
 	"path"
 	"path/filepath"
@@ -1575,43 +1576,19 @@ func TestCheckResultsTrim(t *testing.T) {
 	}
 }
 
-//go:embed __testdir__/*.rego
+//go:embed __testdir__/*/*.rego
 var policies embed.FS
 
 func TestConftestEvaluatorEvaluate(t *testing.T) {
 	dir := t.TempDir()
 	require.NoError(t, os.MkdirAll(path.Join(dir, "inputs"), 0755))
 	require.NoError(t, os.WriteFile(path.Join(dir, "inputs", "data.json"), []byte("{}"), 0600))
-	require.NoError(t, os.MkdirAll(path.Join(dir, "policy"), 0755))
 
-	f, err := os.Create(path.Join(dir, "policy", "rules.tar"))
-	require.NoError(t, err)
-	ar := tar.NewWriter(f)
-
-	rego, err := policies.ReadDir("__testdir__")
+	rego, err := fs.Sub(policies, "__testdir__/simple")
 	require.NoError(t, err)
 
-	for _, r := range rego {
-		if r.IsDir() {
-			continue
-		}
-		f, err := policies.Open(path.Join("__testdir__", r.Name()))
-		require.NoError(t, err)
-
-		bytes, err := io.ReadAll(f)
-		require.NoError(t, err)
-
-		require.NoError(t, ar.WriteHeader(&tar.Header{
-			Name: r.Name(),
-			Mode: 0644,
-			Size: int64(len(bytes)),
-		}))
-
-		_, err = ar.Write(bytes)
-		require.NoError(t, err)
-	}
-	ar.Close()
-	f.Close()
+	rules, err := rulesArchive(t, rego)
+	require.NoError(t, err)
 
 	ctx := withCapabilities(context.Background(), testCapabilities)
 
@@ -1624,7 +1601,7 @@ func TestConftestEvaluatorEvaluate(t *testing.T) {
 
 	evaluator, err := NewConftestEvaluator(ctx, []source.PolicySource{
 		&source.PolicyUrl{
-			Url:  path.Join(dir, "policy", "rules.tar"),
+			Url:  rules,
 			Kind: source.PolicyKind,
 		},
 	}, p)
@@ -1650,6 +1627,34 @@ func TestConftestEvaluatorEvaluate(t *testing.T) {
 	snaps.MatchSnapshot(t, results, data)
 }
 
+func TestUnconformingRule(t *testing.T) {
+	dir := t.TempDir()
+	require.NoError(t, os.MkdirAll(path.Join(dir, "inputs"), 0755))
+	require.NoError(t, os.WriteFile(path.Join(dir, "inputs", "data.json"), []byte("{}"), 0600))
+
+	rego, err := fs.Sub(policies, "__testdir__/unconforming")
+	require.NoError(t, err)
+
+	rules, err := rulesArchive(t, rego)
+	require.NoError(t, err)
+
+	ctx := context.Background()
+
+	p, err := policy.NewInertPolicy(ctx, "")
+	require.NoError(t, err)
+
+	evaluator, err := NewConftestEvaluator(ctx, []source.PolicySource{
+		&source.PolicyUrl{
+			Url:  rules,
+			Kind: source.PolicyKind,
+		},
+	}, p)
+	require.NoError(t, err)
+
+	_, _, err = evaluator.Evaluate(ctx, []string{path.Join(dir, "inputs")})
+	assert.EqualError(t, err, `the rule "deny = true { true }" returns an unsupported value, at no_msg.rego:3`)
+}
+
 var testCapabilities string
 
 func init() {
@@ -1660,4 +1665,52 @@ func init() {
 		panic(err)
 	}
 	testCapabilities = data
+}
+
+func rulesArchive(t *testing.T, files fs.FS) (string, error) {
+	t.Helper()
+
+	dir := t.TempDir()
+
+	rules := path.Join(dir, "rules.tar")
+
+	f, err := os.Create(rules)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+	ar := tar.NewWriter(f)
+	defer ar.Close()
+
+	rego, err := fs.ReadDir(files, ".")
+	if err != nil {
+		return "", err
+	}
+
+	for _, r := range rego {
+		if r.IsDir() {
+			continue
+		}
+		f, err := files.Open(r.Name())
+		if err != nil {
+			return "", err
+		}
+
+		bytes, err := io.ReadAll(f)
+		if err != nil {
+			return "", err
+		}
+
+		require.NoError(t, ar.WriteHeader(&tar.Header{
+			Name: r.Name(),
+			Mode: 0644,
+			Size: int64(len(bytes)),
+		}))
+
+		if _, err = ar.Write(bytes); err != nil {
+			return "", err
+		}
+	}
+
+	return rules, nil
 }

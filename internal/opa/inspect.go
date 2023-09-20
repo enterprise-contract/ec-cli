@@ -117,6 +117,44 @@ func shortPath(fullPath string, destDir string) string {
 	return strings.TrimPrefix(strings.TrimPrefix(fullPath, destDir), "/")
 }
 
+func checkRules(rules []*ast.AnnotationsRef) error {
+	for _, rule := range rules {
+		r := rule.GetRule()
+		if r == nil {
+			// not a rule
+			continue
+		}
+		head := r.Head
+		term := head.Value
+		var value ast.Value
+		if term != nil {
+			// cases when rule is assigned, e.g. deny = msg {...}
+			value = term.Value
+		} else {
+			// cases when rule is keyed, e.g. deny[msg] {...}
+			key := head.Key
+			value = key.Value
+		}
+
+		switch value.(type) {
+		case ast.String:
+			continue
+		case *ast.String:
+			continue
+		case ast.Object:
+			continue
+		case ast.Var:
+			continue
+		case ast.Call:
+			continue
+		}
+
+		return fmt.Errorf("the rule %q returns an unsupported value, at %s", r.String(), r.Location)
+	}
+
+	return nil
+}
+
 // Finds all the rego files, inspects each one and returns a list the inspect data
 func InspectDir(afs afero.Fs, dir string) ([]*ast.AnnotationsRef, error) {
 	regoPaths := []string{}
@@ -168,6 +206,11 @@ func InspectDir(afs afero.Fs, dir string) ([]*ast.AnnotationsRef, error) {
 	// Return only interesting rules
 	result, err := interestingRulesOnly(allAnnotations)
 	if err != nil {
+		return nil, err
+	}
+
+	// check for conformance
+	if err := checkRules(result); err != nil {
 		return nil, err
 	}
 

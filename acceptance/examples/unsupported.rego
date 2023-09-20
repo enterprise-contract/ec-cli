@@ -1,0 +1,5 @@
+package unsupported
+
+deny {
+    true
+}

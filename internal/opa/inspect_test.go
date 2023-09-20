@@ -19,6 +19,7 @@ package opa
 import (
 	"encoding/json"
 	"os"
+	"path"
 	"path/filepath"
 	"testing"
 
@@ -89,10 +90,14 @@ func TestInspectDir(t *testing.T) {
 		"spam.rego": hd.Doc(`
 			package spam
 
+			import future.keywords.contains
+			import future.keywords.if
+
 			# METADATA
 			# title: Enough spam
-			deny {
+			deny contains msg if {
 				input.spam_count > 42
+				msg := "plenty spam"
 			}
 		`),
 		"spam_test.rego":   "ignored",
@@ -101,10 +106,14 @@ func TestInspectDir(t *testing.T) {
 		"more/bacon.REGO": hd.Doc(`
 			package more.bacon
 
+			import future.keywords.contains
+			import future.keywords.if
+
 			# METADATA
 			# title: Enough bacon
-			deny {
+			deny contains msg if {
 				input.bacon_count > 42
+				msg := "plenty bacon"
 			}
 		`),
 	}
@@ -145,6 +154,85 @@ func TestInspectDir(t *testing.T) {
 			jsonAnnotations, err := json.MarshalIndent(annotations, "", "  ")
 			require.NoError(t, err)
 			snaps.MatchSnapshot(t, string(jsonAnnotations))
+		})
+	}
+}
+
+func TestCheckRules(t *testing.T) {
+	cases := []struct {
+		name string
+		rego string
+		err  string
+	}{
+		{
+			name: "assignement",
+			rego: `package test
+			x := "value"`,
+		},
+		{
+			name: "no message",
+			rego: `package test
+			deny { true }`,
+			err: `the rule "deny = true { true }" returns an unsupported value, at rules.rego:2`,
+		},
+		{
+			// we can't check for this, we don't know the type of `x`
+			name: "var assignement",
+			rego: `package test
+			deny[x] { x := true }`,
+		},
+		{
+			// we can't check for this, we don't know if `o` is an empty object
+			name: "object assignement",
+			rego: `package test
+			import future.keywords.contains
+			import future.keywords.if
+			deny contains o if { o := {} }`,
+		},
+		{
+			name: "not string",
+			rego: `package test
+			deny { 2 }`,
+			err: `the rule "deny = true { 2 }" returns an unsupported value, at rules.rego:2`,
+		},
+		{
+			name: "string",
+			rego: `package test
+			deny[msg] { msg := "str" }`,
+		},
+		{
+			name: "object",
+			rego: `package test
+			deny := {"key": "val"}`,
+		},
+		{
+			name: "function",
+			rego: `package test
+			deny[fn()]{
+				true
+			}
+			fn := {"key": "val"}`,
+		},
+		{
+			name: "assign",
+			rego: `package test
+			deny := "value" {
+				true
+			}`,
+		},
+	}
+
+	for _, c := range cases[len(cases)-1:] {
+		t.Run(c.name, func(t *testing.T) {
+			tmp := t.TempDir()
+			require.NoError(t, os.WriteFile(path.Join(tmp, "rules.rego"), []byte(c.rego), 0600))
+
+			_, err := InspectDir(afero.NewOsFs(), tmp)
+			if c.err != "" {
+				assert.EqualError(t, err, c.err)
+			} else {
+				assert.NoError(t, err)
+			}
 		})
 	}
 }

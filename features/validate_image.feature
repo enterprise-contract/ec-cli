@@ -844,3 +844,26 @@ Feature: evaluate enterprise contract
     Then the exit status should be 0
      And the output should match the snapshot
      And the "${TMPDIR}/input.json" file should match the snapshot
+
+  Scenario: Unsupported policies
+    Given a key pair named "known"
+    Given an image named "acceptance/image"
+    Given a valid image signature of "acceptance/image" image signed by the "known" key
+    Given a valid attestation of "acceptance/image" signed by the "known" key
+    Given a git repository named "happy-day-policy" with
+      | main.rego | examples/unsupported.rego |
+    Given policy configuration named "ec-policy" with specification
+    """
+    {
+      "sources": [
+        {
+          "policy": [
+            "git::https://${GITHOST}/git/happy-day-policy.git"
+          ]
+        }
+      ]
+    }
+    """
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/image --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --ignore-rekor --show-successes"
+    Then the exit status should be 1
+    Then the output should match the snapshot
