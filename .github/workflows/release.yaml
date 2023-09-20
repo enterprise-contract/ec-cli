@@ -33,6 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       head_sha: ${{ steps.head_sha.outputs.head_sha }}
+      timestamp: ${{ steps.timestamp.outputs.timestamp }}
 
     steps:
       - name: Git Info
@@ -42,6 +43,10 @@ jobs:
           GH_COBRA: 1
         run: |
           echo head_sha=$(gh api /repos/enterprise-contract/ec-cli/git/matching-refs/heads/main --jq '.[0].object.sha') >> "$GITHUB_OUTPUT"
+      - name: Timestamp
+        id: timestamp
+        run: |
+          echo timestamp=$(date '+%s') >> "$GITHUB_OUTPUT"
 
   release:
 
@@ -58,6 +63,7 @@ jobs:
       IMAGE_REPO: quay.io/hacbs-contract/ec-cli
       EC_IMAGE_REPO: quay.io/enterprise-contract/ec-cli
       TAG: ${{ github.sha }}
+      TAG_TIMESTAMP: ${{ github.sha }}-${{ needs.info.outputs.timestamp }}
 
     steps:
       # TODO: Enabling this seems to cause the host to run out of disk space.
@@ -112,7 +118,7 @@ jobs:
 
       # TODO: Remove this once all references to quay.io/hacbs-contract are removed
       - name: Create and push image
-        run: make dist-image-push IMAGE_TAG=$TAG IMAGE_REPO=$IMAGE_REPO ADD_IMAGE_TAG=snapshot
+        run: make dist-image-push IMAGE_TAG=$TAG IMAGE_REPO=$IMAGE_REPO ADD_IMAGE_TAG="snapshot $TAG_TIMESTAMP"
 
       # TODO: Remove this once all references to quay.io/hacbs-contract are removed
       - name: Create and push the tekton bundle
@@ -124,13 +130,13 @@ jobs:
         run: podman login -u ${{ secrets.BUNDLE_PUSH_USER_EC  }} -p ${{ secrets.BUNDLE_PUSH_PASS_EC }} quay.io
 
       - name: Create and push image (quay.io/enterprise-contract/ec-cli)
-        run: make dist-image-push IMAGE_TAG=$TAG IMAGE_REPO=$EC_IMAGE_REPO ADD_IMAGE_TAG=snapshot
+        run: make dist-image-push IMAGE_TAG=$TAG IMAGE_REPO=$EC_IMAGE_REPO ADD_IMAGE_TAG="snapshot $TAG_TIMESTAMP"
 
       - name: Create and push the tekton bundle (quay.io/enterprise-contract/ec-task-bundle)
         env:
           TASK_REPO: quay.io/enterprise-contract/ec-task-bundle
           TASK: "tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml tasks/verify-definition/0.1/verify-definition.yaml"
-        run: make task-bundle-snapshot TASK_REPO=$TASK_REPO TASK_TAG=$TAG TASK=<( yq e ".spec.steps[].image? = \"$EC_IMAGE_REPO:$TAG\"" $TASK | yq 'select(. != null)')
+        run: make task-bundle-snapshot TASK_REPO=$TASK_REPO TASK_TAG=$TAG ADD_TASK_TAG="$TAG_TIMESTAMP" TASK=<( yq e ".spec.steps[].image? = \"$EC_IMAGE_REPO:$TAG\"" $TASK | yq 'select(. != null)')
 
       - name: Download statistics
         env:

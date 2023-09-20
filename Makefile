@@ -238,7 +238,9 @@ dist-image-push: dist-image  $(subst image_,push_image_,$(ALL_SUPPORTED_IMG_OS_A
 	@for img in $(ALL_IMAGE_REFS); do TARGETOS=$$(echo $$img | sed -e 's/.*:[^-]\+-\([^-]\+\).*/\1/'); TARGETARCH=$${img/*-}; podman manifest add $(IMAGE_REPO):$(IMAGE_TAG) $(PODMAN_OPTS) $$img --os $${TARGETOS} --arch $${TARGETARCH}; done
 	@podman manifest push $(IMAGE_REPO):$(IMAGE_TAG) $(IMAGE_REPO):$(IMAGE_TAG)
 ifdef ADD_IMAGE_TAG
-	@podman manifest push $(IMAGE_REPO):$(IMAGE_TAG) $(IMAGE_REPO):$(ADD_IMAGE_TAG)
+	@for tag in $(ADD_IMAGE_TAG); do
+	  @podman manifest push $(IMAGE_REPO):$(IMAGE_TAG) $(IMAGE_REPO):$${tag}
+	done
 endif
 
 .PHONY: dev
@@ -266,6 +268,11 @@ task-bundle: ## Push the Tekton Task bundle an image repository
 task-bundle-snapshot: task-bundle ## Push task bundle and then tag with "snapshot"
 	@skopeo copy "docker://$(TASK_REPO):$(TASK_TAG)" "docker://$(TASK_REPO):snapshot" $(SKOPEO_ARGS)
 	echo Tagged $(TASK_REPO):$(TASK_TAG) with snapshot tag
+ifdef ADD_TASK_TAG
+	@for tag in $(ADD_TASK_TAG); do
+	  @skopeo copy "docker://$(TASK_REPO):$(TASK_TAG)" "docker://$(TASK_REPO):$${tag}"
+	done
+endif
 
 # Useful to compare the `ec test` command source with the `conftest test`
 # command source. They should be almost identical.
