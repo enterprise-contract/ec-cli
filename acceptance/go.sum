@@ -760,8 +760,8 @@ github.com/tektoncd/cli v0.32.0/go.mod h1:BZyW2sjs3XOak97RoXfwm4fMBSeI1EcHQ0tCY4
 github.com/tektoncd/pipeline v0.51.0 h1:n2i/AJPXkTwcv9uc9xRJCtMeAHF1c1NkF7cNQ5zEf+0=
 github.com/tektoncd/pipeline v0.51.0/go.mod h1:P9xePA0fqYIhaw4fllmX2LtMneyWqj60EjsZp5qqq9U=
 github.com/tektoncd/triggers v0.25.0 h1:HaHZ0w8RpeIvB/7DoIZz+KhIOAVzPiFIPZOrDtvEPbM=
-github.com/testcontainers/testcontainers-go v0.24.0 h1:eqkq6nNIPVrqpXNyn/s5jDBqPGuWtND2hOMEBrUULIw=
-github.com/testcontainers/testcontainers-go v0.24.0/go.mod h1:MGBiAkCm86yXQoCiipmQCqZLVdk1uFqtMqaU1Or0MRk=
+github.com/testcontainers/testcontainers-go v0.24.1 h1:gJdZuQIVWnMJTo+CmQMEP7/CAagNk/0jbcUPn3OWvD8=
+github.com/testcontainers/testcontainers-go v0.24.1/go.mod h1:MGBiAkCm86yXQoCiipmQCqZLVdk1uFqtMqaU1Or0MRk=
 github.com/theupdateframework/go-tuf v0.6.1 h1:6J89fGjQf7s0mLmTG7p7pO/MbKOg+bIXhaLyQdmbKuE=
 github.com/theupdateframework/go-tuf v0.6.1/go.mod h1:LAFusuQsFNBnEyYoTuA5zZrF7iaQ4TEgBXm8lb6Vj18=
 github.com/tidwall/gjson v1.14.2/go.mod h1:/wbyibRr2FHMks5tjHJ5F8dMZh3AcwJEMf5vlfC0lxk=
