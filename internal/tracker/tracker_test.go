@@ -30,16 +30,24 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/empty"
 	"github.com/google/go-containerregistry/pkg/v1/mutate"
 	"github.com/google/go-containerregistry/pkg/v1/random"
+	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/stretchr/testify/assert"
 	pipeline "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
 	"github.com/tektoncd/pipeline/pkg/remote/oci"
 	"k8s.io/apimachinery/pkg/runtime"
+
+	"github.com/enterprise-contract/ec-cli/internal/image"
 )
 
 var sampleHashOne = v1.Hash{
 	Algorithm: "sha256",
 	Hex:       "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+}
+
+var sampleHashOneUpdated = v1.Hash{
+	Algorithm: "sha256",
+	Hex:       "8b4683472773680a36b58ba96d321aa82c4f59248d5614348deca12adce61f39",
 }
 
 var sampleHashTwo = v1.Hash{
@@ -58,11 +66,12 @@ var yesterday = time.Now().Add(time.Hour * 24 * -1).UTC().Format(time.RFC3339)
 
 func TestTrack(t *testing.T) {
 	tests := []struct {
-		name   string
-		urls   []string
-		prune  bool
-		output string
-		input  []byte
+		name    string
+		urls    []string
+		prune   bool
+		output  string
+		input   []byte
+		freshen bool
 	}{
 		{
 			name: "always insert at the front",
@@ -402,16 +411,39 @@ func TestTrack(t *testing.T) {
 				      tag: "0.2"
 			`),
 		},
+		{
+			name:    "freshen existing input",
+			freshen: true,
+			input: []byte(hd.Doc(`
+				---
+				pipeline-bundles:
+				  registry.com/one:
+				    - digest: ` + sampleHashOne.String() + `
+				      effective_on: "` + expectedEffectiveOn + `"
+				      tag: "1.0"
+			`)),
+			output: hd.Doc(`
+			---
+			pipeline-bundles:
+			  registry.com/one:
+			    - digest: ` + sampleHashOneUpdated.String() + `
+			      effective_on: "` + expectedEffectiveOn + `"
+			      tag: "1.0"
+			    - digest: ` + sampleHashOne.String() + `
+			      effective_on: "` + expectedEffectiveOn + `"
+			      tag: "1.0"
+			`),
+		},
 	}
 
-	for _, tt := range tests {
+	for _, tt := range tests[len(tests)-1:] {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx := context.Background()
+			ctx := context.WithValue(context.Background(), image.RemoteHead, head)
 
 			client := fakeClient{objects: testObjects, images: testImages}
 			ctx = WithClient(ctx, client)
 
-			output, err := Track(ctx, tt.urls, tt.input, tt.prune)
+			output, err := Track(ctx, tt.urls, tt.input, tt.prune, tt.freshen)
 			assert.NoError(t, err)
 			assert.Equal(t, tt.output, string(output))
 		})
@@ -440,6 +472,14 @@ func (r fakeClient) GetImage(ctx context.Context, ref name.Reference) (v1.Image,
 		return image, nil
 	}
 	return nil, fmt.Errorf("image %q not found", ref)
+}
+
+func head(ref name.Reference, options ...remote.Option) (*v1.Descriptor, error) {
+	if d, ok := testTags[ref]; ok {
+		return d, nil
+	} else {
+		return nil, fmt.Errorf("%q not found", ref)
+	}
 }
 
 var testObjects = map[string]map[string]map[string]runtime.Object{
@@ -474,6 +514,9 @@ var testImages = map[string]v1.Image{
 	"registry.com/one:1.0@" + sampleHashOne.String(): mustCreateFakeBundleImage([]fakeDefinition{
 		{name: "pipeline-v1", kind: "pipeline"},
 	}),
+	"registry.com/one:1.0@" + sampleHashOneUpdated.String(): mustCreateFakeBundleImage([]fakeDefinition{
+		{name: "pipeline-v1", kind: "pipeline"},
+	}),
 	"registry.com/two:2.0@" + sampleHashTwo.String(): mustCreateFakeBundleImage([]fakeDefinition{
 		{name: "pipeline-v2", kind: "pipeline"},
 	}),
@@ -487,6 +530,12 @@ var testImages = map[string]v1.Image{
 		{name: "pipeline-v1", kind: "pipeline"},
 		{name: "task-v1", kind: "task"},
 	}),
+}
+
+var testTags = map[name.Reference]*v1.Descriptor{
+	name.MustParseReference("registry.com/one:1.0"): {
+		Digest: sampleHashOneUpdated,
+	},
 }
 
 type fakeDefinition struct {

@@ -26,6 +26,7 @@ import (
 
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
@@ -40,6 +41,7 @@ func Test_TrackBundleCommand(t *testing.T) {
 		expectInput       string
 		expectStdout      bool
 		expectImageOutput bool
+		expectFreshen     bool
 	}{
 		{
 			name: "simple",
@@ -191,12 +193,13 @@ func Test_TrackBundleCommand(t *testing.T) {
 				assert.NoError(t, err)
 			}
 			testOutput := `{"test": true}`
-			track := func(_ context.Context, urls []string, input []byte, prune bool) ([]byte, error) {
+			track := func(_ context.Context, urls []string, input []byte, prune bool, freshen bool) ([]byte, error) {
 				assert.Equal(t, c.expectUrls, urls)
 				if c.expectInput != "" {
 					assert.Equal(t, inputData, input)
 				}
 				assert.Equal(t, c.expectPrune, prune)
+				assert.Equal(t, c.expectFreshen, freshen)
 				return []byte(testOutput), nil
 			}
 			pullImage := func(_ context.Context, imageRef string) ([]byte, error) {
@@ -230,5 +233,40 @@ func Test_TrackBundleCommand(t *testing.T) {
 			}
 		})
 	}
+}
 
+func TestPreRunE(t *testing.T) {
+	cases := []struct {
+		name string
+		args []string
+		err  string
+	}{
+		{
+			name: "bundles",
+			args: []string{"-b", "b1", "--bundle", "b2"},
+		},
+		{
+			name: "input",
+			args: []string{"--input", "some-file"},
+		},
+		{
+			name: "no bundle nor input",
+			err:  "neither --bundle nor --input was provided",
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			tbc := trackBundleCmd(nil, nil, nil)
+			require.NoError(t, tbc.ParseFlags(c.args))
+
+			err := tbc.PreRunE(tbc, []string{})
+
+			if c.err != "" {
+				assert.EqualError(t, err, c.err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
 }

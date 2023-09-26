@@ -77,6 +77,65 @@ func (d diffy) Deltas() []gojsondiff.Delta {
 	return d
 }
 
+func variables(ctx context.Context) ([]string, map[string]string, error) {
+	// environment that the ec command line will run with
+	// we need to keep the $PATH, otherwise go-getter could
+	// fail if it can't locate the git command
+	environment := []string{
+		"PATH=" + os.Getenv("PATH"),
+		"COVERAGE_FILEPATH=" + os.Getenv("COVERAGE_FILEPATH"), // where to put the coverage file, $COVERAGE_FILEPATH is provided by the Makefile, if empty it'll be $TMPDIR
+		"COVERAGE_FILENAME=" + os.Getenv("COVERAGE_FILENAME"), // suffix for the coverage file
+		"HOME=/tmp",
+	}
+
+	// variables that can be substituted on the command line
+	// provided by the `parameters`` parameter
+
+	ctx, tmpdir := testenv.TempDir(ctx)
+	vars := map[string]string{
+		"TMPDIR": tmpdir,
+	}
+
+	var err error
+	if environment, vars, err = setupKubernetes(ctx, vars, environment); err != nil {
+		return nil, nil, err
+	}
+
+	if environment, vars, err = setupRegistry(ctx, vars, environment); err != nil {
+		return nil, nil, err
+	}
+
+	if environment, vars, err = setupRekor(ctx, vars, environment); err != nil {
+		return nil, nil, err
+	}
+
+	if environment, vars, err = setupKeys(ctx, vars, environment); err != nil {
+		return nil, nil, err
+	}
+
+	if environment, vars, err = setupSigs(ctx, vars, environment); err != nil {
+		return nil, nil, err
+	}
+
+	if environment, vars, err = setupGitHost(ctx, vars, environment); err != nil {
+		return nil, nil, err
+	}
+
+	if environment, vars, err = setupTUF(ctx, vars, environment); err != nil {
+		return nil, nil, err
+	}
+
+	if environment, err = setupCmdEnvironmentVariable(ctx, environment); err != nil {
+		return nil, nil, err
+	}
+
+	if vars, err = setupCliVersion(ctx, vars); err != nil {
+		return nil, nil, err
+	}
+
+	return environment, vars, nil
+}
+
 // ecCommandIsRunWith launches the ec command line with provided parameters.
 // If parameters contain references to variables in ${...} syntax those will
 // be substituted with the values appropriate for this scenario execution
@@ -97,56 +156,8 @@ func ecCommandIsRunWith(ctx context.Context, parameters string) (context.Context
 		return ctx, fmt.Errorf("%s is a not a regular file", ec)
 	}
 
-	// environment that the ec command line will run with
-	// we need to keep the $PATH, otherwise go-getter could
-	// fail if it can't locate the git command
-	environment := []string{
-		"PATH=" + os.Getenv("PATH"),
-		"COVERAGE_FILEPATH=" + os.Getenv("COVERAGE_FILEPATH"), // where to put the coverage file, $COVERAGE_FILEPATH is provided by the Makefile, if empty it'll be $TMPDIR
-		"COVERAGE_FILENAME=" + os.Getenv("COVERAGE_FILENAME"), // suffix for the coverage file
-		"HOME=/tmp",
-	}
-
-	// variables that can be substituted on the command line
-	// provided by the `parameters`` parameter
-
-	vars := map[string]string{
-		"TMPDIR": testenv.Testing(ctx).TempDir(),
-	}
-
-	if environment, vars, err = setupKubernetes(ctx, vars, environment); err != nil {
-		return ctx, err
-	}
-
-	if environment, vars, err = setupRegistry(ctx, vars, environment); err != nil {
-		return ctx, err
-	}
-
-	if environment, vars, err = setupRekor(ctx, vars, environment); err != nil {
-		return ctx, err
-	}
-
-	if environment, vars, err = setupKeys(ctx, vars, environment); err != nil {
-		return ctx, err
-	}
-
-	if environment, vars, err = setupSigs(ctx, vars, environment); err != nil {
-		return ctx, err
-	}
-
-	if environment, vars, err = setupGitHost(ctx, vars, environment); err != nil {
-		return ctx, err
-	}
-
-	if environment, vars, err = setupTUF(ctx, vars, environment); err != nil {
-		return ctx, err
-	}
-
-	if environment, err = setupCmdEnvironmentVariable(ctx, environment); err != nil {
-		return ctx, err
-	}
-
-	if vars, err = setupCliVersion(ctx, vars); err != nil {
+	environment, vars, err := variables(ctx)
+	if err != nil {
 		return ctx, err
 	}
 
@@ -749,6 +760,25 @@ func matchFileSnapshot(ctx context.Context, file string) error {
 	return snaps.MatchSnapshot(ctx, file, string(content), status.vars)
 }
 
+func createTrackBundleFile(ctx context.Context, name string, content *godog.DocString) (context.Context, error) {
+	_, vars, err := variables(ctx)
+	if err != nil {
+		return ctx, err
+	}
+
+	expand := func(text string) string {
+		return os.Expand(text, func(key string) string {
+			return vars[key]
+		})
+	}
+
+	file := expand(name)
+
+	data := expand(content.Content)
+
+	return ctx, os.WriteFile(file, []byte(data), 0o600)
+}
+
 // AddStepsTo adds Gherkin steps to the godog ScenarioContext
 func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^ec command is run with "(.+)"$`, ecCommandIsRunWith)
@@ -759,6 +789,7 @@ func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^the environment variable is set "([^"]*)"$`, theEnvironmentVarilableIsSet)
 	sc.Step(`^the output should match the snapshot$`, matchSnapshot)
 	sc.Step(`^the "([^"]*)" file should match the snapshot$`, matchFileSnapshot)
+	sc.Step(`^a track bundle file named "([^"]*)" containing$`, createTrackBundleFile)
 	sc.After(func(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
 		logExecution(ctx)
 

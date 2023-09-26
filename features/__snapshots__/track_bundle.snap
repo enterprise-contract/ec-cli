@@ -17,3 +17,53 @@ task-bundles:
 [:stderr - 1]
 
 ---
+
+[:stdout - 2]
+/-/-/-/
+pipeline-bundles:
+  ${REGISTRY}/acceptance/bundle:
+    - digest: sha256:${REGISTRY_acceptance/bundle:tag_DIGEST}
+      effective_on: "${TIMESTAMP}"
+      tag: tag
+    - digest: sha256:21040e5abd0e077b7344574473468beff02cd6cc66dc464acb3c6b4be5bb82af
+      effective_on: "2006-01-02T15:04:05Z"
+      tag: tag
+task-bundles:
+  ${REGISTRY}/acceptance/bundle:
+    - digest: sha256:${REGISTRY_acceptance/bundle:tag_DIGEST}
+      effective_on: "${TIMESTAMP}"
+      tag: tag
+    - digest: sha256:21040e5abd0e077b7344574473468beff02cd6cc66dc464acb3c6b4be5bb82af
+      effective_on: "2006-01-02T15:04:05Z"
+      tag: tag
+
+---
+
+[:stderr - 2]
+
+---
+
+[Fresh tags:stdout - 1]
+/-/-/-/
+pipeline-bundles:
+  ${REGISTRY}/acceptance/bundle:
+    - digest: sha256:${REGISTRY_acceptance/bundle:tag_DIGEST}
+      effective_on: "${TIMESTAMP}"
+      tag: tag
+    - digest: sha256:21040e5abd0e077b7344574473468beff02cd6cc66dc464acb3c6b4be5bb82af
+      effective_on: "2006-01-02T15:04:05Z"
+      tag: tag
+task-bundles:
+  ${REGISTRY}/acceptance/bundle:
+    - digest: sha256:${REGISTRY_acceptance/bundle:tag_DIGEST}
+      effective_on: "${TIMESTAMP}"
+      tag: tag
+    - digest: sha256:21040e5abd0e077b7344574473468beff02cd6cc66dc464acb3c6b4be5bb82af
+      effective_on: "2006-01-02T15:04:05Z"
+      tag: tag
+
+---
+
+[Fresh tags:stderr - 1]
+
+---

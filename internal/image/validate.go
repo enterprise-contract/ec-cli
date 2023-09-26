@@ -50,7 +50,7 @@ func ValidateImage(ctx context.Context, comp app.SnapshotComponent, p policy.Pol
 		return out, nil
 	}
 
-	if resolved, err := resolveAndSetImageUrl(comp.ContainerImage, a); err != nil {
+	if resolved, err := resolveAndSetImageUrl(ctx, comp.ContainerImage, a); err != nil {
 		return nil, err
 	} else {
 		out.ImageURL = resolved
@@ -127,10 +127,10 @@ func ValidateImage(ctx context.Context, comp app.SnapshotComponent, p policy.Pol
 	return out, nil
 }
 
-func resolveAndSetImageUrl(url string, asi *application_snapshot_image.ApplicationSnapshotImage) (string, error) {
+func resolveAndSetImageUrl(ctx context.Context, url string, asi *application_snapshot_image.ApplicationSnapshotImage) (string, error) {
 	// Ensure image URL contains a digest to avoid ambiguity in the next
 	// validation steps
-	ref, err := ParseAndResolve(url)
+	ref, err := ParseAndResolve(ctx, url)
 	if err != nil {
 		log.Debugf("Failed to parse image url %s", url)
 		return "", err

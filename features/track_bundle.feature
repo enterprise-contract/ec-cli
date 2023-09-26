@@ -86,3 +86,28 @@ Feature: track bundles
           tag: tag
 
     """
+
+  Scenario: Fresh tags
+    Given a tekton bundle image named "acceptance/bundle:tag" containing
+      | Task     | task1     |
+      | Pipeline | pipeline1 |
+      And a track bundle file named "${TMPDIR}/bundles.yaml" containing
+    """
+    ---
+    pipeline-bundles:
+      ${REGISTRY}/acceptance/bundle:
+        - digest: sha256:${REGISTRY_acceptance/bundle:tag_DIGEST}
+          effective_on: 2006-01-02T15:04:05Z
+          tag: tag
+    task-bundles:
+      ${REGISTRY}/acceptance/bundle:
+        - digest: sha256:${REGISTRY_acceptance/bundle:tag_DIGEST}
+          effective_on: 2006-01-02T15:04:05Z
+          tag: tag
+    """
+      And a tekton bundle image named "acceptance/bundle:tag" containing
+      | Task     | task1-updated     |
+      | Pipeline | pipeline1-updated |
+    When ec command is run with "track bundle --input ${TMPDIR}/bundles.yaml --bundle ${REGISTRY}/acceptance/bundle:tag"
+    Then the exit status should be 0
+    Then the output should match the snapshot

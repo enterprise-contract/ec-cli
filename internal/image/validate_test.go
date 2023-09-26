@@ -271,7 +271,7 @@ var validAttestation = sign(&in_toto.Statement{
 func withImageConfig(ctx context.Context, url string) context.Context {
 	// Internally, ValidateImage strips off the tag from the image reference and
 	// leaves just the digest. Do the same here so mock matching works.
-	refWithTag, err := ParseAndResolve(url)
+	refWithTag, err := ParseAndResolve(ctx, url)
 	if err != nil {
 		panic(err)
 	}

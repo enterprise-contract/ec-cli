@@ -19,6 +19,7 @@ package tracker
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/google/go-containerregistry/pkg/name"
@@ -110,8 +111,8 @@ func (t Tracker) Output() ([]byte, error) {
 // records to one of its collections.
 // Each url is expected to reference a valid Tekton bundle. Each bundle may be added
 // to none, 1, or 2 collections depending on the Tekton resource types they include.
-func Track(ctx context.Context, urls []string, input []byte, prune bool) ([]byte, error) {
-	refs, err := image.ParseAndResolveAll(urls, name.StrictValidation)
+func Track(ctx context.Context, urls []string, input []byte, prune bool, freshen bool) ([]byte, error) {
+	refs, err := image.ParseAndResolveAll(ctx, urls, name.StrictValidation)
 	if err != nil {
 		return nil, err
 	}
@@ -119,6 +120,15 @@ func Track(ctx context.Context, urls []string, input []byte, prune bool) ([]byte
 	t, err := newTracker(input)
 	if err != nil {
 		return nil, err
+	}
+
+	if freshen {
+		imageRefs, err := inputBundleTags(ctx, t)
+		if err != nil {
+			return nil, err
+		}
+
+		refs = append(refs, imageRefs...)
 	}
 
 	effective_on := effectiveOn()
@@ -143,6 +153,27 @@ func Track(ctx context.Context, urls []string, input []byte, prune bool) ([]byte
 	t.filterBundles(prune)
 
 	return t.Output()
+}
+
+func inputBundleTags(ctx context.Context, t Tracker) ([]image.ImageReference, error) {
+	uniqueTagRefs := map[string]bool{}
+	for repository, bundles := range t.PipelineBundles {
+		for _, bundle := range bundles {
+			uniqueTagRefs[fmt.Sprintf("%s:%s", repository, bundle.Tag)] = true
+		}
+	}
+	for repository, bundles := range t.TaskBundles {
+		for _, bundle := range bundles {
+			uniqueTagRefs[fmt.Sprintf("%s:%s", repository, bundle.Tag)] = true
+		}
+	}
+
+	tagRefs := make([]string, 0, len(uniqueTagRefs))
+	for bundle := range uniqueTagRefs {
+		tagRefs = append(tagRefs, bundle)
+	}
+
+	return image.ParseAndResolveAll(ctx, tagRefs, name.StrictValidation)
 }
 
 // effectiveOn returns an RFC3339 representation of the beginning of the
