@@ -170,6 +170,8 @@ spec:
         - "data=$(params.HOMEDIR)/data.yaml"
         - "--output"
         - "attestation=$(params.HOMEDIR)/attestations.jsonl"
+        - "--output"
+        - "json=$(params.HOMEDIR)/report-json.json"
       env:
         - name: SSL_CERT_DIR
           # The Tekton Operator automatically sets the SSL_CERT_DIR env to the value below but,
@@ -195,6 +197,11 @@ spec:
       command: [cat]
       args:
         - "$(params.HOMEDIR)/attestations.jsonl"
+    - name: report-json
+      image: quay.io/enterprise-contract/ec-cli:snapshot
+      command: [cat]
+      args:
+        - "$(params.HOMEDIR)/report-json.json"
     - name: summary
       image: quay.io/enterprise-contract/ec-cli:snapshot
       command: [jq]
