@@ -14,6 +14,9 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+// Not really...
+//go:build unit
+
 package something
 
 import (
