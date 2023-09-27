@@ -27,6 +27,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gkampitakis/go-snaps/snaps"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -150,6 +151,121 @@ policy:
 	assert.NoError(t, err)
 	assert.YAMLEq(t, expected, string(reportYaml))
 	assert.False(t, report.Success)
+}
+
+func Test_GenerateMarkdownSummary(t *testing.T) {
+	cases := []struct {
+		name       string
+		snapshot   string
+		components []Component
+	}{
+		{
+			name: "One Warning and One Success",
+			components: []Component{
+				{
+					Successes: []evaluator.Result{
+						{Message: "Success1"},
+					},
+					SuccessCount: 1,
+					Warnings: []evaluator.Result{
+						{Message: "Warning1"},
+					},
+					Success: true,
+				},
+			},
+		},
+		{
+			name: "One failure and One Success",
+			components: []Component{
+				{
+					Successes: []evaluator.Result{
+						{Message: "Success1"},
+					},
+					SuccessCount: 1,
+					Violations: []evaluator.Result{
+						{Message: "faulure1"},
+					},
+					Success: true,
+				},
+			},
+		},
+		{
+			name: "One Failure and One Violation",
+			components: []Component{
+				{
+					Violations: []evaluator.Result{
+						{Message: "failure1"},
+					},
+					Warnings: []evaluator.Result{
+						{Message: "Warning1"},
+					},
+					Success: false,
+				},
+			},
+		},
+		{
+			name: "Multiple Failure and One Violation",
+			components: []Component{
+				{
+					Violations: []evaluator.Result{
+						{Message: "failure1"},
+						{Message: "failure2"},
+						{Message: "failure3"},
+					},
+					Warnings: []evaluator.Result{
+						{Message: "Warning1"},
+						{Message: "Warning2"},
+					},
+					Success: false,
+				},
+			},
+		},
+		{
+			name: "With success",
+			components: []Component{
+				{
+					Successes: []evaluator.Result{
+						{Message: "Success1"},
+						{Message: "Success2"},
+						{Message: "Success3"},
+					},
+					SuccessCount: 3,
+					Success:      true,
+				},
+			},
+		},
+		{
+			name:     "With Snapshot",
+			snapshot: "snappy",
+			components: []Component{
+				{
+					Violations: []evaluator.Result{
+						{Message: "failure1"},
+						{Message: "failure2"},
+					},
+					Warnings: []evaluator.Result{
+						{Message: "Warning1"},
+						{Message: "Warning2"},
+					},
+					Success: false,
+				},
+			},
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+
+			ctx := context.Background()
+			report, err := NewReport(c.snapshot, c.components, createTestPolicy(t, ctx), nil, nil)
+			assert.NoError(t, err)
+			report.created = time.Unix(0, 0).UTC()
+
+			markdownSummary, err := generateMarkdownSummary(&report)
+			assert.NoError(t, err)
+			snaps.MatchSnapshot(t, string(markdownSummary))
+		})
+	}
 }
 
 func Test_ReportSummary(t *testing.T) {
