@@ -163,7 +163,7 @@ func (r Report) WriteAll(targets []string, p format.TargetParser) (allErrors err
 func (r *Report) toFormat(format string) (data []byte, err error) {
 	switch format {
 	case SummaryMarkdown:
-		data, err = generateMarkdownSummary(*r)
+		data, err = generateMarkdownSummary(r)
 	case JSON:
 		data, err = json.Marshal(r)
 	case YAML:
@@ -236,6 +236,42 @@ func condensedMsg(results []evaluator.Result) map[string][]string {
 		}
 	}
 	return shortNames
+}
+
+func generateMarkdownSummary(r *Report) ([]byte, error) {
+    var markdownBuffer bytes.Buffer
+    markdownBuffer.WriteString("| Field     | Value |\n")
+    markdownBuffer.WriteString("|-----------|-------|\n")
+
+	var totalViolations, totalWarnings, totalSuccesses int
+	pr:= r.toSummary()
+		for _, component := range pr.Components {
+		totalViolations += component.TotalViolations
+		totalWarnings += component.TotalWarnings
+		totalSuccesses += component.TotalSuccesses
+		}
+    type Field struct {
+		Name  string
+		Value string
+		//TODOStatus string tick and x
+	}
+	fields := []Field{
+		{"Time",  r.created.UTC().Format("2006-01-02 15:04:05")},
+		{"Name", " "},
+		{"Successes", fmt.Sprint(totalSuccesses)},
+		{"Failures", fmt.Sprint(totalViolations)},
+		{"Warnings", fmt.Sprint(totalWarnings)},
+		{"Result", fmt.Sprint(pr.Success)},
+    }
+
+    for _, field := range fields {
+        writeMarkdownField(&markdownBuffer, field.Name, field.Value)
+    }
+    return markdownBuffer.Bytes(), nil
+}
+
+func writeMarkdownField(buffer *bytes.Buffer, fieldName, fieldValue string) {
+    buffer.WriteString(fmt.Sprintf("| %s | %s |\n", fieldName, fieldValue))
 }
 
 // toAppstudioReport returns a version of the report that conforms to the
