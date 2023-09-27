@@ -25,6 +25,7 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -99,6 +100,8 @@ func MatchSnapshot(ctx context.Context, qualifier, text string, vars map[string]
 
 	for k, v := range vars {
 		text = strings.ReplaceAll(text, v, "${"+k+"}")
+		// in case the value was quoted, so doubly-escaped
+		text = strings.ReplaceAll(text, strconv.Quote(v), `"${`+k+`}"`)
 	}
 
 	// replace any remaining timestamps

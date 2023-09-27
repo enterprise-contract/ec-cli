@@ -266,6 +266,7 @@ func taskLogsShouldMatchTheSnapshot(ctx context.Context, stepName string) error 
 	publicKeys := crypto.PublicKeysFrom(ctx)
 	for name, key := range publicKeys {
 		// account for various indentations
+		vars[fmt.Sprintf("%s_PUBLIC_KEY", name)] = key
 		vars[fmt.Sprintf("__%s_PUBLIC_KEY", name)] = indent(key, 2)
 		vars[fmt.Sprintf("____%s_PUBLIC_KEY", name)] = indent(key, 4)
 	}
