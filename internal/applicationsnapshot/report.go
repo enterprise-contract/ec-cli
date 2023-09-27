@@ -93,6 +93,7 @@ type TestReport struct {
 
 // Possible formats the report can be written as.
 const (
+	SummaryMarkdown = "summary-markdown"
 	JSON      = "json"
 	YAML      = "yaml"
 	APPSTUDIO = "appstudio"
@@ -161,6 +162,8 @@ func (r Report) WriteAll(targets []string, p format.TargetParser) (allErrors err
 // toFormat converts the report into the given format.
 func (r *Report) toFormat(format string) (data []byte, err error) {
 	switch format {
+	case SummaryMarkdown:
+		data, err = generateMarkdownSummary(*r)
 	case JSON:
 		data, err = json.Marshal(r)
 	case YAML:
