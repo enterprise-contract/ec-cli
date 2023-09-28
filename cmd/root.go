@@ -19,9 +19,6 @@ package cmd
 import (
 	"context"
 	"os"
-	"time"
-
-	"github.com/spf13/cobra"
 
 	"github.com/enterprise-contract/ec-cli/cmd/fetch"
 	"github.com/enterprise-contract/ec-cli/cmd/initialize"
@@ -31,31 +28,11 @@ import (
 	"github.com/enterprise-contract/ec-cli/cmd/track"
 	"github.com/enterprise-contract/ec-cli/cmd/validate"
 	"github.com/enterprise-contract/ec-cli/cmd/version"
-	"github.com/enterprise-contract/ec-cli/internal/kubernetes"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
 // RootCmd represents the base command when called without any subcommands
-var RootCmd = root.NewRootCmd(quiet, verbose, debug, trace, globalTimeout)
-
-var quiet bool = false
-var verbose bool = false
-var debug bool = false
-var trace bool = false
-var globalTimeout = 5 * time.Minute
-
-func init() {
-	setFlags(RootCmd)
-}
-
-func setFlags(rootCmd *cobra.Command) {
-	rootCmd.PersistentFlags().BoolVar(&quiet, "quiet", quiet, "less verbose output")
-	rootCmd.PersistentFlags().BoolVar(&verbose, "verbose", verbose, "more verbose output")
-	rootCmd.PersistentFlags().BoolVar(&debug, "debug", debug, "same as verbose but also show function names and line numbers")
-	rootCmd.PersistentFlags().BoolVar(&trace, "trace", trace, "enable trace logging")
-	rootCmd.PersistentFlags().DurationVar(&globalTimeout, "timeout", globalTimeout, "max overall execution duration")
-	kubernetes.AddKubeconfigFlag(rootCmd)
-}
+var RootCmd = root.NewRootCmd()
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
