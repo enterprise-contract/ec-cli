@@ -25,13 +25,20 @@ IDENTITY_ISSUER=${IDENTITY_ISSUER:-"https://token.actions.githubusercontent.com"
 #IDENTITY_REGEXP=${IDENTITY_REGEXP:-"https:\/\/github\.com\/(slsa-framework\/slsa-github-generator|lcarva\/festoji)\/"}
 #IDENTITY_ISSUER=${IDENTITY_ISSUER:-"https://token.actions.githubusercontent.com"}
 
-# Todo: Use a useful policy here
-POLICY=""
+POLICY_YAML=${POLICY_YAML:-"github.com/enterprise-contract/config//github-default"}
+#POLICY_YAML=${POLICY_YAML:-"./policy.yaml"}
 
-OPTS=${1:-}
+OUTPUT=${OUTPUT:-yaml}
+
 MAIN_GO=$(git rev-parse --show-toplevel)/main.go
-go run $MAIN_GO validate image --image "${IMAGE}" \
-  --policy "${POLICY}" \
+
+go run $MAIN_GO \
+  validate image \
+  --image "${IMAGE}" \
+  --policy "${POLICY_YAML}" \
   --certificate-identity-regexp ${IDENTITY_REGEXP} \
   --certificate-oidc-issuer ${IDENTITY_ISSUER} \
-  --info $OPTS | yq -P
+  --show-successes \
+  --info \
+  --output ${OUTPUT} \
+  "$@"
