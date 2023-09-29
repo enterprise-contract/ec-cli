@@ -70,21 +70,24 @@ func Test_ReportJson(t *testing.T) {
           "violations": [{"msg": "violation1"}],
           "warnings": [{"msg": "warning1"}],
 		  "successes": [{"msg": "success1"}],
-          "success": false
+          "success": false,
+		  "successCount": 0
         },
         {
           "name": "bacon",
           "containerImage": "quay.io/caf/bacon@sha256:234…",
 		  "source": {},
           "violations": [{"msg": "violation2"}],
-          "success": false
+          "success": false,
+		  "successCount": 0
         },
         {
 			"name": "eggs",
 			"containerImage": "quay.io/caf/eggs@sha256:345…",
 			"source": {},
 			"successes": [{"msg": "success3"}],
-			"success": true
+			"success": true,
+		    "successCount": 0
         }
       ],
 	  "policy": {
@@ -130,18 +133,21 @@ components:
     successes:
       - msg: success1
     success: false
+    successCount: 0
   - name: bacon
     containerImage: quay.io/caf/bacon@sha256:234…
     source: {}
     violations:
       - msg: violation2
     success: false
+    successCount: 0
   - name: eggs
     containerImage: quay.io/caf/eggs@sha256:345…
     source: {}
     successes:
       - msg: success3
     success: true
+    successCount: 0
 policy:
   publicKey: %s
 `, testEffectiveTime, utils.TestPublicKeyJSON, utils.TestPublicKeyJSON)
@@ -314,7 +320,8 @@ func Test_ReportSummary(t *testing.T) {
 						},
 					},
 				},
-				Success: false,
+				Success:      false,
+				SuccessCount: 1,
 			},
 			want: summary{
 				Components: []componentSummary{
@@ -361,7 +368,8 @@ func Test_ReportSummary(t *testing.T) {
 						},
 					},
 				},
-				Success: false,
+				Success:      false,
+				SuccessCount: 1,
 			},
 			want: summary{
 				Snapshot: "snappy",
@@ -409,11 +417,11 @@ func Test_ReportAppstudio(t *testing.T) {
 				"failures": 0,
 				"namespace": "",
 				"result": "SUCCESS",
-				"successes": 3,
+				"successes": 1,
 				"timestamp": "0",
 				"warnings": 0
 			}`,
-			components: []Component{{Success: true}, {Success: true}, {Success: true}},
+			components: []Component{{Success: true, SuccessCount: 1}, {Success: true}, {Success: true}},
 			success:    true,
 		},
 		{
@@ -428,8 +436,8 @@ func Test_ReportAppstudio(t *testing.T) {
 				"warnings": 1
 			}`,
 			components: []Component{
-				{Success: true},
-				{Success: true, Warnings: []evaluator.Result{{Message: "this is a warning"}}},
+				{Success: true, SuccessCount: 1},
+				{Success: true, SuccessCount: 1, Warnings: []evaluator.Result{{Message: "this is a warning"}}},
 			},
 			success: true,
 		},
@@ -445,7 +453,7 @@ func Test_ReportAppstudio(t *testing.T) {
 				"warnings": 0
 			}`,
 			components: []Component{
-				{Success: true},
+				{Success: true, SuccessCount: 1},
 				{Success: false, Violations: []evaluator.Result{{Message: "this is a violation"}}},
 			},
 			success: false,
@@ -461,7 +469,7 @@ func Test_ReportAppstudio(t *testing.T) {
 				"timestamp": "0",
 				"warnings": 0
 			}`,
-			components: []Component{{Success: false}, {Success: true}},
+			components: []Component{{Success: false}, {Success: true, SuccessCount: 1}},
 			success:    false,
 		},
 		{
@@ -476,7 +484,7 @@ func Test_ReportAppstudio(t *testing.T) {
 				"warnings": 1
 			}`,
 			components: []Component{
-				{Success: true},
+				{Success: true, SuccessCount: 1},
 				{Success: false, Violations: []evaluator.Result{{Message: "this is a violation"}}},
 				{Success: false, Warnings: []evaluator.Result{{Message: "this is a warning"}}},
 			},
@@ -508,7 +516,7 @@ func Test_ReportAppstudio(t *testing.T) {
 				"warnings": 0
 			}`,
 			snapshot:   "snappy",
-			components: []Component{{Success: true}, {Success: true}, {Success: true}},
+			components: []Component{{Success: true, SuccessCount: 3}, {Success: true}, {Success: true}},
 			success:    true,
 		},
 	}
@@ -557,11 +565,11 @@ func Test_ReportHACBS(t *testing.T) {
 				"failures": 0,
 				"namespace": "",
 				"result": "SUCCESS",
-				"successes": 3,
+				"successes": 42,
 				"timestamp": "0",
 				"warnings": 0
 			}`,
-			components: []Component{{Success: true}, {Success: true}, {Success: true}},
+			components: []Component{{Success: true, SuccessCount: 42}, {Success: true}, {Success: true}},
 			success:    true,
 		},
 		{
@@ -576,8 +584,8 @@ func Test_ReportHACBS(t *testing.T) {
 				"warnings": 1
 			}`,
 			components: []Component{
-				{Success: true},
-				{Success: true, Warnings: []evaluator.Result{{Message: "this is a warning"}}},
+				{Success: true, SuccessCount: 1},
+				{Success: true, SuccessCount: 1, Warnings: []evaluator.Result{{Message: "this is a warning"}}},
 			},
 			success: true,
 		},
@@ -593,7 +601,7 @@ func Test_ReportHACBS(t *testing.T) {
 				"warnings": 0
 			}`,
 			components: []Component{
-				{Success: true},
+				{Success: true, SuccessCount: 1},
 				{Success: false, Violations: []evaluator.Result{{Message: "this is a violation"}}},
 			},
 			success: false,
@@ -609,7 +617,7 @@ func Test_ReportHACBS(t *testing.T) {
 				"timestamp": "0",
 				"warnings": 0
 			}`,
-			components: []Component{{Success: false}, {Success: true}},
+			components: []Component{{Success: false}, {Success: true, SuccessCount: 1}},
 			success:    false,
 		},
 		{
@@ -624,7 +632,7 @@ func Test_ReportHACBS(t *testing.T) {
 				"warnings": 1
 			}`,
 			components: []Component{
-				{Success: true},
+				{Success: true, SuccessCount: 1},
 				{Success: false, Violations: []evaluator.Result{{Message: "this is a violation"}}},
 				{Success: false, Warnings: []evaluator.Result{{Message: "this is a warning"}}},
 			},
@@ -656,7 +664,7 @@ func Test_ReportHACBS(t *testing.T) {
 				"warnings": 0
 			}`,
 			snapshot:   "snappy",
-			components: []Component{{Success: true}, {Success: true}, {Success: true}},
+			components: []Component{{Success: true, SuccessCount: 1}, {Success: true, SuccessCount: 1}, {Success: true, SuccessCount: 1}},
 			success:    true,
 		},
 	}

@@ -307,7 +307,8 @@ func Test_ValidateImageCommand(t *testing.T) {
 			"name": "Unnamed",
 			"containerImage": "registry/image:tag",
 			"source": {},
-			"success": true
+			"success": true,
+			"successCount": 1
 		  }
 		],
 		"policy": {
@@ -412,7 +413,8 @@ func Test_ValidateImageCommandImages(t *testing.T) {
 						"revision": "ded982e702e07bb7b6effafdc353db3fe172c83f"
 					}
 				},
-				"success": true
+				"success": true,
+				"successCount": 1
 			},
 			{
 				"name": "bacon",
@@ -423,7 +425,8 @@ func Test_ValidateImageCommandImages(t *testing.T) {
 						"revision": "8abf15bef376e0e21f1f9e9c3d74483d5018f3d5"
 					}
 				},
-				"success": true
+				"success": true,
+				"successCount": 1
 			}
 		],
 		"policy": {
@@ -827,7 +830,8 @@ func Test_FailureImageAccessibility(t *testing.T) {
 			  {"msg": "skipped due to inaccessible image ref"},
 			  {"msg": "skipped due to inaccessible image ref"}
 			],
-			"success": false
+			"success": false,
+			"successCount": 0
 		  }
 		],
 		"policy": {
@@ -891,7 +895,8 @@ func Test_FailureOutput(t *testing.T) {
 			  {"msg": "failed attestation signature check"},
 			  {"msg": "failed image signature check"}
 			],
-			"success": false
+			"success": false,
+			"successCount": 0
 		  }
 		],
 		"policy": {
@@ -960,7 +965,8 @@ func Test_WarningOutput(t *testing.T) {
 				{"msg": "warning for policy check 1"},
 				{"msg": "warning for policy check 2"}
 			],
-			"success": true
+			"success": true,
+			"successCount": 0
 		  }
 		],
 		"policy": {

@@ -42,6 +42,7 @@ type Component struct {
 	Warnings     []evaluator.Result          `json:"warnings,omitempty"`
 	Successes    []evaluator.Result          `json:"successes,omitempty"`
 	Success      bool                        `json:"success"`
+	SuccessCount int                         `json:"successCount"`
 	Signatures   []signature.EntitySignature `json:"signatures,omitempty"`
 	Attestations []attestation.Attestation   `json:"attestations,omitempty"`
 }
@@ -198,12 +199,16 @@ func (r *Report) toSummary() summary {
 		c := componentSummary{
 			TotalViolations: len(cmp.Violations),
 			TotalWarnings:   len(cmp.Warnings),
-			TotalSuccesses:  len(cmp.Successes),
-			Success:         cmp.Success,
-			Name:            cmp.Name,
-			Violations:      condensedMsg(cmp.Violations),
-			Warnings:        condensedMsg(cmp.Warnings),
-			Successes:       condensedMsg(cmp.Successes),
+
+			// Because cmp.Successes does not get populated unless the --show-successes
+			// flag was set, cmp.SuccessCount is used here instead of len(cmp.Successes)
+			TotalSuccesses: cmp.SuccessCount,
+
+			Success:    cmp.Success,
+			Name:       cmp.Name,
+			Violations: condensedMsg(cmp.Violations),
+			Warnings:   condensedMsg(cmp.Warnings),
+			Successes:  condensedMsg(cmp.Successes),
 		}
 		pr.Components = append(pr.Components, c)
 	}
@@ -247,12 +252,12 @@ func (r *Report) toAppstudioReport() TestReport {
 	}
 
 	hasFailures := false
-	for _, component := range r.Components {
-		result.Failures += len(component.Violations)
-		result.Warnings += len(component.Warnings)
-		if component.Success {
-			result.Successes += 1
-		} else {
+	for _, component := range r.toSummary().Components {
+		result.Failures += component.TotalViolations
+		result.Warnings += component.TotalWarnings
+		result.Successes += component.TotalSuccesses
+
+		if !component.Success {
 			// It is possible, although quite unusual, that a component has no
 			// listed violations but is still marked as not successful.
 			hasFailures = true
