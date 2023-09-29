@@ -87,7 +87,7 @@ Error: success criteria not met
 {
   "timestamp": "${TIMESTAMP}",
   "namespace": "",
-  "successes": 0,
+  "successes": 4,
   "failures": 1,
   "warnings": 0,
   "result": "FAILURE"
