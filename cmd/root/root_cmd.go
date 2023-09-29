@@ -23,12 +23,19 @@ import (
 	hd "github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 
+	"github.com/enterprise-contract/ec-cli/internal/kubernetes"
 	"github.com/enterprise-contract/ec-cli/internal/logging"
 )
 
 var cancel context.CancelFunc
 
-func NewRootCmd(verbose bool, quiet bool, debug bool, trace bool, globalTimeout time.Duration) *cobra.Command {
+var quiet bool = false
+var verbose bool = false
+var debug bool = false
+var trace bool = false
+var globalTimeout = 5 * time.Minute
+
+func NewRootCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:   "ec",
 		Short: "Enterprise Contract CLI",
@@ -57,5 +64,16 @@ func NewRootCmd(verbose bool, quiet bool, debug bool, trace bool, globalTimeout 
 		},
 	}
 
+	setFlags(rootCmd)
+
 	return rootCmd
+}
+
+func setFlags(rootCmd *cobra.Command) {
+	rootCmd.PersistentFlags().BoolVar(&quiet, "quiet", quiet, "less verbose output")
+	rootCmd.PersistentFlags().BoolVar(&verbose, "verbose", verbose, "more verbose output")
+	rootCmd.PersistentFlags().BoolVar(&debug, "debug", debug, "same as verbose but also show function names and line numbers")
+	rootCmd.PersistentFlags().BoolVar(&trace, "trace", trace, "enable trace logging")
+	rootCmd.PersistentFlags().DurationVar(&globalTimeout, "timeout", globalTimeout, "max overall execution duration")
+	kubernetes.AddKubeconfigFlag(rootCmd)
 }
