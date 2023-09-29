@@ -475,7 +475,7 @@ Feature: evaluate enterprise contract
     Then the exit status should be 0
     Then the output should match the snapshot
 
-  Scenario: JUnit output format
+  Scenario: JUnit and AppStudio output format
     Given a key pair named "known"
     Given an image named "acceptance/image"
     Given a valid image signature of "acceptance/image" image signed by the "known" key
@@ -498,6 +498,9 @@ Feature: evaluate enterprise contract
     }
     """
     When ec command is run with "validate image --image ${REGISTRY}/acceptance/image --policy acceptance/ec-policy --rekor-url ${REKOR} --public-key ${known_PUBLIC_KEY} --output junit --show-successes"
+    Then the exit status should be 1
+    Then the output should match the snapshot
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/image --policy acceptance/ec-policy --rekor-url ${REKOR} --public-key ${known_PUBLIC_KEY} --output appstudio"
     Then the exit status should be 1
     Then the output should match the snapshot
 
