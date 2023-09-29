@@ -19,6 +19,7 @@
 package image
 
 import (
+	"context"
 	"testing"
 
 	"github.com/google/go-containerregistry/pkg/name"
@@ -100,13 +101,14 @@ func TestParseAndResolveAll(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// func Head(ref name.Reference, options ...Option) (*v1.Descriptor, error) {
-			remoteHead = func(ref name.Reference, options ...remote.Option) (*v1.Descriptor, error) {
+			remoteHead := func(ref name.Reference, options ...remote.Option) (*v1.Descriptor, error) {
 				// Ensure it is only called when expected.
 				assert.NotEmpty(t, tt.headDigest)
 				return &v1.Descriptor{Digest: tt.headDigest}, nil
 			}
-			refs, err := ParseAndResolveAll(tt.urls, tt.opts...)
+			ctx := context.WithValue(context.Background(), RemoteHead, remoteHead)
+
+			refs, err := ParseAndResolveAll(ctx, tt.urls, tt.opts...)
 			if tt.err != "" {
 				assert.ErrorContains(t, err, tt.err)
 				return

@@ -17,25 +17,31 @@
 package image
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
+	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/hashicorp/go-multierror"
 )
 
+type key string
+
+const RemoteHead key = "ec.image.remoteHead"
+
 // ParseAndResolve parses the url into an ImageReference object. The digest is
 // resolved if needed.
-func ParseAndResolve(url string, opts ...name.Option) (*ImageReference, error) {
+func ParseAndResolve(ctx context.Context, url string, opts ...name.Option) (*ImageReference, error) {
 	ref, err := NewImageReference(url, opts...)
 	if err != nil {
 		return nil, err
 	}
 
 	if ref.Digest == "" {
-		ref, err = ref.resolveDigest(opts...)
+		ref, err = ref.resolveDigest(ctx, opts...)
 		if err != nil {
 			return nil, err
 		}
@@ -45,12 +51,12 @@ func ParseAndResolve(url string, opts ...name.Option) (*ImageReference, error) {
 }
 
 // ParseAndResolveAll is like ParseAndResolve, but for a list of urls.
-func ParseAndResolveAll(urls []string, opts ...name.Option) ([]ImageReference, error) {
+func ParseAndResolveAll(ctx context.Context, urls []string, opts ...name.Option) ([]ImageReference, error) {
 	var errs error
 
 	refs := make([]ImageReference, 0, len(urls))
 	for _, url := range urls {
-		ref, err := ParseAndResolve(url, opts...)
+		ref, err := ParseAndResolve(ctx, url, opts...)
 		if err != nil {
 			errs = multierror.Append(errs, err)
 			continue
@@ -72,12 +78,13 @@ type ImageReference struct {
 	ref        name.Reference
 }
 
-// This facilitates unit tests.
-var remoteHead = remote.Head
-
 // resolveDigest queries the image repository to determine the image digest and
 // returns a new instance of ImageReference with the updated digest value.
-func (i ImageReference) resolveDigest(opts ...name.Option) (*ImageReference, error) {
+func (i ImageReference) resolveDigest(ctx context.Context, opts ...name.Option) (*ImageReference, error) {
+	remoteHead := remote.Head
+	if rh, ok := ctx.Value(RemoteHead).(func(name.Reference, ...remote.Option) (*v1.Descriptor, error)); ok {
+		remoteHead = rh
+	}
 	descriptor, err := remoteHead(i.ref, remote.WithAuthFromKeychain(authn.DefaultKeychain))
 	if err != nil {
 		return nil, err

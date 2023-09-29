@@ -44,6 +44,7 @@ const (
 	persistedEnv                          // key to a map of persisted environment states
 	RekorImpl                             // key to a implementation of the Rekor interface, used to prevent import cycles
 	Scenario                              // key to a the *godog.Scenario of the current scenario, used to prevent import cycles
+	TestUtil                              // key to a test utility struct
 
 	persistedFile = ".persisted"
 )
@@ -222,6 +223,23 @@ func Testing(ctx context.Context) *testing.T {
 	return ctx.Value(TestingT).(*testing.T)
 }
 
+func TempDir(ctx context.Context) (context.Context, string) {
+	utl := &testUtil{}
+
+	var err error
+	ctx, err = SetupState[testUtil](ctx, &utl)
+	if err != nil {
+		panic(err)
+	}
+
+	if utl.tempDir == "" {
+		t := Testing(ctx)
+		utl.tempDir = t.TempDir()
+	}
+
+	return ctx, utl.tempDir
+}
+
 // TestContainersRequest modifies the req to keep the container running after the test if PersistStubEnvironment is set to true in the ctx
 func TestContainersRequest(ctx context.Context, req testcontainers.ContainerRequest) testcontainers.ContainerRequest {
 	persisted := Persisted(ctx)
@@ -258,4 +276,12 @@ func CLIVersion(ctx context.Context) (string, error) {
 	})
 
 	return ecVersion, ecVersionErr
+}
+
+type testUtil struct {
+	tempDir string
+}
+
+func (testUtil) Key() any {
+	return TestUtil
 }

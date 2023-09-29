@@ -18,6 +18,7 @@ package track
 
 import (
 	"context"
+	"errors"
 	"os"
 	"strings"
 
@@ -28,7 +29,7 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
-type trackBundleFn func(context.Context, []string, []byte, bool) ([]byte, error)
+type trackBundleFn func(context.Context, []string, []byte, bool, bool) ([]byte, error)
 type pullImageFn func(context.Context, string) ([]byte, error)
 type pushImageFn func(context.Context, string, []byte, string) error
 
@@ -39,6 +40,7 @@ func trackBundleCmd(track trackBundleFn, pullImage pullImageFn, pushImage pushIm
 		prune   bool
 		replace bool
 		output  string
+		freshen bool
 	}{
 		prune: true,
 	}
@@ -98,9 +100,20 @@ func trackBundleCmd(track trackBundleFn, pullImage pullImageFn, pushImage pushIm
 			Skip pruning for unacceptable entries:
 
 			  ec track bundle --bundle <IMAGE1> --input <path/to/input/file> --prune=false
+
+			Update existing acceptable bundles:
+
+			  ec track bundle --input <path/to/input/file> --output <path/to/input/file> --freshen
 		`),
 
 		Args: cobra.NoArgs,
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			if len(params.bundles) == 0 && params.input == "" {
+				return errors.New("neither --bundle nor --input was provided")
+			}
+
+			return nil
+		},
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			// capture the command and arguments so we can keep track of what
 			// Tekton bundles were used to getnerate the OPA/Conftest bundle
@@ -117,7 +130,7 @@ func trackBundleCmd(track trackBundleFn, pullImage pullImageFn, pushImage pushIm
 				return err
 			}
 
-			out, err := track(cmd.Context(), params.bundles, data, params.prune)
+			out, err := track(cmd.Context(), params.bundles, data, params.prune, params.freshen)
 			if err != nil {
 				return err
 			}
@@ -167,9 +180,7 @@ func trackBundleCmd(track trackBundleFn, pullImage pullImageFn, pushImage pushIm
 	cmd.Flags().StringVarP(&params.output, "output", "o", params.output,
 		"write modified tracking file to a file. Use empty string for stdout, default behavior")
 
-	if err := cmd.MarkFlagRequired("bundle"); err != nil {
-		panic(err)
-	}
+	cmd.Flags().BoolVar(&params.freshen, "freshen", params.freshen, "resolve image tags to catch updates and use the latest image for the tag")
 
 	return cmd
 }
