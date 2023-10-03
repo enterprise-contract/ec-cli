@@ -1,0 +1,66 @@
+
+[Test_GenerateMarkdownSummary/One_Warning_and_One_Success - 1]
+| Field     | Value |Status|
+|-----------|-------|-------|
+| Time | 1970-01-01 00:00:00 |  |
+| Successes | 1 | :white_check_mark: |
+| Failures | 0 | :white_check_mark: |
+| Warnings | 1 | :x: |
+| Result |  | :white_check_mark: |
+
+---
+
+[Test_GenerateMarkdownSummary/One_failure_and_One_Success - 1]
+| Field     | Value |Status|
+|-----------|-------|-------|
+| Time | 1970-01-01 00:00:00 |  |
+| Successes | 1 | :x: |
+| Failures | 1 | :x: |
+| Warnings | 0 | :white_check_mark: |
+| Result |  | :white_check_mark: |
+
+---
+
+[Test_GenerateMarkdownSummary/One_Failure_and_One_Violation - 1]
+| Field     | Value |Status|
+|-----------|-------|-------|
+| Time | 1970-01-01 00:00:00 |  |
+| Successes | 0 | :x: |
+| Failures | 1 | :x: |
+| Warnings | 1 | :x: |
+| Result |  | :x: |
+
+---
+
+[Test_GenerateMarkdownSummary/Multiple_Failure_and_One_Violation - 1]
+| Field     | Value |Status|
+|-----------|-------|-------|
+| Time | 1970-01-01 00:00:00 |  |
+| Successes | 0 | :x: |
+| Failures | 3 | :x: |
+| Warnings | 2 | :x: |
+| Result |  | :x: |
+
+---
+
+[Test_GenerateMarkdownSummary/With_success - 1]
+| Field     | Value |Status|
+|-----------|-------|-------|
+| Time | 1970-01-01 00:00:00 |  |
+| Successes | 3 | :white_check_mark: |
+| Failures | 0 | :white_check_mark: |
+| Warnings | 0 | :white_check_mark: |
+| Result |  | :white_check_mark: |
+
+---
+
+[Test_GenerateMarkdownSummary/With_Snapshot - 1]
+| Field     | Value |Status|
+|-----------|-------|-------|
+| Time | 1970-01-01 00:00:00 |  |
+| Successes | 0 | :x: |
+| Failures | 2 | :x: |
+| Warnings | 2 | :x: |
+| Result |  | :x: |
+
+---

@@ -94,9 +94,10 @@ type TestReport struct {
 
 // Possible formats the report can be written as.
 const (
-	JSON      = "json"
-	YAML      = "yaml"
-	APPSTUDIO = "appstudio"
+	SummaryMarkdown = "summary-markdown"
+	JSON            = "json"
+	YAML            = "yaml"
+	APPSTUDIO       = "appstudio"
 	// Deprecated. Remove when hacbs output is removed
 	HACBS       = "hacbs"
 	Summary     = "summary"
@@ -162,6 +163,8 @@ func (r Report) WriteAll(targets []string, p format.TargetParser) (allErrors err
 // toFormat converts the report into the given format.
 func (r *Report) toFormat(format string) (data []byte, err error) {
 	switch format {
+	case SummaryMarkdown:
+		data, err = generateMarkdownSummary(r)
 	case JSON:
 		data, err = json.Marshal(r)
 	case YAML:
@@ -238,6 +241,39 @@ func condensedMsg(results []evaluator.Result) map[string][]string {
 		}
 	}
 	return shortNames
+}
+
+func generateMarkdownSummary(r *Report) ([]byte, error) {
+	var markdownBuffer bytes.Buffer
+	markdownBuffer.WriteString("| Field     | Value |Status|\n")
+	markdownBuffer.WriteString("|-----------|-------|-------|\n")
+
+	var totalViolations, totalWarnings, totalSuccesses int
+	pr := r.toSummary()
+	for _, component := range pr.Components {
+		totalViolations += component.TotalViolations
+		totalWarnings += component.TotalWarnings
+		totalSuccesses += component.TotalSuccesses
+	}
+
+	writeIcon := func(condition bool) string {
+		if condition {
+			return ":white_check_mark:"
+		}
+		return ":x:"
+	}
+
+	writeMarkdownField(&markdownBuffer, "Time", r.created.UTC().Format("2006-01-02 15:04:05"), "")
+	writeMarkdownField(&markdownBuffer, "Successes", totalSuccesses, writeIcon(totalSuccesses >= 1 && totalViolations == 0))
+	writeMarkdownField(&markdownBuffer, "Failures", totalViolations, writeIcon(totalViolations == 0))
+	writeMarkdownField(&markdownBuffer, "Warnings", totalWarnings, writeIcon(totalWarnings == 0))
+	writeMarkdownField(&markdownBuffer, "Result", "", writeIcon(r.Success))
+	return markdownBuffer.Bytes(), nil
+}
+
+func writeMarkdownField(buffer *bytes.Buffer, name string, value any, icon string) {
+	valueStr := fmt.Sprintf("%v", value)
+	buffer.WriteString(fmt.Sprintf("| %s | %s | %s |\n", name, valueStr, icon))
 }
 
 // toAppstudioReport returns a version of the report that conforms to the
