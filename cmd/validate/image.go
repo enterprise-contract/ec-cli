@@ -292,9 +292,13 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 						res.component.Violations = out.Violations()
 						showSuccesses, _ := cmd.Flags().GetBool("show-successes")
 						res.component.Warnings = out.Warnings()
+
+						successes := out.Successes()
+						res.component.SuccessCount = len(successes)
 						if showSuccesses {
-							res.component.Successes = out.Successes()
+							res.component.Successes = successes
 						}
+
 						res.component.Signatures = out.Signatures
 						res.component.Attestations = out.Attestations
 						res.component.ContainerImage = out.ImageURL
