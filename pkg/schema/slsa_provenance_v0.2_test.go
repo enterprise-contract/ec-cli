@@ -125,6 +125,7 @@ func TestPredicateBuilderType(t *testing.T) {
 func TestPredicateInvocationConfigSourceUri(t *testing.T) {
 	check(t,
 		`{"predicate": {"invocation": {"configSource": {"uri": null}}}}`, // is optional, so `null` is allowed
+		// Values without a scheme are currently allowed due to https://github.com/tektoncd/chains/issues/934.
 		`{"predicate": {"invocation": {"configSource": {"uri": ""}}}}`,
 		`{"predicate": {"invocation": {"configSource": {"uri": "not_uri"}}}}`,
 		`{"predicate": {"invocation": {"configSource": {"uri": "scheme:authority"}}}}`,

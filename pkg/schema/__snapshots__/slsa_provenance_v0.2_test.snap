@@ -269,21 +269,11 @@
 
 [TestPredicateInvocationConfigSourceUri/case_1 - 1]
 []jsonschema.KeyError{
-    {
-        PropertyPath: "/predicate/invocation/configSource/uri",
-        InvalidValue: "",
-        Message:      "invalid uri: uri missing scheme prefix",
-    },
 }
 ---
 
 [TestPredicateInvocationConfigSourceUri/case_2 - 1]
 []jsonschema.KeyError{
-    {
-        PropertyPath: "/predicate/invocation/configSource/uri",
-        InvalidValue: "not_uri",
-        Message:      "invalid uri: uri missing scheme prefix",
-    },
 }
 ---
 
