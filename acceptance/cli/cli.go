@@ -77,7 +77,7 @@ func (d diffy) Deltas() []gojsondiff.Delta {
 	return d
 }
 
-func variables(ctx context.Context) ([]string, map[string]string, error) {
+func variables(ctx context.Context) (context.Context, []string, map[string]string, error) {
 	// environment that the ec command line will run with
 	// we need to keep the $PATH, otherwise go-getter could
 	// fail if it can't locate the git command
@@ -98,42 +98,42 @@ func variables(ctx context.Context) ([]string, map[string]string, error) {
 
 	var err error
 	if environment, vars, err = setupKubernetes(ctx, vars, environment); err != nil {
-		return nil, nil, err
+		return ctx, nil, nil, err
 	}
 
 	if environment, vars, err = setupRegistry(ctx, vars, environment); err != nil {
-		return nil, nil, err
+		return ctx, nil, nil, err
 	}
 
 	if environment, vars, err = setupRekor(ctx, vars, environment); err != nil {
-		return nil, nil, err
+		return ctx, nil, nil, err
 	}
 
 	if environment, vars, err = setupKeys(ctx, vars, environment); err != nil {
-		return nil, nil, err
+		return ctx, nil, nil, err
 	}
 
 	if environment, vars, err = setupSigs(ctx, vars, environment); err != nil {
-		return nil, nil, err
+		return ctx, nil, nil, err
 	}
 
 	if environment, vars, err = setupGitHost(ctx, vars, environment); err != nil {
-		return nil, nil, err
+		return ctx, nil, nil, err
 	}
 
 	if environment, vars, err = setupTUF(ctx, vars, environment); err != nil {
-		return nil, nil, err
+		return ctx, nil, nil, err
 	}
 
 	if environment, err = setupCmdEnvironmentVariable(ctx, environment); err != nil {
-		return nil, nil, err
+		return ctx, nil, nil, err
 	}
 
 	if vars, err = setupCliVersion(ctx, vars); err != nil {
-		return nil, nil, err
+		return ctx, nil, nil, err
 	}
 
-	return environment, vars, nil
+	return ctx, environment, vars, nil
 }
 
 // ecCommandIsRunWith launches the ec command line with provided parameters.
@@ -156,7 +156,7 @@ func ecCommandIsRunWith(ctx context.Context, parameters string) (context.Context
 		return ctx, fmt.Errorf("%s is a not a regular file", ec)
 	}
 
-	environment, vars, err := variables(ctx)
+	ctx, environment, vars, err := variables(ctx)
 	if err != nil {
 		return ctx, err
 	}
@@ -761,7 +761,7 @@ func matchFileSnapshot(ctx context.Context, file string) error {
 }
 
 func createTrackBundleFile(ctx context.Context, name string, content *godog.DocString) (context.Context, error) {
-	_, vars, err := variables(ctx)
+	ctx, _, vars, err := variables(ctx)
 	if err != nil {
 		return ctx, err
 	}
