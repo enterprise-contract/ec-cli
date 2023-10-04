@@ -30,9 +30,11 @@ import (
 	"github.com/gkampitakis/go-snaps/snaps"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
 	"github.com/spf13/afero"
+	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 
 	app "github.com/enterprise-contract/ec-cli/application/v1alpha1"
+	"github.com/enterprise-contract/ec-cli/cmd/root"
 	"github.com/enterprise-contract/ec-cli/internal/applicationsnapshot"
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 	"github.com/enterprise-contract/ec-cli/internal/output"
@@ -45,6 +47,11 @@ type data struct {
 	input    string
 	filePath string
 	images   string
+}
+
+var rootArgs = []string{
+	"validate",
+	"image",
 }
 
 func Test_determineInputSpec(t *testing.T) {
@@ -276,20 +283,21 @@ func Test_ValidateImageCommand(t *testing.T) {
 		}, nil
 	}
 
-	cmd := validateImageCmd(validate)
+	validateImageCmd := validateImageCmd(validate)
+	cmd := setUpCobra(validateImageCmd)
 
 	cmd.SetContext(utils.WithFS(context.TODO(), afero.NewMemMapFs()))
 
 	effectiveTimeTest := time.Now().UTC().Format(time.RFC3339Nano)
 
-	cmd.SetArgs([]string{
+	cmd.SetArgs(append(rootArgs, []string{
 		"--image",
 		"registry/image:tag",
 		"--policy",
 		fmt.Sprintf(`{"publicKey": %s}`, utils.TestPublicKeyJSON),
 		"--effective-time",
 		effectiveTimeTest,
-	})
+	}...))
 
 	var out bytes.Buffer
 	cmd.SetOut(&out)
@@ -351,7 +359,8 @@ func Test_ValidateImageCommandImages(t *testing.T) {
 		}, nil
 	}
 
-	cmd := validateImageCmd(validate)
+	validateImageCmd := validateImageCmd(validate)
+	cmd := setUpCobra(validateImageCmd)
 
 	cmd.SetContext(utils.WithFS(context.Background(), afero.NewMemMapFs()))
 
@@ -382,14 +391,14 @@ func Test_ValidateImageCommandImages(t *testing.T) {
 		]
 	}`
 
-	cmd.SetArgs([]string{
+	cmd.SetArgs(append(rootArgs, []string{
 		"--images",
 		images,
 		"--policy",
 		fmt.Sprintf(`{"publicKey": %s}`, utils.TestPublicKeyJSON),
 		"--effective-time",
 		effectiveTimeTest,
-	})
+	}...))
 
 	var out bytes.Buffer
 	cmd.SetOut(&out)
@@ -435,7 +444,7 @@ func Test_ValidateImageCommandImages(t *testing.T) {
 
 func Test_ValidateImageCommandKeyless(t *testing.T) {
 	called := false
-	cmd := validateImageCmd(func(_ context.Context, _ app.SnapshotComponent, p policy.Policy, _ bool) (*output.Output, error) {
+	validateImageCmd := validateImageCmd(func(_ context.Context, _ app.SnapshotComponent, p policy.Policy, _ bool) (*output.Output, error) {
 		assert.Equal(t, cosign.Identity{
 			Issuer:        "my-certificate-oidc-issuer",
 			Subject:       "my-certificate-identity",
@@ -447,10 +456,11 @@ func Test_ValidateImageCommandKeyless(t *testing.T) {
 
 		return &output.Output{}, nil
 	})
+	cmd := setUpCobra(validateImageCmd)
 
 	cmd.SetContext(utils.WithFS(context.Background(), afero.NewMemMapFs()))
 
-	cmd.SetArgs([]string{
+	cmd.SetArgs(append(rootArgs, []string{
 		"--image",
 		"registry/image:tag",
 		"--policy",
@@ -463,7 +473,7 @@ func Test_ValidateImageCommandKeyless(t *testing.T) {
 		"my-certificate-identity-regexp",
 		"--certificate-oidc-issuer-regexp",
 		"my-certificate-oidc-issuer-regexp",
-	})
+	}...))
 
 	utils.SetTestRekorPublicKey(t)
 	utils.SetTestFulcioRoots(t)
@@ -507,7 +517,8 @@ func Test_ValidateImageCommandYAMLPolicyFile(t *testing.T) {
 		}, nil
 	}
 
-	cmd := validateImageCmd(validate)
+	validateImageCmd := validateImageCmd(validate)
+	cmd := setUpCobra(validateImageCmd)
 
 	fs := afero.NewMemMapFs()
 
@@ -561,7 +572,7 @@ spec:
 			if err != nil {
 				panic(err)
 			}
-			args := []string{
+			args := append(rootArgs, []string{
 				"--image",
 				"registry/image:tag",
 				"--public-key",
@@ -570,7 +581,7 @@ spec:
 				"/policy.yaml",
 				"--effective-time",
 				"1970-01-01",
-			}
+			}...)
 			cmd.SetArgs(args)
 
 			var out bytes.Buffer
@@ -620,7 +631,8 @@ func Test_ValidateImageCommandJSONPolicyFile(t *testing.T) {
 		}, nil
 	}
 
-	cmd := validateImageCmd(validate)
+	validateImageCmd := validateImageCmd(validate)
+	cmd := setUpCobra(validateImageCmd)
 
 	fs := afero.NewMemMapFs()
 
@@ -642,14 +654,14 @@ configuration:
 	if err != nil {
 		panic(err)
 	}
-	args := []string{
+	args := append(rootArgs, []string{
 		"--image",
 		"registry/image:tag",
 		"--public-key",
 		utils.TestPublicKey,
 		"--policy",
 		"/policy.json",
-	}
+	}...)
 	cmd.SetArgs(args)
 
 	var out bytes.Buffer
@@ -695,7 +707,8 @@ func Test_ValidateImageCommandEmptyPolicyFile(t *testing.T) {
 		}, nil
 	}
 
-	cmd := validateImageCmd(validate)
+	validateImageCmd := validateImageCmd(validate)
+	cmd := setUpCobra(validateImageCmd)
 
 	fs := afero.NewMemMapFs()
 
@@ -705,14 +718,14 @@ func Test_ValidateImageCommandEmptyPolicyFile(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	args := []string{
+	args := append(rootArgs, []string{
 		"--image",
 		"registry/image:tag",
 		"--public-key",
 		utils.TestPublicKey,
 		"--policy",
 		"/policy.yaml",
-	}
+	}...)
 	cmd.SetArgs(args)
 
 	var out bytes.Buffer
@@ -789,11 +802,12 @@ func Test_ValidateErrorCommand(t *testing.T) {
 				return nil, errors.New("expected")
 			}
 
-			cmd := validateImageCmd(validate)
+			validateImageCmd := validateImageCmd(validate)
+			cmd := setUpCobra(validateImageCmd)
 
 			cmd.SetContext(utils.WithFS(context.TODO(), afero.NewMemMapFs()))
 
-			cmd.SetArgs(c.args)
+			cmd.SetArgs(append([]string{"validate", "image"}, c.args...))
 
 			var out bytes.Buffer
 			cmd.SetOut(&out)
@@ -828,21 +842,22 @@ func Test_FailureImageAccessibility(t *testing.T) {
 		}, nil
 	}
 
-	cmd := validateImageCmd(validate)
+	validateImageCmd := validateImageCmd(validate)
+	cmd := setUpCobra(validateImageCmd)
 	cmd.SilenceUsage = true // The root command is set to prevent usage printouts when running the CLI directly. This setup is temporary workaround.
 
 	cmd.SetContext(utils.WithFS(context.TODO(), afero.NewMemMapFs()))
 
 	effectiveTimeTest := time.Now().UTC().Format(time.RFC3339Nano)
 
-	cmd.SetArgs([]string{
+	cmd.SetArgs(append(rootArgs, []string{
 		"--image",
 		"registry/image:tag",
 		"--policy",
 		fmt.Sprintf(`{"publicKey": %s}`, utils.TestPublicKeyJSON),
 		"--effective-time",
 		effectiveTimeTest,
-	})
+	}...))
 
 	var out bytes.Buffer
 	cmd.SetOut(&out)
@@ -893,21 +908,22 @@ func Test_FailureOutput(t *testing.T) {
 		}, nil
 	}
 
-	cmd := validateImageCmd(validate)
+	validateImageCmd := validateImageCmd(validate)
+	cmd := setUpCobra(validateImageCmd)
 	cmd.SilenceUsage = true // The root command is set to prevent usage printouts when running the CLI directly. This setup is temporary workaround.
 
 	cmd.SetContext(utils.WithFS(context.TODO(), afero.NewMemMapFs()))
 
 	effectiveTimeTest := time.Now().UTC().Format(time.RFC3339Nano)
 
-	cmd.SetArgs([]string{
+	cmd.SetArgs(append(rootArgs, []string{
 		"--image",
 		"registry/image:tag",
 		"--policy",
 		fmt.Sprintf(`{"publicKey": %s}`, utils.TestPublicKeyJSON),
 		"--effective-time",
 		effectiveTimeTest,
-	})
+	}...))
 
 	var out bytes.Buffer
 	cmd.SetOut(&out)
@@ -963,20 +979,21 @@ func Test_WarningOutput(t *testing.T) {
 		}, nil
 	}
 
-	cmd := validateImageCmd(validate)
+	validateImageCmd := validateImageCmd(validate)
+	cmd := setUpCobra(validateImageCmd)
 
 	cmd.SetContext(utils.WithFS(context.TODO(), afero.NewMemMapFs()))
 
 	effectiveTimeTest := time.Now().UTC().Format(time.RFC3339Nano)
 
-	cmd.SetArgs([]string{
+	cmd.SetArgs(append(rootArgs, []string{
 		"--image",
 		"registry/image:tag",
 		"--policy",
 		fmt.Sprintf(`{"publicKey": %s}`, utils.TestPublicKeyJSON),
 		"--effective-time",
 		effectiveTimeTest,
-	})
+	}...))
 
 	var out bytes.Buffer
 	cmd.SetOut(&out)
@@ -1006,4 +1023,12 @@ func Test_WarningOutput(t *testing.T) {
 			"publicKey": %s
 		}
 	  }`, effectiveTimeTest, utils.TestPublicKeyJSON, utils.TestPublicKeyJSON), out.String())
+}
+
+func setUpCobra(command *cobra.Command) *cobra.Command {
+	validateCmd := NewValidateCmd()
+	validateCmd.AddCommand(command)
+	cmd := root.NewRootCmd()
+	cmd.AddCommand(validateCmd)
+	return cmd
 }

@@ -28,6 +28,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/enterprise-contract/ec-cli/cmd/root"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
@@ -212,9 +213,14 @@ func Test_TrackBundleCommand(t *testing.T) {
 				assert.NotEmpty(t, invocation) // in tests this will be the cmd.test in temp directory, counting on os.Args to be correct when ec-cli is invoked
 				return nil
 			}
-			cmd := trackBundleCmd(track, pullImage, pushImage)
+			completeArgs := append([]string{"track", "bundle"}, c.args...)
+			trackBundleCmd := trackBundleCmd(track, pullImage, pushImage)
+			trackCmd := NewTrackCmd()
+			trackCmd.AddCommand(trackBundleCmd)
+			cmd := root.NewRootCmd()
+			cmd.AddCommand(trackCmd)
 			cmd.SetContext(ctx)
-			cmd.SetArgs(c.args)
+			cmd.SetArgs(completeArgs)
 			var out bytes.Buffer
 			cmd.SetOut(&out)
 			err := cmd.Execute()

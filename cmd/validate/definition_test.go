@@ -39,12 +39,15 @@ func TestValidateDefinitionFileCommandOutput(t *testing.T) {
 		return &output2.Output{PolicyCheck: []evaluator.Outcome{{FileName: fpath}}}, nil
 	}
 
-	cmd := validateDefinitionCmd(validate)
+	validateDefinitionCmd := validateDefinitionCmd(validate)
+	cmd := setUpCobra(validateDefinitionCmd)
 
 	var out bytes.Buffer
 	cmd.SetOut(&out)
 
 	cmd.SetArgs([]string{
+		"validate",
+		"definition",
 		"--file",
 		"/path/file1.yaml",
 		"--file",
@@ -85,12 +88,15 @@ func TestValidateDefinitionFilePolicySources(t *testing.T) {
 		return &output2.Output{}, nil
 	}
 
-	cmd := validateDefinitionCmd(validate)
+	validateDefinitionCmd := validateDefinitionCmd(validate)
+	cmd := setUpCobra(validateDefinitionCmd)
 
 	var out bytes.Buffer
 	cmd.SetOut(&out)
 
 	cmd.SetArgs([]string{
+		"validate",
+		"definition",
 		"--file",
 		"/path/file1.yaml",
 		"--policy",
@@ -158,12 +164,15 @@ func TestDefinitionFileOutputFormats(t *testing.T) {
 				return &output2.Output{PolicyCheck: []evaluator.Outcome{{FileName: fpath}}}, nil
 			}
 
-			cmd := validateDefinitionCmd(validate)
+			validateDefinitionCmd := validateDefinitionCmd(validate)
+			cmd := setUpCobra(validateDefinitionCmd)
 
 			var out bytes.Buffer
 			cmd.SetOut(&out)
 
 			cmd.SetArgs(append([]string{
+				"validate",
+				"definition",
 				"--file",
 				"/path/file1.yaml",
 			}, c.output...))
@@ -188,13 +197,16 @@ func TestValidateDefinitionFileCommandErrors(t *testing.T) {
 		return nil, errors.New(fpath)
 	}
 
-	cmd := validateDefinitionCmd(validate)
+	validateDefinitionCmd := validateDefinitionCmd(validate)
+	cmd := setUpCobra(validateDefinitionCmd)
 
 	var out bytes.Buffer
 	cmd.SetOut(&out)
 	cmd.SilenceUsage = true
 
 	cmd.SetArgs([]string{
+		"validate",
+		"definition",
 		"--file",
 		"/path/file1.yaml",
 		"--file",
@@ -245,8 +257,9 @@ func TestStrictOutput(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			cmd := validateDefinitionCmd(validate)
-			cmd.SetArgs(c.args)
+			validateDefinitionCmd := validateDefinitionCmd(validate)
+			cmd := setUpCobra(validateDefinitionCmd)
+			cmd.SetArgs(append([]string{"validate", "definition"}, c.args...))
 			err := cmd.Execute()
 			assert.Equal(t, c.expectedError, err)
 		})

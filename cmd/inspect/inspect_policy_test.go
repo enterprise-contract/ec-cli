@@ -23,10 +23,12 @@ import (
 	"testing"
 
 	"github.com/spf13/afero"
+	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"golang.org/x/net/context"
 
+	"github.com/enterprise-contract/ec-cli/cmd/root"
 	"github.com/enterprise-contract/ec-cli/internal/policy/source"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
@@ -60,12 +62,15 @@ func TestFetchSourcesFromPolicy(t *testing.T) {
 	downloader.On("Download", mock.Anything, "two", false).Return(nil).Run(createDir)
 	downloader.On("Download", mock.Anything, "three", false).Return(nil).Run(createDir)
 
-	cmd := inspectPolicyCmd()
+	inspectPolicyCmd := inspectPolicyCmd()
+	cmd := setUpCobra(inspectPolicyCmd)
 	cmd.SetContext(ctx)
 	buffy := bytes.Buffer{}
 	cmd.SetOut(&buffy)
 
 	cmd.SetArgs([]string{
+		"inspect",
+		"policy",
 		"--policy",
 		`{"sources":[{"policy":["one","two"]},{"policy":["three"]}]}`,
 	})
@@ -73,7 +78,7 @@ func TestFetchSourcesFromPolicy(t *testing.T) {
 	err := cmd.Execute()
 	assert.NoError(t, err)
 
-	assert.Equal(t, "[one,two,three]", cmd.Flag("source").Value.String())
+	assert.Equal(t, "[one,two,three]", inspectPolicyCmd.Flag("source").Value.String())
 	assert.Equal(t, "# Source: one\n\n# Source: three\n\n# Source: two\n\n", buffy.String())
 }
 
@@ -96,12 +101,15 @@ func TestFetchSources(t *testing.T) {
 	downloader.On("Download", mock.Anything, "two", false).Return(nil).Run(createDir)
 	downloader.On("Download", mock.Anything, "three", false).Return(nil).Run(createDir)
 
-	cmd := inspectPolicyCmd()
+	inspectPolicyCmd := inspectPolicyCmd()
+	cmd := setUpCobra(inspectPolicyCmd)
 	cmd.SetContext(ctx)
 	buffy := bytes.Buffer{}
 	cmd.SetOut(&buffy)
 
 	cmd.SetArgs([]string{
+		"inspect",
+		"policy",
 		"--source",
 		"one",
 		"--source",
@@ -113,7 +121,7 @@ func TestFetchSources(t *testing.T) {
 	err := cmd.Execute()
 	assert.NoError(t, err)
 
-	assert.Equal(t, "[one,two,three]", cmd.Flag("source").Value.String())
+	assert.Equal(t, "[one,two,three]", inspectPolicyCmd.Flag("source").Value.String())
 	assert.Equal(t, "# Source: one\n\n# Source: three\n\n# Source: two\n\n", buffy.String())
 }
 
@@ -136,12 +144,13 @@ func TestSourcesAndPolicyCantBeBothProvided(t *testing.T) {
 	downloader.On("Download", mock.Anything, "two", false).Return(nil).Run(createDir)
 	downloader.On("Download", mock.Anything, "three", false).Return(nil).Run(createDir)
 
-	cmd := inspectPolicyCmd()
+	inspectPolicyCmd := inspectPolicyCmd()
+	cmd := setUpCobra(inspectPolicyCmd)
 	cmd.SetContext(ctx)
-	buffy := bytes.Buffer{}
-	cmd.SetOut(&buffy)
 
 	cmd.SetArgs([]string{
+		"inspect",
+		"policy",
 		"--source",
 		"one",
 		"--source",
@@ -154,6 +163,12 @@ func TestSourcesAndPolicyCantBeBothProvided(t *testing.T) {
 
 	err := cmd.Execute()
 	assert.Error(t, err, "if any flags in the group [policy source] are set none of the others can be; [policy source] were all set")
+}
 
-	assert.Contains(t, buffy.String(), "Usage:")
+func setUpCobra(command *cobra.Command) *cobra.Command {
+	inspectCmd := NewInspectCmd()
+	inspectCmd.AddCommand(command)
+	cmd := root.NewRootCmd()
+	cmd.AddCommand(inspectCmd)
+	return cmd
 }

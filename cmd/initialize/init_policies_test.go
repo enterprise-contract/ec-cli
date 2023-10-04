@@ -24,8 +24,10 @@ import (
 	"testing"
 
 	"github.com/spf13/afero"
+	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/enterprise-contract/ec-cli/cmd/root"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
@@ -33,12 +35,15 @@ func TestInitializeNoError(t *testing.T) {
 	fs := afero.NewMemMapFs()
 	ctx := utils.WithFS(context.Background(), fs)
 
-	cmd := initPoliciesCmd()
+	initPoliciesCmd := initPoliciesCmd()
+	cmd := setUpCobra(initPoliciesCmd)
 	cmd.SetContext(ctx)
 	buffy := new(bytes.Buffer)
 	cmd.SetOut(buffy)
 
 	cmd.SetArgs([]string{
+		"init",
+		"policies",
 		"--dest-dir",
 		"sample",
 	})
@@ -51,12 +56,15 @@ func TestInitializeSamplePolicy(t *testing.T) {
 	fs := afero.NewMemMapFs()
 	ctx := utils.WithFS(context.Background(), fs)
 
-	cmd := initPoliciesCmd()
+	initPoliciesCmd := initPoliciesCmd()
+	cmd := setUpCobra(initPoliciesCmd)
 	cmd.SetContext(ctx)
 	buffy := new(bytes.Buffer)
 	cmd.SetOut(buffy)
 
 	cmd.SetArgs([]string{
+		"init",
+		"policies",
 		"--dest-dir",
 		"sample",
 	})
@@ -74,12 +82,26 @@ func TestInitializeStdOut(t *testing.T) {
 	fs := afero.NewMemMapFs()
 	ctx := utils.WithFS(context.Background(), fs)
 
-	cmd := initPoliciesCmd()
+	initPoliciesCmd := initPoliciesCmd()
+	cmd := setUpCobra(initPoliciesCmd)
 	cmd.SetContext(ctx)
 	buffy := bytes.Buffer{}
 	cmd.SetOut(&buffy)
 
+	cmd.SetArgs([]string{
+		"init",
+		"policies",
+	})
+
 	err := cmd.Execute()
 	assert.NoError(t, err)
 	assert.Contains(t, buffy.String(), "Simplest never-failing policy")
+}
+
+func setUpCobra(command *cobra.Command) *cobra.Command {
+	initCmd := NewInitCmd()
+	initCmd.AddCommand(command)
+	cmd := root.NewRootCmd()
+	cmd.AddCommand(initCmd)
+	return cmd
 }
