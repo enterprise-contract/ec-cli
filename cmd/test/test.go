@@ -118,6 +118,7 @@ func newTestCommand() *cobra.Command {
 				"no-fail",
 				"suppress-exceptions",
 				"output",
+				"file",
 				"parser",
 				"policy",
 				"proto-file-dirs",
@@ -150,6 +151,11 @@ func newTestCommand() *cobra.Command {
 				return fmt.Errorf("unmarshal parameters: %w", err)
 			}
 
+			outputFilePath, err := cmd.Flags().GetString("file")
+			if err != nil {
+				return fmt.Errorf("reading flag: %w", err)
+			}
+
 			results, resultsErr := runner.Run(ctx, fileList)
 			var exitCode int
 			if runner.FailOnWarn {
@@ -171,7 +177,14 @@ func newTestCommand() *cobra.Command {
 					if err != nil {
 						return appstudioErrorHandler(runner.NoFail, "output results", err)
 					}
-					fmt.Printf("%s\n", reportOutput)
+
+					if outputFilePath != "" {
+						err := os.WriteFile(outputFilePath, reportOutput, 0600)
+						if err != nil {
+							return fmt.Errorf("creating output file: %w", err)
+						}
+					}
+					fmt.Fprintln(cmd.OutOrStdout(), string(reportOutput)+"\n")
 
 				} else {
 					// Conftest handles the output
@@ -180,14 +193,32 @@ func newTestCommand() *cobra.Command {
 						return fmt.Errorf("running test: %w", resultsErr)
 					}
 
+					var outputFile *os.File
+					if outputFilePath != "" {
+						outputFile, err = os.Create(outputFilePath)
+						if err != nil {
+							return fmt.Errorf("creating output file: %w", err)
+						}
+						defer outputFile.Close()
+					}
+
 					outputter := output.Get(runner.Output, output.Options{
 						NoColor:            runner.NoColor,
 						SuppressExceptions: runner.SuppressExceptions,
 						Tracing:            runner.Trace,
 						JUnitHideMessage:   viper.GetBool("junit-hide-message"),
+						File:               outputFile,
 					})
 					if err := outputter.Output(results); err != nil {
 						return fmt.Errorf("output results: %w", err)
+					}
+
+					if outputFilePath != "" {
+						contents, err := os.ReadFile(outputFile.Name())
+						if err != nil {
+							return fmt.Errorf("copying output file to stdout: %w", err)
+						}
+						fmt.Fprintln(cmd.OutOrStdout(), string(contents))
 					}
 				}
 
@@ -219,6 +250,7 @@ func newTestCommand() *cobra.Command {
 	cmd.Flags().String("capabilities", "", "Path to JSON file that can restrict opa functionality against a given policy. Default: all operations allowed")
 
 	cmd.Flags().StringP("output", "o", output.OutputStandard, fmt.Sprintf("Output format for conftest results - valid options are: %s", append(output.Outputs(), OutputAppstudio)))
+	cmd.Flags().String("file", "", "File path to write output to")
 	cmd.Flags().Bool("junit-hide-message", false, "Do not include the violation message in the JUnit test name")
 
 	cmd.Flags().StringSliceP("policy", "p", []string{"policy"}, "Path to the Rego policy files directory")
