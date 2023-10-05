@@ -8,7 +8,9 @@
             {
                 Message:  "Pass",
                 Metadata: {
-                    "code": "a.success",
+                    "code":        "a.success",
+                    "description": "Success description.",
+                    "title":       "Success",
                 },
                 Outputs: nil,
             },
@@ -19,7 +21,9 @@
             {
                 Message:  "Warning!",
                 Metadata: {
-                    "code": "a.warning",
+                    "code":        "a.warning",
+                    "description": "Warning description.",
+                    "title":       "Warning",
                 },
                 Outputs: nil,
             },
@@ -28,7 +32,9 @@
             {
                 Message:  "Failure!",
                 Metadata: {
-                    "code": "a.failure",
+                    "code":        "a.failure",
+                    "description": "Failure description. To exclude this rule add \"a.failure\" to the `exclude` section of the policy configuration.",
+                    "title":       "Failure",
                 },
                 Outputs: nil,
             },

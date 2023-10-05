@@ -108,6 +108,11 @@ Reject rule
 This rule will always fail
 [A]
 --
+main.reject_with_term (deny)
+Reject with term rule
+This rule will always fail
+[A]
+--
 
 ---
 

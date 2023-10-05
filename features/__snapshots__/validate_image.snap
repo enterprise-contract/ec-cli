@@ -76,7 +76,7 @@
 ---
 
 [JUnit and AppStudio output format:stdout - 1]
-<testsuites tests="5" failures="1"><testsuite name="Unnamed (${REGISTRY}/acceptance/image@sha256:${REGISTRY_acceptance/image:latest_DIGEST})" tests="5" failures="1" errors="0" id="0" time="" timestamp="${TIMESTAMP}"><properties><property name="image" value="${REGISTRY}/acceptance/image@sha256:${REGISTRY_acceptance/image:latest_DIGEST}"></property><property name="key" value="${known_PUBLIC_KEY_XML}"></property><property name="success" value="false"></property><property name="keyId" value=""></property><property name="signature" value="${IMAGE_SIGNATURE_acceptance/image}"></property></properties><testcase name="builtin.attestation.signature_check: Pass" classname="builtin.attestation.signature_check: Pass"></testcase><testcase name="builtin.attestation.syntax_check: Pass" classname="builtin.attestation.syntax_check: Pass"></testcase><testcase name="builtin.image.signature_check: Pass" classname="builtin.image.signature_check: Pass"></testcase><testcase name="main.acceptor: Pass" classname="main.acceptor: Pass"></testcase><testcase name="main.rejector: Fails always" classname="main.rejector: Fails always"><failure message="Fails always"><![CDATA[Fails always]]></failure></testcase></testsuite></testsuites>
+<testsuites tests="7" failures="3"><testsuite name="Unnamed (${REGISTRY}/acceptance/image@sha256:${REGISTRY_acceptance/image:latest_DIGEST})" tests="7" failures="3" errors="0" id="0" time="" timestamp="${TIMESTAMP}"><properties><property name="image" value="${REGISTRY}/acceptance/image@sha256:${REGISTRY_acceptance/image:latest_DIGEST}"></property><property name="key" value="${known_PUBLIC_KEY_XML}"></property><property name="success" value="false"></property><property name="keyId" value=""></property><property name="signature" value="${IMAGE_SIGNATURE_acceptance/image}"></property></properties><testcase name="builtin.attestation.signature_check: Pass" classname="builtin.attestation.signature_check: Pass"></testcase><testcase name="builtin.attestation.syntax_check: Pass" classname="builtin.attestation.syntax_check: Pass"></testcase><testcase name="builtin.image.signature_check: Pass" classname="builtin.image.signature_check: Pass"></testcase><testcase name="main.acceptor: Pass" classname="main.acceptor: Pass"></testcase><testcase name="main.reject_with_term: Fails always (term1)" classname="main.reject_with_term: Fails always (term1)"><failure message="Fails always (term1)"><![CDATA[Fails always (term1)]]></failure></testcase><testcase name="main.reject_with_term: Fails always (term2)" classname="main.reject_with_term: Fails always (term2)"><failure message="Fails always (term2)"><![CDATA[Fails always (term2)]]></failure></testcase><testcase name="main.rejector: Fails always" classname="main.rejector: Fails always"><failure message="Fails always"><![CDATA[Fails always]]></failure></testcase></testsuite></testsuites>
 ---
 
 [JUnit and AppStudio output format:stderr - 1]
@@ -88,7 +88,7 @@ Error: success criteria not met
   "timestamp": "${TIMESTAMP}",
   "namespace": "",
   "successes": 4,
-  "failures": 1,
+  "failures": 3,
   "warnings": 0,
   "result": "FAILURE"
 }
@@ -513,6 +513,18 @@ Error: success criteria not met
       "source": {},
       "violations": [
         {
+          "msg": "Fails always (term1)",
+          "metadata": {
+            "code": "main.reject_with_term"
+          }
+        },
+        {
+          "msg": "Fails always (term2)",
+          "metadata": {
+            "code": "main.reject_with_term"
+          }
+        },
+        {
           "msg": "Fails always",
           "metadata": {
             "code": "main.rejector"
@@ -858,6 +870,18 @@ Error: success criteria not met
       "containerImage": "${REGISTRY}/acceptance/ec-multiple-sources@sha256:${REGISTRY_acceptance/ec-multiple-sources:latest_DIGEST}",
       "source": {},
       "violations": [
+        {
+          "msg": "Fails always (term1)",
+          "metadata": {
+            "code": "main.reject_with_term"
+          }
+        },
+        {
+          "msg": "Fails always (term2)",
+          "metadata": {
+            "code": "main.reject_with_term"
+          }
+        },
         {
           "msg": "Fails always",
           "metadata": {
@@ -1554,13 +1578,39 @@ Error: success criteria not met
       "source": {},
       "violations": [
         {
+          "msg": "Fails always (term1)",
+          "metadata": {
+            "code": "main.reject_with_term",
+            "collections": [
+              "A"
+            ],
+            "description": "This rule will always fail. To exclude this rule add \"main.reject_with_term:term1\" to the `exclude` section of the policy configuration.",
+            "solution": "None",
+            "term": "term1",
+            "title": "Reject with term rule"
+          }
+        },
+        {
+          "msg": "Fails always (term2)",
+          "metadata": {
+            "code": "main.reject_with_term",
+            "collections": [
+              "A"
+            ],
+            "description": "This rule will always fail. To exclude this rule add \"main.reject_with_term:term2\" to the `exclude` section of the policy configuration.",
+            "solution": "None",
+            "term": "term2",
+            "title": "Reject with term rule"
+          }
+        },
+        {
           "msg": "Fails always",
           "metadata": {
             "code": "main.rejector",
             "collections": [
               "A"
             ],
-            "description": "This rule will always fail",
+            "description": "This rule will always fail. To exclude this rule add \"main.rejector\" to the `exclude` section of the policy configuration.",
             "solution": "None",
             "title": "Reject rule"
           }

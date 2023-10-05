@@ -103,8 +103,29 @@ func trim(results *[]Outcome) {
 		return trimmed
 	}
 
+	addNote := func(results []Result) []Result {
+		for i := range results {
+			var description, code string
+			var ok bool
+			if description, ok = results[i].Metadata[metadataDescription].(string); !ok {
+				continue
+			}
+
+			if code, ok = results[i].Metadata[metadataCode].(string); !ok {
+				continue
+			}
+
+			if term, ok := results[i].Metadata[metadataTerm]; ok {
+				code = fmt.Sprintf("%s:%s", code, term)
+			}
+			results[i].Metadata[metadataDescription] = fmt.Sprintf("%s. To exclude this rule add %q to the `exclude` section of the policy configuration.", strings.TrimSuffix(description, "."), code)
+		}
+
+		return results
+	}
+
 	for i, checks := range *results {
-		(*results)[i].Failures = trimOutput(checks.Failures)
+		(*results)[i].Failures = addNote(trimOutput(checks.Failures))
 		(*results)[i].Warnings = trimOutput(checks.Warnings)
 		(*results)[i].Skipped = trimOutput(checks.Skipped)
 		(*results)[i].Successes = trimOutput(checks.Successes)
