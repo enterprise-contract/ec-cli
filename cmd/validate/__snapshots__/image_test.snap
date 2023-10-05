@@ -1,0 +1,76 @@
+
+[Test_ValidateImageCommandYAMLPolicyFile/spec - 1]
+{
+ "components": [
+  {
+   "containerImage": "registry/image:tag",
+   "name": "Unnamed",
+   "source": {},
+   "success": true
+  }
+ ],
+ "ec-version": "development",
+ "effective-time": "1970-01-01T00:00:00Z",
+ "key": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAECBtqKHcvxYkGx7ZXqps3nrYS+ZSA\nmh3m1MZfTGlnr2oN0z+sBWEC23s4RkVSXkEydI6SLYatUtJK8OmiBRS+Xw==\n-----END PUBLIC KEY-----\n",
+ "policy": {
+  "configuration": {
+   "exclude": [
+    "not_useful",
+    "test:conftest-clair"
+   ],
+   "include": [
+    "always_checked",
+    "@salsa_one_collection"
+   ]
+  },
+  "description": "My custom enterprise contract policy configuration",
+  "publicKey": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAECBtqKHcvxYkGx7ZXqps3nrYS+ZSA\nmh3m1MZfTGlnr2oN0z+sBWEC23s4RkVSXkEydI6SLYatUtJK8OmiBRS+Xw==\n-----END PUBLIC KEY-----\n",
+  "sources": [
+   {
+    "policy": [
+     "quay.io/hacbs-contract/ec-release-policy:latest"
+    ]
+   }
+  ]
+ },
+ "success": true
+}
+---
+
+[Test_ValidateImageCommandYAMLPolicyFile/ecp - 1]
+{
+ "components": [
+  {
+   "containerImage": "registry/image:tag",
+   "name": "Unnamed",
+   "source": {},
+   "success": true
+  }
+ ],
+ "ec-version": "development",
+ "effective-time": "1970-01-01T00:00:00Z",
+ "key": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAECBtqKHcvxYkGx7ZXqps3nrYS+ZSA\nmh3m1MZfTGlnr2oN0z+sBWEC23s4RkVSXkEydI6SLYatUtJK8OmiBRS+Xw==\n-----END PUBLIC KEY-----\n",
+ "policy": {
+  "configuration": {
+   "exclude": [
+    "not_useful",
+    "test:conftest-clair"
+   ],
+   "include": [
+    "always_checked",
+    "@salsa_one_collection"
+   ]
+  },
+  "description": "My custom enterprise contract policy configuration",
+  "publicKey": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAECBtqKHcvxYkGx7ZXqps3nrYS+ZSA\nmh3m1MZfTGlnr2oN0z+sBWEC23s4RkVSXkEydI6SLYatUtJK8OmiBRS+Xw==\n-----END PUBLIC KEY-----\n",
+  "sources": [
+   {
+    "policy": [
+     "quay.io/hacbs-contract/ec-release-policy:latest"
+    ]
+   }
+  ]
+ },
+ "success": true
+}
+---

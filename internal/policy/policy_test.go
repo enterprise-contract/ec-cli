@@ -33,6 +33,7 @@ import (
 	cosignSig "github.com/sigstore/cosign/v2/pkg/signature"
 	sigstoreSig "github.com/sigstore/sigstore/pkg/signature"
 	"github.com/stretchr/testify/assert"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/yaml"
 
 	"github.com/enterprise-contract/ec-cli/internal/kubernetes"
@@ -59,8 +60,34 @@ func TestNewPolicy(t *testing.T) {
 				PublicKey: utils.TestPublicKey}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 		{
+			name: "k8s JSON inline",
+			policyRef: toJson(&ecc.EnterpriseContractPolicy{
+				TypeMeta: v1.TypeMeta{
+					APIVersion: "appstudio.redhat.com/v1alpha1",
+					Kind:       "EnterpriseContractPolicy",
+				}, Spec: ecc.EnterpriseContractPolicySpec{
+					PublicKey: utils.TestPublicKey,
+				},
+			}),
+			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
+				PublicKey: utils.TestPublicKey}, effectiveTime: &timeNow, choosenTime: timeNowStr},
+		},
+		{
 			name:      "simple YAML inline",
 			policyRef: toYAML(&ecc.EnterpriseContractPolicySpec{PublicKey: utils.TestPublicKey}),
+			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
+				PublicKey: utils.TestPublicKey}, effectiveTime: &timeNow, choosenTime: timeNowStr},
+		},
+		{
+			name: "k8s YAML inline",
+			policyRef: toYAML(&ecc.EnterpriseContractPolicy{
+				TypeMeta: v1.TypeMeta{
+					APIVersion: "appstudio.redhat.com/v1alpha1",
+					Kind:       "EnterpriseContractPolicy",
+				}, Spec: ecc.EnterpriseContractPolicySpec{
+					PublicKey: utils.TestPublicKey,
+				},
+			}),
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
 				PublicKey: utils.TestPublicKey}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
@@ -609,7 +636,7 @@ func TestEffectiveTimeAttestationAllowMutation(t *testing.T) {
 	assert.Equal(t, attestation, p.EffectiveTime())
 }
 
-func toJson(policy *ecc.EnterpriseContractPolicySpec) string {
+func toJson(policy any) string {
 	newInline, err := json.Marshal(policy)
 	if err != nil {
 		panic(fmt.Errorf("invalid JSON: %w", err))
@@ -617,7 +644,7 @@ func toJson(policy *ecc.EnterpriseContractPolicySpec) string {
 	return string(newInline)
 }
 
-func toYAML(policy *ecc.EnterpriseContractPolicySpec) string {
+func toYAML(policy any) string {
 	inline, err := yaml.Marshal(policy)
 	if err != nil {
 		panic(fmt.Errorf("invalid YAML: %w", err))
