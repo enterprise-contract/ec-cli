@@ -27,6 +27,7 @@ import (
 	"time"
 
 	hd "github.com/MakeNowJust/heredoc"
+	"github.com/gkampitakis/go-snaps/snaps"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
@@ -512,39 +513,77 @@ func Test_ValidateImageCommandYAMLPolicyFile(t *testing.T) {
 
 	cmd.SetContext(utils.WithFS(context.TODO(), fs))
 
-	testPolicyYaml := `sources:
+	cases := []struct {
+		name   string
+		config string
+	}{
+		{name: "spec",
+			config: `
+description: My custom enterprise contract policy configuration
+sources:
   - policy:
-      - "registry/policy:latest"
-    data:
-      - "registry/policy-data:latest"
+      - quay.io/hacbs-contract/ec-release-policy:latest
 configuration:
-  collections:
-    - minimal
+  exclude:
+    - not_useful
+    - test:conftest-clair
   include:
-    - "*"
-  exclude: []
-`
-	err := afero.WriteFile(fs, "/policy.yaml", []byte(testPolicyYaml), 0644)
-	if err != nil {
-		panic(err)
+    - always_checked
+    - "@salsa_one_collection"
+`,
+		},
+		{
+			name: "ecp",
+			config: `
+apiVersion: appstudio.redhat.com/v1alpha1
+kind: EnterpriseContractPolicy
+metadata:
+  name: enterprisecontractpolicy-sample
+spec:
+  description: My custom enterprise contract policy configuration
+  sources:
+    - policy:
+        - quay.io/hacbs-contract/ec-release-policy:latest
+  configuration:
+    exclude:
+      - not_useful
+      - test:conftest-clair
+    include:
+      - always_checked
+      - "@salsa_one_collection"
+`,
+		},
 	}
-	args := []string{
-		"--image",
-		"registry/image:tag",
-		"--public-key",
-		utils.TestPublicKey,
-		"--policy",
-		"/policy.yaml",
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			err := afero.WriteFile(fs, "/policy.yaml", []byte(c.config), 0644)
+			if err != nil {
+				panic(err)
+			}
+			args := []string{
+				"--image",
+				"registry/image:tag",
+				"--public-key",
+				utils.TestPublicKey,
+				"--policy",
+				"/policy.yaml",
+				"--effective-time",
+				"1970-01-01",
+			}
+			cmd.SetArgs(args)
+
+			var out bytes.Buffer
+			cmd.SetOut(&out)
+
+			utils.SetTestRekorPublicKey(t)
+
+			err = cmd.Execute()
+			assert.NoError(t, err)
+
+			snaps.MatchJSON(t, out.String())
+		})
 	}
-	cmd.SetArgs(args)
-
-	var out bytes.Buffer
-	cmd.SetOut(&out)
-
-	utils.SetTestRekorPublicKey(t)
-
-	err = cmd.Execute()
-	assert.NoError(t, err)
 }
 
 func Test_ValidateImageCommandJSONPolicyFile(t *testing.T) {
