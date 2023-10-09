@@ -1,6 +1,6 @@
 module github.com/enterprise-contract/ec-cli/application/generator
 
-go 1.20
+go 1.21
 
 require (
 	github.com/redhat-appstudio/application-api v0.0.0-20230802141542-0caa1d32ccf6

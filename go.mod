@@ -1,6 +1,8 @@
 module github.com/enterprise-contract/ec-cli
 
-go 1.20
+go 1.21.0
+
+toolchain go1.21.1
 
 require (
 	cuelang.org/go v0.6.0
@@ -18,7 +20,7 @@ require (
 	github.com/jstemmer/go-junit-report/v2 v2.0.0
 	github.com/leanovate/gopter v0.2.9
 	github.com/open-policy-agent/conftest v0.45.0
-	github.com/open-policy-agent/opa v0.56.0
+	github.com/open-policy-agent/opa v0.57.0
 	github.com/qri-io/jsonpointer v0.1.1
 	github.com/qri-io/jsonschema v0.2.1
 	github.com/secure-systems-lab/go-securesystemslib v0.7.0
@@ -167,7 +169,7 @@ require (
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/pprof v0.0.0-20221103000818-d260c55eee4c // indirect
 	github.com/google/s2a-go v0.1.5 // indirect
-	github.com/google/uuid v1.3.0 // indirect
+	github.com/google/uuid v1.3.1 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.2.5 // indirect
 	github.com/googleapis/gax-go/v2 v2.12.0 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
@@ -285,7 +287,7 @@ require (
 	google.golang.org/genproto v0.0.0-20230803162519-f966b187b2e5 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20230803162519-f966b187b2e5 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230807174057-1744710a1577 // indirect
-	google.golang.org/grpc v1.57.0 // indirect
+	google.golang.org/grpc v1.58.2 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect

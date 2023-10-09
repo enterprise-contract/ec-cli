@@ -26,15 +26,16 @@ import (
 	"strings"
 
 	"github.com/open-policy-agent/opa/ast"
+	"github.com/open-policy-agent/opa/ast/json"
 	"github.com/spf13/afero"
 )
 
 func inspectSingle(path, module string) ([]*ast.AnnotationsRef, error) {
 	mod, err := ast.ParseModuleWithOpts(path, module, ast.ParserOptions{
 		ProcessAnnotation: true,
-		JSONOptions: &ast.JSONOptions{
-			MarshalOptions: ast.JSONMarshalOptions{
-				IncludeLocation: ast.NodeToggle{
+		JSONOptions: &json.Options{
+			MarshalOptions: json.MarshalOptions{
+				IncludeLocation: json.NodeToggle{
 					AnnotationsRef: true,
 				},
 			},
