@@ -65,10 +65,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		strict                      bool
 		images                      string
 	}{
-
-		// Default policy from an ECP cluster resource
-		policyConfiguration: "enterprise-contract-service/default",
-		strict:              true,
+		strict: true,
 	}
 	cmd := &cobra.Command{
 		Use:   "image",
@@ -121,10 +118,10 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 
 			Return a non-zero status code on validation failure:
 
-			  ec validate image --image registry/name:tag 
-			
+			  ec validate image --image registry/name:tag
+
 		  	Return a zero status code even if there are validation failures:
-			
+
 			  ec validate image --image registry/name:tag --strict=false
 
 			Use an EnterpriseContractPolicy resource from the currently active kubernetes context:
