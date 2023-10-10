@@ -2,6 +2,8 @@
 package a
 
 # METADATA
+# title: Failure
+# description: Failure description.
 # custom:
 #   short_name: failure
 deny[result] {
@@ -11,6 +13,8 @@ deny[result] {
 	}
 }
 # METADATA
+# title: Warning
+# description: Warning description.
 # custom:
 #   short_name: warning
 warn[result] {
@@ -20,6 +24,8 @@ warn[result] {
 	}
 }
 # METADATA
+# title: Success
+# description: Success description.
 # custom:
 #   short_name: success
 deny[result] {
