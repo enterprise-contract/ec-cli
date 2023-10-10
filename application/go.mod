@@ -1,6 +1,6 @@
 module github.com/enterprise-contract/ec-cli/application
 
-go 1.21
+go 1.21.2
 
 require (
 	k8s.io/api v0.28.2
