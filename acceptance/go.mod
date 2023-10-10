@@ -1,8 +1,6 @@
 module github.com/enterprise-contract/ec-cli/acceptance
 
-go 1.21.0
-
-toolchain go1.21.1
+go 1.21.2
 
 require (
 	cuelang.org/go v0.6.0
