@@ -43,14 +43,7 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/policy/source"
 	"github.com/enterprise-contract/ec-cli/internal/signature"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
-	ece "github.com/enterprise-contract/ec-cli/pkg/error"
 	"github.com/enterprise-contract/ec-cli/pkg/schema"
-)
-
-var (
-	EV001 = ece.NewError("EV001", "No attestation data", ece.ErrorExitStatus)
-	EV002 = ece.NewError("EV002", "Unable to decode attestation data from attestation image", ece.ErrorExitStatus)
-	EV003 = ece.NewError("EV003", "Attestation syntax validation failed", ece.ErrorExitStatus)
 )
 
 var newConftestEvaluator = evaluator.NewConftestEvaluator
@@ -250,7 +243,7 @@ func (a *ApplicationSnapshotImage) ValidateAttestationSignature(ctx context.Cont
 	for _, sig := range layers {
 		att, err := attestation.ProvenanceFromSignature(sig)
 		if err != nil {
-			return fmt.Errorf("Unable to parse untyped provenance: %w", err)
+			return fmt.Errorf("unable to parse untyped provenance: %w", err)
 		}
 		t := att.PredicateType()
 		log.Debugf("Found attestation with predicateType: %s", t)
@@ -262,7 +255,7 @@ func (a *ApplicationSnapshotImage) ValidateAttestationSignature(ctx context.Cont
 			// but it's not super important IMO.
 			sp, err := attestation.SLSAProvenanceFromSignature(sig)
 			if err != nil {
-				return fmt.Errorf("Unable to parse as SLSA v0.2: %w", err)
+				return fmt.Errorf("unable to parse as SLSA v0.2: %w", err)
 			}
 			a.attestations = append(a.attestations, sp)
 
@@ -289,7 +282,7 @@ func (a *ApplicationSnapshotImage) ValidateAttestationSignature(ctx context.Cont
 func (a ApplicationSnapshotImage) ValidateAttestationSyntax(ctx context.Context) error {
 	if len(a.attestations) == 0 {
 		log.Debug("No attestation data found, possibly due to attestation image signature not being validated beforehand")
-		return EV001
+		return errors.New("no attestation data")
 	}
 
 	allErrors := map[string][]jsonschema.KeyError{}
@@ -300,7 +293,7 @@ func (a ApplicationSnapshotImage) ValidateAttestationSyntax(ctx context.Context)
 			log.Debugf("Attempting to validate an attestation with predicateType %s", pt)
 			if errs, err := schema.ValidateBytes(ctx, sp.Statement()); err != nil {
 				// Error while trying to validate
-				return EV002.CausedBy(err)
+				return fmt.Errorf("unable to decode attestation data from attestation image: %w", err)
 			} else {
 				if len(errs) == 0 {
 					log.Debugf("Statement schema was validated successfully against the %s schema", pt)
@@ -328,7 +321,7 @@ func (a ApplicationSnapshotImage) ValidateAttestationSyntax(ctx context.Context)
 			msg += fmt.Sprintf("\n - %s", e.Error())
 		}
 	}
-	return EV003.CausedBy(errors.New(msg))
+	return fmt.Errorf("attestation syntax validation failed: %s", msg)
 }
 
 // Attestations returns the value of the attestations field of the ApplicationSnapshotImage struct
@@ -369,14 +362,14 @@ func (a attestationData) MarshalJSON() ([]byte, error) {
 	}
 
 	if _, err = buffy.WriteString(`,"extra":`); err != nil {
-		return nil, fmt.Errorf("write extra key: %s", err)
+		return nil, fmt.Errorf("write extra key: %w", err)
 	}
 	extra, err := json.Marshal(a.Extra)
 	if err != nil {
-		return nil, fmt.Errorf("marshal json extra: %s", err)
+		return nil, fmt.Errorf("marshal json extra: %w", err)
 	}
 	if _, err := buffy.Write(extra); err != nil {
-		return nil, fmt.Errorf("write extra value: %s", err)
+		return nil, fmt.Errorf("write extra value: %w", err)
 	}
 
 	_, err = buffy.WriteString(`, "statement":`)

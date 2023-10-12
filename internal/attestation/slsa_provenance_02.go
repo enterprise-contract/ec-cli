@@ -18,6 +18,7 @@ package attestation
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/in-toto/in-toto-golang/in_toto"
 	v02 "github.com/in-toto/in-toto-golang/in_toto/slsa_provenance/v0.2"
@@ -47,20 +48,20 @@ func SLSAProvenanceFromSignature(sig oci.Signature) (Attestation, error) {
 
 	var statement in_toto.ProvenanceStatementSLSA02
 	if err := json.Unmarshal(embedded, &statement); err != nil {
-		return nil, AT002.CausedBy(err)
+		return nil, fmt.Errorf("malformed attestation data: %w", err)
 	}
 
 	if statement.Type != in_toto.StatementInTotoV01 {
-		return nil, AT003.CausedByF(statement.Type)
+		return nil, fmt.Errorf("unsupported attestation type: %s", statement.Type)
 	}
 
 	if statement.PredicateType != v02.PredicateSLSAProvenance {
-		return nil, AT004.CausedByF(statement.PredicateType)
+		return nil, fmt.Errorf("unsupported attestation predicate type: %s", statement.PredicateType)
 	}
 
 	signatures, err := createEntitySignatures(sig, payload)
 	if err != nil {
-		return nil, AT005.CausedBy(err)
+		return nil, fmt.Errorf("cannot create signed entity: %w", err)
 	}
 
 	return slsaProvenance{statement: statement, data: embedded, signatures: signatures}, nil

@@ -25,8 +25,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-
-	e "github.com/enterprise-contract/ec-cli/pkg/error"
 )
 
 type mockDownloader struct {
@@ -61,7 +59,7 @@ func TestDownloader_Download(t *testing.T) {
 			name:   "insecure download",
 			dest:   "dir",
 			source: "http://example.com",
-			err:    DL001.CausedByF("http://example.com"),
+			err:    errors.New("attempting to download from insecure source: http://example.com"),
 		},
 	}
 
@@ -74,16 +72,9 @@ func TestDownloader_Download(t *testing.T) {
 			err := Download(ctx, tt.dest, tt.source, false)
 			if tt.err == nil {
 				assert.NoError(t, err)
-
 				mock.AssertExpectationsForObjects(t, &d)
 			} else {
-				if exx, ok := err.(e.Error); ok {
-					assert.True(t, exx.Alike(tt.err))
-				} else {
-					assert.EqualError(t, err, tt.err.Error())
-
-					mock.AssertExpectationsForObjects(t, &d)
-				}
+				assert.True(t, err.Error() == tt.err.Error())
 			}
 		})
 	}

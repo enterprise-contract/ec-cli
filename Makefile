@@ -142,10 +142,6 @@ lint: generate tekton-lint go-mod-lint ## Run linter
 	@go run -modfile tools/go.mod github.com/google/addlicense -c '$(COPY)' -y '' -s -check $(LICENSE_IGNORE) . >/dev/null 2>&1
 	@go run -modfile tools/go.mod github.com/golangci/golangci-lint/cmd/golangci-lint run --sort-results $(if $(GITHUB_ACTIONS), --out-format=github-actions --timeout=10m0s)
 	@(cd acceptance && go run -modfile ../tools/go.mod github.com/golangci/golangci-lint/cmd/golangci-lint run --path-prefix acceptance --sort-results $(if $(GITHUB_ACTIONS), --out-format=github-actions --timeout=10m0s))
-# We don't fail on the internal (error handling) linter, we just report the
-# issues for now.
-# TODO: resolve the error handling issues and enable the linter failure
-	@go run -modfile tools/go.mod ./internal/lint $(if $(GITHUB_ACTIONS), -json) $$(go list ./... | grep -v '/acceptance/') $(if $(GITHUB_ACTIONS), | jq -r $(LINT_TO_GITHUB_ANNOTATIONS))
 
 .PHONY: lint-fix
 lint-fix: generate ## Fix linting issues automagically

@@ -37,17 +37,12 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/enterprise-contract/ec-cli/internal/kubernetes"
-	e "github.com/enterprise-contract/ec-cli/pkg/error"
 )
 
 const (
 	Now           = "now"
 	AtAttestation = "attestation"
 	DateFormat    = "2006-01-02"
-)
-
-var (
-	PO001 = e.NewError("PO001", "Invalid policy time argument", e.ErrorExitStatus)
 )
 
 // allows controlling time in tests
@@ -314,10 +309,10 @@ func parseEffectiveTime(choosenTime string) (*time.Time, error) {
 			whenUTC := when.UTC()
 			return &whenUTC, nil
 		}
-		log.Debugf("Unable to provided effective time string `%s` using %s format", choosenTime, DateFormat)
+		log.Debugf("Unable to parse provided effective time string `%s` using %s format", choosenTime, DateFormat)
 		errs = multierror.Append(errs, err)
 
-		return nil, PO001.CausedBy(errs)
+		return nil, fmt.Errorf("invalid policy time argument: %s", errs)
 	}
 }
 
