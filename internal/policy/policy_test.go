@@ -549,7 +549,7 @@ func TestIdentity(t *testing.T) {
 
 func TestParseEffectiveTime(t *testing.T) {
 	_, err := parseEffectiveTime("")
-	assert.ErrorContains(t, err, "PO001")
+	assert.ErrorContains(t, err, "invalid policy time argument")
 
 	effective, err := parseEffectiveTime(Now)
 	assert.NoError(t, err)

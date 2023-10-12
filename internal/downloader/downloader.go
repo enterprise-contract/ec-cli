@@ -26,12 +26,6 @@ import (
 
 	"github.com/open-policy-agent/conftest/downloader"
 	log "github.com/sirupsen/logrus"
-
-	e "github.com/enterprise-contract/ec-cli/pkg/error"
-)
-
-var (
-	DL001 = e.NewError("DL001", "Attempting to download from insecure source", e.ErrorExitStatus)
 )
 
 type key int
@@ -53,7 +47,7 @@ func WithDownloadImpl(ctx context.Context, d downloadImpl) context.Context {
 // Conftest function can take a list of source urls.
 func Download(ctx context.Context, destDir string, sourceUrl string, showMsg bool) (err error) {
 	if !isSecure(sourceUrl) {
-		return DL001.CausedByF(sourceUrl)
+		return fmt.Errorf("attempting to download from insecure source: %s", sourceUrl)
 	}
 
 	msg := fmt.Sprintf("Downloading %s to %s", sourceUrl, destDir)

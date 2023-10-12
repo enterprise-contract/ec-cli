@@ -41,11 +41,6 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/policy/source"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
-	e "github.com/enterprise-contract/ec-cli/pkg/error"
-)
-
-var (
-	CE001 = e.NewError("CE001", "Could not retrieve data from the policy engine", e.ErrorExitStatus)
 )
 
 type contextKey string
@@ -215,7 +210,7 @@ func (r conftestRunner) Run(ctx context.Context, fileList []string) (result []Ou
 
 	var ok bool
 	if data, ok = d.(map[string]any); !ok {
-		err = CE001.CausedBy(fmt.Errorf("Data is: %v", d))
+		err = fmt.Errorf("could not retrieve data from the policy engine: Data is: %v", d)
 	}
 
 	return

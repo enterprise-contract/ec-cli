@@ -318,7 +318,7 @@ func TestSyntaxValidationWithoutAttestations(t *testing.T) {
 	err := noAttestations.ValidateAttestationSyntax(context.TODO())
 	assert.Error(t, err, "Expected error in validation")
 
-	assert.True(t, strings.HasPrefix(err.Error(), "EV001: No attestation data"))
+	assert.True(t, strings.HasPrefix(err.Error(), "no attestation data"))
 }
 
 // Todo: Include some testing here for different attestation types.

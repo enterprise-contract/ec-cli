@@ -38,7 +38,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/enterprise-contract/ec-cli/internal/signature"
-	e "github.com/enterprise-contract/ec-cli/pkg/error"
 )
 
 type mockSignature struct {
@@ -131,7 +130,7 @@ func (l mockSignature) MediaType() (types.MediaType, error) {
 
 func TestSLSAProvenanceFromSignatureNilSignature(t *testing.T) {
 	sp, err := SLSAProvenanceFromSignature(nil)
-	assert.True(t, AT001.Alike(err), "Expecting `%v` to be alike: `%v`", err, AT001)
+	assert.True(t, assert.ErrorContains(t, err, "no attestation found"), "Expecting `%v` to be alike: `%v`", err, "no attestation found")
 	assert.Nil(t, sp)
 }
 
@@ -140,30 +139,28 @@ func TestSLSAProvenanceFromSignature(t *testing.T) {
 		name  string
 		setup func(l *mockSignature)
 		data  string
-		err   e.Error
+		err   error
 	}{
 		{
 			name: "media type error",
 			setup: func(l *mockSignature) {
 				l.On("MediaType").Return(types.MediaType(""), errors.New("expected"))
 			},
-			err: AT002.CausedByF("expected"),
+			err: errors.New("malformed attestation data: expected"),
 		},
 		{
 			name: "no media type",
 			setup: func(l *mockSignature) {
 				l.On("MediaType").Return(types.MediaType(""), nil)
 			},
-			err: AT002.CausedByF(
-				"Expecting media type of `application/vnd.dsse.envelope.v1+json`, received: ``"),
+			err: errors.New("malformed attestation data: expecting media type of `application/vnd.dsse.envelope.v1+json`, received: ``"),
 		},
 		{
 			name: "unsupported media type",
 			setup: func(l *mockSignature) {
 				l.On("MediaType").Return(types.MediaType("xxx"), nil)
 			},
-			err: AT002.CausedByF(
-				"Expecting media type of `application/vnd.dsse.envelope.v1+json`, received: `xxx`"),
+			err: errors.New("malformed attestation data: expecting media type of `application/vnd.dsse.envelope.v1+json`, received: `xxx`"),
 		},
 		{
 			name: "no payload JSON",
@@ -171,7 +168,7 @@ func TestSLSAProvenanceFromSignature(t *testing.T) {
 				l.On("MediaType").Return(types.MediaType(ct.DssePayloadType), nil)
 				l.On("Uncompressed").Return(io.NopCloser(&bytes.Buffer{}), nil)
 			},
-			err: AT002.CausedByF("EOF"),
+			err: errors.New("malformed attestation data: EOF"),
 		},
 		{
 			name: "empty payload JSON",
@@ -181,7 +178,7 @@ func TestSLSAProvenanceFromSignature(t *testing.T) {
 				l.On("MediaType").Return(types.MediaType(ct.DssePayloadType), nil)
 				l.On("Uncompressed").Return(buffy(fmt.Sprintf(`{"payload":"%s"}`, payload)), nil)
 			},
-			err: AT003.CausedByF(""),
+			err: errors.New("unsupported attestation type: "),
 		},
 		{
 			name: "invalid attestation payload JSON",
@@ -191,10 +188,10 @@ func TestSLSAProvenanceFromSignature(t *testing.T) {
 				l.On("MediaType").Return(types.MediaType(ct.DssePayloadType), nil)
 				l.On("Uncompressed").Return(buffy(payload), nil)
 			},
-			err: AT002.CausedByF("invalid character '{' looking for beginning of object key string"),
+			err: errors.New("malformed attestation data: invalid character '{' looking for beginning of object key string"),
 		},
 		{
-			name: "invalid statement JSON",
+			name: "invalid statement JSON base64",
 			setup: func(l *mockSignature) {
 				sig1 := `{"keyid": "key-id-1", "sig": "sig-1"}`
 				l.On("MediaType").Return(types.MediaType(ct.DssePayloadType), nil)
@@ -202,7 +199,7 @@ func TestSLSAProvenanceFromSignature(t *testing.T) {
 					fmt.Sprintf(`{"signatures": [%s], "payload": "not-base64"}`, sig1),
 				), nil)
 			},
-			err: AT002.CausedByF("illegal base64 data at input byte 3"),
+			err: errors.New("malformed attestation data: illegal base64 data at input byte 3"),
 		},
 		{
 			name: "invalid statement JSON",
@@ -218,7 +215,7 @@ func TestSLSAProvenanceFromSignature(t *testing.T) {
 					fmt.Sprintf(`{"signatures": [%s], "payload": "%s"}`, sig1, payload),
 				), nil)
 			},
-			err: AT002.CausedByF("invalid character '{' looking for beginning of object key string"),
+			err: errors.New("malformed attestation data: invalid character '{' looking for beginning of object key string"),
 		},
 		{
 			name: "unexpected predicate type",
@@ -233,7 +230,7 @@ func TestSLSAProvenanceFromSignature(t *testing.T) {
 					fmt.Sprintf(`{"signatures": [%s], "payload": "%s"}`, sig1, payload),
 				), nil)
 			},
-			err: AT004.CausedByF("kaboom"),
+			err: errors.New("unsupported attestation predicate type: kaboom"),
 		},
 		{
 			name: "cannot create entity signature",
@@ -252,7 +249,7 @@ func TestSLSAProvenanceFromSignature(t *testing.T) {
 				l.On("Uncompressed").Return(buffy(fmt.Sprintf(`{"payload":"%s"}`, payload)), nil)
 				l.On("Base64Signature").Return("", errors.New("kaboom"))
 			},
-			err: AT005.CausedByF("kaboom"),
+			err: fmt.Errorf("cannot create signed entity: %s", "kaboom"),
 		},
 		{
 			name: "valid with signature from payload",
@@ -318,7 +315,7 @@ func TestSLSAProvenanceFromSignature(t *testing.T) {
 				require.NotNil(t, sp)
 			} else {
 				require.Nil(t, sp)
-				assert.True(t, c.err.Alike(err), "Expecting `%v` to be alike: `%v`", err, c.err)
+				assert.True(t, c.err.Error() == err.Error(), "Expecting `%v` to be alike: `%v`", err, c.err)
 				return
 			}
 

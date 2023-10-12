@@ -19,6 +19,8 @@ package attestation
 import (
 	"encoding/base64"
 	"encoding/json"
+	"errors"
+	"fmt"
 
 	"github.com/in-toto/in-toto-golang/in_toto"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
@@ -26,15 +28,6 @@ import (
 	"github.com/sigstore/cosign/v2/pkg/types"
 
 	"github.com/enterprise-contract/ec-cli/internal/signature"
-	e "github.com/enterprise-contract/ec-cli/pkg/error"
-)
-
-var (
-	AT001 = e.NewError("AT001", "No attestation found", e.ErrorExitStatus)
-	AT002 = e.NewError("AT002", "Malformed attestation data", e.ErrorExitStatus)
-	AT003 = e.NewError("AT003", "Unsupported attestation type", e.ErrorExitStatus)
-	AT004 = e.NewError("AT004", "Unsupported attestation predicate type", e.ErrorExitStatus)
-	AT005 = e.NewError("AT005", "Cannot create signed entity", e.ErrorExitStatus)
 )
 
 // Attestation holds the raw attestation data, usually fetched from the
@@ -52,31 +45,31 @@ func payloadFromSig(sig oci.Signature) (cosign.AttestationPayload, error) {
 	var payload cosign.AttestationPayload
 
 	if sig == nil {
-		return payload, AT001
+		return payload, errors.New("no attestation found")
 	}
 
 	typ, err := sig.MediaType()
 	if err != nil {
-		return payload, AT002.CausedBy(err)
+		return payload, fmt.Errorf("malformed attestation data: %w", err)
 	}
 
 	if typ != types.DssePayloadType {
-		return payload, AT002.CausedByF("Expecting media type of `%s`, received: `%s`", types.DssePayloadType, typ)
+		return payload, fmt.Errorf("malformed attestation data: expecting media type of `%s`, received: `%s`", types.DssePayloadType, typ)
 	}
 
 	reader, err := sig.Uncompressed()
 	if err != nil {
-		return payload, AT002.CausedBy(err)
+		return payload, fmt.Errorf("malformed attestation data: %w", err)
 	}
 	defer reader.Close()
 
 	err = json.NewDecoder(reader).Decode(&payload)
 	if err != nil {
-		return payload, AT002.CausedBy(err)
+		return payload, fmt.Errorf("malformed attestation data: %w", err)
 	}
 
 	if payload.PayLoad == "" {
-		return payload, AT002.CausedByF("No `payload` data found")
+		return payload, errors.New("no `payload` data found")
 	}
 
 	return payload, nil
@@ -87,7 +80,7 @@ func payloadFromSig(sig oci.Signature) (cosign.AttestationPayload, error) {
 func decodedPayload(payload cosign.AttestationPayload) ([]byte, error) {
 	decoded, err := base64.StdEncoding.DecodeString(payload.PayLoad)
 	if err != nil {
-		return nil, AT002.CausedBy(err)
+		return nil, fmt.Errorf("malformed attestation data: %w", err)
 	}
 
 	return decoded, nil
@@ -136,12 +129,12 @@ func ProvenanceFromSignature(sig oci.Signature) (Attestation, error) {
 
 	var statement in_toto.Statement
 	if err := json.Unmarshal(embedded, &statement); err != nil {
-		return nil, AT002.CausedBy(err)
+		return nil, fmt.Errorf("malformed attestation data: %w", err)
 	}
 
 	signatures, err := createEntitySignatures(sig, payload)
 	if err != nil {
-		return nil, AT005.CausedBy(err)
+		return nil, fmt.Errorf("cannot create signed entity: %w", err)
 	}
 
 	return provenance{statement: statement, data: embedded, signatures: signatures}, nil
