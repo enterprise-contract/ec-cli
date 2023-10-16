@@ -51,10 +51,12 @@ OUTPUT=${OUTPUT:-yaml}
 
 MAIN_GO=$(git rev-parse --show-toplevel)/main.go
 
+# Use `EC=ec` to avoid recompiling
+EC=${EC:-"go run $MAIN_GO"}
+
 # Additional parameters will be included, e.g.:
 #   hack/simple-demo.sh --output appstudio=appstudio.json --debug
-go run $MAIN_GO \
-  validate image \
+$EC validate image \
   --json-input "${APPLICATION_SNAPSHOT}" \
   --policy "${POLICY_YAML}" \
   --public-key <(echo "${PUBLIC_KEY}") \
