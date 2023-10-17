@@ -29,10 +29,18 @@ APPLICATION_SNAPSHOT='{"components":[
 # - Visit https://oauth-openshift.apps.stone-prd-rh01.pg1f.p1.openshiftapps.com/oauth/token/request
 # - Authenticate and get a token, then use the oc login to authenticate
 # - kubectl get -n openshift-pipelines secret public-key -o json | jq -r '.data."cosign.pub" | @base64d'
-PUBLIC_KEY=${PUBLIC_KEY:-"-----BEGIN PUBLIC KEY-----
+RHTAP_PROD_KEY="-----BEGIN PUBLIC KEY-----
 MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEZP/0htjhVt2y0ohjgtIIgICOtQtA
 naYJRuLprwIv6FDhZ5yFjYUEtsmoNcW7rx2KM6FOXGsCX3BNc7qhHELT+g==
------END PUBLIC KEY-----"}
+-----END PUBLIC KEY-----"
+
+RHTAP_STAGE_KEY="-----BEGIN PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAExIJfBe0aQb8jiQo1roYAi+YlAxr5
+thSeH7kghWZnAzFeZOUsqMy13LiLGuVRuLkbGNktaToBeT7DyXiC+aIntw==
+-----END PUBLIC KEY-----"
+
+PUBLIC_KEY=${PUBLIC_KEY:-$RHTAP_PROD_KEY}
+#PUBLIC_KEY=${PUBLIC_KEY:-$RHTAP_STAGE_KEY}
 
 # Adjust as required
 POLICY_YAML=${POLICY_YAML:-"github.com/enterprise-contract/config//default"}
@@ -43,10 +51,12 @@ OUTPUT=${OUTPUT:-yaml}
 
 MAIN_GO=$(git rev-parse --show-toplevel)/main.go
 
+# Use `EC=ec` to avoid recompiling
+EC=${EC:-"go run $MAIN_GO"}
+
 # Additional parameters will be included, e.g.:
 #   hack/simple-demo.sh --output appstudio=appstudio.json --debug
-go run $MAIN_GO \
-  validate image \
+$EC validate image \
   --json-input "${APPLICATION_SNAPSHOT}" \
   --policy "${POLICY_YAML}" \
   --public-key <(echo "${PUBLIC_KEY}") \

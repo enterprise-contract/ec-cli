@@ -32,8 +32,10 @@ OUTPUT=${OUTPUT:-yaml}
 
 MAIN_GO=$(git rev-parse --show-toplevel)/main.go
 
-go run $MAIN_GO \
-  validate image \
+# Use `EC=ec` to avoid recompiling
+EC=${EC:-"go run $MAIN_GO"}
+
+$EC validate image \
   --image "${IMAGE}" \
   --policy "${POLICY_YAML}" \
   --certificate-identity-regexp ${IDENTITY_REGEXP} \
