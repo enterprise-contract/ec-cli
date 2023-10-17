@@ -20,7 +20,9 @@ updates:
   - package-ecosystem: docker
     directory: "/"
     schedule:
-      interval: daily
+      interval: weekly
+      time: '15:00'
+      timezone: Etc/UTC
     groups:
       all:
         patterns:
@@ -28,7 +30,9 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: weekly
+      time: '15:00'
+      timezone: Etc/UTC
     groups:
       all:
         patterns:
@@ -36,7 +40,9 @@ updates:
   - package-ecosystem: "gomod"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: weekly
+      time: '15:00'
+      timezone: Etc/UTC
     groups:
       all:
         patterns:
@@ -44,7 +50,9 @@ updates:
   - package-ecosystem: "npm"
     directory: "/reference-antora-extension/"
     schedule:
-      interval: "daily"
+      interval: weekly
+      time: '15:00'
+      timezone: Etc/UTC
     groups:
       all:
         patterns:
@@ -52,7 +60,9 @@ updates:
   - package-ecosystem: "npm"
     directory: "/tekton-task-antora-extension/"
     schedule:
-      interval: "daily"
+      interval: weekly
+      time: '15:00'
+      timezone: Etc/UTC
     groups:
       all:
         patterns:
@@ -60,7 +70,9 @@ updates:
   - package-ecosystem: "gomod"
     directory: "/tools/"
     schedule:
-      interval: "daily"
+      interval: weekly
+      time: '15:00'
+      timezone: Etc/UTC
     groups:
       all:
         patterns:
@@ -68,7 +80,9 @@ updates:
   - package-ecosystem: "gomod"
     directory: "/acceptance/"
     schedule:
-      interval: "daily"
+      interval: weekly
+      time: '15:00'
+      timezone: Etc/UTC
     groups:
       all:
         patterns:
@@ -76,7 +90,9 @@ updates:
   - package-ecosystem: "gomod"
     directory: "/application/"
     schedule:
-      interval: "daily"
+      interval: weekly
+      time: '15:00'
+      timezone: Etc/UTC
     groups:
       all:
         patterns:
@@ -84,7 +100,9 @@ updates:
   - package-ecosystem: "gomod"
     directory: "/application/generator"
     schedule:
-      interval: "daily"
+      interval: weekly
+      time: '15:00'
+      timezone: Etc/UTC
     groups:
       all:
         patterns:
@@ -92,7 +110,9 @@ updates:
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: weekly
+      time: '15:00'
+      timezone: Etc/UTC
     groups:
       all:
         patterns:
