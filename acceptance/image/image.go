@@ -398,6 +398,22 @@ func createAndPushImageWithLayer(ctx context.Context, imageName string, files *g
 	return ctx, nil
 }
 
+func createAndPushLayer(ctx context.Context, content string, imageName string) (context.Context, error) {
+	l := s.NewLayer([]byte(content), types.OCIUncompressedLayer)
+
+	ref, err := registry.ImageReferenceInStubRegistry(ctx, imageName)
+	if err != nil {
+		return ctx, err
+	}
+
+	repo, err := name.NewRepository(ref.String())
+	if err != nil {
+		return ctx, err
+	}
+
+	return ctx, remote.WriteLayer(repo, l)
+}
+
 func labelImage(ctx context.Context, imageName string, labels *godog.Table) (context.Context, error) {
 	state := testenv.FetchState[imageState](ctx)
 
@@ -979,4 +995,5 @@ func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^an image named "([^"]*)" with signature from "([^"]*)"$`, steal("sig"))
 	sc.Step(`^an image named "([^"]*)" with attestation from "([^"]*)"$`, steal("att"))
 	sc.Step(`^all images relating to "([^"]*)" are copied to "([^"]*)"$`, copyAllImages)
+	sc.Step(`^an OCI blob with content "([^"]*)" in the repo "([^"]*)"$`, createAndPushLayer)
 }
