@@ -12,7 +12,7 @@ require (
 	github.com/go-logr/logr v1.2.4
 	github.com/google/go-containerregistry v0.16.1
 	github.com/hako/durafmt v0.0.0-20210608085754-5c1018a4e16b
-	github.com/hashicorp/go-getter v1.7.2
+	github.com/hashicorp/go-getter v1.7.3
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/in-toto/in-toto-golang v0.9.0
 	github.com/jstemmer/go-junit-report/v2 v2.0.0
@@ -23,7 +23,7 @@ require (
 	github.com/qri-io/jsonschema v0.2.1
 	github.com/secure-systems-lab/go-securesystemslib v0.7.0
 	github.com/sigstore/cosign/v2 v2.2.0
-	github.com/sigstore/sigstore v1.7.3
+	github.com/sigstore/sigstore v1.7.4
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/afero v1.10.0
 	github.com/spf13/cobra v1.7.0
@@ -160,7 +160,7 @@ require (
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/certificate-transparency-go v1.1.6 // indirect
 	github.com/google/gnostic-models v0.6.8 // indirect
-	github.com/google/go-cmp v0.5.9 // indirect
+	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/go-github/v53 v53.2.0 // indirect
 	github.com/google/go-jsonnet v0.20.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
@@ -272,7 +272,7 @@ require (
 	go.uber.org/zap v1.25.0 // indirect
 	golang.org/x/crypto v0.14.0 // indirect
 	golang.org/x/mod v0.13.0 // indirect
-	golang.org/x/oauth2 v0.12.0 // indirect
+	golang.org/x/oauth2 v0.13.0 // indirect
 	golang.org/x/sync v0.4.0 // indirect
 	golang.org/x/sys v0.13.0 // indirect
 	golang.org/x/term v0.13.0 // indirect
