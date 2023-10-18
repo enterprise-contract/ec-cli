@@ -151,9 +151,16 @@ func (r Report) WriteAll(targets []string, p format.TargetParser) (allErrors err
 	for _, targetName := range targets {
 		target := p.Parse(targetName)
 
-		if data, err := r.toFormat(target.Format); err != nil {
+		data, err := r.toFormat(target.Format)
+		if err != nil {
 			allErrors = multierror.Append(allErrors, err)
-		} else if _, err := target.Write(data); err != nil {
+		}
+
+		if !bytes.HasSuffix(data, []byte{'\n'}) {
+			data = append(data, "\n"...)
+		}
+
+		if _, err := target.Write(data); err != nil {
 			allErrors = multierror.Append(allErrors, err)
 		}
 	}
