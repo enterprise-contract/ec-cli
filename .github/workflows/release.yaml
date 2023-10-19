@@ -123,8 +123,8 @@ jobs:
       # TODO: Remove this once all references to quay.io/hacbs-contract are removed
       - name: Create and push the tekton bundle
         env:
-          TASK: "tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml tasks/verify-definition/0.1/verify-definition.yaml"
-        run: make task-bundle-snapshot TASK_REPO=quay.io/hacbs-contract/ec-task-bundle TASK_TAG=$TAG TASK=<( yq e ".spec.steps[].image? = \"$EC_IMAGE_REPO:$TAG\"" $TASK | yq 'select(. != null)')
+          TASKS: "tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml tasks/verify-definition/0.1/verify-definition.yaml"
+        run: make task-bundle-snapshot TASK_REPO=quay.io/hacbs-contract/ec-task-bundle TASK_TAG=$TAG TASKS=<( yq e ".spec.steps[].image? = \"$EC_IMAGE_REPO:$TAG\"" $TASKS | yq 'select(. != null)')
 
       - name: Registry login (quay.io/enterprise-contract)
         run: podman login -u ${{ secrets.BUNDLE_PUSH_USER_EC  }} -p ${{ secrets.BUNDLE_PUSH_PASS_EC }} quay.io
@@ -135,8 +135,8 @@ jobs:
       - name: Create and push the tekton bundle (quay.io/enterprise-contract/ec-task-bundle)
         env:
           TASK_REPO: quay.io/enterprise-contract/ec-task-bundle
-          TASK: "tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml tasks/verify-definition/0.1/verify-definition.yaml"
-        run: make task-bundle-snapshot TASK_REPO=$TASK_REPO TASK_TAG=$TAG ADD_TASK_TAG="$TAG_TIMESTAMP" TASK=<( yq e ".spec.steps[].image? = \"$EC_IMAGE_REPO:$TAG\"" $TASK | yq 'select(. != null)')
+          TASKS: "tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml tasks/verify-definition/0.1/verify-definition.yaml"
+        run: make task-bundle-snapshot TASK_REPO=$TASK_REPO TASK_TAG=$TAG ADD_TASK_TAG="$TAG_TIMESTAMP" TASKS=<( yq e ".spec.steps[].image? = \"$EC_IMAGE_REPO:$TAG\"" $TASKS | yq 'select(. != null)')
 
       - name: Download statistics
         env:
