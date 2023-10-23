@@ -34,7 +34,7 @@ require (
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9
 	golang.org/x/net v0.17.0
 	k8s.io/apimachinery v0.28.3
-	k8s.io/client-go v0.28.2
+	k8s.io/client-go v0.28.3
 	k8s.io/klog/v2 v2.100.1
 	k8s.io/kube-openapi v0.0.0-20230717233707-2695361300d9
 	sigs.k8s.io/yaml v1.3.0
@@ -126,7 +126,7 @@ require (
 	github.com/docker/docker-credential-helpers v0.8.0 // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
-	github.com/emicklei/go-restful/v3 v3.10.2 // indirect
+	github.com/emicklei/go-restful/v3 v3.11.0 // indirect
 	github.com/evanphx/json-patch/v5 v5.6.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
@@ -292,14 +292,14 @@ require (
 	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/api v0.28.2 // indirect
-	k8s.io/apiextensions-apiserver v0.28.2 // indirect
+	k8s.io/api v0.28.3 // indirect
+	k8s.io/apiextensions-apiserver v0.28.3 // indirect
 	k8s.io/utils v0.0.0-20230726121419-3b25d923346b // indirect
 	knative.dev/pkg v0.0.0-20230718152110-aef227e72ead // indirect
 	muzzammil.xyz/jsonc v1.0.0 // indirect
 	olympos.io/encoding/edn v0.0.0-20201019073823-d3554ca0b0a3 // indirect
 	oras.land/oras-go/v2 v2.3.0 // indirect
-	sigs.k8s.io/controller-runtime v0.16.2 // indirect
+	sigs.k8s.io/controller-runtime v0.16.3 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/release-utils v0.7.4 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.3.0 // indirect
