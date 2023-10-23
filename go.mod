@@ -15,7 +15,7 @@ require (
 	github.com/hashicorp/go-getter v1.7.3
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/in-toto/in-toto-golang v0.9.0
-	github.com/jstemmer/go-junit-report/v2 v2.0.0
+	github.com/jstemmer/go-junit-report/v2 v2.1.0
 	github.com/leanovate/gopter v0.2.9
 	github.com/open-policy-agent/conftest v0.46.0
 	github.com/open-policy-agent/opa v0.57.1
@@ -33,7 +33,7 @@ require (
 	github.com/tektoncd/pipeline v0.51.0
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9
 	golang.org/x/net v0.17.0
-	k8s.io/apimachinery v0.28.2
+	k8s.io/apimachinery v0.28.3
 	k8s.io/client-go v0.28.2
 	k8s.io/klog/v2 v2.100.1
 	k8s.io/kube-openapi v0.0.0-20230717233707-2695361300d9
