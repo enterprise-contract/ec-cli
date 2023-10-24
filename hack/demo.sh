@@ -47,7 +47,7 @@ spec:
   description: Demo Enterprise Contract policy configuration
   sources:
   - data:
-    - quay.io/enterprise-contract/ec-policy-data:latest
+    - git::https://github.com/enterprise-contract/ec-policies//example/data
     name: Default EC policy
     policy:
     - quay.io/enterprise-contract/ec-release-policy:latest

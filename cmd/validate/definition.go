@@ -45,7 +45,7 @@ func validateDefinitionCmd(validate definitionValidationFn) *cobra.Command {
 	}{
 		filePaths:  []string{},
 		policyURLs: []string{"oci::quay.io/enterprise-contract/ec-pipeline-policy:latest"},
-		dataURLs:   []string{"git::https://github.com/enterprise-contract/ec-policies.git//data"},
+		dataURLs:   []string{"git::https://github.com/enterprise-contract/ec-policies//example/data"},
 		output:     []string{"json"},
 		namespaces: []string{},
 	}
@@ -78,7 +78,7 @@ func validateDefinitionCmd(validate definitionValidationFn) *cobra.Command {
 			  ec validate definition --file </path/to/pipeline/file> \
 				--policy git::https://github.com/enterprise-contract/ec-policies//policy/lib \
 				--policy git::https://github.com/enterprise-contract/ec-policies//policy/pipeline \
-				--data git::https://github.com/enterprise-contract/ec-policies//data
+				--data git::https://github.com/enterprise-contract/ec-policies//example/data
 		`),
 
 		RunE: func(cmd *cobra.Command, args []string) error {

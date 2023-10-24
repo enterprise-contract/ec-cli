@@ -13,7 +13,7 @@ ec validate image --policy '{
     "sources": [
         {
             "policy": ["oci::quay.io/enterprise-contract/ec-release-policy:latest"],
-            "data": ["oci::quay.io/enterprise-contract/ec-policy-data:latest"]
+            "data": ["git::https://github.com/enterprise-contract/ec-policies//example/data"]
         }
     ]
 }' ...
@@ -194,9 +194,9 @@ xref:ec-policies:ROOT:attachment$rule_data.yml[rule_data.yml]
 allowing the same policy rules to be used to best fit your use cases.
 
 There are different ways to create a custom data source. The simplest form is to
-fork the ec-policies git repository and change the values of
-`data/rule_data.yml` in your fork. Then, simply provide your fork as a data
-source. For example:
+copy the example/data directory of the ec-policies git repository to your own
+repository, and change the values of `rule_data.yml`. Then, simply provide your
+repo as a data source. For example:
 
 [source,json]
 ----
@@ -207,7 +207,7 @@ source. For example:
         "git::https://github.com/enterprise-contract/ec-policies.git//policy"
       ],
       "data": [
-        "git::https://github.com/lcarva/ec-policies.git//data"
+        "git::https://github.com/enterprise-contract/ec-policies//example/data"
       ]
     }
   ]
@@ -235,7 +235,7 @@ as a data source, for example:
 
 NOTE: If the data source contains policy rules, those will be ignored.
 
-NOTE: If you replace the default data source entirely, you must provide the full set of required data values.
+NOTE: When providing a data source, you must provide the full set of required data values.
 These are all the values defined in
 xref:ec-policies:ROOT:attachment$rule_data.yml[data/rule_data.yml] and
 xref:ec-policies:ROOT:attachment$acceptable_tekton_bundles.yml[data/acceptable_tekton_bundles.yml].

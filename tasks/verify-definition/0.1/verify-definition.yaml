@@ -47,7 +47,7 @@ spec:
     - name: POLICY_DATA
       type: string
       description: The source containing the policy files.
-      default: git::github.com/enterprise-contract/ec-policies//data
+      default: git::https://github.com/enterprise-contract/ec-policies//example/data
     - name: HOMEDIR
       type: string
       description: Value for the HOME environment variable.
