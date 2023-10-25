@@ -6,7 +6,7 @@ require (
 	cuelang.org/go v0.6.0
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/enterprise-contract/ec-cli/application v0.0.0-00010101000000-000000000000
-	github.com/enterprise-contract/enterprise-contract-controller/api v0.0.0-20230928144500-ee994416688e
+	github.com/enterprise-contract/enterprise-contract-controller/api v0.0.0-20231027095011-f06fe20fb615
 	github.com/evanphx/json-patch v5.7.0+incompatible
 	github.com/gkampitakis/go-snaps v0.4.11
 	github.com/go-logr/logr v1.2.4

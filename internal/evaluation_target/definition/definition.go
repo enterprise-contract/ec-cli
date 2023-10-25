@@ -19,6 +19,8 @@ package definition
 import (
 	"context"
 
+	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
+
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/policy/source"
@@ -43,7 +45,7 @@ func NewDefinition(ctx context.Context, fpath []string, sources []source.PolicyS
 		return nil, err
 	}
 
-	c, err := newConftestEvaluator(ctx, sources, pol, nil, namespace)
+	c, err := newConftestEvaluator(ctx, sources, pol, ecc.Source{}, namespace)
 
 	if err != nil {
 		return nil, err

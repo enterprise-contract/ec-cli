@@ -495,6 +495,8 @@ github.com/emicklei/proto v1.10.0 h1:pDGyFRVV5RvV+nkBK9iy3q67FBy9Xa7vwrOTE+g5aGw
 github.com/emicklei/proto v1.10.0/go.mod h1:rn1FgRS/FANiZdD2djyH7TMA9jdRDcYQ9IEN9yvjX0A=
 github.com/enterprise-contract/enterprise-contract-controller/api v0.0.0-20230928144500-ee994416688e h1:5xs6a665zFELeTTuPX9cqYGZCXT6DgOYPvhx7nH5cuE=
 github.com/enterprise-contract/enterprise-contract-controller/api v0.0.0-20230928144500-ee994416688e/go.mod h1:A5Nr4ZbDDR+HuGhezHsbOsBfvyXrV4jEtv0JhhdDe34=
+github.com/enterprise-contract/enterprise-contract-controller/api v0.0.0-20231027095011-f06fe20fb615 h1:NAawZ0uB21/QvU+XHjh5mYKiYg1vKyZjl9F2fV5G4bc=
+github.com/enterprise-contract/enterprise-contract-controller/api v0.0.0-20231027095011-f06fe20fb615/go.mod h1:Zy2h6ld9aeicWvvCSofdCX7/RSVPD3OHV0263HMCA1U=
 github.com/envoyproxy/go-control-plane v0.9.0/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/go-control-plane v0.9.1-0.20191026205805-5f8ba28d4473/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/go-control-plane v0.9.4/go.mod h1:6rpuAdCZL397s3pYoYcLgu1mIlRU8Am5FuJP05cCM98=
