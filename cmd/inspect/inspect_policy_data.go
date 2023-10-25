@@ -63,7 +63,7 @@ func inspectPolicyDataCmd() *cobra.Command {
 		Example: hd.Doc(`
 			Print data from a given source url:
 
-			  ec inspect policy-data --source quay.io/enterprise-contract/ec-policy-data
+			ec inspect policy-data --source git::https://github.com/enterprise-contract/ec-policies//example/data
 		`),
 
 		Args: cobra.NoArgs,

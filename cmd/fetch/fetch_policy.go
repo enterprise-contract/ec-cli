@@ -69,7 +69,7 @@ func fetchPolicyCmd() *cobra.Command {
 			  ec fetch policy \
 				--source github.com/enterprise-contract/ec-policies//policy/lib \
 				--source github.com/enterprise-contract/ec-policies//policy/release \
-				--data-source github.com/enterprise-contract/ec-policies//data
+				--data-source git::https://github.com/enterprise-contract/ec-policies//example/data
 
 			Fetching policies from multiple sources to an automatically generated temporary
 			work directory:
