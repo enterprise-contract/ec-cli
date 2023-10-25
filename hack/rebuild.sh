@@ -74,7 +74,7 @@ function build() {
     pipeline_run="${name}-$(openssl rand --hex 8)"
 
     kubectl create -o yaml --dry-run=client -f - <<EOF | kubectl apply -f - >&2
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:
   name: ${pipeline_run}

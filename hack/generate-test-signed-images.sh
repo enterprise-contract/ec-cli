@@ -153,7 +153,7 @@ provenance='
   "builder": {
     "id": "https://tekton.dev/chains/v2"
   },
-  "buildType": "tekton.dev/v1beta1/PipelineRun",
+  "buildType": "tekton.dev/v1/PipelineRun",
   "invocation": {},
   "metadata": {
     "buildStartedOn": "2023-03-22T19:38:01Z",

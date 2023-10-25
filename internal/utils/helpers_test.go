@@ -28,7 +28,7 @@ import (
 )
 
 var testJSONPipelineData = `{
-    "apiVersion": "tekton.dev/v1beta1",
+    "apiVersion": "tekton.dev/v1",
     "kind": "Pipeline",
     "metadata": {
         "name": "run-component-build"
@@ -36,15 +36,15 @@ var testJSONPipelineData = `{
 }
 `
 
-var testYAMLPipelineData = `apiVersion: tekton.dev/v1beta1
+var testYAMLPipelineData = `apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
   name: run-component-build
 `
 
-var testYamlConvertedToJSON = `{"apiVersion":"tekton.dev/v1beta1","kind":"Pipeline","metadata":{"name":"run-component-build"}}`
+var testYamlConvertedToJSON = `{"apiVersion":"tekton.dev/v1","kind":"Pipeline","metadata":{"name":"run-component-build"}}`
 
-var testJSONMissingPrefix = `"apiVersion": "tekton.dev/v1beta1",
+var testJSONMissingPrefix = `"apiVersion": "tekton.dev/v1",
     "kind": "Pipeline",
     "metadata": {
         "name": "run-component-build"

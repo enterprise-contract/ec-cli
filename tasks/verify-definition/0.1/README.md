@@ -21,7 +21,7 @@ This TaskRun runs the Task to verify the JSON string '{"kind": "Task"}'.
 
 ```yaml
 ---
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: TaskRun
 metadata:
   generateName: verify-definition-run-
@@ -48,6 +48,3 @@ spec:
       value: task
   timeout: 10m
 ```
-
-
-

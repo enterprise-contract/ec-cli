@@ -11,7 +11,7 @@ Feature: validate pipeline definition
     Given a pipeline definition file named "pipeline_definition.yaml" containing
     """
     ---
-    apiVersion: tekton.dev/v1beta1
+    apiVersion: tekton.dev/v1
     kind: Pipeline
     metadata:
       name: basic-build
@@ -32,7 +32,7 @@ Feature: validate pipeline definition
     Given a pipeline definition file named "pipeline_definition.yaml" containing
     """
     ---
-    apiVersion: tekton.dev/v1beta1
+    apiVersion: tekton.dev/v1
     kind: Pipeline
     metadata:
       name: basic-build
