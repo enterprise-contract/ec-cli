@@ -82,5 +82,18 @@ type FakeClient struct {
 
 func (m *FakeClient) Image(ref name.Reference, opts ...remote.Option) (v1.Image, error) {
 	args := m.Called(ref, opts)
-	return args.Get(0).(v1.Image), args.Error(1)
+	var img v1.Image
+	if maybeImg, ok := args.Get(0).(v1.Image); ok {
+		img = maybeImg
+	}
+	return img, args.Error(1)
+}
+
+func (m *FakeClient) Layer(ref name.Digest, opts ...remote.Option) (v1.Layer, error) {
+	args := m.Called(ref, opts)
+	var layer v1.Layer
+	if maybeLayer, ok := args.Get(0).(v1.Layer); ok {
+		layer = maybeLayer
+	}
+	return layer, args.Error(1)
 }

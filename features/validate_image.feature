@@ -870,3 +870,29 @@ Feature: evaluate enterprise contract
     When ec command is run with "validate image --image ${REGISTRY}/acceptance/image --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --ignore-rekor --show-successes"
     Then the exit status should be 1
     Then the output should match the snapshot
+
+  Scenario: fetch OCI blob
+    Given a key pair named "known"
+    Given an image named "acceptance/fetch-oci-blob"
+    Given a valid image signature of "acceptance/fetch-oci-blob" image signed by the "known" key
+    Given a valid Rekor entry for image signature of "acceptance/fetch-oci-blob"
+    Given a valid attestation of "acceptance/fetch-oci-blob" signed by the "known" key
+    Given a valid Rekor entry for attestation of "acceptance/fetch-oci-blob"
+    Given an OCI blob with content "spam" in the repo "acceptance/fetch-oci-blob"
+    Given a git repository named "fetch-oci-blob-policy" with
+      | main.rego | examples/fetch_blob.rego |
+    Given policy configuration named "ec-policy" with specification
+    """
+    {
+      "sources": [
+        {
+          "policy": [
+            "git::https://${GITHOST}/git/fetch-oci-blob-policy.git"
+          ]
+        }
+      ]
+    }
+    """
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/fetch-oci-blob --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR}  --show-successes"
+    Then the exit status should be 0
+    Then the output should match the snapshot

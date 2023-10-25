@@ -18,6 +18,7 @@ package oci
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path"
 	"strconv"
@@ -59,6 +60,7 @@ func initCache() {
 
 type client interface {
 	Image(name.Reference, ...remote.Option) (v1.Image, error)
+	Layer(name.Digest, ...remote.Option) (v1.Layer, error)
 }
 
 var defaultClient = remoteClient{}
@@ -90,4 +92,14 @@ func (*remoteClient) Image(ref name.Reference, opts ...remote.Option) (v1.Image,
 	}
 
 	return img, nil
+}
+
+func (*remoteClient) Layer(ref name.Digest, options ...remote.Option) (v1.Layer, error) {
+	// TODO: Caching a layer directly is difficult and may not be possible, see:
+	//   https://github.com/google/go-containerregistry/issues/1821
+	layer, err := remote.Layer(ref, options...)
+	if err != nil {
+		return nil, fmt.Errorf("fetching layer: %w", err)
+	}
+	return layer, nil
 }
