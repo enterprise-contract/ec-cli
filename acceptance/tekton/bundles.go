@@ -34,7 +34,7 @@ import (
 	"github.com/enterprise-contract/ec-cli/acceptance/registry"
 )
 
-const version = "v1beta1"
+const version = "v1"
 
 func createTektonBundle(ctx context.Context, name string, data *godog.Table) (context.Context, error) {
 	img := empty.Image
