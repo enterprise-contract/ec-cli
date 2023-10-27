@@ -23,12 +23,12 @@ Feature: track bundles
     ---
     pipeline-bundles:
       ${REGISTRY}/acceptance/bundle:
-        - digest: sha256:21040e5abd0e077b7344574473468beff02cd6cc66dc464acb3c6b4be5bb82af
+        - digest: sha256:96e96850c6561bdd7514d0f9849e3cdb2f3c284480663128a438537f602ff64e
           effective_on: "${TODAY_PLUS_30_DAYS}"
           tag: tag
     task-bundles:
       ${REGISTRY}/acceptance/bundle:
-        - digest: sha256:21040e5abd0e077b7344574473468beff02cd6cc66dc464acb3c6b4be5bb82af
+        - digest: sha256:96e96850c6561bdd7514d0f9849e3cdb2f3c284480663128a438537f602ff64e
           effective_on: "${TODAY_PLUS_30_DAYS}"
           tag: tag
 
@@ -49,18 +49,18 @@ Feature: track bundles
     ---
     pipeline-bundles:
       ${REGISTRY}/acceptance/bundle:
-        - digest: sha256:210498ce79b1184ad92fadd6d658ee80e4d6d142f759d2f4c1c63d54f60bd2c6
+        - digest: sha256:980e69d9bbfb10d28506863fa479b361cd25b38483951a17d60932f777ac0240
           effective_on: "${TODAY_PLUS_30_DAYS}"
           tag: "1.1"
-        - digest: sha256:21040e5abd0e077b7344574473468beff02cd6cc66dc464acb3c6b4be5bb82af
+        - digest: sha256:96e96850c6561bdd7514d0f9849e3cdb2f3c284480663128a438537f602ff64e
           effective_on: "${TODAY_PLUS_30_DAYS}"
           tag: "1.0"
     task-bundles:
       ${REGISTRY}/acceptance/bundle:
-        - digest: sha256:210498ce79b1184ad92fadd6d658ee80e4d6d142f759d2f4c1c63d54f60bd2c6
+        - digest: sha256:980e69d9bbfb10d28506863fa479b361cd25b38483951a17d60932f777ac0240
           effective_on: "${TODAY_PLUS_30_DAYS}"
           tag: "1.1"
-        - digest: sha256:21040e5abd0e077b7344574473468beff02cd6cc66dc464acb3c6b4be5bb82af
+        - digest: sha256:96e96850c6561bdd7514d0f9849e3cdb2f3c284480663128a438537f602ff64e
           effective_on: "${TODAY_PLUS_30_DAYS}"
           tag: "1.0"
 
@@ -76,12 +76,12 @@ Feature: track bundles
     ---
     pipeline-bundles:
       ${REGISTRY}/acceptance/bundle:
-        - digest: sha256:21040e5abd0e077b7344574473468beff02cd6cc66dc464acb3c6b4be5bb82af
+        - digest: sha256:96e96850c6561bdd7514d0f9849e3cdb2f3c284480663128a438537f602ff64e
           effective_on: "${TODAY_PLUS_30_DAYS}"
           tag: tag
     task-bundles:
       ${REGISTRY}/acceptance/bundle:
-        - digest: sha256:21040e5abd0e077b7344574473468beff02cd6cc66dc464acb3c6b4be5bb82af
+        - digest: sha256:96e96850c6561bdd7514d0f9849e3cdb2f3c284480663128a438537f602ff64e
           effective_on: "${TODAY_PLUS_30_DAYS}"
           tag: tag
 

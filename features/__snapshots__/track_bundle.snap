@@ -25,7 +25,7 @@ pipeline-bundles:
     - digest: sha256:${REGISTRY_acceptance/bundle:tag_DIGEST}
       effective_on: "${TIMESTAMP}"
       tag: tag
-    - digest: sha256:21040e5abd0e077b7344574473468beff02cd6cc66dc464acb3c6b4be5bb82af
+    - digest: sha256:96e96850c6561bdd7514d0f9849e3cdb2f3c284480663128a438537f602ff64e
       effective_on: "2006-01-02T15:04:05Z"
       tag: tag
 task-bundles:
@@ -33,7 +33,7 @@ task-bundles:
     - digest: sha256:${REGISTRY_acceptance/bundle:tag_DIGEST}
       effective_on: "${TIMESTAMP}"
       tag: tag
-    - digest: sha256:21040e5abd0e077b7344574473468beff02cd6cc66dc464acb3c6b4be5bb82af
+    - digest: sha256:96e96850c6561bdd7514d0f9849e3cdb2f3c284480663128a438537f602ff64e
       effective_on: "2006-01-02T15:04:05Z"
       tag: tag
 
@@ -50,7 +50,7 @@ pipeline-bundles:
     - digest: sha256:${REGISTRY_acceptance/bundle:tag_DIGEST}
       effective_on: "${TIMESTAMP}"
       tag: tag
-    - digest: sha256:21040e5abd0e077b7344574473468beff02cd6cc66dc464acb3c6b4be5bb82af
+    - digest: sha256:96e96850c6561bdd7514d0f9849e3cdb2f3c284480663128a438537f602ff64e
       effective_on: "2006-01-02T15:04:05Z"
       tag: tag
 task-bundles:
@@ -58,7 +58,7 @@ task-bundles:
     - digest: sha256:${REGISTRY_acceptance/bundle:tag_DIGEST}
       effective_on: "${TIMESTAMP}"
       tag: tag
-    - digest: sha256:21040e5abd0e077b7344574473468beff02cd6cc66dc464acb3c6b4be5bb82af
+    - digest: sha256:96e96850c6561bdd7514d0f9849e3cdb2f3c284480663128a438537f602ff64e
       effective_on: "2006-01-02T15:04:05Z"
       tag: tag
 
