@@ -194,9 +194,10 @@ func TestConftestEvaluatorEvaluateTimeBased(t *testing.T) {
 	pol, err := policy.NewOfflinePolicy(ctx, policy.Now)
 	assert.NoError(t, err)
 
+	src := testPolicySource{}
 	evaluator, err := NewConftestEvaluator(ctx, []source.PolicySource{
-		testPolicySource{},
-	}, pol, nil)
+		src,
+	}, pol, ecc.Source{})
 
 	assert.NoError(t, err)
 	actualResults, data, err := evaluator.Evaluate(ctx, inputs)
@@ -236,7 +237,7 @@ func TestConftestEvaluatorCapabilities(t *testing.T) {
 
 	evaluator, err := NewConftestEvaluator(ctx, []source.PolicySource{
 		testPolicySource{},
-	}, p, nil)
+	}, p, ecc.Source{})
 	assert.NoError(t, err)
 
 	blob, err := afero.ReadFile(fs, evaluator.CapabilitiesPath())
@@ -285,7 +286,7 @@ func TestConftestEvaluatorEvaluateNoSuccessWarningsOrFailures(t *testing.T) {
 
 	evaluator, err := NewConftestEvaluator(ctx, []source.PolicySource{
 		testPolicySource{},
-	}, p, nil)
+	}, p, ecc.Source{})
 
 	assert.NoError(t, err)
 	actualResults, data, err := evaluator.Evaluate(ctx, inputs)
@@ -1107,7 +1108,7 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 
 			evaluator, err := NewConftestEvaluator(ctx, []source.PolicySource{
 				testPolicySource{},
-			}, p, nil)
+			}, p, ecc.Source{})
 
 			assert.NoError(t, err)
 			got, data, err := evaluator.Evaluate(ctx, inputs)
@@ -1604,7 +1605,7 @@ func TestConftestEvaluatorEvaluate(t *testing.T) {
 			Url:  rules,
 			Kind: source.PolicyKind,
 		},
-	}, p, nil)
+	}, p, ecc.Source{})
 	require.NoError(t, err)
 
 	results, data, err := evaluator.Evaluate(ctx, []string{path.Join(dir, "inputs")})
@@ -1648,7 +1649,7 @@ func TestUnconformingRule(t *testing.T) {
 			Url:  rules,
 			Kind: source.PolicyKind,
 		},
-	}, p, nil)
+	}, p, ecc.Source{})
 	require.NoError(t, err)
 
 	_, _, err = evaluator.Evaluate(ctx, []string{path.Join(dir, "inputs")})
@@ -1659,7 +1660,7 @@ func TestNewConftestEvaluatorComputeIncludeExclude(t *testing.T) {
 	cases := []struct {
 		name            string
 		globalConfig    *ecc.EnterpriseContractPolicyConfiguration
-		sourceConfig    *ecc.SourceConfig
+		source          ecc.Source
 		expectedInclude []string
 		expectedExclude []string
 	}{
@@ -1680,15 +1681,19 @@ func TestNewConftestEvaluatorComputeIncludeExclude(t *testing.T) {
 			expectedExclude: []string{"exclude-me"},
 		},
 		{
-			name:            "empty source config",
-			sourceConfig:    &ecc.SourceConfig{},
+			name: "empty source config",
+			source: ecc.Source{
+				Config: &ecc.SourceConfig{},
+			},
 			expectedInclude: []string{"*"},
 		},
 		{
 			name: "source config",
-			sourceConfig: &ecc.SourceConfig{
-				Include: []string{"include-me"},
-				Exclude: []string{"exclude-me"},
+			source: ecc.Source{
+				Config: &ecc.SourceConfig{
+					Include: []string{"include-me"},
+					Exclude: []string{"exclude-me"},
+				},
 			},
 			expectedInclude: []string{"include-me"},
 			expectedExclude: []string{"exclude-me"},
@@ -1700,12 +1705,120 @@ func TestNewConftestEvaluatorComputeIncludeExclude(t *testing.T) {
 				Exclude:     []string{"exclude-ignored"},
 				Collections: []string{"collection-ignored"},
 			},
-			sourceConfig: &ecc.SourceConfig{
-				Include: []string{"include-me"},
-				Exclude: []string{"exclude-me"},
+			source: ecc.Source{
+				Config: &ecc.SourceConfig{
+					Include: []string{"include-me"},
+					Exclude: []string{"exclude-me"},
+				},
 			},
 			expectedInclude: []string{"include-me"},
 			expectedExclude: []string{"exclude-me"},
+		},
+		{
+			name: "volatile source config",
+			source: ecc.Source{
+				VolatileConfig: &ecc.VolatileSourceConfig{
+					Include: []ecc.VolatileCriteria{
+						{
+							Value: "include-me",
+						},
+					},
+					Exclude: []ecc.VolatileCriteria{
+						{
+							Value: "exclude-me",
+						},
+					},
+				},
+			},
+			expectedInclude: []string{"include-me"},
+			expectedExclude: []string{"exclude-me"},
+		},
+		{
+			name: "volatile source config not applicable",
+			source: ecc.Source{
+				VolatileConfig: &ecc.VolatileSourceConfig{
+					Include: []ecc.VolatileCriteria{
+						{
+							Value:       "include-farfetched",
+							EffectiveOn: "2100-01-01T00:00:00Z",
+						},
+						{
+							Value:          "include-expired",
+							EffectiveUntil: "1000-01-01T00:00:00Z",
+						},
+						{
+							Value:          "include-expired",
+							EffectiveOn:    "2014-05-01T00:00:00Z",
+							EffectiveUntil: "2014-05-30T00:00:00Z",
+						},
+						{
+							Value:          "include-notyet",
+							EffectiveOn:    "2014-06-01T00:00:00Z",
+							EffectiveUntil: "2014-06-30T00:00:00Z",
+						},
+					},
+					Exclude: []ecc.VolatileCriteria{
+						{
+							Value:       "exclude-farfetched",
+							EffectiveOn: "2100-01-01T00:00:00Z",
+						},
+						{
+							Value:          "exclude-expired",
+							EffectiveUntil: "1000-01-01T00:00:00Z",
+						},
+						{
+							Value:          "exclude-expired",
+							EffectiveOn:    "2014-05-01T00:00:00Z",
+							EffectiveUntil: "2014-05-30T00:00:00Z",
+						},
+						{
+							Value:          "exclude-notyet",
+							EffectiveOn:    "2014-06-01T00:00:00Z",
+							EffectiveUntil: "2014-06-30T00:00:00Z",
+						},
+					},
+				},
+			},
+			expectedInclude: []string{"*"},
+		},
+		{
+			name: "volatile source config applicable",
+			source: ecc.Source{
+				VolatileConfig: &ecc.VolatileSourceConfig{
+					Include: []ecc.VolatileCriteria{
+						{
+							Value:       "include-open-ended",
+							EffectiveOn: "2014-05-30T00:00:00Z",
+						},
+						{
+							Value:          "include-un-expired",
+							EffectiveUntil: "2014-06-01T00:00:00Z",
+						},
+						{
+							Value:          "include-in-range",
+							EffectiveOn:    "2014-05-30T00:00:00Z",
+							EffectiveUntil: "2014-06-01T00:00:00Z",
+						},
+					},
+					Exclude: []ecc.VolatileCriteria{
+						{
+							Value:       "exclude-open-ended",
+							EffectiveOn: "2014-05-30T00:00:00Z",
+						},
+						{
+							Value:          "exclude-un-expired",
+							EffectiveUntil: "2014-06-01T00:00:00Z",
+						},
+						{
+							Value:          "exclude-in-range",
+							EffectiveOn:    "2014-05-30T00:00:00Z",
+							EffectiveUntil: "2014-06-01T00:00:00Z",
+						},
+					},
+				},
+			},
+			expectedInclude: []string{"include-open-ended", "include-un-expired", "include-in-range"},
+			expectedExclude: []string{"exclude-open-ended", "exclude-un-expired", "exclude-in-range"},
 		},
 	}
 
@@ -1726,7 +1839,7 @@ func TestNewConftestEvaluatorComputeIncludeExclude(t *testing.T) {
 					Url:  path.Join(dir, "policy", "rules.tar"),
 					Kind: source.PolicyKind,
 				},
-			}, p, tt.sourceConfig)
+			}, p, tt.source)
 			require.NoError(t, err)
 
 			ce := evaluator.(conftestEvaluator)
