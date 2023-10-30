@@ -1,20 +1,20 @@
 {
-  "id" : "23268e3c-6998-30a8-b096-a047be895946",
+  "id" : "b52bff9c-dbcb-306b-9987-38bb623c1947",
   "request" : {
     "url" : "/snapshot.json",
     "method" : "GET"
   },
   "response" : {
     "status" : 200,
-    "bodyFileName" : "body-snapshot.json-ow7Gw.json",
+    "bodyFileName" : "body-snapshot.json-dZVPS.json",
     "headers" : {
       "accept-ranges" : "bytes",
       "content-type" : "application/json",
-      "date" : "Thu, 27 Apr 2023 13:06:17 GMT",
-      "last-modified" : "Thu, 27 Apr 2023 13:06:01 GMT",
+      "date" : "Mon, 30 Oct 2023 19:59:57 GMT",
+      "last-modified" : "Mon, 30 Oct 2023 19:59:40 GMT",
       "x-envoy-upstream-service-time" : "0",
       "server" : "envoy"
     }
   },
-  "uuid" : "23268e3c-6998-30a8-b096-a047be895946"
+  "uuid" : "b52bff9c-dbcb-306b-9987-38bb623c1947"
 }

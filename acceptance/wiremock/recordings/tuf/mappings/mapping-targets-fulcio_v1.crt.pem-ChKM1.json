@@ -1,20 +1,20 @@
 {
-  "id" : "4f26a93d-bbf4-3082-b5aa-41cf38e2d542",
+  "id" : "b1ffc34c-ec4a-34d1-b155-aec9686f6af6",
   "request" : {
     "url" : "/targets/fulcio_v1.crt.pem",
     "method" : "GET"
   },
   "response" : {
     "status" : 200,
-    "bodyFileName" : "body-targets-fulcio_v1.crt.pem-1rwRI.txt",
+    "bodyFileName" : "body-targets-fulcio_v1.crt.pem-ChKM1.txt",
     "headers" : {
       "accept-ranges" : "bytes",
       "content-type" : "text/plain; charset=utf-8",
-      "date" : "Thu, 27 Apr 2023 13:06:17 GMT",
-      "last-modified" : "Thu, 27 Apr 2023 13:06:01 GMT",
+      "date" : "Mon, 30 Oct 2023 19:59:57 GMT",
+      "last-modified" : "Mon, 30 Oct 2023 19:59:40 GMT",
       "x-envoy-upstream-service-time" : "0",
       "server" : "envoy"
     }
   },
-  "uuid" : "4f26a93d-bbf4-3082-b5aa-41cf38e2d542"
+  "uuid" : "b1ffc34c-ec4a-34d1-b155-aec9686f6af6"
 }

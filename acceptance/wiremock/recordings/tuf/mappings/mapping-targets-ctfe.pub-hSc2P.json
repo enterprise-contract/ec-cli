@@ -1,20 +1,20 @@
 {
-  "id" : "99bce573-8a4b-3512-9439-06dcbe400bef",
+  "id" : "e40854cb-d3fe-3c9c-8ea9-055ea6823bd9",
   "request" : {
     "url" : "/targets/ctfe.pub",
     "method" : "GET"
   },
   "response" : {
     "status" : 200,
-    "bodyFileName" : "body-targets-ctfe.pub-loHjC.txt",
+    "bodyFileName" : "body-targets-ctfe.pub-hSc2P.txt",
     "headers" : {
       "accept-ranges" : "bytes",
       "content-type" : "text/plain; charset=utf-8",
-      "date" : "Thu, 27 Apr 2023 13:06:17 GMT",
-      "last-modified" : "Thu, 27 Apr 2023 13:06:01 GMT",
+      "date" : "Mon, 30 Oct 2023 19:59:57 GMT",
+      "last-modified" : "Mon, 30 Oct 2023 19:59:40 GMT",
       "x-envoy-upstream-service-time" : "0",
       "server" : "envoy"
     }
   },
-  "uuid" : "99bce573-8a4b-3512-9439-06dcbe400bef"
+  "uuid" : "e40854cb-d3fe-3c9c-8ea9-055ea6823bd9"
 }
