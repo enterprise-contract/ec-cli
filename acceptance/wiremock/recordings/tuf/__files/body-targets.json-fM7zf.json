@@ -1,0 +1,55 @@
+{
+ "signed": {
+  "_type": "targets",
+  "spec_version": "1.0",
+  "version": 1,
+  "expires": "2024-04-30T19:59:40Z",
+  "targets": {
+   "ctfe.pub": {
+    "length": 178,
+    "hashes": {
+     "sha512": "46f082b7af32e94f35419db4802be9b7cb3a05c858a65ce980efb6fb03ea14ca08ccedc9f365a465dce8f1776a5ca88a9e35813e52053295dda7e8e02142920f"
+    },
+    "custom": {
+     "sigstore": {
+      "usage": "CTFE",
+      "status": "Active",
+      "uri": ""
+     }
+    }
+   },
+   "fulcio_v1.crt.pem": {
+    "length": 2057,
+    "hashes": {
+     "sha512": "2e62ee31903be2cd7168d820447ff3125caf499526db82cd758698418adf95c84bf9e5b245eb7b3f92a471bba1fcead83ef06cd9b9a190d25b6e0e90f4389261"
+    },
+    "custom": {
+     "sigstore": {
+      "usage": "Fulcio",
+      "status": "Active",
+      "uri": ""
+     }
+    }
+   },
+   "rekor.pub": {
+    "length": 178,
+    "hashes": {
+     "sha512": "774afc50c7086a2384a64232dad1188418b20e3732993d6eb26b09b07ede4b21f1be05da8a7ca1a3e26e171380fbf9f4c1277cb14f671e8d1685ba9a2bc476ea"
+    },
+    "custom": {
+     "sigstore": {
+      "usage": "Rekor",
+      "status": "Active",
+      "uri": ""
+     }
+    }
+   }
+  }
+ },
+ "signatures": [
+  {
+   "keyid": "e5500cc95236d513a935a6b074a8a85a2fffc87fc2fd50d96c53c5c629fd751d",
+   "sig": "aab8e15399625f8f74c0b89a77e2ad7ac83dcc4113af247152c83673c384efdcc4f7341f3b39b49851a284f1d49ab0085a82756a110b4d70e28d51bdfcba280c"
+  }
+ ]
+}
