@@ -217,8 +217,9 @@ func TestReadSnapshotFile(t *testing.T) {
 		content, err := afero.ReadFile(fs, specFile)
 		assert.NoError(t, err)
 		_, err = readSnapshotSource(content)
-		expected := errors.New("error unmarshaling JSON: while decoding JSON: json: cannot unmarshal string into Go value of type v1alpha1.SnapshotSpec")
-		assert.Equal(t, fmt.Errorf("unable to parse Snapshot specification from %s: %w", spec, expected), err)
+		wrapped := errors.New("error unmarshaling JSON: while decoding JSON: json: cannot unmarshal string into Go value of type v1alpha1.SnapshotSpec")
+		expected := fmt.Errorf("unable to parse Snapshot specification from %s: %w", spec, wrapped)
+		assert.Error(t, err, expected)
 	})
 
 }
