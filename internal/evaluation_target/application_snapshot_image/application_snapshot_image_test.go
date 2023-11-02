@@ -147,6 +147,14 @@ func (f fakeAtt) Signatures() []signature.EntitySignature {
 	return f.signatures
 }
 
+func (f fakeAtt) Digest() map[string]string {
+	return map[string]string{}
+}
+
+func (f fakeAtt) Subject() []in_toto.Subject {
+	return []in_toto.Subject{}
+}
+
 type opts func(*fakeAtt)
 
 func createSimpleAttestation(statement *in_toto.ProvenanceStatementSLSA02, o ...opts) attestation.Attestation {
@@ -441,6 +449,10 @@ func (c *MockClient) Head(name name.Reference, options ...remote.Option) (*v1.De
 	args := c.Called(name, options)
 
 	return args.Get(0).(*v1.Descriptor), args.Error(1)
+}
+
+func (c *MockClient) ResolveDigest(ref name.Reference, opts *cosign.CheckOpts) (string, error) {
+	return "", nil
 }
 
 func TestValidateImageSignatureClaims(t *testing.T) {

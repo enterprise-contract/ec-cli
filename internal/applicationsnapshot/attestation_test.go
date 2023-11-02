@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	"github.com/gkampitakis/go-snaps/snaps"
+	"github.com/in-toto/in-toto-golang/in_toto"
 	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
 
@@ -141,6 +142,14 @@ func (a mockAttestation) Statement() []byte {
 
 func (a mockAttestation) Signatures() []signature.EntitySignature {
 	return nil
+}
+
+func (a mockAttestation) Digest() map[string]string {
+	return map[string]string{}
+}
+
+func (a mockAttestation) Subject() []in_toto.Subject {
+	return []in_toto.Subject{}
 }
 
 func att(data string) attestation.Attestation {

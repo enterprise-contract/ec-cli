@@ -38,6 +38,8 @@ type Attestation interface {
 	PredicateType() string
 	Statement() []byte
 	Signatures() []signature.EntitySignature
+	Subject() []in_toto.Subject
+	Digest() map[string]string
 }
 
 // Extract the payload from a DSSE signature OCI layer
@@ -137,13 +139,19 @@ func ProvenanceFromSignature(sig oci.Signature) (Attestation, error) {
 		return nil, fmt.Errorf("cannot create signed entity: %w", err)
 	}
 
-	return provenance{statement: statement, data: embedded, signatures: signatures}, nil
+	digest, err := sig.Digest()
+	if err != nil {
+		return nil, err
+	}
+
+	return provenance{statement: statement, data: embedded, signatures: signatures, digest: map[string]string{digest.Algorithm: digest.String()}}, nil
 }
 
 type provenance struct {
 	statement  in_toto.Statement
 	data       []byte
 	signatures []signature.EntitySignature
+	digest     map[string]string
 }
 
 func (p provenance) Type() string {
@@ -162,6 +170,14 @@ func (p provenance) Signatures() []signature.EntitySignature {
 	return p.signatures
 }
 
+func (p provenance) Digest() map[string]string {
+	return p.digest
+}
+
+func (p provenance) Subject() []in_toto.Subject {
+	return p.statement.Subject
+}
+
 // Todo: It seems odd that this does not contain the statement.
 // (See also the equivalent method in slsa_provenance_02.go)
 func (p provenance) MarshalJSON() ([]byte, error) {
@@ -169,10 +185,12 @@ func (p provenance) MarshalJSON() ([]byte, error) {
 		Type          string                      `json:"type"`
 		PredicateType string                      `json:"predicateType"`
 		Signatures    []signature.EntitySignature `json:"signatures"`
+		Digest        map[string]string           `json:"digest"`
 	}{
 		Type:          p.Type(),
 		PredicateType: p.PredicateType(),
 		Signatures:    p.Signatures(),
+		Digest:        p.Digest(),
 	}
 
 	return json.Marshal(val)

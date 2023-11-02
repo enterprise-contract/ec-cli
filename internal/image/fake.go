@@ -48,3 +48,11 @@ func (f fakeAtt) PredicateType() string {
 func (f fakeAtt) Signatures() []signature.EntitySignature {
 	return []signature.EntitySignature{}
 }
+
+func (f fakeAtt) Digest() map[string]string {
+	return map[string]string{}
+}
+
+func (f fakeAtt) Subject() []in_toto.Subject {
+	return []in_toto.Subject{}
+}

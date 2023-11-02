@@ -18,6 +18,8 @@ package evaluator
 
 import (
 	"context"
+
+	"github.com/enterprise-contract/ec-cli/internal/policy/source"
 )
 
 type Evaluator interface {
@@ -28,6 +30,8 @@ type Evaluator interface {
 
 	// CapabilitiesPath returns the path to the file where capabilities are defined
 	CapabilitiesPath() string
+
+	GetPolicySources() []source.PolicySource
 }
 
 type Data map[string]any

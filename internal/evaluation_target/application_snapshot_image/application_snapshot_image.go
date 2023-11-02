@@ -71,6 +71,10 @@ type ApplicationSnapshotImage struct {
 	component        app.SnapshotComponent
 }
 
+func (a ApplicationSnapshotImage) GetReference() name.Reference {
+	return a.reference
+}
+
 // NewApplicationSnapshotImage returns an ApplicationSnapshotImage struct with reference, checkOpts, and evaluator ready to use.
 func NewApplicationSnapshotImage(ctx context.Context, component app.SnapshotComponent, p policy.Policy) (*ApplicationSnapshotImage, error) {
 	opts, err := p.CheckOpts()
@@ -233,6 +237,7 @@ func (a *ApplicationSnapshotImage) ValidateAttestationSignature(ctx context.Cont
 	// Set the ClaimVerifier on a shallow *copy* of CheckOpts to avoid unexpected side-effects
 	opts := a.checkOpts
 	opts.ClaimVerifier = cosign.IntotoSubjectClaimVerifier
+
 	layers, _, err := NewClient(ctx).VerifyImageAttestations(ctx, a.reference, &opts)
 	if err != nil {
 		return err
@@ -331,6 +336,14 @@ func (a *ApplicationSnapshotImage) Attestations() []attestation.Attestation {
 
 func (a *ApplicationSnapshotImage) Signatures() []signature.EntitySignature {
 	return a.signatures
+}
+
+func (a *ApplicationSnapshotImage) ResolveDigest(ctx context.Context) (string, error) {
+	digest, err := NewClient(ctx).ResolveDigest(a.reference, &a.checkOpts)
+	if err != nil {
+		return "", err
+	}
+	return digest, nil
 }
 
 type attestationData struct {

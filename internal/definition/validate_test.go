@@ -49,6 +49,10 @@ func (e mockEvaluator) CapabilitiesPath() string {
 	return ""
 }
 
+func (e mockEvaluator) GetPolicySources() []source.PolicySource {
+	return []source.PolicySource{}
+}
+
 func (b badMockEvaluator) Evaluate(ctx context.Context, inputs []string) ([]evaluator.Outcome, evaluator.Data, error) {
 	return nil, nil, errors.New("Evaluator error")
 }
@@ -58,6 +62,10 @@ func (e badMockEvaluator) Destroy() {
 
 func (e badMockEvaluator) CapabilitiesPath() string {
 	return ""
+}
+
+func (e badMockEvaluator) GetPolicySources() []source.PolicySource {
+	return []source.PolicySource{}
 }
 
 func mockNewPipelineDefinitionFile(ctx context.Context, fpath []string, sources []source.PolicySource, namespace []string) (*definition.Definition, error) {

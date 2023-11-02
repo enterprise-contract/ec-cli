@@ -75,19 +75,20 @@ func (v VerificationStatus) addToSuccesses(successes []evaluator.Result) []evalu
 
 // Output is a struct representing checks and exit code.
 type Output struct {
-	ImageAccessibleCheck      VerificationStatus          `json:"imageAccessibleCheck"`
-	ImageSignatureCheck       VerificationStatus          `json:"imageSignatureCheck"`
-	AttestationSignatureCheck VerificationStatus          `json:"attestationSignatureCheck"`
-	AttestationSyntaxCheck    VerificationStatus          `json:"attestationSyntaxCheck"`
-	PolicyCheck               []evaluator.Outcome         `json:"policyCheck"`
-	ExitCode                  int                         `json:"-"`
-	Signatures                []signature.EntitySignature `json:"signatures,omitempty"`
-	Attestations              []attestation.Attestation   `json:"attestations,omitempty"`
-	ImageURL                  string                      `json:"-"`
-	Detailed                  bool                        `json:"-"`
-	Data                      []evaluator.Data            `json:"-"`
-	Policy                    policy.Policy               `json:"-"`
-	PolicyInput               []byte                      `json:"-"`
+	ImageAccessibleCheck      VerificationStatus                   `json:"imageAccessibleCheck"`
+	ImageSignatureCheck       VerificationStatus                   `json:"imageSignatureCheck"`
+	AttestationSignatureCheck VerificationStatus                   `json:"attestationSignatureCheck"`
+	AttestationSyntaxCheck    VerificationStatus                   `json:"attestationSyntaxCheck"`
+	PolicyCheck               []evaluator.Outcome                  `json:"policyCheck"`
+	ExitCode                  int                                  `json:"-"`
+	Signatures                []signature.EntitySignature          `json:"signatures,omitempty"`
+	Attestations              []attestation.Attestation            `json:"attestations,omitempty"`
+	ImageURL                  string                               `json:"-"`
+	Detailed                  bool                                 `json:"-"`
+	Data                      []evaluator.Data                     `json:"-"`
+	Policy                    policy.Policy                        `json:"-"`
+	PolicyInput               []byte                               `json:"-"`
+	Vsa                       []attestation.ProvenanceStatementVSA `json:"vsa"`
 }
 
 // SetImageAccessibleCheck sets the passed and result.message fields of the ImageAccessibleCheck to the given values.
