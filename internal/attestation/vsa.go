@@ -29,7 +29,7 @@ import (
 
 const (
 	// Make it visible elsewhere
-	PredicateVSAProvenance = "https://slsa.dev/verification_summary/v1"
+	PredicateVSAProvenance = "https://enterprisecontract.dev//verification_summary/v1"
 	StatmentVSA            = "https://in-toto.io/Statement/v1"
 )
 
@@ -43,7 +43,8 @@ type policySource struct {
 }
 
 type attestationSource struct {
-	digest map[string]string
+	version string
+	digest  map[string]string
 }
 
 type predicate struct {
@@ -87,38 +88,29 @@ func VsaFromImageValidation(results []evaluator.Outcome, policies []source.Polic
 		}
 	}
 
-	var slsaVersion string
-	var digest map[string]string
-	var subject []in_toto.Subject
+	var subjects []in_toto.Subject
+	var inputAttestations []attestationSource
 	for _, sp := range attestations {
-		slsaVersion = sp.PredicateType()
-		digest = sp.Digest()
-		subject = sp.Subject()
+		inputAttestations = append(inputAttestations, attestationSource{version: sp.PredicateType(), digest: sp.Digest()})
+		subjects = append(subjects, sp.Subject()...)
 	}
 
 	return ProvenanceStatementVSA{
 		StatementHeader: in_toto.StatementHeader{
 			Type:          StatmentVSA,
 			PredicateType: PredicateVSAProvenance,
-			Subject:       subject,
+			Subject:       subjects,
 		},
 		Predicate: predicate{
 			Verifier: map[string]string{
 				"id": "ec",
 			},
-			TimeVerified: time.Now().String(),
-			// need to check on this. Sounds like it should be the same as the subject, but not compatible types
-			ResourceUri: subject[0].Name,
-			Policies:    verifiedPolicies,
-			InputAttestations: []attestationSource{
-				{
-					digest: digest,
-				},
-			},
+			TimeVerified:        time.Now().String(),
+			Policies:            verifiedPolicies,
+			InputAttestations:   inputAttestations,
 			VerificationResult:  verificationResult,
 			VerifiedRules:       verifiedLevels,
 			VerifiedCollections: verifiedCollections,
-			SlsaVersion:         slsaVersion,
 		},
 	}, nil
 }
