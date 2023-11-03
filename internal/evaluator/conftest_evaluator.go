@@ -163,23 +163,42 @@ type conftestRunner struct {
 }
 
 func (r conftestRunner) Run(ctx context.Context, fileList []string) (result []Outcome, data Data, err error) {
+	if log.IsLevelEnabled(log.TraceLevel) {
+		r.Trace = true
+	}
+
 	var conftestResult []output.CheckResult
 	conftestResult, err = r.TestRunner.Run(ctx, fileList)
 	if err != nil {
 		return
 	}
 
-	for _, r := range conftestResult {
+	for _, res := range conftestResult {
+		if log.IsLevelEnabled(log.TraceLevel) {
+			for _, q := range res.Queries {
+				for _, t := range q.Traces {
+					log.Tracef("[%s] %s", q.Query, t)
+				}
+			}
+		}
+		if log.IsLevelEnabled(log.DebugLevel) {
+			for _, q := range res.Queries {
+				for _, o := range q.Outputs {
+					log.Debugf("[%s] %s", q.Query, o)
+				}
+			}
+		}
+
 		result = append(result, Outcome{
-			FileName:  r.FileName,
-			Namespace: r.Namespace,
+			FileName:  res.FileName,
+			Namespace: res.Namespace,
 			// Conftest doesn't give us a list of successes, just a count. Here we turn that count
 			// into a placeholder slice of that size to make processing easier later on.
-			Successes:  make([]Result, r.Successes),
-			Skipped:    toRules(r.Skipped),
-			Warnings:   toRules(r.Warnings),
-			Failures:   toRules(r.Failures),
-			Exceptions: toRules(r.Exceptions),
+			Successes:  make([]Result, res.Successes),
+			Skipped:    toRules(res.Skipped),
+			Warnings:   toRules(res.Warnings),
+			Failures:   toRules(res.Failures),
+			Exceptions: toRules(res.Exceptions),
 		})
 	}
 

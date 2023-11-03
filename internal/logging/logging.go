@@ -47,7 +47,7 @@ func InitLogging(verbose, quiet, debug, trace bool) {
 	var v string
 	switch {
 	case trace:
-		level = log.DebugLevel
+		level = log.TraceLevel
 		setupDebugMode()
 		v = "9"
 	case debug:

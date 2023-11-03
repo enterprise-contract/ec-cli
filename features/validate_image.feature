@@ -896,3 +896,35 @@ Feature: evaluate enterprise contract
     When ec command is run with "validate image --image ${REGISTRY}/acceptance/fetch-oci-blob --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR}  --show-successes"
     Then the exit status should be 0
     Then the output should match the snapshot
+
+  Scenario: tracing and debug logging
+    Given a key pair named "trace_debug"
+      And an image named "acceptance/trace-debug"
+      And a valid image signature of "acceptance/trace-debug" image signed by the "trace_debug" key
+      And a valid Rekor entry for image signature of "acceptance/trace-debug"
+      And a valid attestation of "acceptance/trace-debug" signed by the "trace_debug" key
+      And a valid Rekor entry for attestation of "acceptance/trace-debug"
+      And a git repository named "trace-debug" with
+      | main.rego | examples/trace_debug.rego |
+      And policy configuration named "ec-policy" with specification
+      """
+      {
+        "sources": [
+          {
+            "policy": [
+              "git::https://${GITHOST}/git/trace-debug.git"
+            ]
+          }
+        ]
+      }
+      """
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/trace-debug --policy acceptance/ec-policy --public-key ${trace_debug_PUBLIC_KEY} --rekor-url ${REKOR}  --show-successes --trace"
+    Then the exit status should be 0
+     And the standard error should contain
+      """
+      level=trace msg="\[data.main.deny\] Enter data.main.deny
+      """
+     And the standard error should contain
+      """
+      level=debug msg="\[data.main.deny\] .*/main.rego:13: here we are
+      """
