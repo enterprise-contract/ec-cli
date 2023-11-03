@@ -34,7 +34,7 @@ _If applicable, add screenshots or copy-paste the terminal output to help explai
 ## Environment Details
 
 - **Operating System:**
-- **CLI Version:**
+- **`ec` CLI Version, run `ec version --short`:**
 - **Shell:**
 - **Additional context:**
 
