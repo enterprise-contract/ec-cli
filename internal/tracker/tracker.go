@@ -80,8 +80,10 @@ func (t *Tracker) addBundleRecord(record bundleRecord) {
 	var collection map[string][]bundleRecord
 	switch record.Collection {
 	case pipelineCollection:
+		log.Debugf("Adding record to the pipelines collection: %#v", record)
 		collection = t.PipelineBundles
 	case taskCollection:
+		log.Debugf("Adding record to the tasks collection: %#v", record)
 		collection = t.TaskBundles
 	default:
 		log.Warnf("Ignoring record with unexpected collection: %#v", record)
@@ -123,6 +125,7 @@ func Track(ctx context.Context, urls []string, input []byte, prune bool, freshen
 	}
 
 	if freshen {
+		log.Debug("Freshen is enabled")
 		imageRefs, err := inputBundleTags(ctx, t)
 		if err != nil {
 			return nil, err
@@ -133,6 +136,7 @@ func Track(ctx context.Context, urls []string, input []byte, prune bool, freshen
 
 	effective_on := effectiveOn()
 	for _, ref := range refs {
+		log.Debugf("Processing bundle %q", ref.String())
 		info, err := newBundleInfo(ctx, ref)
 		if err != nil {
 			return nil, err
@@ -190,9 +194,11 @@ func effectiveOn() time.Time {
 // filterBundles applies filterRecords to PipelienBundles and TaskBundles.
 func (t *Tracker) filterBundles(prune bool) {
 	for ref, records := range t.PipelineBundles {
+		log.Debugf("Filtering pipeline records for %q", ref)
 		t.PipelineBundles[ref] = filterRecords(records, prune)
 	}
 	for ref, records := range t.TaskBundles {
+		log.Debugf("Filtering task records for %q", ref)
 		t.TaskBundles[ref] = filterRecords(records, prune)
 	}
 }
@@ -230,5 +236,9 @@ func filterRecords(records []bundleRecord, prune bool) []bundleRecord {
 		}
 	}
 
+	filteredCount := len(records) - len(relevant)
+	if filteredCount != 0 {
+		log.Debugf("Filtered %d records (prune=%t)", filteredCount, prune)
+	}
 	return relevant
 }
