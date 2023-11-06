@@ -49,7 +49,10 @@
               "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"
             }
-          ]
+          ],
+          "digest": {
+            "sha256": "${SIGNATURE_DIGEST_acceptance/ec-happy-day}"
+          }
         }
       ]
     }
@@ -151,7 +154,10 @@ Error: success criteria not met
               "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"
             }
-          ]
+          ],
+          "digest": {
+            "sha256": "${SIGNATURE_DIGEST_acceptance/ec-happy-day}"
+          }
         }
       ]
     }
@@ -240,7 +246,10 @@ Error: success criteria not met
               "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"
             }
-          ]
+          ],
+          "digest": {
+            "sha256": "${SIGNATURE_DIGEST_acceptance/ec-happy-day}"
+          }
         }
       ]
     }
@@ -317,7 +326,10 @@ Error: success criteria not met
               "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"
             }
-          ]
+          ],
+          "digest": {
+            "sha256": "${SIGNATURE_DIGEST_acceptance/ec-happy-day}"
+          }
         }
       ]
     }
@@ -396,7 +408,10 @@ Error: success criteria not met
               "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"
             }
-          ]
+          ],
+          "digest": {
+            "sha256": "${SIGNATURE_DIGEST_acceptance/ec-happy-day}"
+          }
         }
       ]
     }
@@ -467,7 +482,10 @@ Error: success criteria not met
               "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/image}"
             }
-          ]
+          ],
+          "digest": {
+            "sha256": "${SIGNATURE_DIGEST_acceptance/image}"
+          }
         }
       ]
     }
@@ -580,7 +598,10 @@ Error: success criteria not met
               "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-multiple-sources}"
             }
-          ]
+          ],
+          "digest": {
+            "sha256": "${SIGNATURE_DIGEST_acceptance/ec-multiple-sources}"
+          }
         }
       ]
     }
@@ -664,7 +685,10 @@ Error: success criteria not met
               "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/bad-actor}"
             }
-          ]
+          ],
+          "digest": {
+            "sha256": "${SIGNATURE_DIGEST_acceptance/bad-actor}"
+          }
         }
       ]
     }
@@ -748,7 +772,10 @@ Error: success criteria not met
               "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"
             }
-          ]
+          ],
+          "digest": {
+            "sha256": "${SIGNATURE_DIGEST_acceptance/ec-happy-day}"
+          }
         }
       ]
     }
@@ -836,7 +863,10 @@ Error: success criteria not met
               "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"
             }
-          ]
+          ],
+          "digest": {
+            "sha256": "${SIGNATURE_DIGEST_acceptance/ec-happy-day}"
+          }
         }
       ]
     }
@@ -938,7 +968,10 @@ Error: success criteria not met
               "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-multiple-sources}"
             }
-          ]
+          ],
+          "digest": {
+            "sha256": "${SIGNATURE_DIGEST_acceptance/ec-multiple-sources}"
+          }
         }
       ]
     }
@@ -1110,7 +1143,10 @@ Error: success criteria not met
               "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"
             }
-          ]
+          ],
+          "digest": {
+            "sha256": "${SIGNATURE_DIGEST_acceptance/ec-happy-day}"
+          }
         }
       ]
     }
@@ -1211,7 +1247,10 @@ Error: 1 error occurred:
               "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"
             }
-          ]
+          ],
+          "digest": {
+            "sha256": "${SIGNATURE_DIGEST_acceptance/ec-happy-day}"
+          }
         }
       ]
     }
@@ -1289,7 +1328,10 @@ Error: success criteria not met
               "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"
             }
-          ]
+          ],
+          "digest": {
+            "sha256": "${SIGNATURE_DIGEST_acceptance/ec-happy-day}"
+          }
         }
       ]
     }
@@ -1544,7 +1586,10 @@ Error: success criteria not met
               "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/source}"
             }
-          ]
+          ],
+          "digest": {
+            "sha256": "${SIGNATURE_DIGEST_acceptance/source}"
+          }
         }
       ]
     }
@@ -1671,7 +1716,10 @@ Error: success criteria not met
               "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/image}"
             }
-          ]
+          ],
+          "digest": {
+            "sha256": "${SIGNATURE_DIGEST_acceptance/image}"
+          }
         }
       ]
     }
@@ -1751,7 +1799,10 @@ Error: success criteria not met
               "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"
             }
-          ]
+          ],
+          "digest": {
+            "sha256": "${SIGNATURE_DIGEST_acceptance/ec-happy-day}"
+          }
         }
       ]
     }
@@ -1829,7 +1880,10 @@ Error: success criteria not met
               "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/my-image}"
             }
-          ]
+          ],
+          "digest": {
+            "sha256": "${SIGNATURE_DIGEST_acceptance/my-image}"
+          }
         }
       ]
     }
@@ -1922,7 +1976,10 @@ ${TEMP}/ec-work-${RANDOM}/policy/${RANDOM}/main.rego:34: rego_type_error: undefi
               "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"
             }
-          ]
+          ],
+          "digest": {
+            "sha256": "${SIGNATURE_DIGEST_acceptance/ec-happy-day}"
+          }
         }
       ]
     }
@@ -2009,7 +2066,10 @@ ${TEMP}/ec-work-${RANDOM}/policy/${RANDOM}/main.rego:34: rego_type_error: undefi
               "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/image}"
             }
-          ]
+          ],
+          "digest": {
+            "sha256": "${SIGNATURE_DIGEST_acceptance/image}"
+          }
         }
       ]
     }
@@ -2101,7 +2161,10 @@ Error: success criteria not met
               "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/unique-successes}"
             }
-          ]
+          ],
+          "digest": {
+            "sha256": "${SIGNATURE_DIGEST_acceptance/unique-successes}"
+          }
         }
       ]
     }
@@ -2216,7 +2279,10 @@ Error: success criteria not met
               "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/image-config}"
             }
-          ]
+          ],
+          "digest": {
+            "sha256": "${SIGNATURE_DIGEST_acceptance/image-config}"
+          }
         }
       ]
     }
@@ -2267,7 +2333,10 @@ Error: success criteria not met
               "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/image}"
             }
-          ]
+          ],
+          "digest": {
+            "sha256": "${SIGNATURE_DIGEST_acceptance/image}"
+          }
         }
       ]
     }
@@ -2432,7 +2501,10 @@ Error: success criteria not met
               "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/ignore-rekor}"
             }
-          ]
+          ],
+          "digest": {
+            "sha256": "${SIGNATURE_DIGEST_acceptance/ignore-rekor}"
+          }
         }
       ]
     }
@@ -2839,7 +2911,10 @@ Error: success criteria not met
               "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/image}"
             }
-          ]
+          ],
+          "digest": {
+            "sha256": "${SIGNATURE_DIGEST_acceptance/image}"
+          }
         }
       ]
     }
@@ -2911,7 +2986,10 @@ Error: success criteria not met
               "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/image}"
             }
-          ]
+          ],
+          "digest": {
+            "sha256": "${SIGNATURE_DIGEST_acceptance/image}"
+          }
         }
       ]
     }
@@ -2993,7 +3071,10 @@ Error: success criteria not met
           "keyid": "",
           "sig": "${ATTESTATION_SIGNATURE_acceptance/image}"
         }
-      ]
+      ],
+      "digest": {
+        "sha256": "${SIGNATURE_DIGEST_acceptance/image}"
+      }
     }
   ],
   "image": {
@@ -3220,7 +3301,10 @@ Error: 1 error occurred:
               "keyid": "",
               "sig": "${ATTESTATION_SIGNATURE_acceptance/fetch-oci-blob}"
             }
-          ]
+          ],
+          "digest": {
+            "sha256": "${SIGNATURE_DIGEST_acceptance/fetch-oci-blob}"
+          }
         }
       ]
     }
