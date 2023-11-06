@@ -23,6 +23,7 @@ import (
 	"github.com/enterprise-contract/ec-cli/cmd/fetch"
 	"github.com/enterprise-contract/ec-cli/cmd/initialize"
 	"github.com/enterprise-contract/ec-cli/cmd/inspect"
+	"github.com/enterprise-contract/ec-cli/cmd/opa"
 	"github.com/enterprise-contract/ec-cli/cmd/root"
 	"github.com/enterprise-contract/ec-cli/cmd/test"
 	"github.com/enterprise-contract/ec-cli/cmd/track"
@@ -49,6 +50,7 @@ func init() {
 	RootCmd.AddCommand(track.TrackCmd)
 	RootCmd.AddCommand(validate.ValidateCmd)
 	RootCmd.AddCommand(version.VersionCmd)
+	RootCmd.AddCommand(opa.OPACmd)
 	if utils.Experimental() {
 		RootCmd.AddCommand(test.TestCmd)
 	}
