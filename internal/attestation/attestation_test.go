@@ -24,6 +24,7 @@ import (
 	"testing"
 
 	"github.com/gkampitakis/go-snaps/snaps"
+	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/types"
 	ct "github.com/sigstore/cosign/v2/pkg/types"
 	"github.com/stretchr/testify/assert"
@@ -83,6 +84,7 @@ func TestProvenanceFromSignature(t *testing.T) {
 				l.On("Base64Signature").Return("", nil)
 				l.On("Cert").Return(&x509.Certificate{}, nil)
 				l.On("Chain").Return([]*x509.Certificate{}, nil)
+				l.On("Digest").Return(v1.Hash{}, nil)
 			},
 			data: payloadJson1,
 		},
@@ -94,6 +96,7 @@ func TestProvenanceFromSignature(t *testing.T) {
 				l.On("Base64Signature").Return("sig-from-cert", nil)
 				l.On("Cert").Return(signature.ParseChainguardReleaseCert(), nil)
 				l.On("Chain").Return(signature.ParseSigstoreChainCert(), nil)
+				l.On("Digest").Return(v1.Hash{}, nil)
 			},
 			data: payloadJson1,
 		},
@@ -105,6 +108,7 @@ func TestProvenanceFromSignature(t *testing.T) {
 				l.On("Base64Signature").Return("sig-from-cert", nil)
 				l.On("Cert").Return(signature.ParseChainguardReleaseCert(), nil)
 				l.On("Chain").Return(signature.ParseSigstoreChainCert(), nil)
+				l.On("Digest").Return(v1.Hash{}, nil)
 			},
 			data: payloadJson2, // String payload remains as a string
 			//data: payloadJson1, // String payload is marshaled

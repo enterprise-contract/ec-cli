@@ -18,7 +18,6 @@ package attestation
 
 import (
 	"strings"
-	"time"
 
 	"github.com/in-toto/in-toto-golang/in_toto"
 
@@ -48,18 +47,16 @@ type attestationSource struct {
 }
 
 type predicate struct {
-	Verifier            map[string]string   `json:"verifier"`
-	TimeVerified        string              `json:"timeVerified"`
-	ResourceUri         string              `json:"resourceUri"`
-	Policies            []policySource      `json:"policies"`
-	InputAttestations   []attestationSource `json:"intputAttestations"`
-	VerificationResult  string              `json:"verificationResult"`
-	VerifiedRules       []string            `json:"verifiedRules"`
-	VerifiedCollections []string            `json:"verfiedCollection"`
-	SlsaVersion         string              `json:"slsaVersion"`
+	Verifier            map[string]string   `json:"verifier,omitempty"`
+	TimeVerified        string              `json:"timeVerified,omitempty"`
+	Policies            []policySource      `json:"policies,omitempty"`
+	InputAttestations   []attestationSource `json:"intputAttestations,omitempty"`
+	VerificationResult  string              `json:"verificationResult,omitempty"`
+	VerifiedRules       []string            `json:"verifiedRules,omitempty"`
+	VerifiedCollections []string            `json:"verfiedCollection,omitempty"`
 }
 
-func VsaFromImageValidation(results []evaluator.Outcome, policies []source.PolicySource, policy policy.Policy, attestations []Attestation) (ProvenanceStatementVSA, error) {
+func VsaFromImageValidation(verifiedTime string, results []evaluator.Outcome, policies []source.PolicySource, policy policy.Policy, attestations []Attestation) ProvenanceStatementVSA {
 	var verifiedPolicies []policySource
 	for _, p := range policies {
 		verifiedPolicies = append(verifiedPolicies, policySource{uri: p.PolicyUrl()})
@@ -105,12 +102,12 @@ func VsaFromImageValidation(results []evaluator.Outcome, policies []source.Polic
 			Verifier: map[string]string{
 				"id": "ec",
 			},
-			TimeVerified:        time.Now().String(),
+			TimeVerified:        verifiedTime,
 			Policies:            verifiedPolicies,
 			InputAttestations:   inputAttestations,
 			VerificationResult:  verificationResult,
 			VerifiedRules:       verifiedLevels,
 			VerifiedCollections: verifiedCollections,
 		},
-	}, nil
+	}
 }

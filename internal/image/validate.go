@@ -118,11 +118,9 @@ func ValidateImage(ctx context.Context, comp app.SnapshotComponent, p policy.Pol
 		}
 		allResults = append(allResults, results...)
 		out.Data = append(out.Data, data)
-		vsa, err := attestation.VsaFromImageValidation(results, e.GetPolicySources(), p, a.Attestations())
-		if err != nil {
-			log.Debugf("error creating vsa: %v", err)
-		}
-		out.Vsa = append(out.Vsa, vsa)
+		out.Vsa = append(out.Vsa,
+			attestation.VsaFromImageValidation(time.Now().String(), results, e.GetPolicySources(), p, a.Attestations()),
+		)
 	}
 
 	out.PolicyInput = inputJSON

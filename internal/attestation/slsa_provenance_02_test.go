@@ -273,6 +273,7 @@ func TestSLSAProvenanceFromSignature(t *testing.T) {
 				l.On("Base64Signature").Return("", nil)
 				l.On("Cert").Return(&x509.Certificate{}, nil)
 				l.On("Chain").Return([]*x509.Certificate{}, nil)
+				l.On("Digest").Return(v1.Hash{}, nil)
 			},
 		},
 		{
@@ -297,6 +298,7 @@ func TestSLSAProvenanceFromSignature(t *testing.T) {
 				l.On("Base64Signature").Return("sig-from-cert", nil)
 				l.On("Cert").Return(signature.ParseChainguardReleaseCert(), nil)
 				l.On("Chain").Return(signature.ParseSigstoreChainCert(), nil)
+				l.On("Digest").Return(v1.Hash{}, nil)
 			},
 		},
 	}
@@ -346,6 +348,7 @@ func TestMarshal(t *testing.T) {
 	sig.On("Base64Signature").Return("sig-from-cert", nil)
 	sig.On("Cert").Return(signature.ParseChainguardReleaseCert(), nil)
 	sig.On("Chain").Return(signature.ParseSigstoreChainCert(), nil)
+	sig.On("Digest").Return(v1.Hash{Algorithm: "sha1", Hex: "asdf"}, nil)
 
 	att, err := SLSAProvenanceFromSignature(sig)
 
