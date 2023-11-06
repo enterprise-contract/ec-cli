@@ -4,7 +4,7 @@ go 1.21.2
 
 require (
 	github.com/daixiang0/gci v0.11.2
-	github.com/golangci/golangci-lint v1.55.1
+	github.com/golangci/golangci-lint v1.55.2
 	github.com/google/addlicense v1.1.1
 	github.com/open-policy-agent/conftest v0.46.0
 	github.com/tektoncd/chains v0.19.0
@@ -124,7 +124,7 @@ require (
 	github.com/breml/bidichk v0.2.7 // indirect
 	github.com/breml/errchkjson v0.3.6 // indirect
 	github.com/bufbuild/protocompile v0.6.0 // indirect
-	github.com/butuzov/ireturn v0.2.1 // indirect
+	github.com/butuzov/ireturn v0.2.2 // indirect
 	github.com/butuzov/mirror v1.1.0 // indirect
 	github.com/catenacyber/perfsprint v0.2.0 // indirect
 	github.com/ccojocar/zxcvbn-go v1.0.1 // indirect
@@ -358,7 +358,7 @@ require (
 	github.com/nishanths/predeclared v0.2.2 // indirect
 	github.com/nozzle/throttler v0.0.0-20180817012639-2ea982251481 // indirect
 	github.com/nsf/termbox-go v1.1.1 // indirect
-	github.com/nunnatsa/ginkgolinter v0.14.0 // indirect
+	github.com/nunnatsa/ginkgolinter v0.14.1 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/open-policy-agent/opa v0.57.0 // indirect
