@@ -1,0 +1,41 @@
+
+[OPA sub-command is available:stdout - 1]
+An open source project to policy-enable your service.
+
+Usage:
+  ec opa [command]
+
+Available Commands:
+  bench        Benchmark a Rego query
+  build        Build an OPA bundle
+  capabilities Print the capabilities of OPA
+  check        Check Rego source files
+  deps         Analyze Rego query dependencies
+  eval         Evaluate a Rego query
+  exec         Execute against input files
+  fmt          Format Rego source files
+  inspect      Inspect OPA bundle(s)
+  parse        Parse Rego source file
+  run          Start OPA in interactive or server mode
+  sign         Generate an OPA bundle signature
+  test         Execute Rego test cases
+  version      Print the version of OPA
+
+Flags:
+  -h, --help   help for opa
+
+Global Flags:
+      --debug               same as verbose but also show function names and line numbers
+      --kubeconfig string   path to the Kubernetes config file to use
+      --quiet               less verbose output
+      --timeout duration    max overall execution duration (default 5m0s)
+      --trace               enable trace logging
+      --verbose             more verbose output
+
+Use "ec opa [command] --help" for more information about a command.
+
+---
+
+[OPA sub-command is available:stderr - 1]
+
+---
