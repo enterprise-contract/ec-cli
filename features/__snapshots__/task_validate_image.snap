@@ -213,8 +213,6 @@ components:
       code: slsa_provenance_available.attestation_predicate_type_accepted
       collections:
       - minimal
-      - slsa1
-      - slsa2
       - slsa3
       - redhat
       depends_on:
@@ -306,8 +304,6 @@ components:
       code: slsa_provenance_available.attestation_predicate_type_accepted
       collections:
       - minimal
-      - slsa1
-      - slsa2
       - slsa3
       - redhat
       depends_on:
