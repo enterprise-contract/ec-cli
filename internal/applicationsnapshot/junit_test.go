@@ -22,9 +22,9 @@ import (
 	"testing"
 
 	"github.com/jstemmer/go-junit-report/v2/junit"
+	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
 
-	app "github.com/enterprise-contract/ec-cli/application/v1alpha1"
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 	"github.com/enterprise-contract/ec-cli/internal/signature"
 )

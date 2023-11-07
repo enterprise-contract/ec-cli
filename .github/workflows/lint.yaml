@@ -71,7 +71,6 @@ jobs:
           go mod download
           (cd tools && go mod download)
           (cd acceptance && go mod download)
-          (cd application && go mod download)
 
       - name: Download NPM dependencies
         run: npm ci
