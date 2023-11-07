@@ -39,14 +39,8 @@ help: ## Display this help
 
 ##@ Building
 
-generate: $(wildcard application/*/doc.go)
-ifndef NO_GENERATE
-	@cd $(dir $<)
-	@go generate
-endif
-
 .PHONY: $(ALL_SUPPORTED_OS_ARCH)
-$(ALL_SUPPORTED_OS_ARCH): generate ## Build binaries for specific platform/architecture, e.g. make dist/ec_linux_amd64
+$(ALL_SUPPORTED_OS_ARCH): ## Build binaries for specific platform/architecture, e.g. make dist/ec_linux_amd64
 	@GOOS=$(word 2,$(subst _, ,$(notdir $@))); \
 	GOARCH=$(word 3,$(subst _, ,$(notdir $@))); \
 	GOOS=$${GOOS} GOARCH=$${GOARCH} CGO_ENABLED=0 go build -trimpath -ldflags="-s -w -X github.com/enterprise-contract/ec-cli/internal/version.Version=$(VERSION)" -o dist/ec_$${GOOS}_$${GOARCH}; \
@@ -65,7 +59,7 @@ BUILD_IMG_ARCH:=$(shell podman version -f {{.Server.OsArch}} | awk -F/ '{print $
 build-for-test: dist/ec_$(BUILD_IMG_ARCH)
 
 .PHONY: reference-docs
-reference-docs: generate ## Generate reference documentation input YAML files
+reference-docs: ## Generate reference documentation input YAML files
 	@mkdir -p dist
 	@rm -rf dist/cli-reference
 # Make sure docs for experimental commands are generated.
@@ -78,7 +72,7 @@ clean: ## Delete build output
 ##@ Testing
 
 .PHONY: test
-test: generate ## Run all unit tests
+test: ## Run all unit tests
 	@echo "Unit tests:"
 	@go test -race -covermode=atomic -coverprofile=coverage-unit.out -timeout 500ms -tags=unit ./...
 	@echo "Integration tests:"
@@ -92,7 +86,7 @@ ACCEPTANCE_TIMEOUT:=20m
 .ONESHELL:
 .SHELLFLAGS=-e -c
 .PHONY: acceptance
-acceptance: generate ## Run all acceptance tests
+acceptance: ## Run all acceptance tests
 	@ACCEPTANCE_WORKDIR="$$(mktemp -d)"
 	@function cleanup() {
 	  cp "$${ACCEPTANCE_WORKDIR}"/features/__snapshots__/* "$(ROOT_DIR)"/features/__snapshots__/
@@ -102,7 +96,7 @@ acceptance: generate ## Run all acceptance tests
 	@cp -R . "$${ACCEPTANCE_WORKDIR}"
 	@cd "$${ACCEPTANCE_WORKDIR}"
 	@go run acceptance/coverage/coverage.go .
-	@$(MAKE) build -e NO_GENERATE=1
+	@$(MAKE) build
 	@export COVERAGE_FILEPATH="$${ACCEPTANCE_WORKDIR}"
 	@export COVERAGE_FILENAME="-acceptance"
 	@cd acceptance && go test -timeout $(ACCEPTANCE_TIMEOUT) ./...
@@ -135,7 +129,7 @@ ci: test lint-fix acceptance ## Run the usual required CI tasks
 LICENSE_IGNORE=-ignore 'dist/cli-reference/*.yaml' -ignore 'acceptance/examples/*.yaml' -ignore 'configs/*/*.yaml' -ignore 'node_modules/**' -ignore 'hack/**/charts/**'
 LINT_TO_GITHUB_ANNOTATIONS='map(map(.)[])[][] as $$d | $$d.posn | split(":") as $$posn | "::warning file=\($$posn[0]),line=\($$posn[1]),col=\($$posn[2])::\($$d.message)"'
 .PHONY: lint
-lint: generate tekton-lint go-mod-lint ## Run linter
+lint: tekton-lint go-mod-lint ## Run linter
 # addlicense doesn't give us a nice explanation so we prefix it with one
 	@go run -modfile tools/go.mod github.com/google/addlicense -c '$(COPY)' -y '' -s -check $(LICENSE_IGNORE) . | sed 's/^/Missing license header in: /g'
 # piping to sed above looses the exit code, luckily addlicense is fast so we invoke it for the second time to exit 1 in case of issues
@@ -144,7 +138,7 @@ lint: generate tekton-lint go-mod-lint ## Run linter
 	@(cd acceptance && go run -modfile ../tools/go.mod github.com/golangci/golangci-lint/cmd/golangci-lint run --path-prefix acceptance --sort-results $(if $(GITHUB_ACTIONS), --out-format=github-actions --timeout=10m0s))
 
 .PHONY: lint-fix
-lint-fix: generate ## Fix linting issues automagically
+lint-fix: ## Fix linting issues automagically
 	@go run -modfile tools/go.mod github.com/google/addlicense -c '$(COPY)' -y '' -s $(LICENSE_IGNORE) .
 	@go run -modfile tools/go.mod github.com/golangci/golangci-lint/cmd/golangci-lint run --fix
 	@(cd acceptance && go run -modfile ../tools/go.mod github.com/golangci/golangci-lint/cmd/golangci-lint run --path-prefix acceptance --fix)

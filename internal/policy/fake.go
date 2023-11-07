@@ -21,8 +21,7 @@ import (
 	"errors"
 
 	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
-
-	app "github.com/enterprise-contract/ec-cli/application/v1alpha1"
+	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 )
 
 type FakeKubernetesClient struct {

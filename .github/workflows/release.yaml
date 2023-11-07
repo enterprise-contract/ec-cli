@@ -98,7 +98,6 @@ jobs:
           go mod download
           (cd tools && go mod download)
           (cd acceptance && go mod download)
-          (cd application && go mod download)
 
       - name: Setup Node.js environment
         uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65 # v4.0.0

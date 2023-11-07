@@ -72,7 +72,6 @@ jobs:
           go mod download
           (cd tools && go mod download)
           (cd acceptance && go mod download)
-          (cd application && go mod download)
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@74483a38d39275f33fcff5f35b679b5ca4a26a99 # v2.22.5

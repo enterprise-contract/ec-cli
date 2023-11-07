@@ -1,8 +1,0 @@
-The files in this directory are copied from[1] using go code generator, e.g. by
-running `go generate` in this directory.
-
-The file `doc.go` maintains a list of files that will be copied verbatim using
-`../generator/borrow.sh` script. After copying the files the controller-gen tool
-is run to generate the required function implementations for use in k8s API.
-
-[1] https://github.com/redhat-appstudio/application-api/tree/main/api/v1alpha1

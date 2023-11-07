@@ -7,7 +7,6 @@ require (
 	github.com/cucumber/godog v0.13.0
 	github.com/cyberphone/json-canonicalization v0.0.0-20220623050100-57a0ce2678a7
 	github.com/doiit/picocolors v1.0.1
-	github.com/enterprise-contract/ec-cli/application v0.0.0-00010101000000-000000000000
 	github.com/enterprise-contract/enterprise-contract-controller/api v0.0.0-20230725143429-4731fc7d3b41
 	github.com/evanphx/json-patch/v5 v5.7.0
 	github.com/gkampitakis/go-snaps v0.4.11 // we need custom snapshot directory & file support from https://github.com/gkampitakis/go-snaps/pull/60
@@ -42,6 +41,8 @@ require (
 	sigs.k8s.io/kustomize/kyaml v0.15.0
 	sigs.k8s.io/yaml v1.4.0
 )
+
+require github.com/redhat-appstudio/application-api v0.0.0-20231026192857-89515ad2504f
 
 require (
 	contrib.go.opencensus.io/exporter/ocagent v0.7.1-0.20200907061046-05415f1de66d // indirect
@@ -247,5 +248,3 @@ require (
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.3.0 // indirect
 )
-
-replace github.com/enterprise-contract/ec-cli/application => ../application/
