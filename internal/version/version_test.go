@@ -38,12 +38,12 @@ func TestVersionInfoStringer(t *testing.T) {
 		},
 	}
 
-	assert.Equal(t, `Version      v1
+	assert.Regexp(t, `^Version      v1
 Source ID    abc
-Change date  2009-11-10 23:00:00 +0000 UTC (13 years ago)
+Change date  2009-11-10 23:00:00 \+0000 UTC \(\d{2} years ago\)
 dep1         v1
 dep2         v2
-`, fmt.Sprintf("%v", vi))
+$`, fmt.Sprintf("%v", vi))
 }
 
 func TestComputeInfo(t *testing.T) {
