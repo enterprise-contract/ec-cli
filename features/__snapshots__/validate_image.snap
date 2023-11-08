@@ -2321,33 +2321,6 @@ Error: success criteria not met
 {
   "attestations": [
     {
-      "_type": "https://in-toto.io/Statement/v0.1",
-      "predicateType": "https://slsa.dev/provenance/v0.2",
-      "subject": [
-        {
-          "name": "acceptance/policy-input-output",
-          "digest": {
-            "sha256": "${REGISTRY_acceptance/policy-input-output:latest_DIGEST}"
-          }
-        }
-      ],
-      "predicate": {
-        "builder": {
-          "id": "https://tekton.dev/chains/v2"
-        },
-        "buildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
-        "invocation": {
-          "configSource": {}
-        }
-      },
-      "extra": {
-        "signatures": [
-          {
-            "keyid": "",
-            "sig": "${ATTESTATION_SIGNATURE_acceptance/policy-input-output}"
-          }
-        ]
-      },
       "statement": {
         "_type": "https://in-toto.io/Statement/v0.1",
         "predicateType": "https://slsa.dev/provenance/v0.2",
@@ -2512,33 +2485,6 @@ Error: success criteria not met
 {
   "attestations": [
     {
-      "_type": "https://in-toto.io/Statement/v0.1",
-      "predicateType": "https://slsa.dev/provenance/v0.2",
-      "subject": [
-        {
-          "name": "acceptance/image",
-          "digest": {
-            "sha256": "${REGISTRY_acceptance/image:latest_DIGEST}"
-          }
-        }
-      ],
-      "predicate": {
-        "builder": {
-          "id": "https://tekton.dev/chains/v2"
-        },
-        "buildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
-        "invocation": {
-          "configSource": {}
-        }
-      },
-      "extra": {
-        "signatures": [
-          {
-            "keyid": "",
-            "sig": "${ATTESTATION_SIGNATURE_acceptance/image}"
-          }
-        ]
-      },
       "statement": {
         "_type": "https://in-toto.io/Statement/v0.1",
         "predicateType": "https://slsa.dev/provenance/v0.2",
@@ -2940,33 +2886,6 @@ Error: success criteria not met
 {
   "attestations": [
     {
-      "_type": "https://in-toto.io/Statement/v0.1",
-      "predicateType": "https://slsa.dev/provenance/v0.2",
-      "subject": [
-        {
-          "name": "acceptance/image",
-          "digest": {
-            "sha256": "${REGISTRY_acceptance/image:latest_DIGEST}"
-          }
-        }
-      ],
-      "predicate": {
-        "builder": {
-          "id": "https://tekton.dev/chains/v2"
-        },
-        "buildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
-        "invocation": {
-          "configSource": {}
-        }
-      },
-      "extra": {
-        "signatures": [
-          {
-            "keyid": "",
-            "sig": "${ATTESTATION_SIGNATURE_acceptance/image}"
-          }
-        ]
-      },
       "statement": {
         "_type": "https://in-toto.io/Statement/v0.1",
         "predicateType": "https://slsa.dev/provenance/v0.2",
