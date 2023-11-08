@@ -61,16 +61,6 @@ attributes. `.statement` represents a SLSA Provenance v0.2 statement. See
 https://slsa.dev/provenance/v0.2#schema[schema] for details. `.signatures` contains information
 about the signatures associated with the statement.
 
-NOTE: The information from `.attestations[].statement` is accessible directly via `.attestations[]`.
-However, this limits the amount of information that can be provided for each attestation. As a
-result, `.attestations[].extra` was introduced as a workaround to hold additional information such
-as signatures. This created potential collisions with attributes from the statement. For this
-reason, the old format is now marked as deprecated and it will be removed soon.
-
-An additional attribute, `.extra`, is
-added to provide additional information about the statements. Currently, this means the signatures
-associated with the statement.
-
 `.image` is an object representing the image being validated.
 
 `.image.config` holds the OCI config for the image. It may contain various attributes, such as

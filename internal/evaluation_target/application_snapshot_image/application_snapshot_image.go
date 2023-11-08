@@ -334,13 +334,7 @@ func (a *ApplicationSnapshotImage) Signatures() []signature.EntitySignature {
 }
 
 type attestationData struct {
-	json.RawMessage                             // Deprecated
-	Extra           attestationExtraData        `json:"extra"` // Deprecated
-	Statement       json.RawMessage             `json:"statement"`
-	Signatures      []signature.EntitySignature `json:"signatures,omitempty"`
-}
-
-type attestationExtraData struct {
+	Statement  json.RawMessage             `json:"statement"`
 	Signatures []signature.EntitySignature `json:"signatures,omitempty"`
 }
 
@@ -352,27 +346,8 @@ type attestationExtraData struct {
 // a standard process for Marshaling the JSON can be used, thus removing the need for this method.
 func (a attestationData) MarshalJSON() ([]byte, error) {
 	buffy := bytes.Buffer{}
-	raw, err := a.RawMessage.MarshalJSON()
-	if err != nil {
-		return nil, err
-	}
 
-	if _, err = buffy.Write(raw[0 : len(raw)-1]); err != nil {
-		return nil, err
-	}
-
-	if _, err = buffy.WriteString(`,"extra":`); err != nil {
-		return nil, fmt.Errorf("write extra key: %w", err)
-	}
-	extra, err := json.Marshal(a.Extra)
-	if err != nil {
-		return nil, fmt.Errorf("marshal json extra: %w", err)
-	}
-	if _, err := buffy.Write(extra); err != nil {
-		return nil, fmt.Errorf("write extra value: %w", err)
-	}
-
-	_, err = buffy.WriteString(`, "statement":`)
+	_, err := buffy.WriteString(`{"statement":`)
 	if err != nil {
 		return nil, fmt.Errorf("write statement key: %w", err)
 	}
@@ -426,8 +401,6 @@ func (a *ApplicationSnapshotImage) WriteInputFile(ctx context.Context) (string, 
 	var attestations []attestationData
 	for _, a := range a.attestations {
 		attestations = append(attestations, attestationData{
-			RawMessage: a.Statement(),                                    // Deprecated, remove soon
-			Extra:      attestationExtraData{Signatures: a.Signatures()}, // Deprecated, remove soon
 			Statement:  a.Statement(),
 			Signatures: a.Signatures(),
 		})
