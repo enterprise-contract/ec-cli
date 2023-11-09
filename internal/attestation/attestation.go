@@ -39,7 +39,6 @@ type Attestation interface {
 	Statement() []byte
 	Signatures() []signature.EntitySignature
 	Subject() []in_toto.Subject
-	Digest() map[string]string
 }
 
 // Extract the payload from a DSSE signature OCI layer
@@ -139,12 +138,7 @@ func ProvenanceFromSignature(sig oci.Signature) (Attestation, error) {
 		return nil, fmt.Errorf("cannot create signed entity: %w", err)
 	}
 
-	digest, err := sig.Digest()
-	if err != nil {
-		return nil, err
-	}
-
-	return provenance{statement: statement, data: embedded, signatures: signatures, digest: map[string]string{digest.Algorithm: digest.String()}}, nil
+	return provenance{statement: statement, data: embedded, signatures: signatures}, nil
 }
 
 type provenance struct {
@@ -170,10 +164,6 @@ func (p provenance) Signatures() []signature.EntitySignature {
 	return p.signatures
 }
 
-func (p provenance) Digest() map[string]string {
-	return p.digest
-}
-
 func (p provenance) Subject() []in_toto.Subject {
 	return p.statement.Subject
 }
@@ -185,12 +175,10 @@ func (p provenance) MarshalJSON() ([]byte, error) {
 		Type          string                      `json:"type"`
 		PredicateType string                      `json:"predicateType"`
 		Signatures    []signature.EntitySignature `json:"signatures"`
-		Digest        map[string]string           `json:"digest"`
 	}{
 		Type:          p.Type(),
 		PredicateType: p.PredicateType(),
 		Signatures:    p.Signatures(),
-		Digest:        p.Digest(),
 	}
 
 	return json.Marshal(val)

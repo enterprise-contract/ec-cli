@@ -41,9 +41,6 @@ https://in-toto.io/Statement/v0.1
 
 [TestMarshal - 1]
 {
- "digest": {
-  "sha1": "sha1:asdf"
- },
  "predicateBuildType": "https://my.build.type",
  "predicateType": "https://slsa.dev/provenance/v0.2",
  "signatures": [

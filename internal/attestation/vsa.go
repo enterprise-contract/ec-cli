@@ -19,18 +19,30 @@ package attestation
 import (
 	"strings"
 
+	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/in-toto/in-toto-golang/in_toto"
+	"github.com/sigstore/cosign/v2/pkg/cosign"
 
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/policy/source"
+	"github.com/sigstore/cosign/v2/pkg/oci/remote"
 )
 
 const (
 	// Make it visible elsewhere
-	PredicateVSAProvenance = "https://enterprisecontract.dev//verification_summary/v1"
+	PredicateVSAProvenance = "https://enterprisecontract.dev/verification_summary/v1"
 	StatmentVSA            = "https://in-toto.io/Statement/v1"
 )
+
+type ImageResolver interface {
+	FetchDigest() (name.Digest, error)
+	ResolveAttestationTag(name.Reference, ...remote.Option) (name.Tag, error)
+	ResolveSBOMTag(name.Reference, ...remote.Option) (name.Tag, error)
+	GetReference() name.Reference
+	FetchImageDigest(string) (name.Digest, error)
+	Attestations() []Attestation
+}
 
 type ProvenanceStatementVSA struct {
 	in_toto.StatementHeader
@@ -38,28 +50,30 @@ type ProvenanceStatementVSA struct {
 }
 
 type policySource struct {
-	uri string
+	Uri string `json:"uri,omitempty"`
 }
 
 type attestationSource struct {
-	version string
-	digest  map[string]string
+	Version string            `json:"version,omitempty"`
+	Uri     string            `json:"uri,omitempty"`
+	Digest  map[string]string `json:"digest,omitempty"`
 }
 
 type predicate struct {
 	Verifier            map[string]string   `json:"verifier,omitempty"`
 	TimeVerified        string              `json:"timeVerified,omitempty"`
+	ResourceUri         string              `json:"resourceUri"`
 	Policies            []policySource      `json:"policies,omitempty"`
-	InputAttestations   []attestationSource `json:"intputAttestations,omitempty"`
+	InputAttestations   []attestationSource `json:"inputAttestations,omitempty"`
 	VerificationResult  string              `json:"verificationResult,omitempty"`
 	VerifiedRules       []string            `json:"verifiedRules,omitempty"`
 	VerifiedCollections []string            `json:"verfiedCollection,omitempty"`
 }
 
-func VsaFromImageValidation(verifiedTime string, results []evaluator.Outcome, policies []source.PolicySource, policy policy.Policy, attestations []Attestation) ProvenanceStatementVSA {
+func VsaFromImageValidation(resolver ImageResolver, verifiedTime string, results []evaluator.Outcome, policies []source.PolicySource, policy policy.Policy) (*ProvenanceStatementVSA, error) {
 	var verifiedPolicies []policySource
 	for _, p := range policies {
-		verifiedPolicies = append(verifiedPolicies, policySource{uri: p.PolicyUrl()})
+		verifiedPolicies = append(verifiedPolicies, policySource{Uri: p.PolicyUrl()})
 	}
 
 	var verfiedResults int
@@ -87,12 +101,17 @@ func VsaFromImageValidation(verifiedTime string, results []evaluator.Outcome, po
 
 	var subjects []in_toto.Subject
 	var inputAttestations []attestationSource
-	for _, sp := range attestations {
-		inputAttestations = append(inputAttestations, attestationSource{version: sp.PredicateType(), digest: sp.Digest()})
+
+	for _, sp := range resolver.Attestations() {
+		attSource, err := fetchAttestationSource(resolver, sp.PredicateType())
+		if err != nil {
+			return nil, err
+		}
+		inputAttestations = append(inputAttestations, attSource)
 		subjects = append(subjects, sp.Subject()...)
 	}
 
-	return ProvenanceStatementVSA{
+	return &ProvenanceStatementVSA{
 		StatementHeader: in_toto.StatementHeader{
 			Type:          StatmentVSA,
 			PredicateType: PredicateVSAProvenance,
@@ -103,11 +122,62 @@ func VsaFromImageValidation(verifiedTime string, results []evaluator.Outcome, po
 				"id": "ec",
 			},
 			TimeVerified:        verifiedTime,
+			ResourceUri:         resolver.GetReference().Name(),
 			Policies:            verifiedPolicies,
 			InputAttestations:   inputAttestations,
 			VerificationResult:  verificationResult,
 			VerifiedRules:       verifiedLevels,
 			VerifiedCollections: verifiedCollections,
 		},
-	}
+	}, nil
 }
+
+func fetchAttestationSource(resolver ImageResolver, attType string) (attestationSource, error) {
+	var attSource attestationSource
+
+	opts := cosign.CheckOpts{}
+	digest, err := resolver.FetchDigest()
+	if err != nil {
+		return attSource, err
+	}
+
+	var st name.Tag
+	var stErr error
+	switch attType {
+	case PredicateSLSAProvenance:
+		st, stErr = resolver.ResolveAttestationTag(digest, opts.RegistryClientOpts...)
+		if stErr != nil {
+			return attSource, stErr
+		}
+	case PredicateSpdxDocument:
+		st, stErr = resolver.ResolveSBOMTag(digest, opts.RegistryClientOpts...)
+		if stErr != nil {
+			return attSource, stErr
+		}
+	}
+
+	attDigest, err := resolver.FetchImageDigest(st.Name())
+	if err != nil {
+		return attSource, err
+	}
+	attSource.Digest = map[string]string{"sha256": attDigest.DigestStr()}
+	attSource.Uri = st.Name()
+	attSource.Version = attType
+
+	return attSource, nil
+}
+
+// func fetchDigest(img string) (name.Digest, error) {
+// 	var digest name.Digest
+// 	opts := cosign.CheckOpts{}
+// 	attRef, err := name.ParseReference(img)
+// 	if err != nil {
+// 		return digest, err
+// 	}
+
+// 	digest, err = remote.ResolveDigest(attRef, opts.RegistryClientOpts...)
+// 	if err != nil {
+// 		return digest, err
+// 	}
+// 	return digest, nil
+// }

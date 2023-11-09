@@ -70,6 +70,30 @@ func (c *defaultClient) Head(ref name.Reference, opts ...remote.Option) (*gcr.De
 	return remote.Head(ref, opts...)
 }
 
+// gather all attestation uris and digests associated with an image
+func (c *defaultClient) AttestationUri(img string) (string, error) {
+	imgRef, err := name.ParseReference(img)
+	if err != nil {
+		return "", err
+	}
+
+	opts := cosign.CheckOpts{}
+	digest, err := ociremote.ResolveDigest(imgRef, opts.RegistryClientOpts...)
+	if err != nil {
+		return "", err
+	}
+
+	st, err := ociremote.AttestationTag(digest, opts.RegistryClientOpts...)
+	if err != nil {
+		return "", err
+	}
+
+	// parse st.Name() reference
+	// ResolveDigest
+
+	return st.Name(), nil
+}
+
 func (c *defaultClient) ResolveDigest(ref name.Reference, opts *cosign.CheckOpts) (string, error) {
 	digest, err := ociremote.ResolveDigest(ref, opts.RegistryClientOpts...)
 	if err != nil {

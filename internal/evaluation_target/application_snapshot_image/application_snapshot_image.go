@@ -44,6 +44,7 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/signature"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 	"github.com/enterprise-contract/ec-cli/pkg/schema"
+	ociremote "github.com/sigstore/cosign/v2/pkg/oci/remote"
 )
 
 var newConftestEvaluator = evaluator.NewConftestEvaluator
@@ -211,6 +212,43 @@ func (a *ApplicationSnapshotImage) FetchImageFiles(ctx context.Context) error {
 	return err
 }
 
+func (a *ApplicationSnapshotImage) FetchDigest() (name.Digest, error) {
+	digest, err := ociremote.ResolveDigest(a.reference, a.checkOpts.RegistryClientOpts...)
+	if err != nil {
+		return digest, err
+	}
+	return digest, nil
+}
+
+func (a *ApplicationSnapshotImage) ResolveAttestationTag(ref name.Reference, opts ...ociremote.Option) (name.Tag, error) {
+	st, err := ociremote.AttestationTag(ref, a.checkOpts.RegistryClientOpts...)
+	if err != nil {
+		return name.Tag{}, err
+	}
+	return st, nil
+}
+
+func (a *ApplicationSnapshotImage) ResolveSBOMTag(ref name.Reference, opts ...ociremote.Option) (name.Tag, error) {
+	st, err := ociremote.SBOMTag(ref, a.checkOpts.RegistryClientOpts...)
+	if err != nil {
+		return name.Tag{}, err
+	}
+	return st, nil
+}
+
+func (a *ApplicationSnapshotImage) FetchImageDigest(img string) (name.Digest, error) {
+	var digest name.Digest
+	attRef, err := name.ParseReference(img)
+	if err != nil {
+		return digest, err
+	}
+	digest, err = ociremote.ResolveDigest(attRef, a.checkOpts.RegistryClientOpts...)
+	if err != nil {
+		return digest, err
+	}
+	return digest, nil
+}
+
 // ValidateImageSignature executes the cosign.VerifyImageSignature method on the ApplicationSnapshotImage image ref.
 func (a *ApplicationSnapshotImage) ValidateImageSignature(ctx context.Context) error {
 	// Set the ClaimVerifier on a shallow *copy* of CheckOpts to avoid unexpected side-effects
@@ -259,6 +297,7 @@ func (a *ApplicationSnapshotImage) ValidateAttestationSignature(ctx context.Cont
 			// over again. We could refactor so we're not doing that twice,
 			// but it's not super important IMO.
 			sp, err := attestation.SLSAProvenanceFromSignature(sig)
+
 			if err != nil {
 				return fmt.Errorf("unable to parse as SLSA v0.2: %w", err)
 			}

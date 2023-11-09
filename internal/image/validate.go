@@ -19,6 +19,7 @@ package image
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"sort"
 	"time"
 
@@ -118,6 +119,8 @@ func ValidateImage(ctx context.Context, comp app.SnapshotComponent, p policy.Pol
 		}
 		allResults = append(allResults, results...)
 		out.Data = append(out.Data, data)
+		vsa, _ := attestation.VsaFromImageValidation(a, "time", results, e.GetPolicySources(), p)
+		fmt.Println(vsa)
 	}
 
 	out.PolicyInput = inputJSON

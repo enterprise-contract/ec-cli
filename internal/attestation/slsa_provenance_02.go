@@ -64,19 +64,13 @@ func SLSAProvenanceFromSignature(sig oci.Signature) (Attestation, error) {
 		return nil, fmt.Errorf("cannot create signed entity: %w", err)
 	}
 
-	digest, err := sig.Digest()
-	if err != nil {
-		return nil, err
-	}
-
-	return slsaProvenance{statement: statement, data: embedded, signatures: signatures, digest: map[string]string{digest.Algorithm: digest.String()}}, nil
+	return slsaProvenance{statement: statement, data: embedded, signatures: signatures}, nil
 }
 
 type slsaProvenance struct {
 	statement  in_toto.ProvenanceStatementSLSA02
 	data       []byte
 	signatures []signature.EntitySignature
-	digest     map[string]string
 }
 
 func (a slsaProvenance) Type() string {
@@ -96,10 +90,6 @@ func (a slsaProvenance) Signatures() []signature.EntitySignature {
 	return a.signatures
 }
 
-func (a slsaProvenance) Digest() map[string]string {
-	return a.digest
-}
-
 func (a slsaProvenance) Subject() []in_toto.Subject {
 	return a.statement.Subject
 }
@@ -112,13 +102,11 @@ func (a slsaProvenance) MarshalJSON() ([]byte, error) {
 		PredicateType      string                      `json:"predicateType"`
 		PredicateBuildType string                      `json:"predicateBuildType"`
 		Signatures         []signature.EntitySignature `json:"signatures"`
-		Digest             map[string]string           `json:"digest"`
 	}{
 		Type:               a.statement.Type,
 		PredicateType:      a.statement.PredicateType,
 		PredicateBuildType: a.statement.Predicate.BuildType,
 		Signatures:         a.signatures,
-		Digest:             a.digest,
 	}
 
 	return json.Marshal(val)

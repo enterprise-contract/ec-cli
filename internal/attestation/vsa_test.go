@@ -94,7 +94,7 @@ func TestVsaFromImageValidation(t *testing.T) {
 		policies     []source.PolicySource
 		policy       policy.Policy
 		attestations []Attestation
-		expected     ProvenanceStatementVSA
+		expected     *ProvenanceStatementVSA
 	}{
 		{
 			name: "verified success - vsa provenance",
@@ -122,7 +122,7 @@ func TestVsaFromImageValidation(t *testing.T) {
 				},
 			},
 			attestations: []Attestation{slsaProvenance{}},
-			expected: ProvenanceStatementVSA{
+			expected: &ProvenanceStatementVSA{
 				StatementHeader: in_toto.StatementHeader{
 					Type:          StatmentVSA,
 					PredicateType: PredicateVSAProvenance,
@@ -134,10 +134,10 @@ func TestVsaFromImageValidation(t *testing.T) {
 					VerificationResult: "Success",
 					TimeVerified:       verifiedTime,
 					InputAttestations: []attestationSource{
-						{version: "https://slsa.dev/provenance/v0.2"},
+						{Version: "https://slsa.dev/provenance/v0.2"},
 					},
 					Policies: []policySource{
-						{uri: "https://example.com"},
+						{Uri: "https://example.com"},
 					},
 					VerifiedRules:       []string{"test.rule"},
 					VerifiedCollections: []string{"redhat"},
@@ -148,7 +148,8 @@ func TestVsaFromImageValidation(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			got := VsaFromImageValidation(c.time, c.results, c.policies, c.policy, c.attestations)
+			got, err := VsaFromImageValidation("image-name", c.time, c.results, c.policies, c.policy)
+			assert.NoError(t, err)
 			assert.Equal(t, c.expected, got)
 		})
 	}
