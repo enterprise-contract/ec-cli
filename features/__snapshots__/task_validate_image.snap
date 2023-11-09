@@ -87,7 +87,11 @@ components:
       - redhat
       depends_on:
       - test.test_data_found
-      description: Produce a warning if any tests have their result set to "SKIPPED".
+      description: Produce a violation if any tests have their result set to "SKIPPED".
+        A skipped result means a pre-requirement for executing the test was not met,
+        e.g. a license key for executing a scanner was not provided. The result type
+        is configurable by the "skipped_tests_results" key in the rule data.
+      effective_on: "${TIMESTAMP}"
       title: No tests were skipped
     msg: Pass
 ec-version: ${EC_VERSION}
@@ -145,7 +149,11 @@ components:
       - redhat
       depends_on:
       - test.test_data_found
-      description: Produce a warning if any tests have their result set to "SKIPPED".
+      description: Produce a violation if any tests have their result set to "SKIPPED".
+        A skipped result means a pre-requirement for executing the test was not met,
+        e.g. a license key for executing a scanner was not provided. The result type
+        is configurable by the "skipped_tests_results" key in the rule data.
+      effective_on: "${TIMESTAMP}"
       title: No tests were skipped
     msg: Pass
 ec-version: ${EC_VERSION}
