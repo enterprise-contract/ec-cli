@@ -212,6 +212,7 @@ func (a *ApplicationSnapshotImage) FetchImageFiles(ctx context.Context) error {
 	return err
 }
 
+// use NewClient(ctx) for all of these
 func (a *ApplicationSnapshotImage) FetchDigest() (name.Digest, error) {
 	digest, err := ociremote.ResolveDigest(a.reference, a.checkOpts.RegistryClientOpts...)
 	if err != nil {
@@ -220,6 +221,7 @@ func (a *ApplicationSnapshotImage) FetchDigest() (name.Digest, error) {
 	return digest, nil
 }
 
+// use NewClient(ctx) for all of these
 func (a *ApplicationSnapshotImage) ResolveAttestationTag(ref name.Reference, opts ...ociremote.Option) (name.Tag, error) {
 	st, err := ociremote.AttestationTag(ref, a.checkOpts.RegistryClientOpts...)
 	if err != nil {
@@ -228,6 +230,7 @@ func (a *ApplicationSnapshotImage) ResolveAttestationTag(ref name.Reference, opt
 	return st, nil
 }
 
+// use NewClient(ctx) for all of these
 func (a *ApplicationSnapshotImage) ResolveSBOMTag(ref name.Reference, opts ...ociremote.Option) (name.Tag, error) {
 	st, err := ociremote.SBOMTag(ref, a.checkOpts.RegistryClientOpts...)
 	if err != nil {
@@ -236,6 +239,7 @@ func (a *ApplicationSnapshotImage) ResolveSBOMTag(ref name.Reference, opts ...oc
 	return st, nil
 }
 
+// use NewClient(ctx) for all of these
 func (a *ApplicationSnapshotImage) FetchImageDigest(img string) (name.Digest, error) {
 	var digest name.Digest
 	attRef, err := name.ParseReference(img)

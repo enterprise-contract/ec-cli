@@ -145,7 +145,6 @@ type provenance struct {
 	statement  in_toto.Statement
 	data       []byte
 	signatures []signature.EntitySignature
-	digest     map[string]string
 }
 
 func (p provenance) Type() string {
