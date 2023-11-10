@@ -18,16 +18,20 @@ package applicationsnapshot
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"testing"
+
+	"github.com/in-toto/in-toto-golang/in_toto"
+	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/enterprise-contract/ec-cli/internal/attestation"
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/signature"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
-	"github.com/in-toto/in-toto-golang/in_toto"
-	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
-	"github.com/stretchr/testify/assert"
+	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 )
 
 type provenance struct {
@@ -88,6 +92,7 @@ func TestNewVSA(t *testing.T) {
 	testPolicy, err := policy.NewPolicy(context.Background(), policy.Options{
 		PublicKey:     utils.TestPublicKey,
 		EffectiveTime: policy.Now,
+		PolicyRef:     toJson(&ecc.EnterpriseContractPolicySpec{PublicKey: utils.TestPublicKey}),
 	})
 	assert.NoError(t, err)
 
@@ -105,4 +110,12 @@ func TestNewVSA(t *testing.T) {
 	vsa, err := NewVSA(report)
 	assert.NoError(t, err)
 	assert.Equal(t, expected, vsa)
+}
+
+func toJson(policy any) string {
+	newInline, err := json.Marshal(policy)
+	if err != nil {
+		panic(fmt.Errorf("invalid JSON: %w", err))
+	}
+	return string(newInline)
 }

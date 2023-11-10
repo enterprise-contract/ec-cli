@@ -144,10 +144,6 @@ func (a mockAttestation) Signatures() []signature.EntitySignature {
 	return nil
 }
 
-func (a mockAttestation) Digest() map[string]string {
-	return map[string]string{}
-}
-
 func (a mockAttestation) Subject() []in_toto.Subject {
 	return []in_toto.Subject{}
 }

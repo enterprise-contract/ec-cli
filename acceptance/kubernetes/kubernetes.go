@@ -22,12 +22,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"maps"
 	"strings"
 	"text/tabwriter"
 
 	"github.com/cucumber/godog"
 	clr "github.com/doiit/picocolors"
+	"golang.org/x/exp/maps"
 
 	"github.com/enterprise-contract/ec-cli/acceptance/crypto"
 	"github.com/enterprise-contract/ec-cli/acceptance/image"

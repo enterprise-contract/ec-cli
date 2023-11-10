@@ -32,6 +32,7 @@ import (
 	"github.com/qri-io/jsonschema"
 	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
+	ociremote "github.com/sigstore/cosign/v2/pkg/oci/remote"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 
@@ -44,7 +45,6 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/signature"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 	"github.com/enterprise-contract/ec-cli/pkg/schema"
-	ociremote "github.com/sigstore/cosign/v2/pkg/oci/remote"
 )
 
 var newConftestEvaluator = evaluator.NewConftestEvaluator

@@ -79,7 +79,6 @@ type Signature struct {
 	Certificate string            `json:"certificate,omitempty"`
 	Chain       []string          `json:"chain,omitempty"`
 	Metadata    map[string]string `json:"metadata,omitempty"`
-	Digest      string            `json:"digest,omitempty"`
 }
 
 // imageState holds the state of images used in acceptance tests keyed by the
@@ -210,15 +209,10 @@ func createAndPushImageSignature(ctx context.Context, imageName string, keyName 
 		return ctx, err
 	}
 
-	sigDigest, err := signatureLayer.Digest()
-	if err != nil {
-		return ctx, err
-	}
 	state.Signatures[imageName] = ref.String()
 	state.ImageSignatures[imageName] = Signature{
 		KeyID:     "",
 		Signature: signatureBase64,
-		Digest:    sigDigest.String(),
 	}
 
 	return ctx, nil
@@ -276,9 +270,6 @@ func createAndPushAttestationWithPatches(ctx context.Context, imageName, keyName
 	if sig, err := unmarshallSignatures(signedAttestation); err != nil {
 		return ctx, err
 	} else {
-		if err != nil {
-			return ctx, err
-		}
 		state.AttestationSignatures[imageName] = Signature{
 			KeyID:     sig.KeyID,
 			Signature: sig.Sig,
@@ -866,7 +857,6 @@ func RawImageSignaturesFrom(ctx context.Context) map[string]string {
 	ret := map[string]string{}
 	for ref, signature := range state.ImageSignatures {
 		ret[fmt.Sprintf("IMAGE_SIGNATURE_%s", ref)] = signature.Signature
-		ret[fmt.Sprintf("SIGNATURE_DIGEST_%s", ref)] = signature.Digest
 	}
 
 	return ret

@@ -279,10 +279,6 @@ func NewConftestEvaluatorWithNamespace(ctx context.Context, policySources []sour
 	return c, nil
 }
 
-func (c conftestEvaluator) GetPolicySources() []source.PolicySource {
-	return c.policySources
-}
-
 // Destroy removes the working directory
 func (c conftestEvaluator) Destroy() {
 	if os.Getenv("EC_DEBUG") == "" {
