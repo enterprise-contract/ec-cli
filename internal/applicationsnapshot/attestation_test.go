@@ -19,6 +19,7 @@
 package applicationsnapshot
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/gkampitakis/go-snaps/snaps"
@@ -27,6 +28,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/enterprise-contract/ec-cli/internal/attestation"
+	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 	"github.com/enterprise-contract/ec-cli/internal/signature"
 )
 
@@ -122,6 +124,39 @@ func TestAttestationReport(t *testing.T) {
 			snaps.MatchSnapshot(t, string(b))
 		})
 	}
+}
+
+func TestAttestations(t *testing.T) {
+	statement := in_toto.Statement{
+		StatementHeader: in_toto.StatementHeader{
+			Type:          "my-type",
+			PredicateType: "my-predicate-type",
+			Subject:       []in_toto.Subject{},
+		},
+	}
+	data, err := json.Marshal(statement)
+	assert.NoError(t, err)
+
+	components := []Component{
+		{
+			SnapshotComponent: app.SnapshotComponent{Name: "component1"},
+			Violations: []evaluator.Result{
+				{
+					Message: "violation1",
+				},
+			},
+			Attestations: []attestation.Attestation{
+				provenance{
+					data: data,
+				},
+			},
+		},
+	}
+
+	report := Report{Components: components}
+	att, err := report.attestations()
+	assert.NoError(t, err)
+	assert.Equal(t, []in_toto.Statement{statement}, att)
 }
 
 type mockAttestation struct {

@@ -39,14 +39,6 @@ type provenance struct {
 	data      []byte
 }
 
-// type Attestation interface {
-// 	Type() string
-// 	PredicateType() string
-// 	Statement() []byte
-// 	Signatures() []signature.EntitySignature
-// 	Subject() []in_toto.Subject
-// }
-
 func (p provenance) Type() string {
 	return in_toto.StatementInTotoV01
 }
@@ -67,11 +59,6 @@ func (p provenance) Subject() []in_toto.Subject {
 	return p.statement.Subject
 }
 
-//	statement: in_toto.Statement{
-//		Type:          "https://in-toto.io/Statement/v1",
-//		PredicateType: "https://enterprisecontract.dev/verification_summary/v1",
-//		Subject:       []in_toto.Subject{},
-//	},
 func TestNewVSA(t *testing.T) {
 	components := []Component{
 		{
@@ -110,6 +97,44 @@ func TestNewVSA(t *testing.T) {
 	vsa, err := NewVSA(report)
 	assert.NoError(t, err)
 	assert.Equal(t, expected, vsa)
+}
+
+func TestSubjects(t *testing.T) {
+	expected := []in_toto.Subject{
+		{
+			Name:   "my-subject",
+			Digest: nil,
+		},
+	}
+	statement := in_toto.Statement{
+		StatementHeader: in_toto.StatementHeader{
+			Subject: expected,
+		},
+	}
+	data, err := json.Marshal(statement)
+	assert.NoError(t, err)
+
+	components := []Component{
+		{
+			SnapshotComponent: app.SnapshotComponent{Name: "component1"},
+			Violations: []evaluator.Result{
+				{
+					Message: "violation1",
+				},
+			},
+			Attestations: []attestation.Attestation{
+				provenance{
+					statement: statement,
+					data:      data,
+				},
+			},
+		},
+	}
+
+	report := Report{Components: components}
+	subjects, err := getSubjects(report)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, subjects)
 }
 
 func toJson(policy any) string {

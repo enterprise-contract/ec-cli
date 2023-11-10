@@ -221,38 +221,6 @@ func (a *ApplicationSnapshotImage) FetchDigest() (name.Digest, error) {
 	return digest, nil
 }
 
-// use NewClient(ctx) for all of these
-func (a *ApplicationSnapshotImage) ResolveAttestationTag(ref name.Reference, opts ...ociremote.Option) (name.Tag, error) {
-	st, err := ociremote.AttestationTag(ref, a.checkOpts.RegistryClientOpts...)
-	if err != nil {
-		return name.Tag{}, err
-	}
-	return st, nil
-}
-
-// use NewClient(ctx) for all of these
-func (a *ApplicationSnapshotImage) ResolveSBOMTag(ref name.Reference, opts ...ociremote.Option) (name.Tag, error) {
-	st, err := ociremote.SBOMTag(ref, a.checkOpts.RegistryClientOpts...)
-	if err != nil {
-		return name.Tag{}, err
-	}
-	return st, nil
-}
-
-// use NewClient(ctx) for all of these
-func (a *ApplicationSnapshotImage) FetchImageDigest(img string) (name.Digest, error) {
-	var digest name.Digest
-	attRef, err := name.ParseReference(img)
-	if err != nil {
-		return digest, err
-	}
-	digest, err = ociremote.ResolveDigest(attRef, a.checkOpts.RegistryClientOpts...)
-	if err != nil {
-		return digest, err
-	}
-	return digest, nil
-}
-
 // ValidateImageSignature executes the cosign.VerifyImageSignature method on the ApplicationSnapshotImage image ref.
 func (a *ApplicationSnapshotImage) ValidateImageSignature(ctx context.Context) error {
 	// Set the ClaimVerifier on a shallow *copy* of CheckOpts to avoid unexpected side-effects
