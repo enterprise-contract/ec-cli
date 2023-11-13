@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"testing"
 
+	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/in-toto/in-toto-golang/in_toto"
 	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
@@ -31,7 +32,6 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/signature"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
-	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 )
 
 type provenance struct {

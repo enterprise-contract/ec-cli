@@ -193,13 +193,19 @@ func (r *Report) toFormat(format string) (data []byte, err error) {
 	case PolicyInput:
 		data = bytes.Join(r.PolicyInput, []byte("\n"))
 	case VSA:
-		var vsa ProvenanceStatementVSA
-		vsa, err = NewVSA(*r)
-		data, err = json.Marshal(vsa)
+		data, err = r.toVSA()
 	default:
 		return nil, fmt.Errorf("%q is not a valid report format", format)
 	}
 	return
+}
+
+func (r *Report) toVSA() ([]byte, error) {
+	vsa, err := NewVSA(*r)
+	if err != nil {
+		return []byte{}, err
+	}
+	return json.Marshal(vsa)
 }
 
 // toSummary returns a condensed version of the report.
