@@ -76,10 +76,12 @@ func TestNewVSA(t *testing.T) {
 		},
 	}
 
+	utils.SetTestRekorPublicKey(t)
+	pkey := utils.TestPublicKey
 	testPolicy, err := policy.NewPolicy(context.Background(), policy.Options{
-		PublicKey:     utils.TestPublicKey,
+		PublicKey:     pkey,
 		EffectiveTime: policy.Now,
-		PolicyRef:     toJson(&ecc.EnterpriseContractPolicySpec{PublicKey: utils.TestPublicKey}),
+		PolicyRef:     toJson(&ecc.EnterpriseContractPolicySpec{PublicKey: pkey}),
 	})
 	assert.NoError(t, err)
 
