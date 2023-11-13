@@ -10,7 +10,7 @@ require (
 	github.com/tektoncd/chains v0.19.0
 	github.com/tektoncd/cli v0.32.0
 	github.com/wadey/gocovmerge v0.0.0-20160331181800-b5bfa59ec0ad
-	helm.sh/helm/v3 v3.13.1
+	helm.sh/helm/v3 v3.13.2
 	sigs.k8s.io/kustomize/kustomize/v5 v5.2.1
 )
 
