@@ -90,6 +90,10 @@ func (a slsaProvenance) Signatures() []signature.EntitySignature {
 	return a.signatures
 }
 
+func (a slsaProvenance) Subject() []in_toto.Subject {
+	return a.statement.Subject
+}
+
 // Todo: It seems odd that this does not contain the statement.
 // (See also the equivalent method in attestation.go)
 func (a slsaProvenance) MarshalJSON() ([]byte, error) {

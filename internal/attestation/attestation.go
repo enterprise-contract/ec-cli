@@ -38,6 +38,7 @@ type Attestation interface {
 	PredicateType() string
 	Statement() []byte
 	Signatures() []signature.EntitySignature
+	Subject() []in_toto.Subject
 }
 
 // Extract the payload from a DSSE signature OCI layer
@@ -160,6 +161,10 @@ func (p provenance) Statement() []byte {
 
 func (p provenance) Signatures() []signature.EntitySignature {
 	return p.signatures
+}
+
+func (p provenance) Subject() []in_toto.Subject {
+	return p.statement.Subject
 }
 
 // Todo: It seems odd that this does not contain the statement.

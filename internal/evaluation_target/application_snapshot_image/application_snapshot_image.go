@@ -32,6 +32,7 @@ import (
 	"github.com/qri-io/jsonschema"
 	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
+	ociremote "github.com/sigstore/cosign/v2/pkg/oci/remote"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 
@@ -69,6 +70,10 @@ type ApplicationSnapshotImage struct {
 	Evaluators       []evaluator.Evaluator
 	files            map[string]json.RawMessage
 	component        app.SnapshotComponent
+}
+
+func (a ApplicationSnapshotImage) GetReference() name.Reference {
+	return a.reference
 }
 
 // NewApplicationSnapshotImage returns an ApplicationSnapshotImage struct with reference, checkOpts, and evaluator ready to use.
@@ -207,6 +212,15 @@ func (a *ApplicationSnapshotImage) FetchImageFiles(ctx context.Context) error {
 	return err
 }
 
+// use NewClient(ctx) for all of these
+func (a *ApplicationSnapshotImage) FetchDigest() (name.Digest, error) {
+	digest, err := ociremote.ResolveDigest(a.reference, a.checkOpts.RegistryClientOpts...)
+	if err != nil {
+		return digest, err
+	}
+	return digest, nil
+}
+
 // ValidateImageSignature executes the cosign.VerifyImageSignature method on the ApplicationSnapshotImage image ref.
 func (a *ApplicationSnapshotImage) ValidateImageSignature(ctx context.Context) error {
 	// Set the ClaimVerifier on a shallow *copy* of CheckOpts to avoid unexpected side-effects
@@ -233,6 +247,7 @@ func (a *ApplicationSnapshotImage) ValidateAttestationSignature(ctx context.Cont
 	// Set the ClaimVerifier on a shallow *copy* of CheckOpts to avoid unexpected side-effects
 	opts := a.checkOpts
 	opts.ClaimVerifier = cosign.IntotoSubjectClaimVerifier
+
 	layers, _, err := NewClient(ctx).VerifyImageAttestations(ctx, a.reference, &opts)
 	if err != nil {
 		return err
@@ -254,6 +269,7 @@ func (a *ApplicationSnapshotImage) ValidateAttestationSignature(ctx context.Cont
 			// over again. We could refactor so we're not doing that twice,
 			// but it's not super important IMO.
 			sp, err := attestation.SLSAProvenanceFromSignature(sig)
+
 			if err != nil {
 				return fmt.Errorf("unable to parse as SLSA v0.2: %w", err)
 			}
@@ -331,6 +347,14 @@ func (a *ApplicationSnapshotImage) Attestations() []attestation.Attestation {
 
 func (a *ApplicationSnapshotImage) Signatures() []signature.EntitySignature {
 	return a.signatures
+}
+
+func (a *ApplicationSnapshotImage) ResolveDigest(ctx context.Context) (string, error) {
+	digest, err := NewClient(ctx).ResolveDigest(a.reference, &a.checkOpts)
+	if err != nil {
+		return "", err
+	}
+	return digest, nil
 }
 
 type attestationData struct {

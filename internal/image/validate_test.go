@@ -225,6 +225,10 @@ func (c *mockASIClient) Head(ref name.Reference, opts ...remote.Option) (*gcr.De
 	return c.head, nil
 }
 
+func (c *mockASIClient) ResolveDigest(ref name.Reference, opts *cosign.CheckOpts) (string, error) {
+	return "", nil
+}
+
 func sign(statement *in_toto.Statement) oci.Signature {
 	statementJson, err := json.Marshal(statement)
 	if err != nil {

@@ -105,6 +105,7 @@ const (
 	DATA        = "data"
 	ATTESTATION = "attestation"
 	PolicyInput = "policy-input"
+	VSA         = "vsa"
 )
 
 // WriteReport returns a new instance of Report representing the state of
@@ -191,10 +192,20 @@ func (r *Report) toFormat(format string) (data []byte, err error) {
 		data, err = r.renderAttestations()
 	case PolicyInput:
 		data = bytes.Join(r.PolicyInput, []byte("\n"))
+	case VSA:
+		data, err = r.toVSA()
 	default:
 		return nil, fmt.Errorf("%q is not a valid report format", format)
 	}
 	return
+}
+
+func (r *Report) toVSA() ([]byte, error) {
+	vsa, err := NewVSA(*r)
+	if err != nil {
+		return []byte{}, err
+	}
+	return json.Marshal(vsa)
 }
 
 // toSummary returns a condensed version of the report.

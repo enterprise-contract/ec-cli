@@ -21,9 +21,11 @@ import (
 
 	"github.com/google/go-containerregistry/pkg/name"
 	gcr "github.com/google/go-containerregistry/pkg/v1"
+	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
 	"github.com/sigstore/cosign/v2/pkg/oci"
+	ociremote "github.com/sigstore/cosign/v2/pkg/oci/remote"
 )
 
 type contextKey string
@@ -36,6 +38,7 @@ type Client interface {
 	VerifyImageSignatures(context.Context, name.Reference, *cosign.CheckOpts) ([]oci.Signature, bool, error)
 	VerifyImageAttestations(context.Context, name.Reference, *cosign.CheckOpts) ([]oci.Signature, bool, error)
 	Head(name.Reference, ...remote.Option) (*gcr.Descriptor, error)
+	ResolveDigest(name.Reference, *cosign.CheckOpts) (string, error)
 }
 
 func WithClient(ctx context.Context, client Client) context.Context {
@@ -65,4 +68,40 @@ func (c *defaultClient) VerifyImageAttestations(ctx context.Context, ref name.Re
 
 func (c *defaultClient) Head(ref name.Reference, opts ...remote.Option) (*gcr.Descriptor, error) {
 	return remote.Head(ref, opts...)
+}
+
+// gather all attestation uris and digests associated with an image
+func (c *defaultClient) AttestationUri(img string) (string, error) {
+	imgRef, err := name.ParseReference(img)
+	if err != nil {
+		return "", err
+	}
+
+	opts := cosign.CheckOpts{}
+	digest, err := ociremote.ResolveDigest(imgRef, opts.RegistryClientOpts...)
+	if err != nil {
+		return "", err
+	}
+
+	st, err := ociremote.AttestationTag(digest, opts.RegistryClientOpts...)
+	if err != nil {
+		return "", err
+	}
+
+	// parse st.Name() reference
+	// ResolveDigest
+
+	return st.Name(), nil
+}
+
+func (c *defaultClient) ResolveDigest(ref name.Reference, opts *cosign.CheckOpts) (string, error) {
+	digest, err := ociremote.ResolveDigest(ref, opts.RegistryClientOpts...)
+	if err != nil {
+		return "", err
+	}
+	h, err := v1.NewHash(digest.Identifier())
+	if err != nil {
+		return "", err
+	}
+	return h.String(), nil
 }

@@ -18,6 +18,9 @@ package applicationsnapshot
 
 import (
 	"bytes"
+	"encoding/json"
+
+	"github.com/in-toto/in-toto-golang/in_toto"
 )
 
 func (r *Report) renderAttestations() ([]byte, error) {
@@ -30,4 +33,19 @@ func (r *Report) renderAttestations() ([]byte, error) {
 	}
 
 	return bytes.Join(byts, []byte{'\n'}), nil
+}
+
+func (r *Report) attestations() ([]in_toto.Statement, error) {
+	var statements []in_toto.Statement
+	for _, c := range r.Components {
+		for _, a := range c.Attestations {
+			var statement in_toto.Statement
+			err := json.Unmarshal(a.Statement(), &statement)
+			if err != nil {
+				return []in_toto.Statement{}, nil
+			}
+			statements = append(statements, statement)
+		}
+	}
+	return statements, nil
 }
