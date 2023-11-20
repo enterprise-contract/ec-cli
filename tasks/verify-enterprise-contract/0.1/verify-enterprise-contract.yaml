@@ -187,6 +187,9 @@ spec:
         # files from an image, see https://github.com/enterprise-contract/ec-cli/issues/1109
         - name: EC_CACHE
           value: "false"
+      computeResources:
+        requests:
+          memory: 300m
     - name: report
       image: quay.io/enterprise-contract/ec-cli:snapshot
       command: [cat]
