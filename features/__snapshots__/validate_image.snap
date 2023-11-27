@@ -3251,3 +3251,96 @@ Error: 1 error occurred:
 [policy rule filtering per source:stderr - 1]
 
 ---
+
+[PURL functions:stdout - 1]
+{
+  "success": false,
+  "components": [
+    {
+      "name": "Unnamed",
+      "containerImage": "${REGISTRY}/acceptance/purl@sha256:${REGISTRY_acceptance/purl:latest_DIGEST}",
+      "source": {},
+      "violations": [
+        {
+          "msg": "PURL is invalid \"this-is-not-a-valid-purl\"",
+          "metadata": {
+            "code": "purl.is_valid_fail"
+          }
+        },
+        {
+          "msg": "PURL parsed as: type: \"rpm\", namespace: \"rhel\", name: \"coreutils-single\", version: \"8.32-34.el9\", qualifiers: \"[{\\\"key\\\": \\\"arch\\\", \\\"value\\\": \\\"x86_64\\\"}, {\\\"key\\\": \\\"distro\\\", \\\"value\\\": \\\"rhel-9.3\\\"}, {\\\"key\\\": \\\"upstream\\\", \\\"value\\\": \\\"coreutils-8.32-34.el9.src.rpm\\\"}]\", subpath: \"\"",
+          "metadata": {
+            "code": "purl.parsed"
+          }
+        }
+      ],
+      "successes": [
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.syntax_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.image.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "purl.is_valid_pass"
+          }
+        }
+      ],
+      "success": false,
+      "signatures": [
+        {
+          "keyid": "",
+          "sig": "${IMAGE_SIGNATURE_acceptance/purl}"
+        }
+      ],
+      "attestations": [
+        {
+          "type": "https://in-toto.io/Statement/v0.1",
+          "predicateType": "https://slsa.dev/provenance/v0.2",
+          "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+          "signatures": [
+            {
+              "keyid": "",
+              "sig": "${ATTESTATION_SIGNATURE_acceptance/purl}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "key": "${known_PUBLIC_KEY_JSON}",
+  "policy": {
+    "sources": [
+      {
+        "policy": [
+          "git::https://${GITHOST}/git/purl-policy.git"
+        ]
+      }
+    ],
+    "rekorUrl": "${REKOR}",
+    "publicKey": "${known_PUBLIC_KEY}"
+  },
+  "ec-version": "${EC_VERSION}",
+  "effective-time": "${TIMESTAMP}"
+}
+---
+
+[PURL functions:stderr - 1]
+time="${TIMESTAMP}" level=error msg="Parsing PURL \"this-is-not-a-valid-purl\" failed: purl scheme is not \"pkg\": \"\""
+Error: success criteria not met
+
+---
