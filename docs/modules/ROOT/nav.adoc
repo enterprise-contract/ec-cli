@@ -1,3 +1,4 @@
 include::partial$main_nav.adoc[]
 include::partial$cli_nav.adoc[]
 include::partial$tasks_nav.adoc[]
+include::partial$rego_nav.adoc[]

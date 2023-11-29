@@ -1,0 +1,77 @@
+
+[TestWriteBuiltinsToYAML - 1]
+decl:
+  args:
+  - description: OCI blob reference
+    name: ref
+    type: string
+  result:
+    description: the OCI blob
+    name: blob
+    type: string
+  type: function
+description: Fetch a blob from an OCI registry.
+name: ec.oci.blob
+nondeterministic: true
+
+---
+
+[TestWriteBuiltinsToYAML - 2]
+decl:
+  args:
+  - description: the PURL
+    name: purl
+    type: string
+  result:
+    description: PURL validity
+    name: result
+    type: string
+  type: function
+description: Determine whether or not a given PURL is valid.
+name: ec.purl.is_valid
+
+---
+
+[TestWriteBuiltinsToYAML - 3]
+decl:
+  args:
+  - description: the PURL
+    name: purl
+    type: string
+  result:
+    description: the parsed PURL object
+    name: object
+    static:
+    - key: name
+      value:
+        type: string
+    - key: namespace
+      value:
+        type: string
+    - key: qualifiers
+      value:
+        dynamic:
+          static:
+          - key: key
+            value:
+              type: string
+          - key: value
+            value:
+              type: string
+          type: object
+        type: array
+    - key: subpath
+      value:
+        type: string
+    - key: type
+      value:
+        type: string
+    - key: version
+      value:
+        type: string
+    type: object
+  type: function
+description: Parse a valid PURL into an object.
+name: ec.purl.parse
+
+---

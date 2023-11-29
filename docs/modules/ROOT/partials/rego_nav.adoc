@@ -1,0 +1,4 @@
+* xref:rego.adoc[Rego Reference]
+{{#each reference}}
+** xref:{{ path }}[{{ name }}]
+{{/each}}

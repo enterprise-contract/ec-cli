@@ -65,6 +65,15 @@ reference-docs: ## Generate reference documentation input YAML files
 # Make sure docs for experimental commands are generated.
 	@EC_EXPERIMENTAL=1 go run internal/documentation/documentation.go -yaml dist/cli-reference
 
+.PHONY: rego-docs
+rego-docs: ## Generate rego documentation input YAML files
+	@mkdir -p dist
+	@rm -rf dist/rego-reference
+	go run internal/evaluator/documentation/documentation.go -yaml dist/rego-reference
+
+.PHONY: generate-docs
+generate-docs: rego-docs reference-docs
+
 .PHONY: clean
 clean: ## Delete build output
 	@rm dist/*

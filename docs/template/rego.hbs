@@ -1,0 +1,24 @@
+= {{ name }}
+
+{{{ description}}}
+
+== Usage
+
+  {{ decl.result.name }} = {{ name }}({{pluck decl.args 'name' ', '}})
+
+== Parameters
+
+{{#each decl.args}}
+* ``{{ name }}`` (``{{ type }}``): {{ description }}
+{{/each}}
+
+== Return
+
+``{{ decl.result.name }}`` (``{{ decl.result.type }}``): {{ decl.result.description }}
+
+{{#if decl.result.static}}
+The object contains the following attributes:
+
+{{{ describe decl.result 1 }}}
+
+{{/if}}

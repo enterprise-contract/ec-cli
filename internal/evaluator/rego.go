@@ -59,6 +59,15 @@ func registerOCIBlob() {
 	}
 
 	rego.RegisterBuiltin1(&decl, ociBlob)
+	// Due to https://github.com/open-policy-agent/opa/issues/6449, we cannot set a description for
+	// the custom function through the call above. As a workaround we re-register the function with
+	// a declaration that does include the description.
+	ast.RegisterBuiltin(&ast.Builtin{
+		Name:             decl.Name,
+		Description:      "Fetch a blob from an OCI registry.",
+		Decl:             decl.Decl,
+		Nondeterministic: decl.Nondeterministic,
+	})
 }
 
 func registerPURLIsValid() {
@@ -77,6 +86,15 @@ func registerPURLIsValid() {
 	}
 
 	rego.RegisterBuiltin1(&decl, purlIsValid)
+	// Due to https://github.com/open-policy-agent/opa/issues/6449, we cannot set a description for
+	// the custom function through the call above. As a workaround we re-register the function with
+	// a declaration that does include the description.
+	ast.RegisterBuiltin(&ast.Builtin{
+		Name:             decl.Name,
+		Description:      "Determine whether or not a given PURL is valid.",
+		Decl:             decl.Decl,
+		Nondeterministic: decl.Nondeterministic,
+	})
 }
 
 func registerPURLParse() {
@@ -115,6 +133,15 @@ func registerPURLParse() {
 	}
 
 	rego.RegisterBuiltin1(&decl, purlParse)
+	// Due to https://github.com/open-policy-agent/opa/issues/6449, we cannot set a description for
+	// the custom function through the call above. As a workaround we re-register the function with
+	// a declaration that does include the description.
+	ast.RegisterBuiltin(&ast.Builtin{
+		Name:             decl.Name,
+		Description:      "Parse a valid PURL into an object.",
+		Decl:             decl.Decl,
+		Nondeterministic: decl.Nondeterministic,
+	})
 }
 
 const maxBytes = 10 * 1024 * 1024 // 10 MB
