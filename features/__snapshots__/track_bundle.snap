@@ -51,7 +51,7 @@ pipeline-bundles:
       effective_on: "${TIMESTAMP}"
       tag: tag
     - digest: sha256:96e96850c6561bdd7514d0f9849e3cdb2f3c284480663128a438537f602ff64e
-      effective_on: "2006-01-02T15:04:05Z"
+      effective_on: "${TIMESTAMP}"
       tag: tag
 task-bundles:
   ${REGISTRY}/acceptance/bundle:
@@ -59,7 +59,7 @@ task-bundles:
       effective_on: "${TIMESTAMP}"
       tag: tag
     - digest: sha256:96e96850c6561bdd7514d0f9849e3cdb2f3c284480663128a438537f602ff64e
-      effective_on: "2006-01-02T15:04:05Z"
+      effective_on: "${TIMESTAMP}"
       tag: tag
 
 ---
