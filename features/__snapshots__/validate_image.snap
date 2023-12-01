@@ -355,7 +355,7 @@ Error: success criteria not met
         {
           "msg": "Fails in 2099",
           "metadata": {
-            "effective_on": "2099-01-01T00:00:00Z"
+            "effective_on": "${TIMESTAMP}"
           }
         }
       ],
@@ -496,7 +496,7 @@ Error: success criteria not met
     "publicKey": "${known_PUBLIC_KEY}"
   },
   "ec-version": "${EC_VERSION}",
-  "effective-time": "2014-05-31T00:00:00Z"
+  "effective-time": "${TIMESTAMP}"
 }
 ---
 
@@ -1170,7 +1170,7 @@ Error: 1 error occurred:
         {
           "msg": "Fails in 2099",
           "metadata": {
-            "effective_on": "2099-01-01T00:00:00Z"
+            "effective_on": "${TIMESTAMP}"
           }
         }
       ],
@@ -1229,7 +1229,7 @@ Error: 1 error occurred:
     "publicKey": "${known_PUBLIC_KEY}"
   },
   "ec-version": "${EC_VERSION}",
-  "effective-time": "2100-01-01T00:00:00Z"
+  "effective-time": "${TIMESTAMP}"
 }
 ---
 
@@ -1710,7 +1710,7 @@ Error: success criteria not met
         {
           "msg": "Fails in 2099",
           "metadata": {
-            "effective_on": "2099-01-01T00:00:00Z"
+            "effective_on": "${TIMESTAMP}"
           }
         }
       ],
@@ -1769,7 +1769,7 @@ Error: success criteria not met
     "publicKey": "${known_PUBLIC_KEY}"
   },
   "ec-version": "${EC_VERSION}",
-  "effective-time": "2100-01-01T12:00:00Z"
+  "effective-time": "${TIMESTAMP}"
 }
 ---
 
