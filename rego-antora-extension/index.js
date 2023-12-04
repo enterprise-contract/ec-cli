@@ -85,11 +85,16 @@ module.exports.register = function () {
             regoDocs.push({
                 path: basename,
                 name: data.name,
+                description: data.description,
             });
         });
 
         const nav = content.files.find(f => f.path.endsWith('rego_nav.adoc'));
         const navTemplate = Handlebars.compile(nav.contents.toString());
         nav.contents = Buffer.from(navTemplate({ reference: regoDocs }));
+
+        const landing = content.files.find(f => f.path.endsWith('rego_builtins.adoc'));
+        const landingTemplate = Handlebars.compile(landing.contents.toString());
+        landing.contents = Buffer.from(landingTemplate({ reference: regoDocs }));
     })
 }
