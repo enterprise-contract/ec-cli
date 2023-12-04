@@ -23,6 +23,6 @@ nav:
 ext:
   collector:
     run:
-      command: make reference-docs
+      command: make generate-docs
     scan:
-      dir: dist/cli-reference
+      dir: dist

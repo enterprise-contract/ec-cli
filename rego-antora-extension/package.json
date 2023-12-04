@@ -1,0 +1,20 @@
+{
+  "name": "@enterprise-contract/rego-antora-extension",
+  "version": "0.0.0",
+  "description": "Antora Extension to generate Asciidoc documents from custom Rego functions",
+  "main": "index.js",
+  "repository": "https://github.com/enterprise-contract/ec-cli",
+  "keywords": [
+    "antora",
+    "golang",
+    "rego"
+  ],
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/enterprise-contract/ec-cli/issues"
+  },
+  "homepage": "https://github.com/enterprise-contract/ec-cli/tree/main/rego-antora-extension",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
