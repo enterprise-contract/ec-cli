@@ -16,11 +16,18 @@
 
 package mocks
 
-import "net/http"
+import (
+	"bytes"
+	"io"
+	"net/http"
+)
 
 type HttpTransportMockSuccess struct {
 }
 type HttpTransportMockFailure struct {
+}
+type HttpTransportTimeoutFailure struct {
+	CallCount int
 }
 
 func (h *HttpTransportMockSuccess) RoundTrip(_ *http.Request) (*http.Response, error) {
@@ -35,6 +42,23 @@ func (h *HttpTransportMockSuccess) RoundTrip(_ *http.Request) (*http.Response, e
 func (h *HttpTransportMockFailure) RoundTrip(_ *http.Request) (*http.Response, error) {
 	return &http.Response{
 		StatusCode: 403,
+		Header: http.Header{
+			"Content-Type":          {"application/json"},
+			"Docker-Content-Digest": {"sha256:11db66166c3d16c8251134e538b794ec08dfbe5f11bcc8066c6fe50e3282d6ed"},
+		},
+	}, nil
+}
+
+func (h *HttpTransportTimeoutFailure) RoundTrip(req *http.Request) (*http.Response, error) {
+	h.CallCount++
+	if h.CallCount <= 2 {
+		return &http.Response{
+			StatusCode: http.StatusRequestTimeout,
+			Body:       io.NopCloser(bytes.NewBufferString(`{"error": "Gateway Timeout"}`)),
+		}, nil
+	}
+	return &http.Response{
+		StatusCode: 200,
 		Header: http.Header{
 			"Content-Type":          {"application/json"},
 			"Docker-Content-Digest": {"sha256:11db66166c3d16c8251134e538b794ec08dfbe5f11bcc8066c6fe50e3282d6ed"},

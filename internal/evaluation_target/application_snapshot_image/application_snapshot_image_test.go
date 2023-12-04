@@ -74,11 +74,24 @@ func TestApplicationSnapshotImage_ValidateImageAccess(t *testing.T) {
 	}
 	ref, _ := name.ParseReference("registry/image:tag")
 	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr bool
+		name      string
+		fields    fields
+		args      args
+		wantErr   bool
+		wantRetry bool
 	}{
+		{
+			name: "Retries until timeout when unable to access image ref",
+			fields: fields{
+				reference:    ref,
+				checkOpts:    cosign.CheckOpts{},
+				attestations: nil,
+				Evaluator:    nil,
+			},
+			args:      args{ctx: context.Background()},
+			wantErr:   false,
+			wantRetry: true,
+		},
 		{
 			name: "Returns no error when able to access image ref",
 			fields: fields{
@@ -104,7 +117,9 @@ func TestApplicationSnapshotImage_ValidateImageAccess(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.wantErr {
+			if tt.wantRetry {
+				imageRefTransport = remote.WithTransport(&mocks.HttpTransportTimeoutFailure{})
+			} else if tt.wantErr {
 				imageRefTransport = remote.WithTransport(&mocks.HttpTransportMockFailure{})
 			} else {
 				imageRefTransport = remote.WithTransport(&mocks.HttpTransportMockSuccess{})
