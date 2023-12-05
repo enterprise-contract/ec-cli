@@ -49,6 +49,15 @@ $(ALL_SUPPORTED_OS_ARCH): ## Build binaries for specific platform/architecture, 
 .PHONY: dist
 dist: $(ALL_SUPPORTED_OS_ARCH) ## Build binaries for all supported operating systems and architectures
 
+# Experimental. Should work with an RHTAP style buildah task
+.PHONY: dist-container
+dist-container: clean
+	podman build . --file Dockerfile.dist --tag dist-container --build-arg EC_VERSION=$(VERSION)
+
+# For local debugging of the above
+dist-container-run:
+	podman run --rm -it --entrypoint=/bin/bash dist-container
+
 BUILD_LOCAL_ARCH:=$(shell go env GOOS)_$(shell go env GOARCH)
 .PHONY: build
 build: dist/ec_$(BUILD_LOCAL_ARCH) ## Build the ec binary for the current platform
@@ -76,7 +85,7 @@ generate-docs: rego-docs reference-docs
 
 .PHONY: clean
 clean: ## Delete build output
-	@rm dist/*
+	@rm -f dist/*
 
 ##@ Testing
 
