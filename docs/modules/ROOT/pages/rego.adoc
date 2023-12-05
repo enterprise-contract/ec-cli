@@ -1,6 +1,0 @@
-= ec rego functions reference documentation
-
-The EC CLI provides custom rego builtin functions in addition to the
-https://www.openpolicyagent.org/docs/latest/policy-reference/#built-in-functions[default ones].
-
-Use the navigation bar to view the documenation for each function.

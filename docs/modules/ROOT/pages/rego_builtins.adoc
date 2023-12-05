@@ -1,0 +1,16 @@
+= ec rego functions reference documentation
+
+The EC CLI provides custom rego builtin functions in addition to the
+https://www.openpolicyagent.org/docs/latest/policy-reference/#built-in-functions[default ones].
+
+Below is a summary of each function added by the EC CLI. Click on their names to view additional
+information.
+
+[cols="1,3"]
+|===
+{{#each reference}}
+|xref:{{ path }}[{{ name }}]
+|{{ description }}
+
+{{/each}}
+|===
