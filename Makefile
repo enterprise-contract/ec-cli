@@ -208,6 +208,13 @@ $(ALL_SUPPORTED_IMG_OS_ARCH): TARGETARCH=$(word 3,$(subst _, ,$@))
 $(ALL_SUPPORTED_IMG_OS_ARCH): $$(subst image_,dist/ec_,$$@)
 	@podman build -t $(IMAGE_REPO):$(IMAGE_TAG)-$(TARGETOS)-$(TARGETARCH) -f Dockerfile --platform $(TARGETOS)/$(TARGETARCH) --build-arg COSIGN_VERSION=$(COSIGN_VERSION)
 
+# Currently it shows the following:
+#  image_linux_amd64
+#  image_linux_arm64
+#  image_linux_ppc64le
+show-supported-builds:
+	@for b in $(ALL_SUPPORTED_IMG_OS_ARCH); do echo $$b; done
+
 .PHONY: $(subst image_,push_image_,$(ALL_SUPPORTED_IMG_OS_ARCH))
 # Ref: https://www.gnu.org/software/make/manual/make.html#Secondary-Expansion
 .SECONDEXPANSION:
