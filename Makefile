@@ -144,8 +144,17 @@ ci: test lint-fix acceptance ## Run the usual required CI tasks
 
 ##@ Linters
 
-LICENSE_IGNORE=-ignore 'dist/cli-reference/*.yaml' -ignore 'acceptance/examples/*.yaml' -ignore 'configs/*/*.yaml' -ignore 'node_modules/**' -ignore 'hack/**/charts/**'
+LICENSE_IGNORE=\
+-ignore 'dist/cli-reference/*.yaml' \
+-ignore 'acceptance/examples/*.yaml' \
+-ignore 'configs/*/*.yaml' \
+-ignore 'node_modules/**' \
+-ignore 'hack/**/charts/**' \
+-ignore '.tekton/ec-cli-pull-request.yaml \
+-ignore '.tekton/ec-cli-push.yaml
+
 LINT_TO_GITHUB_ANNOTATIONS='map(map(.)[])[][] as $$d | $$d.posn | split(":") as $$posn | "::warning file=\($$posn[0]),line=\($$posn[1]),col=\($$posn[2])::\($$d.message)"'
+
 .PHONY: lint
 lint: tekton-lint go-mod-lint ## Run linter
 # addlicense doesn't give us a nice explanation so we prefix it with one
