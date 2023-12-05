@@ -1,0 +1,59 @@
+# Copyright The Enterprise Contract Contributors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# SPDX-License-Identifier: Apache-2.0
+
+# Note: There's more work to do before this image is usable for productized ec,
+# but it builds in RHTAP so it's a good starting point. To make this useful as
+# a Tekton step runnner, we need cosign, jq, and git, and possibly to build and
+# push it as a full multi-arch image, in which case we would do just one build
+# per container.
+
+# This currently has 1.20, but we want 1.21
+#FROM registry.access.redhat.com/ubi9/go-toolset:latest as build
+
+# This has 1.21 but requires an extra secret to access
+#FROM brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_9_1.21@sha256:4fe910174caaaae09ff75b6f1b1c2f4460fd9acfe38ec778a818a54de7f31afc as build
+
+# Temporary to make it work
+FROM docker.io/library/golang:1.21 as build
+
+COPY . /build
+WORKDIR /build
+
+ARG EC_VERSION
+
+# Download dependencies
+RUN go mod download
+
+# Build several binaries
+RUN for TARGETARCH in amd64 arm64 ppc64le; do \
+ for TARGETOS in linux; do \
+  echo Building ${TARGETOS} ${TARGETARCH}; \
+  GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build \
+   -trimpath \
+   -ldflags="-s -w -X github.com/enterprise-contract/ec-cli/internal/version.Version=${EC_VERSION}" \
+   -o dist/ec_${TARGETOS}_${TARGETARCH}; \
+ done; \
+done
+
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.3@sha256:c77792b8084ce5946c68f39024fa460ef7769c0eef3fce995e70299e21a7e166
+
+# Copy all the binaries into the final image
+COPY --from=build "/build/dist" /dist
+
+# Make an assumption about the most likely os and arch
+RUN ln -s /dist/ec_linux_amd64 /usr/bin/ec
+
+ENTRYPOINT ["/usr/bin/ec"]

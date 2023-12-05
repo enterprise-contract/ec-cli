@@ -49,6 +49,15 @@ $(ALL_SUPPORTED_OS_ARCH): ## Build binaries for specific platform/architecture, 
 .PHONY: dist
 dist: $(ALL_SUPPORTED_OS_ARCH) ## Build binaries for all supported operating systems and architectures
 
+# Experimental. Should work with an RHTAP style buildah task
+.PHONY: dist-container
+dist-container: clean
+	podman build . --file Dockerfile.dist --tag dist-container --build-arg EC_VERSION=$(VERSION)
+
+# For local debugging of the above
+dist-container-run:
+	podman run --rm -it --entrypoint=/bin/bash dist-container
+
 BUILD_LOCAL_ARCH:=$(shell go env GOOS)_$(shell go env GOARCH)
 .PHONY: build
 build: dist/ec_$(BUILD_LOCAL_ARCH) ## Build the ec binary for the current platform
@@ -76,7 +85,7 @@ generate-docs: rego-docs reference-docs
 
 .PHONY: clean
 clean: ## Delete build output
-	@rm dist/*
+	@rm -f dist/*
 
 ##@ Testing
 
@@ -207,6 +216,13 @@ $(ALL_SUPPORTED_IMG_OS_ARCH): TARGETOS=$(word 2,$(subst _, ,$@))
 $(ALL_SUPPORTED_IMG_OS_ARCH): TARGETARCH=$(word 3,$(subst _, ,$@))
 $(ALL_SUPPORTED_IMG_OS_ARCH): $$(subst image_,dist/ec_,$$@)
 	@podman build -t $(IMAGE_REPO):$(IMAGE_TAG)-$(TARGETOS)-$(TARGETARCH) -f Dockerfile --platform $(TARGETOS)/$(TARGETARCH) --build-arg COSIGN_VERSION=$(COSIGN_VERSION)
+
+# Currently it shows the following:
+#  image_linux_amd64
+#  image_linux_arm64
+#  image_linux_ppc64le
+show-supported-builds:
+	@for b in $(ALL_SUPPORTED_IMG_OS_ARCH); do echo $$b; done
 
 .PHONY: $(subst image_,push_image_,$(ALL_SUPPORTED_IMG_OS_ARCH))
 # Ref: https://www.gnu.org/software/make/manual/make.html#Secondary-Expansion
