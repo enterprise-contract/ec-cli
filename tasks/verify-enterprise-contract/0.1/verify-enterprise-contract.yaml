@@ -189,9 +189,10 @@ spec:
           value: "false"
       computeResources:
         requests:
-          memory: 300Mi
+          cpu: 250m
+          memory: 500Mi
         limits:
-          memory: 300Mi
+          memory: 2Gi
     - name: report
       image: quay.io/enterprise-contract/ec-cli:snapshot
       command: [cat]
