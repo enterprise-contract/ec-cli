@@ -49,10 +49,14 @@ $(ALL_SUPPORTED_OS_ARCH): ## Build binaries for specific platform/architecture, 
 .PHONY: dist
 dist: $(ALL_SUPPORTED_OS_ARCH) ## Build binaries for all supported operating systems and architectures
 
-# Experimental. Should work with an RHTAP style buildah task
+# Dockerfile.dist is used by the RHTAP build pipeline where it's built using
+# buildah not podman. This is for testing that build locally.
+# Todo: Don't hard code the platform here. Should probably do multi-arch builds similar
+# to dist-image. Also why not use buildah here for consistency with the RHTAP build.
 .PHONY: dist-container
 dist-container: clean
-	podman build . --file Dockerfile.dist --tag dist-container --build-arg EC_VERSION=$(VERSION)
+	#podman build . --file Dockerfile.dist --tag dist-container --platform linux/amd64 --build-arg EC_VERSION=$(VERSION) --build-arg COSIGN_VERSION=$(COSIGN_VERSION)
+	podman build . --file Dockerfile.dist --tag dist-container --platform linux/amd64
 
 # For local debugging of the above
 dist-container-run:
