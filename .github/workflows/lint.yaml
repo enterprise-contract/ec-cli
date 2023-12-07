@@ -21,9 +21,11 @@ name: Lint
   pull_request:
     branches:
       - main
+      - redhat-*
   push:
     branches:
       - main
+      - redhat-*
   workflow_dispatch:
 
 permissions:
