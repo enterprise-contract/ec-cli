@@ -14,11 +14,24 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-# Note: There's more work to do before this image is usable for productized ec,
-# but it builds in RHTAP so it's a good starting point. To make this useful as
-# a Tekton step runnner, we need cosign, jq, and git, and possibly to build and
-# push it as a full multi-arch image, in which case we would do just one build
-# per container.
+## Downloads
+
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.3@sha256:c77792b8084ce5946c68f39024fa460ef7769c0eef3fce995e70299e21a7e166 as download
+
+ARG TARGETOS
+ARG TARGETARCH
+
+ARG COSIGN_VERSION
+
+ADD https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign-${TARGETOS}-${TARGETARCH} /opt/
+ADD https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign_checksums.txt /opt/
+
+RUN cd /opt && \
+    sha256sum --check <(grep -w "cosign-${TARGETOS}-${TARGETARCH}" < cosign_checksums.txt) && \
+    mv "cosign-${TARGETOS}-${TARGETARCH}" cosign && \
+    chmod +x cosign
+
+## Build
 
 # This currently has 1.20, but we want 1.21
 #FROM registry.access.redhat.com/ubi9/go-toolset:latest as build
@@ -29,31 +42,34 @@
 # Temporary to make it work
 FROM docker.io/library/golang:1.21 as build
 
-COPY . /build
-WORKDIR /build
+ARG TARGETOS
+ARG TARGETARCH
 
 ARG EC_VERSION
 
-# Download dependencies
-RUN go mod download
+COPY . /build
 
-# Build several binaries
-RUN for TARGETARCH in amd64 arm64 ppc64le; do \
- for TARGETOS in linux; do \
-  echo Building ${TARGETOS} ${TARGETARCH}; \
-  GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build \
-   -trimpath \
-   -ldflags="-s -w -X github.com/enterprise-contract/ec-cli/internal/version.Version=${EC_VERSION}" \
-   -o dist/ec_${TARGETOS}_${TARGETARCH}; \
- done; \
-done
+RUN cd /build && go mod download
+
+RUN cd /build && \
+    GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build \
+    -trimpath \
+    -ldflags="-s -w -X github.com/enterprise-contract/ec-cli/internal/version.Version=${EC_VERSION}" \
+    -o "dist/ec_${TARGETOS}_${TARGETARCH}"
+
+## Final image
 
 FROM registry.access.redhat.com/ubi9/ubi-minimal:9.3@sha256:c77792b8084ce5946c68f39024fa460ef7769c0eef3fce995e70299e21a7e166
 
-# Copy all the binaries into the final image
-COPY --from=build "/build/dist" /dist
+ARG TARGETOS
+ARG TARGETARCH
 
-# Make an assumption about the most likely os and arch
-RUN ln -s /dist/ec_linux_amd64 /usr/bin/ec
+RUN microdnf -y --nodocs install git-core jq && microdnf clean all
+
+COPY --from=download /opt/cosign /usr/local/bin/
+
+COPY --from=build "/build/dist/ec_${TARGETOS}_${TARGETARCH}" /usr/bin/ec
+
+RUN git version && jq --version && cosign version && ec version
 
 ENTRYPOINT ["/usr/bin/ec"]
