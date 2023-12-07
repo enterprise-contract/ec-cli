@@ -71,6 +71,14 @@ FROM registry.access.redhat.com/ubi9/ubi-minimal:9.3@sha256:c77792b8084ce5946c68
 ARG TARGETOS
 ARG TARGETARCH
 
+LABEL \
+  description="Enterprise Contract verifies and checks supply chain artifacts to ensure they meet security and business policies." \
+  io.k8s.description="Enterprise Contract verifies and checks supply chain artifacts to ensure they meet security and business policies." \
+  summary="Provides the binaries for downloading the EC CLI. Also used as a Tekton task runner image for EC tasks." \
+  io.k8s.display-name="Enterprise Contract for Red Hat Trusted Artifact Signer" \
+  io.openshift.tags="rhtas rhtap trusted-artifact-signer trusted-application-pipeline enterprise-contract ec opa cosign sigstore" \
+  com.redhat.component="ec-cli"
+
 RUN microdnf -y --nodocs install git-core jq && microdnf clean all
 
 COPY --from=download /opt/cosign /usr/local/bin/
