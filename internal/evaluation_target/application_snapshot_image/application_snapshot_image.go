@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"time"
 
 	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/google/go-containerregistry/pkg/authn"
@@ -74,6 +75,22 @@ type ApplicationSnapshotImage struct {
 
 func (a ApplicationSnapshotImage) GetReference() name.Reference {
 	return a.reference
+}
+
+func createRemoteOptions(ctx context.Context) []remote.Option {
+	backoff := remote.Backoff{
+		Duration: 1.0 * time.Second,
+		Factor:   2.0,
+		Jitter:   0.1,
+		Steps:    3,
+	}
+
+	return []remote.Option{
+		imageRefTransport,
+		remote.WithContext(ctx),
+		remote.WithAuthFromKeychain(authn.DefaultKeychain),
+		remote.WithRetryBackoff(backoff),
+	}
 }
 
 // NewApplicationSnapshotImage returns an ApplicationSnapshotImage struct with reference, checkOpts, and evaluator ready to use.
@@ -141,11 +158,7 @@ func fetchPolicySources(s ecc.Source) ([]source.PolicySource, error) {
 
 // ValidateImageAccess executes the remote.Head method on the ApplicationSnapshotImage image ref
 func (a *ApplicationSnapshotImage) ValidateImageAccess(ctx context.Context) error {
-	opts := []remote.Option{
-		imageRefTransport,
-		remote.WithContext(ctx),
-		remote.WithAuthFromKeychain(authn.DefaultKeychain),
-	}
+	opts := createRemoteOptions(ctx)
 	resp, err := NewClient(ctx).Head(a.reference, opts...)
 	if err != nil {
 		return err
@@ -175,23 +188,14 @@ func (a *ApplicationSnapshotImage) SetImageURL(url string) error {
 }
 
 func (a *ApplicationSnapshotImage) FetchImageConfig(ctx context.Context) error {
-	opts := []remote.Option{
-		imageRefTransport,
-		remote.WithContext(ctx),
-		remote.WithAuthFromKeychain(authn.DefaultKeychain),
-	}
+	opts := createRemoteOptions(ctx)
 	var err error
 	a.configJSON, err = config.FetchImageConfig(ctx, a.reference, opts...)
 	return err
 }
 
 func (a *ApplicationSnapshotImage) FetchParentImageConfig(ctx context.Context) error {
-	opts := []remote.Option{
-		imageRefTransport,
-		remote.WithContext(ctx),
-		remote.WithAuthFromKeychain(authn.DefaultKeychain),
-	}
-
+	opts := createRemoteOptions(ctx)
 	var err error
 	a.parentRef, err = config.FetchParentImage(ctx, a.reference, opts...)
 	if err != nil {
@@ -202,11 +206,7 @@ func (a *ApplicationSnapshotImage) FetchParentImageConfig(ctx context.Context) e
 }
 
 func (a *ApplicationSnapshotImage) FetchImageFiles(ctx context.Context) error {
-	opts := []remote.Option{
-		imageRefTransport,
-		remote.WithContext(ctx),
-		remote.WithAuthFromKeychain(authn.DefaultKeychain),
-	}
+	opts := createRemoteOptions(ctx)
 	var err error
 	a.files, err = files.ImageFiles(ctx, a.reference, opts...)
 	return err
