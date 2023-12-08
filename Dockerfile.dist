@@ -14,46 +14,77 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-# Note: There's more work to do before this image is usable for productized ec,
-# but it builds in RHTAP so it's a good starting point. To make this useful as
-# a Tekton step runnner, we need cosign, jq, and git, and possibly to build and
-# push it as a full multi-arch image, in which case we would do just one build
-# per container.
+## Downloads
 
-# This currently has 1.20, but we want 1.21
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.3@sha256:c77792b8084ce5946c68f39024fa460ef7769c0eef3fce995e70299e21a7e166 as download
+
+ARG TARGETOS
+ARG TARGETARCH
+
+# Todo: Need a way to derive this value, either directly in this Dockerfile
+# or somewhere else so it can be passed as a buildarg.
+# go list -f '{{.Version}}' -m github.com/sigstore/cosign/v2 #=> v2.2.1
+ARG COSIGN_VERSION=v2.2.1
+
+ADD https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign-${TARGETOS}-${TARGETARCH} /opt/
+ADD https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign_checksums.txt /opt/
+
+RUN cd /opt && \
+    sha256sum --check <(grep -w "cosign-${TARGETOS}-${TARGETARCH}" < cosign_checksums.txt) && \
+    mv "cosign-${TARGETOS}-${TARGETARCH}" cosign && \
+    chmod +x cosign
+
+## Build
+
+# This works fine but will produce an EC violation
+#FROM docker.io/library/golang:1.21 as build
+
+# This currently has go version 1.20 but we need version 1.21
 #FROM registry.access.redhat.com/ubi9/go-toolset:latest as build
 
-# This has 1.21 but requires an extra secret to access
-#FROM brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_9_1.21@sha256:4fe910174caaaae09ff75b6f1b1c2f4460fd9acfe38ec778a818a54de7f31afc as build
+# This image has go version 1.21 but requires an extra pull secret to access
+# See https://source.redhat.com/groups/public/teamnado/wiki/brew_registry for how to get your own pull secret
+# See our RHTAP pull secret at https://console.redhat.com/preview/application-pipeline/secrets
+FROM brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_9_1.21@sha256:4fe910174caaaae09ff75b6f1b1c2f4460fd9acfe38ec778a818a54de7f31afc as build
 
-# Temporary to make it work
-FROM docker.io/library/golang:1.21 as build
+ARG TARGETOS
+ARG TARGETARCH
+
+# Todo: Figure what version to use and how to provide it
+ARG EC_VERSION=v0.1-alpha
 
 COPY . /build
-WORKDIR /build
 
-ARG EC_VERSION
+RUN cd /build && go mod download
 
-# Download dependencies
-RUN go mod download
+RUN cd /build && \
+    GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build \
+    -trimpath \
+    -mod=readonly \
+    -ldflags="-s -w -X github.com/enterprise-contract/ec-cli/internal/version.Version=${EC_VERSION}-`git rev-parse --short HEAD`" \
+    -o "dist/ec_${TARGETOS}_${TARGETARCH}"
 
-# Build several binaries
-RUN for TARGETARCH in amd64 arm64 ppc64le; do \
- for TARGETOS in linux; do \
-  echo Building ${TARGETOS} ${TARGETARCH}; \
-  GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build \
-   -trimpath \
-   -ldflags="-s -w -X github.com/enterprise-contract/ec-cli/internal/version.Version=${EC_VERSION}" \
-   -o dist/ec_${TARGETOS}_${TARGETARCH}; \
- done; \
-done
+## Final image
 
 FROM registry.access.redhat.com/ubi9/ubi-minimal:9.3@sha256:c77792b8084ce5946c68f39024fa460ef7769c0eef3fce995e70299e21a7e166
 
-# Copy all the binaries into the final image
-COPY --from=build "/build/dist" /dist
+ARG TARGETOS
+ARG TARGETARCH
 
-# Make an assumption about the most likely os and arch
-RUN ln -s /dist/ec_linux_amd64 /usr/bin/ec
+LABEL \
+  description="Enterprise Contract verifies and checks supply chain artifacts to ensure they meet security and business policies." \
+  io.k8s.description="Enterprise Contract verifies and checks supply chain artifacts to ensure they meet security and business policies." \
+  summary="Provides the binaries for downloading the EC CLI. Also used as a Tekton task runner image for EC tasks." \
+  io.k8s.display-name="Enterprise Contract for Red Hat Trusted Artifact Signer" \
+  io.openshift.tags="rhtas rhtap trusted-artifact-signer trusted-application-pipeline enterprise-contract ec opa cosign sigstore" \
+  com.redhat.component="ec-cli"
+
+RUN microdnf -y --nodocs install git-core jq && microdnf clean all
+
+COPY --from=download /opt/cosign /usr/local/bin/
+
+COPY --from=build "/build/dist/ec_${TARGETOS}_${TARGETARCH}" /usr/bin/ec
+
+RUN git version && jq --version && cosign version && ec version
 
 ENTRYPOINT ["/usr/bin/ec"]
