@@ -50,14 +50,15 @@ FROM brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_9_1.21@sha256
 ARG TARGETOS
 ARG TARGETARCH
 
-# Todo: Figure what version to use and how to provide it
-ARG EC_VERSION=v0.1-alpha
-
 COPY . /build
 
 RUN cd /build && go mod download
 
+# Derive the "version" from the branch name, e.g. in the branch
+# "redhat-v0.1-alpha" the version will be "v0.1-alpha"
 RUN cd /build && \
+    GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD) && \
+    EC_VERSION=${GIT_BRANCH#"redhat-"} && \
     GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build \
     -trimpath \
     -mod=readonly \
