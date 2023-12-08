@@ -154,8 +154,8 @@ LICENSE_IGNORE=\
 -ignore 'configs/*/*.yaml' \
 -ignore 'node_modules/**' \
 -ignore 'hack/**/charts/**' \
--ignore '.tekton/ec-cli-pull-request.yaml \
--ignore '.tekton/ec-cli-push.yaml
+-ignore '.tekton/ec-cli-pull-request.yaml' \
+-ignore '.tekton/ec-cli-push.yaml'
 
 LINT_TO_GITHUB_ANNOTATIONS='map(map(.)[])[][] as $$d | $$d.posn | split(":") as $$posn | "::warning file=\($$posn[0]),line=\($$posn[1]),col=\($$posn[2])::\($$d.message)"'
 
