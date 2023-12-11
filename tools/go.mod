@@ -3,7 +3,7 @@ module github.com/enterprise-contract/ec-cli/tools
 go 1.21.4
 
 require (
-	github.com/daixiang0/gci v0.11.2
+	github.com/daixiang0/gci v0.12.0
 	github.com/golangci/golangci-lint v1.55.2
 	github.com/google/addlicense v1.1.1
 	github.com/open-policy-agent/conftest v0.47.0
@@ -11,7 +11,7 @@ require (
 	github.com/tektoncd/cli v0.32.0
 	github.com/wadey/gocovmerge v0.0.0-20160331181800-b5bfa59ec0ad
 	helm.sh/helm/v3 v3.13.2
-	sigs.k8s.io/kustomize/kustomize/v5 v5.2.1
+	sigs.k8s.io/kustomize/kustomize/v5 v5.3.0
 )
 
 require (
@@ -540,9 +540,9 @@ require (
 	oras.land/oras-go v1.2.4 // indirect
 	oras.land/oras-go/v2 v2.3.1 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
-	sigs.k8s.io/kustomize/api v0.15.0 // indirect
-	sigs.k8s.io/kustomize/cmd/config v0.12.0 // indirect
-	sigs.k8s.io/kustomize/kyaml v0.15.0 // indirect
+	sigs.k8s.io/kustomize/api v0.16.0 // indirect
+	sigs.k8s.io/kustomize/cmd/config v0.13.0 // indirect
+	sigs.k8s.io/kustomize/kyaml v0.16.0 // indirect
 	sigs.k8s.io/release-utils v0.7.6 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.3.0 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
