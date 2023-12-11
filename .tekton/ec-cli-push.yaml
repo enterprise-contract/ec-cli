@@ -7,10 +7,10 @@ metadata:
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
     pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch
-      == "redhat-v0.1-alpha"
+      == "main"
   creationTimestamp: null
   labels:
-    appstudio.openshift.io/application: ec-redhat-v01-alpha
+    appstudio.openshift.io/application: ec-main-ci
     appstudio.openshift.io/component: ec-cli
     pipelines.appstudio.openshift.io/type: build
   name: ec-cli-on-push
@@ -22,7 +22,7 @@ spec:
   - name: git-url
     value: '{{repo_url}}'
   - name: output-image
-    value: quay.io/redhat-user-workloads/rhtap-contract-tenant/ec-redhat-v01-alpha/ec-cli:{{revision}}
+    value: quay.io/redhat-user-workloads/rhtap-contract-tenant/ec-main-ci/ec-cli:{{revision}}
   - name: path-context
     value: .
   - name: revision
