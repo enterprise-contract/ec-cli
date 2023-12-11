@@ -317,3 +317,8 @@ conftest-test-cmd-diff:
 	$(DIFF_TOOL) \
 	  <(curl -s https://raw.githubusercontent.com/open-policy-agent/conftest/$${CONFTEST_VER}/internal/commands/test.go) \
 	  cmd/test/test.go
+
+# Since we might want to manipulate the yaml with yq, it's annoying if there are also
+# formatting changes. Use this to standardize the formatting to the yq's preferred format
+format-pipeline-yaml:
+	@for p in .tekton/*; do echo yq . -i $$p; done
