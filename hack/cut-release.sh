@@ -32,7 +32,7 @@ if [[ $RELEASE_NAME == "" ]]; then
 fi
 
 # Use release name as-is for the branch name
-BRANCH_NAME="${RELEASE_NAME}"
+BRANCH_NAME="release-${RELEASE_NAME}"
 
 # RHTAP disallows . chars in names so remove those
 RHTAP_APPLICATION_SUFFIX="${RELEASE_NAME/./}"
@@ -50,7 +50,7 @@ echo RHTAP cli component name: $RHTAP_CLI_COMPONENT_NAME
 RHTAP_APPS_URL=https://console.redhat.com/preview/application-pipeline/workspaces/rhtap-contract/applications
 
 # Explain what needs to be done next
-# (We could make this more automated this in future.)
+# (We could make this more automated in future.)
 cat <<EOT
 
 Next steps:
