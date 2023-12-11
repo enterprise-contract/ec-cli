@@ -94,7 +94,7 @@ jobs:
           key: main
 
       - name: Setup Go environment
-        uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
+        uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
         with:
           go-version-file: go.mod
           cache: false
@@ -151,7 +151,7 @@ jobs:
         run: hack/stats.sh
 
       - name: Configure statistics pages
-        uses: actions/configure-pages@f156874f8191504dae5b037505266ed5dda6c382 # v3.0.6
+        uses: actions/configure-pages@1f0c5cde4bc74cd7e1254d0cb4de8d49e9068c7d # v4.0.0
 
       - name: Upload statistics
         uses: actions/upload-pages-artifact@a753861a5debcf57bf8b404356158c8e1e33150c # v2.0.0
@@ -159,7 +159,7 @@ jobs:
           path: stats
 
       - name: Deploy statistics
-        uses: actions/deploy-pages@de14547edc9944350dc0481aa5b7afb08e75f254 # v2.0.5
+        uses: actions/deploy-pages@13b55b33dd8996121833dbc1db458c793a334630 # v3.0.1
 
       - name: Delete snapshot release and tag
         run: |
