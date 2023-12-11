@@ -21,11 +21,11 @@ name: Checks
   pull_request:
     branches:
       - main
-      - redhat-*
+      - release-*
   push:
     branches:
       - main
-      - redhat-*
+      - release-*
   workflow_dispatch:
 
 permissions:
