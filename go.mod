@@ -5,7 +5,7 @@ go 1.21.4
 require (
 	cuelang.org/go v0.6.0
 	github.com/MakeNowJust/heredoc v1.0.0
-	github.com/enterprise-contract/enterprise-contract-controller/api v0.0.0-20231027095011-f06fe20fb615
+	github.com/enterprise-contract/enterprise-contract-controller/api v0.1.0
 	github.com/evanphx/json-patch v5.7.0+incompatible
 	github.com/gkampitakis/go-snaps v0.4.12
 	github.com/go-logr/logr v1.3.0
@@ -34,9 +34,9 @@ require (
 	github.com/tektoncd/pipeline v0.51.0
 	golang.org/x/exp v0.0.0-20231006140011-7918f672742d
 	golang.org/x/net v0.18.0
-	k8s.io/apiextensions-apiserver v0.28.3
+	k8s.io/apiextensions-apiserver v0.28.4
 	k8s.io/apimachinery v0.28.4
-	k8s.io/client-go v0.28.3
+	k8s.io/client-go v0.28.4
 	k8s.io/klog/v2 v2.110.1
 	k8s.io/kube-openapi v0.0.0-20231010175941-2dd684a91f00
 	sigs.k8s.io/yaml v1.4.0
@@ -315,7 +315,7 @@ require (
 	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/api v0.28.3 // indirect
+	k8s.io/api v0.28.4 // indirect
 	k8s.io/utils v0.0.0-20230726121419-3b25d923346b // indirect
 	knative.dev/pkg v0.0.0-20230718152110-aef227e72ead // indirect
 	muzzammil.xyz/jsonc v1.0.0 // indirect

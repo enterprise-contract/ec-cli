@@ -28,7 +28,7 @@ ROOT=$(git rev-parse --show-toplevel)
 # This can be overriden by specifying the ECC_VERSION environment variable
 # beforehand
 if [ -z "${ECC_VERSION:-}" ]; then
-  SHORT_REV=$(cd "${ROOT}" && go list -f '{{slice .Version 22}}' -m github.com/enterprise-contract/enterprise-contract-controller/api)
+  SHORT_REV="api/$(cd "${ROOT}" && go list -f '{{.Version}}' -m github.com/enterprise-contract/enterprise-contract-controller/api)"
   ECC_VERSION=$(
     TMP_ECC_GIT=$(mktemp -d)
     trap 'rm -rf "${TMP_ECC_GIT}"' EXIT
