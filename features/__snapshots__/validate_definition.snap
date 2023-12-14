@@ -15,6 +15,7 @@
 ---
 
 [:stderr - 1]
+Command "definition" is deprecated, please use "ec validate input" instead.
 
 ---
 
@@ -43,5 +44,6 @@
 ---
 
 [Showing successes:stderr - 1]
+Command "definition" is deprecated, please use "ec validate input" instead.
 
 ---

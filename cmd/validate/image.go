@@ -27,8 +27,6 @@ import (
 	"github.com/hashicorp/go-multierror"
 	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
 	"github.com/enterprise-contract/ec-cli/internal/applicationsnapshot"
@@ -36,8 +34,8 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/format"
 	"github.com/enterprise-contract/ec-cli/internal/output"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
-	"github.com/enterprise-contract/ec-cli/internal/policy/source"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
+	validate_utils "github.com/enterprise-contract/ec-cli/internal/validate"
 )
 
 type imageValidationFunc func(context.Context, app.SnapshotComponent, policy.Policy, bool) (*output.Output, error)
@@ -190,50 +188,12 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 				data.spec = s
 			}
 
-			// Check if policyConfiguration is a git url, if so, try to download a config file from git
-			if source.SourceIsGit(data.policyConfiguration) {
-				log.Debugf("Fetching policy config from git url %s", data.policyConfiguration)
-
-				// Create a temporary dir to download the config. It will be different to the
-				// workdir used later for downloading policy sources, but it won't matter
-				// because this dir is not used again once the config file has been read.
-				fs := utils.FS(ctx)
-				tmpDir, err := utils.CreateWorkDir(fs)
-				if err != nil {
-					allErrors = multierror.Append(allErrors, err)
-					return
-				}
-				defer utils.CleanupWorkDir(fs, tmpDir)
-
-				// Git download and find a suitable config file
-				configFile, err := source.GitConfigDownload(cmd.Context(), tmpDir, data.policyConfiguration)
-				if err != nil {
-					allErrors = multierror.Append(allErrors, err)
-					return
-				}
-
-				// Changing data.policyConfiguration to the name of the newly downloaded
-				// file means we can use the code below to load the config
-				data.policyConfiguration = configFile
+			policyConfiguration, err := validate_utils.GetPolicyConfig(ctx, data.policyConfiguration)
+			if err != nil {
+				allErrors = multierror.Append(allErrors, err)
+				return
 			}
-
-			// Check if policyConfiguration is a file path, if so, we read it into the var data.policyConfiguration
-			if utils.HasJsonOrYamlExt(data.policyConfiguration) {
-				fs := utils.FS(ctx)
-				policyBytes, err := afero.ReadFile(fs, data.policyConfiguration)
-				if err != nil {
-					allErrors = multierror.Append(allErrors, err)
-					return
-				}
-				// Check for empty file as that would cause a false "success"
-				if len(policyBytes) == 0 {
-					err := fmt.Errorf("file %s is empty", data.policyConfiguration)
-					allErrors = multierror.Append(allErrors, err)
-					return
-				}
-
-				data.policyConfiguration = string(policyBytes)
-			}
+			data.policyConfiguration = policyConfiguration
 
 			if p, err := policy.NewPolicy(cmd.Context(), policy.Options{
 				EffectiveTime: data.effectiveTime,
@@ -349,7 +309,6 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 			}
 
 			if data.strict && !report.Success {
-				// TODO: replace this with proper message and exit code 1.
 				return errors.New("success criteria not met")
 			}
 

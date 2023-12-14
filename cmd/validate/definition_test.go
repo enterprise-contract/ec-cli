@@ -22,6 +22,8 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
+	"strings"
 	"testing"
 
 	hd "github.com/MakeNowJust/heredoc"
@@ -73,7 +75,7 @@ func TestValidateDefinitionFileCommandOutput(t *testing.T) {
 	  ],
 	  "success": true,
 	  "ec-version": "development"
-	  }`, out.String())
+	  }`, strings.Split(out.String(), "\n")[1])
 }
 
 func TestValidateDefinitionFilePolicySources(t *testing.T) {
@@ -134,22 +136,22 @@ func TestDefinitionFileOutputFormats(t *testing.T) {
 	}{
 		{
 			name:           "default output",
-			expectedStdout: testJSONText,
+			expectedStdout: fmt.Sprintf("Command \"definition\" is deprecated, please use \"ec validate input\" instead.\n%s", testJSONText),
 		},
 		{
 			name:           "json stdout",
 			output:         []string{"--output", "json"},
-			expectedStdout: testJSONText,
+			expectedStdout: fmt.Sprintf("Command \"definition\" is deprecated, please use \"ec validate input\" instead.\n%s", testJSONText),
 		},
 		{
 			name:           "yaml stdout",
 			output:         []string{"--output", "yaml"},
-			expectedStdout: testYAMLTest,
+			expectedStdout: fmt.Sprintf("Command \"definition\" is deprecated, please use \"ec validate input\" instead.\n%s", testYAMLTest),
 		},
 		{
 			name:           "json and yaml to file",
 			output:         []string{"--output", "json=out.json", "--output", "yaml=out.yaml"},
-			expectedStdout: "",
+			expectedStdout: "Command \"definition\" is deprecated, please use \"ec validate input\" instead.\n",
 			expectedFiles: map[string]string{
 				"out.json": testJSONText,
 				"out.yaml": testYAMLTest,
@@ -215,7 +217,7 @@ func TestValidateDefinitionFileCommandErrors(t *testing.T) {
 
 	err := cmd.Execute()
 	assert.Error(t, err, "2 errors occurred:\n\t* /path/file1.yaml\n\t* /path/file2.yaml\n")
-	assert.Equal(t, "", out.String())
+	assert.Equal(t, "Command \"definition\" is deprecated, please use \"ec validate input\" instead.\n", out.String())
 }
 
 func TestStrictOutput(t *testing.T) {

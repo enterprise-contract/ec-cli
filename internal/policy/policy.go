@@ -147,6 +147,31 @@ func NewInertPolicy(ctx context.Context, policyRef string) (Policy, error) {
 	return &p, nil
 }
 
+// NewInputPolicy constructs and returns a new instance of Policy that doesn't
+// perform strict checks on the consistency of the policy, but can evaluate based on
+// provided effectiveTime
+//
+// The policyRef parameter is expected to be either a YAML/JSON-encoded instance of
+// EnterpriseContractPolicySpec, or reference to the location of the EnterpriseContractPolicy
+// resource in Kubernetes using the format: [namespace/]name
+//
+// If policyRef is blank, an empty EnterpriseContractPolicySpec is used.
+func NewInputPolicy(ctx context.Context, policyRef string, effectiveTime string) (Policy, error) {
+	if efn, err := parseEffectiveTime(effectiveTime); err == nil {
+		p := policy{
+			choosenTime: effectiveTime,
+			checkOpts:   &cosign.CheckOpts{},
+		}
+		if err := p.loadPolicy(ctx, policyRef); err != nil {
+			return nil, err
+		}
+		p.effectiveTime = efn
+		return &p, nil
+	} else {
+		return nil, err
+	}
+}
+
 // NewPolicy construct and return a new instance of Policy.
 //
 // The policyRef parameter is expected to be either a JSON-encoded instance of
@@ -229,9 +254,10 @@ func (p *policy) loadPolicy(ctx context.Context, policyRef string) error {
 		if err := yaml.Unmarshal([]byte(policyRef), &ecp); err == nil && ecp.APIVersion != "" {
 			p.EnterpriseContractPolicySpec = ecp.Spec
 		} else {
-			log.Debugf("Problem parsing EnterpriseContractPolicy from %q", policyRef)
+			log.Debugf("Unable to parse EnterpriseContractPolicy from %q", policyRef)
+			log.Debug("Attempting to parse as EnterpriseContractPolicySpec")
 			if err := yaml.Unmarshal([]byte(policyRef), &p.EnterpriseContractPolicySpec); err != nil {
-				log.Debugf("Problem parsing EnterpriseContractPolicySpec from %q", policyRef)
+				log.Debugf("Unable to parse EnterpriseContractPolicySpec from %q", policyRef)
 				return fmt.Errorf("unable to parse EnterpriseContractPolicySpec: %w", err)
 			}
 		}

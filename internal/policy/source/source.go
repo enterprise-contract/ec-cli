@@ -30,6 +30,7 @@ import (
 	"path"
 	"time"
 
+	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/enterprise-contract/ec-cli/internal/downloader"
@@ -125,4 +126,26 @@ func (s inlineData) PolicyUrl() string {
 
 func (s inlineData) Subdir() string {
 	return "data"
+}
+
+// FetchPolicySources returns an array of policy sources
+func FetchPolicySources(s ecc.Source) ([]PolicySource, error) {
+	policySources := make([]PolicySource, 0, len(s.Policy)+len(s.Data))
+
+	for _, policySourceUrl := range s.Policy {
+		url := PolicyUrl{Url: policySourceUrl, Kind: "policy"}
+		policySources = append(policySources, &url)
+	}
+
+	for _, dataSourceUrl := range s.Data {
+		url := PolicyUrl{Url: dataSourceUrl, Kind: "data"}
+		policySources = append(policySources, &url)
+	}
+
+	if s.RuleData != nil {
+		data := append(append([]byte(`{"rule_data__configuration__":`), s.RuleData.Raw...), '}')
+		policySources = append(policySources, InlineData(data))
+	}
+
+	return policySources, nil
 }

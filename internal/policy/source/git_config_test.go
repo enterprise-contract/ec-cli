@@ -40,7 +40,7 @@ func TestChoosePolicyFile(t *testing.T) {
 			name:    "No files",
 			files:   []string{},
 			wantErr: true,
-			errText: "No suitable config file found",
+			errText: "no suitable config file found",
 		},
 		{
 			name:  "One policy.json file",
