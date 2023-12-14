@@ -1152,7 +1152,7 @@ Error: success criteria not met
 
 [happy day with missing git config:stderr - 1]
 Error: 1 error occurred:
-    * No suitable config file found at git::https://${GITHOST}/git/happy-config.git
+    * no suitable config file found at git::https://${GITHOST}/git/happy-config.git
 
 
 

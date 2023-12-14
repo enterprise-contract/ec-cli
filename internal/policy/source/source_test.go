@@ -26,8 +26,10 @@ import (
 	"regexp"
 	"testing"
 
+	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	extv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 )
 
 func usingDownloader(ctx context.Context, m *mockDownloader) context.Context {
@@ -114,4 +116,58 @@ func TestInlineDataSource(t *testing.T) {
 	assert.Equal(t, []byte("some data"), data)
 
 	assert.Equal(t, "data:application/json;base64,c29tZSBkYXRh", s.PolicyUrl())
+}
+
+func TestFetchPolicySources(t *testing.T) {
+	// var ruleData = &extv1.JSON{Raw: []byte("foo")}
+	tests := []struct {
+		name     string
+		source   ecc.Source
+		expected []PolicySource
+		err      error
+	}{
+		{
+			name: "fetches policy configs",
+			source: ecc.Source{
+				Name:   "policy1",
+				Policy: []string{"github.com/org/repo1//policy/", "github.com/org/repo2//policy/", "github.com/org/repo3//policy/"},
+				Data:   []string{"github.com/org/repo1//data/", "github.com/org/repo2//data/", "github.com/org/repo3//data/"},
+			},
+			expected: []PolicySource{
+				&PolicyUrl{Url: "github.com/org/repo1//policy/", Kind: "policy"},
+				&PolicyUrl{Url: "github.com/org/repo2//policy/", Kind: "policy"},
+				&PolicyUrl{Url: "github.com/org/repo3//policy/", Kind: "policy"},
+				&PolicyUrl{Url: "github.com/org/repo1//data/", Kind: "data"},
+				&PolicyUrl{Url: "github.com/org/repo2//data/", Kind: "data"},
+				&PolicyUrl{Url: "github.com/org/repo3//data/", Kind: "data"},
+			},
+			err: nil,
+		},
+		{
+			name: "handles rule data",
+			source: ecc.Source{
+				Name:     "policy2",
+				Policy:   []string{"github.com/org/repo1//policy/"},
+				Data:     []string{"github.com/org/repo1//data/"},
+				RuleData: &extv1.JSON{Raw: []byte(`"foo":"bar"`)},
+			},
+			expected: []PolicySource{
+				&PolicyUrl{Url: "github.com/org/repo1//policy/", Kind: "policy"},
+				&PolicyUrl{Url: "github.com/org/repo1//data/", Kind: "data"},
+				inlineData{source: []byte("{\"rule_data__configuration__\":\"foo\":\"bar\"}")},
+			},
+			err: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			sources, err := FetchPolicySources(tt.source)
+			if tt.err == nil {
+				assert.NoError(t, err, "FetchPolicySources returned an error")
+			} else {
+				assert.EqualError(t, err, tt.err.Error())
+			}
+			assert.Equal(t, sources, tt.expected)
+		})
+	}
 }

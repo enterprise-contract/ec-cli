@@ -81,6 +81,7 @@ func validateDefinitionCmd(validate definitionValidationFn) *cobra.Command {
 				--data git::https://github.com/enterprise-contract/ec-policies//example/data
 		`),
 
+		Deprecated: "please use \"ec validate input\" instead.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var allErrors error
 			report := definition.NewReport()

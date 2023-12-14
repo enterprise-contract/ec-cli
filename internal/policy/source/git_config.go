@@ -57,7 +57,7 @@ func GitConfigDownload(ctx context.Context, tmpDir, src string) (string, error) 
 	configFile, err := choosePolicyFile(ctx, configDir)
 	if err != nil {
 		// A more useful error message:
-		return "", fmt.Errorf("No suitable config file found at %s", c.Url)
+		return "", fmt.Errorf("no suitable config file found at %s", c.Url)
 	}
 	log.Debugf("Chose file %s to use for the policy config", configFile)
 	return configFile, nil
@@ -90,5 +90,5 @@ func choosePolicyFile(ctx context.Context, configDir string) (string, error) {
 			}
 		}
 	}
-	return "", fmt.Errorf("No suitable config file found in %s", configDir)
+	return "", fmt.Errorf("no suitable config file found in %s", configDir)
 }

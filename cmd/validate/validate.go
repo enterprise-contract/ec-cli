@@ -21,6 +21,7 @@ import (
 
 	"github.com/enterprise-contract/ec-cli/internal/definition"
 	"github.com/enterprise-contract/ec-cli/internal/image"
+	"github.com/enterprise-contract/ec-cli/internal/input"
 )
 
 var ValidateCmd *cobra.Command
@@ -32,6 +33,7 @@ func init() {
 func init() {
 	ValidateCmd.AddCommand(validateImageCmd(image.ValidateImage))
 	ValidateCmd.AddCommand(validateDefinitionCmd(definition.ValidateDefinition))
+	ValidateCmd.AddCommand(validateInputCmd(input.ValidateInput))
 }
 
 func NewValidateCmd() *cobra.Command {

@@ -26,7 +26,6 @@ import (
 	"path"
 	"time"
 
-	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
@@ -112,7 +111,7 @@ func NewApplicationSnapshotImage(ctx context.Context, component app.SnapshotComp
 	for _, sourceGroup := range p.Spec().Sources {
 		// Todo: Make each fetch run concurrently
 		log.Debugf("Fetching policy source group '%s'", sourceGroup.Name)
-		policySources, err := fetchPolicySources(sourceGroup)
+		policySources, err := source.FetchPolicySources(sourceGroup)
 		if err != nil {
 			log.Debugf("Failed to fetch policy source group '%s'!", sourceGroup.Name)
 			return nil, err
@@ -132,28 +131,6 @@ func NewApplicationSnapshotImage(ctx context.Context, component app.SnapshotComp
 		a.Evaluators = append(a.Evaluators, c)
 	}
 	return a, nil
-}
-
-// fetchPolicySources returns an array of policy sources
-func fetchPolicySources(s ecc.Source) ([]source.PolicySource, error) {
-	policySources := make([]source.PolicySource, 0, len(s.Policy)+len(s.Data))
-
-	for _, policySourceUrl := range s.Policy {
-		url := source.PolicyUrl{Url: policySourceUrl, Kind: "policy"}
-		policySources = append(policySources, &url)
-	}
-
-	for _, dataSourceUrl := range s.Data {
-		url := source.PolicyUrl{Url: dataSourceUrl, Kind: "data"}
-		policySources = append(policySources, &url)
-	}
-
-	if s.RuleData != nil {
-		data := append(append([]byte(`{"rule_data__configuration__":`), s.RuleData.Raw...), '}')
-		policySources = append(policySources, source.InlineData(data))
-	}
-
-	return policySources, nil
 }
 
 // ValidateImageAccess executes the remote.Head method on the ApplicationSnapshotImage image ref
