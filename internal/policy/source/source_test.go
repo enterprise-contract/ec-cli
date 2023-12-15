@@ -55,7 +55,7 @@ func TestGetPolicy(t *testing.T) {
 	}{
 		{
 			name:      "Gets policies",
-			sourceUrl: "https://example.com/user/foo.git",
+			sourceUrl: "example.com/user/foo.git",
 			dest:      "/tmp/ec-work-1234/policy/[0-9a-f]+",
 			err:       nil,
 		},

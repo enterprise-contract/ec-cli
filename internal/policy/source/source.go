@@ -28,6 +28,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strings"
 	"time"
 
 	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
@@ -67,7 +68,10 @@ type PolicyUrl struct {
 
 // GetPolicies clones the repository for a given PolicyUrl
 func (p *PolicyUrl) GetPolicy(ctx context.Context, workDir string, showMsg bool) (string, error) {
+	// Trim scheme from repo url as this breaks go-getter.
 	sourceUrl := p.PolicyUrl()
+	sourceUrl = strings.TrimPrefix(sourceUrl, "https://")
+	sourceUrl = strings.TrimPrefix(sourceUrl, "http://")
 
 	dest := uniqueDestination(workDir, p.Subdir(), sourceUrl)
 
