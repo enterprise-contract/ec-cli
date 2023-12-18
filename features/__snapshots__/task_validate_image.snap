@@ -218,6 +218,17 @@ components:
       title: Image signature check passed
     msg: Pass
   - metadata:
+      code: slsa_provenance_available.allowed_predicate_types_provided
+      collections:
+      - minimal
+      - slsa3
+      - redhat
+      - policy_data
+      description: Confirm the `allowed_predicate_types` rule data was provided, since
+        it is required by the policy rules in this package.
+      title: Allowed predicate types provided
+    msg: Pass
+  - metadata:
       code: slsa_provenance_available.attestation_predicate_type_accepted
       collections:
       - minimal
@@ -309,6 +320,17 @@ components:
       title: Image signature check passed
     msg: Pass
   - metadata:
+      code: slsa_provenance_available.allowed_predicate_types_provided
+      collections:
+      - minimal
+      - slsa3
+      - redhat
+      - policy_data
+      description: Confirm the `allowed_predicate_types` rule data was provided, since
+        it is required by the policy rules in this package.
+      title: Allowed predicate types provided
+    msg: Pass
+  - metadata:
       code: slsa_provenance_available.attestation_predicate_type_accepted
       collections:
       - minimal
@@ -378,13 +400,13 @@ TUF_MIRROR not set. Skipping TUF root initialization.
 
 [Golden container image:results - 1]
 {
-  "TEST_OUTPUT": "{\"timestamp\":\"${TIMESTAMP}\",\"namespace\":\"\",\"successes\":4,\"failures\":0,\"warnings\":0,\"result\":\"SUCCESS\"}\n"
+  "TEST_OUTPUT": "{\"timestamp\":\"${TIMESTAMP}\",\"namespace\":\"\",\"successes\":5,\"failures\":0,\"warnings\":0,\"result\":\"SUCCESS\"}\n"
 }
 ---
 
 [Initialize TUF succeeds:results - 1]
 {
-  "TEST_OUTPUT": "{\"timestamp\":\"${TIMESTAMP}\",\"namespace\":\"\",\"successes\":4,\"failures\":0,\"warnings\":0,\"result\":\"SUCCESS\"}\n"
+  "TEST_OUTPUT": "{\"timestamp\":\"${TIMESTAMP}\",\"namespace\":\"\",\"successes\":5,\"failures\":0,\"warnings\":0,\"result\":\"SUCCESS\"}\n"
 }
 ---
 
