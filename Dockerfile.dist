@@ -46,6 +46,9 @@ RUN GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD) && \
     -ldflags="-s -w -X github.com/enterprise-contract/ec-cli/internal/version.Version=${EC_VERSION}-`git rev-parse --short HEAD`" \
     -o "dist/ec_${TARGETOS}_${TARGETARCH}"
 
+# Extract this so we can download the matching cosign version below
+RUN go list --mod=readonly -f '{{.Version}}' -m github.com/sigstore/cosign/v2 | tee cosign_version.txt
+
 ## Downloads
 
 FROM registry.access.redhat.com/ubi9/ubi-minimal:9.3@sha256:a340f4b9fb261a75c84666a3dccb88e193a116da3cebabaf9bcdc33609b61172 AS download
@@ -53,17 +56,14 @@ FROM registry.access.redhat.com/ubi9/ubi-minimal:9.3@sha256:a340f4b9fb261a75c846
 ARG TARGETOS
 ARG TARGETARCH
 
-# Todo: Need a way to derive this value, either directly in this Dockerfile
-# or somewhere else so it can be passed as a buildarg.
-# go list -f '{{.Version}}' -m github.com/sigstore/cosign/v2 #=> v2.2.1
-ARG COSIGN_VERSION=v2.2.1
-
-ADD https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign-${TARGETOS}-${TARGETARCH} /download/
-ADD https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign_checksums.txt /download/
-
 WORKDIR /download
 
-RUN sha256sum --check <(grep -w "cosign-${TARGETOS}-${TARGETARCH}" < cosign_checksums.txt) && \
+COPY --from=build /build/cosign_version.txt /download/
+
+RUN COSIGN_VERSION=$(cat /download/cosign_version.txt) && \
+    curl -sLO https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign-${TARGETOS}-${TARGETARCH} && \
+    curl -sLO https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign_checksums.txt && \
+    sha256sum --check <(grep -w "cosign-${TARGETOS}-${TARGETARCH}" < cosign_checksums.txt) && \
     mv "cosign-${TARGETOS}-${TARGETARCH}" cosign && \
     chmod +x cosign
 
