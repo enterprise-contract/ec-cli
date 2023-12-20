@@ -57,10 +57,10 @@ WORKDIR /build
 
 RUN go mod download
 
-# Derive the "version" from the branch name, e.g. in the branch
-# "redhat-v0.1-alpha" the version will be "v0.1-alpha"
+# Derive the version from the branch name with the "release-" prefix removed if it's
+# present, e.g. in the branch "release-v0.1-alpha" the version will be "v0.1-alpha"
 RUN GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD) && \
-    EC_VERSION=${GIT_BRANCH#"redhat-"} && \
+    EC_VERSION=${GIT_BRANCH#"release-"} && \
     GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build \
     -trimpath \
     -mod=readonly \
