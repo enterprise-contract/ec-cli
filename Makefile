@@ -55,8 +55,7 @@ dist: $(ALL_SUPPORTED_OS_ARCH) ## Build binaries for all supported operating sys
 # to dist-image. Also why not use buildah here for consistency with the RHTAP build.
 .PHONY: dist-container
 dist-container: clean
-	#podman build . --file Dockerfile.dist --tag dist-container --platform linux/amd64 --build-arg EC_VERSION=$(VERSION) --build-arg COSIGN_VERSION=$(COSIGN_VERSION)
-	podman build . --file Dockerfile.dist --tag dist-container --platform linux/amd64
+	podman build . --file Dockerfile.dist --tag dist-container --platform linux/amd64 # --no-cache
 
 # For local debugging of the above
 dist-container-run:
