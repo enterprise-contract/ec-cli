@@ -3,7 +3,7 @@ module github.com/enterprise-contract/ec-cli/tools
 go 1.21.4
 
 require (
-	github.com/daixiang0/gci v0.12.0
+	github.com/daixiang0/gci v0.12.1
 	github.com/golangci/golangci-lint v1.55.2
 	github.com/google/addlicense v1.1.1
 	github.com/open-policy-agent/conftest v0.47.0
