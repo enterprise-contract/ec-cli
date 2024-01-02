@@ -48,11 +48,16 @@ RUN go mod download
 # branch and build just a single binary to save time and cpu cycles. If the
 # branch is a release branch then build all the binaries in ${BUILD_LIST}.
 #
+# For EC_BUILD_NUM, I'd like to try this:
+#   $( git rev-list --count $( git merge-base --fork-point main )..HEAD )
+# but I don't think the main branch ref will be known.
+#
 RUN \
     EC_GIT_SHA=$( git rev-parse --short HEAD ); \
     EC_GIT_BRANCH=$( git rev-parse --abbrev-ref HEAD ); \
     EC_VERSION=${EC_GIT_BRANCH#"release-"}; \
-    EC_FULL_VERSION="${EC_VERSION}-${EC_GIT_SHA}"; \
+    EC_BUILD_NUM=$( git rev-list --count $( git describe --tags --abbrev=0 )..HEAD ); \
+    EC_FULL_VERSION="${EC_VERSION}-${EC_BUILD_NUM}-${EC_GIT_SHA}"; \
     if [ "$EC_GIT_BRANCH" = "$EC_VERSION" ]; then \
       BUILDS="${TARGETOS}_${TARGETARCH}"; \
     else \
