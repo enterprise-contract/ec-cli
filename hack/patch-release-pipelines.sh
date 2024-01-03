@@ -33,7 +33,7 @@ release_name=${current_branch#"release-"}
 # One each for the two pipelines created by RHTAP
 for p in pull-request push; do
   main_pipeline=".tekton/cli-main-ci-$p.yaml"
-  release_pipeline=".tekton/cli-${release_name}-$p.yaml"
+  release_pipeline=".tekton/cli-${release_name/./}-$p.yaml"
 
   # Find all significant changes.
   # Use grep to exclude digest bumps and initial creation.
