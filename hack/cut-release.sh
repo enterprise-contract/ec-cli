@@ -86,6 +86,12 @@ Edit ${RHTAP_APPLICATION_NAME}-enterprise-contract and add a parameter as follow
   Value: github.com/enterprise-contract/config//redhat-no-hermetic
 Save changes
 
+# Apply pipeline modifications
+git checkout ${BRANCH_NAME}
+hack/patch-pipelines.sh
+Review the generated commit and then create a PR for the ${BRANCH_NAME} branch with that commit
+(Todo maybe: It might be nice to include the pipeline mods in the original PR created by RHTAP.)
+
 EOT
 
 # Todo: What about the RPA?
