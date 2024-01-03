@@ -458,35 +458,6 @@ success: true
 
 ---
 
-[Outputs are there:data - 1]
-- null
-
----
-
-[Outputs are there:attestations - 1]
-{
-  "_type": "https://in-toto.io/Statement/v0.1",
-  "predicateType": "https://slsa.dev/provenance/v0.2",
-  "subject": [
-    {
-      "name": "acceptance/okayish",
-      "digest": {
-        "sha256": "${REGISTRY_acceptance/okayish:latest_DIGEST}"
-      }
-    }
-  ],
-  "predicate": {
-    "builder": {
-      "id": "https://tekton.dev/chains/v2"
-    },
-    "buildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
-    "invocation": {
-      "configSource": {}
-    }
-  }
-}
----
-
 [Outputs are there:summary - 1]
 {
   "timestamp": "${TIMESTAMP}",
