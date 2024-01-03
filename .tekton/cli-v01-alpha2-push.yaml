@@ -27,6 +27,8 @@ spec:
     value: .
   - name: revision
     value: '{{revision}}'
+  - name: build-source-image
+    value: 'true'
   pipelineSpec:
     finally:
     - name: show-sbom
@@ -160,6 +162,10 @@ spec:
         value: $(params.git-url)
       - name: revision
         value: $(params.revision)
+      - name: depth
+        value: "0"
+      - name: fetchTags
+        value: "true"
       runAfter:
       - init
       taskRef:
