@@ -14,7 +14,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-FROM registry.access.redhat.com/ubi9/ubi-minimal:9.3@sha256:a340f4b9fb261a75c84666a3dccb88e193a116da3cebabaf9bcdc33609b61172 as downloads
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.3@sha256:a340f4b9fb261a75c84666a3dccb88e193a116da3cebabaf9bcdc33609b61172 AS downloads
 
 ARG TARGETOS
 ARG TARGETARCH
