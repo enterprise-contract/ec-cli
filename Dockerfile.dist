@@ -113,7 +113,7 @@ LABEL \
   com.redhat.component="ec-cli"
 
 # Install cosign and other tools we want to use in the Tekton task
-RUN microdnf -y --nodocs install git-core jq && microdnf clean all
+RUN microdnf -y --nodocs --setopt=keepcache=0 install git-core jq
 COPY --from=download /download/cosign /usr/local/bin/cosign
 
 # Copy all the binaries so they're available to extract and download
