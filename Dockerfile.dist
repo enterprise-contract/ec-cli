@@ -117,6 +117,8 @@ RUN microdnf -y --nodocs --setopt=keepcache=0 install git-core jq
 COPY --from=download /download/cosign /usr/local/bin/cosign
 
 # Copy all the binaries so they're available to extract and download
+# (Beware if you're testing this locally it will copy everything from
+# your dist directory, not just the freshly built binaries.)
 COPY --from=build /build/dist/ /usr/local/bin/
 
 # Copy the one ec binary that can run in this container
