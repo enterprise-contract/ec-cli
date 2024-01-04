@@ -167,10 +167,6 @@ spec:
         - "--output"
         - "appstudio=$(results.TEST_OUTPUT.path)"
         - "--output"
-        - "data=$(params.HOMEDIR)/data.yaml"
-        - "--output"
-        - "attestation=$(params.HOMEDIR)/attestations.jsonl"
-        - "--output"
         - "json=$(params.HOMEDIR)/report-json.json"
       env:
         - name: SSL_CERT_DIR
@@ -198,16 +194,6 @@ spec:
       command: [cat]
       args:
         - "$(params.HOMEDIR)/report.yaml"
-    - name: data
-      image: quay.io/enterprise-contract/ec-cli:snapshot
-      command: [cat]
-      args:
-        - "$(params.HOMEDIR)/data.yaml"
-    - name: attestations
-      image: quay.io/enterprise-contract/ec-cli:snapshot
-      command: [cat]
-      args:
-        - "$(params.HOMEDIR)/attestations.jsonl"
     - name: report-json
       image: quay.io/enterprise-contract/ec-cli:snapshot
       command: [cat]
