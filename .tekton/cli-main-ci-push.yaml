@@ -166,6 +166,8 @@ spec:
         value: "0"
       - name: fetchTags
         value: "true"
+      - name: refspec
+        value: '{{target_branch}}'
       runAfter:
       - init
       taskRef:
