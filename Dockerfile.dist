@@ -40,6 +40,7 @@ WORKDIR /build
 
 RUN go mod download
 
+# Notes:
 # Derive the version from the branch name with the "release-" prefix removed
 # if it's present, e.g. in the branch "release-v0.1-alpha" the version will
 # be "v0.1-alpha"
@@ -48,13 +49,21 @@ RUN go mod download
 # branch and build just a single binary to save time and cpu cycles. If the
 # branch is a release branch then build all the binaries in ${BUILD_LIST}.
 #
+# The normal way to get the branch name is this:
+#   EC_GIT_BRANCH=$( git rev-parse --abbrev-ref HEAD )
+# but it doesn't work because the git-clone task checks out a sha directly
+# rather than a branch. That's why we need to use `git for-each-ref`.
+# Beware that EC_GIT_ORIGIN_BRANCH, EC_GIT_BRANCH and EC_VERSION may be
+# blank in a pre-merge PR because PR branch refs are generally not present.
+#
 # For EC_BUILD_NUM, I'd like to try this:
 #   $( git rev-list --count $( git merge-base --fork-point main )..HEAD )
 # but I don't think the main branch ref will be known.
 #
 RUN \
     EC_GIT_SHA=$( git rev-parse --short HEAD ); \
-    EC_GIT_BRANCH=$( git rev-parse --abbrev-ref HEAD ); \
+    EC_GIT_ORIGIN_BRANCH=$( git for-each-ref --points-at HEAD --format='%(refname:short)' refs/remotes/origin/ ); \
+    EC_GIT_BRANCH=${EC_GIT_ORIGIN_BRANCH#"origin/"}; \
     EC_VERSION=${EC_GIT_BRANCH#"release-"}; \
     EC_BUILD_NUM=$( git rev-list --count $( git describe --tags --abbrev=0 )..HEAD ); \
     EC_FULL_VERSION="${EC_VERSION}-${EC_BUILD_NUM}-${EC_GIT_SHA}"; \
@@ -67,7 +76,7 @@ RUN \
       export GOOS="${os_arch%_*}"; \
       export GOARCH="${os_arch#*_}"; \
       BINFILE="ec_${GOOS}_${GOARCH}"; \
-      echo "Building ${BINFILE}"; \
+      echo "Building ${BINFILE} for ${EC_FULL_VERSION}"; \
       go build \
           -trimpath \
           --mod=readonly \
