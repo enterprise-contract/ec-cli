@@ -34,11 +34,14 @@ ARG TARGETARCH
 ARG BUILD_LIST="linux_amd64 linux_arm64 linux_ppc64le darwin_arm64"
 #ARG BUILD_LIST="linux_amd64 linux_arm64 linux_ppc64le darwin_arm64 darwin_amd64 windows_amd64"
 
-COPY . /build
-
 WORKDIR /build
 
+# Copy just the mod file for better layer caching when building locally
+COPY go.mod go.sum .
 RUN go mod download
+
+# Now copy everything including .git
+COPY . .
 
 # Notes:
 # Derive the version from the branch name with the "release-" prefix removed
