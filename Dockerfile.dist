@@ -56,16 +56,16 @@ RUN go mod download
 # Beware that EC_GIT_ORIGIN_BRANCH, EC_GIT_BRANCH and EC_VERSION may be
 # blank in a pre-merge PR because PR branch refs are generally not present.
 #
-# For EC_BUILD_NUM, I'd like to try this:
-#   $( git rev-list --count $( git merge-base --fork-point main )..HEAD )
-# but I don't think the main branch ref will be known.
+# Alternative for EC_BUILD_NUM using the nearest tag in case we decide we don't
+# like the merge-base technique:
+#   EC_BUILD_NUM=$( git rev-list --count $( git describe --tags --abbrev=0 )..HEAD ); \
 #
 RUN \
     EC_GIT_SHA=$( git rev-parse --short HEAD ); \
     EC_GIT_ORIGIN_BRANCH=$( git for-each-ref --points-at HEAD --format='%(refname:short)' refs/remotes/origin/ ); \
     EC_GIT_BRANCH=${EC_GIT_ORIGIN_BRANCH#"origin/"}; \
     EC_VERSION=${EC_GIT_BRANCH#"release-"}; \
-    EC_BUILD_NUM=$( git rev-list --count $( git describe --tags --abbrev=0 )..HEAD ); \
+    EC_BUILD_NUM=$( git rev-list --count $( git merge-base --fork-point origin/main )..HEAD ); \
     EC_FULL_VERSION="${EC_VERSION}-${EC_BUILD_NUM}-${EC_GIT_SHA}"; \
     if [ "$EC_GIT_BRANCH" = "$EC_VERSION" ]; then \
       BUILDS="${TARGETOS}_${TARGETARCH}"; \
