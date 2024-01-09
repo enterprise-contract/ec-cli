@@ -16,7 +16,7 @@ require (
 	github.com/in-toto/in-toto-golang v0.9.0
 	github.com/jstemmer/go-junit-report/v2 v2.1.0
 	github.com/leanovate/gopter v0.2.9
-	github.com/open-policy-agent/conftest v0.47.0
+	github.com/open-policy-agent/conftest v0.48.0
 	github.com/open-policy-agent/opa v0.60.0
 	github.com/package-url/packageurl-go v0.1.2
 	github.com/qri-io/jsonpointer v0.1.1
@@ -86,7 +86,7 @@ require (
 	github.com/antlr/antlr4/runtime/Go/antlr/v4 v4.0.0-20230305170008-8188dc5388df // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
-	github.com/aws/aws-sdk-go v1.49.4 // indirect
+	github.com/aws/aws-sdk-go v1.49.6 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.23.5 // indirect
 	github.com/aws/aws-sdk-go-v2/config v1.25.11 // indirect
 	github.com/aws/aws-sdk-go-v2/credentials v1.16.9 // indirect
