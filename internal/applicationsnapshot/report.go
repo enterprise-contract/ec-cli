@@ -57,6 +57,7 @@ type Report struct {
 	EcVersion     string                           `json:"ec-version"`
 	Data          any                              `json:"-"`
 	EffectiveTime time.Time                        `json:"effective-time"`
+	Intent        string                           `json:"intent"`
 	PolicyInput   [][]byte                         `json:"-"`
 }
 
@@ -141,6 +142,7 @@ func NewReport(snapshot string, components []Component, policy policy.Policy, da
 		Data:          data,
 		PolicyInput:   policyInput,
 		EffectiveTime: policy.EffectiveTime().UTC(),
+		Intent:        policy.Intent(),
 	}, nil
 }
 

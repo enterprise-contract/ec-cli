@@ -632,7 +632,8 @@ func createConfigJSON(ctx context.Context, dataDir string, p policy.Policy) erro
 	}
 
 	pc := &struct {
-		WhenNs int64 `json:"when_ns"`
+		WhenNs int64  `json:"when_ns"`
+		Intent string `json:"intent"`
 	}{}
 
 	// Now that the future deny logic is handled in the ec-cli and not in rego,
@@ -640,6 +641,8 @@ func createConfigJSON(ctx context.Context, dataDir string, p policy.Policy) erro
 	// acceptable bundles list. Always set it, even when we are using the current
 	// time, so that a consistent current time is used everywhere.
 	pc.WhenNs = p.EffectiveTime().UnixNano()
+
+	pc.Intent = p.Intent()
 
 	// Add the policy config we just prepared
 	config["config"] = map[string]interface{}{

@@ -62,6 +62,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		spec                        *app.SnapshotSpec
 		strict                      bool
 		images                      string
+		intent                      string
 	}{
 		strict: true,
 	}
@@ -207,6 +208,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 				PolicyRef:   data.policyConfiguration,
 				PublicKey:   data.publicKey,
 				RekorURL:    data.rekorURL,
+				Intent:      data.intent,
 			}); err != nil {
 				allErrors = multierror.Append(allErrors, err)
 			} else {
@@ -384,6 +386,10 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		Include additional information on the failures. For instance for policy
 		violations, include the title and the description of the failed policy
 		rule.`))
+
+	cmd.Flags().StringVar(&data.intent, "intent", data.intent, hd.Doc(`
+		Specify the intent of validating an image.
+	`))
 
 	if len(data.input) > 0 || len(data.filePath) > 0 || len(data.images) > 0 {
 		if err := cmd.MarkFlagRequired("image"); err != nil {

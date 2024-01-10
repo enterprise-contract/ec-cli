@@ -57,6 +57,7 @@ type Policy interface {
 	AttestationTime(time.Time)
 	Identity() cosign.Identity
 	Keyless() bool
+	Intent() string
 }
 
 type policy struct {
@@ -67,6 +68,7 @@ type policy struct {
 	attestationTime *time.Time
 	identity        cosign.Identity
 	ignoreRekor     bool
+	intent          string
 }
 
 // PublicKeyPEM returns the PublicKey in PEM format.
@@ -112,6 +114,7 @@ type Options struct {
 	PolicyRef     string
 	PublicKey     string
 	RekorURL      string
+	Intent        string
 }
 
 // NewOfflinePolicy construct and return a new instance of Policy that is used
@@ -236,6 +239,8 @@ func NewPolicy(ctx context.Context, opts Options) (Policy, error) {
 		p.checkOpts = opts
 	}
 
+	p.intent = opts.Intent
+
 	return &p, nil
 }
 
@@ -304,6 +309,10 @@ func (p policy) EffectiveTime() time.Time {
 	}
 
 	return *p.effectiveTime
+}
+
+func (p policy) Intent() string {
+	return p.intent
 }
 
 func isNow(choosenTime string) bool {
