@@ -81,19 +81,22 @@ components:
       description: The image signature matches available signing materials.
       title: Image signature check passed
     msg: Pass
+  warnings:
   - metadata:
-      code: test.no_skipped_tests
+      code: test.no_test_warnings
       collections:
       - redhat
       depends_on:
       - test.test_data_found
-      description: Produce a violation if any tests have their result set to "SKIPPED".
-        A skipped result means a pre-requirement for executing the test was not met,
-        e.g. a license key for executing a scanner was not provided. The result type
-        is configurable by the "skipped_tests_results" key in the rule data.
-      effective_on: "${TIMESTAMP}"
-      title: No tests were skipped
-    msg: Pass
+      description: Produce a warning if any tests have their result set to "WARNING".
+        The result type is configurable by the "warned_tests_results" key in the rule
+        data.
+      solution: There is a task with result 'TEST_OUTPUT' that returned a result of
+        'WARNING'. You can find which test resulted in 'WARNING' by examining the
+        'result' key in the 'TEST_OUTPUT'.
+      term: <NAMELESS>
+      title: No tests produced warnings
+    msg: Test "<NAMELESS>" returned a warning
 ec-version: ${EC_VERSION}
 effective-time: "${TIMESTAMP}"
 key: |
@@ -101,7 +104,7 @@ ${__known_PUBLIC_KEY}
 policy:
   configuration:
     include:
-    - test.no_skipped_tests
+    - test.no_test_warnings
   publicKey: |
 ${____known_PUBLIC_KEY}
   sources:
@@ -143,19 +146,22 @@ components:
       description: The image signature matches available signing materials.
       title: Image signature check passed
     msg: Pass
+  warnings:
   - metadata:
-      code: test.no_skipped_tests
+      code: test.no_test_warnings
       collections:
       - redhat
       depends_on:
       - test.test_data_found
-      description: Produce a violation if any tests have their result set to "SKIPPED".
-        A skipped result means a pre-requirement for executing the test was not met,
-        e.g. a license key for executing a scanner was not provided. The result type
-        is configurable by the "skipped_tests_results" key in the rule data.
-      effective_on: "${TIMESTAMP}"
-      title: No tests were skipped
-    msg: Pass
+      description: Produce a warning if any tests have their result set to "WARNING".
+        The result type is configurable by the "warned_tests_results" key in the rule
+        data.
+      solution: There is a task with result 'TEST_OUTPUT' that returned a result of
+        'WARNING'. You can find which test resulted in 'WARNING' by examining the
+        'result' key in the 'TEST_OUTPUT'.
+      term: <NAMELESS>
+      title: No tests produced warnings
+    msg: Test "<NAMELESS>" returned a warning
 ec-version: ${EC_VERSION}
 effective-time: "${TIMESTAMP}"
 key: |
@@ -163,7 +169,7 @@ ${__known_PUBLIC_KEY}
 policy:
   configuration:
     include:
-    - test.no_skipped_tests
+    - test.no_test_warnings
   publicKey: |
 ${____known_PUBLIC_KEY}
   sources:
@@ -388,13 +394,13 @@ TUF_MIRROR not set. Skipping TUF root initialization.
 
 [Strict with warnings:results - 1]
 {
-  "TEST_OUTPUT": "{\"timestamp\":\"${TIMESTAMP}\",\"namespace\":\"\",\"successes\":4,\"failures\":0,\"warnings\":0,\"result\":\"SUCCESS\"}\n"
+  "TEST_OUTPUT": "{\"timestamp\":\"${TIMESTAMP}\",\"namespace\":\"\",\"successes\":3,\"failures\":0,\"warnings\":1,\"result\":\"WARNING\"}\n"
 }
 ---
 
 [Non strict with warnings:results - 1]
 {
-  "TEST_OUTPUT": "{\"timestamp\":\"${TIMESTAMP}\",\"namespace\":\"\",\"successes\":4,\"failures\":0,\"warnings\":0,\"result\":\"SUCCESS\"}\n"
+  "TEST_OUTPUT": "{\"timestamp\":\"${TIMESTAMP}\",\"namespace\":\"\",\"successes\":3,\"failures\":0,\"warnings\":1,\"result\":\"WARNING\"}\n"
 }
 ---
 
