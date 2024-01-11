@@ -102,7 +102,7 @@ Feature: Verify Enterprise Contract Tekton Tasks
       And an image named "acceptance/non-strict-with-warnings"
       And a valid image signature of "acceptance/non-strict-with-warnings" image signed by the "known" key
       And a valid attestation of "acceptance/non-strict-with-warnings" signed by the "known" key, patched with
-      | [{"op": "add", "path": "/predicate/buildConfig", "value": {}},{"op": "add", "path": "/predicate/buildConfig/tasks", "value": [{"name":"skipped","results":[{"name":"TEST_OUTPUT","type":"string","value":"{\"result\":\"SKIPPED\"}"}]}]}] |
+      | [{"op": "add", "path": "/predicate/buildConfig", "value": {}},{"op": "add", "path": "/predicate/buildConfig/tasks", "value": [{"name":"skipped","results":[{"name":"TEST_OUTPUT","type":"string","value":"{\"result\":\"WARNING\"}"}]}]}] |
       And a cluster policy with content:
       ```
       {
@@ -116,7 +116,7 @@ Feature: Verify Enterprise Contract Tekton Tasks
         ],
         "configuration": {
           "include": [
-            "test.no_skipped_tests"
+            "test.no_test_warnings"
           ]
         }
       }
@@ -136,7 +136,7 @@ Feature: Verify Enterprise Contract Tekton Tasks
       And an image named "acceptance/strict-with-warnings"
       And a valid image signature of "acceptance/strict-with-warnings" image signed by the "known" key
       And a valid attestation of "acceptance/strict-with-warnings" signed by the "known" key, patched with
-      | [{"op": "add", "path": "/predicate/buildConfig", "value": {}},{"op": "add", "path": "/predicate/buildConfig/tasks", "value": [{"name":"skipped","results":[{"name":"TEST_OUTPUT","type":"string","value":"{\"result\":\"SKIPPED\"}"}]}]}] |
+      | [{"op": "add", "path": "/predicate/buildConfig", "value": {}},{"op": "add", "path": "/predicate/buildConfig/tasks", "value": [{"name":"skipped","results":[{"name":"TEST_OUTPUT","type":"string","value":"{\"result\":\"WARNING\"}"}]}]}] |
       And a cluster policy with content:
       ```
       {
@@ -150,7 +150,7 @@ Feature: Verify Enterprise Contract Tekton Tasks
         ],
         "configuration": {
           "include": [
-            "test.no_skipped_tests"
+            "test.no_test_warnings"
           ]
         }
       }
