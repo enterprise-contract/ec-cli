@@ -60,8 +60,7 @@ jobs:
     if: ${{ (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_sha == needs.info.outputs.head_sha) || github.event.workflow_dispatch }}
 
     env:
-      IMAGE_REPO: quay.io/hacbs-contract/ec-cli
-      EC_IMAGE_REPO: quay.io/enterprise-contract/ec-cli
+      IMAGE_REPO: quay.io/enterprise-contract/ec-cli
       TAG: ${{ github.sha }}
       TAG_TIMESTAMP: ${{ github.sha }}-${{ needs.info.outputs.timestamp }}
 
@@ -78,7 +77,7 @@ jobs:
         with:
           docker-images: false
           swap-storage: false
-          
+
       - name: Checkout repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
@@ -116,34 +115,20 @@ jobs:
       - name: Build distribution
         run: make dist
 
-      # TODO: Remove this once all references to quay.io/hacbs-contract are removed
-      - name: Registry login
-        run: podman login -u ${{ secrets.BUNDLE_PUSH_USER  }} -p ${{ secrets.BUNDLE_PUSH_PASS }} quay.io
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3.0.0
-
-      # TODO: Remove this once all references to quay.io/hacbs-contract are removed
-      - name: Create and push image
-        run: make dist-image-push IMAGE_TAG=$TAG IMAGE_REPO=$IMAGE_REPO ADD_IMAGE_TAG="snapshot $TAG_TIMESTAMP"
-
-      # TODO: Remove this once all references to quay.io/hacbs-contract are removed
-      - name: Create and push the tekton bundle
-        env:
-          TASKS: "tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml tasks/verify-definition/0.1/verify-definition.yaml"
-        run: make task-bundle-snapshot TASK_REPO=quay.io/hacbs-contract/ec-task-bundle TASK_TAG=$TAG TASKS=<( yq e ".spec.steps[].image? = \"$EC_IMAGE_REPO:$TAG\"" $TASKS | yq 'select(. != null)')
 
       - name: Registry login (quay.io/enterprise-contract)
         run: podman login -u ${{ secrets.BUNDLE_PUSH_USER_EC  }} -p ${{ secrets.BUNDLE_PUSH_PASS_EC }} quay.io
 
       - name: Create and push image (quay.io/enterprise-contract/ec-cli)
-        run: make dist-image-push IMAGE_TAG=$TAG IMAGE_REPO=$EC_IMAGE_REPO ADD_IMAGE_TAG="snapshot $TAG_TIMESTAMP"
+        run: make dist-image-push IMAGE_TAG=$TAG IMAGE_REPO=$IMAGE_REPO ADD_IMAGE_TAG="snapshot $TAG_TIMESTAMP"
 
       - name: Create and push the tekton bundle (quay.io/enterprise-contract/ec-task-bundle)
         env:
           TASK_REPO: quay.io/enterprise-contract/ec-task-bundle
           TASKS: "tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml tasks/verify-definition/0.1/verify-definition.yaml"
-        run: make task-bundle-snapshot TASK_REPO=$TASK_REPO TASK_TAG=$TAG ADD_TASK_TAG="$TAG_TIMESTAMP" TASKS=<( yq e ".spec.steps[].image? = \"$EC_IMAGE_REPO:$TAG\"" $TASKS | yq 'select(. != null)')
+        run: make task-bundle-snapshot TASK_REPO=$TASK_REPO TASK_TAG=$TAG ADD_TASK_TAG="$TAG_TIMESTAMP" TASKS=<( yq e ".spec.steps[].image? = \"$IMAGE_REPO:$TAG\"" $TASKS | yq 'select(. != null)')
 
       - name: Download statistics
         env:
