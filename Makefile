@@ -116,7 +116,7 @@ acceptance: ## Run all acceptance tests
 	@trap cleanup EXIT
 	@cp -R . "$${ACCEPTANCE_WORKDIR}"
 	@cd "$${ACCEPTANCE_WORKDIR}"
-	@go run acceptance/coverage/coverage.go .
+	@go run acceptance/coverage/coverage.go
 	@$(MAKE) build
 	@export COVERAGE_FILEPATH="$${ACCEPTANCE_WORKDIR}"
 	@export COVERAGE_FILENAME="-acceptance"

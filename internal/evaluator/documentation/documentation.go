@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/open-policy-agent/opa/ast"
@@ -37,7 +38,9 @@ var yamlDir = flag.String("yaml", "", "Location of the generated YAML files")
 func main() {
 	flag.Parse()
 
-	if err := writeBultinsToYAML(*yamlDir); err != nil {
+	dir := filepath.Dir(filepath.Clean(*yamlDir)) // snyk is making us do this, Dir invokes Clean, but it doesn't know about this
+
+	if err := writeBultinsToYAML(dir); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
