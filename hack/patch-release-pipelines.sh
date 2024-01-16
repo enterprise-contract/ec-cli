@@ -21,6 +21,9 @@ set -o pipefail
 
 current_branch=$(git rev-parse --abbrev-ref HEAD)
 
+# If the arg is set to digest_bumps then add only the digest bumps
+digest_bumps=${1:-""}
+
 # Sanity check I guess
 if [[ ! "$current_branch" =~ ^release- ]]; then
   echo "Expecting to be in a release branch!"
@@ -35,11 +38,19 @@ for p in pull-request push; do
   main_pipeline=".tekton/cli-main-ci-$p.yaml"
   release_pipeline=".tekton/cli-${release_name/./}-$p.yaml"
 
-  # Find all significant changes.
-  # Use grep to exclude digest bumps and initial creation.
-  changes=$( git log main --reverse --pretty=%h --invert-grep \
-    --grep="Update RHTAP references" --grep="Red Hat Trusted App Pipeline update" \
-    -- $main_pipeline )
+  if [[ "$digest_bumps" != "digest_bumps" ]]; then
+    # Find all significant changes.
+    # Use grep to exclude digest bumps and initial creation.
+    changes=$( git log main --reverse --pretty=%h --invert-grep --regexp-ignore-case \
+      --grep="Update RHTAP references" \
+      --grep="Red Hat Trusted App Pipeline update" \
+      -- $main_pipeline )
+  else
+    # Find only the digest bumps
+    changes=$( git log main --reverse --pretty=%h --regexp-ignore-case \
+      --grep="Update RHTAP references" \
+      -- $main_pipeline )
+  fi
 
   # Loop over each commit
   for sha in $changes; do
@@ -54,15 +65,15 @@ for p in pull-request push; do
     git add $release_pipeline
   done
 
-  # Tidy up by removing the main branch pipeline
-  git rm $main_pipeline
+  # Let's keep the main branch pipeline for now since it is useful to diff against
+  #git rm $main_pipeline
 done
 
 # Make the commit
 git commit -m "chore: Modify default pipelines for $release_name" \
   -m "Apply changes to the RHTAP generated default pipelines." \
-  -m "Also remove the main branch pipelines." \
-  -m "(Commit created with hack/patch-release-pipelines.sh)"
+  -m "(Commit created with hack/patch-release-pipelines.sh $digest_bumps)"
 
 # Invite the human to look at it
 echo "Please review the commit and see if you like it."
+echo "Please also review the diff between the cli-main-ci pipelines and the corresponding release pipelines."

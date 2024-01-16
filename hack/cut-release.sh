@@ -89,6 +89,8 @@ Save changes
 # Apply pipeline modifications
 git checkout ${BRANCH_NAME}
 hack/patch-release-pipelines.sh
+hack/patch-release-pipelines.sh digest_bumps # maybe
+Review the diff between the ${RHTAP_CLI_COMPONENT_NAME}- and cli-main-ci- pipelines
 Review the generated commit and then create a PR for the ${BRANCH_NAME} branch with that commit
 (Todo maybe: If you want, try adding this commit to the PR created by RHTAP before merging that PR.)
 
