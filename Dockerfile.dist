@@ -31,14 +31,17 @@ ARG TARGETOS
 ARG TARGETARCH
 
 # Adjust as required
-ARG BUILD_LIST="linux_amd64 linux_arm64 linux_ppc64le darwin_arm64"
-#ARG BUILD_LIST="linux_amd64 linux_arm64 linux_ppc64le darwin_arm64 darwin_amd64 windows_amd64"
-
-COPY . /build
+ARG BUILD_LIST="linux_amd64 darwin_amd64 windows_amd64 darwin_arm64"
+#ARG BUILD_LIST="linux_amd64 darwin_amd64 windows_amd64 darwin_arm64 linux_arm64 linux_ppc64le"
 
 WORKDIR /build
 
+# Copy just the mod file for better layer caching when building locally
+COPY go.mod go.sum .
 RUN go mod download
+
+# Now copy everything including .git
+COPY . .
 
 # Notes:
 # Derive the version from the branch name with the "release-" prefix removed
@@ -53,25 +56,34 @@ RUN go mod download
 #   EC_GIT_BRANCH=$( git rev-parse --abbrev-ref HEAD )
 # but it doesn't work because the git-clone task checks out a sha directly
 # rather than a branch. That's why we need to use `git for-each-ref`.
-# Beware that EC_GIT_ORIGIN_BRANCH, EC_GIT_BRANCH and EC_VERSION may be
-# blank in a pre-merge PR because PR branch refs are generally not present.
 #
-# For EC_BUILD_NUM, I'd like to try this:
-#   $( git rev-list --count $( git merge-base --fork-point main )..HEAD )
-# but I don't think the main branch ref will be known.
+# Note that EC_GIT_ORIGIN_BRANCH, EC_GIT_BRANCH may be blank in a pre-merge PR
+# because the PR branch refs are generally not present. In that case we'll use
+# "_ci_build" as the version.
+#
+# Alternative for EC_BUILD_NUM using the nearest tag in case we decide we don't
+# like the merge-base technique:
+#   EC_BUILD_NUM=$( git rev-list --count $( git describe --tags --abbrev=0 )..HEAD ); \
 #
 RUN \
     EC_GIT_SHA=$( git rev-parse --short HEAD ); \
     EC_GIT_ORIGIN_BRANCH=$( git for-each-ref --points-at HEAD --format='%(refname:short)' refs/remotes/origin/ ); \
     EC_GIT_BRANCH=${EC_GIT_ORIGIN_BRANCH#"origin/"}; \
     EC_VERSION=${EC_GIT_BRANCH#"release-"}; \
-    EC_BUILD_NUM=$( git rev-list --count $( git describe --tags --abbrev=0 )..HEAD ); \
-    EC_FULL_VERSION="${EC_VERSION}-${EC_BUILD_NUM}-${EC_GIT_SHA}"; \
-    if [ "$EC_GIT_BRANCH" = "$EC_VERSION" ]; then \
+    EC_BUILD_NUM=$( git rev-list --count $( git merge-base --fork-point origin/main )..HEAD ); \
+    \
+    if [ -z "$EC_VERSION" ]; then \
+      EC_FULL_VERSION="_ci_build-${EC_GIT_SHA}"; \
+    else \
+      EC_FULL_VERSION="${EC_VERSION}-${EC_BUILD_NUM}-${EC_GIT_SHA}"; \
+    fi; \
+    \
+    if [ -z "$EC_VERSION" -o "$EC_GIT_BRANCH" = "$EC_VERSION" ]; then \
       BUILDS="${TARGETOS}_${TARGETARCH}"; \
     else \
       BUILDS="${BUILD_LIST}"; \
     fi; \
+    \
     for os_arch in ${BUILDS}; do \
       export GOOS="${os_arch%_*}"; \
       export GOARCH="${os_arch#*_}"; \
