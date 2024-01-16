@@ -37,7 +37,7 @@ for p in pull-request push; do
 
   # Find all significant changes.
   # Use grep to exclude digest bumps and initial creation.
-  changes=$( git log main --reverse --pretty=%h --invert-grep \
+  changes=$( git log main --reverse --pretty=%h --invert-grep --regexp-ignore-case \
     --grep="Update RHTAP references" --grep="Red Hat Trusted App Pipeline update" \
     -- $main_pipeline )
 
