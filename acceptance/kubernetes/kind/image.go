@@ -67,8 +67,11 @@ func (k *kindCluster) buildTaskBundleImage(ctx context.Context) error {
 		if !task.IsDir() {
 			continue
 		}
+
+		taskName := filepath.Clean(task.Name())
+
 		// once all the directories under tasks/ are collected, gather all the versions
-		versions, err := filepath.Glob(filepath.Join(basePath, task.Name(), "*.*"))
+		versions, err := filepath.Glob(filepath.Join(basePath, taskName, "*.*"))
 		if err != nil {
 			return err
 		}
@@ -77,7 +80,7 @@ func (k *kindCluster) buildTaskBundleImage(ctx context.Context) error {
 			// there should only be versions under the task path i.e. tasks/verify-definition/0.1
 			version := pathSplit[len(pathSplit)-1]
 			// assume the task definition file is named the same as the task directory
-			fileName := filepath.Join(versionPath, fmt.Sprintf("%s.yaml", task.Name()))
+			fileName := filepath.Join(versionPath, fmt.Sprintf("%s.yaml", taskName))
 			if _, err := os.Stat(fileName); err != nil {
 				if errors.Is(err, os.ErrNotExist) {
 					continue
@@ -114,17 +117,17 @@ func (k *kindCluster) buildTaskBundleImage(ctx context.Context) error {
 				return err
 			}
 
-			task, err := os.CreateTemp("", "v-e-c-*.yaml")
+			tempTask, err := os.CreateTemp("", "v-e-c-*.yaml")
 			if err != nil {
 				return err
 			}
-			defer os.Remove(task.Name())
+			defer os.Remove(tempTask.Name())
 
-			if _, err = task.Write(out); err != nil {
+			if _, err = tempTask.Write(out); err != nil {
 				return err
 			}
 
-			taskBundles[version] = append(taskBundles[version], task.Name())
+			taskBundles[version] = append(taskBundles[version], tempTask.Name())
 		}
 	}
 
