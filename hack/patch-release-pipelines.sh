@@ -65,15 +65,15 @@ for p in pull-request push; do
     git add $release_pipeline
   done
 
-  # Tidy up by removing the main branch pipeline
-  git rm $main_pipeline
+  # Let's keep the main branch pipeline for now since it is useful to diff against
+  #git rm $main_pipeline
 done
 
 # Make the commit
 git commit -m "chore: Modify default pipelines for $release_name" \
   -m "Apply changes to the RHTAP generated default pipelines." \
-  -m "Also remove the main branch pipelines." \
   -m "(Commit created with hack/patch-release-pipelines.sh $digest_bumps)"
 
 # Invite the human to look at it
 echo "Please review the commit and see if you like it."
+echo "Please also review the diff between the cli-main-ci pipelines and the corresponding release pipelines."
