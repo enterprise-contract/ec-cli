@@ -20,6 +20,7 @@ package inspect
 
 import (
 	"bytes"
+	"fmt"
 	"testing"
 
 	"github.com/spf13/afero"
@@ -54,6 +55,9 @@ func TestFetchSourcesFromPolicy(t *testing.T) {
 		dir := args.String(0)
 
 		if err := fs.MkdirAll(dir, 0755); err != nil {
+			panic(err)
+		}
+		if err := afero.WriteFile(fs, fmt.Sprintf("%s/foo.rego", args.String(0)), []byte("package foo\n\nbar = 1"), 0644); err != nil {
 			panic(err)
 		}
 	}
@@ -93,6 +97,9 @@ func TestFetchSources(t *testing.T) {
 		dir := args.String(0)
 
 		if err := fs.MkdirAll(dir, 0755); err != nil {
+			panic(err)
+		}
+		if err := afero.WriteFile(fs, fmt.Sprintf("%s/foo.rego", args.String(0)), []byte("package foo\n\nbar = 1"), 0644); err != nil {
 			panic(err)
 		}
 	}
