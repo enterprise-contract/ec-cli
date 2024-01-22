@@ -30,9 +30,7 @@ FROM brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_9_1.21@sha256
 ARG TARGETOS
 ARG TARGETARCH
 
-# Adjust as required
-ARG BUILD_LIST="linux_amd64 darwin_amd64 windows_amd64 darwin_arm64"
-#ARG BUILD_LIST="linux_amd64 darwin_amd64 windows_amd64 darwin_arm64 linux_arm64 linux_ppc64le"
+ARG BUILD_LIST="darwin_amd64 darwin_arm64 linux_amd64 linux_arm64 linux_ppc64le linux_s390x windows_amd64"
 
 WORKDIR /build
 
@@ -87,7 +85,8 @@ RUN \
     for os_arch in ${BUILDS}; do \
       export GOOS="${os_arch%_*}"; \
       export GOARCH="${os_arch#*_}"; \
-      BINFILE="ec_${GOOS}_${GOARCH}"; \
+      [ "$GOOS" = "windows" ] && DOT_EXE=".exe" || DOT_EXE=""; \
+      BINFILE="ec_${GOOS}_${GOARCH}${DOT_EXE}"; \
       echo "Building ${BINFILE} for ${EC_FULL_VERSION}"; \
       go build \
           -trimpath \
