@@ -142,6 +142,10 @@ COPY --from=download /download/cosign /usr/local/bin/cosign
 # your dist directory, not just the freshly built binaries.)
 COPY --from=build /build/dist/ /usr/local/bin/
 
+# Gzip them because that's what the cli downloader image expects, see
+# https://github.com/securesign/sigstore-ocp/blob/main/images/Dockerfile-clientserver
+RUN gzip /usr/local/bin/ec_*
+
 # Copy the one ec binary that can run in this container
 COPY --from=build "/build/dist/ec_${TARGETOS}_${TARGETARCH}" /usr/local/bin/ec
 
