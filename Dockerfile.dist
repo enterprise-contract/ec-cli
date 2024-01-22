@@ -85,7 +85,8 @@ RUN \
     for os_arch in ${BUILDS}; do \
       export GOOS="${os_arch%_*}"; \
       export GOARCH="${os_arch#*_}"; \
-      BINFILE="ec_${GOOS}_${GOARCH}"; \
+      [ "$GOOS" = "windows" ] && DOT_EXE=".exe" || DOT_EXE=""; \
+      BINFILE="ec_${GOOS}_${GOARCH}${DOT_EXE}"; \
       echo "Building ${BINFILE} for ${EC_FULL_VERSION}"; \
       go build \
           -trimpath \
