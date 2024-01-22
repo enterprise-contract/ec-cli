@@ -63,7 +63,7 @@ func TestComputeInfo(t *testing.T) {
 				{Path: "github.com/enterprise-contract/enterprise-contract-controller/api", Version: "v1"},
 				{Path: "github.com/open-policy-agent/opa", Version: "v2"},
 				{Path: "github.com/open-policy-agent/conftest", Version: "v3"},
-				{Path: "github.com/sigstore/cosign", Version: "v4"},
+				{Path: "github.com/sigstore/cosign/v2", Version: "v4"},
 				{Path: "github.com/sigstore/sigstore", Version: "v5"},
 				{Path: "github.com/sigstore/rekor", Version: "v6"},
 				{Path: "github.com/tektoncd/pipeline", Version: "v7"},

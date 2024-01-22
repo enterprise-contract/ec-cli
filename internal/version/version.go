@@ -83,7 +83,7 @@ func ComputeInfo() (*VersionInfo, error) {
 	info.Components = append(info.Components, dependencyVersion("ECC", "github.com/enterprise-contract/enterprise-contract-controller/api", buildInfo.Deps))
 	info.Components = append(info.Components, dependencyVersion("OPA", "github.com/open-policy-agent/opa", buildInfo.Deps))
 	info.Components = append(info.Components, dependencyVersion("Conftest", "github.com/open-policy-agent/conftest", buildInfo.Deps))
-	info.Components = append(info.Components, dependencyVersion("Cosign", "github.com/sigstore/cosign", buildInfo.Deps))
+	info.Components = append(info.Components, dependencyVersion("Cosign", "github.com/sigstore/cosign/v2", buildInfo.Deps))
 	info.Components = append(info.Components, dependencyVersion("Sigstore", "github.com/sigstore/sigstore", buildInfo.Deps))
 	info.Components = append(info.Components, dependencyVersion("Rekor", "github.com/sigstore/rekor", buildInfo.Deps))
 	info.Components = append(info.Components, dependencyVersion("Tekton Pipeline", "github.com/tektoncd/pipeline", buildInfo.Deps))
