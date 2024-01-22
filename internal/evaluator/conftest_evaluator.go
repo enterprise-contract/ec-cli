@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -332,10 +333,33 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) ([]Out
 			return nil, nil, err
 		}
 
+		annotations := []*ast.AnnotationsRef{}
 		fs := utils.FS(ctx)
-		annotations, err := opa.InspectDir(fs, dir)
-		if err != nil {
-			return nil, nil, err
+		// We only want to inspect the directory of policy subdirs, not config or data subdirs.
+		if s.Subdir() == "policy" {
+			annotations, err = opa.InspectDir(fs, dir)
+			if err != nil {
+				errMsg := err
+				if err.Error() == "no rego files found in policy subdirectory" {
+					// Let's try to give some more robust messaging to the user.
+					policyURL, err := url.Parse(s.PolicyUrl())
+					if err != nil {
+						return nil, nil, errMsg
+					}
+					// Do we have a prefix at the end of the URL path?
+					// If not, this means we aren't trying to access a specific file.
+					// TODO: Determine if we want to check for a .git suffix as well?
+					pos := strings.LastIndex(policyURL.Path, ".")
+					if pos == -1 {
+						// Are we accessing a GitHub or GitLab URL? If so, are we beginning with 'https' or 'http'?
+						if (policyURL.Host == "github.com" || policyURL.Host == "gitlab.com") && (policyURL.Scheme == "https" || policyURL.Scheme == "http") {
+							log.Debug("Git Hub or GitLab, http transport, and no file extension, this could be a problem.")
+							errMsg = fmt.Errorf("%s.\nYou've specified a %s URL with an %s:// scheme.\nDid you mean: %s instead?", errMsg, policyURL.Hostname(), policyURL.Scheme, fmt.Sprint(policyURL.Host+policyURL.RequestURI()))
+						}
+					}
+				}
+				return nil, nil, errMsg
+			}
 		}
 
 		for _, a := range annotations {

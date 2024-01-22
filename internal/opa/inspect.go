@@ -27,6 +27,7 @@ import (
 
 	"github.com/open-policy-agent/opa/ast"
 	"github.com/open-policy-agent/opa/ast/json"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 )
 
@@ -196,6 +197,12 @@ func InspectDir(afs afero.Fs, dir string) ([]*ast.AnnotationsRef, error) {
 	})
 	if err != nil {
 		return nil, err
+	}
+
+	// Ensure that we have actual rules, and a directory without rego files.
+	if len(regoPaths) == 0 {
+		log.Debug("No rego files found after cloning policy url.")
+		return nil, errors.New("no rego files found in policy subdirectory")
 	}
 
 	// Inspect all rego files found
