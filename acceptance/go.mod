@@ -8,12 +8,12 @@ require (
 	github.com/cyberphone/json-canonicalization v0.0.0-20231011164504-785e29786b46
 	github.com/doiit/picocolors v1.0.1
 	github.com/enterprise-contract/enterprise-contract-controller/api v0.1.8
-	github.com/evanphx/json-patch/v5 v5.8.0
+	github.com/evanphx/json-patch/v5 v5.8.1
 	github.com/gkampitakis/go-snaps v0.4.12 // we need custom snapshot directory & file support from https://github.com/gkampitakis/go-snaps/pull/60
 	github.com/go-git/go-billy/v5 v5.5.0
 	github.com/go-git/go-git/v5 v5.11.0
 	github.com/go-openapi/strfmt v0.22.0
-	github.com/google/go-containerregistry v0.17.0
+	github.com/google/go-containerregistry v0.18.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/in-toto/in-toto-golang v0.9.0
 	github.com/otiai10/copy v1.14.0
@@ -23,7 +23,7 @@ require (
 	github.com/secure-systems-lab/go-securesystemslib v0.8.0
 	github.com/sigstore/cosign/v2 v2.2.2
 	github.com/sigstore/rekor v1.3.4
-	github.com/sigstore/sigstore v1.8.0
+	github.com/sigstore/sigstore v1.8.1
 	github.com/stretchr/testify v1.8.4
 	github.com/tektoncd/cli v0.34.0
 	github.com/tektoncd/pipeline v0.55.0
@@ -34,7 +34,7 @@ require (
 	golang.org/x/exp v0.0.0-20231108232855-2478ac86f678
 	gopkg.in/square/go-jose.v2 v2.6.0
 	k8s.io/api v0.29.0
-	k8s.io/apimachinery v0.29.0
+	k8s.io/apimachinery v0.29.1
 	k8s.io/client-go v0.29.0
 	sigs.k8s.io/kind v0.20.0
 	sigs.k8s.io/kustomize/api v0.16.0
@@ -214,16 +214,16 @@ require (
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.26.0 // indirect
-	golang.org/x/crypto v0.17.0 // indirect
+	golang.org/x/crypto v0.18.0 // indirect
 	golang.org/x/mod v0.14.0 // indirect
-	golang.org/x/net v0.19.0 // indirect
-	golang.org/x/oauth2 v0.15.0 // indirect
+	golang.org/x/net v0.20.0 // indirect
+	golang.org/x/oauth2 v0.16.0 // indirect
 	golang.org/x/sync v0.5.0 // indirect
 	golang.org/x/sys v0.16.0 // indirect
 	golang.org/x/term v0.16.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
-	golang.org/x/tools v0.15.0 // indirect
+	golang.org/x/tools v0.16.1 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
 	google.golang.org/api v0.152.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
