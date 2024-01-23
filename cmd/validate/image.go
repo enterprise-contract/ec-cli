@@ -21,12 +21,12 @@ import (
 	"errors"
 	"fmt"
 	"sort"
-	"sync"
 
 	hd "github.com/MakeNowJust/heredoc"
 	"github.com/hashicorp/go-multierror"
 	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/enterprise-contract/ec-cli/internal/applicationsnapshot"
@@ -226,14 +226,12 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 
 			appComponents := data.spec.Components
 
-			ch := make(chan result, len(appComponents))
-
-			var lock sync.WaitGroup
-			for _, c := range appComponents {
-				lock.Add(1)
-				go func(comp app.SnapshotComponent) {
-					defer lock.Done()
-
+			// worker is responsible for processing one component at a time from the jobs channel,
+			// and for emitting a corresponding result for the component on the results channel.
+			worker := func(id int, jobs <-chan app.SnapshotComponent, results chan<- result) {
+				log.Debugf("Starting worker %d", id)
+				for comp := range jobs {
+					log.Debugf("Worker %d got a component %q", id, comp.ContainerImage)
 					ctx := cmd.Context()
 					out, err := validate(ctx, comp, data.policy, data.info)
 					res := result{
@@ -265,18 +263,36 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 					}
 					res.component.Success = err == nil && len(res.component.Violations) == 0
 
-					ch <- res
-				}(c)
+					results <- res
+				}
+				log.Debugf("Done with worker %d", id)
 			}
 
-			lock.Wait()
-			close(ch)
+			numComponents := len(appComponents)
+			// TODO: Eventually, this should either be set as a parameter or adjusted based on the
+			// available resources. The main constraint seems to be memory.
+			numWorkers := 5
+
+			jobs := make(chan app.SnapshotComponent, numComponents)
+			results := make(chan result, numComponents)
+			// Initialize each worker. They will wait patiently until a job is sent to the jobs
+			// channel, or the jobs channel is closed.
+			for i := 0; i <= numWorkers; i++ {
+				go worker(i, jobs, results)
+			}
+			// Initialize all the jobs. Each worker will pick a job from the channel when the worker
+			// is ready to consume a new job.
+			for _, c := range appComponents {
+				jobs <- c
+			}
+			close(jobs)
 
 			var components []applicationsnapshot.Component
 			var manyData [][]evaluator.Data
 			var manyPolicyInput [][]byte
 			var allErrors error = nil
-			for r := range ch {
+			for i := 0; i < numComponents; i++ {
+				r := <-results
 				if r.err != nil {
 					e := fmt.Errorf("error validating image %s of component %s: %w", r.component.ContainerImage, r.component.Name, r.err)
 					allErrors = multierror.Append(allErrors, e)
@@ -286,6 +302,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 					manyPolicyInput = append(manyPolicyInput, r.policyInput)
 				}
 			}
+			close(results)
 			if allErrors != nil {
 				return allErrors
 			}
