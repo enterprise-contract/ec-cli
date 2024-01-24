@@ -217,7 +217,7 @@ func TestTrack(t *testing.T) {
 				  registry.com/one:
 				    - digest: ` + sampleHashOne.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "0.9"
+				      tag: "1.0"
 			`)),
 			output: hd.Doc(`
 				---
@@ -225,7 +225,7 @@ func TestTrack(t *testing.T) {
 				  registry.com/one:
 				    - digest: ` + sampleHashOne.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "0.9"
+				      tag: "1.0"
 			`),
 		},
 		{
@@ -240,18 +240,26 @@ func TestTrack(t *testing.T) {
 				  registry.com/mixed:
 				    - digest: ` + sampleHashThree.String() + `
 				      effective_on: "` + yesterday + `"
-				      tag: "0.3"
+				      tag: "1.0"
 				    - digest: ` + sampleHashTwo.String() + `
 				      effective_on: "` + yesterday + `"
-				      tag: "0.2"
+				      tag: "1.0"
+				    # Unrelated tag should be ignored.
+				    - digest: sha256:abc
+				      effective_on: "` + yesterday + `"
+				      tag: "0.9"
 				task-bundles:
 				  registry.com/mixed:
 				    - digest: ` + sampleHashThree.String() + `
 				      effective_on: "` + yesterday + `"
-				      tag: "0.3"
+				      tag: "1.0"
 				    - digest: ` + sampleHashTwo.String() + `
 				      effective_on: "` + yesterday + `"
-				      tag: "0.2"
+				      tag: "1.0"
+				    # Unrelated tag should be ignored.
+				    - digest: sha256:abc
+				      effective_on: "` + yesterday + `"
+				      tag: "0.9"
 			`)),
 			output: hd.Doc(`
 				---
@@ -262,7 +270,10 @@ func TestTrack(t *testing.T) {
 				      tag: "1.0"
 				    - digest: ` + sampleHashThree.String() + `
 				      effective_on: "` + yesterday + `"
-				      tag: "0.3"
+				      tag: "1.0"
+				    - digest: sha256:abc
+				      effective_on: "` + yesterday + `"
+				      tag: "0.9"
 				task-bundles:
 				  registry.com/mixed:
 				    - digest: ` + sampleHashOne.String() + `
@@ -270,7 +281,10 @@ func TestTrack(t *testing.T) {
 				      tag: "1.0"
 				    - digest: ` + sampleHashThree.String() + `
 				      effective_on: "` + yesterday + `"
-				      tag: "0.3"
+				      tag: "1.0"
+				    - digest: sha256:abc
+				      effective_on: "` + yesterday + `"
+				      tag: "0.9"
 			`),
 		},
 		{
@@ -348,30 +362,30 @@ func TestTrack(t *testing.T) {
 				  registry.com/mixed:
 				    - digest: ` + sampleHashThree.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "0.3"
+				      tag: "1.0"
 				    - digest: ` + sampleHashTwo.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "0.2"
+				      tag: "1.0"
 				    - digest: ` + sampleHashThree.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "0.3"
+				      tag: "1.0"
 				    - digest: ` + sampleHashTwo.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "0.2"
+				      tag: "1.0"
 				task-bundles:
 				  registry.com/mixed:
 				    - digest: ` + sampleHashThree.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "0.3"
+				      tag: "1.0"
 				    - digest: ` + sampleHashTwo.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "0.2"
+				      tag: "1.0"
 				    - digest: ` + sampleHashThree.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "0.3"
+				      tag: "1.0"
 				    - digest: ` + sampleHashTwo.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "0.2"
+				      tag: "1.0"
 			`)),
 			output: hd.Doc(`
 				---
@@ -382,16 +396,16 @@ func TestTrack(t *testing.T) {
 				      tag: "1.0"
 				    - digest: ` + sampleHashThree.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "0.3"
+				      tag: "1.0"
 				    - digest: ` + sampleHashTwo.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "0.2"
+				      tag: "1.0"
 				    - digest: ` + sampleHashThree.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "0.3"
+				      tag: "1.0"
 				    - digest: ` + sampleHashTwo.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "0.2"
+				      tag: "1.0"
 				task-bundles:
 				  registry.com/mixed:
 				    - digest: ` + sampleHashOne.String() + `
@@ -399,16 +413,16 @@ func TestTrack(t *testing.T) {
 				      tag: "1.0"
 				    - digest: ` + sampleHashThree.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "0.3"
+				      tag: "1.0"
 				    - digest: ` + sampleHashTwo.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "0.2"
+				      tag: "1.0"
 				    - digest: ` + sampleHashThree.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "0.3"
+				      tag: "1.0"
 				    - digest: ` + sampleHashTwo.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "0.2"
+				      tag: "1.0"
 			`),
 		},
 		{
