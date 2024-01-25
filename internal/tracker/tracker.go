@@ -204,36 +204,48 @@ func (t *Tracker) filterBundles(prune bool) {
 }
 
 // filterRecords reduces the list of records by removing superfluous entries.
-// It removes records that have the same Repository and Digest. If prune is
+// It removes records that have the same Repository Digest, and Tag. If prune is
 // true, it skips any record that is no longer acceptable. Any record with an
 // EffectiveOn date in the future, and the record with the most recent
 // EffectiveOn date *not* in the future are considered acceptable.
 func filterRecords(records []bundleRecord, prune bool) []bundleRecord {
 	now := time.Now().UTC()
 
+	// lastDigestForTag tracks the latest digest seen for each tag.
+	lastDigestForTag := map[string]string{}
 	unique := make([]bundleRecord, 0, len(records))
-	last_index := len(records) - 1
-	for i := last_index; i >= 0; i-- {
-		r := records[i]
+	for i := len(records) - 1; i >= 0; i-- {
 		// NOTE: Newly added records will have a repository, but existing ones
 		// will not. This is expected because the output does not persist the
 		// repository for each record. Instead, the repository is the attribute
 		// which references the list of records.
-		if i < last_index {
-			previous := records[i+1]
-			if previous.Digest == r.Digest {
-				continue
-			}
+		r := records[i]
+
+		if digest, ok := lastDigestForTag[r.Tag]; ok && digest == r.Digest {
+			continue
 		}
+		lastDigestForTag[r.Tag] = r.Digest
+
 		unique = append([]bundleRecord{r}, unique...)
 	}
 
-	relevant := make([]bundleRecord, 0, len(unique))
-	for _, r := range unique {
-		relevant = append(relevant, r)
-		if prune && now.After(r.EffectiveOn) {
-			break
+	var relevant []bundleRecord
+	if prune {
+		// tagsToSkip tracks when records for a certain tag should start to be pruned.
+		tagsToSkip := map[string]bool{}
+		for _, r := range unique {
+			if tagsToSkip[r.Tag] {
+				continue
+			}
+			relevant = append(relevant, r)
+			if !tagsToSkip[r.Tag] {
+				if now.After(r.EffectiveOn) {
+					tagsToSkip[r.Tag] = true
+				}
+			}
 		}
+	} else {
+		relevant = unique
 	}
 
 	filteredCount := len(records) - len(relevant)
