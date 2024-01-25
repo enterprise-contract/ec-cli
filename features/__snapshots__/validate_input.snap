@@ -1,16 +1,3 @@
-
-[invalid policy URL:stdout - 1]
-
----
-
-[invalid policy URL:stderr - 1]
-Error: 1 error occurred:
-    * error validating file pipeline_definition.yaml: no rego files found in policy subdirectory
-
-
-
----
-
 [valid policy URL:stdout - 1]
 {
   "success": true,
