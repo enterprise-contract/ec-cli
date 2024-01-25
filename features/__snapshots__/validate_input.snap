@@ -1,0 +1,55 @@
+
+[invalid policy URL:stdout - 1]
+
+---
+
+[invalid policy URL:stderr - 1]
+Error: 1 error occurred:
+    * error validating file pipeline_definition.yaml: no rego files found in policy subdirectory
+
+
+
+---
+
+[valid policy URL:stdout - 1]
+{
+  "success": true,
+  "filepaths": [
+    {
+      "filepath": "pipeline_definition.yaml",
+      "violations": [],
+      "warnings": [],
+      "successes": null,
+      "success": true,
+      "success-count": 1
+    }
+  ],
+  "policy": {
+    "sources": [
+      {
+        "policy": [
+          "git::https://${GITHOST}/git/happy-day-policy.git"
+        ]
+      }
+    ]
+  },
+  "ec-version": "${EC_VERSION}",
+  "effective-time": "${TIMESTAMP}"
+}
+---
+
+[valid policy URL:stderr - 1]
+
+---
+
+[policy URL with no rego files:stdout - 1]
+
+---
+
+[policy URL with no rego files:stderr - 1]
+Error: 1 error occurred:
+    * error validating file pipeline_definition.yaml: no rego files found in policy subdirectory
+
+
+
+---

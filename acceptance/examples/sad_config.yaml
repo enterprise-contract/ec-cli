@@ -1,0 +1,4 @@
+---
+sources:
+  - policy:
+      - "git::https://${GITHOST}/git/sad-day-policy"
