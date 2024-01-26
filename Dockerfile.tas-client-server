@@ -1,0 +1,18 @@
+
+# Built with Dockerfile.dist
+FROM quay.io/redhat-user-workloads/rhtap-contract-tenant/ec-v01-alpha/cli-v01-alpha@sha256:6aca9b2e9fde177d1398820b4b0609865dc2b0573c2d9e6d475e515a6a123f1c AS ec-image
+#FROM registry.redhat.io/rhtas-tech-preview/ec-rhel9:1.0.alpha-1705963542@sha256:6aca9b2e9fde177d1398820b4b0609865dc2b0573c2d9e6d475e515a6a123f1c AS ec-image
+
+# (This is from November, so will need to be updated once there's a fresh image built)
+FROM registry.redhat.io/rhtas-tech-preview/client-server-rhel9:1.0.beta-1699564708@sha256:07b1c06290706873ee55e39bad5804ea1d7574b01909adf97d67495ad919f9a1
+
+# Add the ec binaries in with the cosign, gitsign and rekor-cli that are already there
+COPY --from=ec-image /usr/local/bin/ec_darwin_amd64.gz      /var/www/html/clients/darwin/ec-amd64.gz
+COPY --from=ec-image /usr/local/bin/ec_darwin_arm64.gz      /var/www/html/clients/darwin/ec-arm64.gz
+COPY --from=ec-image /usr/local/bin/ec_linux_amd64.gz       /var/www/html/clients/linux/ec-amd64.gz
+COPY --from=ec-image /usr/local/bin/ec_linux_arm64.gz       /var/www/html/clients/linux/ec-arm64.gz
+COPY --from=ec-image /usr/local/bin/ec_linux_ppc64le.gz     /var/www/html/clients/linux/ec-ppc64le.gz
+COPY --from=ec-image /usr/local/bin/ec_linux_s390x.gz       /var/www/html/clients/linux/ec-s390x.gz
+COPY --from=ec-image /usr/local/bin/ec_windows_amd64.exe.gz /var/www/html/clients/windows/ec-amd64.gz
+
+# Everything else, i.e. CMD and LABEL, should be inherited from the base image
