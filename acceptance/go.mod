@@ -8,8 +8,8 @@ require (
 	github.com/cyberphone/json-canonicalization v0.0.0-20231011164504-785e29786b46
 	github.com/doiit/picocolors v1.0.1
 	github.com/enterprise-contract/enterprise-contract-controller/api v0.1.8
-	github.com/evanphx/json-patch/v5 v5.8.1
-	github.com/gkampitakis/go-snaps v0.4.12 // we need custom snapshot directory & file support from https://github.com/gkampitakis/go-snaps/pull/60
+	github.com/evanphx/json-patch/v5 v5.9.0
+	github.com/gkampitakis/go-snaps v0.5.0 // we need custom snapshot directory & file support from https://github.com/gkampitakis/go-snaps/pull/60
 	github.com/go-git/go-billy/v5 v5.5.0
 	github.com/go-git/go-git/v5 v5.11.0
 	github.com/go-openapi/strfmt v0.22.0
@@ -139,7 +139,7 @@ require (
 	github.com/lufia/plan9stats v0.0.0-20211012122336-39d0f177ccd0 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
-	github.com/maruel/natural v1.1.0 // indirect
+	github.com/maruel/natural v1.1.1 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/matttproud/golang_protobuf_extensions/v2 v2.0.0 // indirect
@@ -170,7 +170,7 @@ require (
 	github.com/prometheus/common v0.45.0 // indirect
 	github.com/prometheus/procfs v0.12.0 // indirect
 	github.com/prometheus/statsd_exporter v0.22.7 // indirect
-	github.com/rogpeppe/go-internal v1.11.1-0.20231026093722-fa6a31e0812c // indirect
+	github.com/rogpeppe/go-internal v1.12.0 // indirect
 	github.com/sagikazarmark/locafero v0.3.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/sassoftware/relic v7.2.1+incompatible // indirect
