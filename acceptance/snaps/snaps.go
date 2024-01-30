@@ -79,6 +79,10 @@ func (e *errCapture) Error(args ...interface{}) {
 func (e errCapture) Log(args ...interface{}) {
 }
 
+func (e errCapture) Cleanup(f func()) {
+	e.t.Cleanup(f)
+}
+
 func capture(ctx context.Context, qualifier string) errCapture {
 	t := testenv.Testing(ctx)
 
