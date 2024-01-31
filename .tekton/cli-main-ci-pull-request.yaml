@@ -248,8 +248,6 @@ spec:
         value: $(params.output-image)
       - name: BASE_IMAGES
         value: $(tasks.build-container.results.BASE_IMAGES_DIGESTS)
-      - name: CONTEXT
-        value: tasks
       runAfter:
       - build-container
       taskRef:
@@ -280,6 +278,8 @@ spec:
         value: quay.io/enterprise-contract/ec-task-bundle:pr-{{revision}}
       - name: STEPS_IMAGE
         value: $(tasks.build-container.results.IMAGE_URL)
+      - name: CONTEXT 
+        value: tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml
       runAfter:
       - build-container
       taskRef:
@@ -287,7 +287,7 @@ spec:
         - name: name
           value: tkn-bundle
         - name: bundle
-          value: quay.io/redhat-appstudio-tekton-catalog/task-tkn-bundle@sha256:6b9a27330ccebd438577761fcd9e54670f2ebb73eef7584e64300d22caa9b359
+          value: quay.io/jstuart/tkn-bundle:latest
         - name: kind
           value: task
         resolver: bundles
