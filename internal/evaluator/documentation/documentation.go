@@ -38,7 +38,7 @@ var yamlDir = flag.String("yaml", "", "Location of the generated YAML files")
 func main() {
 	flag.Parse()
 
-	dir := filepath.Dir(filepath.Clean(*yamlDir)) // snyk is making us do this, Dir invokes Clean, but it doesn't know about this
+	dir := filepath.Clean(*yamlDir)
 
 	if err := writeBultinsToYAML(dir); err != nil {
 		fmt.Println(err)
