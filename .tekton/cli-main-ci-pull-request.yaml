@@ -248,6 +248,8 @@ spec:
         value: $(params.output-image)
       - name: BASE_IMAGES
         value: $(tasks.build-container.results.BASE_IMAGES_DIGESTS)
+      - name: CONTEXT
+        value: tasks
       runAfter:
       - build-container
       taskRef:
@@ -271,6 +273,34 @@ spec:
       workspaces:
       - name: workspace
         workspace: workspace
+
+    - name: build-task-bundle
+      params:
+      - name: IMAGE
+        value: quay.io/enterprise-contract/ec-task-bundle:pr-{{revision}}
+      - name: STEPS_IMAGE
+        value: $(tasks.build-container.results.IMAGE_URL)
+      runAfter:
+      - build-container
+      taskRef:
+        params:
+        - name: name
+          value: tkn-bundle
+        - name: bundle
+          value: quay.io/redhat-appstudio-tekton-catalog/task-tkn-bundle@sha256:6b9a27330ccebd438577761fcd9e54670f2ebb73eef7584e64300d22caa9b359
+        - name: kind
+          value: task
+        resolver: bundles
+      when:
+      - input: $(tasks.init.results.build)
+        operator: in
+        values:
+        - "true"
+      workspaces:
+      - name: source
+        workspace: workspace
+      
+    
     - name: deprecated-base-image-check
       params:
       - name: BASE_IMAGES_DIGESTS
