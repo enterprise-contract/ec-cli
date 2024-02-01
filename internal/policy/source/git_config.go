@@ -24,24 +24,38 @@ package source
 import (
 	"context"
 	"fmt"
-	"path"
 	"strings"
 
 	getter "github.com/hashicorp/go-getter"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/afero"
-
-	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
+
+// SourceIsFile returns true if go-getter thinks the src looks like a file path.
+// Ensuring that the src is not a git url is important because go-getter can think
+// that a git url is a file path url.
+func SourceIsFile(src string) bool {
+	normalizedUrl, err := getter.Detect(src, ".", []getter.Detector{new(getter.FileDetector)})
+	return err == nil && strings.HasPrefix(normalizedUrl, "file") && !SourceIsGit(src)
+}
 
 // SourceIsGit returns true if go-getter thinks the src looks like a git url
 func SourceIsGit(src string) bool {
-	normalizedUrl, err := getter.Detect(src, ".", getter.Detectors)
+	normalizedUrl, err := getter.Detect(src, ".", []getter.Detector{
+		new(getter.GitHubDetector),
+		new(getter.GitLabDetector),
+		new(getter.GitDetector),
+	})
 	return err == nil && strings.HasPrefix(normalizedUrl, "git::")
 }
 
-func GitConfigDownload(ctx context.Context, tmpDir, src string) (string, error) {
-	// Download the config, presumably from a git url
+// SourceIsHttp returns true if go-getter thinks the src looks like an http url
+func SourceIsHttp(src string) bool {
+	normalizedUrl, err := getter.Detect(src, ".", getter.Detectors)
+	return err == nil && strings.HasPrefix(normalizedUrl, "http")
+}
+
+func GoGetterDownload(ctx context.Context, tmpDir, src string) (string, error) {
+	// Download the config from a url
 	c := PolicyUrl{
 		Url:  src,
 		Kind: ConfigKind,
@@ -61,34 +75,4 @@ func GitConfigDownload(ctx context.Context, tmpDir, src string) (string, error) 
 	}
 	log.Debugf("Chose file %s to use for the policy config", configFile)
 	return configFile, nil
-}
-
-var policyFileBaseNames = []string{
-	".ec/policy",
-	"policy",
-}
-
-var policyFileExtensions = []string{
-	"json",
-	"yaml",
-	"yml",
-}
-
-// choosePolicyFile picks a file from a given directory to use as an EC policy file
-// Uses policyFileBaseNames and policyFileExtensions to decide what to look for
-func choosePolicyFile(ctx context.Context, configDir string) (string, error) {
-	fs := utils.FS(ctx)
-	for _, b := range policyFileBaseNames {
-		for _, e := range policyFileExtensions {
-			configFile := path.Join(configDir, fmt.Sprintf("%s.%s", b, e))
-			fileExists, err := afero.Exists(fs, configFile)
-			if err != nil {
-				return "", err
-			}
-			if fileExists {
-				return configFile, nil
-			}
-		}
-	}
-	return "", fmt.Errorf("no suitable config file found in %s", configDir)
 }

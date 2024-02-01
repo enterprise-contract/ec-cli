@@ -19,70 +19,31 @@
 package source
 
 import (
-	"context"
 	"testing"
 
-	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
-
-	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
-func TestChoosePolicyFile(t *testing.T) {
+func TestSourceIsFile(t *testing.T) {
 	tests := []struct {
-		name    string
-		files   []string
-		want    string
-		wantErr bool
-		errText string
+		src  string
+		want bool
 	}{
-		{
-			name:    "No files",
-			files:   []string{},
-			wantErr: true,
-			errText: "no suitable config file found",
-		},
-		{
-			name:  "One policy.json file",
-			files: []string{"/policy.json"},
-			want:  "/policy.json",
-		},
-		{
-			name:  "One .ec/policy.yaml file",
-			files: []string{"/.ec/policy.yaml"},
-			want:  "/.ec/policy.yaml",
-		},
-		{
-			name:  "Multiple files with basename precedence",
-			files: []string{"/.ec/policy.yml", "/policy.yaml"},
-			want:  "/.ec/policy.yml",
-		},
-		{
-			name:  "Multiple files with extension precedence",
-			files: []string{"/policy.yml", "/policy.yaml", "/policy.json"},
-			want:  "/policy.json",
-		},
+		{src: "", want: false},
+		{src: "foo", want: true},
+		{src: "https://foo.bar/asdf", want: false},
+		{src: "git::https://foo.bar/asdf", want: false},
+		{src: "git::github.com/foo/bar", want: false},
+		{src: "https://raw.githubusercontent.com/foo/bar", want: false},
+		{src: "gitlab.com/foo/bar", want: false},
+		{src: "/file/path/to/foo/policy.yaml", want: true},
+		{src: "../../file/path/to/foo/policy.yaml", want: true},
+		{src: "github.com/foo/bar", want: false},
+		{src: "s3::github.com/foo/bar", want: false},
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			fs := afero.NewMemMapFs()
-			ctx := utils.WithFS(context.Background(), fs)
-
-			for _, f := range tt.files {
-				err := afero.WriteFile(fs, f, []byte(""), 0644)
-				assert.NoError(t, err)
-			}
-
-			ff, err := choosePolicyFile(ctx, "/")
-			if tt.wantErr {
-				assert.Equal(t, "", ff)
-				assert.ErrorContains(t, err, tt.errText)
-			} else {
-				assert.Equal(t, tt.want, ff)
-				assert.NoError(t, err)
-			}
-		})
+		assert.Equal(t, tt.want, SourceIsFile(tt.src), "SourceIsFile(%s) = %v, want %v", tt.src, SourceIsFile(tt.src), tt.want)
 	}
 }
 
@@ -91,15 +52,40 @@ func TestSourceIsGit(t *testing.T) {
 		src  string
 		want bool
 	}{
+		{src: "", want: false},
 		{src: "foo", want: false},
 		{src: "foo.bar/asdf", want: false},
-		{src: "git::foo.bar/asdf", want: true},
+		{src: "git::https://foo.bar/asdf", want: true},
+		{src: "git::github.com/foo/bar", want: true},
+		{src: "https://raw.githubusercontent.com/foo/bar", want: false},
 		{src: "gitlab.com/foo/bar", want: true},
 		{src: "github.com/foo/bar", want: true},
 		{src: "s3::github.com/foo/bar", want: false},
 	}
 
 	for _, tt := range tests {
-		assert.Equal(t, tt.want, SourceIsGit(tt.src))
+		assert.Equal(t, tt.want, SourceIsGit(tt.src), "SourceIsGit(%s) = %v, want %v", tt.src, SourceIsGit(tt.src), tt.want)
+	}
+}
+
+func TestSourceIsHttp(t *testing.T) {
+	tests := []struct {
+		src  string
+		want bool
+	}{
+		{src: "", want: false},
+		{src: "foo", want: false},
+		{src: "foo.bar/asdf", want: false},
+		{src: "git::https://foo.bar/asdf", want: false},
+		{src: "git::github.com/foo/bar", want: false},
+		{src: "https://raw.githubusercontent.com/foo/bar", want: true},
+		{src: "raw.githubusercontent.com/foo/bar", want: false},
+		{src: "gitlab.com/foo/bar", want: false},
+		{src: "github.com/foo/bar", want: false},
+		{src: "s3::github.com/foo/bar", want: false},
+	}
+
+	for _, tt := range tests {
+		assert.Equal(t, tt.want, SourceIsHttp(tt.src), "SourceIsHttp(%s) = %v, want %v", tt.src, SourceIsHttp(tt.src), tt.want)
 	}
 }
