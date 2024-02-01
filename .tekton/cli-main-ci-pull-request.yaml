@@ -279,7 +279,7 @@ spec:
       - name: STEPS_IMAGE
         value: $(tasks.build-container.results.IMAGE_URL)
       - name: CONTEXT 
-        value: tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml
+        value: ./source/tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml
       runAfter:
       - build-container
       taskRef:
@@ -299,8 +299,6 @@ spec:
       workspaces:
       - name: source
         workspace: workspace
-      
-    
     - name: deprecated-base-image-check
       params:
       - name: BASE_IMAGES_DIGESTS
