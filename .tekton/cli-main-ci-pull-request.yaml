@@ -412,7 +412,6 @@ spec:
   taskRunTemplate:
     podTemplate:
       securityContext:
-        runAsNonRoot: true
         runAsUser: 1001
   workspaces:
   - name: workspace
