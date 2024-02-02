@@ -419,7 +419,7 @@ spec:
         creationTimestamp: null
       spec:
         accessModes:
-        - ReadWriteOnce
+        - ReadWrite
         resources:
           requests:
             storage: 1Gi
