@@ -423,7 +423,6 @@ spec:
           requests:
             storage: 1Gi
       status: {}
-      
   - name: git-auth
     secret:
       secretName: '{{ git_auth_secret }}'
