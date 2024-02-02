@@ -301,7 +301,6 @@ spec:
       workspaces:
       - name: source
         workspace: workspace
-
     - name: deprecated-base-image-check
       params:
       - name: BASE_IMAGES_DIGESTS
