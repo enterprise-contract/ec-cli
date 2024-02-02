@@ -280,6 +280,8 @@ spec:
         value: $(tasks.build-container.results.IMAGE_URL)
       - name: CONTEXT 
         value: ./source/tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml
+      - name: HOME 
+        value: /tekton/summer-home
       runAfter:
       - build-container
       taskRef:
