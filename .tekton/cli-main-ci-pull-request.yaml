@@ -409,10 +409,7 @@ spec:
     - name: workspace
     - name: git-auth
       optional: true
-  taskRunTemplate:
-    podTemplate:
-      securityContext:
-        runAsUser: 1001
+  taskRunTemplate: {}
   workspaces:
   - name: workspace
     volumeClaimTemplate:
