@@ -2,34 +2,36 @@ apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:
   annotations:
-    build.appstudio.openshift.io/repo: https://github.com/joejstuart/ec-cli?rev={{revision}}
+    build.appstudio.openshift.io/repo: https://github.com/enterprise-contract/ec-cli?rev={{revision}}
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
     build.appstudio.redhat.com/pull_request_number: '{{pull_request_number}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
     pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch
-      == "ec-release-debugging"
+      == "main"
   creationTimestamp: null
   labels:
     appstudio.openshift.io/application: ec-release-debugging
-    appstudio.openshift.io/component: verify-enterprise-contract-task
+    appstudio.openshift.io/component: ec-cli
     pipelines.appstudio.openshift.io/type: build
-  name: verify-enterprise-contract-task-on-pull-request
+  name: ec-cli-on-pull-request
   namespace: rhtap-contract-tenant
 spec:
   params:
   - name: dockerfile
-    value: docker/Dockerfile
+    value: Dockerfile.dist
   - name: git-url
-    value: '{{source_url}}'
+    value: '{{repo_url}}'
   - name: image-expires-after
     value: 5d
   - name: output-image
-    value: quay.io/redhat-user-workloads/rhtap-contract-tenant/ec-release-debugging/verify-enterprise-contract-task:on-pr-{{revision}}
+    value: quay.io/redhat-user-workloads/rhtap-contract-tenant/ec-release-debugging/ec-cli:on-pr-{{revision}}
   - name: path-context
     value: .
   - name: revision
     value: '{{revision}}'
+  - name: build-source-image
+    value: 'true'
   pipelineSpec:
     finally:
     - name: show-sbom
@@ -93,6 +95,10 @@ spec:
       description: Skip checks against built image
       name: skip-checks
       type: string
+    - default: "true"
+      description: Skip optional checks, set false if you want to run optional checks
+      name: skip-optional
+      type: string
     - default: "false"
       description: Execute the build with network isolation
       name: hermetic
@@ -153,6 +159,10 @@ spec:
         value: $(params.git-url)
       - name: revision
         value: $(params.revision)
+      - name: depth
+        value: "0"
+      - name: fetchTags
+        value: "true"
       runAfter:
       - init
       taskRef:
@@ -272,7 +282,7 @@ spec:
         - name: name
           value: deprecated-image-check
         - name: bundle
-          value: quay.io/redhat-appstudio-tekton-catalog/task-deprecated-image-check:0.3@sha256:d862972471dca80900bbe3a0fbd579cc84e8414bafbd5021bc684b207067c423
+          value: quay.io/redhat-appstudio-tekton-catalog/task-deprecated-image-check:0.3@sha256:a299ff57d97f3924020634625dfb9bbc66547124ca23a3396e338c645f7b4a8e
         - name: kind
           value: task
         resolver: bundles
@@ -294,7 +304,7 @@ spec:
         - name: name
           value: clair-scan
         - name: bundle
-          value: quay.io/redhat-appstudio-tekton-catalog/task-clair-scan:0.1@sha256:cfd4a8350b12900345f341171b3fafe9b1f5eb5eeb6aa773bfb1e88ab99cff4a
+          value: quay.io/redhat-appstudio-tekton-catalog/task-clair-scan:0.1@sha256:63b42c0fc23d05e26776a0e7c4f0ab00750096ebfe1eed9a7ba96f8b27713fbf
         - name: kind
           value: task
         resolver: bundles
@@ -311,7 +321,7 @@ spec:
         - name: name
           value: sast-snyk-check
         - name: bundle
-          value: quay.io/redhat-appstudio-tekton-catalog/task-sast-snyk-check:0.1@sha256:b3ff528f60b1d1239dc3dd5de89e553364899823220de3db7fdaf696c3288977
+          value: quay.io/redhat-appstudio-tekton-catalog/task-sast-snyk-check:0.1@sha256:47515cb119225bba55c593876610bd890f8efcbb66bb57fb0c0881ddd47ce558
         - name: kind
           value: task
         resolver: bundles
@@ -336,7 +346,7 @@ spec:
         - name: name
           value: clamav-scan
         - name: bundle
-          value: quay.io/redhat-appstudio-tekton-catalog/task-clamav-scan:0.1@sha256:429e630d8a9a4f268db52daf4971b08783ebefd20fd2770d27cf75218b6500ba
+          value: quay.io/redhat-appstudio-tekton-catalog/task-clamav-scan:0.1@sha256:3a546fe7c07fc24ecf3bddef88a7a9a66b525c4dd53acc8b5ea13069f60c086d
         - name: kind
           value: task
         resolver: bundles
@@ -358,7 +368,7 @@ spec:
         - name: name
           value: sbom-json-check
         - name: bundle
-          value: quay.io/redhat-appstudio-tekton-catalog/task-sbom-json-check:0.1@sha256:9f803c95f59faa75a87b6548506d5aa0df8368e937d40d696e863a0d46be0937
+          value: quay.io/redhat-appstudio-tekton-catalog/task-sbom-json-check:0.1@sha256:bf49861b3bbee2129e8d1b5966fc2a7c3f259d96a5fcef5674d05c9cb21ab540
         - name: kind
           value: task
         resolver: bundles
