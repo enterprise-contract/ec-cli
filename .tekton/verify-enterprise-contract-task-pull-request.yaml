@@ -7,7 +7,6 @@ metadata:
     pipelines.appstudio.openshift.io/type: build
   name: verify-enterprise-contract-task-on-pull-request
   namespace: rhtap-contract-tenant
-
 spec:
   params:
   - name: dockerfile
