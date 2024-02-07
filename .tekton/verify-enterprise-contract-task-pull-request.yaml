@@ -204,8 +204,6 @@ spec:
       workspaces:
       - name: source
         workspace: workspace
-      - name: registry-auth
-        workspace: registry-auth
     # - name: build-source-image
     #   params:
     #   - name: BINARY_IMAGE
@@ -323,7 +321,6 @@ spec:
     - name: workspace
     - name: git-auth
       optional: true
-    - name: registry-auth
   taskRunTemplate: {}
   workspaces:
   - name: workspace
@@ -340,7 +337,4 @@ spec:
   - name: git-auth
     secret:
       secretName: '{{ git_auth_secret }}'
-  - name: registry-auth
-    secret:
-      secretName: quay-release-engineering
 status: {}
