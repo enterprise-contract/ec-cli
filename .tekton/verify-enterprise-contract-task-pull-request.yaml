@@ -185,6 +185,8 @@ spec:
         value: quay.io/jstuart/verify-enterprise-contract-task:pr-{{revision}}
       - name: CONTEXT 
         value: ./source/tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml
+      - name: HOME 
+        value: /tekton/tekton-home
       runAfter:
         - prefetch-dependencies
       taskRef:
