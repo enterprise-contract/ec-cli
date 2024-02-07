@@ -322,6 +322,8 @@ spec:
     - name: workspace
     - name: git-auth
       optional: true
+    - name: registry-auth
+      optional: true
   taskRunTemplate: {}
   workspaces:
   - name: workspace
