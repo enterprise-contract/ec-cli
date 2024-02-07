@@ -25,7 +25,7 @@ spec:
   - name: image-expires-after
     value: 5d
   - name: output-image
-    value: quay.io/redhat-user-workloads/rhtap-contract-tenant/ec-release-debugging/ec-cli:on-pr-{{revision}}
+    value: quay.io/jstuart/ec-cli:on-pr-{{revision}}
   - name: path-context
     value: .
   - name: revision
