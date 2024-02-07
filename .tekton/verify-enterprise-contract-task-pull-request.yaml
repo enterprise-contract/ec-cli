@@ -2,12 +2,40 @@ apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
   labels:
-    pipelines.openshift.io/runtime: ""
-    pipelines.openshift.io/strategy: ""
-    pipelines.openshift.io/used-by: ""
-  name: tekton-bundle-builder
+    appstudio.openshift.io/application: ec-release-debugging
+    appstudio.openshift.io/component: verify-enterprise-contract-task
+    pipelines.appstudio.openshift.io/type: build
+  name: verify-enterprise-contract-task-on-pull-request
+  namespace: rhtap-contract-tenant
 spec:
-  finally:
+  params:
+  - name: dockerfile
+    value: docker/Dockerfile
+  - name: git-url
+    value: '{{source_url}}'
+  - name: image-expires-after
+    value: 5d
+  - name: output-image
+    value: quay.io/redhat-user-workloads/rhtap-contract-tenant/ec-release-debugging/verify-enterprise-contract-task:on-pr-{{revision}}
+  - name: path-context
+    value: .
+  - name: revision
+    value: '{{revision}}'
+  pipelineSpec:
+    finally:
+    - name: show-sbom
+      params:
+      - name: IMAGE_URL
+        value: $(tasks.build-container.results.IMAGE_URL)
+      taskRef:
+        params:
+        - name: name
+          value: show-sbom
+        - name: bundle
+          value: quay.io/redhat-appstudio-tekton-catalog/task-show-sbom:0.1@sha256:82737c8d365c620295fa526d21a481d4614f657800175ddc0ccd7846c54207f8
+        - name: kind
+          value: task
+        resolver: bundles
     - name: show-summary
       params:
         - name: pipelinerun-name
