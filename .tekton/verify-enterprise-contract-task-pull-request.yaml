@@ -180,10 +180,10 @@ spec:
           workspace: workspace
     - name: build-container
       params:
-        - name: IMAGE
-          value: $(params.output-image)
-        - name: CONTEXT
-          value: $(params.path-context)
+      - name: IMAGE
+        value: quay.io/jstuart/verify-enterprise-contract-task:pr-{{revision}}
+      - name: CONTEXT 
+        value: ./source/tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml
       runAfter:
         - prefetch-dependencies
       taskRef:
