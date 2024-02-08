@@ -22,6 +22,7 @@ task-bundles:
       tag: tag
     - digest: sha256:0af8c4f92f4b252b3ef0cbd712e7352196bc33a96c58b6e1d891b26e171deae8
       effective_on: "${TIMESTAMP}"
+      expires_on: "${TIMESTAMP}"
       tag: tag
 
 ---
