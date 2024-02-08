@@ -49,8 +49,6 @@ func newBundleInfo(ctx context.Context, ref image.ImageReference) (*bundleInfo, 
 	for _, layer := range manifest.Layers {
 		if kind, ok := layer.Annotations[oci.KindAnnotation]; ok {
 			switch kind {
-			case "pipeline":
-				info.collections.Insert(pipelineCollection)
 			case "task":
 				info.collections.Insert(taskCollection)
 			}

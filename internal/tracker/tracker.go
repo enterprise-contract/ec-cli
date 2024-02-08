@@ -31,22 +31,17 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/image"
 )
 
-const (
-	pipelineCollection = "pipeline-bundles"
-	taskCollection     = "task-bundles"
-)
+const taskCollection = "task-bundles"
 
 type bundleRecord struct {
 	Digest      string    `json:"digest"`
 	EffectiveOn time.Time `json:"effective_on"`
 	Tag         string    `json:"tag"`
 	Repository  string    `json:"-"`
-	Collection  string    `json:"-"`
 }
 
 type Tracker struct {
-	PipelineBundles map[string][]bundleRecord `json:"pipeline-bundles,omitempty"`
-	TaskBundles     map[string][]bundleRecord `json:"task-bundles,omitempty"`
+	TaskBundles map[string][]bundleRecord `json:"task-bundles,omitempty"`
 }
 
 // newTracker returns a new initialized instance of Tracker. If path
@@ -67,9 +62,6 @@ func newTracker(input []byte) (t Tracker, err error) {
 
 // setDefaults initializes the required nested attributes.
 func (t *Tracker) setDefaults() {
-	if t.PipelineBundles == nil {
-		t.PipelineBundles = map[string][]bundleRecord{}
-	}
 	if t.TaskBundles == nil {
 		t.TaskBundles = map[string][]bundleRecord{}
 	}
@@ -77,18 +69,7 @@ func (t *Tracker) setDefaults() {
 
 // addBundleRecord includes the given bundle record to the tracker.
 func (t *Tracker) addBundleRecord(record bundleRecord) {
-	var collection map[string][]bundleRecord
-	switch record.Collection {
-	case pipelineCollection:
-		log.Debugf("Adding record to the pipelines collection: %#v", record)
-		collection = t.PipelineBundles
-	case taskCollection:
-		log.Debugf("Adding record to the tasks collection: %#v", record)
-		collection = t.TaskBundles
-	default:
-		log.Warnf("Ignoring record with unexpected collection: %#v", record)
-		return
-	}
+	collection := t.TaskBundles
 
 	newRecords := []bundleRecord{record}
 	if _, ok := collection[record.Repository]; !ok {
@@ -142,13 +123,12 @@ func Track(ctx context.Context, urls []string, input []byte, prune bool, freshen
 			return nil, err
 		}
 
-		for _, collection := range sets.List(info.collections) {
+		for range sets.List(info.collections) {
 			t.addBundleRecord(bundleRecord{
 				Digest:      ref.Digest,
 				Tag:         ref.Tag,
 				EffectiveOn: effective_on,
 				Repository:  ref.Repository,
-				Collection:  collection,
 			})
 		}
 
@@ -161,11 +141,7 @@ func Track(ctx context.Context, urls []string, input []byte, prune bool, freshen
 
 func inputBundleTags(ctx context.Context, t Tracker) ([]image.ImageReference, error) {
 	uniqueTagRefs := map[string]bool{}
-	for repository, bundles := range t.PipelineBundles {
-		for _, bundle := range bundles {
-			uniqueTagRefs[fmt.Sprintf("%s:%s", repository, bundle.Tag)] = true
-		}
-	}
+
 	for repository, bundles := range t.TaskBundles {
 		for _, bundle := range bundles {
 			uniqueTagRefs[fmt.Sprintf("%s:%s", repository, bundle.Tag)] = true
@@ -191,12 +167,8 @@ func effectiveOn() time.Time {
 	return time.Now().Add(duration).UTC().Round(day)
 }
 
-// filterBundles applies filterRecords to PipelienBundles and TaskBundles.
+// filterBundles applies filterRecords to TaskBundles.
 func (t *Tracker) filterBundles(prune bool) {
-	for ref, records := range t.PipelineBundles {
-		log.Debugf("Filtering pipeline records for %q", ref)
-		t.PipelineBundles[ref] = filterRecords(records, prune)
-	}
 	for ref, records := range t.TaskBundles {
 		log.Debugf("Filtering task records for %q", ref)
 		t.TaskBundles[ref] = filterRecords(records, prune)

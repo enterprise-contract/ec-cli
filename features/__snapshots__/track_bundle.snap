@@ -1,11 +1,6 @@
 
 [:stdout - 1]
 /-/-/-/
-pipeline-bundles:
-  ${REGISTRY}/acceptance/bundle:
-    - digest: sha256:${REGISTRY_acceptance/bundle:tag_DIGEST}
-      effective_on: "${TIMESTAMP}"
-      tag: tag
 task-bundles:
   ${REGISTRY}/acceptance/bundle:
     - digest: sha256:${REGISTRY_acceptance/bundle:tag_DIGEST}
@@ -20,20 +15,12 @@ task-bundles:
 
 [:stdout - 2]
 /-/-/-/
-pipeline-bundles:
-  ${REGISTRY}/acceptance/bundle:
-    - digest: sha256:${REGISTRY_acceptance/bundle:tag_DIGEST}
-      effective_on: "${TIMESTAMP}"
-      tag: tag
-    - digest: sha256:96e96850c6561bdd7514d0f9849e3cdb2f3c284480663128a438537f602ff64e
-      effective_on: "2006-01-02T15:04:05Z"
-      tag: tag
 task-bundles:
   ${REGISTRY}/acceptance/bundle:
     - digest: sha256:${REGISTRY_acceptance/bundle:tag_DIGEST}
       effective_on: "${TIMESTAMP}"
       tag: tag
-    - digest: sha256:96e96850c6561bdd7514d0f9849e3cdb2f3c284480663128a438537f602ff64e
+    - digest: sha256:0af8c4f92f4b252b3ef0cbd712e7352196bc33a96c58b6e1d891b26e171deae8
       effective_on: "2006-01-02T15:04:05Z"
       tag: tag
 
@@ -45,25 +32,41 @@ task-bundles:
 
 [Fresh tags:stdout - 1]
 /-/-/-/
-pipeline-bundles:
-  ${REGISTRY}/acceptance/bundle:
-    - digest: sha256:${REGISTRY_acceptance/bundle:tag_DIGEST}
-      effective_on: "${TIMESTAMP}"
-      tag: tag
-    - digest: sha256:96e96850c6561bdd7514d0f9849e3cdb2f3c284480663128a438537f602ff64e
-      effective_on: "${TIMESTAMP}"
-      tag: tag
 task-bundles:
   ${REGISTRY}/acceptance/bundle:
     - digest: sha256:${REGISTRY_acceptance/bundle:tag_DIGEST}
       effective_on: "${TIMESTAMP}"
       tag: tag
-    - digest: sha256:96e96850c6561bdd7514d0f9849e3cdb2f3c284480663128a438537f602ff64e
+    - digest: sha256:0af8c4f92f4b252b3ef0cbd712e7352196bc33a96c58b6e1d891b26e171deae8
       effective_on: "${TIMESTAMP}"
       tag: tag
 
 ---
 
 [Fresh tags:stderr - 1]
+
+---
+
+[Pipeline definition is ignored from mixed bundle:stdout - 1]
+/-/-/-/
+task-bundles:
+  ${REGISTRY}/acceptance/bundle:
+    - digest: sha256:${REGISTRY_acceptance/bundle:tag_DIGEST}
+      effective_on: "${TIMESTAMP}"
+      tag: tag
+
+---
+
+[Pipeline definition is ignored from mixed bundle:stderr - 1]
+
+---
+
+[Pipeline definition is ignored on its own:stdout - 1]
+/-/-/-/
+{}
+
+---
+
+[Pipeline definition is ignored on its own:stderr - 1]
 
 ---

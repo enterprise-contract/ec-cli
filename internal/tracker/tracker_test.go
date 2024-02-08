@@ -81,7 +81,7 @@ func TestTrack(t *testing.T) {
 			},
 			output: hd.Doc(`
 				---
-				pipeline-bundles:
+				task-bundles:
 				  registry.com/repo:
 				    - digest: ` + sampleHashOne.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
@@ -99,7 +99,7 @@ func TestTrack(t *testing.T) {
 			},
 			output: hd.Doc(`
 				---
-				pipeline-bundles:
+				task-bundles:
 				  registry.com/one:
 				    - digest: ` + sampleHashOne.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
@@ -117,7 +117,7 @@ func TestTrack(t *testing.T) {
 			},
 			input: []byte(hd.Doc(
 				`---
-				pipeline-bundles:
+				task-bundles:
 				  registry.com/repo:
 				    - digest: ` + sampleHashOne.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
@@ -125,7 +125,7 @@ func TestTrack(t *testing.T) {
 			`)),
 			output: hd.Doc(
 				`---
-				pipeline-bundles:
+				task-bundles:
 				  registry.com/repo:
 				    - digest: ` + sampleHashTwo.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
@@ -142,7 +142,7 @@ func TestTrack(t *testing.T) {
 			},
 			input: []byte(hd.Doc(`
 				---
-				pipeline-bundles:
+				task-bundles:
 				  registry.com/one:
 				    - digest: ` + sampleHashOne.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
@@ -150,7 +150,7 @@ func TestTrack(t *testing.T) {
 			`)),
 			output: hd.Doc(`
 				---
-				pipeline-bundles:
+				task-bundles:
 				  registry.com/one:
 				    - digest: ` + sampleHashOne.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
@@ -167,24 +167,15 @@ func TestTrack(t *testing.T) {
 				"registry.com/two:2.0@" + sampleHashTwo.String(),
 			},
 			input: []byte(hd.Doc(`
-				task-bundles:
-				  registry.com/one:
-				    - digest: ` + sampleHashOne.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "1.0"
+				---
 			`)),
 			output: hd.Doc(`
 				---
-				pipeline-bundles:
+				task-bundles:
 				  registry.com/two:
 				    - digest: ` + sampleHashTwo.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
 				      tag: "2.0"
-				task-bundles:
-				  registry.com/one:
-				    - digest: ` + sampleHashOne.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "1.0"
 			`),
 		},
 		{
@@ -194,11 +185,6 @@ func TestTrack(t *testing.T) {
 			},
 			output: hd.Doc(`
 				---
-				pipeline-bundles:
-				  registry.com/mixed:
-				    - digest: ` + sampleHashOne.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "1.0"
 				task-bundles:
 				  registry.com/mixed:
 				    - digest: ` + sampleHashOne.String() + `
@@ -213,7 +199,7 @@ func TestTrack(t *testing.T) {
 			},
 			input: []byte(hd.Doc(`
 				---
-				pipeline-bundles:
+				task-bundles:
 				  registry.com/one:
 				    - digest: ` + sampleHashOne.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
@@ -221,7 +207,7 @@ func TestTrack(t *testing.T) {
 			`)),
 			output: hd.Doc(`
 				---
-				pipeline-bundles:
+				task-bundles:
 				  registry.com/one:
 				    - digest: ` + sampleHashOne.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
@@ -236,18 +222,6 @@ func TestTrack(t *testing.T) {
 			prune: true,
 			input: []byte(hd.Doc(`
 				---
-				pipeline-bundles:
-				  registry.com/mixed:
-				    - digest: ` + sampleHashThree.String() + `
-				      effective_on: "` + yesterday + `"
-				      tag: "1.0"
-				    - digest: ` + sampleHashTwo.String() + `
-				      effective_on: "` + yesterday + `"
-				      tag: "1.0"
-				    # Unrelated tag should be ignored.
-				    - digest: sha256:abc
-				      effective_on: "` + yesterday + `"
-				      tag: "0.9"
 				task-bundles:
 				  registry.com/mixed:
 				    - digest: ` + sampleHashThree.String() + `
@@ -263,17 +237,6 @@ func TestTrack(t *testing.T) {
 			`)),
 			output: hd.Doc(`
 				---
-				pipeline-bundles:
-				  registry.com/mixed:
-				    - digest: ` + sampleHashOne.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "1.0"
-				    - digest: ` + sampleHashThree.String() + `
-				      effective_on: "` + yesterday + `"
-				      tag: "1.0"
-				    - digest: sha256:abc
-				      effective_on: "` + yesterday + `"
-				      tag: "0.9"
 				task-bundles:
 				  registry.com/mixed:
 				    - digest: ` + sampleHashOne.String() + `
@@ -295,20 +258,6 @@ func TestTrack(t *testing.T) {
 			prune: true,
 			input: []byte(hd.Doc(`
 				---
-				pipeline-bundles:
-				  registry.com/mixed:
-				    - digest: ` + sampleHashThree.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "0.3"
-				    - digest: ` + sampleHashThree.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "0.3"
-				    - digest: ` + sampleHashTwo.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "0.2"
-				    - digest: ` + sampleHashTwo.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "0.2"
 				task-bundles:
 				  registry.com/mixed:
 				    - digest: ` + sampleHashThree.String() + `
@@ -326,17 +275,6 @@ func TestTrack(t *testing.T) {
 			`)),
 			output: hd.Doc(`
 				---
-				pipeline-bundles:
-				  registry.com/mixed:
-				    - digest: ` + sampleHashOne.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "1.0"
-				    - digest: ` + sampleHashThree.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "0.3"
-				    - digest: ` + sampleHashTwo.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "0.2"
 				task-bundles:
 				  registry.com/mixed:
 				    - digest: ` + sampleHashOne.String() + `
@@ -358,20 +296,6 @@ func TestTrack(t *testing.T) {
 			prune: true,
 			input: []byte(hd.Doc(`
 				---
-				pipeline-bundles:
-				  registry.com/mixed:
-				    - digest: ` + sampleHashThree.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "1.0"
-				    - digest: ` + sampleHashTwo.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "1.0"
-				    - digest: ` + sampleHashThree.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "1.0"
-				    - digest: ` + sampleHashTwo.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "1.0"
 				task-bundles:
 				  registry.com/mixed:
 				    - digest: ` + sampleHashThree.String() + `
@@ -389,23 +313,6 @@ func TestTrack(t *testing.T) {
 			`)),
 			output: hd.Doc(`
 				---
-				pipeline-bundles:
-				  registry.com/mixed:
-				    - digest: ` + sampleHashOne.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "1.0"
-				    - digest: ` + sampleHashThree.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "1.0"
-				    - digest: ` + sampleHashTwo.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "1.0"
-				    - digest: ` + sampleHashThree.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "1.0"
-				    - digest: ` + sampleHashTwo.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "1.0"
 				task-bundles:
 				  registry.com/mixed:
 				    - digest: ` + sampleHashOne.String() + `
@@ -430,7 +337,7 @@ func TestTrack(t *testing.T) {
 			freshen: true,
 			input: []byte(hd.Doc(`
 				---
-				pipeline-bundles:
+				task-bundles:
 				  registry.com/one:
 				    - digest: ` + sampleHashOne.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
@@ -438,7 +345,7 @@ func TestTrack(t *testing.T) {
 			`)),
 			output: hd.Doc(`
 			---
-			pipeline-bundles:
+			task-bundles:
 			  registry.com/one:
 			    - digest: ` + sampleHashOneUpdated.String() + `
 			      effective_on: "` + expectedEffectiveOn + `"
@@ -526,19 +433,19 @@ var testObjects = map[string]map[string]map[string]runtime.Object{
 
 var testImages = map[string]v1.Image{
 	"registry.com/one:1.0@" + sampleHashOne.String(): mustCreateFakeBundleImage([]fakeDefinition{
-		{name: "pipeline-v1", kind: "pipeline"},
+		{name: "task-v1", kind: "task"},
 	}),
 	"registry.com/one:1.0@" + sampleHashOneUpdated.String(): mustCreateFakeBundleImage([]fakeDefinition{
-		{name: "pipeline-v1", kind: "pipeline"},
+		{name: "task-v1", kind: "task"},
 	}),
 	"registry.com/two:2.0@" + sampleHashTwo.String(): mustCreateFakeBundleImage([]fakeDefinition{
-		{name: "pipeline-v2", kind: "pipeline"},
+		{name: "task-v2", kind: "task"},
 	}),
 	"registry.com/repo:one@" + sampleHashOne.String(): mustCreateFakeBundleImage([]fakeDefinition{
-		{name: "pipeline-v1", kind: "pipeline"},
+		{name: "task-v1", kind: "task"},
 	}),
 	"registry.com/repo:two@" + sampleHashTwo.String(): mustCreateFakeBundleImage([]fakeDefinition{
-		{name: "pipeline-v2", kind: "pipeline"},
+		{name: "task-v2", kind: "task"},
 	}),
 	"registry.com/mixed:1.0@" + sampleHashOne.String(): mustCreateFakeBundleImage([]fakeDefinition{
 		{name: "pipeline-v1", kind: "pipeline"},
