@@ -1,6 +1,15 @@
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
+  annotations:
+    build.appstudio.openshift.io/repo: https://github.com/joejstuart/ec-cli?rev={{revision}}
+    build.appstudio.redhat.com/commit_sha: '{{revision}}'
+    build.appstudio.redhat.com/pull_request_number: '{{pull_request_number}}'
+    build.appstudio.redhat.com/target_branch: '{{target_branch}}'
+    pipelinesascode.tekton.dev/max-keep-runs: "3"
+    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch
+      == "ec-release-debugging"
+  creationTimestamp: null
   labels:
     appstudio.openshift.io/application: ec-release-debugging
     appstudio.openshift.io/component: verify-enterprise-contract-task
