@@ -121,12 +121,12 @@ spec:
 
   steps:
     - name: version
-      image: quay.io/jstuart/ec-cli:snapshot
+      image: quay.io/jstuart/ec-cli@sha256:c717e8e6703c068c11f41f9112421f7f35b0cff58064563394a05eb763f1135a
       command: [ec]
       args:
         - version
     - name: initialize-tuf
-      image: quay.io/jstuart/ec-cli:snapshot
+      image: quay.io/jstuart/ec-cli@sha256:c717e8e6703c068c11f41f9112421f7f35b0cff58064563394a05eb763f1135a
       script: |-
         set -euo pipefail
 
@@ -142,7 +142,7 @@ spec:
         - name: TUF_MIRROR
           value: "$(params.TUF_MIRROR)"
     - name: validate
-      image: quay.io/jstuart/ec-cli:snapshot
+      image: quay.io/jstuart/ec-cli@sha256:c717e8e6703c068c11f41f9112421f7f35b0cff58064563394a05eb763f1135a
       command: [ec]
       args:
         - validate
@@ -190,23 +190,23 @@ spec:
         limits:
           memory: 2Gi
     - name: report
-      image: quay.io/jstuart/ec-cli:snapshot
+      image: quay.io/jstuart/ec-cli@sha256:c717e8e6703c068c11f41f9112421f7f35b0cff58064563394a05eb763f1135a
       command: [cat]
       args:
         - "$(params.HOMEDIR)/report.yaml"
     - name: report-json
-      image: quay.io/jstuart/ec-cli:snapshot
+      image: quay.io/jstuart/ec-cli@sha256:c717e8e6703c068c11f41f9112421f7f35b0cff58064563394a05eb763f1135a
       command: [cat]
       args:
         - "$(params.HOMEDIR)/report-json.json"
     - name: summary
-      image: quay.io/jstuart/ec-cli:snapshot
+      image: quay.io/jstuart/ec-cli@sha256:c717e8e6703c068c11f41f9112421f7f35b0cff58064563394a05eb763f1135a
       command: [jq]
       args:
         - "."
         - "$(results.TEST_OUTPUT.path)"
     - name: assert
-      image: quay.io/jstuart/ec-cli:snapshot
+      image: quay.io/jstuart/ec-cli@sha256:c717e8e6703c068c11f41f9112421f7f35b0cff58064563394a05eb763f1135a
       command: [jq]
       args:
         - "--argjson"
