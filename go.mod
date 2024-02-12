@@ -3,9 +3,9 @@ module github.com/enterprise-contract/ec-cli
 go 1.21.4
 
 require (
-	cuelang.org/go v0.7.0
+	cuelang.org/go v0.7.1
 	github.com/MakeNowJust/heredoc v1.0.0
-	github.com/enterprise-contract/enterprise-contract-controller/api v0.1.8
+	github.com/enterprise-contract/enterprise-contract-controller/api v0.1.35
 	github.com/evanphx/json-patch v5.9.0+incompatible
 	github.com/gkampitakis/go-snaps v0.5.2
 	github.com/go-logr/logr v1.4.1
@@ -16,7 +16,7 @@ require (
 	github.com/in-toto/in-toto-golang v0.9.0
 	github.com/jstemmer/go-junit-report/v2 v2.1.0
 	github.com/leanovate/gopter v0.2.9
-	github.com/open-policy-agent/conftest v0.49.0
+	github.com/open-policy-agent/conftest v0.49.1
 	github.com/open-policy-agent/opa v0.61.0
 	github.com/package-url/packageurl-go v0.1.2
 	github.com/qri-io/jsonpointer v0.1.1
@@ -33,7 +33,7 @@ require (
 	github.com/stuart-warren/yamlfmt v0.2.0
 	github.com/tektoncd/pipeline v0.54.0
 	golang.org/x/exp v0.0.0-20231214170342-aacd6d4b4611
-	golang.org/x/net v0.20.0
+	golang.org/x/net v0.21.0
 	k8s.io/apiextensions-apiserver v0.29.1
 	k8s.io/apimachinery v0.29.1
 	k8s.io/client-go v0.29.1
@@ -141,7 +141,7 @@ require (
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/emicklei/go-restful/v3 v3.11.0 // indirect
-	github.com/evanphx/json-patch/v5 v5.6.0 // indirect
+	github.com/evanphx/json-patch/v5 v5.8.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/gkampitakis/ciinfo v0.3.0 // indirect
@@ -293,12 +293,12 @@ require (
 	go.uber.org/automaxprocs v1.5.3 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.26.0 // indirect
-	golang.org/x/crypto v0.18.0 // indirect
+	golang.org/x/crypto v0.19.0 // indirect
 	golang.org/x/mod v0.14.0 // indirect
 	golang.org/x/oauth2 v0.16.0 // indirect
 	golang.org/x/sync v0.6.0 // indirect
-	golang.org/x/sys v0.16.0 // indirect
-	golang.org/x/term v0.16.0 // indirect
+	golang.org/x/sys v0.17.0 // indirect
+	golang.org/x/term v0.17.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
@@ -320,7 +320,7 @@ require (
 	muzzammil.xyz/jsonc v1.0.0 // indirect
 	olympos.io/encoding/edn v0.0.0-20201019073823-d3554ca0b0a3 // indirect
 	oras.land/oras-go/v2 v2.3.1 // indirect
-	sigs.k8s.io/controller-runtime v0.16.3 // indirect
+	sigs.k8s.io/controller-runtime v0.17.0 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/release-utils v0.7.7 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
