@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"sync"
 
 	"github.com/open-policy-agent/conftest/downloader"
 	log "github.com/sirupsen/logrus"
@@ -35,6 +36,8 @@ const downloadImplKey key = 0
 type downloadImpl interface {
 	Download(context.Context, string, []string) error
 }
+
+var dlMutex sync.Mutex
 
 // WithDownloadImpl replaces the downloadImpl implementation used
 func WithDownloadImpl(ctx context.Context, d downloadImpl) context.Context {
@@ -59,7 +62,13 @@ func Download(ctx context.Context, destDir string, sourceUrl string, showMsg boo
 	if d, ok := ctx.Value(downloadImplKey).(downloadImpl); ok {
 		err = d.Download(ctx, destDir, []string{sourceUrl})
 	} else {
+		// conftest's Download function leverages oras under the hood to fetch from OCI. It uses the
+		// global oras client and sets the user agent to "conftest". This is not a thread safe
+		// operation. Here we get around this limitation by ensuring a single download happens at a
+		// time.
+		dlMutex.Lock()
 		err = downloader.Download(ctx, destDir, []string{sourceUrl})
+		dlMutex.Unlock()
 	}
 
 	if err != nil {
