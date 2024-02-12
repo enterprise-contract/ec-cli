@@ -36,8 +36,11 @@ const taskCollection = "task-bundles"
 type bundleRecord struct {
 	Digest      string    `json:"digest"`
 	EffectiveOn time.Time `json:"effective_on"`
-	Tag         string    `json:"tag"`
-	Repository  string    `json:"-"`
+	// ExpiresOn should be omitted if there isn't a value. Not using a pointer means it will always
+	// have a value, e.g. 0001-01-01T00:00:00Z.
+	ExpiresOn  *time.Time `json:"expires_on,omitempty"`
+	Tag        string     `json:"tag"`
+	Repository string     `json:"-"`
 }
 
 type Tracker struct {
@@ -136,6 +139,8 @@ func Track(ctx context.Context, urls []string, input []byte, prune bool, freshen
 
 	t.filterBundles(prune)
 
+	t.setExpiration()
+
 	return t.Output()
 }
 
@@ -225,4 +230,23 @@ func filterRecords(records []bundleRecord, prune bool) []bundleRecord {
 		log.Debugf("Filtered %d records (prune=%t)", filteredCount, prune)
 	}
 	return relevant
+}
+
+// setExpiration sets the expires_on attribute on records. The expires_on value for record N is the
+// effective_on value of the n-1 record. The first record on the list does not contain an expires_on
+// value since there is no newer record that invalidates it in the future.
+// TODO: Probably need to compute the expires_on value without requiring the "effective_on" value so
+// we don't have to always require both values. But this may be required during some transition
+// period.
+func (t *Tracker) setExpiration() {
+	for _, records := range t.TaskBundles {
+		tagsToExpiration := map[string]time.Time{}
+		for i := range records {
+			tag := records[i].Tag
+			if expiresOn, ok := tagsToExpiration[tag]; ok {
+				records[i].ExpiresOn = &expiresOn
+			}
+			tagsToExpiration[tag] = records[i].EffectiveOn
+		}
+	}
 }

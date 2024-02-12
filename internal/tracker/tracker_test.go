@@ -61,6 +61,7 @@ var sampleHashThree = v1.Hash{
 }
 
 var expectedEffectiveOn = effectiveOn().Format(time.RFC3339)
+var expectedExpiresOn = expectedEffectiveOn
 
 var yesterday = time.Now().Add(time.Hour * 24 * -1).UTC().Format(time.RFC3339)
 
@@ -244,6 +245,7 @@ func TestTrack(t *testing.T) {
 				      tag: "1.0"
 				    - digest: ` + sampleHashThree.String() + `
 				      effective_on: "` + yesterday + `"
+				      expires_on: "` + expectedExpiresOn + `"
 				      tag: "1.0"
 				    - digest: sha256:abc
 				      effective_on: "` + yesterday + `"
@@ -320,15 +322,19 @@ func TestTrack(t *testing.T) {
 				      tag: "1.0"
 				    - digest: ` + sampleHashThree.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
+				      expires_on: "` + expectedExpiresOn + `"
 				      tag: "1.0"
 				    - digest: ` + sampleHashTwo.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
+				      expires_on: "` + expectedExpiresOn + `"
 				      tag: "1.0"
 				    - digest: ` + sampleHashThree.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
+				      expires_on: "` + expectedExpiresOn + `"
 				      tag: "1.0"
 				    - digest: ` + sampleHashTwo.String() + `
 				      effective_on: "` + expectedEffectiveOn + `"
+				      expires_on: "` + expectedExpiresOn + `"
 				      tag: "1.0"
 			`),
 		},
@@ -352,6 +358,7 @@ func TestTrack(t *testing.T) {
 			      tag: "1.0"
 			    - digest: ` + sampleHashOne.String() + `
 			      effective_on: "` + expectedEffectiveOn + `"
+			      expires_on: "` + expectedExpiresOn + `"
 			      tag: "1.0"
 			`),
 		},
