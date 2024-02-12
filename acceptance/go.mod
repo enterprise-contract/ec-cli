@@ -3,11 +3,11 @@ module github.com/enterprise-contract/ec-cli/acceptance
 go 1.21.4
 
 require (
-	cuelang.org/go v0.7.0
+	cuelang.org/go v0.7.1
 	github.com/cucumber/godog v0.14.0
 	github.com/cyberphone/json-canonicalization v0.0.0-20231011164504-785e29786b46
 	github.com/doiit/picocolors v1.0.1
-	github.com/enterprise-contract/enterprise-contract-controller/api v0.1.33
+	github.com/enterprise-contract/enterprise-contract-controller/api v0.1.35
 	github.com/evanphx/json-patch/v5 v5.9.0
 	github.com/gkampitakis/go-snaps v0.5.2 // we need custom snapshot directory & file support from https://github.com/gkampitakis/go-snaps/pull/60
 	github.com/go-git/go-billy/v5 v5.5.0
@@ -25,8 +25,8 @@ require (
 	github.com/sigstore/rekor v1.3.5
 	github.com/sigstore/sigstore v1.8.1
 	github.com/stretchr/testify v1.8.4
-	github.com/tektoncd/cli v0.34.0
-	github.com/tektoncd/pipeline v0.55.0
+	github.com/tektoncd/cli v0.35.0
+	github.com/tektoncd/pipeline v0.56.0
 	github.com/testcontainers/testcontainers-go v0.27.0
 	github.com/transparency-dev/merkle v0.0.2
 	github.com/walkerus/go-wiremock v1.7.0
@@ -54,7 +54,7 @@ require (
 	github.com/Microsoft/hcsshim v0.11.4 // indirect
 	github.com/ProtonMail/go-crypto v0.0.0-20230923063757-afb1ddc0824c // indirect
 	github.com/alessio/shellescape v1.4.1 // indirect
-	github.com/antlr/antlr4/runtime/Go/antlr/v4 v4.0.0-20230305170008-8188dc5388df // indirect
+	github.com/antlr4-go/antlr/v4 v4.13.0 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blang/semver v3.5.1+incompatible // indirect
@@ -75,9 +75,9 @@ require (
 	github.com/digitorus/pkcs7 v0.0.0-20230818184609-3a137a874352 // indirect
 	github.com/digitorus/timestamp v0.0.0-20231217203849-220c5c2851b7 // indirect
 	github.com/distribution/reference v0.5.0 // indirect
-	github.com/docker/cli v24.0.7+incompatible // indirect
+	github.com/docker/cli v25.0.3+incompatible // indirect
 	github.com/docker/distribution v2.8.3+incompatible // indirect
-	github.com/docker/docker v25.0.2+incompatible // indirect
+	github.com/docker/docker v25.0.3+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.8.0 // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
@@ -110,7 +110,7 @@ require (
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
-	github.com/google/cel-go v0.18.1 // indirect
+	github.com/google/cel-go v0.19.0 // indirect
 	github.com/google/certificate-transparency-go v1.1.7 // indirect
 	github.com/google/gnostic-models v0.6.9-0.20230804172637-c7be7c783f49 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
@@ -133,7 +133,7 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kevinburke/ssh_config v1.2.0 // indirect
-	github.com/klauspost/compress v1.17.2 // indirect
+	github.com/klauspost/compress v1.17.3 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/letsencrypt/boulder v0.0.0-20231026200631-000cd05d5491 // indirect
@@ -225,7 +225,7 @@ require (
 	golang.org/x/term v0.16.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
-	golang.org/x/tools v0.16.1 // indirect
+	golang.org/x/tools v0.17.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
 	google.golang.org/api v0.159.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
