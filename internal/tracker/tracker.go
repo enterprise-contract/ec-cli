@@ -20,6 +20,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"sort"
+	"strings"
 	"time"
 
 	"github.com/google/go-containerregistry/pkg/name"
@@ -32,6 +34,17 @@ import (
 )
 
 const taskCollection = "task-bundles"
+const ociPrefix = "oci://"
+
+type taskRecord struct {
+	Ref         string    `json:"ref"`
+	EffectiveOn time.Time `json:"effective_on"`
+	// ExpiresOn should be omitted if there isn't a value. Not using a pointer means it will always
+	// have a value, e.g. 0001-01-01T00:00:00Z.
+	ExpiresOn  *time.Time `json:"expires_on,omitempty"`
+	Tag        string     `json:"-"`
+	Repository string     `json:"-"`
+}
 
 type bundleRecord struct {
 	Digest      string    `json:"digest"`
@@ -44,7 +57,9 @@ type bundleRecord struct {
 }
 
 type Tracker struct {
-	TaskBundles map[string][]bundleRecord `json:"task-bundles,omitempty"`
+	// TaskBundles is deprecated and will be removed in the future. Use TrustedTasks instead.
+	TaskBundles  map[string][]bundleRecord `json:"task-bundles,omitempty"`
+	TrustedTasks map[string][]taskRecord   `json:"trusted_tasks,omitempty"`
 }
 
 // newTracker returns a new initialized instance of Tracker. If path
@@ -65,8 +80,22 @@ func newTracker(input []byte) (t Tracker, err error) {
 
 // setDefaults initializes the required nested attributes.
 func (t *Tracker) setDefaults() {
+	if t.TrustedTasks == nil {
+		t.TrustedTasks = map[string][]taskRecord{}
+	}
 	if t.TaskBundles == nil {
 		t.TaskBundles = map[string][]bundleRecord{}
+	}
+}
+
+// addTrustedTaskBundleRecord includes the given Tekton bundle Task record in the tracker.
+func (t *Tracker) addTrustedTaskBundleRecord(record taskRecord) {
+	newRecords := []taskRecord{record}
+	group := fmt.Sprintf("%s%s:%s", ociPrefix, record.Repository, record.Tag)
+	if _, ok := t.TrustedTasks[group]; !ok {
+		t.TrustedTasks[group] = newRecords
+	} else {
+		t.TrustedTasks[group] = append(newRecords, t.TrustedTasks[group]...)
 	}
 }
 
@@ -108,6 +137,23 @@ func Track(ctx context.Context, urls []string, input []byte, prune bool, freshen
 		return nil, err
 	}
 
+	if len(t.TrustedTasks) == 0 && len(t.TaskBundles) > 0 {
+		log.Debug("converting deprecated task-bundles format to trusted_tasks")
+		for repo, bundles := range t.TaskBundles {
+			for i := len(bundles) - 1; i >= 0; i-- {
+				bundle := bundles[i]
+				t.addTrustedTaskBundleRecord(taskRecord{
+					Ref:         bundle.Digest,
+					Tag:         bundle.Tag,
+					EffectiveOn: bundle.EffectiveOn,
+					ExpiresOn:   bundle.ExpiresOn,
+					Repository:  repo,
+				})
+			}
+		}
+	}
+	t.TaskBundles = map[string][]bundleRecord{}
+
 	if freshen {
 		log.Debug("Freshen is enabled")
 		imageRefs, err := inputBundleTags(ctx, t)
@@ -127,19 +173,22 @@ func Track(ctx context.Context, urls []string, input []byte, prune bool, freshen
 		}
 
 		for range sets.List(info.collections) {
-			t.addBundleRecord(bundleRecord{
-				Digest:      ref.Digest,
+			t.addTrustedTaskBundleRecord(taskRecord{
+				Ref:         ref.Digest,
 				Tag:         ref.Tag,
 				EffectiveOn: effective_on,
 				Repository:  ref.Repository,
 			})
 		}
-
 	}
 
 	t.filterBundles(prune)
 
 	t.setExpiration()
+
+	if err := t.convertToOldFormat(); err != nil {
+		return nil, err
+	}
 
 	return t.Output()
 }
@@ -147,10 +196,13 @@ func Track(ctx context.Context, urls []string, input []byte, prune bool, freshen
 func inputBundleTags(ctx context.Context, t Tracker) ([]image.ImageReference, error) {
 	uniqueTagRefs := map[string]bool{}
 
-	for repository, bundles := range t.TaskBundles {
-		for _, bundle := range bundles {
-			uniqueTagRefs[fmt.Sprintf("%s:%s", repository, bundle.Tag)] = true
+	for group := range t.TrustedTasks {
+		tagRef := ociRefFromGroup(group)
+		if tagRef == "" {
+			// Not an OCI bundle
+			continue
 		}
+		uniqueTagRefs[tagRef] = true
 	}
 
 	tagRefs := make([]string, 0, len(uniqueTagRefs))
@@ -174,23 +226,24 @@ func effectiveOn() time.Time {
 
 // filterBundles applies filterRecords to TaskBundles.
 func (t *Tracker) filterBundles(prune bool) {
-	for ref, records := range t.TaskBundles {
-		log.Debugf("Filtering task records for %q", ref)
-		t.TaskBundles[ref] = filterRecords(records, prune)
+	for group, records := range t.TrustedTasks {
+		log.Debugf("Filtering task records for %q", group)
+		t.TrustedTasks[group] = filterRecords(records, prune)
 	}
 }
 
 // filterRecords reduces the list of records by removing superfluous entries.
-// It removes records that have the same Repository Digest, and Tag. If prune is
+// It removes records that have the same reference in a certain group. If prune is
 // true, it skips any record that is no longer acceptable. Any record with an
 // EffectiveOn date in the future, and the record with the most recent
 // EffectiveOn date *not* in the future are considered acceptable.
-func filterRecords(records []bundleRecord, prune bool) []bundleRecord {
+func filterRecords(records []taskRecord, prune bool) []taskRecord {
 	now := time.Now().UTC()
 
-	// lastDigestForTag tracks the latest digest seen for each tag.
-	lastDigestForTag := map[string]string{}
-	unique := make([]bundleRecord, 0, len(records))
+	// lastRef tracks the latest ref seen. This is used to remove consecutive entries with the
+	// same digest.
+	var lastRef string
+	unique := make([]taskRecord, 0, len(records))
 	for i := len(records) - 1; i >= 0; i-- {
 		// NOTE: Newly added records will have a repository, but existing ones
 		// will not. This is expected because the output does not persist the
@@ -198,26 +251,26 @@ func filterRecords(records []bundleRecord, prune bool) []bundleRecord {
 		// which references the list of records.
 		r := records[i]
 
-		if digest, ok := lastDigestForTag[r.Tag]; ok && digest == r.Digest {
+		if lastRef == r.Ref {
 			continue
 		}
-		lastDigestForTag[r.Tag] = r.Digest
+		lastRef = r.Ref
 
-		unique = append([]bundleRecord{r}, unique...)
+		unique = append([]taskRecord{r}, unique...)
 	}
 
-	var relevant []bundleRecord
+	var relevant []taskRecord
 	if prune {
-		// tagsToSkip tracks when records for a certain tag should start to be pruned.
-		tagsToSkip := map[string]bool{}
+		// skip tracks when records should start to be pruned.
+		skip := false
 		for _, r := range unique {
-			if tagsToSkip[r.Tag] {
+			if skip {
 				continue
 			}
 			relevant = append(relevant, r)
-			if !tagsToSkip[r.Tag] {
+			if !skip {
 				if now.After(r.EffectiveOn) {
-					tagsToSkip[r.Tag] = true
+					skip = true
 				}
 			}
 		}
@@ -239,14 +292,75 @@ func filterRecords(records []bundleRecord, prune bool) []bundleRecord {
 // we don't have to always require both values. But this may be required during some transition
 // period.
 func (t *Tracker) setExpiration() {
-	for _, records := range t.TaskBundles {
-		tagsToExpiration := map[string]time.Time{}
+	for _, records := range t.TrustedTasks {
+		var expiration *time.Time
 		for i := range records {
-			tag := records[i].Tag
-			if expiresOn, ok := tagsToExpiration[tag]; ok {
-				records[i].ExpiresOn = &expiresOn
+			if expiration != nil {
+				records[i].ExpiresOn = expiration
 			}
-			tagsToExpiration[tag] = records[i].EffectiveOn
+			expiration = &records[i].EffectiveOn
 		}
 	}
+}
+
+func (t *Tracker) convertToOldFormat() error {
+	for group, tasks := range t.TrustedTasks {
+		repo := ociRefFromGroup(group)
+		if repo == "" {
+			// Not an OCI group
+			continue
+		}
+		for _, task := range tasks {
+			ref, err := name.NewTag(repo)
+			if err != nil {
+				return fmt.Errorf("cannot parse existing repo as a tag ref: %w", err)
+			}
+			t.addBundleRecord(bundleRecord{
+				Digest:      task.Ref,
+				Tag:         ref.TagStr(),
+				Repository:  ref.Repository.Name(),
+				EffectiveOn: task.EffectiveOn,
+				ExpiresOn:   task.ExpiresOn,
+			})
+		}
+	}
+
+	for _, bundles := range t.TaskBundles {
+		// Sort the task bundles in reverse order. The first bundle being the most recent one. The
+		// sorting function returns true if the bundle at "i" is considered newer than the bundle at
+		// "j". It is assumed that every bundle has an EffectiveOn date and a Tag, but some bundles
+		// may not have an ExpiresOn date.
+		sort.SliceStable(bundles, func(i, j int) bool {
+			if !bundles[i].EffectiveOn.Equal(bundles[j].EffectiveOn) {
+				return bundles[i].EffectiveOn.After(bundles[j].EffectiveOn)
+			}
+
+			iExpiresOn := bundles[i].ExpiresOn
+			jExpiresOn := bundles[j].ExpiresOn
+			// A missing ExpiresOn value is always considered to be newer than an explicit value.
+			// Only one defines an expiration date. "i" is newer if it is the one that is null.
+			if (iExpiresOn == nil || jExpiresOn == nil) && iExpiresOn != jExpiresOn {
+				return iExpiresOn == nil
+			}
+			if iExpiresOn != nil && jExpiresOn != nil && !iExpiresOn.Equal(*jExpiresOn) {
+				return iExpiresOn.After(*jExpiresOn)
+			}
+
+			// Records are pretty similar. Use the tag as a tie breaker to produce a stable order.
+			return bundles[i].Tag > bundles[j].Tag
+		})
+	}
+
+	return nil
+}
+
+// ociRefFromGroup returns the OCI image reference from the given group, e.g.
+// oci://registry.local/spam:latest -> registry.local/spam:latest
+// If the group does not represent an OCI image reference, an empty string is returned.
+func ociRefFromGroup(group string) string {
+	if !strings.HasPrefix(group, ociPrefix) {
+		// Not an OCI bundle
+		return ""
+	}
+	return strings.TrimPrefix(group, ociPrefix)
 }

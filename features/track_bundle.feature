@@ -24,6 +24,10 @@ Feature: track bundles
         - digest: sha256:0af8c4f92f4b252b3ef0cbd712e7352196bc33a96c58b6e1d891b26e171deae8
           effective_on: "${TODAY_PLUS_30_DAYS}"
           tag: tag
+    trusted_tasks:
+      oci://${REGISTRY}/acceptance/bundle:tag:
+        - effective_on: "${TODAY_PLUS_30_DAYS}"
+          ref: sha256:0af8c4f92f4b252b3ef0cbd712e7352196bc33a96c58b6e1d891b26e171deae8
 
     """
 
@@ -46,6 +50,13 @@ Feature: track bundles
         - digest: sha256:0af8c4f92f4b252b3ef0cbd712e7352196bc33a96c58b6e1d891b26e171deae8
           effective_on: "${TODAY_PLUS_30_DAYS}"
           tag: "1.0"
+    trusted_tasks:
+      oci://${REGISTRY}/acceptance/bundle:1.0:
+        - effective_on: "${TODAY_PLUS_30_DAYS}"
+          ref: sha256:0af8c4f92f4b252b3ef0cbd712e7352196bc33a96c58b6e1d891b26e171deae8
+      oci://${REGISTRY}/acceptance/bundle:1.1:
+        - effective_on: "${TODAY_PLUS_30_DAYS}"
+          ref: sha256:7af058b8a7adb24b74875411d625afbf90af6b4ed41b740606032edf1c4a0d1d
 
     """
 
@@ -61,6 +72,10 @@ Feature: track bundles
         - digest: sha256:0af8c4f92f4b252b3ef0cbd712e7352196bc33a96c58b6e1d891b26e171deae8
           effective_on: "${TODAY_PLUS_30_DAYS}"
           tag: tag
+    trusted_tasks:
+      oci://${REGISTRY}/acceptance/bundle:tag:
+        - effective_on: "${TODAY_PLUS_30_DAYS}"
+          ref: sha256:0af8c4f92f4b252b3ef0cbd712e7352196bc33a96c58b6e1d891b26e171deae8
 
     """
 
