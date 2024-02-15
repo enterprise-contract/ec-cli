@@ -33,7 +33,7 @@ fi
 # The release name is the branch name with release- trimmed off the front
 release_name=${current_branch#"release-"}
 
-# One each for the two pipelines created by RHTAP
+# One each for the two pipelines created by Konflux
 for p in pull-request push; do
   main_pipeline=".tekton/cli-main-ci-$p.yaml"
   release_pipeline=".tekton/cli-${release_name/./}-$p.yaml"
@@ -43,12 +43,16 @@ for p in pull-request push; do
     # Use grep to exclude digest bumps and initial creation.
     changes=$( git log main --reverse --pretty=%h --invert-grep --regexp-ignore-case \
       --grep="Update RHTAP references" \
+      --grep="Update Konflux references" \
+      --grep="Konflux CI update" \
+      --grep="Konflux update" \
       --grep="Red Hat Trusted App Pipeline update" \
       -- $main_pipeline )
   else
     # Find only the digest bumps
     changes=$( git log main --reverse --pretty=%h --regexp-ignore-case \
       --grep="Update RHTAP references" \
+      --grep="Update Konflux references" \
       -- $main_pipeline )
   fi
 
@@ -71,7 +75,7 @@ done
 
 # Make the commit
 git commit -m "chore: Modify default pipelines for $release_name" \
-  -m "Apply changes to the RHTAP generated default pipelines." \
+  -m "Apply changes to the Konflux generated default pipelines." \
   -m "(Commit created with hack/patch-release-pipelines.sh $digest_bumps)"
 
 # Invite the human to look at it

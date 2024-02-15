@@ -15,7 +15,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-# This is an image regularly built in RHTAP for testing purposes.
+# This is an image regularly built in Konflux for testing purposes.
 # See https://github.com/enterprise-contract/golden-container
 IMAGE=${IMAGE:-"quay.io/redhat-appstudio/ec-golden-image:latest"}
 
@@ -29,18 +29,18 @@ APPLICATION_SNAPSHOT='{"components":[
 # - Visit https://oauth-openshift.apps.stone-prd-rh01.pg1f.p1.openshiftapps.com/oauth/token/request
 # - Authenticate and get a token, then use the oc login to authenticate
 # - kubectl get -n openshift-pipelines secret public-key -o json | jq -r '.data."cosign.pub" | @base64d'
-RHTAP_PROD_KEY="-----BEGIN PUBLIC KEY-----
+KONFLUX_PROD_KEY="-----BEGIN PUBLIC KEY-----
 MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEZP/0htjhVt2y0ohjgtIIgICOtQtA
 naYJRuLprwIv6FDhZ5yFjYUEtsmoNcW7rx2KM6FOXGsCX3BNc7qhHELT+g==
 -----END PUBLIC KEY-----"
 
-RHTAP_STAGE_KEY="-----BEGIN PUBLIC KEY-----
+KONFLUX_STAGE_KEY="-----BEGIN PUBLIC KEY-----
 MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAExIJfBe0aQb8jiQo1roYAi+YlAxr5
 thSeH7kghWZnAzFeZOUsqMy13LiLGuVRuLkbGNktaToBeT7DyXiC+aIntw==
 -----END PUBLIC KEY-----"
 
-PUBLIC_KEY=${PUBLIC_KEY:-$RHTAP_PROD_KEY}
-#PUBLIC_KEY=${PUBLIC_KEY:-$RHTAP_STAGE_KEY}
+PUBLIC_KEY=${PUBLIC_KEY:-$KONFLUX_PROD_KEY}
+#PUBLIC_KEY=${PUBLIC_KEY:-$KONFLUX_STAGE_KEY}
 
 # Adjust as required
 POLICY_YAML=${POLICY_YAML:-"github.com/enterprise-contract/config//default"}

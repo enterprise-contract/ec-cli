@@ -17,7 +17,7 @@
 
 # Rebuilds the images, stores the image references in images.txt and updates the
 # cosign.pub. Requires a running Tekton and Tekton Chains and the usual
-# utilities: kubectl & openssl; and access to an operating RHTAP cluster.
+# utilities: kubectl & openssl; and access to an operating Konflux cluster.
 
 set -o errexit
 set -o pipefail
@@ -25,7 +25,7 @@ set -o nounset
 
 HACK_DIR="$(dirname "${BASH_SOURCE[0]}")"
 
-# The default in RHTAP
+# The default in Konflux
 PIPELINE_SERVICE_ACCOUNT=pipeline
 
 # What pipeline bundle to use
@@ -34,7 +34,7 @@ PIPELINE_BUNDLE=quay.io/redhat-appstudio-tekton-catalog/pipeline-hacbs-docker-bu
 # Where to push the image(s)
 IMAGE_REPOSITORY=quay.io/hacbs-contract-demo
 
-# If RHTAP is not setup, there might not be a appstudio PVC, this creates if if
+# If Konflux is not setup, there might not be a appstudio PVC, this creates if if
 # it already doesn't exist
 kubectl get pvc appstudio -o name > /dev/null 2>&1 || kubectl create -o yaml --dry-run=client -f - << EOF | kubectl apply -f - >&2
 kind: PersistentVolumeClaim
@@ -52,7 +52,7 @@ EOF
 
 # Might require that the pull secret is set for the pipeline service account,
 # the secret named redhat-appstudio-registry-pull-secret is pre-created and
-# could be empty in RHTAP, so it needs to be recreated from the local Docker
+# could be empty in Konflux, so it needs to be recreated from the local Docker
 # configuration
 {
     kubectl get secret redhat-appstudio-registry-pull-secret -o name > /dev/null 2>&1 && [ -n "$(kubectl get secret redhat-appstudio-registry-pull-secret -o jsonpath='{.data}')" ]
