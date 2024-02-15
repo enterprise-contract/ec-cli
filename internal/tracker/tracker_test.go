@@ -407,7 +407,7 @@ func TestTrack(t *testing.T) {
 				---
 				trusted_tasks:
 				  oci://registry.com/one:1.0:
-				    - effective_on: "` + expectedEffectiveOn + `"
+				    - effective_on: "` + tomorrow + `"
 				      ref: ` + sampleHashOne.String() + `
 			`)),
 			output: hd.Doc(`
@@ -418,16 +418,16 @@ func TestTrack(t *testing.T) {
 			      effective_on: "` + expectedEffectiveOn + `"
 			      tag: "1.0"
 			    - digest: ` + sampleHashOne.String() + `
-			      effective_on: "` + expectedEffectiveOn + `"
+			      effective_on: "` + tomorrow + `"
 			      expires_on: "` + expectedExpiresOn + `"
 			      tag: "1.0"
 			trusted_tasks:
 			  oci://registry.com/one:1.0:
-			    - effective_on: "2024-03-16T00:00:00Z"
-			      ref: sha256:8b4683472773680a36b58ba96d321aa82c4f59248d5614348deca12adce61f39
-			    - effective_on: "2024-03-16T00:00:00Z"
-			      expires_on: "2024-03-16T00:00:00Z"
-			      ref: sha256:01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
+			    - effective_on: "` + expectedEffectiveOn + `"
+			      ref: ` + sampleHashOneUpdated.String() + `
+			    - effective_on: "` + tomorrow + `"
+			      expires_on: "` + expectedExpiresOn + `"
+			      ref: ` + sampleHashOne.String() + `
 			`),
 		},
 		{
