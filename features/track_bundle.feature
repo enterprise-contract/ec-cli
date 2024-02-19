@@ -64,7 +64,7 @@ Feature: track bundles
     Given a tekton bundle image named "acceptance/bundle:tag" containing
       | Task     | task1     |
     When ec command is run with "track bundle --bundle ${REGISTRY}/acceptance/bundle:tag --output oci:${REGISTRY}/tracked/bundle:tag"
-    Then running conftest "pull oci://${REGISTRY}/tracked/bundle:tag" produces "policy/data/data/acceptable_tekton_bundles.yml" containing:
+    Then running conftest "pull oci://${REGISTRY}/tracked/bundle:tag" produces "policy/data/data/trusted_tekton_tasks.yml" containing:
     """
     ---
     task-bundles:
