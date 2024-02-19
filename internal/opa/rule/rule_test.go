@@ -130,7 +130,7 @@ func TestDescription(t *testing.T) {
 				# METADATA
 				# description: >-
 				#   See xref:release_policy.adoc#attestation_task_bundle_package[here] and
-				#   xref:attachment$acceptable_tekton_bundles.yml[over there] for details.
+				#   xref:attachment$trusted_tekton_tasks.yml[over there] for details.
 				deny() { true }`)),
 			expected: "See here and over there for details.",
 		},
@@ -328,7 +328,7 @@ func TestSolution(t *testing.T) {
 				# custom:
 				#  solution: >-
 				#    See xref:release_policy.adoc#attestation_task_bundle_package[here] and
-				#    xref:attachment$acceptable_tekton_bundles.yml[over there] for details.
+				#    xref:attachment$trusted_tekton_tasks.yml[over there] for details.
 				deny() { true }`)),
 			expected: "See here and over there for details.",
 		},

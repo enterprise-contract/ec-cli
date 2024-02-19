@@ -34,7 +34,7 @@ const (
 	unknownConfig       = "application/vnd.unknown.config.v1+json"
 	openPolicyAgentData = "application/vnd.cncf.openpolicyagent.data.layer.v1+json"
 	title               = "org.opencontainers.image.title"
-	dataFileTitle       = "data/data/acceptable_tekton_bundles.yml"
+	dataFileTitle       = "data/data/trusted_tekton_tasks.yml"
 )
 
 type ctxKey int

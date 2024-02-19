@@ -235,10 +235,9 @@ as a data source, for example:
 
 NOTE: If the data source contains policy rules, those will be ignored.
 
-NOTE: When providing a data source, you must provide the full set of required data values.
-These are all the values defined in
-xref:ec-policies:ROOT:attachment$rule_data.yml[data/rule_data.yml] and
-xref:ec-policies:ROOT:attachment$acceptable_tekton_bundles.yml[data/acceptable_tekton_bundles.yml].
+NOTE: When providing a data source, you must provide the full set of required data values. The full
+set depends on which policy rules are included in your policy configuration. See examples at
+xref:ec-policies:ROOT:attachment$rule_data.yml[data/rule_data.yml].
 
 NOTE: It's also possible to add an additional data source containing rule data
 defined under the `rule_data_custom` top level key. Data under this key will
