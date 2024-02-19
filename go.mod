@@ -34,9 +34,9 @@ require (
 	github.com/tektoncd/pipeline v0.54.0
 	golang.org/x/exp v0.0.0-20231214170342-aacd6d4b4611
 	golang.org/x/net v0.21.0
-	k8s.io/apiextensions-apiserver v0.29.1
-	k8s.io/apimachinery v0.29.1
-	k8s.io/client-go v0.29.1
+	k8s.io/apiextensions-apiserver v0.29.2
+	k8s.io/apimachinery v0.29.2
+	k8s.io/client-go v0.29.2
 	k8s.io/klog/v2 v2.120.1
 	k8s.io/kube-openapi v0.0.0-20231010175941-2dd684a91f00
 	sigs.k8s.io/yaml v1.4.0
@@ -314,7 +314,7 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/api v0.29.1 // indirect
+	k8s.io/api v0.29.2 // indirect
 	k8s.io/utils v0.0.0-20230726121419-3b25d923346b // indirect
 	knative.dev/pkg v0.0.0-20231023150739-56bfe0dd9626 // indirect
 	muzzammil.xyz/jsonc v1.0.0 // indirect
