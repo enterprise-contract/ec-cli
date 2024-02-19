@@ -25,18 +25,18 @@ require (
 	github.com/sigstore/rekor v1.3.5
 	github.com/sigstore/sigstore v1.8.1
 	github.com/stretchr/testify v1.8.4
-	github.com/tektoncd/cli v0.35.0
-	github.com/tektoncd/pipeline v0.56.0
-	github.com/testcontainers/testcontainers-go v0.27.0
+	github.com/tektoncd/cli v0.35.1
+	github.com/tektoncd/pipeline v0.56.1
+	github.com/testcontainers/testcontainers-go v0.28.0
 	github.com/transparency-dev/merkle v0.0.2
 	github.com/walkerus/go-wiremock v1.7.0
 	github.com/yudai/gojsondiff v1.0.0
 	golang.org/x/exp v0.0.0-20231108232855-2478ac86f678
 	gopkg.in/square/go-jose.v2 v2.6.0
 	k8s.io/api v0.29.1
-	k8s.io/apimachinery v0.29.1
+	k8s.io/apimachinery v0.29.2
 	k8s.io/client-go v0.29.1
-	sigs.k8s.io/kind v0.21.0
+	sigs.k8s.io/kind v0.22.0
 	sigs.k8s.io/kustomize/api v0.16.0
 	sigs.k8s.io/kustomize/kyaml v0.16.0
 	sigs.k8s.io/yaml v1.4.0
@@ -64,7 +64,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/cloudflare/circl v1.3.7 // indirect
 	github.com/cockroachdb/apd/v3 v3.2.1 // indirect
-	github.com/containerd/containerd v1.7.11 // indirect
+	github.com/containerd/containerd v1.7.12 // indirect
 	github.com/containerd/log v0.1.0 // indirect
 	github.com/containerd/stargz-snapshotter/estargz v0.14.3 // indirect
 	github.com/cpuguy83/dockercfg v0.3.1 // indirect
@@ -79,7 +79,7 @@ require (
 	github.com/docker/distribution v2.8.3+incompatible // indirect
 	github.com/docker/docker v25.0.3+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.8.0 // indirect
-	github.com/docker/go-connections v0.4.0 // indirect
+	github.com/docker/go-connections v0.5.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/emicklei/go-restful/v3 v3.11.0 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
@@ -177,7 +177,7 @@ require (
 	github.com/sassoftware/relic v7.2.1+incompatible // indirect
 	github.com/sergi/go-diff v1.3.1 // indirect
 	github.com/shibumi/go-pathspec v1.3.0 // indirect
-	github.com/shirou/gopsutil/v3 v3.23.11 // indirect
+	github.com/shirou/gopsutil/v3 v3.23.12 // indirect
 	github.com/shoenig/go-m1cpu v0.1.6 // indirect
 	github.com/sigstore/timestamp-authority v1.2.1 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
