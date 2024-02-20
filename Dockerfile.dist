@@ -24,7 +24,7 @@
 
 # This image has go version 1.21 but requires an extra pull secret to access
 # See https://source.redhat.com/groups/public/teamnado/wiki/brew_registry for how to get your own pull secret
-# See our RHTAP pull secret at https://console.redhat.com/preview/application-pipeline/secrets
+# See our Konflux pull secret at https://console.redhat.com/preview/application-pipeline/secrets
 FROM brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_9_1.21@sha256:4fe910174caaaae09ff75b6f1b1c2f4460fd9acfe38ec778a818a54de7f31afc AS build
 
 ARG TARGETOS

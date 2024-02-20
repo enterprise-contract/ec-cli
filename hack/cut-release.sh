@@ -34,20 +34,20 @@ fi
 # Use release name as-is for the branch name
 BRANCH_NAME="release-${RELEASE_NAME}"
 
-# RHTAP disallows . chars in names so remove those
-RHTAP_APPLICATION_SUFFIX="${RELEASE_NAME/./}"
+# Konflux disallows . chars in names so remove those
+KONFLUX_APPLICATION_SUFFIX="${RELEASE_NAME/./}"
 
 # Could be whatever, but let's adopt a consistent convention
-RHTAP_APPLICATION_NAME=ec-${RHTAP_APPLICATION_SUFFIX}
-RHTAP_CLI_COMPONENT_NAME=cli-${RHTAP_APPLICATION_SUFFIX}
+KONFLUX_APPLICATION_NAME=ec-${KONFLUX_APPLICATION_SUFFIX}
+KONFLUX_CLI_COMPONENT_NAME=cli-${KONFLUX_APPLICATION_SUFFIX}
 
 # Show some useful values
 echo Release name: $RELEASE_NAME
 echo Release branch name: $BRANCH_NAME
-echo RHTAP application name: $RHTAP_APPLICATION_NAME
-echo RHTAP cli component name: $RHTAP_CLI_COMPONENT_NAME
+echo Konflux application name: $KONFLUX_APPLICATION_NAME
+echo Konflux cli component name: $KONFLUX_CLI_COMPONENT_NAME
 
-RHTAP_APPS_URL=https://console.redhat.com/preview/application-pipeline/workspaces/rhtap-contract/applications
+KONFLUX_APPS_URL=https://console.redhat.com/preview/application-pipeline/workspaces/rhtap-contract/applications
 
 # Explain what needs to be done next
 # (We could make this more automated in future.)
@@ -62,12 +62,12 @@ git push upstream refs/remotes/upstream/main:refs/heads/${BRANCH_NAME}
 # Make your local version of the release branch
 git checkout -b ${BRANCH_NAME} upstream/${BRANCH_NAME}
 
-# Create the new application in RHTAP
-Login at ${RHTAP_APPS_URL}
+# Create the new application in Konflux
+Login at ${KONFLUX_APPS_URL}
 Create a new application by importing code from https://github.com/enterprise-contract/ec-cli
 Set Git reference to ${BRANCH_NAME} and click "Import code"
-Set the application name to ${RHTAP_APPLICATION_NAME}
-Set the component name to ${RHTAP_CLI_COMPONENT_NAME}
+Set the application name to ${KONFLUX_APPLICATION_NAME}
+Set the component name to ${KONFLUX_CLI_COMPONENT_NAME}
 Set Dockerfile to Dockerfile.dist
 Unset the "Default build pipeline" toggle
 Click "Create application"
@@ -75,13 +75,13 @@ Click "Create application"
 # Wait for PR
 Wait for the PR to be created
 Go look at the PR in GitHub
-Wait for the PR to pass the ${RHTAP_CLI_COMPONENT_NAME}-on-pull-request check
-You can also watch the activity at ${RHTAP_APPS_URL}/${RHTAP_APPLICATION_NAME}/activity/pipelineruns
+Wait for the PR to pass the ${KONFLUX_CLI_COMPONENT_NAME}-on-pull-request check
+You can also watch the activity at ${KONFLUX_APPS_URL}/${KONFLUX_APPLICATION_NAME}/activity/pipelineruns
 When it's done you can merge. (Continue to next section while you're waiting...)
 
 # Modify EC policy config
-Go to the integration tests at ${RHTAP_APPS_URL}/${RHTAP_APPLICATION_NAME}/integrationtests
-Edit ${RHTAP_APPLICATION_NAME}-enterprise-contract and add a parameter as follows:
+Go to the integration tests at ${KONFLUX_APPS_URL}/${KONFLUX_APPLICATION_NAME}/integrationtests
+Edit ${KONFLUX_APPLICATION_NAME}-enterprise-contract and add a parameter as follows:
   Name: POLICY_CONFIGURATION
   Value: github.com/enterprise-contract/config//redhat-no-hermetic
 Save changes
@@ -90,9 +90,9 @@ Save changes
 git checkout ${BRANCH_NAME}
 hack/patch-release-pipelines.sh
 hack/patch-release-pipelines.sh digest_bumps # maybe
-Review the diff between the ${RHTAP_CLI_COMPONENT_NAME}- and cli-main-ci- pipelines
+Review the diff between the ${KONFLUX_CLI_COMPONENT_NAME}- and cli-main-ci- pipelines
 Review the generated commit and then create a PR for the ${BRANCH_NAME} branch with that commit
-(Todo maybe: If you want, try adding this commit to the PR created by RHTAP before merging that PR.)
+(Todo maybe: If you want, try adding this commit to the PR created by Konflux before merging that PR.)
 
 EOT
 
