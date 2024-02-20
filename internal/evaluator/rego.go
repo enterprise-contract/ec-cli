@@ -23,6 +23,7 @@ package evaluator
 import (
 	"bytes"
 	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -38,9 +39,12 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/fetchers/oci"
 )
 
-const ociBlobName = "ec.oci.blob"
-const purlIsValidName = "ec.purl.is_valid"
-const purlParseName = "ec.purl.parse"
+const (
+	ociBlobName          = "ec.oci.blob"
+	ociImageManifestName = "ec.oci.image_manifest"
+	purlIsValidName      = "ec.purl.is_valid"
+	purlParseName        = "ec.purl.parse"
+)
 
 func registerOCIBlob() {
 	decl := rego.Function{
@@ -65,6 +69,35 @@ func registerOCIBlob() {
 	ast.RegisterBuiltin(&ast.Builtin{
 		Name:             decl.Name,
 		Description:      "Fetch a blob from an OCI registry.",
+		Decl:             decl.Decl,
+		Nondeterministic: decl.Nondeterministic,
+	})
+}
+
+func registerOCIImageManifest() {
+	decl := rego.Function{
+		Name: ociImageManifestName,
+		Decl: types.NewFunction(
+			types.Args(
+				types.Named("ref", types.S).Description("OCI image reference"),
+			),
+			// TODO: Define the exact attributes the object will have.
+			types.Named("manifest", types.S).Description("the OCI Image Manifest"),
+		),
+		// As per the documentation, enable memoization to ensure function evaluation is
+		// deterministic. But also mark it as non-deterministic because it does rely on external
+		// entities, i.e. OCI registry. https://www.openpolicyagent.org/docs/latest/extensions/
+		Memoize:          true,
+		Nondeterministic: true,
+	}
+
+	rego.RegisterBuiltin1(&decl, ociImageManifest)
+	// Due to https://github.com/open-policy-agent/opa/issues/6449, we cannot set a description for
+	// the custom function through the call above. As a workaround we re-register the function with
+	// a declaration that does include the description.
+	ast.RegisterBuiltin(&ast.Builtin{
+		Name:             decl.Name,
+		Description:      "Fetch an Image Manifest from an OCI registry.",
 		Decl:             decl.Decl,
 		Nondeterministic: decl.Nondeterministic,
 	})
@@ -204,6 +237,46 @@ func ociBlob(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) {
 	return ast.StringTerm(blob.String()), nil
 }
 
+func ociImageManifest(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) {
+	uri, ok := a.Value.(ast.String)
+	if !ok {
+		return nil, nil
+	}
+
+	ref, err := name.NewDigest(string(uri))
+	if err != nil {
+		log.Errorf("%s new digest: %s", ociImageManifestName, err)
+		return nil, nil
+	}
+
+	opts := []remote.Option{
+		remote.WithTransport(remote.DefaultTransport),
+		remote.WithContext(bctx.Context),
+		remote.WithAuthFromKeychain(authn.DefaultKeychain),
+	}
+
+	image, err := oci.NewClient(bctx.Context).Image(ref, opts...)
+	if err != nil {
+		log.Errorf("%s fetch image: %s", ociImageManifestName, err)
+		return nil, nil
+	}
+
+	manifest, err := image.Manifest()
+	if err != nil {
+		log.Errorf("%s fetch manifest: %s", ociImageManifestName, err)
+		return nil, nil
+	}
+
+	// TODO: Don't really like marshaling and unmarshaling here... But it might be a good compromise?
+	manifestJSON, err := json.Marshal(manifest)
+	if err != nil {
+		log.Errorf("%s json Marshal: %s", ociImageManifestName, err)
+		return nil, nil
+	}
+
+	return ast.StringTerm(string(manifestJSON)), nil
+}
+
 func purlIsValid(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) {
 	uri, ok := a.Value.(ast.String)
 	if !ok {
@@ -248,6 +321,7 @@ func purlParse(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) {
 
 func init() {
 	registerOCIBlob()
+	registerOCIImageManifest()
 	registerPURLIsValid()
 	registerPURLParse()
 }
