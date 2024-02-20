@@ -926,6 +926,31 @@ Feature: evaluate enterprise contract
     Then the exit status should be 0
     Then the output should match the snapshot
 
+  Scenario: fetch OCI image manifest
+    Given a key pair named "known"
+    Given an image named "acceptance/oci-image-manifest"
+    Given a valid image signature of "acceptance/oci-image-manifest" image signed by the "known" key
+    Given a valid Rekor entry for image signature of "acceptance/oci-image-manifest"
+    Given a valid attestation of "acceptance/oci-image-manifest" signed by the "known" key
+    Given a valid Rekor entry for attestation of "acceptance/oci-image-manifest"
+    Given a git repository named "oci-image-manifest-policy" with
+      | main.rego | examples/oci_image_manifest.rego |
+    Given policy configuration named "ec-policy" with specification
+      """
+      {
+        "sources": [
+          {
+            "policy": [
+              "git::https://${GITHOST}/git/oci-image-manifest-policy"
+            ]
+          }
+        ]
+      }
+      """
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/oci-image-manifest --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR}  --show-successes"
+    Then the exit status should be 0
+    Then the output should match the snapshot
+
   Scenario: tracing and debug logging
     Given a key pair named "trace_debug"
       And an image named "acceptance/trace-debug"

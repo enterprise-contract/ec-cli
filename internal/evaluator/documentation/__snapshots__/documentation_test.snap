@@ -19,6 +19,214 @@ nondeterministic: true
 [TestWriteBuiltinsToYAML - 2]
 decl:
   args:
+  - description: OCI image reference
+    name: ref
+    type: string
+  result:
+    description: the Image Manifest object
+    name: object
+    static:
+    - key: annotations
+      value:
+        dynamic:
+          key:
+            type: string
+          value:
+            type: string
+        type: object
+    - key: config
+      value:
+        static:
+        - key: annotations
+          value:
+            dynamic:
+              key:
+                type: string
+              value:
+                type: string
+            type: object
+        - key: artifactType
+          value:
+            type: string
+        - key: data
+          value:
+            type: string
+        - key: digest
+          value:
+            type: string
+        - key: mediaType
+          value:
+            type: string
+        - key: platform
+          value:
+            static:
+            - key: architecture
+              value:
+                type: string
+            - key: features
+              value:
+                static:
+                - type: string
+                type: array
+            - key: os
+              value:
+                type: string
+            - key: os.features
+              value:
+                static:
+                - type: string
+                type: array
+            - key: os.version
+              value:
+                type: string
+            - key: variant
+              value:
+                type: string
+            type: object
+        - key: size
+          value:
+            type: number
+        - key: urls
+          value:
+            static:
+            - type: string
+            type: array
+        type: object
+    - key: layers
+      value:
+        static:
+        - static:
+          - key: annotations
+            value:
+              dynamic:
+                key:
+                  type: string
+                value:
+                  type: string
+              type: object
+          - key: artifactType
+            value:
+              type: string
+          - key: data
+            value:
+              type: string
+          - key: digest
+            value:
+              type: string
+          - key: mediaType
+            value:
+              type: string
+          - key: platform
+            value:
+              static:
+              - key: architecture
+                value:
+                  type: string
+              - key: features
+                value:
+                  static:
+                  - type: string
+                  type: array
+              - key: os
+                value:
+                  type: string
+              - key: os.features
+                value:
+                  static:
+                  - type: string
+                  type: array
+              - key: os.version
+                value:
+                  type: string
+              - key: variant
+                value:
+                  type: string
+              type: object
+          - key: size
+            value:
+              type: number
+          - key: urls
+            value:
+              static:
+              - type: string
+              type: array
+          type: object
+        type: array
+    - key: mediaType
+      value:
+        type: string
+    - key: schemaVersion
+      value:
+        type: number
+    - key: subject
+      value:
+        static:
+        - key: annotations
+          value:
+            dynamic:
+              key:
+                type: string
+              value:
+                type: string
+            type: object
+        - key: artifactType
+          value:
+            type: string
+        - key: data
+          value:
+            type: string
+        - key: digest
+          value:
+            type: string
+        - key: mediaType
+          value:
+            type: string
+        - key: platform
+          value:
+            static:
+            - key: architecture
+              value:
+                type: string
+            - key: features
+              value:
+                static:
+                - type: string
+                type: array
+            - key: os
+              value:
+                type: string
+            - key: os.features
+              value:
+                static:
+                - type: string
+                type: array
+            - key: os.version
+              value:
+                type: string
+            - key: variant
+              value:
+                type: string
+            type: object
+        - key: size
+          value:
+            type: number
+        - key: urls
+          value:
+            static:
+            - type: string
+            type: array
+        type: object
+    type: object
+  type: function
+description: Fetch an Image Manifest from an OCI registry.
+name: ec.oci.image_manifest
+nondeterministic: true
+
+---
+
+[TestWriteBuiltinsToYAML - 3]
+decl:
+  args:
   - description: the PURL
     name: purl
     type: string
@@ -32,7 +240,7 @@ name: ec.purl.is_valid
 
 ---
 
-[TestWriteBuiltinsToYAML - 3]
+[TestWriteBuiltinsToYAML - 4]
 decl:
   args:
   - description: the PURL
