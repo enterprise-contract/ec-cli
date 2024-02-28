@@ -23,32 +23,79 @@ module.exports.register = function () {
         const yaml = this.require('js-yaml')
         const Handlebars = this.require('handlebars')
 
-        function describe(thing, level) {
-            const type = thing.type || thing.value.type;
-            const name = thing.name || thing.key;
-            const bullet = "*".repeat(parseInt(level, 10));
+        const lvl = level => '*'.repeat(level) + ' ';
 
-            let nextLevel = level;
+        function describe(type) {
+            function describeType(given, level, isType = false) {
+                const obj = given;
+                const kind = obj.type;
 
-            let text = "";
-            // The only attribute that has a description is the top-level object. We skip that one
-            // here to avoid duplication on the template.
-            if (!thing.description) {
-                text += bullet;
-                if (name) {
-                    text += ` \`\`${name}\`\``;
+                switch(kind) {
+                    case 'object':
+                        return describeObject(obj, level, isType);
+                    case 'array':
+                        return describeArray(obj, level + 1, isType);
+                    default:
+                        return describePrimitive(obj, level, isType);
                 }
-                text += ` (\`\`${type}\`\`)\n`;
-                nextLevel++;
             }
 
-            if (type == "object") {
-                thing.static.forEach(each => text += describe(each, nextLevel));
-            } else if (type == "array") {
-                text += describe(thing.value.dynamic, nextLevel);
+            function describeObject(obj, level, isType) {
+                let ret = [];
+                ret.push((isType ? '' : lvl(level)) + '(``object``)');
+                if (obj.static) {
+                    ret.push(describeStaticProperties(obj.static, level + 1));
+                }
+
+                if (obj.dynamic) {
+                    ret.push(describeDynamicProperties(obj.dynamic, level + 1));
+                }
+
+                return ret.join('\n');
             }
 
-            return text;
+            function describeStaticProperties(obj, level, isType) {
+                const l = isType ? '' : lvl(level);
+                const str = e => `${l}\`\`${e.key}\`\`: ${describeType(e.value, level, true)}`
+                if (Array.isArray(obj)) {
+                    return obj.map(str).join('\n');
+                }
+
+                return str(obj);
+            }
+
+            function describeDynamicProperties(obj, level, isType) {
+                const l = isType ? '' : lvl(level);
+                const str = e => `${l}${describeType(e.key, level, true)}: ${describeType(e.value, level, true)}`
+                if (Array.isArray(obj)) {
+                    return obj.map(str).join('\n');
+                }
+
+                return str(obj);
+            }
+
+            function describePrimitive(primitive, level, isType) {
+                if (isType) {
+                    return '(``' + primitive.type + '``)'
+                }
+
+                return lvl(level) + '(``' + primitive.type + '``)';
+            }
+
+            function describeArray(array, level) {
+                let ret = ['(``array``)'];
+                if (array.static) {
+                    ret = ret.concat(array.static.map(e => describeType(e, level)));
+                }
+
+                if (array.dynamic) {
+                    ret.push(describeType(array.dynamic, level));
+                }
+
+                return ret.join('\n');
+            }
+
+            return describeType(type, 1)
         }
 
         Handlebars.registerHelper("describe", describe);
