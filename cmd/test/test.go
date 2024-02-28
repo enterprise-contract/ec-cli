@@ -155,6 +155,10 @@ func newTestCommand() *cobra.Command {
 			if err != nil {
 				return fmt.Errorf("reading flag: %w", err)
 			}
+			forceAppStudioOutput, err := cmd.Flags().GetBool("file-appstudio-output")
+			if err != nil {
+				return fmt.Errorf("reading flag: %w", err)
+			}
 
 			results, resultsErr := runner.Run(ctx, fileList)
 			var exitCode int
@@ -165,7 +169,7 @@ func newTestCommand() *cobra.Command {
 			}
 
 			if !runner.Quiet || exitCode != 0 {
-				if runner.Output == OutputAppstudio {
+				if runner.Output == OutputAppstudio || forceAppStudioOutput {
 					// The appstudio format is unknown to Conftest so we handle it ourselves
 
 					if resultsErr != nil {
@@ -184,17 +188,23 @@ func newTestCommand() *cobra.Command {
 							return fmt.Errorf("creating output file: %w", err)
 						}
 					}
-					fmt.Fprintln(cmd.OutOrStdout(), string(reportOutput)+"\n")
 
-				} else {
-					// Conftest handles the output
+					// Only print to stdout if explicitly asked for
+					if runner.Output == OutputAppstudio {
+						fmt.Fprintln(cmd.OutOrStdout(), string(reportOutput)+"\n")
+					}
+
+				}
+
+				if runner.Output != OutputAppstudio {
+					// Conftest handles all non-appstudio output
 
 					if resultsErr != nil {
 						return fmt.Errorf("running test: %w", resultsErr)
 					}
 
 					var outputFile *os.File
-					if outputFilePath != "" {
+					if outputFilePath != "" && !forceAppStudioOutput {
 						outputFile, err = os.Create(outputFilePath)
 						if err != nil {
 							return fmt.Errorf("creating output file: %w", err)
@@ -213,7 +223,7 @@ func newTestCommand() *cobra.Command {
 						return fmt.Errorf("output results: %w", err)
 					}
 
-					if outputFilePath != "" {
+					if outputFilePath != "" && !forceAppStudioOutput {
 						contents, err := os.ReadFile(outputFile.Name())
 						if err != nil {
 							return fmt.Errorf("copying output file to stdout: %w", err)
@@ -251,6 +261,7 @@ func newTestCommand() *cobra.Command {
 
 	cmd.Flags().StringP("output", "o", output.OutputStandard, fmt.Sprintf("Output format for conftest results - valid options are: %s", append(output.Outputs(), OutputAppstudio)))
 	cmd.Flags().String("file", "", "File path to write output to")
+	cmd.Flags().Bool("file-appstudio-output", false, "Forces output file from --file to be written in appstudio format")
 	cmd.Flags().Bool("junit-hide-message", false, "Do not include the violation message in the JUnit test name")
 
 	cmd.Flags().StringSliceP("policy", "p", []string{"policy"}, "Path to the Rego policy files directory")
