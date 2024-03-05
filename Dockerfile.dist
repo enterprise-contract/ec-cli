@@ -153,6 +153,9 @@ COPY --from=build "/build/dist/ec_${TARGETOS}_${TARGETARCH}" /usr/local/bin/ec
 # OpenShift preflight check requires a license
 COPY --from=build /build/LICENSE /licenses/LICENSE
 
+# OpenShift preflight check requires a non-root user
+USER 1001
+
 # Show some version numbers for troubleshooting purposes
 RUN git version && jq --version && cosign version && ec version && ls -l /usr/local/bin
 
