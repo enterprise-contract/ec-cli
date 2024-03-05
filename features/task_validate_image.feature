@@ -14,7 +14,8 @@ Feature: Verify Enterprise Contract Tekton Tasks
         "sources": [
           {
             "policy": [
-              "github.com/enterprise-contract/ec-policies//policy"
+              "github.com/enterprise-contract/ec-policies//policy/release",
+              "github.com/enterprise-contract/ec-policies//policy/lib"
             ]
           }
         ],
@@ -43,7 +44,8 @@ Feature: Verify Enterprise Contract Tekton Tasks
         "sources": [
           {
             "policy": [
-              "github.com/enterprise-contract/ec-policies//policy"
+              "github.com/enterprise-contract/ec-policies//policy/release",
+              "github.com/enterprise-contract/ec-policies//policy/lib"
             ]
           }
         ],
@@ -74,7 +76,8 @@ Feature: Verify Enterprise Contract Tekton Tasks
         "sources": [
           {
             "policy": [
-              "github.com/enterprise-contract/ec-policies//policy"
+              "github.com/enterprise-contract/ec-policies//policy/release",
+              "github.com/enterprise-contract/ec-policies//policy/lib"
             ]
           }
         ],
@@ -110,7 +113,8 @@ Feature: Verify Enterprise Contract Tekton Tasks
         "sources": [
           {
             "policy": [
-              "github.com/enterprise-contract/ec-policies//policy"
+              "github.com/enterprise-contract/ec-policies//policy/release",
+              "github.com/enterprise-contract/ec-policies//policy/lib"
             ]
           }
         ],
@@ -144,7 +148,8 @@ Feature: Verify Enterprise Contract Tekton Tasks
         "sources": [
           {
             "policy": [
-              "github.com/enterprise-contract/ec-policies//policy"
+              "github.com/enterprise-contract/ec-policies//policy/release",
+              "github.com/enterprise-contract/ec-policies//policy/lib"
             ]
           }
         ],

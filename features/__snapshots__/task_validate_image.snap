@@ -109,7 +109,8 @@ policy:
 ${____known_PUBLIC_KEY}
   sources:
   - policy:
-    - github.com/enterprise-contract/ec-policies//policy
+    - github.com/enterprise-contract/ec-policies//policy/release
+    - github.com/enterprise-contract/ec-policies//policy/lib
 success: true
 
 ---
@@ -174,7 +175,8 @@ policy:
 ${____known_PUBLIC_KEY}
   sources:
   - policy:
-    - github.com/enterprise-contract/ec-policies//policy
+    - github.com/enterprise-contract/ec-policies//policy/release
+    - github.com/enterprise-contract/ec-policies//policy/lib
 success: true
 
 ---
@@ -264,7 +266,8 @@ policy:
     -----END PUBLIC KEY-----
   sources:
   - policy:
-    - github.com/enterprise-contract/ec-policies//policy
+    - github.com/enterprise-contract/ec-policies//policy/release
+    - github.com/enterprise-contract/ec-policies//policy/lib
 success: true
 
 ---
@@ -366,7 +369,8 @@ policy:
     -----END PUBLIC KEY-----
   sources:
   - policy:
-    - github.com/enterprise-contract/ec-policies//policy
+    - github.com/enterprise-contract/ec-policies//policy/release
+    - github.com/enterprise-contract/ec-policies//policy/lib
 success: true
 
 ---
@@ -624,7 +628,8 @@ true
     "sources": [
       {
         "policy": [
-          "github.com/enterprise-contract/ec-policies//policy"
+          "github.com/enterprise-contract/ec-policies//policy/release",
+          "github.com/enterprise-contract/ec-policies//policy/lib"
         ]
       }
     ],
@@ -719,7 +724,8 @@ true
     "sources": [
       {
         "policy": [
-          "github.com/enterprise-contract/ec-policies//policy"
+          "github.com/enterprise-contract/ec-policies//policy/release",
+          "github.com/enterprise-contract/ec-policies//policy/lib"
         ]
       }
     ],
@@ -836,7 +842,8 @@ true
     "sources": [
       {
         "policy": [
-          "github.com/enterprise-contract/ec-policies//policy"
+          "github.com/enterprise-contract/ec-policies//policy/release",
+          "github.com/enterprise-contract/ec-policies//policy/lib"
         ]
       }
     ],
@@ -953,7 +960,8 @@ true
     "sources": [
       {
         "policy": [
-          "github.com/enterprise-contract/ec-policies//policy"
+          "github.com/enterprise-contract/ec-policies//policy/release",
+          "github.com/enterprise-contract/ec-policies//policy/lib"
         ]
       }
     ],
