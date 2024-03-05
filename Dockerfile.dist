@@ -75,7 +75,7 @@ RUN \
     if [ -z "$EC_VERSION" ]; then \
       EC_FULL_VERSION="_ci_build-${EC_GIT_SHA}"; \
     else \
-      EC_FULL_VERSION="v${EC_VERSION}.${EC_PATCH_NUM}"; \
+      EC_FULL_VERSION="${EC_VERSION}.${EC_PATCH_NUM}"; \
     fi; \
     \
     if [ -z "$EC_VERSION" -o "$EC_GIT_BRANCH" = "$EC_VERSION" ]; then \
