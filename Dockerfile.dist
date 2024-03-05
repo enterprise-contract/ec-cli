@@ -150,6 +150,9 @@ RUN gzip /usr/local/bin/ec_*
 # Copy the one ec binary that can run in this container
 COPY --from=build "/build/dist/ec_${TARGETOS}_${TARGETARCH}" /usr/local/bin/ec
 
+# OpenShift preflight check requires a license
+COPY --from=build /build/LICENSE /licenses/LICENSE
+
 # Show some version numbers for troubleshooting purposes
 RUN git version && jq --version && cosign version && ec version && ls -l /usr/local/bin
 
