@@ -61,8 +61,12 @@ for p in pull-request push; do
 
   # Loop over each commit
   for sha in $changes; do
-    echo "Applying changes from commit $(git log -n1 --pretty="'%h %s'" $sha)"\
-      "to pipeline definition file '$release_pipeline'"
+    git show $sha $main_pipeline
+
+    echo ""
+    echo "Applying the above changes to '$release_pipeline'"
+    read -p "Press any key to continue..."
+    echo ""
 
     # Create a diff file and apply the patch
     # (Can't use git apply since it is a different file)
@@ -71,6 +75,8 @@ for p in pull-request push; do
 
     # Stage the changes
     git add $release_pipeline
+
+    echo ""
   done
 
   # Let's clean up by removing the main branch pipeline from the release branch
@@ -80,6 +86,11 @@ for p in pull-request push; do
   diff_help=$(echo "$diff_help"; echo "  vimdiff <(git show main:$main_pipeline) $release_pipeline")
 done
 
+echo ""
+echo "Patching done. Ready to make a commit."
+read -p "Press any key to continue..."
+echo ""
+
 # Make the commit
 git commit -m "chore: Modify default pipelines for $release_name" \
   -m "Apply changes to the Konflux generated default pipelines." \
@@ -87,6 +98,7 @@ git commit -m "chore: Modify default pipelines for $release_name" \
   -m "(Commit created with hack/patch-release-pipelines.sh $digest_bumps)"
 
 # Invite the human to look at it
+echo ""
 echo "Please review the commit and see if you like it."
 echo "Please also review the diff between the cli-main-ci pipelines and the corresponding release pipelines."
 echo "(You can use the following vimdiff commands to see what the differences are.)"
