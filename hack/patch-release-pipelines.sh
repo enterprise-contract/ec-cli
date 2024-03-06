@@ -44,7 +44,7 @@ for p in pull-request push; do
   if [[ "$digest_bumps" != "digest_bumps" ]]; then
     # Find all significant changes.
     # Use grep to exclude digest bumps and initial creation.
-    changes=$( git log main --reverse --pretty=%h --invert-grep --regexp-ignore-case \
+    changes=$( git log main --reverse --pretty=%h --no-merges --invert-grep --regexp-ignore-case \
       --grep="Update RHTAP references" \
       --grep="Update Konflux references" \
       --grep="Konflux CI update" \
