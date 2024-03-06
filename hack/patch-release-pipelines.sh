@@ -63,7 +63,8 @@ for p in pull-request push; do
 
     # Create a diff file and apply the patch
     # (Can't use git apply since it is a different file)
-    git diff $sha^ $sha $main_pipeline | patch -p1 $release_pipeline
+    # If the patch doesn't apply, keep going anyhow
+    git diff $sha^ $sha $main_pipeline | patch -p1 $release_pipeline || true
 
     # Stage the changes
     git add $release_pipeline
