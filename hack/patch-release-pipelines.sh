@@ -32,41 +32,47 @@ fi
 
 # The release name is the branch name with release- trimmed off the front
 release_name=${current_branch#"release-"}
+main_release_name="main-ci"
+components=(cli verify-enterprise-contract-task)
 
 # One each for the two pipelines created by RHTAP
 for p in pull-request push; do
-  main_pipeline=".tekton/cli-main-ci-$p.yaml"
-  release_pipeline=".tekton/cli-${release_name/./}-$p.yaml"
 
-  if [[ "$digest_bumps" != "digest_bumps" ]]; then
-    # Find all significant changes.
-    # Use grep to exclude digest bumps and initial creation.
-    changes=$( git log main --reverse --pretty=%h --invert-grep --regexp-ignore-case \
-      --grep="Update RHTAP references" \
-      --grep="Red Hat Trusted App Pipeline update" \
-      -- $main_pipeline )
-  else
-    # Find only the digest bumps
-    changes=$( git log main --reverse --pretty=%h --regexp-ignore-case \
-      --grep="Update RHTAP references" \
-      -- $main_pipeline )
-  fi
+  for comp in ${components[@]}; do
+    main_pipeline=".tekton/${comp}-${main_release_name}-$p.yaml"
+    release_pipeline=".tekton/${comp}-${release_name/./}-$p.yaml"
 
-  # Loop over each commit
-  for sha in $changes; do
-    echo "Applying changes from commit $(git log -n1 --pretty="'%h %s'" $sha)"\
-      "to pipeline definition file '$release_pipeline'"
+    if [[ "$digest_bumps" != "digest_bumps" ]]; then
+      # Find all significant changes.
+      # Use grep to exclude digest bumps and initial creation.
+      changes=$( git log main --reverse --pretty=%h --invert-grep --regexp-ignore-case \
+        --grep="Update RHTAP references" \
+        --grep="Red Hat Trusted App Pipeline update" \
+        -- $main_pipeline )
+    else
+      # Find only the digest bumps
+      changes=$( git log main --reverse --pretty=%h --regexp-ignore-case \
+        --grep="Update RHTAP references" \
+        -- $main_pipeline )
+    fi
 
-    # Create a diff file and apply the patch
-    # (Can't use git apply since it is a different file)
-    git diff $sha^ $sha $main_pipeline | patch -p1 $release_pipeline
+    # Loop over each commit
+    for sha in $changes; do
+      echo "Applying changes from commit $(git log -n1 --pretty="'%h %s'" $sha)"\
+        "to pipeline definition file '$release_pipeline'"
 
-    # Stage the changes
-    git add $release_pipeline
+      # Create a diff file and apply the patch
+      # (Can't use git apply since it is a different file)
+      git diff $sha^ $sha $main_pipeline | patch -p1 $release_pipeline
+
+      # Stage the changes
+      git add $release_pipeline
+
+    done
+    # Let's keep the main branch pipeline for now since it is useful to diff against
+    # git rm $main_pipeline
   done
-
-  # Let's keep the main branch pipeline for now since it is useful to diff against
-  #git rm $main_pipeline
+    
 done
 
 # Make the commit
