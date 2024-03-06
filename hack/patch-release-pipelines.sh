@@ -92,7 +92,7 @@ read -p "Press any key to continue..."
 echo ""
 
 # Make the commit
-git commit -m "chore: Modify default pipelines for $release_name" \
+git commit -m "chore: Modify default cli pipelines for $release_name" \
   -m "Apply changes to the Konflux generated default pipelines." \
   -m "Also remove the main branch pipelines since they're not needed in the release branch." \
   -m "(Commit created with hack/patch-release-pipelines.sh $digest_bumps)"
