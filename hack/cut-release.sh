@@ -31,6 +31,16 @@ if [[ $RELEASE_NAME == "" ]]; then
   exit 1
 fi
 
+if [[ $RELEASE_NAME != v* ]]; then
+  echo "Release name should begin with v, e.g. v0.1-tech-preview, or v1.1"
+  exit 1
+fi
+
+if [[ $RELEASE_NAME != *.* || $RELEASE_NAME == *.*.* ]]; then
+  echo "Release name should include one dot, e.g. v0.1-tech-preview, or v1.1"
+  exit 1
+fi
+
 # Use release name as-is for the branch name
 BRANCH_NAME="release-${RELEASE_NAME}"
 
