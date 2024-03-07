@@ -54,7 +54,7 @@ for p in pull-request push; do
   git rm $main_pipeline
 
   # Prepare handy commands for comparing the patched pipeline to the corresponding main branch pipeline
-  diff_help=$(echo "$diff_help"; echo "  vimdiff <(git show main:$main_pipeline) $release_pipeline")
+  diff_help=$(echo "$diff_help"; echo "  vimdiff +'set ft=yaml' <(git show main:$main_pipeline) $release_pipeline")
 done
 
 git commit -m "chore: Copy task bundle pipelines for $release_name" \
