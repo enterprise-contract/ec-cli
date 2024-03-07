@@ -206,7 +206,7 @@ spec:
         - name: name
           value: tkn-bundle
         - name: bundle
-          value: quay.io/jstuart/tkn-bundle:latest
+          value: quay.io/redhat-appstudio-tekton-catalog/task-tkn-bundle@sha256:3612482c00030acbb261b4c8f501c15fb43e241edccb5225ca8e9f5a2d47c46c
         - name: kind
           value: task
         resolver: bundles
