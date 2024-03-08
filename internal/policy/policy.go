@@ -19,6 +19,8 @@ package policy
 import (
 	"context"
 	"crypto"
+	_ "embed"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -27,6 +29,8 @@ import (
 
 	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/hashicorp/go-multierror"
+	schemaExporter "github.com/invopop/jsonschema"
+	"github.com/santhosh-tekuri/jsonschema/v5"
 	"github.com/sigstore/cosign/v2/cmd/cosign/cli/fulcio"
 	"github.com/sigstore/cosign/v2/cmd/cosign/cli/rekor"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
@@ -47,6 +51,29 @@ const (
 
 // allows controlling time in tests
 var now = time.Now
+
+var ecp_schema string
+
+// generate the JSON schema for the EnterpriseContractPolicySpec dependency at compile time
+func init() {
+	schemaJson, err := jsonSchemaFromPolicySpec(&ecc.EnterpriseContractPolicySpec{})
+	if err != nil {
+		fmt.Println("Error creating JSON schema:", err)
+		os.Exit(1)
+	}
+	ecp_schema = string(schemaJson)
+}
+
+// Create a JSON schema from a Go type, and return the JSON as a byte slice
+func jsonSchemaFromPolicySpec(ecp *ecc.EnterpriseContractPolicySpec) ([]byte, error) {
+	r := new(schemaExporter.Reflector)
+	schema := r.Reflect(ecp)
+	schemaJson, err := json.MarshalIndent(schema, "", "  ")
+	if err != nil {
+		return nil, err
+	}
+	return schemaJson, nil
+}
 
 type Policy interface {
 	PublicKeyPEM() ([]byte, error)
@@ -247,7 +274,15 @@ func (p *policy) loadPolicy(ctx context.Context, policyRef string) error {
 		// publicKey param.
 		return nil
 	}
+	/*
+		Note: by the time we arrive here, if our policyRef was originally a URI for a
+		JSON / YAML the document will have already opened / downloaded and it would be
+		a JSON / YAML string which is why we can use `yaml.Unmarshal` below.
 
+		Before we unmarshal we need to check if the policyRef text conforms to the
+		EnprerpriseContractPolicySpec schema. If it does, we can proceed to unmarshal
+		it. If it does not conform to the spec, we should return an error.
+	*/
 	if strings.Contains(policyRef, ":") { // Should detect JSON or YAML objects 🤞
 		log.Debug("Read EnterpriseContractPolicy as YAML")
 		ecp := ecc.EnterpriseContractPolicy{}
@@ -259,6 +294,16 @@ func (p *policy) loadPolicy(ctx context.Context, policyRef string) error {
 			if err := yaml.Unmarshal([]byte(policyRef), &p.EnterpriseContractPolicySpec); err != nil {
 				log.Debugf("Unable to parse EnterpriseContractPolicySpec from %q", policyRef)
 				return fmt.Errorf("unable to parse EnterpriseContractPolicySpec: %w", err)
+			}
+		}
+		// Check if the policyRef is conformant to the schema
+		if policyRef != "" {
+			ok, err := p.isConformant(policyRef)
+			if err != nil {
+				return err
+			}
+			if !ok {
+				return fmt.Errorf("policy does not conform to the schema")
 			}
 		}
 	} else {
@@ -277,8 +322,44 @@ func (p *policy) loadPolicy(ctx context.Context, policyRef string) error {
 		}
 		p.EnterpriseContractPolicySpec = ecp.Spec
 	}
-
 	return nil
+}
+
+// isConformant checks if the given policy conforms to the Enterprise Contract
+// Policy schema. It returns a boolean indicating conformance and an error if any
+// occurred during the validation process.
+func (p *policy) isConformant(policyRef string) (bool, error) {
+	policySchema, err := jsonschema.CompileString("schema.json", ecp_schema)
+	if err != nil {
+		log.Errorf("Failed to compile schema: %s", err)
+		return false, err
+	}
+
+	var v map[string]interface{}
+
+	// Since JSON is a subset of YAML, yaml.Unmarshal can be used directly.
+	if err := yaml.Unmarshal([]byte(policyRef), &v); err != nil {
+		log.Errorf("yaml.Unmarshal failed: %v", err)
+		return false, err
+	}
+
+	// Extract the "spec" key from YAML, if present, to use as the policy.
+	if spec, ok := v["spec"]; ok {
+		v, ok = spec.(map[string]interface{})
+		if !ok {
+			return false, fmt.Errorf("spec is not a valid map structure")
+		}
+	}
+
+	// Validate the policy against the schema.
+	if err := policySchema.Validate(v); err != nil {
+		// b := err.(*jsonschema.ValidationError).BasicOutput()
+		log.Errorf("Policy does not conform to the schema: %v", err)
+		return false, err
+	}
+
+	// Policy conforms to the schema.
+	return true, nil
 }
 
 func (p *policy) WithSpec(spec ecc.EnterpriseContractPolicySpec) Policy {
