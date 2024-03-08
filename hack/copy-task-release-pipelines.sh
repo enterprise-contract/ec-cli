@@ -41,8 +41,6 @@ for p in pull-request push; do
   main_pipeline=".tekton/verify-enterprise-contract-task-main-ci-$p.yaml"
   release_pipeline=".tekton/verify-enterprise-contract-task-$short_release_name-$p.yaml"
 
-  # Beware: If the branch name is long enough there'll be a newline after
-  # "target_branch ==" and the second sed command won't work
   cat $main_pipeline \
     | sed "s/main-ci/$short_release_name/g" \
     | sed "s/target_branch == \"main\"/target_branch == \"$current_branch\"/" \
