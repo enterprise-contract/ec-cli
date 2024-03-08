@@ -6,14 +6,13 @@ metadata:
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch
-      == "main"
+    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "release-v0.2"
   creationTimestamp: null
   labels:
-    appstudio.openshift.io/application: ec-main-ci
-    appstudio.openshift.io/component: verify-enterprise-contract-task-main-ci
+    appstudio.openshift.io/application: ec-v02
+    appstudio.openshift.io/component: verify-enterprise-contract-task-v02
     pipelines.appstudio.openshift.io/type: build
-  name: verify-enterprise-contract-task-main-ci-on-push
+  name: verify-enterprise-contract-task-v02-on-push
   namespace: rhtap-contract-tenant
 spec:
   params:
@@ -24,7 +23,7 @@ spec:
   - name: image-expires-after
     value: 5d
   - name: output-image
-    value: quay.io/redhat-user-workloads/rhtap-contract-tenant/ec-main-ci/verify-enterprise-contract-task-main-ci:{{revision}}
+    value: quay.io/redhat-user-workloads/rhtap-contract-tenant/ec-v02/verify-enterprise-contract-task-v02:{{revision}}
   - name: path-context
     value: .
   - name: revision
