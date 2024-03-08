@@ -4,25 +4,28 @@ metadata:
   annotations:
     build.appstudio.openshift.io/repo: https://github.com/enterprise-contract/ec-cli?rev={{revision}}
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
+    build.appstudio.redhat.com/pull_request_number: '{{pull_request_number}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch
-      == "release-v0.2"
+    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch
+      == "main"
   creationTimestamp: null
   labels:
-    appstudio.openshift.io/application: ec-v02
-    appstudio.openshift.io/component: cli-v02
+    appstudio.openshift.io/application: ec-main-ci
+    appstudio.openshift.io/component: cli-main-ci
     pipelines.appstudio.openshift.io/type: build
-  name: cli-v02-on-push
+  name: cli-main-ci-on-pull-request
   namespace: rhtap-contract-tenant
 spec:
   params:
   - name: dockerfile
     value: Dockerfile.dist
   - name: git-url
-    value: '{{source_url}}'
+    value: '{{repo_url}}'
+  - name: image-expires-after
+    value: 5d
   - name: output-image
-    value: quay.io/redhat-user-workloads/rhtap-contract-tenant/ec-v02/cli-v02:{{revision}}
+    value: quay.io/redhat-user-workloads/rhtap-contract-tenant/ec-main-ci/cli-main-ci:on-pr-{{revision}}
   - name: path-context
     value: .
   - name: revision
