@@ -50,6 +50,7 @@ KONFLUX_APPLICATION_SUFFIX="${RELEASE_NAME/./}"
 # Could be whatever, but let's adopt a consistent convention
 KONFLUX_APPLICATION_NAME=ec-${KONFLUX_APPLICATION_SUFFIX}
 KONFLUX_CLI_COMPONENT_NAME=cli-${KONFLUX_APPLICATION_SUFFIX}
+KONFLUX_TASK_COMPONENT_NAME=verify-enterprise-contract-task-${KONFLUX_APPLICATION_SUFFIX}
 
 # Show some useful values
 echo Release name: $RELEASE_NAME
@@ -82,7 +83,17 @@ Set Dockerfile to Dockerfile.dist
 Unset the "Default build pipeline" toggle
 Click "Create application"
 
-# Wait for PR
+# Add the verify-enterprise-contract-task component
+Go to the componets list at ${KONFLUX_APPS_URL}/${KONFLUX_APPLICATION_NAME}/components
+Click "Add component"
+Paste in https://github.com/enterprise-contract/ec-cli under "Git repository URL"
+Set Git reference to ${BRANCH_NAME} and click "Import code"
+Set the component name to ${KONFLUX_TASK_COMPONENT_NAME}
+Leave the "Default build pipeline" toggle set, (we're going to provide a custom pipeline)
+Click "Add component"
+(The build pipeline triggered will fail now, but don't worry about it.)
+
+# Wait for Konflux to create PR for the ec-cli component
 Wait for the PR to be created
 Go look at the PR in GitHub
 Wait for the PR to pass the ${KONFLUX_CLI_COMPONENT_NAME}-on-pull-request check
@@ -97,6 +108,7 @@ Edit ${KONFLUX_APPLICATION_NAME}-enterprise-contract and add a parameter as foll
 Save changes
 
 # Apply cli pipeline modifications
+Should be done on top of the Konflux generated PR
 git checkout ${BRANCH_NAME}
 hack/patch-release-pipelines.sh
 hack/patch-release-pipelines.sh digest_bumps # maybe
