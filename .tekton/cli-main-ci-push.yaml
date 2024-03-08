@@ -10,25 +10,25 @@ metadata:
       == "main"
   creationTimestamp: null
   labels:
-    appstudio.openshift.io/application: ec-v02
-    appstudio.openshift.io/component: verify-enterprise-contract-task-v02
+    appstudio.openshift.io/application: ec-main-ci
+    appstudio.openshift.io/component: cli-main-ci
     pipelines.appstudio.openshift.io/type: build
-  name: verify-enterprise-contract-task-v02-on-push
+  name: cli-main-ci-on-push
   namespace: rhtap-contract-tenant
 spec:
   params:
   - name: dockerfile
-    value: docker/Dockerfile
+    value: Dockerfile.dist
   - name: git-url
-    value: '{{source_url}}'
-  - name: image-expires-after
-    value: 5d
+    value: '{{repo_url}}'
   - name: output-image
-    value: quay.io/redhat-user-workloads/rhtap-contract-tenant/ec-v02/verify-enterprise-contract-task-v02:{{revision}}
+    value: quay.io/redhat-user-workloads/rhtap-contract-tenant/ec-main-ci/cli-main-ci:{{revision}}
   - name: path-context
     value: .
   - name: revision
     value: '{{revision}}'
+  - name: build-source-image
+    value: 'true'
   pipelineSpec:
     finally:
     - name: show-sbom
@@ -125,6 +125,9 @@ spec:
     - description: ""
       name: CHAINS-GIT_COMMIT
       value: $(tasks.clone-repository.results.commit)
+    - description: ""
+      name: JAVA_COMMUNITY_DEPENDENCIES
+      value: $(tasks.build-container.results.JAVA_COMMUNITY_DEPENDENCIES)
     tasks:
     - name: init
       params:
@@ -149,6 +152,10 @@ spec:
         value: $(params.git-url)
       - name: revision
         value: $(params.revision)
+      - name: depth
+        value: "0"
+      - name: fetchTags
+        value: "true"
       runAfter:
       - init
       taskRef:
@@ -197,16 +204,26 @@ spec:
       params:
       - name: IMAGE
         value: $(params.output-image)
-      - name: CONTEXT 
-        value: ./source/tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml
+      - name: DOCKERFILE
+        value: $(params.dockerfile)
+      - name: CONTEXT
+        value: $(params.path-context)
+      - name: HERMETIC
+        value: $(params.hermetic)
+      - name: PREFETCH_INPUT
+        value: $(params.prefetch-input)
+      - name: IMAGE_EXPIRES_AFTER
+        value: $(params.image-expires-after)
+      - name: COMMIT_SHA
+        value: $(tasks.clone-repository.results.commit)
       runAfter:
       - prefetch-dependencies
       taskRef:
         params:
         - name: name
-          value: tkn-bundle
+          value: buildah
         - name: bundle
-          value: quay.io/redhat-appstudio-tekton-catalog/task-tkn-bundle:0.1@sha256:3612482c00030acbb261b4c8f501c15fb43e241edccb5225ca8e9f5a2d47c46c
+          value: quay.io/redhat-appstudio-tekton-catalog/task-buildah:0.1@sha256:cfb32c9f1ec9c217bc81389d6aeacdb9e7a092a7fa86d4fed7b6fbb2612f5c1d
         - name: kind
           value: task
         resolver: bundles
@@ -218,6 +235,55 @@ spec:
       workspaces:
       - name: source
         workspace: workspace
+    - name: build-source-image
+      params:
+      - name: BINARY_IMAGE
+        value: $(params.output-image)
+      - name: BASE_IMAGES
+        value: $(tasks.build-container.results.BASE_IMAGES_DIGESTS)
+      runAfter:
+      - build-container
+      taskRef:
+        params:
+        - name: name
+          value: source-build
+        - name: bundle
+          value: quay.io/redhat-appstudio-tekton-catalog/task-source-build:0.1@sha256:e831f3e10362ecb21910f45ff48c3af1c0c8bea4858ca25f4f436153499f9802
+        - name: kind
+          value: task
+        resolver: bundles
+      when:
+      - input: $(tasks.init.results.build)
+        operator: in
+        values:
+        - "true"
+      - input: $(params.build-source-image)
+        operator: in
+        values:
+        - "true"
+      workspaces:
+      - name: workspace
+        workspace: workspace
+    - name: deprecated-base-image-check
+      params:
+      - name: BASE_IMAGES_DIGESTS
+        value: $(tasks.build-container.results.BASE_IMAGES_DIGESTS)
+      runAfter:
+      - build-container
+      taskRef:
+        params:
+        - name: name
+          value: deprecated-image-check
+        - name: bundle
+          value: quay.io/redhat-appstudio-tekton-catalog/task-deprecated-image-check:0.3@sha256:ba55ff56b8718406278d72fd5e3de88da110dd4391aa7581923b8d219a29f841
+        - name: kind
+          value: task
+        resolver: bundles
+      when:
+      - input: $(params.skip-checks)
+        operator: in
+        values:
+        - "false"
     - name: clair-scan
       params:
       - name: image-digest
@@ -232,6 +298,26 @@ spec:
           value: clair-scan
         - name: bundle
           value: quay.io/redhat-appstudio-tekton-catalog/task-clair-scan:0.1@sha256:5097b69c7b8ed19bbc09b3b119214305ed382a185aece344806875e6c43203b8
+        - name: kind
+          value: task
+        resolver: bundles
+      when:
+      - input: $(params.skip-checks)
+        operator: in
+        values:
+        - "false"
+    - name: ecosystem-cert-preflight-checks
+      params:
+      - name: image-url
+        value: $(tasks.build-container.results.IMAGE_URL)
+      runAfter:
+      - build-container
+      taskRef:
+        params:
+        - name: name
+          value: ecosystem-cert-preflight-checks
+        - name: bundle
+          value: quay.io/redhat-appstudio-tekton-catalog/task-ecosystem-cert-preflight-checks:0.1@sha256:4bcabe436ddbef6af8f8108ee234d83e116e63e91f64a77191e1492db11bf56b
         - name: kind
           value: task
         resolver: bundles
