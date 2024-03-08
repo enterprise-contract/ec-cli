@@ -20,7 +20,7 @@ spec:
   - name: dockerfile
     value: Dockerfile.dist
   - name: git-url
-    value: '{{repo_url}}'
+    value: '{{source_url}}'
   - name: output-image
     value: quay.io/redhat-user-workloads/rhtap-contract-tenant/ec-main-ci/cli-main-ci:{{revision}}
   - name: path-context
