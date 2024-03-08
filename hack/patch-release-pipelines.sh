@@ -33,6 +33,9 @@ fi
 # The release name is the branch name with release- trimmed off the front
 release_name=${current_branch#"release-"}
 
+# Will append to this and echo it later
+diff_help=""
+
 # One each for the two pipelines created by Konflux
 for p in pull-request push; do
   main_pipeline=".tekton/cli-main-ci-$p.yaml"
@@ -41,7 +44,7 @@ for p in pull-request push; do
   if [[ "$digest_bumps" != "digest_bumps" ]]; then
     # Find all significant changes.
     # Use grep to exclude digest bumps and initial creation.
-    changes=$( git log main --reverse --pretty=%h --invert-grep --regexp-ignore-case \
+    changes=$( git log main --reverse --pretty=%h --no-merges --invert-grep --regexp-ignore-case \
       --grep="Update RHTAP references" \
       --grep="Update Konflux references" \
       --grep="Konflux CI update" \
@@ -58,8 +61,12 @@ for p in pull-request push; do
 
   # Loop over each commit
   for sha in $changes; do
-    echo "Applying changes from commit $(git log -n1 --pretty="'%h %s'" $sha)"\
-      "to pipeline definition file '$release_pipeline'"
+    git show $sha $main_pipeline
+
+    echo ""
+    echo "Applying the above changes to '$release_pipeline'"
+    read -p "Press any key to continue..."
+    echo ""
 
     # Create a diff file and apply the patch
     # (Can't use git apply since it is a different file)
@@ -68,17 +75,31 @@ for p in pull-request push; do
 
     # Stage the changes
     git add $release_pipeline
+
+    echo ""
   done
 
-  # Let's keep the main branch pipeline for now since it is useful to diff against
-  #git rm $main_pipeline
+  # Let's clean up by removing the main branch pipeline from the release branch
+  git rm $main_pipeline
+
+  # Prepare handy commands for comparing the patched pipeline to the corresponding main branch pipeline
+  diff_help=$(echo "$diff_help"; echo "  vimdiff +'set ft=yaml' <(git show main:$main_pipeline) $release_pipeline")
 done
 
+echo ""
+echo "Patching done. Ready to make a commit."
+read -p "Press any key to continue..."
+echo ""
+
 # Make the commit
-git commit -m "chore: Modify default pipelines for $release_name" \
+git commit -m "chore: Modify default cli pipelines for $release_name" \
   -m "Apply changes to the Konflux generated default pipelines." \
+  -m "Also remove the main branch pipelines since they're not needed in the release branch." \
   -m "(Commit created with hack/patch-release-pipelines.sh $digest_bumps)"
 
 # Invite the human to look at it
+echo ""
 echo "Please review the commit and see if you like it."
 echo "Please also review the diff between the cli-main-ci pipelines and the corresponding release pipelines."
+echo "(You can use the following vimdiff commands to see what the differences are.)"
+echo "$diff_help"

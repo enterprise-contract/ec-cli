@@ -31,6 +31,16 @@ if [[ $RELEASE_NAME == "" ]]; then
   exit 1
 fi
 
+if [[ $RELEASE_NAME != v* ]]; then
+  echo "Release name should begin with v, e.g. v0.1-tech-preview, or v1.1"
+  exit 1
+fi
+
+if [[ $RELEASE_NAME != *.* || $RELEASE_NAME == *.*.* ]]; then
+  echo "Release name should include one dot, e.g. v0.1-tech-preview, or v1.1"
+  exit 1
+fi
+
 # Use release name as-is for the branch name
 BRANCH_NAME="release-${RELEASE_NAME}"
 
@@ -86,12 +96,19 @@ Edit ${KONFLUX_APPLICATION_NAME}-enterprise-contract and add a parameter as foll
   Value: github.com/enterprise-contract/config//redhat-no-hermetic
 Save changes
 
-# Apply pipeline modifications
+# Apply cli pipeline modifications
 git checkout ${BRANCH_NAME}
 hack/patch-release-pipelines.sh
 hack/patch-release-pipelines.sh digest_bumps # maybe
 Review the diff between the ${KONFLUX_CLI_COMPONENT_NAME}- and cli-main-ci- pipelines
-Review the generated commit and then create a PR for the ${BRANCH_NAME} branch with that commit
+Review the generated commit, and inspect the diff as described.
+
+# Copy the task definition pipeline from main branch
+hack/copy-task-release-pipelines.sh
+Review the generated commit.
+
+# Create pipeline customizations PR
+With the above two commits, create a PR for the ${BRANCH_NAME} branch.
 (Todo maybe: If you want, try adding this commit to the PR created by Konflux before merging that PR.)
 
 EOT
