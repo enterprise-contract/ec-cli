@@ -15,6 +15,11 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+echo "*** This script is not used currently ***"
+echo "See https://issues.redhat.com/browse/EC-479 for details"
+echo "See also the changes to hack/cut-release.sh in this commit"
+exit 1
+
 set -o errexit
 set -o nounset
 set -o pipefail

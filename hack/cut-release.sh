@@ -83,16 +83,6 @@ Set Dockerfile to Dockerfile.dist
 Unset the "Default build pipeline" toggle
 Click "Create application"
 
-# Add the verify-enterprise-contract-task component
-Go to the componets list at ${KONFLUX_APPS_URL}/${KONFLUX_APPLICATION_NAME}/components
-Click "Add component"
-Paste in https://github.com/enterprise-contract/ec-cli under "Git repository URL"
-Set Git reference to ${BRANCH_NAME} and click "Import code"
-Set the component name to ${KONFLUX_TASK_COMPONENT_NAME}
-Leave the "Default build pipeline" toggle set, (we're going to provide a custom pipeline)
-Click "Add component"
-(The build pipeline triggered will fail now, but don't worry about it.)
-
 # Wait for Konflux to create PR for the ec-cli component
 Wait for the PR to be created
 Go look at the PR in GitHub
@@ -115,12 +105,8 @@ hack/patch-release-pipelines.sh digest_bumps # maybe
 Review the diff between the ${KONFLUX_CLI_COMPONENT_NAME}- and cli-main-ci- pipelines
 Review the generated commit, and inspect the diff as described.
 
-# Copy the task definition pipeline from main branch
-hack/copy-task-release-pipelines.sh
-Review the generated commit.
-
 # Create pipeline customizations PR
-With the above two commits, create a PR for the ${BRANCH_NAME} branch.
+With the above commit, create a PR for the ${BRANCH_NAME} branch.
 (Todo maybe: If you want, try adding this commit to the PR created by Konflux before merging that PR.)
 
 EOT
