@@ -61,16 +61,16 @@ COPY . .
 # because the PR branch refs are generally not present. In that case we'll use
 # "_ci_build" as the version.
 #
-# Alternative for EC_PATCH_NUM using the nearest tag in case we decide we don't
-# like the merge-base technique:
-#   EC_PATCH_NUM=$( git rev-list --count $( git describe --tags --abbrev=0 )..HEAD ); \
+# For the EC_PATCH_NUM we assume there is a v0.2.0 (for example) tag created
+# by a human. Using --merges there because we assume every build happens after
+# a PR is merged.
 #
 RUN \
     EC_GIT_SHA=$( git rev-parse --short HEAD ); \
     EC_GIT_ORIGIN_BRANCH=$( git for-each-ref --points-at HEAD --format='%(refname:short)' refs/remotes/origin/ ); \
     EC_GIT_BRANCH=${EC_GIT_ORIGIN_BRANCH#"origin/"}; \
     EC_VERSION=${EC_GIT_BRANCH#"release-"}; \
-    EC_PATCH_NUM=$( git rev-list --count $( git merge-base --fork-point origin/main )..HEAD ); \
+    EC_PATCH_NUM=$( git rev-list --merges --count ${EC_VERSION}.0..HEAD ); \
     \
     if [ -z "$EC_VERSION" ]; then \
       EC_FULL_VERSION="_ci_build-${EC_GIT_SHA}"; \
