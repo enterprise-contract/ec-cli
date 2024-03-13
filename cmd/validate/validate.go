@@ -22,6 +22,7 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/definition"
 	"github.com/enterprise-contract/ec-cli/internal/image"
 	"github.com/enterprise-contract/ec-cli/internal/input"
+	_ "github.com/enterprise-contract/ec-cli/internal/rego"
 )
 
 var ValidateCmd *cobra.Command
