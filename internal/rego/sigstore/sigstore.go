@@ -22,6 +22,7 @@ package sigstore
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/google/go-containerregistry/pkg/name"
@@ -30,9 +31,12 @@ import (
 	"github.com/open-policy-agent/opa/topdown/builtins"
 	"github.com/open-policy-agent/opa/types"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
+	"github.com/sigstore/cosign/v2/pkg/oci"
 
+	"github.com/enterprise-contract/ec-cli/internal/attestation"
 	"github.com/enterprise-contract/ec-cli/internal/evaluation_target/application_snapshot_image"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
+	"github.com/enterprise-contract/ec-cli/internal/signature"
 )
 
 const (
@@ -66,25 +70,24 @@ var sigstoreOptsParameter = types.Named("opts",
 		nil,
 	)).Description("Sigstore verification options")
 
-// TODO: We want to enhance this verification result to return signatures and attestations. This is
-// important, specially for verify_attestation so callers can make sure the expected predicate is
-// found. At that time, it may not make sense to share the same result type between the different
-// verify_* functions.
-var verificationResult = types.Named(
-	"result",
-	types.NewObject([]*types.StaticProperty{
-		{Key: "success", Value: types.Named("success", types.B).Description("true when verification is successful")},
-		{Key: "errors", Value: types.Named("errors", types.NewArray([]types.Type{types.S}, nil)).Description("verification errors")},
-	}, nil),
-).Description("the result of the verification request")
-
 func registerSigstoreVerifyImage() {
+	signatureType := types.Named("signature", types.A).Description("signatures matching provided identity/key")
+
+	result := types.Named(
+		"result",
+		types.NewObject([]*types.StaticProperty{
+			{Key: "success", Value: types.Named("success", types.B).Description("true when verification is successful")},
+			{Key: "errors", Value: types.Named("errors", types.NewArray([]types.Type{types.S}, nil)).Description("verification errors")},
+			{Key: "signatures", Value: types.Named("signatures", types.NewArray([]types.Type{signatureType}, nil)).Description("matching signatures")},
+		}, nil),
+	).Description("the result of the verification request")
+
 	decl := rego.Function{
 		Name:        sigstoreVerifyImageName,
 		Description: "Use sigstore to verify the signature of an image.",
 		Decl: types.NewFunction(
 			types.Args(ociImageReferenceParameter, sigstoreOptsParameter),
-			verificationResult,
+			result,
 		),
 		Memoize:          true,
 		Nondeterministic: true,
@@ -97,35 +100,51 @@ func sigstoreVerifyImage(bctx rego.BuiltinContext, refTerm *ast.Term, optsTerm *
 
 	uri, err := builtins.StringOperand(refTerm.Value, 0)
 	if err != nil {
-		return makeVerificationResult(fmt.Sprintf("ref parameter: %s", err)), nil
+		return signatureFailedResult(fmt.Errorf("ref parameter: %w", err))
 	}
 
 	ref, err := name.NewDigest(string(uri))
 	if err != nil {
-		return makeVerificationResult(fmt.Sprintf("new digest: %s", err)), nil
+		return signatureFailedResult(fmt.Errorf("new digest: %w", err))
 	}
 
 	checkOpts, err := parseCheckOpts(ctx, optsTerm)
 	if err != nil {
-		return makeVerificationResult(fmt.Sprintf("opts parameter: %s", err)), nil
+		return signatureFailedResult(fmt.Errorf("opts parameter: %w", err))
 	}
 	checkOpts.ClaimVerifier = cosign.SimpleClaimVerifier
 
-	_, _, err = application_snapshot_image.NewClient(ctx).VerifyImageSignatures(ctx, ref, checkOpts)
+	signatures, _, err := application_snapshot_image.NewClient(ctx).VerifyImageSignatures(ctx, ref, checkOpts)
 	if err != nil {
-		return makeVerificationResult(fmt.Sprintf("verify image signature: %s", err)), nil
+		return signatureFailedResult(fmt.Errorf("verify image signature: %w", err))
 	}
 
-	return makeVerificationResult(), nil
+	return signatureResult(signatures, nil)
 }
 
 func registerSigstoreVerifyAttestation() {
+	attestationType := types.Named("attestation", types.NewObject([]*types.StaticProperty{
+		{Key: "statement", Value: types.Named("statement", types.A).Description("statement from attestation")},
+		{Key: "signatures", Value: types.Named("signatures", types.NewArray([]types.Type{
+			types.Named("signature", types.A).Description("signature"),
+		}, nil)).Description("signatures associated with attestation")},
+	}, nil)).Description("attestation matching provided identity/key")
+
+	result := types.Named(
+		"result",
+		types.NewObject([]*types.StaticProperty{
+			{Key: "success", Value: types.Named("success", types.B).Description("true when verification is successful")},
+			{Key: "errors", Value: types.Named("errors", types.NewArray([]types.Type{types.S}, nil)).Description("verification errors")},
+			{Key: "attestations", Value: types.Named("attestations", types.NewArray([]types.Type{attestationType}, nil)).Description("matching attestations")},
+		}, nil),
+	).Description("the result of the verification request")
+
 	decl := rego.Function{
 		Name:        sigstoreVerifyAttestationName,
 		Description: "Use sigstore to verify the attestation of an image.",
 		Decl: types.NewFunction(
 			types.Args(ociImageReferenceParameter, sigstoreOptsParameter),
-			verificationResult,
+			result,
 		),
 		// As per the documentation, enable memoization to ensure function evaluation is
 		// deterministic. But also mark it as non-deterministic because it does rely on external
@@ -141,26 +160,26 @@ func sigstoreVerifyAttestation(bctx rego.BuiltinContext, refTerm *ast.Term, opts
 
 	uri, err := builtins.StringOperand(refTerm.Value, 0)
 	if err != nil {
-		return makeVerificationResult(fmt.Sprintf("ref parameter: %s", err)), nil
+		return attestationFailedResult(fmt.Errorf("ref parameter: %w", err))
 	}
 
 	ref, err := name.NewDigest(string(uri))
 	if err != nil {
-		return makeVerificationResult(fmt.Sprintf("new digest: %s", err)), nil
+		return attestationFailedResult(fmt.Errorf("new digest: %w", err))
 	}
 
 	checkOpts, err := parseCheckOpts(ctx, optsTerm)
 	if err != nil {
-		return makeVerificationResult(fmt.Sprintf("opts parameter: %s", err)), nil
+		return attestationFailedResult(fmt.Errorf("opts parameter: %w", err))
 	}
 	checkOpts.ClaimVerifier = cosign.IntotoSubjectClaimVerifier
 
-	_, _, err = application_snapshot_image.NewClient(ctx).VerifyImageAttestations(ctx, ref, checkOpts)
+	attestations, _, err := application_snapshot_image.NewClient(ctx).VerifyImageAttestations(ctx, ref, checkOpts)
 	if err != nil {
-		return makeVerificationResult(fmt.Sprintf("verify image attestation signature: %s", err)), nil
+		return attestationFailedResult(fmt.Errorf("verify image attestation signature: %w", err))
 	}
 
-	return makeVerificationResult(), nil
+	return attestationResult(attestations, nil)
 }
 
 func parseCheckOpts(ctx context.Context, optsTerm *ast.Term) (*cosign.CheckOpts, error) {
@@ -248,23 +267,96 @@ func optionsFromTerm(term *ast.Term) options {
 	return opts
 }
 
-func makeVerificationResult(errors ...string) *ast.Term {
+func signatureFailedResult(err error) (*ast.Term, error) {
+	return signatureResult(nil, err)
+}
 
-	var terms []*ast.Term
-	for _, err := range errors {
-		terms = append(terms, ast.StringTerm(err))
-	}
-	errorsTerm := ast.ArrayTerm(terms...)
+func signatureResult(signatures []oci.Signature, err error) (*ast.Term, error) {
+	var errorTerms []*ast.Term
+	var sigTerms []*ast.Term
 
-	var success bool
-	if len(errors) == 0 {
-		success = true
+	if err != nil {
+		errorTerms = append(errorTerms, ast.StringTerm(err.Error()))
 	}
+
+	for _, s := range signatures {
+		sig, err := signature.NewEntitySignature(s)
+		if err != nil {
+			errorTerms = append(errorTerms, ast.StringTerm(fmt.Sprintf("parsing signature: %s", err)))
+			continue
+		}
+
+		v, err := ast.InterfaceToValue(sig)
+		if err != nil {
+			errorTerms = append(errorTerms, ast.StringTerm(fmt.Sprintf("converting sig to value: %s", err)))
+			continue
+		}
+		sigTerms = append(sigTerms, ast.NewTerm(v))
+	}
+
+	success := len(errorTerms) == 0
 
 	return ast.ObjectTerm(
 		ast.Item(ast.StringTerm("success"), ast.BooleanTerm(success)),
-		ast.Item(ast.StringTerm("errors"), errorsTerm),
-	)
+		ast.Item(ast.StringTerm("errors"), ast.ArrayTerm(errorTerms...)),
+		ast.Item(ast.StringTerm("signatures"), ast.ArrayTerm(sigTerms...)),
+	), nil
+}
+
+func attestationFailedResult(err error) (*ast.Term, error) {
+	return attestationResult(nil, err)
+}
+
+func attestationResult(attestations []oci.Signature, err error) (*ast.Term, error) {
+	var errorTerms []*ast.Term
+	var attestationTerms []*ast.Term
+
+	if err != nil {
+		errorTerms = append(errorTerms, ast.StringTerm(err.Error()))
+	}
+
+	for _, s := range attestations {
+		att, err := attestation.ProvenanceFromSignature(s)
+		if err != nil {
+			errorTerms = append(errorTerms, ast.StringTerm(fmt.Sprintf("parsing attestation: %s", err)))
+			continue
+		}
+
+		var statement any
+		if err := json.Unmarshal(att.Statement(), &statement); err != nil {
+			errorTerms = append(errorTerms, ast.StringTerm(fmt.Sprintf("unmarshalling statement: %s", err)))
+			continue
+		}
+
+		statementValue, err := ast.InterfaceToValue(statement)
+		if err != nil {
+			errorTerms = append(errorTerms, ast.StringTerm(fmt.Sprintf("interface to value: %s", err)))
+			continue
+		}
+
+		var sigsTerm []*ast.Term
+		for _, entity := range att.Signatures() {
+			v, err := ast.InterfaceToValue(entity)
+			if err != nil {
+				errorTerms = append(errorTerms, ast.StringTerm(fmt.Sprintf("converting sig to value: %s", err)))
+				continue
+			}
+			sigsTerm = append(sigsTerm, ast.NewTerm(v))
+		}
+
+		attestationTerms = append(attestationTerms, ast.ObjectTerm(
+			ast.Item(ast.StringTerm("statement"), ast.NewTerm(statementValue)),
+			ast.Item(ast.StringTerm("signatures"), ast.ArrayTerm(sigsTerm...)),
+		))
+	}
+
+	success := len(errorTerms) == 0
+
+	return ast.ObjectTerm(
+		ast.Item(ast.StringTerm("success"), ast.BooleanTerm(success)),
+		ast.Item(ast.StringTerm("errors"), ast.ArrayTerm(errorTerms...)),
+		ast.Item(ast.StringTerm("attestations"), ast.ArrayTerm(attestationTerms...)),
+	), nil
 }
 
 func init() {

@@ -20,16 +20,21 @@ package sigstore
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
+	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/open-policy-agent/opa/ast"
 	"github.com/open-policy-agent/opa/rego"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
 	"github.com/sigstore/cosign/v2/pkg/oci"
+	"github.com/sigstore/cosign/v2/pkg/oci/static"
+	cosignTypes "github.com/sigstore/cosign/v2/pkg/types"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
@@ -163,9 +168,16 @@ func TestSigstoreVerifyImage(t *testing.T) {
 			c := MockClient{}
 			ctx := application_snapshot_image.WithClient(context.Background(), &c)
 
+			sig, err := static.NewSignature(
+				[]byte(`image`),
+				"signature",
+				static.WithLayerMediaType(types.MediaType((cosignTypes.DssePayloadType))),
+			)
+			require.NoError(t, err)
+
 			verifyCall := c.On(
 				"VerifyImageSignatures", ctx, goodImage, mock.Anything,
-			).Return([]oci.Signature{}, false, tt.sigError)
+			).Return([]oci.Signature{sig}, false, tt.sigError)
 
 			if tt.optsVerifier != nil {
 				verifyCall.Run(tt.optsVerifier)
@@ -187,6 +199,20 @@ func TestSigstoreVerifyAttestation(t *testing.T) {
 		"registry.local/spam@sha256:4e388ab32b10dc8dbc7e28144f552830adc74787c1e2c0824032078a79f227fb",
 	)
 
+	goodSig, err := static.NewSignature(
+		[]byte(fmt.Sprintf(`{"payload": "%s"}`, base64.StdEncoding.EncodeToString([]byte("{}")))),
+		"signature",
+		static.WithLayerMediaType(types.MediaType((cosignTypes.DssePayloadType))),
+	)
+	require.NoError(t, err)
+
+	badSig, err := static.NewSignature(
+		[]byte(`{"payload": "bad-base64"}`),
+		"signature",
+		static.WithLayerMediaType(types.MediaType((cosignTypes.DssePayloadType))),
+	)
+	require.NoError(t, err)
+
 	cases := []struct {
 		name         string
 		success      *ast.Term
@@ -195,6 +221,7 @@ func TestSigstoreVerifyAttestation(t *testing.T) {
 		opts         options
 		optsVerifier func(mock.Arguments)
 		sigError     error
+		sigs         []oci.Signature
 	}{
 		{
 			name:    "long lived key",
@@ -209,6 +236,7 @@ func TestSigstoreVerifyAttestation(t *testing.T) {
 				require.Nil(t, checkOpts.RekorClient)
 				require.Empty(t, checkOpts.Identities)
 			},
+			sigs: []oci.Signature{goodSig},
 		},
 		{
 			name:    "long lived key with rekor",
@@ -223,6 +251,7 @@ func TestSigstoreVerifyAttestation(t *testing.T) {
 				require.Empty(t, checkOpts.Identities)
 				require.NotNil(t, checkOpts.RekorClient)
 			},
+			sigs: []oci.Signature{goodSig},
 		},
 		{
 			name:    "fulcio key",
@@ -242,6 +271,7 @@ func TestSigstoreVerifyAttestation(t *testing.T) {
 				identities := []cosign.Identity{{Issuer: "issuer", Subject: "subject"}}
 				require.Equal(t, checkOpts.Identities, identities)
 			},
+			sigs: []oci.Signature{goodSig},
 		},
 		{
 			name:    "fulcio key regex",
@@ -261,6 +291,7 @@ func TestSigstoreVerifyAttestation(t *testing.T) {
 				identities := []cosign.Identity{{IssuerRegExp: `issuer.*`, SubjectRegExp: `subject.*`}}
 				require.Equal(t, checkOpts.Identities, identities)
 			},
+			sigs: []oci.Signature{goodSig},
 		},
 		{
 			name:    "bad public key",
@@ -297,6 +328,16 @@ func TestSigstoreVerifyAttestation(t *testing.T) {
 			opts:     options{ignoreRekor: true, publicKey: utils.TestPublicKey},
 			sigError: errors.New("kaboom!"),
 		},
+		{
+			name:    "bad attestation",
+			success: ast.BooleanTerm(false),
+			errors: ast.ArrayTerm(
+				ast.StringTerm("parsing attestation: malformed attestation data: illegal base64 data at input byte 3"),
+			),
+			uri:  ast.StringTerm(goodImage.String()),
+			opts: options{ignoreRekor: true, publicKey: utils.TestPublicKey},
+			sigs: []oci.Signature{badSig},
+		},
 	}
 
 	for _, tt := range cases {
@@ -310,7 +351,7 @@ func TestSigstoreVerifyAttestation(t *testing.T) {
 
 			verifyCall := c.On(
 				"VerifyImageAttestations", ctx, goodImage, mock.Anything,
-			).Return([]oci.Signature{}, false, tt.sigError)
+			).Return(tt.sigs, false, tt.sigError)
 
 			if tt.optsVerifier != nil {
 				verifyCall.Run(tt.optsVerifier)
