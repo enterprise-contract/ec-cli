@@ -18,7 +18,7 @@
 // when an error is encountered. If they did return an error, opa would exit abruptly and it would
 // not produce a report of which policy rules succeeded/failed.
 
-package evaluator
+package sigstore
 
 import (
 	"context"

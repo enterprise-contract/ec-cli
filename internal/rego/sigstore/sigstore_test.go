@@ -16,7 +16,7 @@
 
 //go:build unit
 
-package evaluator
+package sigstore
 
 import (
 	"context"
