@@ -18,7 +18,7 @@
 // when an error is encountered. If they did return an error, opa would exit abruptly and it would
 // not produce a report of which policy rules succeeded/failed.
 
-package evaluator
+package oci
 
 import (
 	"bytes"
@@ -34,7 +34,6 @@ import (
 	"github.com/open-policy-agent/opa/ast"
 	"github.com/open-policy-agent/opa/rego"
 	"github.com/open-policy-agent/opa/types"
-	"github.com/package-url/packageurl-go"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/enterprise-contract/ec-cli/internal/fetchers/oci"
@@ -43,8 +42,6 @@ import (
 const (
 	ociBlobName          = "ec.oci.blob"
 	ociImageManifestName = "ec.oci.image_manifest"
-	purlIsValidName      = "ec.purl.is_valid"
-	purlParseName        = "ec.purl.parse"
 )
 
 func registerOCIBlob() {
@@ -145,80 +142,6 @@ func registerOCIImageManifest() {
 	ast.RegisterBuiltin(&ast.Builtin{
 		Name:             decl.Name,
 		Description:      "Fetch an Image Manifest from an OCI registry.",
-		Decl:             decl.Decl,
-		Nondeterministic: decl.Nondeterministic,
-	})
-}
-
-func registerPURLIsValid() {
-	decl := rego.Function{
-		Name: purlIsValidName,
-		Decl: types.NewFunction(
-			types.Args(
-				types.Named("purl", types.S).Description("the PURL"),
-			),
-			types.Named("result", types.S).Description("PURL validity"),
-		),
-		// As per the documentation, enable memoization to ensure function evaluation is
-		// deterministic.
-		Memoize:          true,
-		Nondeterministic: false,
-	}
-
-	rego.RegisterBuiltin1(&decl, purlIsValid)
-	// Due to https://github.com/open-policy-agent/opa/issues/6449, we cannot set a description for
-	// the custom function through the call above. As a workaround we re-register the function with
-	// a declaration that does include the description.
-	ast.RegisterBuiltin(&ast.Builtin{
-		Name:             decl.Name,
-		Description:      "Determine whether or not a given PURL is valid.",
-		Decl:             decl.Decl,
-		Nondeterministic: decl.Nondeterministic,
-	})
-}
-
-func registerPURLParse() {
-	decl := rego.Function{
-		Name: purlParseName,
-		Decl: types.NewFunction(
-			types.Args(
-				types.Named("purl", types.S).Description("the PURL"),
-			),
-			types.Named("object", types.NewObject(
-				[]*types.StaticProperty{
-					// Specifying the properties like this ensure the compiler catches typos when
-					// evaluating rego functions.
-					{Key: "type", Value: types.S},
-					{Key: "namespace", Value: types.S},
-					{Key: "name", Value: types.S},
-					{Key: "version", Value: types.S},
-					{Key: "qualifiers", Value: types.NewArray(
-						nil, types.NewObject(
-							[]*types.StaticProperty{
-								{Key: "key", Value: types.S},
-								{Key: "value", Value: types.S},
-							},
-							nil,
-						),
-					)},
-					{Key: "subpath", Value: types.S},
-				},
-				nil,
-			)).Description("the parsed PURL object"),
-		),
-		// As per the documentation, enable memoization to ensure function evaluation is
-		// deterministic.
-		Memoize:          true,
-		Nondeterministic: false,
-	}
-
-	rego.RegisterBuiltin1(&decl, purlParse)
-	// Due to https://github.com/open-policy-agent/opa/issues/6449, we cannot set a description for
-	// the custom function through the call above. As a workaround we re-register the function with
-	// a declaration that does include the description.
-	ast.RegisterBuiltin(&ast.Builtin{
-		Name:             decl.Name,
-		Description:      "Parse a valid PURL into an object.",
 		Decl:             decl.Decl,
 		Nondeterministic: decl.Nondeterministic,
 	})
@@ -392,51 +315,7 @@ func newAnnotationsTerm(annotations map[string]string) *ast.Term {
 	return ast.ObjectTerm(annotationTerms...)
 }
 
-func purlIsValid(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) {
-	uri, ok := a.Value.(ast.String)
-	if !ok {
-		return ast.BooleanTerm(false), nil
-	}
-	_, err := packageurl.FromString(string(uri))
-	if err != nil {
-		log.Errorf("Parsing PURL %s failed: %s", uri, err)
-		return ast.BooleanTerm(false), nil
-	}
-	return ast.BooleanTerm(true), nil
-}
-
-func purlParse(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) {
-	uri, ok := a.Value.(ast.String)
-	if !ok {
-		return nil, nil
-	}
-	instance, err := packageurl.FromString(string(uri))
-	if err != nil {
-		log.Errorf("Parsing PURL %s failed: %s", uri, err)
-		return nil, nil
-	}
-
-	qualifiers := ast.NewArray()
-	for _, q := range instance.Qualifiers {
-		o := ast.NewObject(
-			ast.Item(ast.StringTerm("key"), ast.StringTerm(q.Key)),
-			ast.Item(ast.StringTerm("value"), ast.StringTerm(q.Value)),
-		)
-		qualifiers = qualifiers.Append(ast.NewTerm(o))
-	}
-	return ast.ObjectTerm(
-		ast.Item(ast.StringTerm("type"), ast.StringTerm(instance.Type)),
-		ast.Item(ast.StringTerm("namespace"), ast.StringTerm(instance.Namespace)),
-		ast.Item(ast.StringTerm("name"), ast.StringTerm(instance.Name)),
-		ast.Item(ast.StringTerm("version"), ast.StringTerm(instance.Version)),
-		ast.Item(ast.StringTerm("qualifiers"), ast.NewTerm(qualifiers)),
-		ast.Item(ast.StringTerm("subpath"), ast.StringTerm(instance.Subpath)),
-	), nil
-}
-
 func init() {
 	registerOCIBlob()
 	registerOCIImageManifest()
-	registerPURLIsValid()
-	registerPURLParse()
 }
