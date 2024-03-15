@@ -145,6 +145,14 @@ const (
 	metadataTitle       = "title"
 )
 
+// ConfigProvider is a subset of the policy.Policy interface. Its purpose is to codify which parts
+// of Policy are actually used and to make it easier to use mock in tests.
+type ConfigProvider interface {
+	EffectiveTime() time.Time
+	SigstoreOpts() (policy.SigstoreOpts, error)
+	Spec() ecc.EnterpriseContractPolicySpec
+}
+
 // ConftestEvaluator represents a structure which can be used to evaluate targets
 type conftestEvaluator struct {
 	policySources []source.PolicySource
@@ -152,7 +160,7 @@ type conftestEvaluator struct {
 	workDir       string
 	dataDir       string
 	policyDir     string
-	policy        policy.Policy
+	policy        ConfigProvider
 	include       []string
 	exclude       []string
 	fs            afero.Fs
@@ -238,13 +246,13 @@ func (r conftestRunner) Run(ctx context.Context, fileList []string) (result []Ou
 
 // NewConftestEvaluator returns initialized conftestEvaluator implementing
 // Evaluator interface
-func NewConftestEvaluator(ctx context.Context, policySources []source.PolicySource, p policy.Policy, source ecc.Source) (Evaluator, error) {
+func NewConftestEvaluator(ctx context.Context, policySources []source.PolicySource, p ConfigProvider, source ecc.Source) (Evaluator, error) {
 	return NewConftestEvaluatorWithNamespace(ctx, policySources, p, source, nil)
 
 }
 
 // set the policy namespace
-func NewConftestEvaluatorWithNamespace(ctx context.Context, policySources []source.PolicySource, p policy.Policy, source ecc.Source, namespace []string) (Evaluator, error) {
+func NewConftestEvaluatorWithNamespace(ctx context.Context, policySources []source.PolicySource, p ConfigProvider, source ecc.Source, namespace []string) (Evaluator, error) {
 	fs := utils.FS(ctx)
 	c := conftestEvaluator{
 		policySources: policySources,
@@ -644,11 +652,10 @@ func addMetadataToResults(ctx context.Context, r *Result, rule rule.Info) {
 
 // createConfigJSON creates the config.json file with the provided configuration
 // in the data directory
-func createConfigJSON(ctx context.Context, dataDir string, p policy.Policy) error {
+func createConfigJSON(ctx context.Context, dataDir string, p ConfigProvider) error {
 	if p == nil {
 		return nil
 	}
-
 	configFilePath := filepath.Join(dataDir, "config.json")
 
 	var config = map[string]interface{}{
@@ -665,9 +672,15 @@ func createConfigJSON(ctx context.Context, dataDir string, p policy.Policy) erro
 	// time, so that a consistent current time is used everywhere.
 	pc.WhenNs = p.EffectiveTime().UnixNano()
 
+	opts, err := p.SigstoreOpts()
+	if err != nil {
+		return err
+	}
+
 	// Add the policy config we just prepared
 	config["config"] = map[string]interface{}{
-		"policy": pc,
+		"policy":                pc,
+		"default_sigstore_opts": opts,
 	}
 
 	configJSON, err := json.MarshalIndent(config, "", "    ")
@@ -915,7 +928,7 @@ func strictCapabilities(ctx context.Context) (string, error) {
 	return string(blob), nil
 }
 
-func computeIncludeExclude(src ecc.Source, p policy.Policy) ([]string, []string) {
+func computeIncludeExclude(src ecc.Source, p ConfigProvider) ([]string, []string) {
 	var include, exclude []string
 
 	sc := src.Config

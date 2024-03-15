@@ -80,6 +80,15 @@
 }
 evaluator.Data{
     "config": map[string]interface {}{
+        "default_sigstore_opts": map[string]interface {}{
+            "certificate_identity":           "cert-identity",
+            "certificate_identity_regexp":    "cert-identity-regexp",
+            "certificate_oidc_issuer":        "cert-oidc-issuer",
+            "certificate_oidc_issuer_regexp": "cert-oidc-issuer-regexp",
+            "ignore_rekor":                   bool(true),
+            "public_key":                     "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAECBtqKHcvxYkGx7ZXqps3nrYS+ZSA\nmh3m1MZfTGlnr2oN0z+sBWEC23s4RkVSXkEydI6SLYatUtJK8OmiBRS+Xw==\n-----END PUBLIC KEY-----\n",
+            "rekor_url":                      "https://rekor.local/",
+        },
         "policy": map[string]interface {}{
             "when_ns": "1401494400000000000",
         },

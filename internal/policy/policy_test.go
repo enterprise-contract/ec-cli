@@ -33,6 +33,7 @@ import (
 	cosignSig "github.com/sigstore/cosign/v2/pkg/signature"
 	sigstoreSig "github.com/sigstore/sigstore/pkg/signature"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/yaml"
 
@@ -875,4 +876,96 @@ func TestJsonSchemaFromPolicySpec(t *testing.T) {
 	schemaJson, err := jsonSchemaFromPolicySpec(ecp)
 	assert.NoError(t, err)
 	assert.JSONEq(t, expectedSchema, string(schemaJson))
+}
+
+func TestSigstoreOpts(t *testing.T) {
+	cases := []struct {
+		name         string
+		rekorUrl     string
+		ignoreRekor  bool
+		publicKey    string
+		identity     cosign.Identity
+		expectedOpts SigstoreOpts
+		err          string
+	}{
+		{
+			name:      "long-lived key with rekor",
+			rekorUrl:  utils.TestRekorURL,
+			publicKey: utils.TestPublicKey,
+			expectedOpts: SigstoreOpts{
+				RekorURL:  utils.TestRekorURL,
+				PublicKey: utils.TestPublicKey,
+			},
+		},
+		{
+			name:        "long-lived key without rekor",
+			ignoreRekor: true,
+			publicKey:   utils.TestPublicKey,
+			expectedOpts: SigstoreOpts{
+				IgnoreRekor: true,
+				PublicKey:   utils.TestPublicKey,
+			},
+		},
+		{
+			name:     "fulcio key with rekor",
+			rekorUrl: utils.TestRekorURL,
+			identity: cosign.Identity{
+				Subject: "my-subject",
+				Issuer:  "my-issuer",
+			},
+			expectedOpts: SigstoreOpts{
+				CertificateIdentity:   "my-subject",
+				CertificateOIDCIssuer: "my-issuer",
+				RekorURL:              utils.TestRekorURL,
+			},
+		},
+		{
+			name:        "fulcio key without rekor",
+			ignoreRekor: true,
+			identity: cosign.Identity{
+				Subject: "my-subject",
+				Issuer:  "my-issuer",
+			},
+			expectedOpts: SigstoreOpts{
+				CertificateIdentity:   "my-subject",
+				CertificateOIDCIssuer: "my-issuer",
+				IgnoreRekor:           true,
+			},
+		},
+		{
+			name:     "fulcio key with regular expressions",
+			rekorUrl: utils.TestRekorURL,
+			identity: cosign.Identity{
+				SubjectRegExp: "my-subject.*",
+				IssuerRegExp:  "my-issuer.*",
+			},
+			expectedOpts: SigstoreOpts{
+				CertificateIdentityRegExp:   "my-subject.*",
+				CertificateOIDCIssuerRegExp: "my-issuer.*",
+				RekorURL:                    utils.TestRekorURL,
+			},
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			ctx := context.Background()
+			utils.SetTestRekorPublicKey(t)
+			utils.SetTestFulcioRoots(t)
+			utils.SetTestCTLogPublicKey(t)
+
+			p, err := NewPolicy(ctx, Options{
+				RekorURL:      c.rekorUrl,
+				IgnoreRekor:   c.ignoreRekor,
+				PublicKey:     c.publicKey,
+				EffectiveTime: Now,
+				Identity:      c.identity,
+			})
+			require.NoError(t, err)
+
+			opts, err := p.SigstoreOpts()
+			require.NoError(t, err)
+			require.Equal(t, opts, c.expectedOpts)
+		})
+	}
 }

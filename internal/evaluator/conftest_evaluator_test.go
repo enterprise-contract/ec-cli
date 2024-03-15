@@ -1593,19 +1593,27 @@ func TestConftestEvaluatorEvaluate(t *testing.T) {
 
 	ctx := withCapabilities(context.Background(), testCapabilities)
 
-	p, err := policy.NewOfflinePolicy(ctx, "2014-05-31")
+	eTime, err := time.Parse(policy.DateFormat, "2014-05-31")
 	require.NoError(t, err)
-
-	p = p.WithSpec(ecc.EnterpriseContractPolicySpec{
-		Configuration: &ecc.EnterpriseContractPolicyConfiguration{},
-	})
+	config := &mockConfigProvider{}
+	config.On("EffectiveTime").Return(eTime)
+	config.On("SigstoreOpts").Return(policy.SigstoreOpts{
+		CertificateIdentity:         "cert-identity",
+		CertificateIdentityRegExp:   "cert-identity-regexp",
+		CertificateOIDCIssuer:       "cert-oidc-issuer",
+		CertificateOIDCIssuerRegExp: "cert-oidc-issuer-regexp",
+		IgnoreRekor:                 true,
+		RekorURL:                    "https://rekor.local/",
+		PublicKey:                   utils.TestPublicKey,
+	}, nil)
+	config.On("Spec").Return(ecc.EnterpriseContractPolicySpec{})
 
 	evaluator, err := NewConftestEvaluator(ctx, []source.PolicySource{
 		&source.PolicyUrl{
 			Url:  rules,
 			Kind: source.PolicyKind,
 		},
-	}, p, ecc.Source{})
+	}, config, ecc.Source{})
 	require.NoError(t, err)
 
 	results, data, err := evaluator.Evaluate(ctx, []string{path.Join(dir, "inputs")})
@@ -1626,6 +1634,25 @@ func TestConftestEvaluatorEvaluate(t *testing.T) {
 	}
 
 	snaps.MatchSnapshot(t, results, data)
+}
+
+type mockConfigProvider struct {
+	mock.Mock
+}
+
+func (o *mockConfigProvider) EffectiveTime() time.Time {
+	args := o.Called()
+	return args.Get(0).(time.Time)
+}
+
+func (o *mockConfigProvider) SigstoreOpts() (policy.SigstoreOpts, error) {
+	args := o.Called()
+	return args.Get(0).(policy.SigstoreOpts), args.Error(1)
+}
+
+func (o *mockConfigProvider) Spec() ecc.EnterpriseContractPolicySpec {
+	args := o.Called()
+	return args.Get(0).(ecc.EnterpriseContractPolicySpec)
 }
 
 func TestUnconformingRule(t *testing.T) {
