@@ -146,6 +146,46 @@ spec:
         - name: kind
           value: task
         resolver: bundles
+    - name: build-acceptable-bundles
+      runAfter:
+      - clone-repository
+      workspaces:
+      - name: source
+        workspace: workspace
+      taskSpec:
+        steps:
+          - name: build-bundles
+            image: quay.io/redhat-appstudio/appstudio-utils:5eeda820aad40b4575c2099891accd07aa888c69
+            workingDir: $(workspaces.source.path)/source
+            env:
+            - name: REVISION
+              value: "$(params.revision)"
+            - name: GIT_URL
+              value: "$(params.git-url)"
+            # per https://kubernetes.io/docs/concepts/containers/images/#imagepullpolicy-defaulting
+            # the cluster will set imagePullPolicy to IfNotPresent
+            # also per direction from Ralph Bean, we want to use image digest based tags to use a cue to automation like dependabot or renovatebot to periodially submit pull requests that update the digest as new images are released.
+            script: |-
+              #!/usr/bin/env bash
+              set -euo pipefail
+
+              # store a list of changed task files
+              task_files=()
+              # loop over all changed files
+              for path in `git diff-tree --no-commit-id --name-only ${REVISION} -r`; do
+                if [[ "${path}" == task/*/*.yaml ]]; then
+                  # check that the file modified is the task file
+                  IFS='/' read -r -a path_array <<< "${path}"
+                  dir_name_after_task="${path_array[1]}"
+                  file_name=$(basename "${path_array[-1]}" ".yaml")
+
+                  if [[ $dir_name_after_task == "${file_name}" ]]; then
+                    task_files+=("${GIT_URL}/${path}@${REVISION}")
+                  fi
+                fi
+              done
+
+              echo "${task_files[@]}"
     - name: clone-repository
       params:
       - name: url
