@@ -2129,11 +2129,29 @@ Error: success criteria not met
 
 [Custom rule data:${TMPDIR}/custom-rule-data.yaml - 1]
 - - config:
+      default_sigstore_opts:
+        certificate_identity: ""
+        certificate_identity_regexp: ""
+        certificate_oidc_issuer: ""
+        certificate_oidc_issuer_regexp: ""
+        ignore_rekor: false
+        public_key: |
+${__________known_PUBLIC_KEY}
+        rekor_url: ${REKOR}
       policy:
         when_ns: 1401494400000000000
     rule_data__configuration__:
       custom: data1
   - config:
+      default_sigstore_opts:
+        certificate_identity: ""
+        certificate_identity_regexp: ""
+        certificate_oidc_issuer: ""
+        certificate_oidc_issuer_regexp: ""
+        ignore_rekor: false
+        public_key: |
+${__________known_PUBLIC_KEY}
+        rekor_url: ${REKOR}
       policy:
         when_ns: 1401494400000000000
     rule_data__configuration__:

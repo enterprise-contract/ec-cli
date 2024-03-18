@@ -79,6 +79,16 @@ func jsonSchemaFromPolicySpec(ecp *ecc.EnterpriseContractPolicySpec) ([]byte, er
 	return schemaJson, nil
 }
 
+type SigstoreOpts struct {
+	CertificateIdentity         string `json:"certificate_identity"`
+	CertificateIdentityRegExp   string `json:"certificate_identity_regexp"`
+	CertificateOIDCIssuer       string `json:"certificate_oidc_issuer"`
+	CertificateOIDCIssuerRegExp string `json:"certificate_oidc_issuer_regexp"`
+	IgnoreRekor                 bool   `json:"ignore_rekor"`
+	PublicKey                   string `json:"public_key"`
+	RekorURL                    string `json:"rekor_url"`
+}
+
 type Policy interface {
 	PublicKeyPEM() ([]byte, error)
 	CheckOpts() (*cosign.CheckOpts, error)
@@ -88,6 +98,7 @@ type Policy interface {
 	AttestationTime(time.Time)
 	Identity() cosign.Identity
 	Keyless() bool
+	SigstoreOpts() (SigstoreOpts, error)
 }
 
 type policy struct {
@@ -134,6 +145,25 @@ func (p *policy) Identity() cosign.Identity {
 // Keyless returns whether or not the Policy uses the keyless workflow for verification.
 func (p *policy) Keyless() bool {
 	return p.PublicKey == ""
+}
+
+func (p *policy) SigstoreOpts() (SigstoreOpts, error) {
+	pk, err := p.PublicKeyPEM()
+	if err != nil {
+		return SigstoreOpts{}, err
+	}
+
+	opts := SigstoreOpts{
+		CertificateIdentity:         p.identity.Subject,
+		CertificateIdentityRegExp:   p.identity.SubjectRegExp,
+		CertificateOIDCIssuer:       p.identity.Issuer,
+		CertificateOIDCIssuerRegExp: p.identity.IssuerRegExp,
+		IgnoreRekor:                 p.ignoreRekor,
+		PublicKey:                   string(pk),
+		RekorURL:                    p.RekorUrl,
+	}
+
+	return opts, nil
 }
 
 type Options struct {

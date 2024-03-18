@@ -267,8 +267,8 @@ func taskLogsShouldMatchTheSnapshot(ctx context.Context, stepName string) error 
 	for name, key := range publicKeys {
 		// account for various indentations
 		vars[fmt.Sprintf("%s_PUBLIC_KEY", name)] = key
-		vars[fmt.Sprintf("__%s_PUBLIC_KEY", name)] = indent(key, 2)
-		vars[fmt.Sprintf("____%s_PUBLIC_KEY", name)] = indent(key, 4)
+		vars[fmt.Sprintf("__%s_PUBLIC_KEY", name)] = snaps.Indent(key, 2)
+		vars[fmt.Sprintf("____%s_PUBLIC_KEY", name)] = snaps.Indent(key, 4)
 	}
 
 	digests, err := registry.AllDigests(ctx)
@@ -317,14 +317,6 @@ func taskResultsShouldMatchTheSnapshot(ctx context.Context) error {
 	}
 
 	return snaps.MatchSnapshot(ctx, "results", string(j), nil)
-}
-
-func indent(str string, n int) string {
-	idnt := strings.Repeat(" ", n)
-
-	lines := strings.Split(str, "\n")
-
-	return idnt + strings.TrimSuffix(strings.Join(lines, "\n"+idnt), "\n"+idnt)
 }
 
 // AddStepsTo adds cluster-related steps to the context
