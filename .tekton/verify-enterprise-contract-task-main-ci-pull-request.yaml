@@ -167,7 +167,10 @@ spec:
             # also per direction from Ralph Bean, we want to use image digest based tags to use a cue to automation like dependabot or renovatebot to periodially submit pull requests that update the digest as new images are released.
             script: |-
               #!/usr/bin/env bash
-              # set -euo pipefail
+              set -euo pipefail
+
+              # need more history for diff-tree to work
+              git fetch --deepen 1
 
               # store a list of changed task files
               task_files=()
@@ -194,8 +197,6 @@ spec:
         value: $(params.git-url)
       - name: revision
         value: $(params.revision)
-      - name: depth
-        value: "2"
       runAfter:
       - init
       taskRef:
