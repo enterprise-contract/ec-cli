@@ -171,8 +171,9 @@ spec:
 
               # store a list of changed task files
               task_files=()
+
               # loop over all changed files
-              for path in $(git diff-tree --name-only --no-commit-id -r ${REVISION}); do
+              for path in $(git diff-tree -c --name-only --no-commit-id -r ${REVISION}); do
                 if [[ "${path}" == tasks/*/*.yaml ]]; then
                   # check that the file modified is the task file
                   IFS='/' read -r -a path_array <<< "${path}"
@@ -193,6 +194,8 @@ spec:
         value: $(params.git-url)
       - name: revision
         value: $(params.revision)
+      - name: depth
+        value: "2"
       runAfter:
       - init
       taskRef:
