@@ -24,8 +24,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-
-	"github.com/enterprise-contract/ec-cli/internal/policy"
 )
 
 func Test_ValidatePolicyCmd(t *testing.T) {
@@ -61,13 +59,6 @@ func Test_ValidatePolicyErrors(t *testing.T) {
 		// Test PreRunE function
 		err := cmd.PreRunE(cmd, []string{})
 		assert.NoError(t, err)
-	})
-
-	t.Run("PreRunE", func(t *testing.T) {
-		policy.ECPSchema = ""
-		// Test PreRunE function
-		err := cmd.PreRunE(cmd, []string{})
-		assert.ErrorContains(t, err, "ECP schema is not defined")
 	})
 
 	t.Run("RunE", func(t *testing.T) {

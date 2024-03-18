@@ -52,20 +52,8 @@ const (
 // allows controlling time in tests
 var now = time.Now
 
-var ECPSchema string
-
 func ValidatePolicy(ctx context.Context, policyConfig string) error {
 	return validatePolicyConfig(policyConfig)
-}
-
-// generate the JSON schema for the EnterpriseContractPolicySpec dependency at compile time
-func init() {
-	schemaJson, err := jsonSchemaFromPolicySpec(&ecc.EnterpriseContractPolicySpec{})
-	if err != nil {
-		fmt.Println("Error creating JSON schema:", err)
-		os.Exit(1)
-	}
-	ECPSchema = string(schemaJson)
 }
 
 // Create a JSON schema from a Go type, and return the JSON as a byte slice
@@ -525,7 +513,7 @@ func validateIdentity(identity cosign.Identity) error {
 }
 
 func validatePolicyConfig(policyConfig string) error {
-	policySchema, err := jsonschema.CompileString("schema.json", ECPSchema)
+	policySchema, err := jsonschema.CompileString("schema.json", ecc.Schema)
 
 	if err != nil {
 		log.Errorf("Failed to compile schema: %s", err)

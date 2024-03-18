@@ -5,7 +5,7 @@ go 1.21.4
 require (
 	cuelang.org/go v0.7.1
 	github.com/MakeNowJust/heredoc v1.0.0
-	github.com/enterprise-contract/enterprise-contract-controller/api v0.1.38
+	github.com/enterprise-contract/enterprise-contract-controller/api v0.1.39
 	github.com/evanphx/json-patch v5.9.0+incompatible
 	github.com/gkampitakis/go-snaps v0.5.2
 	github.com/go-logr/logr v1.4.1
