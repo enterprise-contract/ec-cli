@@ -167,30 +167,63 @@ spec:
             # also per direction from Ralph Bean, we want to use image digest based tags to use a cue to automation like dependabot or renovatebot to periodially submit pull requests that update the digest as new images are released.
             script: |-
               #!/usr/bin/env bash
-              set -euo pipefail
+                set -euo pipefail
 
-              # need more history for diff-tree to work
-              git fetch --deepen 1
-
-              # store a list of changed task files
-              task_files=()
-
-              # loop over all changed files
-              for path in $(git diff-tree -c --name-only --no-commit-id -r ${REVISION}); do
-                if [[ "${path}" == tasks/*/*.yaml ]]; then
-                  # check that the file modified is the task file
-                  IFS='/' read -r -a path_array <<< "${path}"
-                  dir_name_after_task="${path_array[1]}"
-                  file_name=$(basename "${path_array[-1]}" ".yaml")
-
-                  if [[ "${dir_name_after_task}" == "${file_name}" ]]; then
-                    task_files+=("${GIT_URL}/${path}@${REVISION}")
-                  fi
+                # need more history for diff-tree to work
+                # assuming depth is 1 which is the default for git-clone
+                if [[ -f .git/shallow ]]; then
+                  git fetch --deepen 1 > /dev/null 2>&1
                 fi
-              done
 
-              echo "echoing task files"
-              echo "${task_files[@]}"
+                # store a list of changed task files
+                task_records=()
+                # loop over all changed files
+                for path in $(git diff-tree -c --name-only --no-commit-id -r ${REVISION}); do
+                  # check that the file modified is the task file
+                  if [[ "${path}" == tasks/*/*.yaml ]]; then
+                    IFS='/' read -r -a path_array <<< "${path}"
+                    dir_name_after_task="${path_array[1]}"
+                    file_name=$(basename "${path_array[-1]}" ".yaml")
+
+                    if [[ "${dir_name_after_task}" == "${file_name}" ]]; then
+                      # GIT_URL is the repo_url from PAC (https://hostname/org/repo)
+                      task_records+=("git+${GIT_URL}.git/${path}@${REVISION}")
+                    fi
+                  fi
+                done
+
+                BUNDLES=(
+                  test
+                )
+                echo "blah" > test
+                touch ${BUNDLES[@]}
+                echo "Bundles to be added:"
+                cat ${BUNDLES[@]}
+
+                # The OPA data bundle is tagged with the current timestamp. This has two main
+                # advantages. First, it prevents the image from accidentally not having any tags,
+                # and getting garbage collected. Second, it helps us create a timeline of the
+                # changes done to the data over time.
+                TAG="$(date '+%s')"
+                DATA_BUNDLE_REPO='quay.io/redhat-appstudio-tekton-catalog/data-acceptable-bundles'
+
+                # task_records can be empty if a task wasn't changed
+                TASK_PARAM=()
+                if [ "${#task_records[@]}" -gt 0 ]; then
+                  TASK_PARAM=($(printf "%s\n" "${task_records[@]}" | awk '{ print "--git=" $0 }'))
+                fi
+
+                BUNDLES_PARAM=($(cat ${BUNDLES[@]} | awk '{ print "--bundle=" $0 }'))
+
+                PARAMS=("${TASK_PARAM[@]}" "${BUNDLES_PARAM[@]}")
+                echo "ec track bundle --debug \
+                  --input \"oci:${DATA_BUNDLE_REPO}:latest\" \
+                  --output \"oci:${DATA_BUNDLE_REPO}:${TAG}\" \
+                  --timeout \"15m0s\" \
+                  --freshen \
+                  --prune \
+                  ${PARAMS[@]}"
+              
     - name: clone-repository
       params:
       - name: url
