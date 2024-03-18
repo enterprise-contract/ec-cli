@@ -71,8 +71,6 @@ var sigstoreOptsParameter = types.Named("opts",
 	)).Description("Sigstore verification options")
 
 func registerSigstoreVerifyImage() {
-	signatureType := types.Named("signature", types.A).Description("signatures matching provided identity/key")
-
 	result := types.Named(
 		"result",
 		types.NewObject([]*types.StaticProperty{
@@ -125,9 +123,10 @@ func sigstoreVerifyImage(bctx rego.BuiltinContext, refTerm *ast.Term, optsTerm *
 func registerSigstoreVerifyAttestation() {
 	attestationType := types.Named("attestation", types.NewObject([]*types.StaticProperty{
 		{Key: "statement", Value: types.Named("statement", types.A).Description("statement from attestation")},
-		{Key: "signatures", Value: types.Named("signatures", types.NewArray([]types.Type{
-			types.Named("signature", types.A).Description("signature"),
-		}, nil)).Description("signatures associated with attestation")},
+		{Key: "signatures", Value: types.Named(
+			"signatures",
+			types.NewArray([]types.Type{signatureType}, nil),
+		).Description("signatures associated with attestation")},
 	}, nil)).Description("attestation matching provided identity/key")
 
 	result := types.Named(
@@ -286,12 +285,7 @@ func signatureResult(signatures []oci.Signature, err error) (*ast.Term, error) {
 			continue
 		}
 
-		v, err := ast.InterfaceToValue(sig)
-		if err != nil {
-			errorTerms = append(errorTerms, ast.StringTerm(fmt.Sprintf("converting sig to value: %s", err)))
-			continue
-		}
-		sigTerms = append(sigTerms, ast.NewTerm(v))
+		sigTerms = append(sigTerms, toSignatureTerm(sig))
 	}
 
 	success := len(errorTerms) == 0
@@ -335,13 +329,8 @@ func attestationResult(attestations []oci.Signature, err error) (*ast.Term, erro
 		}
 
 		var sigsTerm []*ast.Term
-		for _, entity := range att.Signatures() {
-			v, err := ast.InterfaceToValue(entity)
-			if err != nil {
-				errorTerms = append(errorTerms, ast.StringTerm(fmt.Sprintf("converting sig to value: %s", err)))
-				continue
-			}
-			sigsTerm = append(sigsTerm, ast.NewTerm(v))
+		for _, sig := range att.Signatures() {
+			sigsTerm = append(sigsTerm, toSignatureTerm(sig))
 		}
 
 		attestationTerms = append(attestationTerms, ast.ObjectTerm(
