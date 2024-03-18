@@ -24,7 +24,6 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/spf13/cobra"
 
-	"github.com/enterprise-contract/ec-cli/internal/policy"
 	validate_utils "github.com/enterprise-contract/ec-cli/internal/validate"
 )
 
@@ -52,10 +51,6 @@ func ValidatePolicyCmd(validate policyValidationFunc) *cobra.Command {
 			ec validate policy --policy-configuration github.com/org/repo/policy.yaml
 `),
 		PreRunE: func(cmd *cobra.Command, args []string) (allErrors error) {
-			if len(policy.ECPSchema) == 0 {
-				return fmt.Errorf("ECP schema is not defined")
-			}
-
 			ctx := cmd.Context()
 
 			policyConfiguration, err := validate_utils.GetPolicyConfig(ctx, data.policyConfiguration)
