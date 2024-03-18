@@ -171,9 +171,8 @@ spec:
 
               # store a list of changed task files
               task_files=()
-              git show --format="" --name-only
               # loop over all changed files
-              for path in $(git show --format="" --name-only); do
+              for path in $(git diff-tree --name-only --no-commit-id -r ${REVISION}); do
                 if [[ "${path}" == tasks/*/*.yaml ]]; then
                   # check that the file modified is the task file
                   IFS='/' read -r -a path_array <<< "${path}"
