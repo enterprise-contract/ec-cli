@@ -1008,3 +1008,28 @@ Feature: evaluate enterprise contract
     When ec command is run with "validate image --image ${REGISTRY}/acceptance/purl --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR}  --show-successes"
     Then the exit status should be 1
     Then the output should match the snapshot
+
+  Scenario: sigstore functions
+    Given a key pair named "known"
+    Given an image named "acceptance/sigstore"
+    Given a valid image signature of "acceptance/sigstore" image signed by the "known" key
+    Given a valid Rekor entry for image signature of "acceptance/sigstore"
+    Given a valid attestation of "acceptance/sigstore" signed by the "known" key
+    Given a valid Rekor entry for attestation of "acceptance/sigstore"
+    Given a git repository named "sigstore" with
+      | main.rego | examples/sigstore.rego |
+    Given policy configuration named "ec-policy" with specification
+      """
+      {
+        "sources": [
+          {
+            "policy": [
+              "git::https://${GITHOST}/git/sigstore.git"
+            ]
+          }
+        ]
+      }
+      """
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/sigstore --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR}  --show-successes"
+    Then the exit status should be 0
+    Then the output should match the snapshot
