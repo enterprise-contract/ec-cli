@@ -3,14 +3,14 @@ module github.com/enterprise-contract/ec-cli/tools
 go 1.21.4
 
 require (
-	github.com/daixiang0/gci v0.13.0
+	github.com/daixiang0/gci v0.13.1
 	github.com/golangci/golangci-lint v1.56.2
 	github.com/google/addlicense v1.1.1
 	github.com/open-policy-agent/conftest v0.50.0
 	github.com/tektoncd/chains v0.19.0
 	github.com/tektoncd/cli v0.32.0
 	github.com/wadey/gocovmerge v0.0.0-20160331181800-b5bfa59ec0ad
-	helm.sh/helm/v3 v3.14.2
+	helm.sh/helm/v3 v3.14.3
 	sigs.k8s.io/kustomize/kustomize/v5 v5.3.0
 )
 
