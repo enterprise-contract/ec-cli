@@ -35,6 +35,7 @@ type pushImageFn func(context.Context, string, []byte, string) error
 func trackBundleCmd(track trackBundleFn, pullImage pullImageFn, pushImage pushImageFn) *cobra.Command {
 	var params = struct {
 		bundles []string
+		gits    []string
 		input   string
 		prune   bool
 		replace bool
@@ -122,7 +123,9 @@ func trackBundleCmd(track trackBundleFn, pullImage pullImageFn, pushImage pushIm
 				return err
 			}
 
-			out, err := track(cmd.Context(), params.bundles, data, params.prune, params.freshen)
+			urls := append(params.bundles, params.gits...)
+
+			out, err := track(cmd.Context(), urls, data, params.prune, params.freshen)
 			if err != nil {
 				return err
 			}
@@ -162,7 +165,10 @@ func trackBundleCmd(track trackBundleFn, pullImage pullImageFn, pushImage pushIm
 	cmd.Flags().StringVarP(&params.input, "input", "i", params.input, "existing tracking file")
 
 	cmd.Flags().StringSliceVarP(&params.bundles, "bundle", "b", params.bundles,
-		"bundle image reference to track - may be used multiple times (required)")
+		"bundle image reference to track - may be used multiple times")
+
+	cmd.Flags().StringSliceVarP(&params.gits, "git", "g", params.gits,
+		"git references to track - may be used multiple times")
 
 	cmd.Flags().BoolVarP(&params.prune, "prune", "p", params.prune,
 		"remove entries that are no longer acceptable, i.e. a newer entry already effective exists")
@@ -174,7 +180,7 @@ func trackBundleCmd(track trackBundleFn, pullImage pullImageFn, pushImage pushIm
 
 	cmd.Flags().BoolVar(&params.freshen, "freshen", params.freshen, "resolve image tags to catch updates and use the latest image for the tag")
 
-	cmd.MarkFlagsOneRequired("bundle", "input")
+	cmd.MarkFlagsOneRequired("bundle", "git", "input")
 
 	return cmd
 }
