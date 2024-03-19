@@ -106,7 +106,8 @@ func trackBundleCmd(track trackBundleFn, pullImage pullImageFn, pushImage pushIm
 			  ec track bundle --input <path/to/input/file> --output <path/to/input/file> --freshen
 		`),
 
-		Args: cobra.NoArgs,
+		Args:    cobra.NoArgs,
+		Aliases: []string{"tekton-task"},
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			// capture the command and arguments so we can keep track of what
 			// Tekton bundles were used to getnerate the OPA/Conftest bundle
