@@ -48,6 +48,8 @@ spec:
         Name of the policy configuration (EnterpriseContractPolicy
         resource) to use. `namespace/name` or `name` syntax supported. If
         namespace is omitted the namespace where the task runs is used.
+        You can also specify a policy configuration using a git url, e.g.
+        `github.com/enterprise-contract/config//slsa3`.
       default: "enterprise-contract-service/default"
 
     - name: PUBLIC_KEY
