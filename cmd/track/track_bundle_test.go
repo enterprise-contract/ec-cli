@@ -257,16 +257,18 @@ func TestPreRunE(t *testing.T) {
 		},
 		{
 			name: "no bundle nor input",
-			err:  "neither --bundle nor --input was provided",
+			err:  "at least one of the flags in the group [bundle input] is required",
 		},
 	}
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			tbc := trackBundleCmd(nil, nil, nil)
-			require.NoError(t, tbc.ParseFlags(c.args))
+			if err := tbc.ParseFlags(c.args); err != nil {
+				t.Error(err)
+			}
 
-			err := tbc.PreRunE(tbc, []string{})
+			err := tbc.ValidateFlagGroups()
 
 			if c.err != "" {
 				assert.EqualError(t, err, c.err)
