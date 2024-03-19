@@ -25,14 +25,14 @@ task-bundles:
       effective_on: "${TIMESTAMP}"
       tag: tag
     - digest: sha256:0af8c4f92f4b252b3ef0cbd712e7352196bc33a96c58b6e1d891b26e171deae8
-      effective_on: "${TIMESTAMP}"
+      effective_on: "2006-01-02T15:04:05Z"
       expires_on: "${TIMESTAMP}"
       tag: tag
 trusted_tasks:
   oci://${REGISTRY}/acceptance/bundle:tag:
     - effective_on: "${TIMESTAMP}"
       ref: sha256:${REGISTRY_acceptance/bundle:tag_DIGEST}
-    - effective_on: "${TIMESTAMP}"
+    - effective_on: "2006-01-02T15:04:05Z"
       expires_on: "${TIMESTAMP}"
       ref: sha256:0af8c4f92f4b252b3ef0cbd712e7352196bc33a96c58b6e1d891b26e171deae8
 
