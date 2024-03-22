@@ -43,18 +43,25 @@ INPUT_JSON='{
 # A minimal ECP using local files
 # ec looks for specific subdirs under the source's root location
 # so that's why we have policy/policy and data/data
-POLICY_JSON='{
-  "sources": [
-    {
-      "policy": [
-        "'$LOCAL_DIR'/policy"
-      ],
-      "data": [
-        "'$LOCAL_DIR'/data"
-      ]
-    }
-  ]
-}'
+POLICY_YAML='
+sources:
+  - policy:
+      - '$POLICY_DIR'
+      - github.com/simonbaird/ec-policies//policy/lib?ref=builtin-experiments
+      - github.com/simonbaird/ec-policies//policy/release?ref=builtin-experiments
+
+    data:
+      - '$DATA_DIR'
+      - oci::quay.io/redhat-appstudio-tekton-catalog/data-acceptable-bundles:latest
+      - github.com/release-engineering/rhtap-ec-policy//data
+
+    config:
+      include:
+        # Fixme: I dont think it is running the sigstore check sin sigstore.rego
+        # now, not sure why
+        - "sigstore"
+        - "@slsa3"
+'
 
 # Public key for the signature of the image we're verifying
 PUBLIC_KEY="-----BEGIN PUBLIC KEY-----
@@ -73,7 +80,8 @@ echo '{
 # The acceptance test rego is pretty much prod-ready.. :)
 # Tweak one line to make it work with the sigstore_opts data we just created above
 sed \
-  's/^_sigstore_opts :=.*/_sigstore_opts := object.union(data.config.default_sigstore_opts, data.sigstore_opts)/' \
+  -e 's/^_sigstore_opts :=.*/_sigstore_opts := object.union(data.config.default_sigstore_opts, data.sigstore_opts)/' \
+  -e 's/^package sigstore/package policy.release.sigstore/' \
   ${GIT_ROOT}/acceptance/examples/sigstore.rego \
   > ${POLICY_DIR}/sigstore.rego
 
@@ -83,7 +91,15 @@ echo "$INPUT_JSON" | yq -P
 echo -e "\n* EC results:\n"
 $EC validate input \
   --file <(echo $INPUT_JSON) \
-  --policy "$(echo $POLICY_JSON)" \
+  --policy "$(echo "$POLICY_YAML" | yq -ojson)" \
   --show-successes \
-  --info \
   | yq -P
+
+# For debugging...
+#echo "$INPUT_JSON" > i.json
+#ec opa eval \
+#  --input i.json \
+#  'data.lib._input_attestations' \
+#  --data ${DATA_DIR} \
+#  --data /home/sbaird/code/ec-policies/policy/lib \
+#  --data /home/sbaird/code/ec-policies/policy/release | yq -P
