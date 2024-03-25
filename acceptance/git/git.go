@@ -274,7 +274,7 @@ func createGitRepository(ctx context.Context, repositoryName string, files *godo
 		Author: &object.Signature{
 			Name:  "Testy McTestface",
 			Email: "test@test.test",
-			When:  time.Now(),
+			When:  time.Date(1970, time.January, 1, 0, 9, 9, 9, time.UTC), // makes commits deterministic
 		},
 	})
 	if err != nil {
