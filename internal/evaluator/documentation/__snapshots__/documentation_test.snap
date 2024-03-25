@@ -283,3 +283,188 @@ description: Parse a valid PURL into an object.
 name: ec.purl.parse
 
 ---
+
+[TestWriteBuiltinsToYAML - 5]
+decl:
+  args:
+  - description: OCI image reference
+    name: ref
+    type: string
+  - description: Sigstore verification options
+    name: opts
+    static:
+    - key: certificate_identity
+      value:
+        type: string
+    - key: certificate_identity_regexp
+      value:
+        type: string
+    - key: certificate_oidc_issuer
+      value:
+        type: string
+    - key: certificate_oidc_issuer_regexp
+      value:
+        type: string
+    - key: ignore_rekor
+      value:
+        type: boolean
+    - key: public_key
+      value:
+        type: string
+    - key: rekor_url
+      value:
+        type: string
+    type: object
+  result:
+    description: the result of the verification request
+    name: result
+    static:
+    - key: attestations
+      value:
+        description: matching attestations
+        name: attestations
+        static:
+        - description: attestation matching provided identity/key
+          name: attestation
+          static:
+          - key: signatures
+            value:
+              description: signatures associated with attestation
+              name: signatures
+              static:
+              - static:
+                - key: certificate
+                  value:
+                    type: string
+                - key: chain
+                  value:
+                    static:
+                    - type: string
+                    type: array
+                - key: keyid
+                  value:
+                    type: string
+                - key: metadata
+                  value:
+                    dynamic:
+                      key:
+                        type: string
+                      value:
+                        type: string
+                    type: object
+                - key: signature
+                  value:
+                    type: string
+                type: object
+              type: array
+          - key: statement
+            value:
+              description: statement from attestation
+              name: statement
+              type: any
+          type: object
+        type: array
+    - key: errors
+      value:
+        description: verification errors
+        name: errors
+        static:
+        - type: string
+        type: array
+    - key: success
+      value:
+        description: true when verification is successful
+        name: success
+        type: boolean
+    type: object
+  type: function
+description: Use sigstore to verify the attestation of an image.
+name: ec.sigstore.verify_attestation
+nondeterministic: true
+
+---
+
+[TestWriteBuiltinsToYAML - 6]
+decl:
+  args:
+  - description: OCI image reference
+    name: ref
+    type: string
+  - description: Sigstore verification options
+    name: opts
+    static:
+    - key: certificate_identity
+      value:
+        type: string
+    - key: certificate_identity_regexp
+      value:
+        type: string
+    - key: certificate_oidc_issuer
+      value:
+        type: string
+    - key: certificate_oidc_issuer_regexp
+      value:
+        type: string
+    - key: ignore_rekor
+      value:
+        type: boolean
+    - key: public_key
+      value:
+        type: string
+    - key: rekor_url
+      value:
+        type: string
+    type: object
+  result:
+    description: the result of the verification request
+    name: result
+    static:
+    - key: errors
+      value:
+        description: verification errors
+        name: errors
+        static:
+        - type: string
+        type: array
+    - key: signatures
+      value:
+        description: matching signatures
+        name: signatures
+        static:
+        - static:
+          - key: certificate
+            value:
+              type: string
+          - key: chain
+            value:
+              static:
+              - type: string
+              type: array
+          - key: keyid
+            value:
+              type: string
+          - key: metadata
+            value:
+              dynamic:
+                key:
+                  type: string
+                value:
+                  type: string
+              type: object
+          - key: signature
+            value:
+              type: string
+          type: object
+        type: array
+    - key: success
+      value:
+        description: true when verification is successful
+        name: success
+        type: boolean
+    type: object
+  type: function
+description: Use sigstore to verify the signature of an image.
+name: ec.sigstore.verify_image
+nondeterministic: true
+
+---
