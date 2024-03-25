@@ -166,3 +166,24 @@ trusted_tasks:
 [Track git references, with prune:stderr - 1]
 
 ---
+
+[Track git references, without git id:stdout - 1]
+---
+
+[Track git references, without git id:stderr - 1]
+Error: expected "git+https://${GITHOST}/git/tasks.git//task.yaml" to contain the revision information following the `@`, e.g. git+https://github.com/org/repository//task/0.1/task.yaml@f0cacc1a, to fetch the latest revision from a remote URL provide the --freshen parameter
+
+---
+
+[Track git references, with freshen:stdout - 1]
+/-/-/-/
+trusted_tasks:
+  git+https://${GITHOST}/git/tasks.git//task.yaml:
+    - effective_on: "${TIMESTAMP}"
+      ref: 60079661c514e31e542a55aefb8de67bd40597a9
+
+---
+
+[Track git references, with freshen:stderr - 1]
+
+---
