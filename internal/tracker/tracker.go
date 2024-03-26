@@ -88,10 +88,15 @@ func (t *Tracker) setDefaults() {
 	}
 }
 
-// addTrustedTaskBundleRecord includes the given Tekton bundle Task record in the tracker.
-func (t *Tracker) addTrustedTaskBundleRecord(record taskRecord) {
+// addTrustedTaskRecord includes the given Tekton bundle Task record in the tracker.
+func (t *Tracker) addTrustedTaskRecord(prefix string, record taskRecord) {
 	newRecords := []taskRecord{record}
-	group := fmt.Sprintf("%s%s:%s", ociPrefix, record.Repository, record.Tag)
+	var group string
+	if record.Tag == "" {
+		group = fmt.Sprintf("%s%s", prefix, record.Repository)
+	} else {
+		group = fmt.Sprintf("%s%s:%s", prefix, record.Repository, record.Tag)
+	}
 	if _, ok := t.TrustedTasks[group]; !ok {
 		t.TrustedTasks[group] = newRecords
 	} else {
@@ -127,11 +132,6 @@ func (t Tracker) Output() ([]byte, error) {
 // Each url is expected to reference a valid Tekton bundle. Each bundle may be added
 // to none, 1, or 2 collections depending on the Tekton resource types they include.
 func Track(ctx context.Context, urls []string, input []byte, prune bool, freshen bool) ([]byte, error) {
-	refs, err := image.ParseAndResolveAll(ctx, urls, name.StrictValidation)
-	if err != nil {
-		return nil, err
-	}
-
 	t, err := newTracker(input)
 	if err != nil {
 		return nil, err
@@ -142,7 +142,7 @@ func Track(ctx context.Context, urls []string, input []byte, prune bool, freshen
 		for repo, bundles := range t.TaskBundles {
 			for i := len(bundles) - 1; i >= 0; i-- {
 				bundle := bundles[i]
-				t.addTrustedTaskBundleRecord(taskRecord{
+				t.addTrustedTaskRecord(ociPrefix, taskRecord{
 					Ref:         bundle.Digest,
 					Tag:         bundle.Tag,
 					EffectiveOn: bundle.EffectiveOn,
@@ -154,32 +154,14 @@ func Track(ctx context.Context, urls []string, input []byte, prune bool, freshen
 	}
 	t.TaskBundles = map[string][]bundleRecord{}
 
-	if freshen {
-		log.Debug("Freshen is enabled")
-		imageRefs, err := inputBundleTags(ctx, t)
-		if err != nil {
-			return nil, err
-		}
+	imageUrls, gitUrls := groupUrls(urls)
 
-		refs = append(refs, imageRefs...)
+	if err := t.trackImageReferences(ctx, imageUrls, freshen); err != nil {
+		return nil, err
 	}
 
-	effective_on := effectiveOn()
-	for _, ref := range refs {
-		log.Debugf("Processing bundle %q", ref.String())
-		info, err := newBundleInfo(ctx, ref)
-		if err != nil {
-			return nil, err
-		}
-
-		for range sets.List(info.collections) {
-			t.addTrustedTaskBundleRecord(taskRecord{
-				Ref:         ref.Digest,
-				Tag:         ref.Tag,
-				EffectiveOn: effective_on,
-				Repository:  ref.Repository,
-			})
-		}
+	if err := t.trackGitReferences(ctx, gitUrls); err != nil {
+		return nil, err
 	}
 
 	t.filterBundles(prune)
@@ -191,6 +173,80 @@ func Track(ctx context.Context, urls []string, input []byte, prune bool, freshen
 	}
 
 	return t.Output()
+}
+
+func groupUrls(urls []string) ([]string, []string) {
+	imgs := make([]string, 0, len(urls))
+	gits := make([]string, 0, len(urls))
+	for _, u := range urls {
+		if strings.HasPrefix(u, "git+") {
+			gits = append(gits, u)
+		} else {
+			imgs = append(imgs, u)
+		}
+	}
+
+	return imgs, gits
+}
+
+func (t *Tracker) trackImageReferences(ctx context.Context, urls []string, freshen bool) error {
+	refs, err := image.ParseAndResolveAll(ctx, urls, name.StrictValidation)
+	if err != nil {
+		return err
+	}
+
+	if freshen {
+		log.Debug("Freshen is enabled")
+		imageRefs, err := inputBundleTags(ctx, *t)
+		if err != nil {
+			return err
+		}
+
+		refs = append(refs, imageRefs...)
+	}
+
+	effective_on := effectiveOn()
+	for _, ref := range refs {
+		log.Debugf("Processing bundle %q", ref.String())
+		info, err := newBundleInfo(ctx, ref)
+		if err != nil {
+			return err
+		}
+
+		for range sets.List(info.collections) {
+			t.addTrustedTaskRecord(ociPrefix, taskRecord{
+				Ref:         ref.Digest,
+				Tag:         ref.Tag,
+				EffectiveOn: effective_on,
+				Repository:  ref.Repository,
+			})
+		}
+	}
+
+	return nil
+}
+
+func (t *Tracker) trackGitReferences(_ context.Context, urls []string) error {
+	effective_on := effectiveOn()
+
+	for _, u := range urls {
+		repository, rest, found := strings.Cut(u, "//")
+		if !found {
+			return fmt.Errorf("expected %q to contain the `//` to separate the repository from the path, e.g. git+https://github.com/org/repository//task/0.1/task.yaml@f0cacc1a", u)
+		}
+		path, rev, found := strings.Cut(rest, "@")
+		if !found {
+			return fmt.Errorf("expected %q to contain the `@` to separate the path from the revision, e.g. git+https://github.com/org/repository//task/0.1/task.yaml@f0cacc1a", u)
+		}
+
+		t.addTrustedTaskRecord("", taskRecord{
+			Repository:  fmt.Sprintf("%s//%s", repository, path),
+			Ref:         rev,
+			EffectiveOn: effective_on,
+		})
+	}
+
+	return nil
 }
 
 func inputBundleTags(ctx context.Context, t Tracker) ([]image.ImageReference, error) {

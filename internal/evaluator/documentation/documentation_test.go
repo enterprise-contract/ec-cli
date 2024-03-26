@@ -25,6 +25,7 @@ import (
 	"testing"
 
 	"github.com/gkampitakis/go-snaps/snaps"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -32,15 +33,18 @@ func TestWriteBuiltinsToYAML(t *testing.T) {
 	dir := t.TempDir()
 	err := writeBultinsToYAML(dir)
 	require.NoError(t, err)
+	found := 0
 	err = filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
 		require.NoError(t, err)
 		if d.IsDir() {
 			return nil
 		}
 		contents, err := os.ReadFile(path)
+		found += 1
 		require.NoError(t, err)
 		snaps.MatchSnapshot(t, string(contents))
 		return nil
 	})
 	require.NoError(t, err)
+	assert.NotZero(t, found, "did not find any ec builtins")
 }

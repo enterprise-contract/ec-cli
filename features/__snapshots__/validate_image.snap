@@ -1229,7 +1229,7 @@ Error: 1 error occurred:
     "publicKey": "${known_PUBLIC_KEY}"
   },
   "ec-version": "${EC_VERSION}",
-  "effective-time": "${TIMESTAMP}"
+  "effective-time": "2100-01-01T00:00:00Z"
 }
 ---
 
@@ -1769,7 +1769,7 @@ Error: success criteria not met
     "publicKey": "${known_PUBLIC_KEY}"
   },
   "ec-version": "${EC_VERSION}",
-  "effective-time": "${TIMESTAMP}"
+  "effective-time": "2100-01-01T12:00:00Z"
 }
 ---
 
@@ -2129,11 +2129,29 @@ Error: success criteria not met
 
 [Custom rule data:${TMPDIR}/custom-rule-data.yaml - 1]
 - - config:
+      default_sigstore_opts:
+        certificate_identity: ""
+        certificate_identity_regexp: ""
+        certificate_oidc_issuer: ""
+        certificate_oidc_issuer_regexp: ""
+        ignore_rekor: false
+        public_key: |
+${__________known_PUBLIC_KEY}
+        rekor_url: ${REKOR}
       policy:
         when_ns: 1401494400000000000
     rule_data__configuration__:
       custom: data1
   - config:
+      default_sigstore_opts:
+        certificate_identity: ""
+        certificate_identity_regexp: ""
+        certificate_oidc_issuer: ""
+        certificate_oidc_issuer_regexp: ""
+        ignore_rekor: false
+        public_key: |
+${__________known_PUBLIC_KEY}
+        rekor_url: ${REKOR}
       policy:
         when_ns: 1401494400000000000
     rule_data__configuration__:
@@ -3419,5 +3437,82 @@ Error: success criteria not met
 ---
 
 [fetch OCI image manifest:stderr - 1]
+
+---
+
+[sigstore functions:stdout - 1]
+{
+  "success": true,
+  "components": [
+    {
+      "name": "Unnamed",
+      "containerImage": "${REGISTRY}/acceptance/sigstore@sha256:${REGISTRY_acceptance/sigstore:latest_DIGEST}",
+      "source": {},
+      "successes": [
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.syntax_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.image.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "sigstore.valid"
+          }
+        }
+      ],
+      "success": true,
+      "signatures": [
+        {
+          "keyid": "",
+          "sig": "${IMAGE_SIGNATURE_acceptance/sigstore}"
+        }
+      ],
+      "attestations": [
+        {
+          "type": "https://in-toto.io/Statement/v0.1",
+          "predicateType": "https://slsa.dev/provenance/v0.2",
+          "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+          "signatures": [
+            {
+              "keyid": "",
+              "sig": "${ATTESTATION_SIGNATURE_acceptance/sigstore}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "key": "${known_PUBLIC_KEY_JSON}",
+  "policy": {
+    "sources": [
+      {
+        "policy": [
+          "git::https://${GITHOST}/git/sigstore.git"
+        ]
+      }
+    ],
+    "rekorUrl": "${REKOR}",
+    "publicKey": "${known_PUBLIC_KEY}"
+  },
+  "ec-version": "${EC_VERSION}",
+  "effective-time": "${TIMESTAMP}"
+}
+---
+
+[sigstore functions:stderr - 1]
 
 ---

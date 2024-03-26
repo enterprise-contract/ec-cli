@@ -15,6 +15,11 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+echo "*** This script is not used currently ***"
+echo "See https://issues.redhat.com/browse/EC-479 for details"
+echo "See also the changes to hack/cut-release.sh in this commit"
+exit 1
+
 set -o errexit
 set -o nounset
 set -o pipefail
@@ -41,8 +46,6 @@ for p in pull-request push; do
   main_pipeline=".tekton/verify-enterprise-contract-task-main-ci-$p.yaml"
   release_pipeline=".tekton/verify-enterprise-contract-task-$short_release_name-$p.yaml"
 
-  # Beware: If the branch name is long enough there'll be a newline after
-  # "target_branch ==" and the second sed command won't work
   cat $main_pipeline \
     | sed "s/main-ci/$short_release_name/g" \
     | sed "s/target_branch == \"main\"/target_branch == \"$current_branch\"/" \
