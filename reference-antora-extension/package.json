@@ -16,5 +16,14 @@
   "homepage": "https://github.com/enterprise-contract/ec-cli/tree/main/reference-antora-extension#readme",
   "engines": {
     "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@antora/collector-extension": "^1.0.0-alpha.3",
+    "@antora/content-aggregator": "^3.1.7",
+    "handlebars": "^4.7.8",
+    "jest": "^29.7.0"
+  },
+  "scripts": {
+    "test": "jest"
   }
 }
