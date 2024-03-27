@@ -33,6 +33,7 @@ import (
 	cosignSig "github.com/sigstore/cosign/v2/pkg/signature"
 	sigstoreSig "github.com/sigstore/sigstore/pkg/signature"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/yaml"
 
@@ -650,4 +651,321 @@ func toYAML(policy any) string {
 		panic(fmt.Errorf("invalid YAML: %w", err))
 	}
 	return string(inline)
+}
+func TestIsConformant(t *testing.T) {
+	cases := []struct {
+		name       string
+		policyRef  string
+		expectPass bool
+		expectErr  bool
+	}{
+		{
+			name:       "valid policy",
+			policyRef:  `{"spec": {"publicKey": "test-key"}}`,
+			expectPass: true,
+			expectErr:  false,
+		},
+		{
+			name:       "invalid policy",
+			policyRef:  `{"spec": {"invalidField": "test"}}`,
+			expectPass: false,
+			expectErr:  true,
+		},
+		{
+			name:       "invalid YAML",
+			policyRef:  `invalid-yaml`,
+			expectPass: false,
+			expectErr:  true,
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			p := &policy{}
+			pass, err := p.isConformant(c.policyRef)
+
+			if c.expectPass {
+				assert.True(t, pass, "Expected policy to pass validation")
+			} else {
+				assert.False(t, pass, "Expected policy to fail validation")
+			}
+
+			if c.expectErr {
+				assert.Error(t, err, "Expected error during validation")
+			} else {
+				assert.NoError(t, err, "Expected no error during validation")
+			}
+		})
+	}
+}
+func TestJsonSchemaFromPolicySpec(t *testing.T) {
+	ecp := &ecc.EnterpriseContractPolicySpec{
+		PublicKey: "testPublicKey",
+		RekorUrl:  "testRekorUrl",
+	}
+
+	expectedSchema := `{
+		"$schema": "https://json-schema.org/draft/2020-12/schema",
+		"$id": "https://github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1/enterprise-contract-policy-spec",
+		"$ref": "#/$defs/EnterpriseContractPolicySpec",
+		"$defs": {
+		  "EnterpriseContractPolicyConfiguration": {
+			"properties": {
+			  "exclude": {
+				"items": {
+				  "type": "string"
+				},
+				"type": "array"
+			  },
+			  "include": {
+				"items": {
+				  "type": "string"
+				},
+				"type": "array"
+			  },
+			  "collections": {
+				"items": {
+				  "type": "string"
+				},
+				"type": "array"
+			  }
+			},
+			"additionalProperties": false,
+			"type": "object"
+		  },
+		  "EnterpriseContractPolicySpec": {
+			"properties": {
+			  "name": {
+				"type": "string"
+			  },
+			  "description": {
+				"type": "string"
+			  },
+			  "sources": {
+				"items": {
+				  "$ref": "#/$defs/Source"
+				},
+				"type": "array"
+			  },
+			  "configuration": {
+				"$ref": "#/$defs/EnterpriseContractPolicyConfiguration"
+			  },
+			  "rekorUrl": {
+				"type": "string"
+			  },
+			  "publicKey": {
+				"type": "string"
+			  },
+			  "identity": {
+				"$ref": "#/$defs/Identity"
+			  }
+			},
+			"additionalProperties": false,
+			"type": "object"
+		  },
+		  "Identity": {
+			"properties": {
+			  "subject": {
+				"type": "string"
+			  },
+			  "subjectRegExp": {
+				"type": "string"
+			  },
+			  "issuer": {
+				"type": "string"
+			  },
+			  "issuerRegExp": {
+				"type": "string"
+			  }
+			},
+			"additionalProperties": false,
+			"type": "object"
+		  },
+		  "JSON": {
+			"properties": {},
+			"additionalProperties": false,
+			"type": "object"
+		  },
+		  "Source": {
+			"properties": {
+			  "name": {
+				"type": "string"
+			  },
+			  "policy": {
+				"items": {
+				  "type": "string"
+				},
+				"type": "array"
+			  },
+			  "data": {
+				"items": {
+				  "type": "string"
+				},
+				"type": "array"
+			  },
+			  "ruleData": {
+				"$ref": "#/$defs/JSON"
+			  },
+			  "config": {
+				"$ref": "#/$defs/SourceConfig"
+			  },
+			  "volatileConfig": {
+				"$ref": "#/$defs/VolatileSourceConfig"
+			  }
+			},
+			"additionalProperties": false,
+			"type": "object"
+		  },
+		  "SourceConfig": {
+			"properties": {
+			  "exclude": {
+				"items": {
+				  "type": "string"
+				},
+				"type": "array"
+			  },
+			  "include": {
+				"items": {
+				  "type": "string"
+				},
+				"type": "array"
+			  }
+			},
+			"additionalProperties": false,
+			"type": "object"
+		  },
+		  "VolatileCriteria": {
+			"properties": {
+			  "value": {
+				"type": "string"
+			  },
+			  "effectiveOn": {
+				"type": "string"
+			  },
+			  "effectiveUntil": {
+				"type": "string"
+			  }
+			},
+			"additionalProperties": false,
+			"type": "object",
+			"required": [
+			  "value"
+			]
+		  },
+		  "VolatileSourceConfig": {
+			"properties": {
+			  "exclude": {
+				"items": {
+				  "$ref": "#/$defs/VolatileCriteria"
+				},
+				"type": "array"
+			  },
+			  "include": {
+				"items": {
+				  "$ref": "#/$defs/VolatileCriteria"
+				},
+				"type": "array"
+			  }
+			},
+			"additionalProperties": false,
+			"type": "object"
+		  }
+		}
+	  }`
+
+	schemaJson, err := jsonSchemaFromPolicySpec(ecp)
+	assert.NoError(t, err)
+	assert.JSONEq(t, expectedSchema, string(schemaJson))
+}
+
+func TestSigstoreOpts(t *testing.T) {
+	cases := []struct {
+		name         string
+		rekorUrl     string
+		ignoreRekor  bool
+		publicKey    string
+		identity     cosign.Identity
+		expectedOpts SigstoreOpts
+		err          string
+	}{
+		{
+			name:      "long-lived key with rekor",
+			rekorUrl:  utils.TestRekorURL,
+			publicKey: utils.TestPublicKey,
+			expectedOpts: SigstoreOpts{
+				RekorURL:  utils.TestRekorURL,
+				PublicKey: utils.TestPublicKey,
+			},
+		},
+		{
+			name:        "long-lived key without rekor",
+			ignoreRekor: true,
+			publicKey:   utils.TestPublicKey,
+			expectedOpts: SigstoreOpts{
+				IgnoreRekor: true,
+				PublicKey:   utils.TestPublicKey,
+			},
+		},
+		{
+			name:     "fulcio key with rekor",
+			rekorUrl: utils.TestRekorURL,
+			identity: cosign.Identity{
+				Subject: "my-subject",
+				Issuer:  "my-issuer",
+			},
+			expectedOpts: SigstoreOpts{
+				CertificateIdentity:   "my-subject",
+				CertificateOIDCIssuer: "my-issuer",
+				RekorURL:              utils.TestRekorURL,
+			},
+		},
+		{
+			name:        "fulcio key without rekor",
+			ignoreRekor: true,
+			identity: cosign.Identity{
+				Subject: "my-subject",
+				Issuer:  "my-issuer",
+			},
+			expectedOpts: SigstoreOpts{
+				CertificateIdentity:   "my-subject",
+				CertificateOIDCIssuer: "my-issuer",
+				IgnoreRekor:           true,
+			},
+		},
+		{
+			name:     "fulcio key with regular expressions",
+			rekorUrl: utils.TestRekorURL,
+			identity: cosign.Identity{
+				SubjectRegExp: "my-subject.*",
+				IssuerRegExp:  "my-issuer.*",
+			},
+			expectedOpts: SigstoreOpts{
+				CertificateIdentityRegExp:   "my-subject.*",
+				CertificateOIDCIssuerRegExp: "my-issuer.*",
+				RekorURL:                    utils.TestRekorURL,
+			},
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			ctx := context.Background()
+			utils.SetTestRekorPublicKey(t)
+			utils.SetTestFulcioRoots(t)
+			utils.SetTestCTLogPublicKey(t)
+
+			p, err := NewPolicy(ctx, Options{
+				RekorURL:      c.rekorUrl,
+				IgnoreRekor:   c.ignoreRekor,
+				PublicKey:     c.publicKey,
+				EffectiveTime: Now,
+				Identity:      c.identity,
+			})
+			require.NoError(t, err)
+
+			opts, err := p.SigstoreOpts()
+			require.NoError(t, err)
+			require.Equal(t, opts, c.expectedOpts)
+		})
+	}
 }

@@ -16,7 +16,7 @@
 
 //go:build unit
 
-package kubernetes
+package snaps
 
 import (
 	"testing"
@@ -25,9 +25,9 @@ import (
 )
 
 func TestIndent(t *testing.T) {
-	assert.Equal(t, "", indent("", 0))
-	assert.Equal(t, "   ", indent("", 3))
-	assert.Equal(t, "   A", indent("A", 3))
-	assert.Equal(t, "   A\n   B", indent("A\nB", 3))
-	assert.Equal(t, "   A\n   B", indent("A\nB\n", 3))
+	assert.Equal(t, "", Indent("", 0))
+	assert.Equal(t, "   ", Indent("", 3))
+	assert.Equal(t, "   A", Indent("A", 3))
+	assert.Equal(t, "   A\n   B", Indent("A\nB", 3))
+	assert.Equal(t, "   A\n   B", Indent("A\nB\n", 3))
 }

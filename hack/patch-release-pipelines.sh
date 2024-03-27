@@ -61,7 +61,7 @@ for p in pull-request push; do
 
   # Loop over each commit
   for sha in $changes; do
-    git show $sha $main_pipeline
+    git show $sha -- $main_pipeline
 
     echo ""
     echo "Applying the above changes to '$release_pipeline'"

@@ -44,12 +44,16 @@ fi
 # Use release name as-is for the branch name
 BRANCH_NAME="release-${RELEASE_NAME}"
 
+# We'll be creating a tag later with this name
+INITIAL_TAG_NAME="${RELEASE_NAME}.0"
+
 # Konflux disallows . chars in names so remove those
 KONFLUX_APPLICATION_SUFFIX="${RELEASE_NAME/./}"
 
 # Could be whatever, but let's adopt a consistent convention
 KONFLUX_APPLICATION_NAME=ec-${KONFLUX_APPLICATION_SUFFIX}
 KONFLUX_CLI_COMPONENT_NAME=cli-${KONFLUX_APPLICATION_SUFFIX}
+KONFLUX_TASK_COMPONENT_NAME=verify-enterprise-contract-task-${KONFLUX_APPLICATION_SUFFIX}
 
 # Show some useful values
 echo Release name: $RELEASE_NAME
@@ -82,7 +86,7 @@ Set Dockerfile to Dockerfile.dist
 Unset the "Default build pipeline" toggle
 Click "Create application"
 
-# Wait for PR
+# Wait for Konflux to create PR for the ec-cli component
 Wait for the PR to be created
 Go look at the PR in GitHub
 Wait for the PR to pass the ${KONFLUX_CLI_COMPONENT_NAME}-on-pull-request check
@@ -97,19 +101,21 @@ Edit ${KONFLUX_APPLICATION_NAME}-enterprise-contract and add a parameter as foll
 Save changes
 
 # Apply cli pipeline modifications
+Should be done on top of the Konflux generated PR
 git checkout ${BRANCH_NAME}
 hack/patch-release-pipelines.sh
 hack/patch-release-pipelines.sh digest_bumps # maybe
 Review the diff between the ${KONFLUX_CLI_COMPONENT_NAME}- and cli-main-ci- pipelines
 Review the generated commit, and inspect the diff as described.
 
-# Copy the task definition pipeline from main branch
-hack/copy-task-release-pipelines.sh
-Review the generated commit.
-
 # Create pipeline customizations PR
-With the above two commits, create a PR for the ${BRANCH_NAME} branch.
+With the above commit, create a PR for the ${BRANCH_NAME} branch.
 (Todo maybe: If you want, try adding this commit to the PR created by Konflux before merging that PR.)
+
+# Merge the pipeline customizations PR and create a tag
+This is a bit clunky, but you need to create a tag as soon (within seconds) of the above PR being merged.
+Do it like this right after merging:
+  git fetch upstream && git tag ${INITIAL_TAG_NAME} upstream/${BRANCH_NAME} && git push upstream ${INITIAL_TAG_NAME}
 
 EOT
 

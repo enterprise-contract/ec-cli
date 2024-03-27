@@ -27,7 +27,7 @@ import (
 	"github.com/open-policy-agent/opa/ast"
 	"sigs.k8s.io/yaml"
 
-	_ "github.com/enterprise-contract/ec-cli/internal/evaluator" // imports EC OPA builtins
+	_ "github.com/enterprise-contract/ec-cli/internal/rego" // imports EC OPA builtins
 )
 
 const directoryPermissions = 0755

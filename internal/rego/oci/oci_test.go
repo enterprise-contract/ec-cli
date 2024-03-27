@@ -16,7 +16,7 @@
 
 //go:build unit
 
-package evaluator
+package oci
 
 import (
 	"context"
@@ -281,88 +281,10 @@ func TestOCIImageManifest(t *testing.T) {
 	}
 }
 
-func TestPURLIsValid(t *testing.T) {
-	cases := []struct {
-		name     string
-		uri      *ast.Term
-		expected bool
-	}{
-		{
-			name:     "success",
-			uri:      ast.StringTerm("pkg:rpm/fedora/curl@7.50.3-1.fc25?arch=i386&distro=fedora-25"),
-			expected: true,
-		},
-		{
-			name:     "unexpected uri type",
-			uri:      ast.IntNumberTerm(42),
-			expected: false,
-		},
-		{
-			name:     "malformed PURL string",
-			uri:      ast.StringTerm("pkg::rpm//fedora/curl7.50.3-1.fc25?arch=i386&distro=fedora-"),
-			expected: false,
-		},
-	}
-
-	for _, c := range cases {
-		t.Run(c.name, func(t *testing.T) {
-			ctx := context.Background()
-			bctx := rego.BuiltinContext{Context: ctx}
-
-			isValid, err := purlIsValid(bctx, c.uri)
-			require.NoError(t, err)
-			require.NotNil(t, isValid)
-			require.Equal(t, isValid, ast.BooleanTerm(c.expected))
-		})
-	}
-}
-
-func TestPURLParse(t *testing.T) {
-	cases := []struct {
-		name string
-		uri  *ast.Term
-		err  bool
-	}{
-		{
-			name: "success",
-			uri:  ast.StringTerm("pkg:rpm/fedora/curl@7.50.3-1.fc25?arch=i386&distro=fedora-25"),
-		},
-		{
-			name: "unexpected uri type",
-			uri:  ast.IntNumberTerm(42),
-			err:  true,
-		},
-		{
-			name: "malformed PURL string",
-			uri:  ast.StringTerm("pkg::rpm//fedora/curl7.50.3-1.fc25?arch=i386&distro=fedora-"),
-			err:  true,
-		},
-	}
-
-	for _, c := range cases {
-		t.Run(c.name, func(t *testing.T) {
-			ctx := context.Background()
-			bctx := rego.BuiltinContext{Context: ctx}
-
-			instance, err := purlParse(bctx, c.uri)
-			require.NoError(t, err)
-			if c.err {
-				require.Nil(t, instance)
-			} else {
-				require.NotNil(t, instance)
-				data := instance.Get(ast.StringTerm("type")).Value
-				require.Equal(t, ast.String("rpm"), data)
-			}
-		})
-	}
-}
-
 func TestFunctionsRegistered(t *testing.T) {
 	names := []string{
 		ociBlobName,
 		ociImageManifestName,
-		purlIsValidName,
-		purlParseName,
 	}
 	for _, name := range names {
 		t.Run(name, func(t *testing.T) {

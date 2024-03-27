@@ -223,6 +223,8 @@ func setupKeys(ctx context.Context, vars map[string]string, environment []string
 		}
 
 		vars[name+"_PUBLIC_KEY"] = key.Name()
+		// Handle some variations in indentation
+		vars[fmt.Sprintf("__________%s_PUBLIC_KEY", name)] = snaps.Indent(publicKey, 10)
 
 		vars[name+"_PUBLIC_KEY_JSON"] = strings.ReplaceAll(publicKey, "\n", "\\n")
 

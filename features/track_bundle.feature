@@ -111,3 +111,41 @@ Feature: track bundles
     When ec command is run with "track bundle --bundle ${REGISTRY}/acceptance/bundle:tag"
     Then the exit status should be 0
     Then the output should match the snapshot
+
+  Scenario: Track git references
+    When ec command is run with "track bundle --git git+https://github.com/redhat-appstudio/build-definitions.git//task/buildah/0.1/buildah.yaml@3672a457e3e89c0591369f609eba727b8e84108f"
+    Then the exit status should be 0
+    Then the output should match the snapshot
+
+  Scenario: Track tekton-task alias
+    Given a tekton bundle image named "acceptance/bundle:tag" containing
+      | Task     | task1     |
+    When ec command is run with "track tekton-task --bundle ${REGISTRY}/acceptance/bundle:tag --git git+https://github.com/redhat-appstudio/build-definitions.git//task/buildah/0.1/buildah.yaml@3672a457e3e89c0591369f609eba727b8e84108f"
+    Then the exit status should be 0
+    Then the output should match the snapshot
+
+  Scenario: Track git references, append to existing
+    Given a track bundle file named "${TMPDIR}/bundles.yaml" containing
+    """
+    ---
+    trusted_tasks:
+      git+https://forge.io/organization/repository.git//task/0.1/task.yaml:
+        - effective_on: 2006-01-02T15:04:05Z
+          ref: f0cacc1a
+    """
+    When ec command is run with "track tekton-task --input ${TMPDIR}/bundles.yaml --git git+https://forge.io/organization/repository.git//task/0.1/task.yaml@f0cacc1af00d"
+    Then the exit status should be 0
+    Then the output should match the snapshot
+
+  Scenario: Track git references, with prune
+    Given a track bundle file named "${TMPDIR}/bundles.yaml" containing
+    """
+    ---
+    trusted_tasks:
+      git+https://forge.io/organization/repository.git//task/0.1/task.yaml:
+        - effective_on: 2006-01-02T15:04:05Z
+          ref: f0cacc1a
+    """
+    When ec command is run with "track tekton-task --prune --input ${TMPDIR}/bundles.yaml --git git+https://forge.io/organization/repository.git//task/0.1/task.yaml@f0cacc1a"
+    Then the exit status should be 0
+    Then the output should match the snapshot

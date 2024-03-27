@@ -25,6 +25,7 @@ import (
 	"time"
 
 	hd "github.com/MakeNowJust/heredoc"
+	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/empty"
@@ -32,6 +33,7 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/random"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/google/go-containerregistry/pkg/v1/types"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	pipeline "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
 	"github.com/tektoncd/pipeline/pkg/remote/oci"
@@ -626,4 +628,38 @@ func mustCreateFakePipelineObject() runtime.Object {
 	p.Spec.Finally = []pipeline.PipelineTask{summaryTask}
 
 	return &p
+}
+
+func TestGroupUrls(t *testing.T) {
+	urls := []string{"registry.io/repository/image:tag", "git+https://git.io/organization/repository", "rhcr.io/repository/image:tag", "git+ssh://got.io/organization/repository"}
+
+	imgs, gits := groupUrls(urls)
+
+	assert.Equal(t, imgs, []string{"registry.io/repository/image:tag", "rhcr.io/repository/image:tag"})
+	assert.Equal(t, gits, []string{"git+https://git.io/organization/repository", "git+ssh://got.io/organization/repository"})
+}
+
+func TestTrackGitReferences(t *testing.T) {
+	tracker := &Tracker{
+		TrustedTasks: make(map[string][]taskRecord),
+	}
+
+	require.NoError(t, tracker.trackGitReferences(context.Background(), []string{"git+https://git.io/organization/repository//task1.yaml@rev1", "git+ssh://got.io/organization/repository//dir/task2.yaml@rev2"}))
+
+	expected := map[string][]taskRecord{
+		"git+https://git.io/organization/repository//task1.yaml": {{
+			Ref:         "rev1",
+			Repository:  "git+https://git.io/organization/repository//task1.yaml",
+			EffectiveOn: effectiveOn(),
+		}},
+		"git+ssh://got.io/organization/repository//dir/task2.yaml": {{
+			Ref:         "rev2",
+			Repository:  "git+ssh://got.io/organization/repository//dir/task2.yaml",
+			EffectiveOn: effectiveOn(),
+		}},
+	}
+
+	if !cmp.Equal(tracker.TrustedTasks, expected) {
+		t.Errorf("expected vs got: %s", cmp.Diff(tracker.TrustedTasks, expected))
+	}
 }
