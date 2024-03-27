@@ -21,6 +21,10 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/google/go-containerregistry/pkg/name"
+	v1 "github.com/google/go-containerregistry/pkg/v1"
+	"github.com/google/go-containerregistry/pkg/v1/remote"
+	"github.com/hashicorp/go-multierror"
 	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
@@ -44,6 +48,17 @@ type Input struct {
 type snapshot struct {
 	app.SnapshotSpec
 }
+
+type client interface {
+	Get(name.Reference) (*remote.Descriptor, error)
+	Index(name.Reference) (v1.ImageIndex, error)
+}
+
+type remoteClient struct{}
+
+var _ client = (*remoteClient)(nil)
+
+type RemoteClientKey struct{}
 
 func (s *snapshot) merge(snap app.SnapshotSpec) {
 	if s.Application == "" {
@@ -129,14 +144,15 @@ func DetermineInputSpec(ctx context.Context, input Input) (*app.SnapshotSpec, er
 	// create Snapshot with a single image
 	if input.Image != "" {
 		log.Debugf("Generating application snapshot from image reference %s", input.Image)
-		snapshot.merge(app.SnapshotSpec{
+		imageSnapshot := app.SnapshotSpec{
 			Components: []app.SnapshotComponent{
 				{
 					Name:           unnamed,
 					ContainerImage: input.Image,
 				},
 			},
-		})
+		}
+		snapshot.merge(imageSnapshot)
 		provided = true
 	}
 
@@ -152,7 +168,6 @@ func DetermineInputSpec(ctx context.Context, input Input) (*app.SnapshotSpec, er
 			log.Debugf("Unable to fetch snapshot %s from Kubernetes cluster: %v", input.Snapshot, err)
 			return nil, err
 		}
-
 		snapshot.merge(cluster.Spec)
 		provided = true
 	}
@@ -161,6 +176,7 @@ func DetermineInputSpec(ctx context.Context, input Input) (*app.SnapshotSpec, er
 		log.Debug("No application snapshot available")
 		return nil, errors.New("neither Snapshot nor image reference provided to validate")
 	}
+	expandImageIndex(ctx, &snapshot.SnapshotSpec)
 
 	return &snapshot.SnapshotSpec, nil
 }
@@ -175,4 +191,77 @@ func readSnapshotSource(input []byte) (app.SnapshotSpec, error) {
 
 	log.Debugf("Read application snapshot from file %s", input)
 	return file, nil
+}
+
+func (*remoteClient) Get(ref name.Reference) (*remote.Descriptor, error) {
+	return remote.Get(ref)
+}
+
+func (*remoteClient) Index(ref name.Reference) (v1.ImageIndex, error) {
+	return remote.Index(ref)
+}
+
+var defaultClient = &remoteClient{}
+
+func determineClient(ctx context.Context) client {
+	if cli, ok := ctx.Value(RemoteClientKey{}).(client); ok {
+		return cli
+	}
+	return defaultClient
+}
+
+func expandImageIndex(ctx context.Context, snap *app.SnapshotSpec) {
+	client := determineClient(ctx)
+	// For an image index, remove the original component and replace it with an expanded component with all its image manifests
+	var components []app.SnapshotComponent
+	// Do not raise an error if the image is inaccessible, it will be handled as a violation when evaluated against the policy
+	// This is to retain the original behavior of the `ec validate` command.
+	var allErrors error = nil
+	for _, component := range snap.Components {
+		// Assume the image is not an image index or it isn't accessible
+		components = append(components, component)
+		ref, err := name.ParseReference(component.ContainerImage)
+		if err != nil {
+			allErrors = multierror.Append(allErrors, fmt.Errorf("unable to parse container image %s: %w", component.ContainerImage, err))
+			continue
+		}
+
+		desc, err := client.Get(ref)
+		if err != nil {
+			allErrors = multierror.Append(allErrors, fmt.Errorf("unable to fetch descriptior for container image %s: %w", ref, err))
+			continue
+		}
+
+		if !desc.MediaType.IsIndex() {
+			continue
+		}
+
+		index, err := client.Index(ref)
+		if err != nil {
+			allErrors = multierror.Append(allErrors, fmt.Errorf("unable to fetch index for container image %s: %w", component.ContainerImage, err))
+			continue
+		}
+
+		indexManifest, err := index.IndexManifest()
+		if err != nil {
+			allErrors = multierror.Append(allErrors, fmt.Errorf("unable to fetch index manifest for container image %s: %w", component.ContainerImage, err))
+			continue
+		}
+
+		// The image is an image index and accessible so remove the image index itself and add index manifests
+		components = components[:len(components)-1]
+		for _, manifest := range indexManifest.Manifests {
+			archComponent := component
+			archComponent.Name = fmt.Sprintf("%s-%s-%s", component.Name, manifest.Digest, manifest.Platform.Architecture)
+			archComponent.ContainerImage = fmt.Sprintf("%s@%s", ref.Context().Name(), manifest.Digest)
+			components = append(components, archComponent)
+		}
+	}
+
+	snap.Components = components
+
+	if allErrors != nil {
+		log.Warnf("Encountered error while checking for Image Index: %v", allErrors)
+	}
+	log.Debugf("Snap component after expanding the image index is %v", snap.Components)
 }
