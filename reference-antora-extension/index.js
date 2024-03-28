@@ -22,7 +22,7 @@ module.exports.register = function () {
     this.on('contentAggregated', ({ contentAggregate }) => {
         const yaml = this.require('js-yaml')
         const Handlebars = this.require('handlebars')
-        Handlebars.registerHelper('seeAlso', function(text) {
+        Handlebars.registerHelper('seeAlso', function (text) {
             const [name, description] = text.split(' - ')
 
             const path = name.replaceAll(' ', '_') + '.adoc'
@@ -52,6 +52,7 @@ module.exports.register = function () {
                     stem,
                     extname: '.adoc',
                 },
+                generated: true
             }
 
             content.files.push(page)

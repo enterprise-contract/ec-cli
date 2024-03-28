@@ -1,0 +1,2427 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`extension reference documentation templating 1`] = `
+Map {
+  "modules/ROOT/pages/ec.adoc" => "= ec
+
+Enterprise Contract CLI
+
+== Synopsis
+
+Enterprise Contract CLI
+
+Set of commands to help validate resources with the Enterprise Contract.
+
+
+
+
+
+== Options
+
+ --debug:: same as verbose but also show function names and line numbers
+ (Default: false)
+--h,  --help:: help for ec (Default: false)
+ --kubeconfig:: path to the Kubernetes config file to use
+ --quiet:: less verbose output (Default: false)
+ --timeout:: max overall execution duration (Default: 5m0s)
+ --trace:: enable trace logging (Default: false)
+ --verbose:: more verbose output (Default: false)
+
+== Options inherited from parent commands
+
+
+== See also
+
+ * xref:ec_fetch.adoc[ec fetch] - Fetch remote resources
+ * xref:ec_init.adoc[ec init] - Initialize a directory for use
+ * xref:ec_inspect.adoc[ec inspect] - Inspect policy rules
+ * xref:ec_opa.adoc[ec opa] - Open Policy Agent (OPA) (embedded)
+ * xref:ec_test.adoc[ec test] - Test your configuration files using Open Policy Agent
+ * xref:ec_track.adoc[ec track] - Record resource references for tracking purposes
+ * xref:ec_validate.adoc[ec validate] - Validate conformance with the Enterprise Contract
+ * xref:ec_version.adoc[ec version] - Print version information
+",
+  "modules/ROOT/pages/ec_fetch.adoc" => "= ec fetch
+
+Fetch remote resources
+
+
+
+
+== Options
+
+--h,  --help:: help for fetch (Default: false)
+
+== Options inherited from parent commands
+
+ --debug:: same as verbose but also show function names and line numbers
+ (Default: false)
+ --kubeconfig:: path to the Kubernetes config file to use
+ --quiet:: less verbose output (Default: false)
+ --timeout:: max overall execution duration (Default: 5m0s)
+ --trace:: enable trace logging (Default: false)
+ --verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec.adoc[ec] - Enterprise Contract CLI
+ * xref:ec_fetch_policy.adoc[ec fetch policy] - Fetch policy rules from a git repository or other source
+",
+  "modules/ROOT/pages/ec_fetch_policy.adoc" => "= ec fetch policy
+
+Fetch policy rules from a git repository or other source
+
+== Synopsis
+
+Fetch policy rules (rego files) from a git repository or other source.
+
+Each policy source will be downloaded into a separate unique directory inside
+the "policy" directory under the destination directory specified. The
+destination directory is either an automatically generated temporary work dir
+if --work-dir is set, the directory specified with the --dest flag, or the
+current directory if neither flag is specified.
+
+This command is based on 'conftest pull' so you can refer to the conftest pull
+documentation for more usage examples and for details on the different types of
+supported source URLs.
+
+Note that this command is not typically required to verify the Enterprise
+Contract. It has been made available for troubleshooting and debugging
+purposes.
+
+
+[source,shell]
+----
+ec fetch policy --source <source-url> --data-source <source-url> [flags]
+----
+
+
+== Examples
+Fetching policies from multiple sources to a specific directory:
+
+  ec fetch policy --dest fetched-policies \\
+	--source github.com/enterprise-contract/ec-policies//policy/lib \\
+	--source github.com/enterprise-contract/ec-policies//policy/release
+
+Fetching policies and data from multiple sources to the current directory:
+
+  ec fetch policy \\
+	--source github.com/enterprise-contract/ec-policies//policy/lib \\
+	--source github.com/enterprise-contract/ec-policies//policy/release \\
+	--data-source git::https://github.com/enterprise-contract/ec-policies//example/data
+
+Fetching policies from multiple sources to an automatically generated temporary
+work directory:
+
+  ec fetch policy --work-dir \\
+	--source github.com/enterprise-contract/ec-policies//policy/lib \\
+	--source github.com/enterprise-contract/ec-policies//policy/release
+
+Different style url formats are supported. In this example "policy" is treated as
+a subdirectory even without the go-getter style // delimiter:
+
+  ec fetch policy --source https://github.com/enterprise-contract/ec-policies/policy
+
+Fetching policies from an OPA bundle (OCI image):
+
+  ec fetch policy --source quay.io/enterprise-contract/ec-release-policy:latest
+
+Notes:
+
+- The --dest flag will be ignored if --work-dir is set
+- Adding a protocol prefix such as 'git::' to the source url forces it to be treated
+  as a go-getter style url.
+
+
+== Options
+
+ --data-source:: data source url. multiple values are allowed (Default: [])
+--d,  --dest:: use the specified download destination directory. ignored if --work-dir is set
+ (Default: .)
+--h,  --help:: help for policy (Default: false)
+--s,  --source:: policy source url. multiple values are allowed (Default: [])
+--w,  --work-dir:: use a temporary work dir as the download destination directory
+ (Default: false)
+
+== Options inherited from parent commands
+
+ --debug:: same as verbose but also show function names and line numbers
+ (Default: false)
+ --kubeconfig:: path to the Kubernetes config file to use
+ --quiet:: less verbose output (Default: false)
+ --timeout:: max overall execution duration (Default: 5m0s)
+ --trace:: enable trace logging (Default: false)
+ --verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec_fetch.adoc[ec fetch] - Fetch remote resources
+",
+  "modules/ROOT/pages/ec_init.adoc" => "= ec init
+
+Initialize a directory for use
+
+
+
+
+== Options
+
+--h,  --help:: help for init (Default: false)
+
+== Options inherited from parent commands
+
+ --debug:: same as verbose but also show function names and line numbers
+ (Default: false)
+ --kubeconfig:: path to the Kubernetes config file to use
+ --quiet:: less verbose output (Default: false)
+ --timeout:: max overall execution duration (Default: 5m0s)
+ --trace:: enable trace logging (Default: false)
+ --verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec.adoc[ec] - Enterprise Contract CLI
+ * xref:ec_init_policies.adoc[ec init policies] - Initialize a directory with minimal EC scaffolding
+",
+  "modules/ROOT/pages/ec_init_policies.adoc" => "= ec init policies
+
+Initialize a directory with minimal EC scaffolding
+
+== Synopsis
+
+This command creates the necessary files for a minimal EC policy setup in the
+specified destination directory.
+
+More information about authoring policies is available in the EC documentation:
+https://enterprisecontract.dev/docs/ec-policies/authoring.html
+
+
+[source,shell]
+----
+ec init policies --dest-dir <directory-url> [flags]
+----
+
+
+== Examples
+Initialize the "my-policy" directory with minimal EC policy scaffolding:
+
+  ec init policies --dest-dir my-policy
+
+
+== Options
+
+--d,  --dest-dir:: Directory to use when creating EC policy scaffolding. If not specified stdout will be used.
+
+--h,  --help:: help for policies (Default: false)
+
+== Options inherited from parent commands
+
+ --debug:: same as verbose but also show function names and line numbers
+ (Default: false)
+ --kubeconfig:: path to the Kubernetes config file to use
+ --quiet:: less verbose output (Default: false)
+ --timeout:: max overall execution duration (Default: 5m0s)
+ --trace:: enable trace logging (Default: false)
+ --verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec_init.adoc[ec init] - Initialize a directory for use
+",
+  "modules/ROOT/pages/ec_inspect.adoc" => "= ec inspect
+
+Inspect policy rules
+
+
+
+
+== Options
+
+--h,  --help:: help for inspect (Default: false)
+
+== Options inherited from parent commands
+
+ --debug:: same as verbose but also show function names and line numbers
+ (Default: false)
+ --kubeconfig:: path to the Kubernetes config file to use
+ --quiet:: less verbose output (Default: false)
+ --timeout:: max overall execution duration (Default: 5m0s)
+ --trace:: enable trace logging (Default: false)
+ --verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec.adoc[ec] - Enterprise Contract CLI
+ * xref:ec_inspect_policy.adoc[ec inspect policy] - Read policies from source urls and show information about the rules inside them
+ * xref:ec_inspect_policy-data.adoc[ec inspect policy-data] - Read policy data from source urls and displays the data
+",
+  "modules/ROOT/pages/ec_inspect_policy-data.adoc" => "= ec inspect policy-data
+
+Read policy data from source urls and displays the data
+
+== Synopsis
+
+Read policy data from source urls and displays the data.
+
+This fetches policy sources similar to the 'ec fetch policy' command, but once
+the policy is fetched it reads json and yaml files inside the policy source and
+displays the data.
+
+Note that this command is not typically required to verify the Enterprise
+Contract. It has been made available for troubleshooting and debugging purposes.
+
+
+[source,shell]
+----
+ec inspect policy-data --source <source-url> [flags]
+----
+
+
+== Examples
+Print data from a given source url:
+
+ec inspect policy-data --source git::https://github.com/enterprise-contract/ec-policies//example/data
+
+
+== Options
+
+--d,  --dest:: use the specified destination directory to download the policy. if not set, a temporary directory will be used
+
+--h,  --help:: help for policy-data (Default: false)
+--o,  --output:: output format. one of: json, yaml (Default: json)
+--s,  --source:: policy data source url. multiple values are allowed (Default: [])
+
+== Options inherited from parent commands
+
+ --debug:: same as verbose but also show function names and line numbers
+ (Default: false)
+ --kubeconfig:: path to the Kubernetes config file to use
+ --quiet:: less verbose output (Default: false)
+ --timeout:: max overall execution duration (Default: 5m0s)
+ --trace:: enable trace logging (Default: false)
+ --verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec_inspect.adoc[ec inspect] - Inspect policy rules
+",
+  "modules/ROOT/pages/ec_inspect_policy.adoc" => "= ec inspect policy
+
+Read policies from source urls and show information about the rules inside them
+
+
+== Synopsis
+
+Read policies from a source url and show information about the rules inside them.
+
+This fetches policy sources similar to the 'ec fetch policy' command, but once
+the policy is fetched the equivalent of 'opa inspect' is run against the
+downloaded policies.
+
+This can be used to extract information about each rule in the policy source,
+including the rule annotations which include the rule's title and description
+and custom fields used by ec to filter the results produced by conftest.
+
+Note that this command is not typically required to verify the Enterprise
+Contract. It has been made available for troubleshooting and debugging purposes.
+
+
+[source,shell]
+----
+ec inspect policy --source <source-url> [flags]
+----
+
+
+== Examples
+Print a list of rules and their descriptions from the latest Enterprise Contract release policy:
+
+  ec inspect policy --source quay.io/enterprise-contract/ec-release-policy
+
+Display details about the latest Enterprise Contract release policy in json format:
+
+  ec inspect policy --source quay.io/enterprise-contract/ec-release-policy -o json | jq
+
+
+== Options
+
+ --collection:: display rules included in given collection
+--d,  --dest:: use the specified destination directory to download the policy. if not set, a temporary directory will be used
+
+--h,  --help:: help for policy (Default: false)
+--o,  --output:: output format. one of: json, text, names, short-names (Default: text)
+ --package:: display results matching package name
+--p,  --policy:: reference to the policy configuration, either EnterpriseContractPolicy Kubernetes custom resource reference [&lt;namespace&gt;/]&lt;name&gt;, or inline JSON or YAML of the &#x60;spec&#x60; part
+
+ --rule:: display results matching rule name
+--s,  --source:: policy source url. multiple values are allowed (Default: [])
+
+== Options inherited from parent commands
+
+ --debug:: same as verbose but also show function names and line numbers
+ (Default: false)
+ --kubeconfig:: path to the Kubernetes config file to use
+ --quiet:: less verbose output (Default: false)
+ --timeout:: max overall execution duration (Default: 5m0s)
+ --trace:: enable trace logging (Default: false)
+ --verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec_inspect.adoc[ec inspect] - Inspect policy rules
+",
+  "modules/ROOT/pages/ec_opa.adoc" => "= ec opa
+
+Open Policy Agent (OPA) (embedded)
+
+== Synopsis
+
+An open source project to policy-enable your service.
+
+
+
+
+== Options
+
+--h,  --help:: help for opa (Default: false)
+
+== Options inherited from parent commands
+
+ --debug:: same as verbose but also show function names and line numbers
+ (Default: false)
+ --kubeconfig:: path to the Kubernetes config file to use
+ --quiet:: less verbose output (Default: false)
+ --timeout:: max overall execution duration (Default: 5m0s)
+ --trace:: enable trace logging (Default: false)
+ --verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec.adoc[ec] - Enterprise Contract CLI
+ * xref:ec_opa_bench.adoc[ec opa bench] - Benchmark a Rego query
+ * xref:ec_opa_build.adoc[ec opa build] - Build an OPA bundle
+ * xref:ec_opa_capabilities.adoc[ec opa capabilities] - Print the capabilities of OPA
+ * xref:ec_opa_check.adoc[ec opa check] - Check Rego source files
+ * xref:ec_opa_deps.adoc[ec opa deps] - Analyze Rego query dependencies
+ * xref:ec_opa_eval.adoc[ec opa eval] - Evaluate a Rego query
+ * xref:ec_opa_exec.adoc[ec opa exec] - Execute against input files
+ * xref:ec_opa_fmt.adoc[ec opa fmt] - Format Rego source files
+ * xref:ec_opa_inspect.adoc[ec opa inspect] - Inspect OPA bundle(s)
+ * xref:ec_opa_parse.adoc[ec opa parse] - Parse Rego source file
+ * xref:ec_opa_run.adoc[ec opa run] - Start OPA in interactive or server mode
+ * xref:ec_opa_sign.adoc[ec opa sign] - Generate an OPA bundle signature
+ * xref:ec_opa_test.adoc[ec opa test] - Execute Rego test cases
+ * xref:ec_opa_version.adoc[ec opa version] - Print the version of OPA
+",
+  "modules/ROOT/pages/ec_opa_bench.adoc" => "= ec opa bench
+
+Benchmark a Rego query
+
+== Synopsis
+
+Benchmark a Rego query and print the results.
+
+The benchmark command works very similar to 'eval' and will evaluate the query in the same fashion. The
+evaluation will be repeated a number of times and performance results will be returned.
+
+Example with bundle and input data:
+
+	opa bench -b ./policy-bundle -i input.json 'data.authz.allow'
+
+To enable more detailed analysis use the --metrics and --benchmem flags.
+
+To run benchmarks against a running OPA server to evaluate server overhead use the --e2e flag.
+
+The optional "gobench" output format conforms to the Go Benchmark Data Format.
+
+
+[source,shell]
+----
+ec opa bench <query> [flags]
+----
+
+
+
+== Options
+
+ --benchmem:: report memory allocations with benchmark results (Default: true)
+--b,  --bundle:: set bundle file(s) or directory path(s). This flag can be repeated.
+
+--c,  --config-file:: set path of configuration file
+ --count:: number of times to repeat each benchmark (Default: 1)
+--d,  --data:: set policy or data file(s). This flag can be repeated.
+ --e2e:: run benchmarks against a running OPA server (Default: false)
+ --fail:: exits with non-zero exit code on undefined/empty result and errors
+ (Default: true)
+--f,  --format:: set output format (Default: pretty)
+--h,  --help:: help for bench (Default: false)
+ --ignore:: set file and directory names to ignore during loading (e.g., &#x27;.*&#x27; excludes hidden files)
+ (Default: [])
+ --import:: set query import(s). This flag can be repeated.
+--i,  --input:: set input file path
+ --metrics:: report query performance metrics (Default: true)
+ --package:: set query package
+--p,  --partial:: perform partial evaluation (Default: false)
+--s,  --schema:: set schema file path or directory path
+ --shutdown-grace-period:: set the time (in seconds) that the server will wait to gracefully shut down. This flag is valid in &#x27;e2e&#x27; mode only.
+ (Default: 10)
+ --shutdown-wait-period:: set the time (in seconds) that the server will wait before initiating shutdown. This flag is valid in &#x27;e2e&#x27; mode only.
+ (Default: 0)
+ --stdin:: read query from stdin (Default: false)
+--I,  --stdin-input:: read input document from stdin (Default: false)
+--t,  --target:: set the runtime to exercise (Default: rego)
+--u,  --unknowns:: set paths to treat as unknown during partial evaluation (Default: [input])
+ --v1-compatible:: opt-in to OPA features and behaviors that will be enabled by default in a future OPA v1.0 release
+ (Default: false)
+
+== Options inherited from parent commands
+
+ --debug:: same as verbose but also show function names and line numbers
+ (Default: false)
+ --kubeconfig:: path to the Kubernetes config file to use
+ --quiet:: less verbose output (Default: false)
+ --timeout:: max overall execution duration (Default: 5m0s)
+ --trace:: enable trace logging (Default: false)
+ --verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec_opa.adoc[ec opa] - Open Policy Agent (OPA) (embedded)
+",
+  "modules/ROOT/pages/ec_opa_build.adoc" => "= ec opa build
+
+Build an OPA bundle
+
+== Synopsis
+
+Build an OPA bundle.
+
+The 'build' command packages OPA policy and data files into bundles. Bundles are
+gzipped tarballs containing policies and data. Paths referring to directories are
+loaded recursively.
+
+    $ ls
+    example.rego
+
+    $ opa build -b .
+
+You can load bundles into OPA on the command-line:
+
+    $ ls
+    bundle.tar.gz example.rego
+
+    $ opa run bundle.tar.gz
+
+You can also configure OPA to download bundles from remote HTTP endpoints:
+
+    $ opa run --server \\
+        --set bundles.example.resource=bundle.tar.gz \\
+        --set services.example.url=http://localhost:8080
+
+Inside another terminal in the same directory, serve the bundle via HTTP:
+
+    $ python3 -m http.server --bind localhost 8080
+
+For more information on bundles see https://www.openpolicyagent.org/docs/latest/management-bundles/.
+
+Common Flags
+------------
+
+When -b is specified the 'build' command assumes paths refer to existing bundle files
+or directories following the bundle structure. If multiple bundles are provided, their
+contents are merged. If there are any merge conflicts (e.g., due to conflicting bundle
+roots), the command fails. When loading an existing bundle file, the .manifest from
+the input bundle will be included in the output bundle. Flags that set .manifest fields
+(such as --revision) override input bundle .manifest fields.
+
+The -O flag controls the optimization level. By default, optimization is disabled (-O=0).
+When optimization is enabled the 'build' command generates a bundle that is semantically
+equivalent to the input files however the structure of the files in the bundle may have
+been changed by rewriting, inlining, pruning, etc. Higher optimization levels may result
+in longer build times. The --partial-namespace flag can used in conjunction with the -O flag
+to specify the namespace for the partially evaluated files in the optimized bundle.
+
+The 'build' command supports targets (specified by -t):
+
+    rego    The default target emits a bundle containing a set of policy and data files
+            that are semantically equivalent to the input files. If optimizations are
+            disabled the output may simply contain a copy of the input policy and data
+            files. If optimization is enabled at least one entrypoint must be supplied,
+            either via the -e option, or via entrypoint metadata annotations.
+
+    wasm    The wasm target emits a bundle containing a WebAssembly module compiled from
+            the input files for each specified entrypoint. The bundle may contain the
+            original policy or data files.
+
+    plan    The plan target emits a bundle containing a plan, i.e., an intermediate
+            representation compiled from the input files for each specified entrypoint.
+            This is for further processing, OPA cannot evaluate a "plan bundle" like it
+            can evaluate a wasm or rego bundle.
+
+The -e flag tells the 'build' command which documents (entrypoints) will be queried by 
+the software asking for policy decisions, so that it can focus optimization efforts and 
+ensure that document is not eliminated by the optimizer.
+Note: Unless the --prune-unused flag is used, any rule transitively referring to a 
+package or rule declared as an entrypoint will also be enumerated as an entrypoint.
+
+Signing
+-------
+
+The 'build' command can be used to verify the signature of a signed bundle and
+also to generate a signature for the output bundle the command creates.
+
+If the directory path(s) provided to the 'build' command contain a ".signatures.json" file,
+it will attempt to verify the signatures included in that file. The bundle files
+or directory path(s) to verify must be specified using --bundle.
+
+For more information on the bundle signing and verification, see
+https://www.openpolicyagent.org/docs/latest/management-bundles/#signing.
+
+Example:
+
+    $ opa build --verification-key /path/to/public_key.pem --signing-key /path/to/private_key.pem --bundle foo
+
+Where foo has the following structure:
+
+    foo/
+      |
+      +-- bar/
+      |     |
+      |     +-- data.json
+      |
+      +-- policy.rego
+      |
+      +-- .manifest
+      |
+      +-- .signatures.json
+
+
+The 'build' command will verify the signatures using the public key provided by the --verification-key flag.
+The default signing algorithm is RS256 and the --signing-alg flag can be used to specify
+a different one. The --verification-key-id and --scope flags can be used to specify the name for the key
+provided using the --verification-key flag and scope to use for bundle signature verification respectively.
+
+If the verification succeeds, the 'build' command will write out an updated ".signatures.json" file
+to the output bundle. It will use the key specified by the --signing-key flag to sign
+the token in the ".signatures.json" file.
+
+To include additional claims in the payload use the --claims-file flag to provide a JSON file
+containing optional claims.
+
+For more information on the format of the ".signatures.json" file
+see https://www.openpolicyagent.org/docs/latest/management-bundles/#signature-format.
+
+Capabilities
+------------
+
+The 'build' command can validate policies against a configurable set of OPA capabilities.
+The capabilities define the built-in functions and other language features that policies
+may depend on. For example, the following capabilities file only permits the policy to
+depend on the "plus" built-in function ('+'):
+
+    {
+        "builtins": [
+            {
+                "name": "plus",
+                "infix": "+",
+                "decl": {
+                    "type": "function",
+                    "args": [
+                        {
+                            "type": "number"
+                        },
+                        {
+                            "type": "number"
+                        }
+                    ],
+                    "result": {
+                        "type": "number"
+                    }
+                }
+            }
+        ]
+    }
+
+Capabilities can be used to validate policies against a specific version of OPA.
+The OPA repository contains a set of capabilities files for each OPA release. For example,
+the following command builds a directory of policies ('./policies') and validates them
+against OPA v0.22.0:
+
+    opa build ./policies --capabilities v0.22.0
+
+
+[source,shell]
+----
+ec opa build <path> [<path> [...]] [flags]
+----
+
+
+
+== Options
+
+--b,  --bundle:: load paths as bundle files or root directories (Default: false)
+ --capabilities:: set capabilities version or capabilities.json file path
+ --claims-file:: set path of JSON file containing optional claims (see: https://www.openpolicyagent.org/docs/latest/management-bundles/#signature-format)
+
+ --debug:: enable debug output (Default: false)
+--e,  --entrypoint:: set slash separated entrypoint path
+ --exclude-files-verify:: set file names to exclude during bundle verification (Default: [])
+--h,  --help:: help for build (Default: false)
+ --ignore:: set file and directory names to ignore during loading (e.g., &#x27;.*&#x27; excludes hidden files)
+ (Default: [])
+--O,  --optimize:: set optimization level (Default: 0)
+--o,  --output:: set the output filename (Default: bundle.tar.gz)
+ --partial-namespace:: set the namespace to use for partially evaluated files in an optimized bundle
+ (Default: partial)
+ --prune-unused:: exclude dependents of entrypoints (Default: false)
+--r,  --revision:: set output bundle revision
+ --scope:: scope to use for bundle signature verification
+ --signing-alg:: name of the signing algorithm (Default: RS256)
+ --signing-key:: set the secret (HMAC) or path of the PEM file containing the private key (RSA and ECDSA)
+
+ --signing-plugin:: name of the plugin to use for signing/verification (see https://www.openpolicyagent.org/docs/latest/management-bundles/#signature-plugin
+
+--t,  --target:: set the output bundle target type (Default: rego)
+ --v1-compatible:: opt-in to OPA features and behaviors that will be enabled by default in a future OPA v1.0 release
+ (Default: false)
+ --verification-key:: set the secret (HMAC) or path of the PEM file containing the public key (RSA and ECDSA)
+
+ --verification-key-id:: name assigned to the verification key used for bundle verification
+ (Default: default)
+
+== Options inherited from parent commands
+
+ --kubeconfig:: path to the Kubernetes config file to use
+ --quiet:: less verbose output (Default: false)
+ --timeout:: max overall execution duration (Default: 5m0s)
+ --trace:: enable trace logging (Default: false)
+ --verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec_opa.adoc[ec opa] - Open Policy Agent (OPA) (embedded)
+",
+  "modules/ROOT/pages/ec_opa_capabilities.adoc" => "= ec opa capabilities
+
+Print the capabilities of OPA
+
+== Synopsis
+
+Show capabilities for OPA.
+
+The 'capabilities' command prints the OPA capabilities, prior to and including the version of OPA used.
+
+Print a list of all existing capabilities version names
+
+    $ opa capabilities
+    v0.17.0
+    v0.17.1
+    ...
+    v0.37.1
+    v0.37.2
+    v0.38.0
+    ...
+
+Print the capabilities of the current version
+
+    $ opa capabilities --current
+    {
+        "builtins": [...],
+        "future_keywords": [...],
+        "wasm_abi_versions": [...]
+    }
+
+Print the capabilities of a specific version
+
+    $ opa capabilities --version v0.32.1
+    {
+        "builtins": [...],
+        "future_keywords": null,
+        "wasm_abi_versions": [...]
+    }
+
+Print the capabilities of a capabilities file
+
+    $ opa capabilities --file ./capabilities/v0.32.1.json
+    {
+        "builtins": [...],
+        "future_keywords": null,
+        "wasm_abi_versions": [...]
+    }
+
+
+
+[source,shell]
+----
+ec opa capabilities [flags]
+----
+
+
+
+== Options
+
+ --current:: print current capabilities (Default: false)
+ --file:: print current capabilities
+--h,  --help:: help for capabilities (Default: false)
+ --version:: print capabilities of a specific version
+
+== Options inherited from parent commands
+
+ --debug:: same as verbose but also show function names and line numbers
+ (Default: false)
+ --kubeconfig:: path to the Kubernetes config file to use
+ --quiet:: less verbose output (Default: false)
+ --timeout:: max overall execution duration (Default: 5m0s)
+ --trace:: enable trace logging (Default: false)
+ --verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec_opa.adoc[ec opa] - Open Policy Agent (OPA) (embedded)
+",
+  "modules/ROOT/pages/ec_opa_check.adoc" => "= ec opa check
+
+Check Rego source files
+
+== Synopsis
+
+Check Rego source files for parse and compilation errors.
+	
+	If the 'check' command succeeds in parsing and compiling the source file(s), no output
+	is produced. If the parsing or compiling fails, 'check' will output the errors
+	and exit with a non-zero exit code.
+
+[source,shell]
+----
+ec opa check <path> [path [...]] [flags]
+----
+
+
+
+== Options
+
+--b,  --bundle:: load paths as bundle files or root directories (Default: false)
+ --capabilities:: set capabilities version or capabilities.json file path
+--f,  --format:: set output format (Default: pretty)
+--h,  --help:: help for check (Default: false)
+ --ignore:: set file and directory names to ignore during loading (e.g., &#x27;.*&#x27; excludes hidden files)
+ (Default: [])
+--m,  --max-errors:: set the number of errors to allow before compilation fails early
+ (Default: 10)
+ --rego-v1:: check for Rego v1 compatibility (policies must also be compatible with current OPA version)
+ (Default: false)
+--s,  --schema:: set schema file path or directory path
+--S,  --strict:: enable compiler strict mode (Default: false)
+ --v1-compatible:: opt-in to OPA features and behaviors that will be enabled by default in a future OPA v1.0 release
+ (Default: false)
+
+== Options inherited from parent commands
+
+ --debug:: same as verbose but also show function names and line numbers
+ (Default: false)
+ --kubeconfig:: path to the Kubernetes config file to use
+ --quiet:: less verbose output (Default: false)
+ --timeout:: max overall execution duration (Default: 5m0s)
+ --trace:: enable trace logging (Default: false)
+ --verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec_opa.adoc[ec opa] - Open Policy Agent (OPA) (embedded)
+",
+  "modules/ROOT/pages/ec_opa_deps.adoc" => "= ec opa deps
+
+Analyze Rego query dependencies
+
+== Synopsis
+
+Print dependencies of provided query.
+
+Dependencies are categorized as either base documents, which is any data loaded
+from the outside world, or virtual documents, i.e values that are computed from rules.
+
+Example
+-------
+Given a policy like this:
+
+	package policy
+
+	import rego.v1
+
+	allow if is_admin
+
+	is_admin if "admin" in input.user.roles
+
+To evaluate the dependencies of a simple query (e.g. data.policy.allow),
+we'd run opa deps like demonstrated below:
+
+	$ opa deps --data policy.rego data.policy.allow
+	+------------------+----------------------+
+	|  BASE DOCUMENTS  |  VIRTUAL DOCUMENTS   |
+	+------------------+----------------------+
+	| input.user.roles | data.policy.allow    |
+	|                  | data.policy.is_admin |
+	+------------------+----------------------+
+
+From the output we're able to determine that the allow rule depends on
+the input.user.roles base document, as well as the virtual document (rule)
+data.policy.is_admin.
+
+
+[source,shell]
+----
+ec opa deps <query> [flags]
+----
+
+
+
+== Options
+
+--b,  --bundle:: set bundle file(s) or directory path(s). This flag can be repeated.
+
+--d,  --data:: set policy or data file(s). This flag can be repeated.
+--f,  --format:: set output format (Default: pretty)
+--h,  --help:: help for deps (Default: false)
+ --ignore:: set file and directory names to ignore during loading (e.g., &#x27;.*&#x27; excludes hidden files)
+ (Default: [])
+ --v1-compatible:: opt-in to OPA features and behaviors that will be enabled by default in a future OPA v1.0 release
+ (Default: false)
+
+== Options inherited from parent commands
+
+ --debug:: same as verbose but also show function names and line numbers
+ (Default: false)
+ --kubeconfig:: path to the Kubernetes config file to use
+ --quiet:: less verbose output (Default: false)
+ --timeout:: max overall execution duration (Default: 5m0s)
+ --trace:: enable trace logging (Default: false)
+ --verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec_opa.adoc[ec opa] - Open Policy Agent (OPA) (embedded)
+",
+  "modules/ROOT/pages/ec_opa_eval.adoc" => "= ec opa eval
+
+Evaluate a Rego query
+
+== Synopsis
+
+Evaluate a Rego query and print the result.
+
+Examples
+--------
+
+To evaluate a simple query:
+
+    $ opa eval 'x := 1; y := 2; x < y'
+
+To evaluate a query against JSON data:
+
+    $ opa eval --data data.json 'name := data.names[_]'
+
+To evaluate a query against JSON data supplied with a file:// URL:
+
+    $ opa eval --data file:///path/to/file.json 'data'
+
+
+File & Bundle Loading
+---------------------
+
+The --bundle flag will load data files and Rego files contained
+in the bundle specified by the path. It can be either a
+compressed tar archive bundle file or a directory tree.
+
+    $ opa eval --bundle /some/path 'data'
+
+Where /some/path contains:
+
+    foo/
+      |
+      +-- bar/
+      |     |
+      |     +-- data.json
+      |
+      +-- baz.rego
+      |
+      +-- manifest.yaml
+
+The JSON file 'foo/bar/data.json' would be loaded and rooted under
+'data.foo.bar' and the 'foo/baz.rego' would be loaded and rooted under the
+package path contained inside the file. Only data files named data.json or
+data.yaml will be loaded. In the example above the manifest.yaml would be
+ignored.
+
+See https://www.openpolicyagent.org/docs/latest/management-bundles/ for more details
+on bundle directory structures.
+
+The --data flag can be used to recursively load ALL *.rego, *.json, and
+*.yaml files under the specified directory.
+
+The -O flag controls the optimization level. By default, optimization is disabled (-O=0).
+When optimization is enabled the 'eval' command generates a bundle from the files provided
+with either the --bundle or --data flag. This bundle is semantically equivalent to the input
+files however the structure of the files in the bundle may have been changed by rewriting, inlining,
+pruning, etc. This resulting optimized bundle is used to evaluate the query. If optimization is
+enabled at least one entrypoint must be supplied, either via the -e option, or via entrypoint
+metadata annotations.
+
+Output Formats
+--------------
+
+Set the output format with the --format flag.
+
+    --format=json      : output raw query results as JSON
+    --format=values    : output line separated JSON arrays containing expression values
+    --format=bindings  : output line separated JSON objects containing variable bindings
+    --format=pretty    : output query results in a human-readable format
+    --format=source    : output partial evaluation results in a source format
+    --format=raw       : output the values from query results in a scripting friendly format
+    --format=discard   : output the result field as "discarded" when non-nil
+
+Schema
+------
+
+The -s/--schema flag provides one or more JSON Schemas used to validate references to the input or data documents.
+Loads a single JSON file, applying it to the input document; or all the schema files under the specified directory.
+
+    $ opa eval --data policy.rego --input input.json --schema schema.json
+    $ opa eval --data policy.rego --input input.json --schema schemas/
+
+Capabilities
+------------
+
+When passing a capabilities definition file via --capabilities, one can restrict which
+hosts remote schema definitions can be retrieved from. For example, a capabilities.json
+containing
+
+    {
+        "builtins": [ ... ],
+        "allow_net": [ "kubernetesjsonschema.dev" ]
+    }
+
+would disallow fetching remote schemas from any host but "kubernetesjsonschema.dev".
+Setting allow_net to an empty array would prohibit fetching any remote schemas.
+
+Not providing a capabilities file, or providing a file without an allow_net key, will
+permit fetching remote schemas from any host.
+
+Note that the metaschemas http://json-schema.org/draft-04/schema, http://json-schema.org/draft-06/schema,
+and http://json-schema.org/draft-07/schema, are always available, even without network
+access.
+
+
+[source,shell]
+----
+ec opa eval <query> [flags]
+----
+
+
+
+== Options
+
+--b,  --bundle:: set bundle file(s) or directory path(s). This flag can be repeated.
+
+ --capabilities:: set capabilities version or capabilities.json file path
+ --count:: number of times to repeat each benchmark (Default: 1)
+ --coverage:: report coverage (Default: false)
+--d,  --data:: set policy or data file(s). This flag can be repeated.
+ --disable-early-exit:: disable &#x27;early exit&#x27; optimizations (Default: false)
+ --disable-indexing:: disable indexing optimizations (Default: false)
+ --disable-inlining:: set paths of documents to exclude from inlining (Default: [])
+--e,  --entrypoint:: set slash separated entrypoint path
+ --explain:: enable query explanations (Default: off)
+ --fail:: exits with non-zero exit code on undefined/empty result and errors
+ (Default: false)
+ --fail-defined:: exits with non-zero exit code on defined/non-empty result and errors
+ (Default: false)
+--f,  --format:: set output format (Default: json)
+--h,  --help:: help for eval (Default: false)
+ --ignore:: set file and directory names to ignore during loading (e.g., &#x27;.*&#x27; excludes hidden files)
+ (Default: [])
+ --import:: set query import(s). This flag can be repeated.
+--i,  --input:: set input file path
+ --instrument:: enable query instrumentation metrics (implies --metrics) (Default: false)
+ --metrics:: report query performance metrics (Default: false)
+--O,  --optimize:: set optimization level (Default: 0)
+ --package:: set query package
+--p,  --partial:: perform partial evaluation (Default: false)
+ --pretty-limit:: set limit after which pretty output gets truncated (Default: 80)
+ --profile:: perform expression profiling (Default: false)
+ --profile-limit:: set number of profiling results to show (Default: 10)
+ --profile-sort:: set sort order of expression profiler results. Accepts: total_time_ns, num_eval, num_redo, num_gen_expr, file, line. This flag can be repeated.
+
+--s,  --schema:: set schema file path or directory path
+ --shallow-inlining:: disable inlining of rules that depend on unknowns (Default: false)
+ --show-builtin-errors:: collect and return all encountered built-in errors, built in errors are not fatal
+ (Default: false)
+ --stdin:: read query from stdin (Default: false)
+--I,  --stdin-input:: read input document from stdin (Default: false)
+--S,  --strict:: enable compiler strict mode (Default: false)
+ --strict-builtin-errors:: treat the first built-in function error encountered as fatal (Default: false)
+--t,  --target:: set the runtime to exercise (Default: rego)
+ --timeout:: set eval timeout (default unlimited) (Default: 0s)
+--u,  --unknowns:: set paths to treat as unknown during partial evaluation (Default: [input])
+ --v1-compatible:: opt-in to OPA features and behaviors that will be enabled by default in a future OPA v1.0 release
+ (Default: false)
+
+== Options inherited from parent commands
+
+ --debug:: same as verbose but also show function names and line numbers
+ (Default: false)
+ --kubeconfig:: path to the Kubernetes config file to use
+ --quiet:: less verbose output (Default: false)
+ --trace:: enable trace logging (Default: false)
+ --verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec_opa.adoc[ec opa] - Open Policy Agent (OPA) (embedded)
+",
+  "modules/ROOT/pages/ec_opa_exec.adoc" => "= ec opa exec
+
+Execute against input files
+
+== Synopsis
+
+Execute against input files.
+
+The 'exec' command executes OPA against one or more input files. If the paths
+refer to directories, OPA will execute against files contained inside those
+directories, recursively.
+
+The 'exec' command accepts a --config-file/-c or series of --set options as
+arguments. These options behave the same as way as 'opa run'. Since the 'exec'
+command is intended to execute OPA in one-shot, the 'exec' command will
+manually trigger plugins before and after policy execution:
+
+Before: Discovery -> Bundle -> Status
+After: Decision Logs
+
+By default, the 'exec' command executes the "default decision" (specified in
+the OPA configuration) against each input file. This can be overridden by
+specifying the --decision argument and pointing at a specific policy decision,
+e.g., opa exec --decision /foo/bar/baz ...
+
+[source,shell]
+----
+ec opa exec <path> [<path> [...]] [flags]
+----
+
+
+
+== Options
+
+--b,  --bundle:: set bundle file(s) or directory path(s). This flag can be repeated.
+
+--c,  --config-file:: set path of configuration file
+ --decision:: set decision to evaluate
+ --fail:: exits with non-zero exit code on undefined result and errors (Default: false)
+ --fail-defined:: exits with non-zero exit code on defined result and errors (Default: false)
+ --fail-non-empty:: exits with non-zero exit code on non-empty result and errors (Default: false)
+--f,  --format:: set output format (Default: pretty)
+--h,  --help:: help for exec (Default: false)
+ --log-format:: set log format (Default: json)
+--l,  --log-level:: set log level (Default: error)
+ --log-timestamp-format:: set log timestamp format (OPA_LOG_TIMESTAMP_FORMAT environment variable)
+
+ --set:: override config values on the command line (use commas to specify multiple values)
+ (Default: [])
+ --set-file:: override config values with files on the command line (use commas to specify multiple values)
+ (Default: [])
+ --v1-compatible:: opt-in to OPA features and behaviors that will be enabled by default in a future OPA v1.0 release
+ (Default: false)
+
+== Options inherited from parent commands
+
+ --debug:: same as verbose but also show function names and line numbers
+ (Default: false)
+ --kubeconfig:: path to the Kubernetes config file to use
+ --quiet:: less verbose output (Default: false)
+ --timeout:: max overall execution duration (Default: 5m0s)
+ --trace:: enable trace logging (Default: false)
+ --verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec_opa.adoc[ec opa] - Open Policy Agent (OPA) (embedded)
+",
+  "modules/ROOT/pages/ec_opa_fmt.adoc" => "= ec opa fmt
+
+Format Rego source files
+
+== Synopsis
+
+Format Rego source files.
+
+The 'fmt' command takes a Rego source file and outputs a reformatted version. If no file path
+is provided - this tool will use stdin.
+The format of the output is not defined specifically; whatever this tool outputs
+is considered correct format (with the exception of bugs).
+
+If the '-w' option is supplied, the 'fmt' command with overwrite the source file
+instead of printing to stdout.
+
+If the '-d' option is supplied, the 'fmt' command will output a diff between the
+original and formatted source.
+
+If the '-l' option is supplied, the 'fmt' command will output the names of files
+that would change if formatted. The '-l' option will suppress any other output
+to stdout from the 'fmt' command.
+
+If the '--fail' option is supplied, the 'fmt' command will return a non zero exit
+code if a file would be reformatted.
+
+[source,shell]
+----
+ec opa fmt [path [...]] [flags]
+----
+
+
+
+== Options
+
+--d,  --diff:: only display a diff of the changes (Default: false)
+ --fail:: non zero exit code on reformat (Default: false)
+--h,  --help:: help for fmt (Default: false)
+--l,  --list:: list all files who would change when formatted (Default: false)
+ --rego-v1:: format module(s) to be compatible with both Rego v1 and current OPA version)
+ (Default: false)
+ --v1-compatible:: opt-in to OPA features and behaviors that will be enabled by default in a future OPA v1.0 release
+ (Default: false)
+--w,  --write:: overwrite the original source file (Default: false)
+
+== Options inherited from parent commands
+
+ --debug:: same as verbose but also show function names and line numbers
+ (Default: false)
+ --kubeconfig:: path to the Kubernetes config file to use
+ --quiet:: less verbose output (Default: false)
+ --timeout:: max overall execution duration (Default: 5m0s)
+ --trace:: enable trace logging (Default: false)
+ --verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec_opa.adoc[ec opa] - Open Policy Agent (OPA) (embedded)
+",
+  "modules/ROOT/pages/ec_opa_inspect.adoc" => "= ec opa inspect
+
+Inspect OPA bundle(s)
+
+== Synopsis
+
+Inspect OPA bundle(s).
+
+The 'inspect' command provides a summary of the contents in OPA bundle(s). Bundles are
+gzipped tarballs containing policies and data. The 'inspect' command reads bundle(s) and lists
+the following:
+
+* packages that are contributed by .rego files
+* data locations defined by the data.json and data.yaml files
+* manifest data
+* signature data
+* information about the Wasm module files
+* package- and rule annotations
+
+Example:
+
+    $ ls
+    bundle.tar.gz
+    $ opa inspect bundle.tar.gz
+
+You can provide exactly one OPA bundle or path to the 'inspect' command on the command-line. If you provide a path
+referring to a directory, the 'inspect' command will load that path as a bundle and summarize its structure and contents.
+
+
+[source,shell]
+----
+ec opa inspect <path> [<path> [...]] [flags]
+----
+
+
+
+== Options
+
+--a,  --annotations:: list annotations (Default: false)
+--f,  --format:: set output format (Default: pretty)
+--h,  --help:: help for inspect (Default: false)
+ --v1-compatible:: opt-in to OPA features and behaviors that will be enabled by default in a future OPA v1.0 release
+ (Default: false)
+
+== Options inherited from parent commands
+
+ --debug:: same as verbose but also show function names and line numbers
+ (Default: false)
+ --kubeconfig:: path to the Kubernetes config file to use
+ --quiet:: less verbose output (Default: false)
+ --timeout:: max overall execution duration (Default: 5m0s)
+ --trace:: enable trace logging (Default: false)
+ --verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec_opa.adoc[ec opa] - Open Policy Agent (OPA) (embedded)
+",
+  "modules/ROOT/pages/ec_opa_parse.adoc" => "= ec opa parse
+
+Parse Rego source file
+
+== Synopsis
+
+Parse Rego source file and print AST.
+
+[source,shell]
+----
+ec opa parse <path> [flags]
+----
+
+
+
+== Options
+
+--f,  --format:: set output format (Default: pretty)
+--h,  --help:: help for parse (Default: false)
+ --json-include:: include or exclude optional elements. By default comments are included. Current options: locations, comments. E.g. --json-include locations,-comments will include locations and exclude comments.
+
+ --v1-compatible:: opt-in to OPA features and behaviors that will be enabled by default in a future OPA v1.0 release
+ (Default: false)
+
+== Options inherited from parent commands
+
+ --debug:: same as verbose but also show function names and line numbers
+ (Default: false)
+ --kubeconfig:: path to the Kubernetes config file to use
+ --quiet:: less verbose output (Default: false)
+ --timeout:: max overall execution duration (Default: 5m0s)
+ --trace:: enable trace logging (Default: false)
+ --verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec_opa.adoc[ec opa] - Open Policy Agent (OPA) (embedded)
+",
+  "modules/ROOT/pages/ec_opa_run.adoc" => "= ec opa run
+
+Start OPA in interactive or server mode
+
+== Synopsis
+
+Start an instance of the Open Policy Agent (OPA).
+
+To run the interactive shell:
+
+    $ opa run
+
+To run the server:
+
+    $ opa run -s
+
+The 'run' command starts an instance of the OPA runtime. The OPA runtime can be
+started as an interactive shell or a server.
+
+When the runtime is started as a shell, users can define rules and evaluate
+expressions interactively. When the runtime is started as a server, OPA exposes
+an HTTP API for managing policies, reading and writing data, and executing
+queries.
+
+The runtime can be initialized with one or more files that contain policies or
+data. If the '--bundle' option is specified the paths will be treated as policy
+bundles and loaded following standard bundle conventions. The path can be a
+compressed archive file or a directory which will be treated as a bundle.
+Without the '--bundle' flag OPA will recursively load ALL rego, JSON, and YAML
+files.
+
+When loading from directories, only files with known extensions are considered.
+The current set of file extensions that OPA will consider are:
+
+    .json          # JSON data
+    .yaml or .yml  # YAML data
+    .rego          # Rego file
+
+Non-bundle data file and directory paths can be prefixed with the desired
+destination in the data document with the following syntax:
+
+    <dotted-path>:<file-path>
+
+To set a data file as the input document in the interactive shell use the
+"repl.input" path prefix with the input file:
+
+    repl.input:<file-path>
+
+Example:
+
+    $ opa run repl.input:input.json
+
+Which will load the "input.json" file at path "data.repl.input".
+
+Use the "help input" command in the interactive shell to see more options.
+
+
+File paths can be specified as URLs to resolve ambiguity in paths containing colons:
+
+    $ opa run file:///c:/path/to/data.json
+
+URL paths to remote public bundles (http or https) will be parsed as shorthand
+configuration equivalent of using repeated --set flags to accomplish the same:
+
+	$ opa run -s https://example.com/bundles/bundle.tar.gz
+
+The above shorthand command is identical to:
+
+    $ opa run -s --set "services.cli1.url=https://example.com" \\
+                 --set "bundles.cli1.service=cli1" \\
+                 --set "bundles.cli1.resource=/bundles/bundle.tar.gz" \\
+                 --set "bundles.cli1.persist=true"
+
+The 'run' command can also verify the signature of a signed bundle.
+A signed bundle is a normal OPA bundle that includes a file
+named ".signatures.json". For more information on signed bundles
+see https://www.openpolicyagent.org/docs/latest/management-bundles/#signing.
+
+The key to verify the signature of signed bundle can be provided
+using the --verification-key flag. For example, for RSA family of algorithms,
+the command expects a PEM file containing the public key.
+For HMAC family of algorithms (eg. HS256), the secret can be provided
+using the --verification-key flag.
+
+The --verification-key-id flag can be used to optionally specify a name for the
+key provided using the --verification-key flag.
+
+The --signing-alg flag can be used to specify the signing algorithm.
+The 'run' command uses RS256 (by default) as the signing algorithm.
+
+The --scope flag can be used to specify the scope to use for
+bundle signature verification.
+
+Example:
+
+    $ opa run --verification-key secret --signing-alg HS256 --bundle bundle.tar.gz
+
+The 'run' command will read the bundle "bundle.tar.gz", check the
+".signatures.json" file and perform verification using the provided key.
+An error will be generated if "bundle.tar.gz" does not contain a ".signatures.json" file.
+For more information on the bundle verification process see
+https://www.openpolicyagent.org/docs/latest/management-bundles/#signature-verification.
+
+The 'run' command can ONLY be used with the --bundle flag to verify signatures
+for existing bundle files or directories following the bundle structure.
+
+To skip bundle verification, use the --skip-verify flag.
+
+The --watch flag can be used to monitor policy and data file-system changes. When a change is detected, the updated policy
+and data is reloaded into OPA. Watching individual files (rather than directories) is generally not recommended as some
+updates might cause them to be dropped by OPA.
+
+OPA will automatically perform type checking based on a schema inferred from known input documents and report any errors
+resulting from the schema check. Currently this check is performed on OPA's Authorization Policy Input document and will
+be expanded in the future. To disable this, use the --skip-known-schema-check flag.
+
+The --v1-compatible flag can be used to opt-in to OPA features and behaviors that will be enabled by default in a future OPA v1.0 release.
+Current behaviors enabled by this flag include:
+- setting OPA's listening address to "localhost:8181" by default.
+
+The --tls-cipher-suites flag can be used to specify the list of enabled TLS 1.0–1.2 cipher suites. Note that TLS 1.3
+cipher suites are not configurable. Following are the supported TLS 1.0 - 1.2 cipher suites (IANA):
+TLS_RSA_WITH_RC4_128_SHA, TLS_RSA_WITH_3DES_EDE_CBC_SHA, TLS_RSA_WITH_AES_128_CBC_SHA, TLS_RSA_WITH_AES_256_CBC_SHA,
+TLS_RSA_WITH_AES_128_CBC_SHA256, TLS_RSA_WITH_AES_128_GCM_SHA256, TLS_RSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_ECDSA_WITH_RC4_128_SHA,
+TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA, TLS_ECDHE_RSA_WITH_RC4_128_SHA, TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA,
+TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,
+TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256, TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256
+
+See https://godoc.org/crypto/tls#pkg-constants for more information.
+
+
+[source,shell]
+----
+ec opa run [flags]
+----
+
+
+
+== Options
+
+--a,  --addr:: set listening address of the server (e.g., [ip]:&lt;port&gt; for TCP, unix://&lt;path&gt; for UNIX domain socket)
+ (Default: [:8181])
+ --authentication:: set authentication scheme (Default: off)
+ --authorization:: set authorization scheme (Default: off)
+--b,  --bundle:: load paths as bundle files or root directories (Default: false)
+--c,  --config-file:: set path of configuration file
+ --diagnostic-addr:: set read-only diagnostic listening address of the server for /health and /metric APIs (e.g., [ip]:&lt;port&gt; for TCP, unix://&lt;path&gt; for UNIX domain socket)
+ (Default: [])
+ --disable-telemetry:: disables anonymous information reporting (see: https://www.openpolicyagent.org/docs/latest/privacy)
+ (Default: false)
+ --exclude-files-verify:: set file names to exclude during bundle verification (Default: [])
+--f,  --format:: set shell output format, i.e, pretty, json (Default: pretty)
+ --h2c:: enable H2C for HTTP listeners (Default: false)
+--h,  --help:: help for run (Default: false)
+--H,  --history:: set path of history file (Default: $HOME/.opa_history)
+ --ignore:: set file and directory names to ignore during loading (e.g., &#x27;.*&#x27; excludes hidden files)
+ (Default: [])
+ --log-format:: set log format (Default: json)
+--l,  --log-level:: set log level (Default: info)
+ --log-timestamp-format:: set log timestamp format (OPA_LOG_TIMESTAMP_FORMAT environment variable)
+
+--m,  --max-errors:: set the number of errors to allow before compilation fails early
+ (Default: 10)
+ --min-tls-version:: set minimum TLS version to be used by OPA&#x27;s server (Default: 1.2)
+ --pprof:: enables pprof endpoints (Default: false)
+ --ready-timeout:: wait (in seconds) for configured plugins before starting server (value &lt;&#x3D; 0 disables ready check)
+ (Default: 0)
+ --scope:: scope to use for bundle signature verification
+--s,  --server:: start the runtime in server mode (Default: false)
+ --set:: override config values on the command line (use commas to specify multiple values)
+ (Default: [])
+ --set-file:: override config values with files on the command line (use commas to specify multiple values)
+ (Default: [])
+ --shutdown-grace-period:: set the time (in seconds) that the server will wait to gracefully shut down
+ (Default: 10)
+ --shutdown-wait-period:: set the time (in seconds) that the server will wait before initiating shutdown
+ (Default: 0)
+ --signing-alg:: name of the signing algorithm (Default: RS256)
+ --skip-known-schema-check:: disables type checking on known input schemas (Default: false)
+ --skip-verify:: disables bundle signature verification (Default: false)
+ --skip-version-check:: disables anonymous version reporting (see: https://www.openpolicyagent.org/docs/latest/privacy)
+ (Default: false)
+ --tls-ca-cert-file:: set path of TLS CA cert file
+ --tls-cert-file:: set path of TLS certificate file
+ --tls-cert-refresh-period:: set certificate refresh period (Default: 0s)
+ --tls-cipher-suites:: set list of enabled TLS 1.0–1.2 cipher suites (IANA) (Default: [])
+ --tls-private-key-file:: set path of TLS private key file
+ --unix-socket-perm:: specify the permissions for the Unix domain socket if used to listen for incoming connections
+ (Default: 755)
+ --v1-compatible:: opt-in to OPA features and behaviors that will be enabled by default in a future OPA v1.0 release
+ (Default: false)
+ --verification-key:: set the secret (HMAC) or path of the PEM file containing the public key (RSA and ECDSA)
+
+ --verification-key-id:: name assigned to the verification key used for bundle verification
+ (Default: default)
+--w,  --watch:: watch command line files for changes (Default: false)
+
+== Options inherited from parent commands
+
+ --debug:: same as verbose but also show function names and line numbers
+ (Default: false)
+ --kubeconfig:: path to the Kubernetes config file to use
+ --quiet:: less verbose output (Default: false)
+ --timeout:: max overall execution duration (Default: 5m0s)
+ --trace:: enable trace logging (Default: false)
+ --verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec_opa.adoc[ec opa] - Open Policy Agent (OPA) (embedded)
+",
+  "modules/ROOT/pages/ec_opa_sign.adoc" => "= ec opa sign
+
+Generate an OPA bundle signature
+
+== Synopsis
+
+Generate an OPA bundle signature.
+
+The 'sign' command generates a digital signature for policy bundles. It generates a
+".signatures.json" file that dictates which files should be included in the bundle,
+what their SHA hashes are, and is cryptographically secure.
+
+The signatures file is a JSON file with an array containing a single JSON Web Token (JWT)
+that encapsulates the signature for the bundle.
+
+The --signing-alg flag can be used to specify the algorithm to sign the token. The 'sign'
+command uses RS256 (by default) as the signing algorithm.
+See https://www.openpolicyagent.org/docs/latest/configuration/#keys
+for a list of supported signing algorithms.
+
+The key to be used for signing the JWT MUST be provided using the --signing-key flag.
+For example, for RSA family of algorithms, the command expects a PEM file containing
+the private key.
+For HMAC family of algorithms (eg. HS256), the secret can be provided using
+the --signing-key flag.
+
+OPA 'sign' can ONLY be used with the --bundle flag to load paths that refer to
+existing bundle files or directories following the bundle structure.
+
+	$ opa sign --signing-key /path/to/private_key.pem --bundle foo
+
+Where foo has the following structure:
+
+	foo/
+	  |
+	  +-- bar/
+	  |     |
+	  |     +-- data.json
+	  |
+	  +-- policy.rego
+	  |
+	  +-- .manifest
+
+This will create a ".signatures.json" file in the current directory.
+The --output-file-path flag can be used to specify a different location for
+the ".signatures.json" file.
+
+The content of the ".signatures.json" file is shown below:
+
+	{
+	  "signatures": [
+		"eyJhbGciOiJSUzI1NiJ9.eyJmaWxlcyI6W3sibmFtZSI6Ii5tYW5pZmVzdCIsImhhc2giOiIxODc0NWRlNzJjMDFlODBjZDlmNTIwZjQxOGMwMDlhYzRkMmMzZDAyYjE3YTUwZTJkMDQyMTU4YmMzNTJhMzJkIiwiYWxnb3JpdGhtIjoiU0hBLTI1NiJ9LHsibmFtZSI6ImJhci9kYXRhLmpzb24iLCJoYXNoIjoiOTNhMjM5NzFhOTE0ZTVlYWNiZjBhOGQyNTE1NGNkYTMwOWMzYzFjNzJmYmI5OTE0ZDQ3YzYwZjNjYjY4MTU4OCIsImFsZ29yaXRobSI6IlNIQS0yNTYifSx7Im5hbWUiOiJwb2xpY3kucmVnbyIsImhhc2giOiJkMGYyNDJhYWUzNGRiNTRlZjU2NmJlYTRkNDVmY2YxOTcwMGM1ZDhmODdhOWRiOTMyZGZhZDZkMWYwZjI5MWFjIiwiYWxnb3JpdGhtIjoiU0hBLTI1NiJ9XX0.lNsmRqrmT1JI4Z_zpY6IzHRZQAU306PyOjZ6osquixPuTtdSBxgbsdKDcp7Civw3B77BgygVsvx4k3fYr8XCDKChm0uYKScrpFr9_yS6g5mVTQws3KZncZXCQHdupRFoqMS8vXAVgJr52C83AinYWABwH2RYq_B0ZPf_GDzaMgzpep9RlDNecGs57_4zlyxmP2ESU8kjfX8jAA6rYFKeGXJHMD-j4SassoYIzYRv9YkHx8F8Y2ae5Kd5M24Ql0kkvqc_4eO_T9s4nbQ4q5qGHGE-91ND1KVn2avcUyVVPc0-XCR7EH8HnHgCl0v1c7gX1RL7ET7NJbPzfmzQAzk0ZW0dEHI4KZnXSpqy8m-3zAc8kIARm2QwoNEWpy3MWiooPeZVSa9d5iw1aLrbyumfjBP0vCQEPes-Aa6PrARwd5jR9SacO5By0-4emzskvJYRZqbfJ9tXSXDMcAFOAm6kqRPJaj8AO4CyajTC_Lt32_0OLeXqYgNpt3HDqLqGjrb-8fVeQc-hKh0aES8XehQqXj4jMwfsTyj5alsXZm08LwzcFlfQZ7s1kUtmr0_BBNJYcdZUdlu6Qio3LFSRYXNuu6edAO1VH5GKqZISvE1uvDZb2E0Z-rtH-oPp1iSpfvsX47jKJ42LVpI6OahEBri44dzHOIwwm3CIuV8gFzOwR0k"
+	  ]
+	}
+
+And the decoded JWT payload has the following form:
+
+	{
+	  "files": [
+		{
+		  "name": ".manifest",
+		  "hash": "18745de72c01e80cd9f520f418c009ac4d2c3d02b17a50e2d042158bc352a32d",
+		  "algorithm": "SHA-256"
+		},
+		{
+		  "name": "policy.rego",
+		  "hash": "d0f242aae34db54ef566bea4d45fcf19700c5d8f87a9db932dfad6d1f0f291ac",
+		  "algorithm": "SHA-256"
+		},
+		{
+		  "name": "bar/data.json",
+		  "hash": "93a23971a914e5eacbf0a8d25154cda309c3c1c72fbb9914d47c60f3cb681588",
+		  "algorithm": "SHA-256"
+		}
+	  ]
+	}
+
+The "files" field is generated from the files under the directory path(s)
+provided to the 'sign' command. During bundle signature verification, OPA will check
+each file name (ex. "foo/bar/data.json") in the "files" field
+exists in the actual bundle. The file content is hashed using SHA256.
+
+To include additional claims in the payload use the --claims-file flag to provide
+a JSON file containing optional claims.
+
+For more information on the format of the ".signatures.json" file see
+https://www.openpolicyagent.org/docs/latest/management-bundles/#signature-format.
+
+
+[source,shell]
+----
+ec opa sign <path> [<path> [...]] [flags]
+----
+
+
+
+== Options
+
+--b,  --bundle:: load paths as bundle files or root directories (Default: false)
+ --claims-file:: set path of JSON file containing optional claims (see: https://www.openpolicyagent.org/docs/latest/management-bundles/#signature-format)
+
+--h,  --help:: help for sign (Default: false)
+--o,  --output-file-path:: set the location for the .signatures.json file (Default: .)
+ --signing-alg:: name of the signing algorithm (Default: RS256)
+ --signing-key:: set the secret (HMAC) or path of the PEM file containing the private key (RSA and ECDSA)
+
+ --signing-plugin:: name of the plugin to use for signing/verification (see https://www.openpolicyagent.org/docs/latest/management-bundles/#signature-plugin
+
+
+== Options inherited from parent commands
+
+ --debug:: same as verbose but also show function names and line numbers
+ (Default: false)
+ --kubeconfig:: path to the Kubernetes config file to use
+ --quiet:: less verbose output (Default: false)
+ --timeout:: max overall execution duration (Default: 5m0s)
+ --trace:: enable trace logging (Default: false)
+ --verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec_opa.adoc[ec opa] - Open Policy Agent (OPA) (embedded)
+",
+  "modules/ROOT/pages/ec_opa_test.adoc" => "= ec opa test
+
+Execute Rego test cases
+
+== Synopsis
+
+Execute Rego test cases.
+	
+The 'test' command takes a file or directory path as input and executes all
+test cases discovered in matching files. Test cases are rules whose names have the prefix "test_".
+
+If the '--bundle' option is specified the paths will be treated as policy bundles
+and loaded following standard bundle conventions. The path can be a compressed archive
+file or a directory which will be treated as a bundle. Without the '--bundle' flag OPA
+will recursively load ALL *.rego, *.json, and *.yaml files for evaluating the test cases.
+
+Test cases under development may be prefixed "todo_" in order to skip their execution,
+while still getting marked as skipped in the test results.
+
+Example policy (example/authz.rego):
+
+	package authz
+
+	import rego.v1
+
+	allow if {
+		input.path == ["users"]
+		input.method == "POST"
+	}
+
+	allow if {
+		input.path == ["users", input.user_id]
+		input.method == "GET"
+	}
+
+Example test (example/authz_test.rego):
+
+	package authz_test
+
+	import rego.v1
+
+	import data.authz.allow
+
+	test_post_allowed if {
+		allow with input as {"path": ["users"], "method": "POST"}
+	}
+
+	test_get_denied if {
+		not allow with input as {"path": ["users"], "method": "GET"}
+	}
+
+	test_get_user_allowed if {
+		allow with input as {"path": ["users", "bob"], "method": "GET", "user_id": "bob"}
+	}
+
+	test_get_another_user_denied if {
+		not allow with input as {"path": ["users", "bob"], "method": "GET", "user_id": "alice"}
+	}
+
+	todo_test_user_allowed_http_client_data if {
+		false # Remember to test this later!
+	}
+
+Example test run:
+
+	$ opa test ./example/
+
+If used with the '--bench' option then tests will be benchmarked.
+
+Example benchmark run:
+
+	$ opa test --bench ./example/
+
+The optional "gobench" output format conforms to the Go Benchmark Data Format.
+
+The --watch flag can be used to monitor policy and data file-system changes. When a change is detected, OPA reloads
+the policy and data and then re-runs the tests. Watching individual files (rather than directories) is generally not
+recommended as some updates might cause them to be dropped by OPA.
+
+
+[source,shell]
+----
+ec opa test <path> [path [...]] [flags]
+----
+
+
+
+== Options
+
+ --bench:: benchmark the unit tests (Default: false)
+ --benchmem:: report memory allocations with benchmark results (Default: true)
+--b,  --bundle:: load paths as bundle files or root directories (Default: false)
+ --capabilities:: set capabilities version or capabilities.json file path
+ --count:: number of times to repeat each test (Default: 1)
+--c,  --coverage:: report coverage (overrides debug tracing) (Default: false)
+--z,  --exit-zero-on-skipped:: skipped tests return status 0 (Default: false)
+ --explain:: enable query explanations (Default: fails)
+--f,  --format:: set output format (Default: pretty)
+--h,  --help:: help for test (Default: false)
+ --ignore:: set file and directory names to ignore during loading (e.g., &#x27;.*&#x27; excludes hidden files)
+ (Default: [])
+--m,  --max-errors:: set the number of errors to allow before compilation fails early
+ (Default: 10)
+--r,  --run:: run only test cases matching the regular expression.
+--s,  --schema:: set schema file path or directory path
+--t,  --target:: set the runtime to exercise (Default: rego)
+ --threshold:: set coverage threshold and exit with non-zero status if coverage is less than threshold %
+ (Default: 0)
+ --timeout:: set test timeout (default 5s, 30s when benchmarking) (Default: 0s)
+ --v1-compatible:: opt-in to OPA features and behaviors that will be enabled by default in a future OPA v1.0 release
+ (Default: false)
+--v,  --verbose:: set verbose reporting mode (Default: false)
+--w,  --watch:: watch command line files for changes (Default: false)
+
+== Options inherited from parent commands
+
+ --debug:: same as verbose but also show function names and line numbers
+ (Default: false)
+ --kubeconfig:: path to the Kubernetes config file to use
+ --quiet:: less verbose output (Default: false)
+ --trace:: enable trace logging (Default: false)
+
+== See also
+
+ * xref:ec_opa.adoc[ec opa] - Open Policy Agent (OPA) (embedded)
+",
+  "modules/ROOT/pages/ec_opa_version.adoc" => "= ec opa version
+
+Print the version of OPA
+
+== Synopsis
+
+Show version and build information for OPA.
+
+[source,shell]
+----
+ec opa version [flags]
+----
+
+
+
+== Options
+
+--c,  --check:: check for latest OPA release (Default: false)
+--h,  --help:: help for version (Default: false)
+
+== Options inherited from parent commands
+
+ --debug:: same as verbose but also show function names and line numbers
+ (Default: false)
+ --kubeconfig:: path to the Kubernetes config file to use
+ --quiet:: less verbose output (Default: false)
+ --timeout:: max overall execution duration (Default: 5m0s)
+ --trace:: enable trace logging (Default: false)
+ --verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec_opa.adoc[ec opa] - Open Policy Agent (OPA) (embedded)
+",
+  "modules/ROOT/pages/ec_test.adoc" => "= ec test
+
+Test your configuration files using Open Policy Agent
+
+== Synopsis
+
+The 'ec test' command is a thin wrapper for the 'conftest test' command. This
+is an experimental feature that requires setting the EC_EXPERIMENTAL environment
+variable to "1".
+
+This command tests your configuration files using the Open Policy Agent.
+
+The test command expects one or more input files that will be evaluated
+against Open Policy Agent policies. Directories are also supported as valid
+inputs.
+
+Policies are written in the Rego language. For more
+information on how to write Rego policies, see the documentation:
+https://www.openpolicyagent.org/docs/latest/policy-language/
+
+
+[source,shell]
+----
+ec test <path> [path [...]] [flags]
+----
+
+
+== Examples
+The policy location defaults to the policy directory in the local folder.
+The location can be overridden with the '--policy' flag, e.g.:
+
+	$ EC_EXPERIMENTAL=1 ec test --policy <my-directory> <input-file(s)/input-folder>
+
+Some policies are dependant on external data. This data is loaded in separately
+from policies. The location of any data directory or file can be specified with
+the '--data' flag. If a directory is specified, it will be recursively searched for
+any data files. Right now any '.json' or '.yaml' file will be loaded in
+and made available in the Rego policies. Data will be made available in Rego based on
+the file path where the data was found. For example, if data is stored
+under 'policy/exceptions/my_data.yaml', and we execute the following command:
+
+	$ EC_EXPERIMENTAL=1 ec test --data policy <input-file>
+
+The data is available under 'import data.exceptions'.
+
+The test command supports the '--output' flag to specify the type, e.g.:
+
+	$ EC_EXPERIMENTAL=1 ec test -o table -p examples/kubernetes/policy examples/kubernetes/deployment.yaml
+
+Which will return the following output:
+
+	+---------+----------------------------------+--------------------------------+
+	| RESULT  |               FILE               |            MESSAGE             |
+	+---------+----------------------------------+--------------------------------+
+	| success | examples/kubernetes/service.yaml |                                |
+	| warning | examples/kubernetes/service.yaml | Found service hello-kubernetes |
+	|         |                                  | but services are not allowed   |
+	+---------+----------------------------------+--------------------------------+
+
+By default, it will use the regular stdout output. For a full list of available output types, see the of the '--output' flag.
+
+The test command supports the '--update' flag to fetch the latest version of the policy at the given url.
+It expects one or more urls to fetch the latest policies from, e.g.:
+
+	$ EC_EXPERIMENTAL=1 ec test --update opa.azurecr.io/test
+
+See the pull command for more details on supported protocols for fetching policies.
+
+When debugging policies it can be useful to use a more verbose policy evaluation output. By using the '--trace' flag
+the output will include a detailed trace of how the policy was evaluated, e.g.
+
+	$ EC_EXPERIMENTAL=1 ec test --trace <input-file>
+
+
+== Options
+
+ --all-namespaces:: Test policies found in all namespaces (Default: false)
+ --capabilities:: Path to JSON file that can restrict opa functionality against a given policy. Default: all operations allowed
+
+ --combine:: Combine all config files to be evaluated together (Default: false)
+--d,  --data:: A list of paths from which data for the rego policies will be recursively loaded
+ (Default: [])
+ --fail-on-warn:: Return a non-zero exit code if warnings or errors are found (Default: false)
+ --file:: File path to write output to
+--h,  --help:: help for test (Default: false)
+ --ignore:: A regex pattern which can be used for ignoring paths
+ --junit-hide-message:: Do not include the violation message in the JUnit test name (Default: false)
+--n,  --namespace:: Test policies in a specific namespace (Default: [main])
+ --no-color:: Disable color when printing (Default: false)
+ --no-fail:: Return an exit code of zero even if a policy fails (Default: false)
+--o,  --output:: Output format for conftest results - valid options are: [stdout json tap table junit github appstudio]
+ (Default: stdout)
+ --parser:: Parser to use to parse the configurations. Valid parsers: [cue dockerfile edn hcl1 hcl2 hocon ignore ini json jsonnet properties spdx textproto toml vcl xml yaml dotenv]
+
+--p,  --policy:: Path to the Rego policy files directory (Default: [policy])
+ --proto-file-dirs:: A list of directories containing Protocol Buffer definitions (Default: [])
+ --quiet:: Disable successful test output (Default: false)
+ --strict:: Enable strict mode for Rego policies (Default: false)
+ --suppress-exceptions:: Do not include exceptions in output (Default: false)
+ --trace:: Enable more verbose trace output for Rego queries (Default: false)
+--u,  --update:: A list of URLs can be provided to the update flag, which will download before the tests run
+ (Default: [])
+
+== Options inherited from parent commands
+
+ --debug:: same as verbose but also show function names and line numbers
+ (Default: false)
+ --kubeconfig:: path to the Kubernetes config file to use
+ --timeout:: max overall execution duration (Default: 5m0s)
+ --verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec.adoc[ec] - Enterprise Contract CLI
+",
+  "modules/ROOT/pages/ec_track.adoc" => "= ec track
+
+Record resource references for tracking purposes
+
+
+
+
+== Options
+
+--h,  --help:: help for track (Default: false)
+
+== Options inherited from parent commands
+
+ --debug:: same as verbose but also show function names and line numbers
+ (Default: false)
+ --kubeconfig:: path to the Kubernetes config file to use
+ --quiet:: less verbose output (Default: false)
+ --timeout:: max overall execution duration (Default: 5m0s)
+ --trace:: enable trace logging (Default: false)
+ --verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec.adoc[ec] - Enterprise Contract CLI
+ * xref:ec_track_bundle.adoc[ec track bundle] - Record tracking information about Tekton bundles
+",
+  "modules/ROOT/pages/ec_track_bundle.adoc" => "= ec track bundle
+
+Record tracking information about Tekton bundles
+
+== Synopsis
+
+Record tracking information about Tekton bundles
+
+Given one or more Tekton Bundles, categorize each as "task-bundles",
+ignoring those that are not. Then, generate a YAML representation of
+this categorization.
+
+Each Tekton Bundle is expected to be a proper OCI image reference. They
+may contain a tag, a digest, or both. If a digest is not provided, this
+command will query the registry to determine its value. Either a tag
+or a digest is required.
+
+The output is meant to assist enforcement of policies that ensure the
+most recent Tekton Bundle is used. As such, each entry contains an
+"effective_on" date which is set to 30 days from today. This indicates
+the Tekton Bundle usage should be updated within that period.
+
+If --prune is set, on by default, non-acceptable entries are removed.
+Any entry with an effective_on date in the future, and the entry with
+the most recent effective_on date *not* in the future are considered
+acceptable.
+
+
+[source,shell]
+----
+ec track bundle [flags]
+----
+
+
+== Examples
+Track multiple bundles:
+
+  ec track bundle --bundle <IMAGE1> --bundle <IMAGE2>
+
+Save tracking information into a new tracking file:
+
+  ec track bundle --bundle <IMAGE1> --output <path/to/new/file>
+
+Save tracking information into an image registry:
+
+  ec track bundle --bundle <IMAGE1> --output <oci:registry.io/repository/image:tag>
+
+Extend an existing tracking file with a new bundle:
+
+  ec track bundle --bundle <IMAGE1> --input <path/to/input/file>
+
+Extend an existing tracking file with a new bundle and save changes:
+
+  ec track bundle --bundle <IMAGE1> --input <path/to/input/file> --replace
+
+Extend an existing tracking image with a new bundle and push to an image registry:
+
+  ec track bundle --bundle <IMAGE1> --input <oci:registry.io/repository/image:tag> --replace
+
+Skip pruning for unacceptable entries:
+
+  ec track bundle --bundle <IMAGE1> --input <path/to/input/file> --prune=false
+
+Update existing acceptable bundles:
+
+  ec track bundle --input <path/to/input/file> --output <path/to/input/file> --freshen
+
+
+== Options
+
+--b,  --bundle:: bundle image reference to track - may be used multiple times (Default: [])
+ --freshen:: resolve image tags to catch updates and use the latest image for the tag
+ (Default: false)
+--g,  --git:: git references to track - may be used multiple times (Default: [])
+--h,  --help:: help for bundle (Default: false)
+--i,  --input:: existing tracking file
+--o,  --output:: write modified tracking file to a file. Use empty string for stdout, default behavior
+
+--p,  --prune:: remove entries that are no longer acceptable, i.e. a newer entry already effective exists
+ (Default: true)
+--r,  --replace:: write changes to input file (Default: false)
+
+== Options inherited from parent commands
+
+ --debug:: same as verbose but also show function names and line numbers
+ (Default: false)
+ --kubeconfig:: path to the Kubernetes config file to use
+ --quiet:: less verbose output (Default: false)
+ --timeout:: max overall execution duration (Default: 5m0s)
+ --trace:: enable trace logging (Default: false)
+ --verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec_track.adoc[ec track] - Record resource references for tracking purposes
+",
+  "modules/ROOT/pages/ec_validate.adoc" => "= ec validate
+
+Validate conformance with the Enterprise Contract
+
+
+
+
+== Options
+
+--h,  --help:: help for validate (Default: false)
+ --show-successes::  (Default: false)
+
+== Options inherited from parent commands
+
+ --debug:: same as verbose but also show function names and line numbers
+ (Default: false)
+ --kubeconfig:: path to the Kubernetes config file to use
+ --quiet:: less verbose output (Default: false)
+ --timeout:: max overall execution duration (Default: 5m0s)
+ --trace:: enable trace logging (Default: false)
+ --verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec.adoc[ec] - Enterprise Contract CLI
+ * xref:ec_validate_image.adoc[ec validate image] - Validate conformance of container images with the Enterprise Contract
+ * xref:ec_validate_input.adoc[ec validate input] - Validate arbitrary JSON or yaml file input conformance with the Enterprise Contract
+ * xref:ec_validate_policy.adoc[ec validate policy] - Validate the provided EnterpriseContractPolicy spec
+",
+  "modules/ROOT/pages/ec_validate_image.adoc" => "= ec validate image
+
+Validate conformance of container images with the Enterprise Contract
+
+
+== Synopsis
+
+Validate conformance of container images with the Enterprise Contract
+
+For each image, validation is performed in stages to determine if the image
+conforms to the Enterprise Contract.
+
+The first validation stage determines if an image has been signed, and the
+signature matches the provided public key. This is akin to the "cosign verify"
+command.
+
+The second validation stage determines if one or more attestations exist, and
+those attestations have been signed matching the provided public key, similarly
+to the "cosign verify-attestation" command. This stage temporarily stores the
+attestations for usage in the next stage.
+
+The final stage verifies the attestations conform to rego policies defined in
+the EnterpriseContractPolicy.
+
+Validation advances each stage as much as possible for each image in order to
+capture all issues in a single execution.
+
+
+[source,shell]
+----
+ec validate image [flags]
+----
+
+
+== Examples
+Validate single image with the policy defined in the EnterpriseContractPolicy
+custom resource named "default" in the enterprise-contract-service Kubernetes
+namespace:
+
+  ec validate image --image registry/name:tag
+
+Validate multiple images from an ApplicationSnapshot Spec file:
+
+  ec validate image --images my-app.yaml
+
+Validate attestation of images from an inline ApplicationSnapshot Spec:
+
+  ec validate image --images '{"components":[{"containerImage":"<image url>"}]}'
+
+Use a different public key than the one from the EnterpriseContractPolicy resource:
+
+  ec validate image --image registry/name:tag --public-key <path/to/public/key>
+
+Use a different Rekor URL than the one from the EnterpriseContractPolicy resource:
+
+  ec validate image --image registry/name:tag --rekor-url https://rekor.example.org
+
+Return a non-zero status code on validation failure:
+
+  ec validate image --image registry/name:tag
+
+ 	Return a zero status code even if there are validation failures:
+
+  ec validate image --image registry/name:tag --strict=false
+
+Use an EnterpriseContractPolicy resource from the currently active kubernetes context:
+
+  ec validate image --image registry/name:tag --policy my-policy
+
+Use an EnterpriseContractPolicy resource from a different namespace:
+
+  ec validate image --image registry/name:tag --policy my-namespace/my-policy
+
+Use an inline EnterpriseContractPolicy spec
+
+  ec validate image --image registry/name:tag --policy '{"publicKey": "<path/to/public/key>"}'
+
+Use an EnterpriseContractPolicy spec from a local YAML file
+  ec validate image --image registry/name:tag --policy my-policy.yaml
+
+Use a git url for the policy configuration. In the first example there should be a '.ec/policy.yaml'
+or a 'policy.yaml' inside a directory called 'default' in the top level of the git repo. In the second
+example there should be a '.ec/policy.yaml' or a 'policy.yaml' file in the top level
+of the git repo. For git repos not hosted on 'github.com' or 'gitlab.com', prefix the url with
+'git::'. For the policy configuration files you can use json instead of yaml if you prefer.
+
+  ec validate image --image registry/name:tag --policy github.com/user/repo//default?ref=main
+
+  ec validate image --image registry/name:tag --policy github.com/user/repo
+
+Write output in JSON format to a file
+
+  ec validate image --image registry/name:tag --output json=<path>
+
+Write output in YAML format to stdout and in appstudio format to a file
+
+  ec validate image --image registry/name:tag --output yaml --output appstudio=<path>
+
+Write the data used in the policy evaluation to a file in YAML format
+
+  ec validate image --image registry/name:tag --output data=<path>
+
+Validate a single image with keyless workflow.
+
+  ec validate image --image registry/name:tag --policy my-policy \\
+    --certificate-identity 'https://github.com/user/repo/.github/workflows/push.yaml@refs/heads/main' \\
+    --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \\
+    --rekor-url 'https://rekor.sigstore.dev'
+
+Use a regular expression to match certificate attributes.
+
+  ec validate image --image registry/name:tag --policy my-policy \\
+    --certificate-identity-regexp '^https://github\\.com' \\
+    --certificate-oidc-issuer-regexp 'githubusercontent' \\
+    --rekor-url 'https://rekor.sigstore.dev'
+
+
+== Options
+
+ --certificate-identity:: URL of the certificate identity for keyless verification
+ --certificate-identity-regexp:: Regular expression for the URL of the certificate identity for keyless verification
+
+ --certificate-oidc-issuer:: URL of the certificate OIDC issuer for keyless verification
+ --certificate-oidc-issuer-regexp:: Regular expresssion for the URL of the certificate OIDC issuer for keyless verification
+
+ --effective-time:: Run policy checks with the provided time. Useful for testing rules with
+effective dates in the future. The value can be &quot;now&quot; (default) - for
+current time, &quot;attestation&quot; - for time from the youngest attestation, or
+a RFC3339 formatted value, e.g. 2022-11-18T00:00:00Z.
+ (Default: now)
+--f,  --file-path:: DEPRECATED - use --images: path to ApplicationSnapshot Spec JSON file
+
+--h,  --help:: help for image (Default: false)
+ --ignore-rekor:: Skip Rekor transparency log checks during validation. (Default: false)
+--i,  --image:: OCI image reference
+ --images:: path to ApplicationSnapshot Spec JSON file or JSON representation of an ApplicationSnapshot Spec
+
+ --info:: Include additional information on the failures. For instance for policy
+violations, include the title and the description of the failed policy
+rule. (Default: false)
+--j,  --json-input:: DEPRECATED - use --images: JSON representation of an ApplicationSnapshot Spec
+
+ --output:: write output to a file in a specific format. Use empty string path for stdout.
+May be used multiple times. Possible formats are json, yaml, appstudio, junit,
+summary, data, and policy-input.
+ (Default: [])
+--o,  --output-file:: [DEPRECATED] write output to a file. Use empty string for stdout, default behavior
+
+--p,  --policy:: Policy configuration as:
+  * Kubernetes reference ([&lt;namespace&gt;/]&lt;name&gt;)
+  * file (policy.yaml)
+  * git reference (github.com/user/repo//default?ref&#x3D;main), or
+  * inline JSON (&#x27;{sources: {...}, configuration: {...}}&#x27;)&quot;)
+--k,  --public-key:: path to the public key. Overrides publicKey from EnterpriseContractPolicy
+
+--r,  --rekor-url:: Rekor URL. Overrides rekorURL from EnterpriseContractPolicy
+ --snapshot:: Provide the AppStudio Snapshot as a source of the images to validate, as inline
+JSON of the &quot;spec&quot; or a reference to a Kubernetes object [&lt;namespace&gt;/]&lt;name&gt;
+--s,  --strict:: Return non-zero status on non-successful validation. Defaults to true. Use --strict&#x3D;false to return a zero status code.
+ (Default: true)
+
+== Options inherited from parent commands
+
+ --debug:: same as verbose but also show function names and line numbers
+ (Default: false)
+ --kubeconfig:: path to the Kubernetes config file to use
+ --quiet:: less verbose output (Default: false)
+ --show-successes::  (Default: false)
+ --timeout:: max overall execution duration (Default: 5m0s)
+ --trace:: enable trace logging (Default: false)
+ --verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec_validate.adoc[ec validate] - Validate conformance with the Enterprise Contract
+",
+  "modules/ROOT/pages/ec_validate_input.adoc" => "= ec validate input
+
+Validate arbitrary JSON or yaml file input conformance with the Enterprise Contract
+
+
+== Synopsis
+
+Validate conformance of arbitrary JSON or yaml file input with the Enterprise Contract
+
+For each file, validation is performed to determine if the file conforms to rego policies
+defined in the the EnterpriseContractPolicy.
+
+
+[source,shell]
+----
+ec validate input [flags]
+----
+
+
+== Examples
+Use an EnterpriseContractPolicy spec from a local YAML file to validate a single file
+ec validate input --file /path/to/file.json --policy my-policy.yaml
+
+Use an EnterpriseContractPolicy spec from a local YAML file to validate multiple files
+The file flag can be repeated for multiple input files.
+ec validate input --file /path/to/file.yaml --file /path/to/file2.yaml --policy my-policy.yaml
+
+Use an EnterpriseContractPolicy spec from a local YAML file to validate multiple files
+The file flag can take a comma separated series of files.
+ec validate input --file="/path/to/file.json,/path/to/file2.json" --policy my-policy.yaml
+
+Use a git url for the policy configuration. In the first example there should be a '.ec/policy.yaml'
+or a 'policy.yaml' inside a directory called 'default' in the top level of the git repo. In the second
+example there should be a '.ec/policy.yaml' or a 'policy.yaml' file in the top level
+of the git repo. For git repos not hosted on 'github.com' or 'gitlab.com', prefix the url with
+'git::'. For the policy configuration files you can use json instead of yaml if you prefer.
+
+  ec validate input --file /path/to/file.json --policy github.com/user/repo//default?ref=main
+
+  ec validate input --file /path/to/file.yaml --policy github.com/user/repo
+
+
+
+== Options
+
+ --effective-time:: Run policy checks with the provided time. Useful for testing rules with
+effective dates in the future. The value can be &quot;now&quot; (default) - for
+current time, or a RFC3339 formatted value, e.g. 2022-11-18T00:00:00Z. (Default: now)
+--f,  --file:: path to input YAML/JSON file (required) (Default: [])
+--h,  --help:: help for input (Default: false)
+ --info:: Include additional information on the failures. For instance for policy
+violations, include the title and the description of the failed policy
+rule. (Default: false)
+--o,  --output:: Write output to a file in a specific format, e.g. yaml&#x3D;/tmp/output.yaml. Use empty string
+path for stdout, e.g. yaml. May be used multiple times. Possible formats are json, yaml, 
+and summary (Default: [])
+--p,  --policy:: Policy configuration as:
+* file (policy.yaml)
+* git reference (github.com/user/repo//default?ref&#x3D;main), or
+* inline JSON (&#x27;{sources: {...}, configuration: {...}}&#x27;)&quot;)
+--s,  --strict:: Return non-zero status on non-successful validation (Default: true)
+
+== Options inherited from parent commands
+
+ --debug:: same as verbose but also show function names and line numbers
+ (Default: false)
+ --kubeconfig:: path to the Kubernetes config file to use
+ --quiet:: less verbose output (Default: false)
+ --show-successes::  (Default: false)
+ --timeout:: max overall execution duration (Default: 5m0s)
+ --trace:: enable trace logging (Default: false)
+ --verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec_validate.adoc[ec validate] - Validate conformance with the Enterprise Contract
+",
+  "modules/ROOT/pages/ec_validate_policy.adoc" => "= ec validate policy
+
+Validate the provided EnterpriseContractPolicy spec
+
+== Synopsis
+
+Validate the provided EnterpriseContractPolicy spec against the EnterpriseContractPolicy spec schema used in this version of the ec CLI
+
+
+[source,shell]
+----
+ec validate policy [flags]
+----
+
+
+== Examples
+Validate a local policy configuration file:
+ec validate policy --policy-configuration policy.yaml
+
+Validate a policy configuration file from a github repository:
+ec validate policy --policy-configuration github.com/org/repo/policy.yaml
+
+
+== Options
+
+--h,  --help:: help for policy (Default: false)
+--p,  --policy:: Policy configuration as:
+* file (policy.yaml)
+* git reference (github.com/user/repo//default?ref&#x3D;main), or
+* inline JSON (&#x27;{sources: {...}, configuration: {...}}&#x27;)&quot;)
+
+== Options inherited from parent commands
+
+ --debug:: same as verbose but also show function names and line numbers
+ (Default: false)
+ --kubeconfig:: path to the Kubernetes config file to use
+ --quiet:: less verbose output (Default: false)
+ --show-successes::  (Default: false)
+ --timeout:: max overall execution duration (Default: 5m0s)
+ --trace:: enable trace logging (Default: false)
+ --verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec_validate.adoc[ec validate] - Validate conformance with the Enterprise Contract
+",
+  "modules/ROOT/pages/ec_version.adoc" => "= ec version
+
+Print version information
+
+
+
+
+== Options
+
+--h,  --help:: help for version (Default: false)
+--j,  --json:: JSON output (Default: false)
+--s,  --short:: Only output the version (Default: false)
+
+== Options inherited from parent commands
+
+ --debug:: same as verbose but also show function names and line numbers
+ (Default: false)
+ --kubeconfig:: path to the Kubernetes config file to use
+ --quiet:: less verbose output (Default: false)
+ --timeout:: max overall execution duration (Default: 5m0s)
+ --trace:: enable trace logging (Default: false)
+ --verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec.adoc[ec] - Enterprise Contract CLI
+",
+}
+`;
+
+exports[`extension reference documentation templating 2`] = `
+"* xref:reference.adoc[Command Reference]
+** xref:ec.adoc[ec]
+** xref:ec_fetch.adoc[ec fetch]
+** xref:ec_fetch_policy.adoc[ec fetch policy]
+** xref:ec_init.adoc[ec init]
+** xref:ec_init_policies.adoc[ec init policies]
+** xref:ec_inspect.adoc[ec inspect]
+** xref:ec_inspect_policy-data.adoc[ec inspect policy-data]
+** xref:ec_inspect_policy.adoc[ec inspect policy]
+** xref:ec_opa.adoc[ec opa]
+** xref:ec_opa_bench.adoc[ec opa bench]
+** xref:ec_opa_build.adoc[ec opa build]
+** xref:ec_opa_capabilities.adoc[ec opa capabilities]
+** xref:ec_opa_check.adoc[ec opa check]
+** xref:ec_opa_deps.adoc[ec opa deps]
+** xref:ec_opa_eval.adoc[ec opa eval]
+** xref:ec_opa_exec.adoc[ec opa exec]
+** xref:ec_opa_fmt.adoc[ec opa fmt]
+** xref:ec_opa_inspect.adoc[ec opa inspect]
+** xref:ec_opa_parse.adoc[ec opa parse]
+** xref:ec_opa_run.adoc[ec opa run]
+** xref:ec_opa_sign.adoc[ec opa sign]
+** xref:ec_opa_test.adoc[ec opa test]
+** xref:ec_opa_version.adoc[ec opa version]
+** xref:ec_test.adoc[ec test]
+** xref:ec_track.adoc[ec track]
+** xref:ec_track_bundle.adoc[ec track bundle]
+** xref:ec_validate.adoc[ec validate]
+** xref:ec_validate_image.adoc[ec validate image]
+** xref:ec_validate_input.adoc[ec validate input]
+** xref:ec_validate_policy.adoc[ec validate policy]
+** xref:ec_version.adoc[ec version]
+"
+`;
