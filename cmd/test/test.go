@@ -26,6 +26,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/open-policy-agent/conftest/output"
 	"github.com/open-policy-agent/conftest/parser"
@@ -117,7 +118,6 @@ func newTestCommand() *cobra.Command {
 				"no-color",
 				"no-fail",
 				"suppress-exceptions",
-				"output",
 				"file",
 				"parser",
 				"policy",
@@ -151,9 +151,12 @@ func newTestCommand() *cobra.Command {
 				return fmt.Errorf("unmarshal parameters: %w", err)
 			}
 
-			outputFilePath, err := cmd.Flags().GetString("file")
+			outputFormats, err := cmd.Flags().GetStringSlice("output")
 			if err != nil {
 				return fmt.Errorf("reading flag: %w", err)
+			}
+			if len(outputFormats) == 0 {
+				outputFormats = []string{output.OutputStandard}
 			}
 
 			results, resultsErr := runner.Run(ctx, fileList)
@@ -165,60 +168,66 @@ func newTestCommand() *cobra.Command {
 			}
 
 			if !runner.Quiet || exitCode != 0 {
-				if runner.Output == OutputAppstudio {
-					// The appstudio format is unknown to Conftest so we handle it ourselves
+				for _, outputAndFormat := range outputFormats {
+					parts := strings.SplitN(outputAndFormat, "=", 2)
 
-					if resultsErr != nil {
-						return appstudioErrorHandler(runner.NoFail, "running test", resultsErr)
-					}
-
-					report := appstudioReport(results, runner.Namespace)
-					reportOutput, err := json.Marshal(report)
-					if err != nil {
-						return appstudioErrorHandler(runner.NoFail, "output results", err)
-					}
-
-					if outputFilePath != "" {
-						err := os.WriteFile(outputFilePath, reportOutput, 0600)
-						if err != nil {
-							return fmt.Errorf("creating output file: %w", err)
+					format := output.OutputStandard
+					outputFilePath := ""
+					if len(parts) > 0 {
+						format = parts[0]
+						if len(parts) == 2 {
+							outputFilePath = parts[1]
 						}
 					}
-					fmt.Fprintln(cmd.OutOrStdout(), string(reportOutput)+"\n")
 
-				} else {
-					// Conftest handles the output
+					if format == OutputAppstudio {
+						// The appstudio format is unknown to Conftest so we handle it ourselves
 
-					if resultsErr != nil {
-						return fmt.Errorf("running test: %w", resultsErr)
-					}
-
-					var outputFile *os.File
-					if outputFilePath != "" {
-						outputFile, err = os.Create(outputFilePath)
-						if err != nil {
-							return fmt.Errorf("creating output file: %w", err)
+						if resultsErr != nil {
+							return appstudioErrorHandler(runner.NoFail, "running test", resultsErr)
 						}
-						defer outputFile.Close()
-					}
 
-					outputter := output.Get(runner.Output, output.Options{
-						NoColor:            runner.NoColor,
-						SuppressExceptions: runner.SuppressExceptions,
-						Tracing:            runner.Trace,
-						JUnitHideMessage:   viper.GetBool("junit-hide-message"),
-						File:               outputFile,
-					})
-					if err := outputter.Output(results); err != nil {
-						return fmt.Errorf("output results: %w", err)
-					}
-
-					if outputFilePath != "" {
-						contents, err := os.ReadFile(outputFile.Name())
+						report := appstudioReport(results, runner.Namespace)
+						reportOutput, err := json.Marshal(report)
 						if err != nil {
-							return fmt.Errorf("copying output file to stdout: %w", err)
+							return appstudioErrorHandler(runner.NoFail, "output results", err)
 						}
-						fmt.Fprintln(cmd.OutOrStdout(), string(contents))
+
+						if outputFilePath != "" {
+							err := os.WriteFile(outputFilePath, reportOutput, 0600)
+							if err != nil {
+								return fmt.Errorf("creating output file: %w", err)
+							}
+						} else {
+							fmt.Fprintln(cmd.OutOrStdout(), string(reportOutput))
+						}
+
+					} else {
+						// Conftest handles the output
+
+						if resultsErr != nil {
+							return fmt.Errorf("running test: %w", resultsErr)
+						}
+
+						var outputFile *os.File
+						if outputFilePath != "" {
+							outputFile, err = os.Create(outputFilePath)
+							if err != nil {
+								return fmt.Errorf("creating output file %s: %w", outputFilePath, err)
+							}
+							defer outputFile.Close()
+						}
+
+						outputter := output.Get(format, output.Options{
+							NoColor:            runner.NoColor,
+							SuppressExceptions: runner.SuppressExceptions,
+							Tracing:            runner.Trace,
+							JUnitHideMessage:   viper.GetBool("junit-hide-message"),
+							File:               outputFile,
+						})
+						if err := outputter.Output(results); err != nil {
+							return fmt.Errorf("output results: %w", err)
+						}
 					}
 				}
 
@@ -249,7 +258,6 @@ func newTestCommand() *cobra.Command {
 	cmd.Flags().String("parser", "", fmt.Sprintf("Parser to use to parse the configurations. Valid parsers: %s", parser.Parsers()))
 	cmd.Flags().String("capabilities", "", "Path to JSON file that can restrict opa functionality against a given policy. Default: all operations allowed")
 
-	cmd.Flags().StringP("output", "o", output.OutputStandard, fmt.Sprintf("Output format for conftest results - valid options are: %s", append(output.Outputs(), OutputAppstudio)))
 	cmd.Flags().String("file", "", "File path to write output to")
 	cmd.Flags().Bool("junit-hide-message", false, "Do not include the violation message in the JUnit test name")
 
@@ -257,6 +265,7 @@ func newTestCommand() *cobra.Command {
 	cmd.Flags().StringSliceP("update", "u", []string{}, "A list of URLs can be provided to the update flag, which will download before the tests run")
 	cmd.Flags().StringSliceP("namespace", "n", []string{"main"}, "Test policies in a specific namespace")
 	cmd.Flags().StringSliceP("data", "d", []string{}, "A list of paths from which data for the rego policies will be recursively loaded")
+	cmd.Flags().StringSliceP("output", "o", []string{}, fmt.Sprintf("Output format for conftest results - valid options are: %s. You can optionally specify a file for the output, e.g. -o json=out.json", append(output.Outputs(), OutputAppstudio)))
 
 	cmd.Flags().StringSlice("proto-file-dirs", []string{}, "A list of directories containing Protocol Buffer definitions")
 
