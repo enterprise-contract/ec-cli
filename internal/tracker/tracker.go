@@ -160,7 +160,7 @@ func Track(ctx context.Context, urls []string, input []byte, prune bool, freshen
 		return nil, err
 	}
 
-	if err := t.trackGitReferences(ctx, gitUrls); err != nil {
+	if err := t.trackGitReferences(ctx, gitUrls, freshen); err != nil {
 		return nil, err
 	}
 
@@ -226,17 +226,46 @@ func (t *Tracker) trackImageReferences(ctx context.Context, urls []string, fresh
 	return nil
 }
 
-func (t *Tracker) trackGitReferences(_ context.Context, urls []string) error {
+func (t *Tracker) trackGitReferences(ctx context.Context, urls []string, freshen bool) error {
 	effective_on := effectiveOn()
 
+	if freshen {
+		log.Debug("Freshen is enabled")
+
+		tmp := make([]string, len(urls), len(urls)+len(t.TrustedTasks))
+		copy(tmp, urls)
+		urls = tmp
+		for u := range t.TrustedTasks {
+			if strings.HasPrefix(u, "git+") {
+				urls = append(urls, u)
+			}
+		}
+	}
+
+	g := NewGitTracker()
+	defer g.Close(ctx)
+
 	for _, u := range urls {
-		repository, rest, found := strings.Cut(u, "//")
-		if !found {
+		schemeSepIdx := strings.Index(u, "//")
+		pathSepIdx := strings.LastIndex(u, "//")
+
+		if pathSepIdx <= schemeSepIdx {
 			return fmt.Errorf("expected %q to contain the `//` to separate the repository from the path, e.g. git+https://github.com/org/repository//task/0.1/task.yaml@f0cacc1a", u)
 		}
+
+		repository := u[0:pathSepIdx]
+		rest := u[pathSepIdx+2:]
+
 		path, rev, found := strings.Cut(rest, "@")
-		if !found {
-			return fmt.Errorf("expected %q to contain the `@` to separate the path from the revision, e.g. git+https://github.com/org/repository//task/0.1/task.yaml@f0cacc1a", u)
+		if freshen {
+			if r, err := g.GitResolve(ctx, repository, rest); err != nil {
+				return err
+			} else {
+				path = rest
+				rev = r
+			}
+		} else if !found {
+			return fmt.Errorf("expected %q to contain the revision information following the `@`, e.g. git+https://github.com/org/repository//task/0.1/task.yaml@f0cacc1a, to fetch the latest revision from a remote URL provide the --freshen parameter", u)
 		}
 
 		t.addTrustedTaskRecord("", taskRecord{
