@@ -21,8 +21,10 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"sync"
 
 	hd "github.com/MakeNowJust/heredoc"
+	"github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/hashicorp/go-multierror"
 	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
@@ -34,11 +36,14 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/format"
 	"github.com/enterprise-contract/ec-cli/internal/output"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
+	"github.com/enterprise-contract/ec-cli/internal/policy/source"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 	validate_utils "github.com/enterprise-contract/ec-cli/internal/validate"
 )
 
-type imageValidationFunc func(context.Context, app.SnapshotComponent, policy.Policy, bool) (*output.Output, error)
+type imageValidationFunc func(context.Context, app.SnapshotComponent, policy.Policy, []evaluator.Evaluator, bool) (*output.Output, error)
+
+var newConftestEvaluator = evaluator.NewConftestEvaluator
 
 func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 	var data = struct {
@@ -226,6 +231,51 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 
 			appComponents := data.spec.Components
 
+			var wg sync.WaitGroup
+			errChan := make(chan error, len(data.policy.Spec().Sources))
+			evaluatorsChan := make(chan *evaluator.Evaluator, len(data.policy.Spec().Sources))
+			for _, sourceGroup := range data.policy.Spec().Sources {
+				wg.Add(1)
+				go func(sourceGroup v1alpha1.Source) {
+					defer wg.Done()
+
+					log.Debugf("Fetching policy source group '%s'", sourceGroup.Name)
+					policySources, err := source.FetchPolicySources(sourceGroup)
+					if err != nil {
+						log.Debugf("Failed to fetch policy source group '%s'!", sourceGroup.Name)
+						errChan <- err
+						return
+					}
+
+					for _, policySource := range policySources {
+						log.Debugf("policySource: %#v", policySource)
+					}
+
+					c, err := newConftestEvaluator(cmd.Context(), policySources, data.policy, sourceGroup)
+					if err != nil {
+						log.Debug("Failed to initialize the conftest evaluator!")
+						errChan <- err
+						return
+					}
+					evaluatorsChan <- &c
+				}(sourceGroup)
+			}
+
+			wg.Wait()
+			close(errChan)
+			close(evaluatorsChan)
+
+			for err := range errChan {
+				if err != nil {
+					return err
+				}
+			}
+
+			evaluators := make([]evaluator.Evaluator, 0)
+			for c := range evaluatorsChan {
+				evaluators = append(evaluators, *c)
+			}
+
 			// worker is responsible for processing one component at a time from the jobs channel,
 			// and for emitting a corresponding result for the component on the results channel.
 			worker := func(id int, jobs <-chan app.SnapshotComponent, results chan<- result) {
@@ -233,7 +283,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 				for comp := range jobs {
 					log.Debugf("Worker %d got a component %q", id, comp.ContainerImage)
 					ctx := cmd.Context()
-					out, err := validate(ctx, comp, data.policy, data.info)
+					out, err := validate(ctx, comp, data.policy, evaluators, data.info)
 					res := result{
 						err: err,
 						component: applicationsnapshot.Component{

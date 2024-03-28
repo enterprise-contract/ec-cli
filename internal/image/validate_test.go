@@ -129,10 +129,12 @@ func TestValidateImage(t *testing.T) {
 			p, err := policy.NewOfflinePolicy(ctx, policy.Now)
 			assert.NoError(t, err)
 
+			evaluators := []evaluator.Evaluator{}
+
 			ctx = application_snapshot_image.WithClient(ctx, c.client)
 			ctx = withImageConfig(ctx, c.component.ContainerImage)
 
-			actual, err := ValidateImage(ctx, c.component, p, false)
+			actual, err := ValidateImage(ctx, c.component, p, evaluators, false)
 			assert.NoError(t, err)
 
 			assert.Equal(t, c.expectedWarnings, actual.Warnings())
