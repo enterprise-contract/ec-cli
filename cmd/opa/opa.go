@@ -19,7 +19,8 @@ import (
 	"github.com/open-policy-agent/opa/cmd"
 	"github.com/spf13/cobra"
 
-	_ "github.com/enterprise-contract/ec-cli/internal/evaluator" // imports EC OPA builtins
+	_ "github.com/enterprise-contract/ec-cli/internal/rego" // imports EC OPA builtins
+	"github.com/enterprise-contract/ec-cli/internal/rego/testing"
 )
 
 var OPACmd *cobra.Command
@@ -28,4 +29,24 @@ func init() {
 	OPACmd = cmd.RootCommand
 	OPACmd.Use = "opa"
 	OPACmd.Short = OPACmd.Short + " (embedded)"
+
+	mockingSupport()
+}
+
+func mockingSupport() {
+	test, _, err := OPACmd.Find([]string{"test"})
+	if err != nil {
+		panic(err)
+	}
+
+	orig := test.PreRunE
+	test.PreRunE = func(cmd *cobra.Command, args []string) error {
+		if err := orig(cmd, args); err != nil {
+			return err
+		}
+
+		testing.RegisterMockSupport()
+
+		return nil
+	}
 }

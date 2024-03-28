@@ -37,6 +37,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/enterprise-contract/ec-cli/internal/fetchers/oci"
+	"github.com/enterprise-contract/ec-cli/internal/rego/testing"
 )
 
 const (
@@ -153,6 +154,10 @@ func ociBlob(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) {
 	uri, ok := a.Value.(ast.String)
 	if !ok {
 		return nil, nil
+	}
+
+	if mocked, ok := testing.Mocked(bctx, ociBlobName, ast.NewTerm(ast.NewArray(a))); ok {
+		return mocked, nil
 	}
 
 	ref, err := name.NewDigest(string(uri))
