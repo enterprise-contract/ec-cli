@@ -35,7 +35,7 @@ import (
 
 // ValidateImage executes the required method calls to evaluate a given policy
 // against a given image url.
-func ValidateImage(ctx context.Context, comp app.SnapshotComponent, p policy.Policy, detailed bool) (*output.Output, error) {
+func ValidateImage(ctx context.Context, comp app.SnapshotComponent, p policy.Policy, evaluators []evaluator.Evaluator, detailed bool) (*output.Output, error) {
 	log.Debugf("Validating image %s", comp.ContainerImage)
 
 	out := &output.Output{ImageURL: comp.ContainerImage, Detailed: detailed, Policy: p}
@@ -107,9 +107,11 @@ func ValidateImage(ctx context.Context, comp app.SnapshotComponent, p policy.Pol
 	}
 
 	var allResults []evaluator.Outcome
-	for _, e := range a.Evaluators {
+
+	for _, e := range evaluators {
 		// Todo maybe: Handle each one concurrently
 		results, data, err := e.Evaluate(ctx, []string{inputPath})
+		log.Debug("\n\nRunning conftest policy check\n\n")
 		defer e.Destroy()
 
 		if err != nil {
