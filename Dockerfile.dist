@@ -17,7 +17,7 @@
 ## Build
 
 # This works fine but will produce an EC violation
-#FROM docker.io/library/golang:1.21 AS build
+# FROM docker.io/library/golang:1.21 AS build
 
 # This currently has go version 1.20 but we need version 1.21
 #FROM registry.access.redhat.com/ubi9/go-toolset:latest AS build
@@ -25,13 +25,12 @@
 # This image has go version 1.21 but requires an extra pull secret to access
 # See https://source.redhat.com/groups/public/teamnado/wiki/brew_registry for how to get your own pull secret
 # See our Konflux pull secret at https://console.redhat.com/preview/application-pipeline/secrets
+
 FROM brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_9_1.21@sha256:4fe910174caaaae09ff75b6f1b1c2f4460fd9acfe38ec778a818a54de7f31afc AS build
 
+ARG BUILD_LIST="darwin_amd64 darwin_arm64 linux_amd64 linux_arm64 linux_ppc64le linux_s390x windows_amd64"
 ARG TARGETOS
 ARG TARGETARCH
-
-ARG BUILD_LIST="darwin_amd64 darwin_arm64 linux_amd64 linux_arm64 linux_ppc64le linux_s390x windows_amd64"
-#ARG BUILD_LIST="linux_amd64"
 
 WORKDIR /build
 
@@ -42,76 +41,7 @@ RUN go mod download
 # Now copy everything including .git
 COPY . .
 
-# Notes:
-# Derive the version from the branch name with the "release-" prefix removed
-# if it's present, e.g. in the branch "release-v0.1-alpha" the version will
-# be "v0.1-alpha"
-#
-# If the branch doesn't start with release- then assume it's not a release
-# branch and build just a single binary to save time and cpu cycles. If the
-# branch is a release branch then build all the binaries in ${BUILD_LIST}.
-#
-# The normal way to get the branch name is this:
-#   EC_GIT_BRANCH=$( git rev-parse --abbrev-ref HEAD )
-# but it doesn't work because the git-clone task checks out a sha directly
-# rather than a branch. That's why we need to use `git for-each-ref`. Beware
-# that testing this locally requires that you push the relevant branches to
-# your 'origin' remote.
-#
-# Note that EC_GIT_ORIGIN_BRANCH, EC_GIT_BRANCH may be blank in a pre-merge PR
-# because the PR branch refs are generally not present. In that case we'll use
-# "_ci_build" as the version.
-#
-# For the EC_PATCH_NUM we assume there is a v0.2.0 (for example) tag created
-# by a human. Using --merges there because we assume every build happens after
-# a PR is merged.
-#
-RUN \
-    EC_GIT_SHA=$( git rev-parse --short HEAD ); \
-    echo "EC_GIT_SHA=$EC_GIT_SHA"; \
-    \
-    EC_GIT_ORIGIN_BRANCH=$( git for-each-ref --points-at HEAD --format='%(refname:short)' refs/remotes/origin/ ); \
-    echo "EC_GIT_ORIGIN_BRANCH=$EC_GIT_ORIGIN_BRANCH"; \
-    \
-    EC_GIT_BRANCH=${EC_GIT_ORIGIN_BRANCH#"origin/"}; \
-    echo "EC_GIT_BRANCH=$EC_GIT_BRANCH"; \
-    \
-    EC_VERSION=${EC_GIT_BRANCH#"release-"}; \
-    echo "EC_VERSION=$EC_VERSION"; \
-    \
-    EC_BASE_TAG="${EC_VERSION}.0"; \
-    echo "EC_BASE_TAG=$EC_BASE_TAG"; \
-    git log -n1 --format="%h %s" "$EC_BASE_TAG"; \
-    \
-    EC_PATCH_NUM=$( git rev-list --merges --count ${EC_BASE_TAG}..HEAD ); \
-    echo "EC_PATCH_NUM=$EC_PATCH_NUM"; \
-    \
-    if [ -z "$EC_VERSION" ]; then \
-      EC_FULL_VERSION="_ci_build-${EC_GIT_SHA}"; \
-    else \
-      EC_FULL_VERSION="${EC_VERSION}.${EC_PATCH_NUM}"; \
-    fi; \
-    echo "EC_FULL_VERSION=$EC_FULL_VERSION"; \
-    \
-    if [ -z "$EC_VERSION" -o "$EC_GIT_BRANCH" = "$EC_VERSION" ]; then \
-      BUILDS="${TARGETOS}_${TARGETARCH}"; \
-    else \
-      BUILDS="${BUILD_LIST}"; \
-    fi; \
-    echo "BUILDS=$BUILDS"; \
-    \
-    for os_arch in ${BUILDS}; do \
-      export GOOS="${os_arch%_*}"; \
-      export GOARCH="${os_arch#*_}"; \
-      [ "$GOOS" = "windows" ] && DOT_EXE=".exe" || DOT_EXE=""; \
-      BINFILE="ec_${GOOS}_${GOARCH}${DOT_EXE}"; \
-      echo "Building ${BINFILE} for ${EC_FULL_VERSION}"; \
-      go build \
-          -trimpath \
-          --mod=readonly \
-          -ldflags="-s -w -X github.com/enterprise-contract/ec-cli/internal/version.Version=${EC_FULL_VERSION}" \
-          -o "dist/${BINFILE}"; \
-    done
+RUN ["/usr/bin/bash", "-c", "/build/build.sh \"${BUILD_LIST}\" \"${TARGETOS}\" \"${TARGETARCH}\""]
 
 # Extract this so we can download the matching cosign version below
 RUN go list --mod=readonly -f '{{.Version}}' -m github.com/sigstore/cosign/v2 | tee cosign_version.txt

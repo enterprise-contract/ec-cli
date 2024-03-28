@@ -218,15 +218,12 @@ push-snapshot-image: build-snapshot-image ## Push the ec-cli image with the "sna
 	@podman push $(PODMAN_OPTS) $(IMAGE_REPO):snapshot
 
 .PHONY: $(ALL_SUPPORTED_IMG_OS_ARCH)
-# Ref: https://www.gnu.org/software/make/manual/make.html#Secondary-Expansion
-.SECONDEXPANSION:
 # Targets are in the form of "image_{platform}_{arch}", we set
-# TARGETOS={platform}, and TARGETARCH={arch}. This target depends on the
-# "dist/ec_{platform}_{arch}" target
+# TARGETOS={platform}, and TARGETARCH={arch}. 
 $(ALL_SUPPORTED_IMG_OS_ARCH): TARGETOS=$(word 2,$(subst _, ,$@))
 $(ALL_SUPPORTED_IMG_OS_ARCH): TARGETARCH=$(word 3,$(subst _, ,$@))
-$(ALL_SUPPORTED_IMG_OS_ARCH): $$(subst image_,dist/ec_,$$@)
-	@podman build -t $(IMAGE_REPO):$(IMAGE_TAG)-$(TARGETOS)-$(TARGETARCH) -f Dockerfile --platform $(TARGETOS)/$(TARGETARCH) --build-arg COSIGN_VERSION=$(COSIGN_VERSION)
+$(ALL_SUPPORTED_IMG_OS_ARCH):
+	@podman build -t $(IMAGE_REPO):$(IMAGE_TAG)-$(TARGETOS)-$(TARGETARCH) -f Dockerfile --platform $(TARGETOS)/$(TARGETARCH)
 
 # Currently it shows the following:
 #  image_linux_amd64
