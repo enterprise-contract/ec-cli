@@ -73,7 +73,7 @@ RUN \
     EC_VERSION="v0.2"; \
     echo "EC_VERSION=$EC_VERSION"; \
     \
-    EC_BASE_TAG="${EC_VERSION}.0"; \
+    EC_BASE_TAG="${EC_VERSION}-patch-base"; \
     echo "EC_BASE_TAG=$EC_BASE_TAG"; \
     git log -n1 --format="%h %s" "$EC_BASE_TAG"; \
     \
