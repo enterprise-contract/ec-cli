@@ -3,6 +3,7 @@ Feature: track bundles
 
   Background:
     Given stub registry running
+    Given stub git daemon running
 
   Scenario:
     Given a tekton bundle image named "acceptance/bundle:tag" containing
@@ -147,5 +148,27 @@ Feature: track bundles
           ref: f0cacc1a
     """
     When ec command is run with "track tekton-task --prune --input ${TMPDIR}/bundles.yaml --git git+https://forge.io/organization/repository.git//task/0.1/task.yaml@f0cacc1a"
+    Then the exit status should be 0
+    Then the output should match the snapshot
+
+  Scenario: Track git references, without git id
+    Given a git repository named "tasks" with
+      | task.yaml | examples/task.yaml |
+    When ec command is run with "track tekton-task --git git+https://${GITHOST}/git/tasks.git//task.yaml"
+    Then the exit status should be 1
+    Then the output should match the snapshot
+
+  Scenario: Track git references, with freshen
+    Given a track bundle file named "${TMPDIR}/bundles.yaml" containing
+    """
+    ---
+    trusted_tasks:
+      git+https://${GITHOST}/git/tasks.git//task.yaml:
+        - effective_on: 2006-01-02T15:04:05Z
+          ref: f0cacc1a
+    """
+    Given a git repository named "tasks" with
+      | task.yaml | examples/task.yaml |
+    When ec command is run with "track tekton-task --git git+https://${GITHOST}/git/tasks.git//task.yaml --freshen"
     Then the exit status should be 0
     Then the output should match the snapshot

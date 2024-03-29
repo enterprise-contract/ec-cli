@@ -19,12 +19,17 @@
 package tracker
 
 import (
+	"archive/zip"
 	"context"
 	"fmt"
+	"os"
 	"testing"
 	"time"
 
 	hd "github.com/MakeNowJust/heredoc"
+	gba "github.com/Maldris/go-billy-afero"
+	"github.com/go-git/go-git/v5/plumbing/transport/client"
+	"github.com/go-git/go-git/v5/plumbing/transport/server"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
@@ -33,6 +38,8 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/random"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/google/go-containerregistry/pkg/v1/types"
+	"github.com/spf13/afero"
+	"github.com/spf13/afero/zipfs"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	pipeline "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
@@ -40,6 +47,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/enterprise-contract/ec-cli/internal/image"
+	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
 var sampleHashOne = v1.Hash{
@@ -644,7 +652,7 @@ func TestTrackGitReferences(t *testing.T) {
 		TrustedTasks: make(map[string][]taskRecord),
 	}
 
-	require.NoError(t, tracker.trackGitReferences(context.Background(), []string{"git+https://git.io/organization/repository//task1.yaml@rev1", "git+ssh://got.io/organization/repository//dir/task2.yaml@rev2"}))
+	require.NoError(t, tracker.trackGitReferences(context.Background(), []string{"git+https://git.io/organization/repository//task1.yaml@rev1", "git+ssh://got.io/organization/repository//dir/task2.yaml@rev2"}, false))
 
 	expected := map[string][]taskRecord{
 		"git+https://git.io/organization/repository//task1.yaml": {{
@@ -662,4 +670,106 @@ func TestTrackGitReferences(t *testing.T) {
 	if !cmp.Equal(tracker.TrustedTasks, expected) {
 		t.Errorf("expected vs got: %s", cmp.Diff(tracker.TrustedTasks, expected))
 	}
+}
+
+func TestTrackGitReferencesWithoutCommitId(t *testing.T) {
+	tracker := &Tracker{
+		TrustedTasks: make(map[string][]taskRecord),
+	}
+
+	fs := afero.NewMemMapFs()
+	ctx := utils.WithFS(context.Background(), fs)
+
+	f, err := os.Open("testdata/repository.zip")
+	require.NoError(t, err)
+
+	i, err := os.Stat("testdata/repository.zip")
+	require.NoError(t, err)
+
+	z, err := zip.NewReader(f, i.Size())
+	require.NoError(t, err)
+
+	rfs := gba.New(zipfs.New(z), "", false)
+
+	client.InstallProtocol("test", server.NewServer(server.NewFilesystemLoader(rfs)))
+
+	require.NoError(t, tracker.trackGitReferences(ctx, []string{"git+test://git.io/repository/.git//tasks/task1/0.1/task.yaml", "git+test://git.io/repository/.git//tasks/task2/0.2/task.yaml"}, true))
+
+	expected := map[string][]taskRecord{
+		"git+test://git.io/repository/.git//tasks/task1/0.1/task.yaml": {{
+			Ref:         "0916963bac30ea708c0ded4dd9d160fc148fd46f",
+			Repository:  "git+test://git.io/repository/.git//tasks/task1/0.1/task.yaml",
+			EffectiveOn: effectiveOn(),
+		}},
+		"git+test://git.io/repository/.git//tasks/task2/0.2/task.yaml": {{
+			Ref:         "acf3f1907b51c0e15809a61536bba71809daec68",
+			Repository:  "git+test://git.io/repository/.git//tasks/task2/0.2/task.yaml",
+			EffectiveOn: effectiveOn(),
+		}},
+	}
+
+	if !cmp.Equal(tracker.TrustedTasks, expected) {
+		t.Errorf("expected vs got: %s", cmp.Diff(tracker.TrustedTasks, expected))
+	}
+
+	// check to make sure we do not leave temp files around
+	matches, err := afero.Glob(fs, "tmp/*")
+	require.NoError(t, err)
+	assert.Nil(t, matches)
+}
+
+func TestTrackGitReferencesWithoutFreshen(t *testing.T) {
+	tracker := &Tracker{
+		TrustedTasks: map[string][]taskRecord{
+			"git+test://git.io/repository/.git//tasks/task1/0.1/task.yaml": {{
+				Ref:         "f0cacc1a",
+				Repository:  "git+test://git.io/repository/.git//tasks/task1/0.1/task.yaml",
+				EffectiveOn: effectiveOn(),
+			}},
+		},
+	}
+
+	fs := afero.NewMemMapFs()
+	ctx := utils.WithFS(context.Background(), fs)
+
+	f, err := os.Open("testdata/repository.zip")
+	require.NoError(t, err)
+
+	i, err := os.Stat("testdata/repository.zip")
+	require.NoError(t, err)
+
+	z, err := zip.NewReader(f, i.Size())
+	require.NoError(t, err)
+
+	rfs := gba.New(zipfs.New(z), "", false)
+
+	client.InstallProtocol("test", server.NewServer(server.NewFilesystemLoader(rfs)))
+
+	require.NoError(t, tracker.trackGitReferences(ctx, []string{"git+test://git.io/repository/.git//tasks/task2/0.2/task.yaml"}, true))
+
+	expected := map[string][]taskRecord{
+		"git+test://git.io/repository/.git//tasks/task1/0.1/task.yaml": {{
+			Ref:         "0916963bac30ea708c0ded4dd9d160fc148fd46f",
+			Repository:  "git+test://git.io/repository/.git//tasks/task1/0.1/task.yaml",
+			EffectiveOn: effectiveOn(),
+		}, {
+			Ref:         "f0cacc1a",
+			Repository:  "git+test://git.io/repository/.git//tasks/task1/0.1/task.yaml",
+			EffectiveOn: effectiveOn(),
+		}},
+		"git+test://git.io/repository/.git//tasks/task2/0.2/task.yaml": {{
+			Ref:         "acf3f1907b51c0e15809a61536bba71809daec68",
+			Repository:  "git+test://git.io/repository/.git//tasks/task2/0.2/task.yaml",
+			EffectiveOn: effectiveOn(),
+		}},
+	}
+
+	if !cmp.Equal(tracker.TrustedTasks, expected) {
+		t.Errorf("expected vs got: %s", cmp.Diff(tracker.TrustedTasks, expected))
+	}
+
+	// check to make sure we do not leave temp files around
+	matches, err := afero.Glob(fs, "tmp/*")
+	require.NoError(t, err)
+	assert.Nil(t, matches)
 }
