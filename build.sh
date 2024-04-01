@@ -40,9 +40,7 @@
 # a PR is merged.
 #
 
-BUILD_LIST="${1:-darwin_amd64 darwin_arm64 linux_amd64 linux_arm64 linux_ppc64le linux_s390x windows_amd64}"
-TARGETOS=$2
-TARGETARCH=$3
+BUILDS="${1}"
 
 EC_GIT_ORIGIN_BRANCH=$( git for-each-ref --points-at HEAD --format='%(refname:short)' refs/remotes/origin/ )
 echo "EC_GIT_ORIGIN_BRANCH=$EC_GIT_ORIGIN_BRANCH"
@@ -54,14 +52,11 @@ EC_VERSION=${EC_GIT_BRANCH#"release-"}
 if [[ "${EC_GIT_BRANCH}" != release-* ]]; then
     EC_VERSION=v0.3
     EC_PATCH_NUM=$(git rev-list --count HEAD)-$(git rev-parse --short HEAD)
-    BUILDS="${TARGETOS}_${TARGETARCH}"
 else
     EC_BASE_TAG="${EC_VERSION}.0"
     echo "EC_BASE_TAG=$EC_BASE_TAG"
     git log -n1 --format="%h %s" "$EC_BASE_TAG"
-
     EC_PATCH_NUM=$( git rev-list --merges --count ${EC_BASE_TAG}..HEAD )
-    BUILDS="${BUILD_LIST}"
 fi
 
 EC_FULL_VERSION="${EC_VERSION}.${EC_PATCH_NUM}"
@@ -72,8 +67,8 @@ echo "EC_FULL_VERSION=$EC_FULL_VERSION"
 echo "BUILDS=$BUILDS"
 
 for os_arch in ${BUILDS}; do
-    export GOOS="${os_arch%_*}"
-    export GOARCH="${os_arch#*_}"
+    GOOS="${os_arch%_*}"
+    GOARCH="${os_arch#*_}"
     [[ "$GOOS" == "windows" ]] && DOT_EXE=".exe" || DOT_EXE=""
     BINFILE="ec_${GOOS}_${GOARCH}${DOT_EXE}"
     echo "Building ${BINFILE} for ${EC_FULL_VERSION}"

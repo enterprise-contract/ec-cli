@@ -41,7 +41,7 @@ RUN go mod download
 # Now copy everything including .git
 COPY . .
 
-RUN ["/usr/bin/bash", "-c", "/build/build.sh \"${BUILD_LIST}\" \"${TARGETOS}\" \"${TARGETARCH}\""]
+RUN /build/build.sh "${BUILD_LIST}"
 
 # Extract this so we can download the matching cosign version below
 RUN go list --mod=readonly -f '{{.Version}}' -m github.com/sigstore/cosign/v2 | tee cosign_version.txt

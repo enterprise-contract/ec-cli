@@ -18,7 +18,6 @@
 
 FROM docker.io/library/golang:1.21 AS build
 
-ARG BUILD_LIST="darwin_amd64 darwin_arm64 linux_amd64 linux_arm64 linux_ppc64le linux_s390x windows_amd64"
 ARG TARGETOS
 ARG TARGETARCH
 
@@ -31,7 +30,7 @@ RUN go mod download
 # Now copy everything including .git
 COPY . .
 
-RUN ["/usr/bin/bash", "-c", "/build/build.sh \"${BUILD_LIST}\" \"${TARGETOS}\" \"${TARGETARCH}\""]
+RUN /build/build.sh "${TARGETOS}_${TARGETARCH}"
 
 # Extract this so we can download the matching cosign version below
 RUN go list --mod=readonly -f '{{.Version}}' -m github.com/sigstore/cosign/v2 | tee cosign_version.txt
@@ -64,8 +63,6 @@ COPY --from=download /download/cosign /usr/bin/cosign
 RUN cosign version
 
 RUN microdnf -y install git-core jq && microdnf clean all
-
-COPY --from=build /build/dist/ /usr/bin/
 
 # Copy the one ec binary that can run in this container
 COPY --from=build "/build/dist/ec_${TARGETOS}_${TARGETARCH}" /usr/bin/ec
