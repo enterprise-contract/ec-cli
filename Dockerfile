@@ -14,31 +14,57 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-FROM registry.access.redhat.com/ubi9/ubi-minimal:9.3@sha256:bc552efb4966aaa44b02532be3168ac1ff18e2af299d0fe89502a1d9fabafbc5 AS downloads
+## Build
+
+FROM docker.io/library/golang:1.21 AS build
 
 ARG TARGETOS
 ARG TARGETARCH
 
-ARG COSIGN_VERSION
+WORKDIR /build
 
-ADD https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign-${TARGETOS}-${TARGETARCH} /opt/
-ADD https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign_checksums.txt /opt/
+# Copy just the mod file for better layer caching when building locally
+COPY go.mod go.sum .
+RUN go mod download
 
-RUN cd /opt && \
+# Now copy everything including .git
+COPY . .
+
+RUN /build/build.sh "${TARGETOS}_${TARGETARCH}"
+
+# Extract this so we can download the matching cosign version below
+RUN go list --mod=readonly -f '{{.Version}}' -m github.com/sigstore/cosign/v2 | tee cosign_version.txt
+
+## Downloads
+
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.3@sha256:bc552efb4966aaa44b02532be3168ac1ff18e2af299d0fe89502a1d9fabafbc5 AS download
+
+ARG TARGETOS
+ARG TARGETARCH
+
+WORKDIR /download
+
+COPY --from=build /build/cosign_version.txt /download/
+
+# Download the matching version of cosign
+RUN COSIGN_VERSION=$(cat /download/cosign_version.txt) && \
+    curl -sLO https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign-${TARGETOS}-${TARGETARCH} && \
+    curl -sLO https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign_checksums.txt && \
     sha256sum --check <(grep -w "cosign-${TARGETOS}-${TARGETARCH}" < cosign_checksums.txt) && \
-    mv cosign-$TARGETOS-$TARGETARCH cosign && \
+    mv "cosign-${TARGETOS}-${TARGETARCH}" cosign && \
     chmod +x cosign
 
-FROM registry.access.redhat.com/ubi9/ubi-minimal:9.3@sha256:bc552efb4966aaa44b02532be3168ac1ff18e2af299d0fe89502a1d9fabafbc5
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.3@sha256:582e18f13291d7c686ec4e6e92d20b24c62ae0fc72767c46f30a69b1a6198055
 
 ARG TARGETOS
 ARG TARGETARCH
 
-COPY --from=downloads /opt/cosign /usr/local/bin/
+COPY --from=download /download/cosign /usr/bin/cosign
 RUN cosign version
 
 RUN microdnf -y install git-core jq && microdnf clean all
 
-COPY "dist/ec_"$TARGETOS"_"$TARGETARCH /usr/bin/ec
+# Copy the one ec binary that can run in this container
+COPY --from=build "/build/dist/ec_${TARGETOS}_${TARGETARCH}" /usr/bin/ec
 
 ENTRYPOINT ["/usr/bin/ec"]
