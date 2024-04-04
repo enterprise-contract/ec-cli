@@ -1,0 +1,198 @@
+= ec opa build
+
+Build an OPA bundle== Synopsis
+
+Build an OPA bundle.
+
+The 'build' command packages OPA policy and data files into bundles. Bundles are
+gzipped tarballs containing policies and data. Paths referring to directories are
+loaded recursively.
+
+    $ ls
+    example.rego
+
+    $ opa build -b .
+
+You can load bundles into OPA on the command-line:
+
+    $ ls
+    bundle.tar.gz example.rego
+
+    $ opa run bundle.tar.gz
+
+You can also configure OPA to download bundles from remote HTTP endpoints:
+
+    $ opa run --server \
+        --set bundles.example.resource=bundle.tar.gz \
+        --set services.example.url=http://localhost:8080
+
+Inside another terminal in the same directory, serve the bundle via HTTP:
+
+    $ python3 -m http.server --bind localhost 8080
+
+For more information on bundles see https://www.openpolicyagent.org/docs/latest/management-bundles/.
+
+Common Flags
+------------
+
+When -b is specified the 'build' command assumes paths refer to existing bundle files
+or directories following the bundle structure. If multiple bundles are provided, their
+contents are merged. If there are any merge conflicts (e.g., due to conflicting bundle
+roots), the command fails. When loading an existing bundle file, the .manifest from
+the input bundle will be included in the output bundle. Flags that set .manifest fields
+(such as --revision) override input bundle .manifest fields.
+
+The -O flag controls the optimization level. By default, optimization is disabled (-O=0).
+When optimization is enabled the 'build' command generates a bundle that is semantically
+equivalent to the input files however the structure of the files in the bundle may have
+been changed by rewriting, inlining, pruning, etc. Higher optimization levels may result
+in longer build times. The --partial-namespace flag can used in conjunction with the -O flag
+to specify the namespace for the partially evaluated files in the optimized bundle.
+
+The 'build' command supports targets (specified by -t):
+
+    rego    The default target emits a bundle containing a set of policy and data files
+            that are semantically equivalent to the input files. If optimizations are
+            disabled the output may simply contain a copy of the input policy and data
+            files. If optimization is enabled at least one entrypoint must be supplied,
+            either via the -e option, or via entrypoint metadata annotations.
+
+    wasm    The wasm target emits a bundle containing a WebAssembly module compiled from
+            the input files for each specified entrypoint. The bundle may contain the
+            original policy or data files.
+
+    plan    The plan target emits a bundle containing a plan, i.e., an intermediate
+            representation compiled from the input files for each specified entrypoint.
+            This is for further processing, OPA cannot evaluate a "plan bundle" like it
+            can evaluate a wasm or rego bundle.
+
+The -e flag tells the 'build' command which documents (entrypoints) will be queried by 
+the software asking for policy decisions, so that it can focus optimization efforts and 
+ensure that document is not eliminated by the optimizer.
+Note: Unless the --prune-unused flag is used, any rule transitively referring to a 
+package or rule declared as an entrypoint will also be enumerated as an entrypoint.
+
+Signing
+-------
+
+The 'build' command can be used to verify the signature of a signed bundle and
+also to generate a signature for the output bundle the command creates.
+
+If the directory path(s) provided to the 'build' command contain a ".signatures.json" file,
+it will attempt to verify the signatures included in that file. The bundle files
+or directory path(s) to verify must be specified using --bundle.
+
+For more information on the bundle signing and verification, see
+https://www.openpolicyagent.org/docs/latest/management-bundles/#signing.
+
+Example:
+
+    $ opa build --verification-key /path/to/public_key.pem --signing-key /path/to/private_key.pem --bundle foo
+
+Where foo has the following structure:
+
+    foo/
+      |
+      +-- bar/
+      |     |
+      |     +-- data.json
+      |
+      +-- policy.rego
+      |
+      +-- .manifest
+      |
+      +-- .signatures.json
+
+
+The 'build' command will verify the signatures using the public key provided by the --verification-key flag.
+The default signing algorithm is RS256 and the --signing-alg flag can be used to specify
+a different one. The --verification-key-id and --scope flags can be used to specify the name for the key
+provided using the --verification-key flag and scope to use for bundle signature verification respectively.
+
+If the verification succeeds, the 'build' command will write out an updated ".signatures.json" file
+to the output bundle. It will use the key specified by the --signing-key flag to sign
+the token in the ".signatures.json" file.
+
+To include additional claims in the payload use the --claims-file flag to provide a JSON file
+containing optional claims.
+
+For more information on the format of the ".signatures.json" file
+see https://www.openpolicyagent.org/docs/latest/management-bundles/#signature-format.
+
+Capabilities
+------------
+
+The 'build' command can validate policies against a configurable set of OPA capabilities.
+The capabilities define the built-in functions and other language features that policies
+may depend on. For example, the following capabilities file only permits the policy to
+depend on the "plus" built-in function ('+'):
+
+    {
+        "builtins": [
+            {
+                "name": "plus",
+                "infix": "+",
+                "decl": {
+                    "type": "function",
+                    "args": [
+                        {
+                            "type": "number"
+                        },
+                        {
+                            "type": "number"
+                        }
+                    ],
+                    "result": {
+                        "type": "number"
+                    }
+                }
+            }
+        ]
+    }
+
+Capabilities can be used to validate policies against a specific version of OPA.
+The OPA repository contains a set of capabilities files for each OPA release. For example,
+the following command builds a directory of policies ('./policies') and validates them
+against OPA v0.22.0:
+
+    opa build ./policies --capabilities v0.22.0
+
+[source,shell]
+----
+ec opa build <path> [<path> [...]] [flags]
+----
+== Options
+
+-b, --bundle:: load paths as bundle files or root directories (Default: false)
+--capabilities:: set capabilities version or capabilities.json file path
+--claims-file:: set path of JSON file containing optional claims (see: https://www.openpolicyagent.org/docs/latest/management-bundles/#signature-format)
+--debug:: enable debug output (Default: false)
+-e, --entrypoint:: set slash separated entrypoint path
+--exclude-files-verify:: set file names to exclude during bundle verification (Default: [])
+-h, --help:: help for build (Default: false)
+--ignore:: set file and directory names to ignore during loading (e.g., '.*' excludes hidden files) (Default: [])
+-O, --optimize:: set optimization level (Default: 0)
+-o, --output:: set the output filename (Default: bundle.tar.gz)
+--partial-namespace:: set the namespace to use for partially evaluated files in an optimized bundle (Default: partial)
+--prune-unused:: exclude dependents of entrypoints (Default: false)
+-r, --revision:: set output bundle revision
+--scope:: scope to use for bundle signature verification
+--signing-alg:: name of the signing algorithm (Default: RS256)
+--signing-key:: set the secret (HMAC) or path of the PEM file containing the private key (RSA and ECDSA)
+--signing-plugin:: name of the plugin to use for signing/verification (see https://www.openpolicyagent.org/docs/latest/management-bundles/#signature-plugin
+-t, --target:: set the output bundle target type (Default: rego)
+--v1-compatible:: opt-in to OPA features and behaviors that will be enabled by default in a future OPA v1.0 release (Default: false)
+--verification-key:: set the secret (HMAC) or path of the PEM file containing the public key (RSA and ECDSA)
+--verification-key-id:: name assigned to the verification key used for bundle verification (Default: default)
+
+== Options inherited from parent commands
+
+--kubeconfig:: path to the Kubernetes config file to use
+--quiet:: less verbose output (Default: false)
+--timeout:: max overall execution duration (Default: 5m0s)
+--trace:: enable trace logging (Default: false)
+--verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec_opa.adoc[ec opa - Open Policy Agent (OPA) (embedded)]

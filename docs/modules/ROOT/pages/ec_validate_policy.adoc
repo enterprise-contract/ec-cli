@@ -1,0 +1,39 @@
+= ec validate policy
+
+Validate the provided EnterpriseContractPolicy spec== Synopsis
+
+Validate the provided EnterpriseContractPolicy spec against the EnterpriseContractPolicy spec schema used in this version of the ec CLI
+
+[source,shell]
+----
+ec validate policy [flags]
+----
+
+== Examples
+Validate a local policy configuration file:
+ec validate policy --policy-configuration policy.yaml
+
+Validate a policy configuration file from a github repository:
+ec validate policy --policy-configuration github.com/org/repo/policy.yaml
+
+== Options
+
+-h, --help:: help for policy (Default: false)
+-p, --policy:: Policy configuration as:
+* file (policy.yaml)
+* git reference (github.com/user/repo//default?ref=main), or
+* inline JSON ('{sources: {...}, configuration: {...}}')")
+
+== Options inherited from parent commands
+
+--debug:: same as verbose but also show function names and line numbers (Default: false)
+--kubeconfig:: path to the Kubernetes config file to use
+--quiet:: less verbose output (Default: false)
+--show-successes::  (Default: false)
+--timeout:: max overall execution duration (Default: 5m0s)
+--trace:: enable trace logging (Default: false)
+--verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec_validate.adoc[ec validate - Validate conformance with the Enterprise Contract]

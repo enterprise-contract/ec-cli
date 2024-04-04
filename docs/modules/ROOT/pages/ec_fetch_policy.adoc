@@ -1,0 +1,81 @@
+= ec fetch policy
+
+Fetch policy rules from a git repository or other source== Synopsis
+
+Fetch policy rules (rego files) from a git repository or other source.
+
+Each policy source will be downloaded into a separate unique directory inside
+the "policy" directory under the destination directory specified. The
+destination directory is either an automatically generated temporary work dir
+if --work-dir is set, the directory specified with the --dest flag, or the
+current directory if neither flag is specified.
+
+This command is based on 'conftest pull' so you can refer to the conftest pull
+documentation for more usage examples and for details on the different types of
+supported source URLs.
+
+Note that this command is not typically required to verify the Enterprise
+Contract. It has been made available for troubleshooting and debugging
+purposes.
+
+[source,shell]
+----
+ec fetch policy --source <source-url> --data-source <source-url> [flags]
+----
+
+== Examples
+Fetching policies from multiple sources to a specific directory:
+
+  ec fetch policy --dest fetched-policies \
+	--source github.com/enterprise-contract/ec-policies//policy/lib \
+	--source github.com/enterprise-contract/ec-policies//policy/release
+
+Fetching policies and data from multiple sources to the current directory:
+
+  ec fetch policy \
+	--source github.com/enterprise-contract/ec-policies//policy/lib \
+	--source github.com/enterprise-contract/ec-policies//policy/release \
+	--data-source git::https://github.com/enterprise-contract/ec-policies//example/data
+
+Fetching policies from multiple sources to an automatically generated temporary
+work directory:
+
+  ec fetch policy --work-dir \
+	--source github.com/enterprise-contract/ec-policies//policy/lib \
+	--source github.com/enterprise-contract/ec-policies//policy/release
+
+Different style url formats are supported. In this example "policy" is treated as
+a subdirectory even without the go-getter style // delimiter:
+
+  ec fetch policy --source https://github.com/enterprise-contract/ec-policies/policy
+
+Fetching policies from an OPA bundle (OCI image):
+
+  ec fetch policy --source quay.io/enterprise-contract/ec-release-policy:latest
+
+Notes:
+
+- The --dest flag will be ignored if --work-dir is set
+- Adding a protocol prefix such as 'git::' to the source url forces it to be treated
+  as a go-getter style url.
+
+== Options
+
+--data-source:: data source url. multiple values are allowed (Default: [])
+-d, --dest:: use the specified download destination directory. ignored if --work-dir is set (Default: .)
+-h, --help:: help for policy (Default: false)
+-s, --source:: policy source url. multiple values are allowed (Default: [])
+-w, --work-dir:: use a temporary work dir as the download destination directory (Default: false)
+
+== Options inherited from parent commands
+
+--debug:: same as verbose but also show function names and line numbers (Default: false)
+--kubeconfig:: path to the Kubernetes config file to use
+--quiet:: less verbose output (Default: false)
+--timeout:: max overall execution duration (Default: 5m0s)
+--trace:: enable trace logging (Default: false)
+--verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec_fetch.adoc[ec fetch - Fetch remote resources]

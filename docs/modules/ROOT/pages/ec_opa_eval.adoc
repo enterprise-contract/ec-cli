@@ -1,0 +1,162 @@
+= ec opa eval
+
+Evaluate a Rego query== Synopsis
+
+Evaluate a Rego query and print the result.
+
+Examples
+--------
+
+To evaluate a simple query:
+
+    $ opa eval 'x := 1; y := 2; x < y'
+
+To evaluate a query against JSON data:
+
+    $ opa eval --data data.json 'name := data.names[_]'
+
+To evaluate a query against JSON data supplied with a file:// URL:
+
+    $ opa eval --data file:///path/to/file.json 'data'
+
+
+File & Bundle Loading
+---------------------
+
+The --bundle flag will load data files and Rego files contained
+in the bundle specified by the path. It can be either a
+compressed tar archive bundle file or a directory tree.
+
+    $ opa eval --bundle /some/path 'data'
+
+Where /some/path contains:
+
+    foo/
+      |
+      +-- bar/
+      |     |
+      |     +-- data.json
+      |
+      +-- baz.rego
+      |
+      +-- manifest.yaml
+
+The JSON file 'foo/bar/data.json' would be loaded and rooted under
+'data.foo.bar' and the 'foo/baz.rego' would be loaded and rooted under the
+package path contained inside the file. Only data files named data.json or
+data.yaml will be loaded. In the example above the manifest.yaml would be
+ignored.
+
+See https://www.openpolicyagent.org/docs/latest/management-bundles/ for more details
+on bundle directory structures.
+
+The --data flag can be used to recursively load ALL *.rego, *.json, and
+*.yaml files under the specified directory.
+
+The -O flag controls the optimization level. By default, optimization is disabled (-O=0).
+When optimization is enabled the 'eval' command generates a bundle from the files provided
+with either the --bundle or --data flag. This bundle is semantically equivalent to the input
+files however the structure of the files in the bundle may have been changed by rewriting, inlining,
+pruning, etc. This resulting optimized bundle is used to evaluate the query. If optimization is
+enabled at least one entrypoint must be supplied, either via the -e option, or via entrypoint
+metadata annotations.
+
+Output Formats
+--------------
+
+Set the output format with the --format flag.
+
+    --format=json      : output raw query results as JSON
+    --format=values    : output line separated JSON arrays containing expression values
+    --format=bindings  : output line separated JSON objects containing variable bindings
+    --format=pretty    : output query results in a human-readable format
+    --format=source    : output partial evaluation results in a source format
+    --format=raw       : output the values from query results in a scripting friendly format
+    --format=discard   : output the result field as "discarded" when non-nil
+
+Schema
+------
+
+The -s/--schema flag provides one or more JSON Schemas used to validate references to the input or data documents.
+Loads a single JSON file, applying it to the input document; or all the schema files under the specified directory.
+
+    $ opa eval --data policy.rego --input input.json --schema schema.json
+    $ opa eval --data policy.rego --input input.json --schema schemas/
+
+Capabilities
+------------
+
+When passing a capabilities definition file via --capabilities, one can restrict which
+hosts remote schema definitions can be retrieved from. For example, a capabilities.json
+containing
+
+    {
+        "builtins": [ ... ],
+        "allow_net": [ "kubernetesjsonschema.dev" ]
+    }
+
+would disallow fetching remote schemas from any host but "kubernetesjsonschema.dev".
+Setting allow_net to an empty array would prohibit fetching any remote schemas.
+
+Not providing a capabilities file, or providing a file without an allow_net key, will
+permit fetching remote schemas from any host.
+
+Note that the metaschemas http://json-schema.org/draft-04/schema, http://json-schema.org/draft-06/schema,
+and http://json-schema.org/draft-07/schema, are always available, even without network
+access.
+
+[source,shell]
+----
+ec opa eval <query> [flags]
+----
+== Options
+
+-b, --bundle:: set bundle file(s) or directory path(s). This flag can be repeated.
+--capabilities:: set capabilities version or capabilities.json file path
+--count:: number of times to repeat each benchmark (Default: 1)
+--coverage:: report coverage (Default: false)
+-d, --data:: set policy or data file(s). This flag can be repeated.
+--disable-early-exit:: disable 'early exit' optimizations (Default: false)
+--disable-indexing:: disable indexing optimizations (Default: false)
+--disable-inlining:: set paths of documents to exclude from inlining (Default: [])
+-e, --entrypoint:: set slash separated entrypoint path
+--explain:: enable query explanations (Default: off)
+--fail:: exits with non-zero exit code on undefined/empty result and errors (Default: false)
+--fail-defined:: exits with non-zero exit code on defined/non-empty result and errors (Default: false)
+-f, --format:: set output format (Default: json)
+-h, --help:: help for eval (Default: false)
+--ignore:: set file and directory names to ignore during loading (e.g., '.*' excludes hidden files) (Default: [])
+--import:: set query import(s). This flag can be repeated.
+-i, --input:: set input file path
+--instrument:: enable query instrumentation metrics (implies --metrics) (Default: false)
+--metrics:: report query performance metrics (Default: false)
+-O, --optimize:: set optimization level (Default: 0)
+--package:: set query package
+-p, --partial:: perform partial evaluation (Default: false)
+--pretty-limit:: set limit after which pretty output gets truncated (Default: 80)
+--profile:: perform expression profiling (Default: false)
+--profile-limit:: set number of profiling results to show (Default: 10)
+--profile-sort:: set sort order of expression profiler results. Accepts: total_time_ns, num_eval, num_redo, num_gen_expr, file, line. This flag can be repeated.
+-s, --schema:: set schema file path or directory path
+--shallow-inlining:: disable inlining of rules that depend on unknowns (Default: false)
+--show-builtin-errors:: collect and return all encountered built-in errors, built in errors are not fatal (Default: false)
+--stdin:: read query from stdin (Default: false)
+-I, --stdin-input:: read input document from stdin (Default: false)
+-S, --strict:: enable compiler strict mode (Default: false)
+--strict-builtin-errors:: treat the first built-in function error encountered as fatal (Default: false)
+-t, --target:: set the runtime to exercise (Default: rego)
+--timeout:: set eval timeout (default unlimited) (Default: 0s)
+-u, --unknowns:: set paths to treat as unknown during partial evaluation (Default: [input])
+--v1-compatible:: opt-in to OPA features and behaviors that will be enabled by default in a future OPA v1.0 release (Default: false)
+
+== Options inherited from parent commands
+
+--debug:: same as verbose but also show function names and line numbers (Default: false)
+--kubeconfig:: path to the Kubernetes config file to use
+--quiet:: less verbose output (Default: false)
+--trace:: enable trace logging (Default: false)
+--verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec_opa.adoc[ec opa - Open Policy Agent (OPA) (embedded)]

@@ -1,0 +1,26 @@
+= ec opa version
+
+Print the version of OPA== Synopsis
+
+Show version and build information for OPA.
+[source,shell]
+----
+ec opa version [flags]
+----
+== Options
+
+-c, --check:: check for latest OPA release (Default: false)
+-h, --help:: help for version (Default: false)
+
+== Options inherited from parent commands
+
+--debug:: same as verbose but also show function names and line numbers (Default: false)
+--kubeconfig:: path to the Kubernetes config file to use
+--quiet:: less verbose output (Default: false)
+--timeout:: max overall execution duration (Default: 5m0s)
+--trace:: enable trace logging (Default: false)
+--verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec_opa.adoc[ec opa - Open Policy Agent (OPA) (embedded)]

@@ -57,6 +57,18 @@ jobs:
           go-version-file: go.mod
           cache: false
 
+      - name: Generate
+        run: make generate
+
+      - name: Check for uncommitted changes
+        run: |
+          if ! git diff --exit-code -s; then
+            for f in $(git diff --exit-code --name-only); do
+              echo "::error file=$f,line=1,col=1,endColumn=1::File was modified in build"
+            done
+            exit 1
+          fi
+
       - name: Test
         run: make test
 

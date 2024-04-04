@@ -1,0 +1,49 @@
+= ec opa fmt
+
+Format Rego source files== Synopsis
+
+Format Rego source files.
+
+The 'fmt' command takes a Rego source file and outputs a reformatted version. If no file path
+is provided - this tool will use stdin.
+The format of the output is not defined specifically; whatever this tool outputs
+is considered correct format (with the exception of bugs).
+
+If the '-w' option is supplied, the 'fmt' command with overwrite the source file
+instead of printing to stdout.
+
+If the '-d' option is supplied, the 'fmt' command will output a diff between the
+original and formatted source.
+
+If the '-l' option is supplied, the 'fmt' command will output the names of files
+that would change if formatted. The '-l' option will suppress any other output
+to stdout from the 'fmt' command.
+
+If the '--fail' option is supplied, the 'fmt' command will return a non zero exit
+code if a file would be reformatted.
+[source,shell]
+----
+ec opa fmt [path [...]] [flags]
+----
+== Options
+
+-d, --diff:: only display a diff of the changes (Default: false)
+--fail:: non zero exit code on reformat (Default: false)
+-h, --help:: help for fmt (Default: false)
+-l, --list:: list all files who would change when formatted (Default: false)
+--rego-v1:: format module(s) to be compatible with both Rego v1 and current OPA version) (Default: false)
+--v1-compatible:: opt-in to OPA features and behaviors that will be enabled by default in a future OPA v1.0 release (Default: false)
+-w, --write:: overwrite the original source file (Default: false)
+
+== Options inherited from parent commands
+
+--debug:: same as verbose but also show function names and line numbers (Default: false)
+--kubeconfig:: path to the Kubernetes config file to use
+--quiet:: less verbose output (Default: false)
+--timeout:: max overall execution duration (Default: 5m0s)
+--trace:: enable trace logging (Default: false)
+--verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec_opa.adoc[ec opa - Open Policy Agent (OPA) (embedded)]

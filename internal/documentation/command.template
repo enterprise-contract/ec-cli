@@ -1,0 +1,41 @@
+= {{ .CommandPath }}
+
+{{ .Short -}}
+
+{{ if .Long -}}
+
+== Synopsis
+
+{{ .Long }}
+{{- if .UseLine }}
+[source,shell]
+----
+{{ .UseLine }}
+----
+{{- end }}{{/* UseLine */}}
+
+{{- end }}{{/* Long */}}
+{{- if .Example}}
+
+== Examples
+{{ .Example }}
+{{- end }}
+== Options
+{{ range options .NonInheritedFlags }}
+{{ if .Shorthand }}-{{ .Shorthand }}, {{ end }}--{{.Name}}:: {{ .Usage }}{{ if .DefaultValue }} (Default: {{.DefaultValue}}){{ end }}
+{{- end }}
+
+== Options inherited from parent commands
+{{ range options .InheritedFlags }}
+{{ if .Shorthand }}-{{ .Shorthand }}, {{ end }}--{{.Name}}:: {{ .Usage }}{{ if .DefaultValue }} (Default: {{.DefaultValue}}){{ end }}
+{{- end }}
+
+== See also
+{{ with .Parent }}
+ * xref:{{ replaceAll .CommandPath " " "_"}}.adoc[{{ .CommandPath }} - {{ .Short }}]
+{{- end -}}
+{{ range .Commands }}
+{{- if and .IsAvailableCommand .IsAdditionalHelpTopicCommand }}
+ * xref:{{ replaceAll .CommandPath " " "_"}}.adoc[{{ .CommandPath }} - {{ .Short }}]
+{{- end }}
+{{- end }}

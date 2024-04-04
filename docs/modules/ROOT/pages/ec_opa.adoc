@@ -1,0 +1,25 @@
+= ec opa
+
+Open Policy Agent (OPA) (embedded)== Synopsis
+
+An open source project to policy-enable your service.
+[source,shell]
+----
+ec opa [flags]
+----
+== Options
+
+-h, --help:: help for opa (Default: false)
+
+== Options inherited from parent commands
+
+--debug:: same as verbose but also show function names and line numbers (Default: false)
+--kubeconfig:: path to the Kubernetes config file to use
+--quiet:: less verbose output (Default: false)
+--timeout:: max overall execution duration (Default: 5m0s)
+--trace:: enable trace logging (Default: false)
+--verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec.adoc[ec - Enterprise Contract CLI]

@@ -1,0 +1,28 @@
+= ec opa parse
+
+Parse Rego source file== Synopsis
+
+Parse Rego source file and print AST.
+[source,shell]
+----
+ec opa parse <path> [flags]
+----
+== Options
+
+-f, --format:: set output format (Default: pretty)
+-h, --help:: help for parse (Default: false)
+--json-include:: include or exclude optional elements. By default comments are included. Current options: locations, comments. E.g. --json-include locations,-comments will include locations and exclude comments.
+--v1-compatible:: opt-in to OPA features and behaviors that will be enabled by default in a future OPA v1.0 release (Default: false)
+
+== Options inherited from parent commands
+
+--debug:: same as verbose but also show function names and line numbers (Default: false)
+--kubeconfig:: path to the Kubernetes config file to use
+--quiet:: less verbose output (Default: false)
+--timeout:: max overall execution duration (Default: 5m0s)
+--trace:: enable trace logging (Default: false)
+--verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec_opa.adoc[ec opa - Open Policy Agent (OPA) (embedded)]

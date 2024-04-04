@@ -1,0 +1,70 @@
+= ec opa capabilities
+
+Print the capabilities of OPA== Synopsis
+
+Show capabilities for OPA.
+
+The 'capabilities' command prints the OPA capabilities, prior to and including the version of OPA used.
+
+Print a list of all existing capabilities version names
+
+    $ opa capabilities
+    v0.17.0
+    v0.17.1
+    ...
+    v0.37.1
+    v0.37.2
+    v0.38.0
+    ...
+
+Print the capabilities of the current version
+
+    $ opa capabilities --current
+    {
+        "builtins": [...],
+        "future_keywords": [...],
+        "wasm_abi_versions": [...]
+    }
+
+Print the capabilities of a specific version
+
+    $ opa capabilities --version v0.32.1
+    {
+        "builtins": [...],
+        "future_keywords": null,
+        "wasm_abi_versions": [...]
+    }
+
+Print the capabilities of a capabilities file
+
+    $ opa capabilities --file ./capabilities/v0.32.1.json
+    {
+        "builtins": [...],
+        "future_keywords": null,
+        "wasm_abi_versions": [...]
+    }
+
+
+[source,shell]
+----
+ec opa capabilities [flags]
+----
+== Options
+
+--current:: print current capabilities (Default: false)
+--file:: print current capabilities
+-h, --help:: help for capabilities (Default: false)
+--version:: print capabilities of a specific version
+
+== Options inherited from parent commands
+
+--debug:: same as verbose but also show function names and line numbers (Default: false)
+--kubeconfig:: path to the Kubernetes config file to use
+--quiet:: less verbose output (Default: false)
+--timeout:: max overall execution duration (Default: 5m0s)
+--trace:: enable trace logging (Default: false)
+--verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec_opa.adoc[ec opa - Open Policy Agent (OPA) (embedded)]

@@ -32,6 +32,8 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
+//go:generate go run ../internal/documentation -adoc ../docs/modules/ROOT/
+
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = root.NewRootCmd()
 
