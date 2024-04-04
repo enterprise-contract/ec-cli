@@ -257,11 +257,11 @@ func (t *Tracker) trackGitReferences(ctx context.Context, urls []string, freshen
 		rest := u[pathSepIdx+2:]
 
 		path, rev, found := strings.Cut(rest, "@")
+		// with --freshen @revision is optional
 		if freshen {
-			if r, err := g.GitResolve(ctx, repository, rest); err != nil {
+			if r, err := g.GitResolve(ctx, repository, path); err != nil {
 				return err
 			} else {
-				path = rest
 				rev = r
 			}
 		} else if !found {
