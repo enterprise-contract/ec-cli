@@ -43,3 +43,9 @@ sources:
         # Temporary until https://issues.redhat.com/browse/EC-360 is fixed
         - hermetic_build_task
         - tasks.required_tasks_found:prefetch-dependencies
+    ruleData:
+      # Temporary until https://issues.redhat.com/browse/EC-520 is fixed
+      # (The default here is [critical,high])
+      restrict_cve_security_levels: [critical]
+      # (The default here is [])
+      warn_cve_security_levels: [high]
