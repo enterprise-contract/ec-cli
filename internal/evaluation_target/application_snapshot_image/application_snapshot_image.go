@@ -41,13 +41,10 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/fetchers/oci/config"
 	"github.com/enterprise-contract/ec-cli/internal/fetchers/oci/files"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
-	"github.com/enterprise-contract/ec-cli/internal/policy/source"
 	"github.com/enterprise-contract/ec-cli/internal/signature"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 	"github.com/enterprise-contract/ec-cli/pkg/schema"
 )
-
-var newConftestEvaluator = evaluator.NewConftestEvaluator
 
 // imageRefTransport is used to inject the type of transport to use with the
 // remote.WithTransport function. By default, remote.DefaultTransport is
@@ -107,29 +104,6 @@ func NewApplicationSnapshotImage(ctx context.Context, component app.SnapshotComp
 		return nil, err
 	}
 
-	// Return an evaluator for each of these
-	for _, sourceGroup := range p.Spec().Sources {
-		// Todo: Make each fetch run concurrently
-		log.Debugf("Fetching policy source group '%s'", sourceGroup.Name)
-		policySources, err := source.FetchPolicySources(sourceGroup)
-		if err != nil {
-			log.Debugf("Failed to fetch policy source group '%s'!", sourceGroup.Name)
-			return nil, err
-		}
-
-		for _, policySource := range policySources {
-			log.Debugf("policySource: %#v", policySource)
-		}
-
-		c, err := newConftestEvaluator(ctx, policySources, p, sourceGroup)
-		if err != nil {
-			log.Debug("Failed to initialize the conftest evaluator!")
-			return nil, err
-		}
-
-		log.Debug("Conftest evaluator initialized")
-		a.Evaluators = append(a.Evaluators, c)
-	}
 	return a, nil
 }
 
