@@ -257,15 +257,19 @@ func (t *Tracker) trackGitReferences(ctx context.Context, urls []string, freshen
 		rest := u[pathSepIdx+2:]
 
 		path, rev, found := strings.Cut(rest, "@")
-		if freshen {
-			if r, err := g.GitResolve(ctx, repository, rest); err != nil {
-				return err
-			} else {
-				path = rest
-				rev = r
+		if !found {
+			if !freshen {
+				return fmt.Errorf("expected %q to contain the revision information following the `@`, e.g. git+https://github.com/org/repository//task/0.1/task.yaml@f0cacc1a, to fetch the latest revision from a remote URL provide the --freshen parameter", u)
 			}
-		} else if !found {
-			return fmt.Errorf("expected %q to contain the revision information following the `@`, e.g. git+https://github.com/org/repository//task/0.1/task.yaml@f0cacc1a, to fetch the latest revision from a remote URL provide the --freshen parameter", u)
+			var err error
+			rev, err = g.GitResolve(ctx, repository, rest)
+			if err != nil {
+				return err
+			}
+			path = rest
+		} else if freshen {
+			// nothing prevents the user using --freshen and revision, so log what revision is being used.
+			log.Debugf("--freshen used, but a revision is also provided. Using provided revision: %q", rev)
 		}
 
 		t.addTrustedTaskRecord("", taskRecord{
