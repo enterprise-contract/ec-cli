@@ -1,0 +1,49 @@
+= ec opa inspect
+
+Inspect OPA bundle(s)== Synopsis
+
+Inspect OPA bundle(s).
+
+The 'inspect' command provides a summary of the contents in OPA bundle(s). Bundles are
+gzipped tarballs containing policies and data. The 'inspect' command reads bundle(s) and lists
+the following:
+
+* packages that are contributed by .rego files
+* data locations defined by the data.json and data.yaml files
+* manifest data
+* signature data
+* information about the Wasm module files
+* package- and rule annotations
+
+Example:
+
+    $ ls
+    bundle.tar.gz
+    $ opa inspect bundle.tar.gz
+
+You can provide exactly one OPA bundle or path to the 'inspect' command on the command-line. If you provide a path
+referring to a directory, the 'inspect' command will load that path as a bundle and summarize its structure and contents.
+
+[source,shell]
+----
+ec opa inspect <path> [<path> [...]] [flags]
+----
+== Options
+
+-a, --annotations:: list annotations (Default: false)
+-f, --format:: set output format (Default: pretty)
+-h, --help:: help for inspect (Default: false)
+--v1-compatible:: opt-in to OPA features and behaviors that will be enabled by default in a future OPA v1.0 release (Default: false)
+
+== Options inherited from parent commands
+
+--debug:: same as verbose but also show function names and line numbers (Default: false)
+--kubeconfig:: path to the Kubernetes config file to use
+--quiet:: less verbose output (Default: false)
+--timeout:: max overall execution duration (Default: 5m0s)
+--trace:: enable trace logging (Default: false)
+--verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec_opa.adoc[ec opa - Open Policy Agent (OPA) (embedded)]

@@ -1,0 +1,42 @@
+= ec inspect policy-data
+
+Read policy data from source urls and displays the data== Synopsis
+
+Read policy data from source urls and displays the data.
+
+This fetches policy sources similar to the 'ec fetch policy' command, but once
+the policy is fetched it reads json and yaml files inside the policy source and
+displays the data.
+
+Note that this command is not typically required to verify the Enterprise
+Contract. It has been made available for troubleshooting and debugging purposes.
+
+[source,shell]
+----
+ec inspect policy-data --source <source-url> [flags]
+----
+
+== Examples
+Print data from a given source url:
+
+ec inspect policy-data --source git::https://github.com/enterprise-contract/ec-policies//example/data
+
+== Options
+
+-d, --dest:: use the specified destination directory to download the policy. if not set, a temporary directory will be used
+-h, --help:: help for policy-data (Default: false)
+-o, --output:: output format. one of: json, yaml (Default: json)
+-s, --source:: policy data source url. multiple values are allowed (Default: [])
+
+== Options inherited from parent commands
+
+--debug:: same as verbose but also show function names and line numbers (Default: false)
+--kubeconfig:: path to the Kubernetes config file to use
+--quiet:: less verbose output (Default: false)
+--timeout:: max overall execution duration (Default: 5m0s)
+--trace:: enable trace logging (Default: false)
+--verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec_inspect.adoc[ec inspect - Inspect policy rules]

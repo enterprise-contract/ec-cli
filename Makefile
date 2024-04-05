@@ -39,8 +39,12 @@ help: ## Display this help
 
 ##@ Building
 
+.PHONY: generate
+generate: ## Code-generate files
+	go generate ./...
+
 .PHONY: $(ALL_SUPPORTED_OS_ARCH)
-$(ALL_SUPPORTED_OS_ARCH): ## Build binaries for specific platform/architecture, e.g. make dist/ec_linux_amd64
+$(ALL_SUPPORTED_OS_ARCH): generate ## Build binaries for specific platform/architecture, e.g. make dist/ec_linux_amd64
 	@GOOS=$(word 2,$(subst _, ,$(notdir $@))); \
 	GOARCH=$(word 3,$(subst _, ,$(notdir $@))); \
 	GOOS=$${GOOS} GOARCH=$${GOARCH} CGO_ENABLED=0 go build -trimpath -ldflags="-s -w -X github.com/enterprise-contract/ec-cli/internal/version.Version=$(VERSION)" -o dist/ec_$${GOOS}_$${GOARCH}; \
@@ -70,13 +74,6 @@ BUILD_IMG_ARCH:=$(shell podman version -f {{.Server.OsArch}} | awk -F/ '{print $
 .PHONY: build-for-test
 build-for-test: dist/ec_$(BUILD_IMG_ARCH)
 
-.PHONY: reference-docs
-reference-docs: ## Generate reference documentation input YAML files
-	@mkdir -p dist
-	@rm -rf dist/cli-reference
-# Make sure docs for experimental commands are generated.
-	@EC_EXPERIMENTAL=1 go run internal/documentation/documentation.go -yaml dist/cli-reference
-
 .PHONY: rego-docs
 rego-docs: ## Generate rego documentation input YAML files
 	@mkdir -p dist
@@ -84,7 +81,7 @@ rego-docs: ## Generate rego documentation input YAML files
 	go run internal/evaluator/documentation/documentation.go -yaml dist/rego-reference
 
 .PHONY: generate-docs
-generate-docs: rego-docs reference-docs
+generate-docs: rego-docs
 
 .PHONY: clean
 clean: ## Delete build output
@@ -219,7 +216,7 @@ push-snapshot-image: build-snapshot-image ## Push the ec-cli image with the "sna
 
 .PHONY: $(ALL_SUPPORTED_IMG_OS_ARCH)
 # Targets are in the form of "image_{platform}_{arch}", we set
-# TARGETOS={platform}, and TARGETARCH={arch}. 
+# TARGETOS={platform}, and TARGETARCH={arch}.
 $(ALL_SUPPORTED_IMG_OS_ARCH): TARGETOS=$(word 2,$(subst _, ,$@))
 $(ALL_SUPPORTED_IMG_OS_ARCH): TARGETARCH=$(word 3,$(subst _, ,$@))
 $(ALL_SUPPORTED_IMG_OS_ARCH):

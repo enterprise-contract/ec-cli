@@ -1,0 +1,55 @@
+= ec opa exec
+
+Execute against input files== Synopsis
+
+Execute against input files.
+
+The 'exec' command executes OPA against one or more input files. If the paths
+refer to directories, OPA will execute against files contained inside those
+directories, recursively.
+
+The 'exec' command accepts a --config-file/-c or series of --set options as
+arguments. These options behave the same as way as 'opa run'. Since the 'exec'
+command is intended to execute OPA in one-shot, the 'exec' command will
+manually trigger plugins before and after policy execution:
+
+Before: Discovery -> Bundle -> Status
+After: Decision Logs
+
+By default, the 'exec' command executes the "default decision" (specified in
+the OPA configuration) against each input file. This can be overridden by
+specifying the --decision argument and pointing at a specific policy decision,
+e.g., opa exec --decision /foo/bar/baz ...
+[source,shell]
+----
+ec opa exec <path> [<path> [...]] [flags]
+----
+== Options
+
+-b, --bundle:: set bundle file(s) or directory path(s). This flag can be repeated.
+-c, --config-file:: set path of configuration file
+--decision:: set decision to evaluate
+--fail:: exits with non-zero exit code on undefined result and errors (Default: false)
+--fail-defined:: exits with non-zero exit code on defined result and errors (Default: false)
+--fail-non-empty:: exits with non-zero exit code on non-empty result and errors (Default: false)
+-f, --format:: set output format (Default: pretty)
+-h, --help:: help for exec (Default: false)
+--log-format:: set log format (Default: json)
+-l, --log-level:: set log level (Default: error)
+--log-timestamp-format:: set log timestamp format (OPA_LOG_TIMESTAMP_FORMAT environment variable)
+--set:: override config values on the command line (use commas to specify multiple values) (Default: [])
+--set-file:: override config values with files on the command line (use commas to specify multiple values) (Default: [])
+--timeout:: set exec timeout with a Go-style duration, such as '5m 30s'. (default unlimited) (Default: 0s)
+--v1-compatible:: opt-in to OPA features and behaviors that will be enabled by default in a future OPA v1.0 release (Default: false)
+
+== Options inherited from parent commands
+
+--debug:: same as verbose but also show function names and line numbers (Default: false)
+--kubeconfig:: path to the Kubernetes config file to use
+--quiet:: less verbose output (Default: false)
+--trace:: enable trace logging (Default: false)
+--verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec_opa.adoc[ec opa - Open Policy Agent (OPA) (embedded)]

@@ -20,22 +20,44 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"path"
-	"strings"
+	"os/exec"
 
 	"github.com/spf13/cobra/doc"
 
 	cmd "github.com/enterprise-contract/ec-cli/cmd"
+	"github.com/enterprise-contract/ec-cli/cmd/test"
 )
 
 const DirectoryPermissions = 0755
 
-var markdown = flag.String("markdown", "", "Location of the generated MarkDown files")
 var man = flag.String("man", "", "Location of the generated Man files")
-var rst = flag.String("rst", "", "Location of the generated reStructuredText files")
-var yaml = flag.String("yaml", "", "Location of the generated YAML files")
+var adoc = flag.String("adoc", "", "Location of the generated Asciidoc files")
+
+func init() {
+	cmd.RootCmd.AddCommand(test.TestCmd)
+}
 
 func main() {
+	// opa run is using $HOME for the --history flag, $HOME is environment
+	// specific, so to reduce the differences we set the HOME to `$HOME` to
+	// eliminate the environment difference
+	if os.Getenv("HOME") != "$HOME" {
+		exe, err := os.Executable()
+		if err != nil {
+			panic(err)
+		}
+
+		cmd := exec.Command(exe, os.Args[1:]...)
+		cmd.Env = append(cmd.Env, "HOME=$HOME")
+		cmd.Stderr = os.Stderr
+		cmd.Stdout = os.Stdout
+		if err := cmd.Run(); err != nil {
+			panic(err)
+		}
+
+		os.Exit(cmd.ProcessState.ExitCode())
+	}
+
 	flag.Parse()
 
 	// Disable generated tags
@@ -49,26 +71,6 @@ func main() {
 		}
 	}()
 
-	// Markdown
-	if *markdown != "" {
-		if err = os.MkdirAll(*markdown, DirectoryPermissions); err != nil {
-			return
-		}
-
-		prepender := func(s string) string {
-			title := strings.ReplaceAll(strings.TrimSuffix(path.Base(s), ".md"), "_", " ")
-			return fmt.Sprintf("---\ntitle: %s\n---\n", title)
-		}
-
-		linkHandler := func(s string) string {
-			return fmt.Sprintf(`{{< relref "%s" >}}`, strings.TrimSuffix(s, ".md"))
-		}
-
-		if err = doc.GenMarkdownTreeCustom(cmd.RootCmd, *markdown, prepender, linkHandler); err != nil {
-			return
-		}
-	}
-
 	// Man pages
 	if *man != "" {
 		if err = os.MkdirAll(*man, DirectoryPermissions); err != nil {
@@ -79,22 +81,14 @@ func main() {
 		}
 	}
 
-	// ReStructuredText
-	if *rst != "" {
-		if err = os.MkdirAll(*rst, DirectoryPermissions); err != nil {
+	if *adoc != "" {
+		if err = os.MkdirAll(*adoc, DirectoryPermissions); err != nil {
 			return
 		}
-		if err = doc.GenReSTTree(cmd.RootCmd, *rst); err != nil {
+		if err = generateAsciidoc(cmd.RootCmd, *adoc); err != nil {
 			return
 		}
-	}
-
-	// YAML
-	if *yaml != "" {
-		if err = os.MkdirAll(*yaml, DirectoryPermissions); err != nil {
-			return
-		}
-		if err = doc.GenYamlTree(cmd.RootCmd, *yaml); err != nil {
+		if err = updateNav(cmd.RootCmd, *adoc); err != nil {
 			return
 		}
 	}

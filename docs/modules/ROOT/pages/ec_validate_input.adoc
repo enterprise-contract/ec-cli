@@ -1,0 +1,69 @@
+= ec validate input
+
+Validate arbitrary JSON or yaml file input conformance with the Enterprise Contract== Synopsis
+
+Validate conformance of arbitrary JSON or yaml file input with the Enterprise Contract
+
+For each file, validation is performed to determine if the file conforms to rego policies
+defined in the the EnterpriseContractPolicy.
+
+[source,shell]
+----
+ec validate input [flags]
+----
+
+== Examples
+Use an EnterpriseContractPolicy spec from a local YAML file to validate a single file
+ec validate input --file /path/to/file.json --policy my-policy.yaml
+
+Use an EnterpriseContractPolicy spec from a local YAML file to validate multiple files
+The file flag can be repeated for multiple input files.
+ec validate input --file /path/to/file.yaml --file /path/to/file2.yaml --policy my-policy.yaml
+
+Use an EnterpriseContractPolicy spec from a local YAML file to validate multiple files
+The file flag can take a comma separated series of files.
+ec validate input --file="/path/to/file.json,/path/to/file2.json" --policy my-policy.yaml
+
+Use a git url for the policy configuration. In the first example there should be a '.ec/policy.yaml'
+or a 'policy.yaml' inside a directory called 'default' in the top level of the git repo. In the second
+example there should be a '.ec/policy.yaml' or a 'policy.yaml' file in the top level
+of the git repo. For git repos not hosted on 'github.com' or 'gitlab.com', prefix the url with
+'git::'. For the policy configuration files you can use json instead of yaml if you prefer.
+
+  ec validate input --file /path/to/file.json --policy github.com/user/repo//default?ref=main
+
+  ec validate input --file /path/to/file.yaml --policy github.com/user/repo
+
+
+== Options
+
+--effective-time:: Run policy checks with the provided time. Useful for testing rules with
+effective dates in the future. The value can be "now" (default) - for
+current time, or a RFC3339 formatted value, e.g. 2022-11-18T00:00:00Z. (Default: now)
+-f, --file:: path to input YAML/JSON file (required) (Default: [])
+-h, --help:: help for input (Default: false)
+--info:: Include additional information on the failures. For instance for policy
+violations, include the title and the description of the failed policy
+rule. (Default: false)
+-o, --output:: Write output to a file in a specific format, e.g. yaml=/tmp/output.yaml. Use empty string
+path for stdout, e.g. yaml. May be used multiple times. Possible formats are json, yaml, 
+and summary (Default: [])
+-p, --policy:: Policy configuration as:
+* file (policy.yaml)
+* git reference (github.com/user/repo//default?ref=main), or
+* inline JSON ('{sources: {...}, configuration: {...}}')")
+-s, --strict:: Return non-zero status on non-successful validation (Default: true)
+
+== Options inherited from parent commands
+
+--debug:: same as verbose but also show function names and line numbers (Default: false)
+--kubeconfig:: path to the Kubernetes config file to use
+--quiet:: less verbose output (Default: false)
+--show-successes::  (Default: false)
+--timeout:: max overall execution duration (Default: 5m0s)
+--trace:: enable trace logging (Default: false)
+--verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec_validate.adoc[ec validate - Validate conformance with the Enterprise Contract]

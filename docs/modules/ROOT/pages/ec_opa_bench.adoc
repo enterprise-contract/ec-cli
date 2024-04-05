@@ -1,0 +1,61 @@
+= ec opa bench
+
+Benchmark a Rego query== Synopsis
+
+Benchmark a Rego query and print the results.
+
+The benchmark command works very similar to 'eval' and will evaluate the query in the same fashion. The
+evaluation will be repeated a number of times and performance results will be returned.
+
+Example with bundle and input data:
+
+	opa bench -b ./policy-bundle -i input.json 'data.authz.allow'
+
+To enable more detailed analysis use the --metrics and --benchmem flags.
+
+To run benchmarks against a running OPA server to evaluate server overhead use the --e2e flag.
+
+The optional "gobench" output format conforms to the Go Benchmark Data Format.
+
+[source,shell]
+----
+ec opa bench <query> [flags]
+----
+== Options
+
+--benchmem:: report memory allocations with benchmark results (Default: true)
+-b, --bundle:: set bundle file(s) or directory path(s). This flag can be repeated.
+-c, --config-file:: set path of configuration file
+--count:: number of times to repeat each benchmark (Default: 1)
+-d, --data:: set policy or data file(s). This flag can be repeated.
+--e2e:: run benchmarks against a running OPA server (Default: false)
+--fail:: exits with non-zero exit code on undefined/empty result and errors (Default: true)
+-f, --format:: set output format (Default: pretty)
+-h, --help:: help for bench (Default: false)
+--ignore:: set file and directory names to ignore during loading (e.g., '.*' excludes hidden files) (Default: [])
+--import:: set query import(s). This flag can be repeated.
+-i, --input:: set input file path
+--metrics:: report query performance metrics (Default: true)
+--package:: set query package
+-p, --partial:: perform partial evaluation (Default: false)
+-s, --schema:: set schema file path or directory path
+--shutdown-grace-period:: set the time (in seconds) that the server will wait to gracefully shut down. This flag is valid in 'e2e' mode only. (Default: 10)
+--shutdown-wait-period:: set the time (in seconds) that the server will wait before initiating shutdown. This flag is valid in 'e2e' mode only. (Default: 0)
+--stdin:: read query from stdin (Default: false)
+-I, --stdin-input:: read input document from stdin (Default: false)
+-t, --target:: set the runtime to exercise (Default: rego)
+-u, --unknowns:: set paths to treat as unknown during partial evaluation (Default: [input])
+--v1-compatible:: opt-in to OPA features and behaviors that will be enabled by default in a future OPA v1.0 release (Default: false)
+
+== Options inherited from parent commands
+
+--debug:: same as verbose but also show function names and line numbers (Default: false)
+--kubeconfig:: path to the Kubernetes config file to use
+--quiet:: less verbose output (Default: false)
+--timeout:: max overall execution duration (Default: 5m0s)
+--trace:: enable trace logging (Default: false)
+--verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec_opa.adoc[ec opa - Open Policy Agent (OPA) (embedded)]

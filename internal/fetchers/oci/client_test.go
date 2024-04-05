@@ -39,17 +39,14 @@ import (
 
 func TestCacheInit(t *testing.T) {
 	// by default the cache should be on
-	assert.NotNil(t, imgCache)
+	assert.NotNil(t, initCache())
 
 	t.Setenv("EC_CACHE", "false")
-	imgCache = nil
-	initCache()
-	assert.Nil(t, imgCache)
+	assert.Nil(t, initCache())
 
 	t.Cleanup(func() {
 		t.Setenv("EC_CACHE", "true")
-		initCache()
-		assert.NotNil(t, imgCache)
+		assert.NotNil(t, initCache())
 	})
 }
 

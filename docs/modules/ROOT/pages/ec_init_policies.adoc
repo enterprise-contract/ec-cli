@@ -1,0 +1,37 @@
+= ec init policies
+
+Initialize a directory with minimal EC scaffolding== Synopsis
+
+This command creates the necessary files for a minimal EC policy setup in the
+specified destination directory.
+
+More information about authoring policies is available in the EC documentation:
+https://enterprisecontract.dev/docs/ec-policies/authoring.html
+
+[source,shell]
+----
+ec init policies --dest-dir <directory-url> [flags]
+----
+
+== Examples
+Initialize the "my-policy" directory with minimal EC policy scaffolding:
+
+  ec init policies --dest-dir my-policy
+
+== Options
+
+-d, --dest-dir:: Directory to use when creating EC policy scaffolding. If not specified stdout will be used.
+-h, --help:: help for policies (Default: false)
+
+== Options inherited from parent commands
+
+--debug:: same as verbose but also show function names and line numbers (Default: false)
+--kubeconfig:: path to the Kubernetes config file to use
+--quiet:: less verbose output (Default: false)
+--timeout:: max overall execution duration (Default: 5m0s)
+--trace:: enable trace logging (Default: false)
+--verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec_init.adoc[ec init - Initialize a directory for use]

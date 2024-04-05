@@ -1,0 +1,4 @@
+* xref:reference.adoc[Command Reference]
+{{ range commands . -}}
+** xref:{{ docname . }}[{{ .Name }}]
+{{ end }}

@@ -1,0 +1,61 @@
+= ec opa deps
+
+Analyze Rego query dependencies== Synopsis
+
+Print dependencies of provided query.
+
+Dependencies are categorized as either base documents, which is any data loaded
+from the outside world, or virtual documents, i.e values that are computed from rules.
+
+Example
+-------
+Given a policy like this:
+
+	package policy
+
+	import rego.v1
+
+	allow if is_admin
+
+	is_admin if "admin" in input.user.roles
+
+To evaluate the dependencies of a simple query (e.g. data.policy.allow),
+we'd run opa deps like demonstrated below:
+
+	$ opa deps --data policy.rego data.policy.allow
+	+------------------+----------------------+
+	|  BASE DOCUMENTS  |  VIRTUAL DOCUMENTS   |
+	+------------------+----------------------+
+	| input.user.roles | data.policy.allow    |
+	|                  | data.policy.is_admin |
+	+------------------+----------------------+
+
+From the output we're able to determine that the allow rule depends on
+the input.user.roles base document, as well as the virtual document (rule)
+data.policy.is_admin.
+
+[source,shell]
+----
+ec opa deps <query> [flags]
+----
+== Options
+
+-b, --bundle:: set bundle file(s) or directory path(s). This flag can be repeated.
+-d, --data:: set policy or data file(s). This flag can be repeated.
+-f, --format:: set output format (Default: pretty)
+-h, --help:: help for deps (Default: false)
+--ignore:: set file and directory names to ignore during loading (e.g., '.*' excludes hidden files) (Default: [])
+--v1-compatible:: opt-in to OPA features and behaviors that will be enabled by default in a future OPA v1.0 release (Default: false)
+
+== Options inherited from parent commands
+
+--debug:: same as verbose but also show function names and line numbers (Default: false)
+--kubeconfig:: path to the Kubernetes config file to use
+--quiet:: less verbose output (Default: false)
+--timeout:: max overall execution duration (Default: 5m0s)
+--trace:: enable trace logging (Default: false)
+--verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec_opa.adoc[ec opa - Open Policy Agent (OPA) (embedded)]

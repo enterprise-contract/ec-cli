@@ -22,6 +22,7 @@ import (
 	"os"
 	"path"
 	"strconv"
+	"sync"
 
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
@@ -34,27 +35,24 @@ type key string
 
 const clientKey key = "ec.fetcher.config.client"
 
-var imgCache cache.Cache
+var imgCache = sync.OnceValue(initCache)
 
-func init() {
-	initCache()
-}
-
-func initCache() {
+func initCache() cache.Cache {
 	// if a value was set and it is parsed as false, turn the cache off
 	if v, err := strconv.ParseBool(os.Getenv("EC_CACHE")); err == nil && !v {
-		return
+		return nil
 	}
 
 	if userCache, err := os.UserCacheDir(); err != nil {
 		log.Debug("unable to find user cache directory")
+		return nil
 	} else {
 		imgCacheDir := path.Join(userCache, "ec", "images")
 		if err := os.MkdirAll(imgCacheDir, 0700); err != nil {
 			log.Debugf("unable to create temporary directory for image cache in %q: %v", imgCacheDir, err)
 		}
 		log.Debugf("using %q directory to store image cache", imgCacheDir)
-		imgCache = cache.NewFilesystemCache(imgCacheDir)
+		return cache.NewFilesystemCache(imgCacheDir)
 	}
 }
 
@@ -87,8 +85,8 @@ func (*remoteClient) Image(ref name.Reference, opts ...remote.Option) (v1.Image,
 		return nil, err
 	}
 
-	if imgCache != nil {
-		img = cache.Image(img, imgCache)
+	if c := imgCache(); c != nil {
+		img = cache.Image(img, c)
 	}
 
 	return img, nil

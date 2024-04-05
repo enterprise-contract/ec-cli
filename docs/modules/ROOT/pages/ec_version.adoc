@@ -1,0 +1,21 @@
+= ec version
+
+Print version information
+== Options
+
+-h, --help:: help for version (Default: false)
+-j, --json:: JSON output (Default: false)
+-s, --short:: Only output the version (Default: false)
+
+== Options inherited from parent commands
+
+--debug:: same as verbose but also show function names and line numbers (Default: false)
+--kubeconfig:: path to the Kubernetes config file to use
+--quiet:: less verbose output (Default: false)
+--timeout:: max overall execution duration (Default: 5m0s)
+--trace:: enable trace logging (Default: false)
+--verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec.adoc[ec - Enterprise Contract CLI]

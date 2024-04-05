@@ -1,0 +1,160 @@
+= ec validate image
+
+Validate conformance of container images with the Enterprise Contract== Synopsis
+
+Validate conformance of container images with the Enterprise Contract
+
+For each image, validation is performed in stages to determine if the image
+conforms to the Enterprise Contract.
+
+The first validation stage determines if an image has been signed, and the
+signature matches the provided public key. This is akin to the "cosign verify"
+command.
+
+The second validation stage determines if one or more attestations exist, and
+those attestations have been signed matching the provided public key, similarly
+to the "cosign verify-attestation" command. This stage temporarily stores the
+attestations for usage in the next stage.
+
+The final stage verifies the attestations conform to rego policies defined in
+the EnterpriseContractPolicy.
+
+Validation advances each stage as much as possible for each image in order to
+capture all issues in a single execution.
+
+[source,shell]
+----
+ec validate image [flags]
+----
+
+== Examples
+Validate single image with the policy defined in the EnterpriseContractPolicy
+custom resource named "default" in the enterprise-contract-service Kubernetes
+namespace:
+
+  ec validate image --image registry/name:tag
+
+Validate multiple images from an ApplicationSnapshot Spec file:
+
+  ec validate image --images my-app.yaml
+
+Validate attestation of images from an inline ApplicationSnapshot Spec:
+
+  ec validate image --images '{"components":[{"containerImage":"<image url>"}]}'
+
+Use a different public key than the one from the EnterpriseContractPolicy resource:
+
+  ec validate image --image registry/name:tag --public-key <path/to/public/key>
+
+Use a different Rekor URL than the one from the EnterpriseContractPolicy resource:
+
+  ec validate image --image registry/name:tag --rekor-url https://rekor.example.org
+
+Return a non-zero status code on validation failure:
+
+  ec validate image --image registry/name:tag
+
+ 	Return a zero status code even if there are validation failures:
+
+  ec validate image --image registry/name:tag --strict=false
+
+Use an EnterpriseContractPolicy resource from the currently active kubernetes context:
+
+  ec validate image --image registry/name:tag --policy my-policy
+
+Use an EnterpriseContractPolicy resource from a different namespace:
+
+  ec validate image --image registry/name:tag --policy my-namespace/my-policy
+
+Use an inline EnterpriseContractPolicy spec
+
+  ec validate image --image registry/name:tag --policy '{"publicKey": "<path/to/public/key>"}'
+
+Use an EnterpriseContractPolicy spec from a local YAML file
+  ec validate image --image registry/name:tag --policy my-policy.yaml
+
+Use a git url for the policy configuration. In the first example there should be a '.ec/policy.yaml'
+or a 'policy.yaml' inside a directory called 'default' in the top level of the git repo. In the second
+example there should be a '.ec/policy.yaml' or a 'policy.yaml' file in the top level
+of the git repo. For git repos not hosted on 'github.com' or 'gitlab.com', prefix the url with
+'git::'. For the policy configuration files you can use json instead of yaml if you prefer.
+
+  ec validate image --image registry/name:tag --policy github.com/user/repo//default?ref=main
+
+  ec validate image --image registry/name:tag --policy github.com/user/repo
+
+Write output in JSON format to a file
+
+  ec validate image --image registry/name:tag --output json=<path>
+
+Write output in YAML format to stdout and in appstudio format to a file
+
+  ec validate image --image registry/name:tag --output yaml --output appstudio=<path>
+
+Write the data used in the policy evaluation to a file in YAML format
+
+  ec validate image --image registry/name:tag --output data=<path>
+
+Validate a single image with keyless workflow.
+
+  ec validate image --image registry/name:tag --policy my-policy \
+    --certificate-identity 'https://github.com/user/repo/.github/workflows/push.yaml@refs/heads/main' \
+    --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
+    --rekor-url 'https://rekor.sigstore.dev'
+
+Use a regular expression to match certificate attributes.
+
+  ec validate image --image registry/name:tag --policy my-policy \
+    --certificate-identity-regexp '^https://github\.com' \
+    --certificate-oidc-issuer-regexp 'githubusercontent' \
+    --rekor-url 'https://rekor.sigstore.dev'
+
+== Options
+
+--certificate-identity:: URL of the certificate identity for keyless verification
+--certificate-identity-regexp:: Regular expression for the URL of the certificate identity for keyless verification
+--certificate-oidc-issuer:: URL of the certificate OIDC issuer for keyless verification
+--certificate-oidc-issuer-regexp:: Regular expresssion for the URL of the certificate OIDC issuer for keyless verification
+--effective-time:: Run policy checks with the provided time. Useful for testing rules with
+effective dates in the future. The value can be "now" (default) - for
+current time, "attestation" - for time from the youngest attestation, or
+a RFC3339 formatted value, e.g. 2022-11-18T00:00:00Z.
+ (Default: now)
+-f, --file-path:: DEPRECATED - use --images: path to ApplicationSnapshot Spec JSON file
+-h, --help:: help for image (Default: false)
+--ignore-rekor:: Skip Rekor transparency log checks during validation. (Default: false)
+-i, --image:: OCI image reference
+--images:: path to ApplicationSnapshot Spec JSON file or JSON representation of an ApplicationSnapshot Spec
+--info:: Include additional information on the failures. For instance for policy
+violations, include the title and the description of the failed policy
+rule. (Default: false)
+-j, --json-input:: DEPRECATED - use --images: JSON representation of an ApplicationSnapshot Spec
+--output:: write output to a file in a specific format. Use empty string path for stdout.
+May be used multiple times. Possible formats are json, yaml, appstudio, junit,
+summary, data, and policy-input.
+ (Default: [])
+-o, --output-file:: [DEPRECATED] write output to a file. Use empty string for stdout, default behavior
+-p, --policy:: Policy configuration as:
+  * Kubernetes reference ([<namespace>/]<name>)
+  * file (policy.yaml)
+  * git reference (github.com/user/repo//default?ref=main), or
+  * inline JSON ('{sources: {...}, configuration: {...}}')")
+-k, --public-key:: path to the public key. Overrides publicKey from EnterpriseContractPolicy
+-r, --rekor-url:: Rekor URL. Overrides rekorURL from EnterpriseContractPolicy
+--snapshot:: Provide the AppStudio Snapshot as a source of the images to validate, as inline
+JSON of the "spec" or a reference to a Kubernetes object [<namespace>/]<name>
+-s, --strict:: Return non-zero status on non-successful validation. Defaults to true. Use --strict=false to return a zero status code. (Default: true)
+
+== Options inherited from parent commands
+
+--debug:: same as verbose but also show function names and line numbers (Default: false)
+--kubeconfig:: path to the Kubernetes config file to use
+--quiet:: less verbose output (Default: false)
+--show-successes::  (Default: false)
+--timeout:: max overall execution duration (Default: 5m0s)
+--trace:: enable trace logging (Default: false)
+--verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec_validate.adoc[ec validate - Validate conformance with the Enterprise Contract]

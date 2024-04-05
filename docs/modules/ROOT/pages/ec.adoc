@@ -1,0 +1,27 @@
+= ec
+
+Enterprise Contract CLI== Synopsis
+
+Enterprise Contract CLI
+
+Set of commands to help validate resources with the Enterprise Contract.
+
+[source,shell]
+----
+ec [flags]
+----
+== Options
+
+--debug:: same as verbose but also show function names and line numbers (Default: false)
+-h, --help:: help for ec (Default: false)
+--kubeconfig:: path to the Kubernetes config file to use
+--quiet:: less verbose output (Default: false)
+--timeout:: max overall execution duration (Default: 5m0s)
+--trace:: enable trace logging (Default: false)
+--verbose:: more verbose output (Default: false)
+
+== Options inherited from parent commands
+
+
+== See also
+

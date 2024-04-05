@@ -22,7 +22,6 @@ name: Release Antora extensions
     branches:
       - main
     paths:
-      - 'reference-antora-extension/**'
       - 'tekton-task-antora-extension/**'
       - 'rego-antora-extension/**'
   workflow_dispatch:
@@ -35,8 +34,6 @@ jobs:
     strategy:
       matrix:
         include:
-        - path: 'reference-antora-extension'
-          if: startsWith(github.event.head_commit.modified, "reference-antora-extension/**")
         - path: 'tekton-task-antora-extension'
           if: startsWith(github.event.head_commit.modified, "tekton-task-antora-extension/**")
         - path: 'rego-antora-extension'

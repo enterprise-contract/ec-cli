@@ -1,0 +1,38 @@
+= ec opa check
+
+Check Rego source files== Synopsis
+
+Check Rego source files for parse and compilation errors.
+	
+	If the 'check' command succeeds in parsing and compiling the source file(s), no output
+	is produced. If the parsing or compiling fails, 'check' will output the errors
+	and exit with a non-zero exit code.
+[source,shell]
+----
+ec opa check <path> [path [...]] [flags]
+----
+== Options
+
+-b, --bundle:: load paths as bundle files or root directories (Default: false)
+--capabilities:: set capabilities version or capabilities.json file path
+-f, --format:: set output format (Default: pretty)
+-h, --help:: help for check (Default: false)
+--ignore:: set file and directory names to ignore during loading (e.g., '.*' excludes hidden files) (Default: [])
+-m, --max-errors:: set the number of errors to allow before compilation fails early (Default: 10)
+--rego-v1:: check for Rego v1 compatibility (policies must also be compatible with current OPA version) (Default: false)
+-s, --schema:: set schema file path or directory path
+-S, --strict:: enable compiler strict mode (Default: false)
+--v1-compatible:: opt-in to OPA features and behaviors that will be enabled by default in a future OPA v1.0 release (Default: false)
+
+== Options inherited from parent commands
+
+--debug:: same as verbose but also show function names and line numbers (Default: false)
+--kubeconfig:: path to the Kubernetes config file to use
+--quiet:: less verbose output (Default: false)
+--timeout:: max overall execution duration (Default: 5m0s)
+--trace:: enable trace logging (Default: false)
+--verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec_opa.adoc[ec opa - Open Policy Agent (OPA) (embedded)]
