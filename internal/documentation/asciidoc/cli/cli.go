@@ -14,7 +14,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package main
+package cli
 
 import (
 	_ "embed"
@@ -26,12 +26,14 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+
+	"github.com/enterprise-contract/ec-cli/cmd"
 )
 
-//go:embed command.template
-var commandTemplateText string
+//go:embed cli.template
+var cliTemplateText string
 
-//go:embed cli_nav.template
+//go:embed nav.template
 var cliNavTemplateText string
 
 var commandTemplate *template.Template
@@ -49,7 +51,7 @@ func init() {
 	commandTemplate = template.Must(template.New("cli-reference").Funcs(template.FuncMap{
 		"options":    options,
 		"replaceAll": strings.ReplaceAll,
-	}).Parse(commandTemplateText))
+	}).Parse(cliTemplateText))
 
 	cliNavTemplate = template.Must(template.New("cli-nav").Funcs(template.FuncMap{
 		"docname":  docname,
@@ -57,13 +59,25 @@ func init() {
 	}).Parse(cliNavTemplateText))
 }
 
-func generateAsciidoc(cmd *cobra.Command, module string) error {
+func GenerateCommandLineDocumentation(module string) error {
+	if err := generateCommandReference(cmd.RootCmd, module); err != nil {
+		return err
+	}
+
+	if err := generateCommandReferenceNav(cmd.RootCmd, module); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func generateCommandReference(cmd *cobra.Command, module string) error {
 	for _, c := range cmd.Commands() {
 		if !c.IsAvailableCommand() || c.IsAdditionalHelpTopicCommand() {
 			continue
 		}
 
-		if err := generateAsciidoc(c, module); err != nil {
+		if err := generateCommandReference(c, module); err != nil {
 			return fmt.Errorf("generating Asciidoc for command %q: %w", c.Name(), err)
 		}
 	}
@@ -81,7 +95,7 @@ func generateAsciidoc(cmd *cobra.Command, module string) error {
 	return commandTemplate.Execute(f, cmd)
 }
 
-func updateNav(root *cobra.Command, module string) error {
+func generateCommandReferenceNav(root *cobra.Command, module string) error {
 	navpath := filepath.Join(module, "partials", "cli_nav.adoc")
 	f, err := os.Create(navpath)
 	if err != nil {

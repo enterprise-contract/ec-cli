@@ -26,6 +26,7 @@ import (
 
 	cmd "github.com/enterprise-contract/ec-cli/cmd"
 	"github.com/enterprise-contract/ec-cli/cmd/test"
+	"github.com/enterprise-contract/ec-cli/internal/documentation/asciidoc"
 )
 
 const DirectoryPermissions = 0755
@@ -85,10 +86,7 @@ func main() {
 		if err = os.MkdirAll(*adoc, DirectoryPermissions); err != nil {
 			return
 		}
-		if err = generateAsciidoc(cmd.RootCmd, *adoc); err != nil {
-			return
-		}
-		if err = updateNav(cmd.RootCmd, *adoc); err != nil {
+		if err = asciidoc.GenerateAsciidoc(*adoc); err != nil {
 			return
 		}
 	}
