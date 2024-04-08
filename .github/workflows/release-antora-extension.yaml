@@ -36,8 +36,6 @@ jobs:
         include:
         - path: 'tekton-task-antora-extension'
           if: startsWith(github.event.head_commit.modified, "tekton-task-antora-extension/**")
-        - path: 'rego-antora-extension'
-          if: startsWith(github.event.head_commit.modified, "rego-antora-extension/**")
 
     runs-on: ubuntu-latest
 
