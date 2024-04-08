@@ -62,6 +62,10 @@ jobs:
 
       - name: Check for uncommitted changes
         run: |
+          git fetch origin "${GITHUB_BASE_REF}"
+          git switch -c checks --track "origin/${GITHUB_BASE_REF}"
+          trap "git switch - --detach" SIGINT
+          git rebase
           if ! git diff --exit-code -s; then
             for f in $(git diff --exit-code --name-only); do
               echo "::error file=$f,line=1,col=1,endColumn=1::File was modified in build"
