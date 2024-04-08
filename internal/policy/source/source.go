@@ -28,12 +28,16 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
+	"sync"
 	"time"
 
 	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/afero"
 
 	"github.com/enterprise-contract/ec-cli/internal/downloader"
+	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
 type key int
@@ -65,22 +69,51 @@ type PolicyUrl struct {
 	Kind policyKind
 }
 
+// downloadCache is a concurrent map used to cache downloaded files.
+var downloadCache sync.Map
+
 // GetPolicies clones the repository for a given PolicyUrl
 func (p *PolicyUrl) GetPolicy(ctx context.Context, workDir string, showMsg bool) (string, error) {
 	sourceUrl := p.PolicyUrl()
-
 	dest := uniqueDestination(workDir, p.Subdir(), sourceUrl)
 
-	// Checkout policy repo into work directory.
-	log.Debugf("Downloading policy files from source url %s to destination %s", sourceUrl, dest)
+	// Load or store the downloaded policy file from the given source URL.
+	// If the file is already in the download cache, it is loaded from there.
+	// Otherwise, it is downloaded from the source URL and stored in the cache.
+	dfn, _ := downloadCache.LoadOrStore(sourceUrl, sync.OnceValues(func() (string, error) {
+		log.Debugf("Download cache miss: %s", sourceUrl)
+		// Checkout policy repo into work directory.
+		log.Debugf("Downloading policy files from source url %s to destination %s", sourceUrl, dest)
+		x := ctx.Value(DownloaderFuncKey)
+		if dl, ok := x.(downloaderFunc); ok {
+			return dest, dl.Download(ctx, dest, sourceUrl, showMsg)
+		}
+		return dest, downloader.Download(ctx, dest, sourceUrl, showMsg)
+	}))
 
-	x := ctx.Value(DownloaderFuncKey)
+	d, err := dfn.(func() (string, error))()
 
-	if dl, ok := x.(downloaderFunc); ok {
-		return dest, dl.Download(ctx, dest, sourceUrl, showMsg)
+	// If the destination directory is different from the source directory, we
+	// need to symlink the source directory to the destination directory.
+	if filepath.Dir(dest) != filepath.Dir(d) {
+		fs := utils.FS(ctx)
+		if symlinkableFS, ok := fs.(afero.Symlinker); ok {
+			log.Debugf("Symlinking %s to %s", d, dest)
+			if err := symlinkableFS.SymlinkIfPossible(d, dest); err == nil {
+				return dest, nil
+			}
+		} else {
+			log.Debugf("Filesystem does not support symlinking: %s", fs.Name())
+			log.Debugf("The error was: %v", err)
+			log.Debugf("Re-downloading instead")
+			x := ctx.Value(DownloaderFuncKey)
+			if dl, ok := x.(downloaderFunc); ok {
+				return dest, dl.Download(ctx, dest, sourceUrl, showMsg)
+			}
+		}
+		return dest, nil
 	}
-
-	return dest, downloader.Download(ctx, dest, sourceUrl, showMsg)
+	return d, err
 }
 
 func (p *PolicyUrl) PolicyUrl() string {

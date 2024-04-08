@@ -34,11 +34,14 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/format"
 	"github.com/enterprise-contract/ec-cli/internal/output"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
+	"github.com/enterprise-contract/ec-cli/internal/policy/source"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 	validate_utils "github.com/enterprise-contract/ec-cli/internal/validate"
 )
 
-type imageValidationFunc func(context.Context, app.SnapshotComponent, policy.Policy, bool) (*output.Output, error)
+type imageValidationFunc func(context.Context, app.SnapshotComponent, policy.Policy, []evaluator.Evaluator, bool) (*output.Output, error)
+
+var newConftestEvaluator = evaluator.NewConftestEvaluator
 
 func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 	var data = struct {
@@ -225,6 +228,30 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 			}
 
 			appComponents := data.spec.Components
+			evaluators := []evaluator.Evaluator{}
+
+			// Return an evaluator for each of these
+			for _, sourceGroup := range data.policy.Spec().Sources {
+				// Todo: Make each fetch run concurrently
+				log.Debugf("Fetching policy source group '%s'", sourceGroup.Name)
+				policySources, err := source.FetchPolicySources(sourceGroup)
+				if err != nil {
+					log.Debugf("Failed to fetch policy source group '%s'!", sourceGroup.Name)
+					return err
+				}
+
+				for _, policySource := range policySources {
+					log.Debugf("policySource: %#v", policySource)
+				}
+
+				c, err := newConftestEvaluator(cmd.Context(), policySources, data.policy, sourceGroup)
+				if err != nil {
+					log.Debug("Failed to initialize the conftest evaluator!")
+					return err
+				}
+
+				evaluators = append(evaluators, c)
+			}
 
 			// worker is responsible for processing one component at a time from the jobs channel,
 			// and for emitting a corresponding result for the component on the results channel.
@@ -233,7 +260,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 				for comp := range jobs {
 					log.Debugf("Worker %d got a component %q", id, comp.ContainerImage)
 					ctx := cmd.Context()
-					out, err := validate(ctx, comp, data.policy, data.info)
+					out, err := validate(ctx, comp, data.policy, evaluators, data.info)
 					res := result{
 						err: err,
 						component: applicationsnapshot.Component{

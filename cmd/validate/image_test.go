@@ -250,7 +250,7 @@ func Test_determineInputSpec(t *testing.T) {
 }
 
 func Test_ValidateImageCommand(t *testing.T) {
-	validate := func(_ context.Context, component app.SnapshotComponent, _ policy.Policy, _ bool) (*output.Output, error) {
+	validate := func(_ context.Context, component app.SnapshotComponent, _ policy.Policy, _ []evaluator.Evaluator, _ bool) (*output.Output, error) {
 		return &output.Output{
 			ImageSignatureCheck: output.VerificationStatus{
 				Passed: true,
@@ -326,7 +326,7 @@ func Test_ValidateImageCommand(t *testing.T) {
 }
 
 func Test_ValidateImageCommandImages(t *testing.T) {
-	validate := func(_ context.Context, component app.SnapshotComponent, _ policy.Policy, _ bool) (*output.Output, error) {
+	validate := func(_ context.Context, component app.SnapshotComponent, _ policy.Policy, _ []evaluator.Evaluator, _ bool) (*output.Output, error) {
 		return &output.Output{
 			ImageSignatureCheck: output.VerificationStatus{
 				Passed: true,
@@ -444,7 +444,7 @@ func Test_ValidateImageCommandImages(t *testing.T) {
 
 func Test_ValidateImageCommandKeyless(t *testing.T) {
 	called := false
-	validateImageCmd := validateImageCmd(func(_ context.Context, _ app.SnapshotComponent, p policy.Policy, _ bool) (*output.Output, error) {
+	validateImageCmd := validateImageCmd(func(_ context.Context, _ app.SnapshotComponent, p policy.Policy, _ []evaluator.Evaluator, _ bool) (*output.Output, error) {
 		assert.Equal(t, cosign.Identity{
 			Issuer:        "my-certificate-oidc-issuer",
 			Subject:       "my-certificate-identity",
@@ -484,7 +484,7 @@ func Test_ValidateImageCommandKeyless(t *testing.T) {
 	assert.True(t, called)
 }
 func Test_ValidateImageCommandYAMLPolicyFile(t *testing.T) {
-	validate := func(_ context.Context, component app.SnapshotComponent, _ policy.Policy, _ bool) (*output.Output, error) {
+	validate := func(_ context.Context, component app.SnapshotComponent, _ policy.Policy, _ []evaluator.Evaluator, _ bool) (*output.Output, error) {
 		return &output.Output{
 			ImageSignatureCheck: output.VerificationStatus{
 				Passed: true,
@@ -598,7 +598,7 @@ spec:
 }
 
 func Test_ValidateImageCommandJSONPolicyFile(t *testing.T) {
-	validate := func(_ context.Context, component app.SnapshotComponent, _ policy.Policy, _ bool) (*output.Output, error) {
+	validate := func(_ context.Context, component app.SnapshotComponent, _ policy.Policy, _ []evaluator.Evaluator, _ bool) (*output.Output, error) {
 		return &output.Output{
 			ImageSignatureCheck: output.VerificationStatus{
 				Passed: true,
@@ -674,7 +674,7 @@ configuration:
 }
 
 func Test_ValidateImageCommandEmptyPolicyFile(t *testing.T) {
-	validate := func(_ context.Context, component app.SnapshotComponent, _ policy.Policy, _ bool) (*output.Output, error) {
+	validate := func(_ context.Context, component app.SnapshotComponent, _ policy.Policy, _ []evaluator.Evaluator, _ bool) (*output.Output, error) {
 		return &output.Output{
 			ImageSignatureCheck: output.VerificationStatus{
 				Passed: true,
@@ -798,7 +798,7 @@ func Test_ValidateErrorCommand(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			validate := func(context.Context, app.SnapshotComponent, policy.Policy, bool) (*output.Output, error) {
+			validate := func(context.Context, app.SnapshotComponent, policy.Policy, []evaluator.Evaluator, bool) (*output.Output, error) {
 				return nil, errors.New("expected")
 			}
 
@@ -824,7 +824,7 @@ func Test_ValidateErrorCommand(t *testing.T) {
 }
 
 func Test_FailureImageAccessibility(t *testing.T) {
-	validate := func(_ context.Context, component app.SnapshotComponent, _ policy.Policy, _ bool) (*output.Output, error) {
+	validate := func(_ context.Context, component app.SnapshotComponent, _ policy.Policy, _ []evaluator.Evaluator, _ bool) (*output.Output, error) {
 		return &output.Output{
 			ImageSignatureCheck: output.VerificationStatus{
 				Passed: false,
@@ -891,7 +891,7 @@ func Test_FailureImageAccessibility(t *testing.T) {
 }
 
 func Test_FailureOutput(t *testing.T) {
-	validate := func(_ context.Context, component app.SnapshotComponent, _ policy.Policy, _ bool) (*output.Output, error) {
+	validate := func(_ context.Context, component app.SnapshotComponent, _ policy.Policy, _ []evaluator.Evaluator, _ bool) (*output.Output, error) {
 		return &output.Output{
 			ImageSignatureCheck: output.VerificationStatus{
 				Passed: false,
@@ -956,7 +956,7 @@ func Test_FailureOutput(t *testing.T) {
 }
 
 func Test_WarningOutput(t *testing.T) {
-	validate := func(_ context.Context, component app.SnapshotComponent, _ policy.Policy, _ bool) (*output.Output, error) {
+	validate := func(_ context.Context, component app.SnapshotComponent, _ policy.Policy, _ []evaluator.Evaluator, _ bool) (*output.Output, error) {
 		return &output.Output{
 			ImageSignatureCheck: output.VerificationStatus{
 				Passed: true,
@@ -1031,4 +1031,79 @@ func setUpCobra(command *cobra.Command) *cobra.Command {
 	cmd := root.NewRootCmd()
 	cmd.AddCommand(validateCmd)
 	return cmd
+}
+func TestValidateImageCommand_RunE(t *testing.T) {
+	validate := func(_ context.Context, component app.SnapshotComponent, _ policy.Policy, _ []evaluator.Evaluator, _ bool) (*output.Output, error) {
+		return &output.Output{
+			ImageSignatureCheck: output.VerificationStatus{
+				Passed: true,
+			},
+			ImageAccessibleCheck: output.VerificationStatus{
+				Passed: true,
+			},
+			AttestationSignatureCheck: output.VerificationStatus{
+				Passed: true,
+			},
+			AttestationSyntaxCheck: output.VerificationStatus{
+				Passed: true,
+			},
+			PolicyCheck: []evaluator.Outcome{
+				{
+					FileName:  "test.json",
+					Namespace: "test.main",
+					Successes: []evaluator.Result{
+						{
+							Message: "Pass",
+							Metadata: map[string]interface{}{
+								"code": "policy.nice",
+							},
+						},
+					},
+				},
+			},
+			ImageURL: component.ContainerImage,
+			ExitCode: 0,
+		}, nil
+	}
+
+	validateImageCmd := validateImageCmd(validate)
+	cmd := setUpCobra(validateImageCmd)
+
+	cmd.SetContext(utils.WithFS(context.Background(), afero.NewMemMapFs()))
+
+	effectiveTimeTest := time.Now().UTC().Format(time.RFC3339Nano)
+
+	cmd.SetArgs(append(rootArgs, []string{
+		"--image",
+		"registry/image:tag",
+		"--policy",
+		fmt.Sprintf(`{"publicKey": %s}`, utils.TestPublicKeyJSON),
+		"--effective-time",
+		effectiveTimeTest,
+	}...))
+
+	var out bytes.Buffer
+	cmd.SetOut(&out)
+
+	utils.SetTestRekorPublicKey(t)
+
+	err := cmd.Execute()
+	assert.NoError(t, err)
+	assert.JSONEq(t, fmt.Sprintf(`{
+		"success": true,
+		"ec-version": "development",
+		"effective-time": %q,
+		"key": %s,
+		"components": [
+		  {
+			"name": "Unnamed",
+			"containerImage": "registry/image:tag",
+			"source": {},
+			"success": true
+		  }
+		],
+		"policy": {
+			"publicKey": %s
+		}
+	  }`, effectiveTimeTest, utils.TestPublicKeyJSON, utils.TestPublicKeyJSON), out.String())
 }
