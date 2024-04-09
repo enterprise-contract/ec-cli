@@ -83,6 +83,10 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Update podman
+        run: |
+          "${GITHUB_WORKSPACE}/hack/ubuntu-podman-update.sh"
+
       - name: Cache
         uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
         with:
