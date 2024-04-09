@@ -62,8 +62,8 @@ jobs:
 
       - name: Check for uncommitted changes
         run: |
-          git fetch origin "${GITHUB_BASE_REF:-$GITHUB_REF}"
-          git switch -c checks --track "origin/${GITHUB_BASE_REF:-$GITHUB_REF}"
+          git fetch origin "${GITHUB_BASE_REF:-$GITHUB_REF_NAME}"
+          git switch -c checks --track "origin/${GITHUB_BASE_REF:-$GITHUB_REF_NAME}"
           trap "git switch - --detach" SIGINT
           git rebase
           if ! git diff --exit-code -s; then
