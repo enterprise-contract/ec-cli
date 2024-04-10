@@ -47,36 +47,6 @@ updates:
       all:
         patterns:
           - "*"
-  - package-ecosystem: "npm"
-    directory: "/reference-antora-extension/"
-    schedule:
-      interval: weekly
-      time: '15:00'
-      timezone: Etc/UTC
-    groups:
-      all:
-        patterns:
-          - "*"
-  - package-ecosystem: "npm"
-    directory: "/tekton-task-antora-extension/"
-    schedule:
-      interval: weekly
-      time: '15:00'
-      timezone: Etc/UTC
-    groups:
-      all:
-        patterns:
-          - "*"
-  - package-ecosystem: "npm"
-    directory: "/rego-antora-extension/"
-    schedule:
-      interval: weekly
-      time: '15:00'
-      timezone: Etc/UTC
-    groups:
-      all:
-        patterns:
-          - "*"
   - package-ecosystem: "gomod"
     directory: "/tools/"
     schedule:
