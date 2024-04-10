@@ -126,6 +126,10 @@ jobs:
           go-version-file: go.mod
           cache: false
 
+      - name: Update podman
+        run: |
+          "${GITHUB_WORKSPACE}/hack/ubuntu-podman-update.sh"
+
       - name: Acceptance test
         run: make acceptance
 

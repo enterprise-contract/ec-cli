@@ -220,7 +220,7 @@ push-snapshot-image: build-snapshot-image ## Push the ec-cli image with the "sna
 $(ALL_SUPPORTED_IMG_OS_ARCH): TARGETOS=$(word 2,$(subst _, ,$@))
 $(ALL_SUPPORTED_IMG_OS_ARCH): TARGETARCH=$(word 3,$(subst _, ,$@))
 $(ALL_SUPPORTED_IMG_OS_ARCH):
-	@podman build -t $(IMAGE_REPO):$(IMAGE_TAG)-$(TARGETOS)-$(TARGETARCH) -f Dockerfile --platform $(TARGETOS)/$(TARGETARCH)
+	@podman build -t $(IMAGE_REPO):$(IMAGE_TAG)-$(TARGETOS)-$(TARGETARCH) -f Dockerfile --platform $(TARGETOS)/$(TARGETARCH) --volume "$$(go env GOCACHE)":/go/cache:Z --volume "$$(go env GOMODCACHE)":/go/mod:Z --env GOCACHE=/go/cache --env GOMODCACHE=/go/mod
 
 # Currently it shows the following:
 #  image_linux_amd64
