@@ -1,0 +1,22 @@
+= ec.sigstore.verify_image
+
+Use sigstore to verify the signature of an image.
+
+== Usage
+
+  result = ec.sigstore.verify_image(ref: string, opts: object<certificate_identity: string, certificate_identity_regexp: string, certificate_oidc_issuer: string, certificate_oidc_issuer_regexp: string, ignore_rekor: boolean, public_key: string, rekor_url: string>)
+
+== Parameters
+
+* `ref` (`string`): OCI image reference
+* `opts` (`object<certificate_identity: string, certificate_identity_regexp: string, certificate_oidc_issuer: string, certificate_oidc_issuer_regexp: string, ignore_rekor: boolean, public_key: string, rekor_url: string>`): Sigstore verification options
+
+== Return
+
+`result` (`object`): the result of the verification request
+
+The object contains the following attributes:
+
+* `errors` (`errors: array<string>`)
+* `signatures` (`signatures: array<object<certificate: string, chain: array<string>, keyid: string, metadata: object[string: string], signature: string>>`)
+* `success` (`success: boolean`)

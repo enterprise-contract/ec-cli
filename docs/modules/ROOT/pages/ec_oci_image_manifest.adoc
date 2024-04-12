@@ -1,0 +1,80 @@
+= ec.oci.image_manifest
+
+Fetch an Image Manifest from an OCI registry.
+
+== Usage
+
+  object = ec.oci.image_manifest(ref: string)
+
+== Parameters
+
+* `ref` (`string`): OCI image reference
+
+== Return
+
+`object` (`object`): the Image Manifest object
+
+The object contains the following attributes:
+
+* `annotations` (`object`)
+** (`string`): (`string`)
+* `config` (`object`)
+** `annotations` (`object`)
+*** (`string`): (`string`)
+** `artifactType` (`string`)
+** `data` (`string`)
+** `digest` (`string`)
+** `mediaType` (`string`)
+** `platform` (`object`)
+*** `architecture` (`string`)
+*** `features`(`array`)
+**** (`string`)
+*** `os` (`string`)
+*** `os.features`(`array`)
+**** (`string`)
+*** `os.version` (`string`)
+*** `variant` (`string`)
+** `size` (`number`)
+** `urls`(`array`)
+*** (`string`)
+* `layers`(`array`)
+** (`object`)
+*** `annotations` (`object`)
+**** (`string`): (`string`)
+*** `artifactType` (`string`)
+*** `data` (`string`)
+*** `digest` (`string`)
+*** `mediaType` (`string`)
+*** `platform` (`object`)
+**** `architecture` (`string`)
+**** `features`(`array`)
+***** (`string`)
+**** `os` (`string`)
+**** `os.features`(`array`)
+***** (`string`)
+**** `os.version` (`string`)
+**** `variant` (`string`)
+*** `size` (`number`)
+*** `urls`(`array`)
+**** (`string`)
+* `mediaType` (`string`)
+* `schemaVersion` (`number`)
+* `subject` (`object`)
+** `annotations` (`object`)
+*** (`string`): (`string`)
+** `artifactType` (`string`)
+** `data` (`string`)
+** `digest` (`string`)
+** `mediaType` (`string`)
+** `platform` (`object`)
+*** `architecture` (`string`)
+*** `features`(`array`)
+**** (`string`)
+*** `os` (`string`)
+*** `os.features`(`array`)
+**** (`string`)
+*** `os.version` (`string`)
+*** `variant` (`string`)
+** `size` (`number`)
+** `urls`(`array`)
+*** (`string`)

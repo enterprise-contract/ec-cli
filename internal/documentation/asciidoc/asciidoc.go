@@ -20,10 +20,15 @@ import (
 	_ "embed"
 
 	"github.com/enterprise-contract/ec-cli/internal/documentation/asciidoc/cli"
+	"github.com/enterprise-contract/ec-cli/internal/documentation/asciidoc/rego"
 )
 
 func GenerateAsciidoc(module string) error {
 	if err := cli.GenerateCommandLineDocumentation(module); err != nil {
+		return err
+	}
+
+	if err := rego.GenerateRegoReference(module); err != nil {
 		return err
 	}
 

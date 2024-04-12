@@ -1,0 +1,15 @@
+= ec.purl.is_valid
+
+Determine whether or not a given PURL is valid.
+
+== Usage
+
+  result = ec.purl.is_valid(purl: string)
+
+== Parameters
+
+* `purl` (`string`): the PURL
+
+== Return
+
+`result` (`string`): PURL validity

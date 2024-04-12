@@ -1,0 +1,25 @@
+= ec.purl.parse
+
+Parse a valid PURL into an object.
+
+== Usage
+
+  object = ec.purl.parse(purl: string)
+
+== Parameters
+
+* `purl` (`string`): the PURL
+
+== Return
+
+`object` (`object`): the parsed PURL object
+
+The object contains the following attributes:
+
+* `name` (`string`)
+* `namespace` (`string`)
+* `qualifiers`(`array`)
+** [object<key: string, value: string>]
+* `subpath` (`string`)
+* `type` (`string`)
+* `version` (`string`)

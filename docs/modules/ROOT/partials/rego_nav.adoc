@@ -1,4 +1,7 @@
 * xref:rego_builtins.adoc[Rego Reference]
-{{#each reference}}
-** xref:{{ path }}[{{ name }}]
-{{/each}}
+** xref:ec_oci_blob.adoc[ec.oci.blob]
+** xref:ec_oci_image_manifest.adoc[ec.oci.image_manifest]
+** xref:ec_purl_is_valid.adoc[ec.purl.is_valid]
+** xref:ec_purl_parse.adoc[ec.purl.parse]
+** xref:ec_sigstore_verify_attestation.adoc[ec.sigstore.verify_attestation]
+** xref:ec_sigstore_verify_image.adoc[ec.sigstore.verify_image]

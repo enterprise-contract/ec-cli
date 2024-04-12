@@ -8,9 +8,16 @@ information.
 
 [cols="1,3"]
 |===
-{{#each reference}}
-|xref:{{ path }}[{{ name }}]
-|{{ description }}
-
-{{/each}}
+|xref:ec_oci_blob.adoc[ec.oci.blob]
+|Fetch a blob from an OCI registry.
+|xref:ec_oci_image_manifest.adoc[ec.oci.image_manifest]
+|Fetch an Image Manifest from an OCI registry.
+|xref:ec_purl_is_valid.adoc[ec.purl.is_valid]
+|Determine whether or not a given PURL is valid.
+|xref:ec_purl_parse.adoc[ec.purl.parse]
+|Parse a valid PURL into an object.
+|xref:ec_sigstore_verify_attestation.adoc[ec.sigstore.verify_attestation]
+|Use sigstore to verify the attestation of an image.
+|xref:ec_sigstore_verify_image.adoc[ec.sigstore.verify_image]
+|Use sigstore to verify the signature of an image.
 |===
