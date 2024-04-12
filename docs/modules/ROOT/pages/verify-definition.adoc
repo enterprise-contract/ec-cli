@@ -1,0 +1,25 @@
+= verify-definition
+
+Version: 0.1
+
+== Synopsis
+
+Verify a json or yaml definition(s)
+
+== Params
+[horizontal]
+
+*DEFINITION* (`string`):: The definition(s) to validate. This can be a yaml or json file, the files' contents
+or a directory containing the definition files.
+
+*POLICY_SOURCE* (`string`):: The source containing the policy files.
+*NAMESPACE* (`string`):: An optional policy package namespace.
+*POLICY_LIB* (`string`):: The source containing the policy files libraries.
++
+*Default*: `git::https://github.com/enterprise-contract/ec-policies//policy/lib`
+*POLICY_DATA* (`string`):: The source containing the policy files.
++
+*Default*: `git::https://github.com/enterprise-contract/ec-policies//example/data`
+*HOMEDIR* (`string`):: Value for the HOME environment variable.
++
+*Default*: `/tekton/home`

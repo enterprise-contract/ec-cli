@@ -21,6 +21,7 @@ import (
 
 	"github.com/enterprise-contract/ec-cli/internal/documentation/asciidoc/cli"
 	"github.com/enterprise-contract/ec-cli/internal/documentation/asciidoc/rego"
+	"github.com/enterprise-contract/ec-cli/internal/documentation/asciidoc/tekton"
 )
 
 func GenerateAsciidoc(module string) error {
@@ -29,6 +30,10 @@ func GenerateAsciidoc(module string) error {
 	}
 
 	if err := rego.GenerateRegoReference(module); err != nil {
+		return err
+	}
+
+	if err := tekton.GenerateTektonDocumentation(module); err != nil {
 		return err
 	}
 

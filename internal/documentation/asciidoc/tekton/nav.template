@@ -1,0 +1,4 @@
+* xref:tasks.adoc[Tekton Tasks]
+{{- range . }}
+** xref:{{ .Name }}[{{ .Name }}]
+{{- end }}
