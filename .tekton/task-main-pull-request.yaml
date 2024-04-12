@@ -17,6 +17,8 @@ metadata:
   name: task-main-on-pull-request
   namespace: rhtap-contract-tenant
 spec:
+  # Note that some params here are not used since the build-container
+  # task is tkn-bundle rather than buildah
   params:
   - name: dockerfile
     value: Dockerfile
@@ -129,9 +131,6 @@ spec:
     - description: ""
       name: CHAINS-GIT_COMMIT
       value: $(tasks.clone-repository.results.commit)
-    - description: ""
-      name: JAVA_COMMUNITY_DEPENDENCIES
-      value: $(tasks.build-container.results.JAVA_COMMUNITY_DEPENDENCIES)
     tasks:
     - name: init
       params:
@@ -204,26 +203,16 @@ spec:
       params:
       - name: IMAGE
         value: $(params.output-image)
-      - name: DOCKERFILE
-        value: $(params.dockerfile)
       - name: CONTEXT
-        value: $(params.path-context)
-      - name: HERMETIC
-        value: $(params.hermetic)
-      - name: PREFETCH_INPUT
-        value: $(params.prefetch-input)
-      - name: IMAGE_EXPIRES_AFTER
-        value: $(params.image-expires-after)
-      - name: COMMIT_SHA
-        value: $(tasks.clone-repository.results.commit)
+        value: ./source/tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml
       runAfter:
       - prefetch-dependencies
       taskRef:
         params:
         - name: name
-          value: buildah
+          value: tkn-bundle
         - name: bundle
-          value: quay.io/redhat-appstudio-tekton-catalog/task-buildah:0.1@sha256:4711aabdf8bc13b03edb7fdb638894f67b678d67d2aae111176e171c2dc26db0
+          value: quay.io/redhat-appstudio-tekton-catalog/task-tkn-bundle@sha256:5604112b21ba2cc5d24c0e100fc8c1ecf64e648d1d45519e482eba6d081d39ca
         - name: kind
           value: task
         resolver: bundles
@@ -235,55 +224,8 @@ spec:
       workspaces:
       - name: source
         workspace: workspace
-    - name: build-source-image
-      params:
-      - name: BINARY_IMAGE
-        value: $(params.output-image)
-      - name: BASE_IMAGES
-        value: $(tasks.build-container.results.BASE_IMAGES_DIGESTS)
-      runAfter:
-      - build-container
-      taskRef:
-        params:
-        - name: name
-          value: source-build
-        - name: bundle
-          value: quay.io/redhat-appstudio-tekton-catalog/task-source-build:0.1@sha256:dce619d12de143d9f2b84b6293027cd053580552219f3c632d91acd901ab294b
-        - name: kind
-          value: task
-        resolver: bundles
-      when:
-      - input: $(tasks.init.results.build)
-        operator: in
-        values:
-        - "true"
-      - input: $(params.build-source-image)
-        operator: in
-        values:
-        - "true"
-      workspaces:
-      - name: workspace
-        workspace: workspace
-    - name: deprecated-base-image-check
-      params:
-      - name: BASE_IMAGES_DIGESTS
-        value: $(tasks.build-container.results.BASE_IMAGES_DIGESTS)
-      runAfter:
-      - build-container
-      taskRef:
-        params:
-        - name: name
-          value: deprecated-image-check
-        - name: bundle
-          value: quay.io/redhat-appstudio-tekton-catalog/task-deprecated-image-check:0.3@sha256:ba55ff56b8718406278d72fd5e3de88da110dd4391aa7581923b8d219a29f841
-        - name: kind
-          value: task
-        resolver: bundles
-      when:
-      - input: $(params.skip-checks)
-        operator: in
-        values:
-        - "false"
+    #- Skipping build-source-image
+    #- Skipping deprecated-base-image-check
     - name: clair-scan
       params:
       - name: image-digest
@@ -306,26 +248,7 @@ spec:
         operator: in
         values:
         - "false"
-    - name: ecosystem-cert-preflight-checks
-      params:
-      - name: image-url
-        value: $(tasks.build-container.results.IMAGE_URL)
-      runAfter:
-      - build-container
-      taskRef:
-        params:
-        - name: name
-          value: ecosystem-cert-preflight-checks
-        - name: bundle
-          value: quay.io/redhat-appstudio-tekton-catalog/task-ecosystem-cert-preflight-checks:0.1@sha256:4bcabe436ddbef6af8f8108ee234d83e116e63e91f64a77191e1492db11bf56b
-        - name: kind
-          value: task
-        resolver: bundles
-      when:
-      - input: $(params.skip-checks)
-        operator: in
-        values:
-        - "false"
+    #- Skipping ecosystem-cert-preflight-checks
     - name: sast-snyk-check
       runAfter:
       - clone-repository
