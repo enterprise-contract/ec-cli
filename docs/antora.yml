@@ -20,9 +20,3 @@ title: Enterprise Contract CLI
 version: main
 nav:
   - modules/ROOT/nav.adoc
-ext:
-  collector:
-    run:
-      command: make generate-docs
-    scan:
-      dir: dist
