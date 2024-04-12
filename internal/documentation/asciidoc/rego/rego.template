@@ -1,0 +1,62 @@
+{{- define "type" }}
+  {{- $type := index . 0 }}
+  {{- $lvl := index . 1 }}
+  {{- if hasPrefix $type.String "object" }} (`object`)
+    {{- with $type.DynamicProperties }}
+      {{- "\n" }}{{ lvl (inc $lvl) }} (`{{ .Key }}`):{{ template "type" (params .Value $lvl) }}
+    {{- end }}{{- /* with */ -}}
+    {{- template "properties" (params ($type.StaticProperties) (inc $lvl)) }}
+  {{- else }}
+    {{- if hasPrefix $type.String "array" }}(`array`)
+      {{- $lvl = inc $lvl }}
+      {{- "\n" }}{{ lvl $lvl }}
+      {{- if ne $type.Len 0 -}}
+        {{- range seq $type.Len }}
+          {{- template "type" (params ($type.Select .) $lvl) }}
+        {{- end }}{{- /* range */ -}}
+      {{- end }}{{- /* if */ -}}
+      {{- with $type.Dynamic -}}
+        {{ " " }}[{{ . }}]
+      {{- end }}{{- /* with */ -}}
+    {{- else }}
+      {{- " " }}(`{{ $type }}`)
+    {{- end }}{{- /* if */ -}}
+  {{- end }}{{- /* if */ -}}
+{{- end -}}{{- /* "type" */ -}}
+
+{{- define "object" }}
+  {{- $lvl := index . 1 }}
+  {{- with index . 0 }}
+    {{- "\n" -}}
+    {{- lvl $lvl }} `{{ .Key }}`{{ template "type" (params .Value $lvl) }}
+  {{- end }}{{- /* with */ -}}
+{{- end -}}{{- /* "object" */ -}}
+
+{{- define "properties" }}
+  {{- $lvl := index . 1 }}
+  {{- range index . 0 }}
+    {{- template "object" (params . $lvl) }}
+  {{- end }}{{- /* range */ -}}
+{{- end -}}{{- /* "properties" */ -}}
+
+= {{ .Name }}
+
+{{ .Description }}
+
+== Usage
+
+  {{ .Decl.NamedResult.Name }} = {{ .Name }}{{ .Decl.NamedFuncArgs }}
+
+== Parameters
+{{ range .Decl.NamedFuncArgs.Args }}
+* `{{ .Name }}` (`{{ .Type }}`): {{ .Descr }}
+{{- end }}
+
+== Return
+{{ $isObject := hasPrefix .Decl.NamedResult.Type.String "object" }}
+`{{ .Decl.NamedResult.Name }}` (`{{ if $isObject }}object{{ else }}{{ .Decl.NamedResult.Type }}{{ end }}`): {{.Decl.NamedResult.Descr}}
+{{- if $isObject }}
+
+The object contains the following attributes:
+{{ template "properties" (params (.Decl.NamedResult.Type.StaticProperties) 1) -}}
+{{- end }}

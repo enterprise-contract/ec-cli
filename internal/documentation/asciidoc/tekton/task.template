@@ -1,0 +1,32 @@
+= {{ .Name}}
+
+Version: {{ index .Labels "app.kubernetes.io/version" }}
+
+== Synopsis
+
+{{ .Spec.Description }}
+
+== Params
+[horizontal]
+{{ range .Spec.Params}}
+*{{ .Name }}* (`{{ .Type }}`):: {{ replaceAll .Description "\n\n" "\n+\n" }}
+{{- $default := "" }}
+{{- with .Default }}
+{{- with .StringVal }}{{ $default = . }}{{ end }}
+{{- with .ArrayVal }}{{ $default = . }}{{ end }}
+{{- with .ObjectVal }}{{ $default = . }}{{ end }}
+{{- end }}{{/* with */}}
+{{- with $default }}
++
+*Default*: `{{ $default }}`
+{{- end }}{{/* with */}}
+{{- end }}{{/* range */}}
+{{- with .Spec.Results }}
+
+== Results
+
+[horizontal]
+{{- range . }}
+*{{ .Name }}*:: {{ replaceAll .Description "\n\n" "\n+\n" }}
+{{- end }}{{/* range */}}
+{{- end }}{{/* with */}}

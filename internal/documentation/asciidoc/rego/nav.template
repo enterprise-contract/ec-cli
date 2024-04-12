@@ -1,0 +1,4 @@
+* xref:rego_builtins.adoc[Rego Reference]
+{{- range . }}
+** xref:{{ replaceAll .Name "." "_" }}.adoc[{{ .Name }}]
+{{- end }}

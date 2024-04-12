@@ -1,0 +1,15 @@
+= ec.oci.blob
+
+Fetch a blob from an OCI registry.
+
+== Usage
+
+  blob = ec.oci.blob(ref: string)
+
+== Parameters
+
+* `ref` (`string`): OCI blob reference
+
+== Return
+
+`blob` (`string`): the OCI blob

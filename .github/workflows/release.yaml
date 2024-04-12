@@ -93,7 +93,6 @@ jobs:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-            .npm
           key: main
 
       - name: Setup Go environment
@@ -107,14 +106,6 @@ jobs:
           go mod download
           (cd tools && go mod download)
           (cd acceptance && go mod download)
-
-      - name: Setup Node.js environment
-        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
-        with:
-          node-version-file: 'package.json'
-
-      - name: Download NPM dependencies
-        run: npm ci
 
       - name: Build distribution
         run: make dist

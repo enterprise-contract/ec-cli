@@ -74,15 +74,6 @@ BUILD_IMG_ARCH:=$(shell podman version -f {{.Server.OsArch}} | awk -F/ '{print $
 .PHONY: build-for-test
 build-for-test: dist/ec_$(BUILD_IMG_ARCH)
 
-.PHONY: rego-docs
-rego-docs: ## Generate rego documentation input YAML files
-	@mkdir -p dist
-	@rm -rf dist/rego-reference
-	go run internal/evaluator/documentation/documentation.go -yaml dist/rego-reference
-
-.PHONY: generate-docs
-generate-docs: rego-docs
-
 .PHONY: clean
 clean: ## Delete build output
 	@rm -f dist/*
