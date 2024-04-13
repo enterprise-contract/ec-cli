@@ -7,8 +7,10 @@ metadata:
     build.appstudio.redhat.com/pull_request_number: '{{pull_request_number}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch
-      == "main"
+    # Only rebuild the task bundle if there is a change to the task definition
+    pipelinesascode.tekton.dev/on-cel-expression: >-
+      event == "pull_request" && target_branch == "main" &&
+      "tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml".pathChanged()
   creationTimestamp: null
   labels:
     appstudio.openshift.io/application: ec-main-task-build
