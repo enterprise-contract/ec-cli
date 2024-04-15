@@ -131,6 +131,7 @@ spec:
       command: [ec]
       args:
         - version
+
     - name: initialize-tuf
       image: quay.io/enterprise-contract/ec-cli:snapshot
       script: |-
@@ -147,6 +148,7 @@ spec:
       env:
         - name: TUF_MIRROR
           value: "$(params.TUF_MIRROR)"
+
     - name: validate
       image: quay.io/enterprise-contract/ec-cli:snapshot
       command: [ec]
@@ -195,22 +197,26 @@ spec:
           memory: 2Gi
         limits:
           memory: 2Gi
+
     - name: report
       image: quay.io/enterprise-contract/ec-cli:snapshot
       command: [cat]
       args:
         - "$(params.HOMEDIR)/report.yaml"
+
     - name: report-json
       image: quay.io/enterprise-contract/ec-cli:snapshot
       command: [cat]
       args:
         - "$(params.HOMEDIR)/report-json.json"
+
     - name: summary
       image: quay.io/enterprise-contract/ec-cli:snapshot
       command: [jq]
       args:
         - "."
         - "$(results.TEST_OUTPUT.path)"
+
     - name: assert
       image: quay.io/enterprise-contract/ec-cli:snapshot
       command: [jq]
