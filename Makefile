@@ -305,3 +305,11 @@ conftest-test-cmd-diff:
 # Useful while hacking on build numbers and versions
 debug-version:
 	@echo $(VERSION)
+
+# It's not so hard to do this by hand, but let's save some typing
+bump-minor-version:
+	@yq ". + 0.1" -i $(VERSION_FILE) && \
+	  git add $(VERSION_FILE) && \
+	  git commit $(VERSION_FILE) \
+	    -m "Bump minor version to $$(cat $(VERSION_FILE))" \
+	    -m 'Commit generated with `make bump-minor-version`'
