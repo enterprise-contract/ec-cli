@@ -6,7 +6,7 @@ Feature: ec cli version subcommand
     Then the exit status should be 0
     Then the standard output should contain
     """
-    Version            v\d+.\d+.\d+-[0-9a-f]+
+    Version            v\d+.\d+.\d+(-ci-[0-9a-f]+)?
     Source ID          [0-9a-f]+
     Change date        \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \+0000 UTC \(.* ago\)
     ECC                v.+
@@ -24,7 +24,7 @@ Feature: ec cli version subcommand
     Then the exit status should be 0
     Then the standard output should contain
     """
-    v\d+.\d+.\d+-[0-9a-f]+
+    v\d+.\d+.\d+(-ci-[0-9a-f]+)?
     """
 
   Scenario: JSON output
@@ -33,7 +33,7 @@ Feature: ec cli version subcommand
     Then the standard output should contain
     """
     {
-      "Version": "v\\d+\\.\\d+\\.\\d+-[0-9a-f]{7}",
+      "Version": "v\\d+\\.\\d+\\.\\d+(-ci-[0-9a-f]+)?",
       "Commit": "[0-9a-f]+",
       "ChangedOn": "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z",
       "Components": [

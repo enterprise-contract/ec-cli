@@ -1,6 +1,6 @@
 MAKEFLAGS+=-j --no-print-directory
 VERSION_FILE=./VERSION
-VERSION:=v$$(cat $(VERSION_FILE)).$$(git rev-list --count HEAD)-$$(git rev-parse --short HEAD)
+VERSION:=$$(hack/derive-version.sh)
 # a list of "dist/ec_{platform}_{arch}" that we support
 ALL_SUPPORTED_OS_ARCH:=$(shell go tool dist list -json|jq -r '.[] | select((.FirstClass == true or .GOARCH == "ppc64le") and .GOARCH != "386") | "dist/ec_\(.GOOS)_\(.GOARCH)"')
 # a list of image_* targets that we do not support
