@@ -140,18 +140,15 @@ outer:
 			// a merge commit is a valid commit id for a change on the path we want
 			// to filter out the merge commits as the default UIs in GitHub
 			// (GitLab?) do not show the merge commits in the file history views
-			to, err := c.Parent(0)
+			parent, err := c.Parent(0)
 			if err != nil {
 				return "", err
 			}
 			// we get commits that didn't change the path, so filter to only
 			// those that did
-			p, _ := c.Patch(to)
+			p, _ := parent.Patch(c)
 			for _, f := range p.FilePatches() {
-				// go-git seems to have reversed from and to, so this differs
-				// from what is documented there, see:
-				// https://github.com/go-git/go-git/discussions/1061
-				to, from := f.Files()
+				from, to := f.Files()
 				if (from != nil && to != nil && from.Path() == path) || (to != nil && to.Path() == path) {
 					// the first commit that did change the file is the latest
 					// for that file
