@@ -112,7 +112,6 @@ func ValidateImage(ctx context.Context, comp app.SnapshotComponent, p policy.Pol
 		// Todo maybe: Handle each one concurrently
 		results, data, err := e.Evaluate(ctx, []string{inputPath})
 		log.Debug("\n\nRunning conftest policy check\n\n")
-		defer e.Destroy()
 
 		if err != nil {
 			log.Debug("Problem running conftest policy check!")

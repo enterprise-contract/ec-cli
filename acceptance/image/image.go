@@ -132,11 +132,11 @@ func imageFrom(ctx context.Context, imageName string) (v1.Image, error) {
 	return remote.Image(ref)
 }
 
-// createAndPushImageSignature for a named image in the Context creates a signature
+// CreateAndPushImageSignature for a named image in the Context creates a signature
 // image, same as `cosign sign` or Tekton Chains would, of that named image and pushes it
 // to the stub registry as a new tag for that image akin to how cosign and Tekton Chains
 // do it
-func createAndPushImageSignature(ctx context.Context, imageName string, keyName string) (context.Context, error) {
+func CreateAndPushImageSignature(ctx context.Context, imageName string, keyName string) (context.Context, error) {
 	var state *imageState
 	ctx, err := testenv.SetupState(ctx, &state)
 	if err != nil {
@@ -218,10 +218,10 @@ func createAndPushImageSignature(ctx context.Context, imageName string, keyName 
 	return ctx, nil
 }
 
-// createAndPushAttestation for a named image in the Context creates an attestation
+// CreateAndPushAttestation for a named image in the Context creates an attestation
 // image, same as `cosign attest` or Tekton Chains would, and pushes it to the stub
 // registry as a new tag for that image akin to how cosign and Tekton Chains do it
-func createAndPushAttestation(ctx context.Context, imageName, keyName string) (context.Context, error) {
+func CreateAndPushAttestation(ctx context.Context, imageName, keyName string) (context.Context, error) {
 	return createAndPushAttestationWithPatches(ctx, imageName, keyName, nil)
 }
 
@@ -326,8 +326,8 @@ func createAndPushAttestationWithPatches(ctx context.Context, imageName, keyName
 	return ctx, nil
 }
 
-// createAndPushImageWithParent creates a parent image and a test image for the given imageName.
-func createAndPushImageWithParent(ctx context.Context, imageName string) (context.Context, error) {
+// CreateAndPushImageWithParent creates a parent image and a test image for the given imageName.
+func CreateAndPushImageWithParent(ctx context.Context, imageName string) (context.Context, error) {
 	var err error
 
 	parentName := fmt.Sprintf("%s/parent", imageName)
@@ -897,7 +897,7 @@ func applyPatches(statement *in_toto.ProvenanceStatementSLSA02, patches *godog.T
 // ("sig") or attestation ("att")
 func steal(what string) func(context.Context, string, string) (context.Context, error) {
 	return func(ctx context.Context, imageName string, signatureFrom string) (context.Context, error) {
-		ctx, err := createAndPushImageWithParent(ctx, imageName)
+		ctx, err := CreateAndPushImageWithParent(ctx, imageName)
 		if err != nil {
 			return ctx, err
 		}
@@ -984,11 +984,11 @@ func copyAllImages(ctx context.Context, source, destination string) (context.Con
 
 // AddStepsTo adds Gherkin steps to the godog ScenarioContext
 func AddStepsTo(sc *godog.ScenarioContext) {
-	sc.Step(`^an image named "([^"]*)"$`, createAndPushImageWithParent)
+	sc.Step(`^an image named "([^"]*)"$`, CreateAndPushImageWithParent)
 	sc.Step(`^an image named "([^"]*)" containing a layer with:$`, createAndPushImageWithLayer)
 	sc.Step(`^the image "([^"]*)" has labels:$`, labelImage)
-	sc.Step(`^a valid image signature of "([^"]*)" image signed by the "([^"]*)" key$`, createAndPushImageSignature)
-	sc.Step(`^a valid attestation of "([^"]*)" signed by the "([^"]*)" key$`, createAndPushAttestation)
+	sc.Step(`^a valid image signature of "([^"]*)" image signed by the "([^"]*)" key$`, CreateAndPushImageSignature)
+	sc.Step(`^a valid attestation of "([^"]*)" signed by the "([^"]*)" key$`, CreateAndPushAttestation)
 	sc.Step(`^a valid attestation of "([^"]*)" signed by the "([^"]*)" key, patched with$`, createAndPushAttestationWithPatches)
 	sc.Step(`^a signed and attested keyless image named "([^"]*)"$`, createAndPushKeylessImage)
 	sc.Step(`^a OCI policy bundle named "([^"]*)" with$`, createAndPushPolicyBundle)
