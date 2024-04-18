@@ -83,7 +83,7 @@ clean: ## Delete build output
 .PHONY: test
 test: ## Run all unit tests
 	@echo "Unit tests:"
-	@go test -race -covermode=atomic -coverprofile=coverage-unit.out -timeout 500ms -tags=unit ./...
+	@go test -race -covermode=atomic -coverprofile=coverage-unit.out -timeout 1s -tags=unit ./...
 	@echo "Integration tests:"
 	@go test -race -covermode=atomic -coverprofile=coverage-integration.out -timeout 15s -tags=integration ./... | grep -v '\[no test files\]'
 # Given the nature of generative tests the test timeout is increased from 500ms

@@ -311,10 +311,10 @@ func jsonPathFromAttestation(data []byte) (string, error) {
 	return fmt.Sprintf("$..[?(@.value=='%x')]", sha256.Sum256(data)), nil
 }
 
-// rekorEntryForAttestation given an image name for which attestation has been
+// RekorEntryForAttestation given an image name for which attestation has been
 // previously performed via image.createAndPushAttestation, creates stub for a
 // mostly empty attestation log entry in Rekor
-func rekorEntryForAttestation(ctx context.Context, imageName string) error {
+func RekorEntryForAttestation(ctx context.Context, imageName string) error {
 	attestation, err := image.AttestationFrom(ctx, imageName)
 	if err != nil {
 		return err
@@ -323,10 +323,10 @@ func rekorEntryForAttestation(ctx context.Context, imageName string) error {
 	return stubRekorEntryFor(ctx, attestation, jsonPathFromAttestation)
 }
 
-// rekorEntryForImageSignature given an image name for which signature has been
+// RekorEntryForImageSignature given an image name for which signature has been
 // previously performed via image.createAndPushImageSignature, creates stub
 // log entry in Rekor
-func rekorEntryForImageSignature(ctx context.Context, imageName string) error {
+func RekorEntryForImageSignature(ctx context.Context, imageName string) error {
 	signature, err := image.ImageSignatureFrom(ctx, imageName)
 	if err != nil {
 		return err
@@ -359,6 +359,6 @@ func IsRunning(ctx context.Context) bool {
 // AddStepsTo adds Gherkin steps to the godog ScenarioContext
 func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^stub rekord running$`, stubRekordRunning)
-	sc.Step(`^a valid Rekor entry for attestation of "([^"]*)"$`, rekorEntryForAttestation)
-	sc.Step(`^a valid Rekor entry for image signature of "([^"]*)"$`, rekorEntryForImageSignature)
+	sc.Step(`^a valid Rekor entry for attestation of "([^"]*)"$`, RekorEntryForAttestation)
+	sc.Step(`^a valid Rekor entry for image signature of "([^"]*)"$`, RekorEntryForImageSignature)
 }

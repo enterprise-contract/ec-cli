@@ -35,6 +35,7 @@ import (
 	"github.com/enterprise-contract/ec-cli/acceptance/kubernetes/stub"
 	"github.com/enterprise-contract/ec-cli/acceptance/kubernetes/types"
 	"github.com/enterprise-contract/ec-cli/acceptance/registry"
+	"github.com/enterprise-contract/ec-cli/acceptance/rekor"
 	"github.com/enterprise-contract/ec-cli/acceptance/snaps"
 	"github.com/enterprise-contract/ec-cli/acceptance/testenv"
 )
@@ -122,6 +123,23 @@ func createNamedPolicy(ctx context.Context, name string, specification *godog.Do
 	return c.cluster.CreateNamedPolicy(ctx, name, specification.Content)
 }
 
+func createNamedPolicyWithManySources(ctx context.Context, name string, amount int, source string) error {
+	c := testenv.FetchState[ClusterState](ctx)
+
+	if err := mustBeUp(ctx, *c); err != nil {
+		return err
+	}
+
+	sources := make([]string, 0, amount)
+	for i := 0; i < amount; i++ {
+		sources = append(sources, fmt.Sprintf(`{"policy": ["%s"]}`, source))
+	}
+
+	policy := fmt.Sprintf(`{"sources": [%s]}`, strings.Join(sources, ", "))
+
+	return c.cluster.CreateNamedPolicy(ctx, name, policy)
+}
+
 func createNamedSnapshot(ctx context.Context, name string, specification *godog.DocString) error {
 	c := testenv.FetchState[ClusterState](ctx)
 
@@ -130,6 +148,50 @@ func createNamedSnapshot(ctx context.Context, name string, specification *godog.
 	}
 
 	return c.cluster.CreateNamedSnapshot(ctx, name, specification.Content)
+}
+
+func createNamedSnapshotWithManyComponents(ctx context.Context, name string, amount int, key string) (context.Context, error) {
+	c := testenv.FetchState[ClusterState](ctx)
+
+	if err := mustBeUp(ctx, *c); err != nil {
+		return ctx, err
+	}
+
+	components := make([]string, 0, amount)
+	for i := 0; i < amount; i++ {
+		imageRef := fmt.Sprintf("%s/image-%d", name, i)
+		var err error
+		ctx, err = image.CreateAndPushImageWithParent(ctx, imageRef)
+		if err != nil {
+			return ctx, err
+		}
+
+		ctx, err = image.CreateAndPushImageSignature(ctx, imageRef, key)
+		if err != nil {
+			return ctx, err
+		}
+
+		err = rekor.RekorEntryForImageSignature(ctx, imageRef)
+		if err != nil {
+			return ctx, err
+		}
+
+		ctx, err = image.CreateAndPushAttestation(ctx, imageRef, key)
+		if err != nil {
+			return ctx, err
+		}
+
+		err = rekor.RekorEntryForAttestation(ctx, imageRef)
+		if err != nil {
+			return ctx, err
+		}
+
+		components = append(components, fmt.Sprintf(`{"name": "component%d", "containerImage": "${REGISTRY}/%s"}`, i, imageRef))
+	}
+
+	snapshot := fmt.Sprintf(`{"components": [%s]}`, strings.Join(components, ", "))
+
+	return ctx, c.cluster.CreateNamedSnapshot(ctx, name, snapshot)
 }
 
 func createPolicy(ctx context.Context, specification *godog.DocString) error {
@@ -331,8 +393,10 @@ func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^the task should succeed$`, theTaskShouldSucceed)
 	sc.Step(`^the task should fail$`, theTaskShouldFail)
 	sc.Step(`^an Snapshot named "([^"]*)" with specification$`, createNamedSnapshot)
+	sc.Step(`^an Snapshot named "([^"]*)" with (\d+) components signed with "([^"]*)" key`, createNamedSnapshotWithManyComponents)
 	sc.Step(`^the task logs for step "([^"]*)" should match the snapshot$`, taskLogsShouldMatchTheSnapshot)
 	sc.Step(`^the task results should match the snapshot$`, taskResultsShouldMatchTheSnapshot)
+	sc.Step(`^policy configuration named "([^"]*)" with (\d+) policy sources from "([^"]*)"$`, createNamedPolicyWithManySources)
 	// stop usage of the cluster once a test is done, godog will call this
 	// function on failure and on the last step, so more than once if the
 	// failure is not on the last step and once if there was no failure or the

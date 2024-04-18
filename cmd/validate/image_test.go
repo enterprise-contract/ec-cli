@@ -23,22 +23,28 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 	"testing"
 	"time"
 
 	hd "github.com/MakeNowJust/heredoc"
+	"github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/gkampitakis/go-snaps/snaps"
 	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 
 	"github.com/enterprise-contract/ec-cli/cmd/root"
 	"github.com/enterprise-contract/ec-cli/internal/applicationsnapshot"
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 	"github.com/enterprise-contract/ec-cli/internal/output"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
+	"github.com/enterprise-contract/ec-cli/internal/policy/source"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
@@ -1106,4 +1112,93 @@ func TestValidateImageCommand_RunE(t *testing.T) {
 			"publicKey": %s
 		}
 	  }`, effectiveTimeTest, utils.TestPublicKeyJSON, utils.TestPublicKeyJSON), out.String())
+}
+
+type mockEvaluator struct {
+	mock.Mock
+}
+
+func (e *mockEvaluator) Evaluate(ctx context.Context, inputs []string) ([]evaluator.Outcome, evaluator.Data, error) {
+	args := e.Called(ctx, inputs)
+
+	return args.Get(0).([]evaluator.Outcome), args.Get(1).(evaluator.Data), args.Error(2)
+}
+
+func (e *mockEvaluator) Destroy() {
+	e.Called()
+}
+
+func (e *mockEvaluator) CapabilitiesPath() string {
+	args := e.Called()
+
+	return args.String(0)
+}
+
+func TestEvaluatorLifecycle(t *testing.T) {
+	ctx := utils.WithFS(context.Background(), afero.NewMemMapFs())
+
+	noEvaluators := 100
+
+	evaluators := make([]*mockEvaluator, 0, noEvaluators)
+	expectations := make([]*mock.Call, 0, noEvaluators)
+
+	for i := 0; i < noEvaluators; i++ {
+		e := mockEvaluator{}
+		call := e.On("Evaluate", ctx, mock.Anything).Return([]evaluator.Outcome{}, evaluator.Data{}, nil)
+
+		evaluators = append(evaluators, &e)
+		expectations = append(expectations, call)
+	}
+
+	for i := 0; i < noEvaluators; i++ {
+		evaluators[i].On("Destroy").NotBefore(expectations...)
+	}
+
+	newConftestEvaluator = func(_ context.Context, s []source.PolicySource, _ evaluator.ConfigProvider, _ v1alpha1.Source) (evaluator.Evaluator, error) {
+		idx, err := strconv.Atoi(s[0].PolicyUrl())
+		require.NoError(t, err)
+
+		return evaluators[idx], nil
+	}
+	t.Cleanup(func() {
+		newConftestEvaluator = evaluator.NewConftestEvaluator
+	})
+
+	validate := func(_ context.Context, component app.SnapshotComponent, _ policy.Policy, evaluators []evaluator.Evaluator, _ bool) (*output.Output, error) {
+		for _, e := range evaluators {
+			_, _, err := e.Evaluate(ctx, []string{})
+			require.NoError(t, err)
+		}
+
+		return &output.Output{ImageURL: component.ContainerImage}, nil
+	}
+
+	validateImageCmd := validateImageCmd(validate)
+	cmd := setUpCobra(validateImageCmd)
+
+	cmd.SetContext(ctx)
+
+	effectiveTimeTest := time.Now().UTC().Format(time.RFC3339Nano)
+
+	sources := make([]string, 0, noEvaluators)
+	for i := 0; i < noEvaluators; i++ {
+		sources = append(sources, fmt.Sprintf(`{"policy": ["%d"]}`, i))
+	}
+
+	cmd.SetArgs([]string{
+		"validate",
+		"image",
+		"--image",
+		"registry/image:tag",
+		"--policy",
+		fmt.Sprintf(`{"publicKey": %s, "sources": [%s]}`, utils.TestPublicKeyJSON, strings.Join(sources, ", ")),
+		"--effective-time",
+		effectiveTimeTest,
+	})
+
+	var out bytes.Buffer
+	cmd.SetOut(&out)
+
+	err := cmd.Execute()
+	assert.NoError(t, err)
 }

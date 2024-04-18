@@ -1033,3 +1033,13 @@ Feature: evaluate enterprise contract
     When ec command is run with "validate image --image ${REGISTRY}/acceptance/sigstore --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR}  --show-successes"
     Then the exit status should be 0
     Then the output should match the snapshot
+
+  Scenario: many components and sources
+    Given a key pair named "known"
+    Given a git repository named "multitude-policy" with
+      | main.rego | examples/happy_day.rego |
+    Given policy configuration named "ec-policy" with 10 policy sources from "git::https://${GITHOST}/git/multitude-policy.git"
+    Given an Snapshot named "multitude" with 10 components signed with "known" key
+    When ec command is run with "validate image --snapshot acceptance/multitude --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR}  --show-successes"
+    Then the exit status should be 0
+    Then the output should match the snapshot

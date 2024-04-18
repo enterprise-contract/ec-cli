@@ -251,6 +251,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 				}
 
 				evaluators = append(evaluators, c)
+				defer c.Destroy()
 			}
 
 			// worker is responsible for processing one component at a time from the jobs channel,

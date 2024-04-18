@@ -40,6 +40,8 @@ import (
 	cosignTypes "github.com/sigstore/cosign/v2/pkg/types"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 
 	"github.com/enterprise-contract/ec-cli/internal/attestation"
 	"github.com/enterprise-contract/ec-cli/internal/evaluation_target/application_snapshot_image"
@@ -285,4 +287,51 @@ func withImageConfig(ctx context.Context, url string) context.Context {
 	resolved := refWithTag.String()
 
 	return fake.WithTestImageConfig(ctx, resolved)
+}
+
+type mockEvaluator struct {
+	mock.Mock
+}
+
+func (e *mockEvaluator) Evaluate(ctx context.Context, inputs []string) ([]evaluator.Outcome, evaluator.Data, error) {
+	args := e.Called(ctx, inputs)
+
+	return args.Get(0).([]evaluator.Outcome), args.Get(1).(evaluator.Data), args.Error(2)
+}
+
+func (e *mockEvaluator) Destroy() {
+	e.Called()
+}
+
+func (e *mockEvaluator) CapabilitiesPath() string {
+	args := e.Called()
+
+	return args.String(0)
+}
+
+func TestEvaluatorLifecycle(t *testing.T) {
+	ctx := context.Background()
+	ctx = application_snapshot_image.WithClient(ctx, &mockASIClient{
+		head:         &gcr.Descriptor{},
+		signatures:   []oci.Signature{validSignature},
+		attestations: []oci.Signature{validAttestation},
+	})
+
+	component := app.SnapshotComponent{
+		ContainerImage: imageRef,
+	}
+
+	policy, err := policy.NewOfflinePolicy(ctx, policy.Now)
+	require.NoError(t, err)
+
+	e := &mockEvaluator{}
+	e.On("Evaluate", ctx, mock.Anything).Return([]evaluator.Outcome{}, evaluator.Data{}, nil)
+
+	// e.Destroy() should not be invoked
+
+	evaluators := []evaluator.Evaluator{e}
+
+	_, err = ValidateImage(ctx, component, policy, evaluators, false)
+
+	require.NoError(t, err)
 }
