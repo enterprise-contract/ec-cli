@@ -61,10 +61,7 @@
           "name",
           "digest"
         ]
-      },
-      "uniqueKeys": [
-        "/name"
-      ]
+      }
     },
     "predicateType": {
       "const": "https://slsa.dev/provenance/v0.2"

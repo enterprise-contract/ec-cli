@@ -91,7 +91,6 @@ func TestSubjectMustBeProvided(t *testing.T) {
 		`{"subject": [{"name": "a", "digest": {"foo": "abcdef0123456789"}}]}`,
 		`{"subject": [{"name": "a", "digest": {"sha256": ""}}]}`,
 		`{"subject": [{"name": "a", "digest": {"sha256": "g%-A"}}]}`,
-		`{"subject": [{"name": "x", "digest": {"sha256": "abcdef"}}, {"name": "x", "digest": {"sha256": "fedcba"}}]}`,
 	)
 }
 
