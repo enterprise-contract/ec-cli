@@ -88,7 +88,7 @@ COPY --from=download /download/cosign /usr/local/bin/cosign
 # Copy all the binaries so they're available to extract and download
 # (Beware if you're testing this locally it will copy everything from
 # your dist directory, not just the freshly built binaries.)
-COPY --from=build /build/dist/ /usr/local/bin/
+COPY --from=build /build/dist/* /usr/local/bin/
 
 # Gzip them because that's what the cli downloader image expects, see
 # https://github.com/securesign/sigstore-ocp/blob/main/images/Dockerfile-clientserver
