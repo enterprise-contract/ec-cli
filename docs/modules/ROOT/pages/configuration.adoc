@@ -115,24 +115,81 @@ Note that you can omit fields where the default value is what you need.
 This would include all rules except for rules from the two specified packages.
 All other rules would be included.
 
+[tabs]
+====
+YAML::
++
 [source,yaml]
 ----
-exclude:
-- attestation_task_bundle
-- slsa_build_scripted_build
+configuration:
+  include:
+    - "@minimal"
+  exclude:
+    - attestation_task_bundle
+    - slsa_build_scripted_build
+sources:
+  - policy:
+      - oci::quay.io/enterprise-contract/ec-release-policy:latest
+    data:
+      - git::https://github.com/enterprise-contract/ec-policies//example/data
 ----
+JSON::
++
+[source,json]
+----
+{
+    "configuration": {
+        "include": ["@minimal"]
+        "exclude": ["attestation_task_bundle", "slsa_build_scripted_build"]
+    }
+    "sources": [
+        {
+            "policy": ["oci::quay.io/enterprise-contract/ec-release-policy:latest"],
+            "data": ["git::https://github.com/enterprise-contract/ec-policies//example/data"]
+        }
+    ]
+}
+----
+====
 
 === Including only rules from a particular package
 
 This would include just the rules from the specified packages and exclude all
 other rules.
 
+[tabs]
+====
+YAML::
++
 [source,yaml]
 ----
-include:
-- test
-- java
+configuration:
+  include:
+    - test
+    - java
+sources:
+  - policy:
+      - oci::quay.io/enterprise-contract/ec-release-policy:latest
+    data:
+      - git::https://github.com/enterprise-contract/ec-policies//example/data
 ----
+JSON::
++
+[source,json]
+----
+{
+    "configuration": {
+        "include": ["test", "java"]
+    }
+    "sources": [
+        {
+            "policy": ["oci::quay.io/enterprise-contract/ec-release-policy:latest"],
+            "data": ["git::https://github.com/enterprise-contract/ec-policies//example/data"]
+        }
+    ]
+}
+----
+====
 
 === Excluding just one rule
 
@@ -140,23 +197,77 @@ This would include all rules except for the `unacceptable_task_bundle` rule in
 the `attestation_task_bundle` package. The other rules in the
 `attestation_task_bundle` would be included.
 
+[tabs]
+====
+YAML::
++
 [source,yaml]
 ----
-exclude:
-- attestation_task_bundle.unacceptable_task_bundle
+configuration:
+  exclude:
+    - attestation_task_bundle.unacceptable_task_bundle
+sources:
+  - policy:
+      - oci::quay.io/enterprise-contract/ec-release-policy:latest
+    data:
+      - git::https://github.com/enterprise-contract/ec-policies//example/data
 ----
+JSON::
++
+[source,json]
+----
+{
+    "configuration": {
+        "exclude": ["attestation_task_bundle.unacceptable_task_bundle"]
+    }
+    "sources": [
+        {
+            "policy": ["oci::quay.io/enterprise-contract/ec-release-policy:latest"],
+            "data": ["git::https://github.com/enterprise-contract/ec-policies//example/data"]
+        }
+    ]
+}
+----
+====
 
 === Specifying that certain tests should be non-blocking
 
 This example shows how to specify that the Enterprise Contract is allowed to
 pass even if certain tests failed or didn't complete.
 
+[tabs]
+====
+YAML::
++
 [source,yaml]
 ----
-exclude:
-- test:get-clair-scan
-- test:clamav-scan
+configuration:
+  exclude:
+    - test:get-clair-scan
+    - test:clamav-scan
+sources:
+  - policy:
+      - oci::quay.io/enterprise-contract/ec-release-policy:latest
+    data:
+      - git::https://github.com/enterprise-contract/ec-policies//example/data
 ----
+JSON::
++
+[source,json]
+----
+{
+    "configuration": {
+        "exclude": ["test:get-clair-scan", "test:clamav-scan"]
+    }
+    "sources": [
+        {
+            "policy": ["oci::quay.io/enterprise-contract/ec-release-policy:latest"],
+            "data": ["git::https://github.com/enterprise-contract/ec-policies//example/data"]
+        }
+    ]
+}
+----
+====
 
 === Including only some rules from a package
 
@@ -170,14 +281,42 @@ This example specifies that only the `unacceptable_task_bundle` rule from the
 Notice the higher specificity include rule takes precedence over the exclude
 rule in this example.
 
+[tabs]
+====
+YAML::
++
 [source,yaml]
 ----
-include:
-- "*"
-- attestation_task_bundle.unacceptable_task_bundle
-exclude:
-- attestation_task_bundle.*
+configuration:
+  include:
+    - *
+    - attestation_task_bundle.unacceptable_task_bundle
+  exclude:
+    - attestation_task_bundle.*
+sources:
+  - policy:
+      - oci::quay.io/enterprise-contract/ec-release-policy:latest
+    data:
+      - git::https://github.com/enterprise-contract/ec-policies//example/data
 ----
+JSON::
++
+[source,json]
+----
+{
+    "configuration": {
+        "include": ["*", "attestation_task_bundle.unacceptable_task_bundle"],
+        "exclude": ["attestation_task_bundle.*"]
+    }
+    "sources": [
+        {
+            "policy": ["oci::quay.io/enterprise-contract/ec-release-policy:latest"],
+            "data": ["git::https://github.com/enterprise-contract/ec-policies//example/data"]
+        }
+    ]
+}
+----
+====
 
 == Data Sources
 
@@ -198,40 +337,62 @@ copy the example/data directory of the ec-policies git repository to your own
 repository, and change the values of `rule_data.yml`. Then, simply provide your
 repo as a data source. For example:
 
+[tabs]
+====
+YAML::
++
+[source,yaml]
+----
+sources:
+  - policy:
+      - git::https://github.com/enterprise-contract/ec-policies.git//policy
+    data:
+      - git::https://github.com/enterprise-contract/ec-policies//example/data
+----
+JSON::
++
 [source,json]
 ----
 {
-  "sources": [
-    {
-      "policy": [
-        "git::https://github.com/enterprise-contract/ec-policies.git//policy"
-      ],
-      "data": [
-        "git::https://github.com/enterprise-contract/ec-policies//example/data"
-      ]
-    }
-  ]
+    "sources": [
+        {
+            "policy": ["git::https://github.com/enterprise-contract/ec-policies.git//policy"],
+            "data": ["git::https://github.com/enterprise-contract/ec-policies//example/data"]
+        }
+    ]
 }
 ----
+====
 
 It is also possible to provide an link:https://www.conftest.dev/sharing/[OPA bundle]
 as a data source, for example:
 
+[tabs]
+====
+YAML::
++
+[source,yaml]
+----
+sources:
+  - policy:
+      - git::https://github.com/enterprise-contract/ec-policies.git//policy
+    data:
+      - oci::quay.io/lucarval/policy-data:latest
+----
+JSON::
++
 [source,json]
 ----
 {
   "sources": [
     {
-      "policy": [
-        "git::https://github.com/enterprise-contract/ec-policies.git//policy"
-      ],
-      "data": [
-        "oci::quay.io/lucarval/policy-data:latest"
-      ]
+      "policy": ["git::https://github.com/enterprise-contract/ec-policies.git//policy"],
+      "data": ["oci::quay.io/lucarval/policy-data:latest"]
     }
   ]
 }
 ----
+====
 
 NOTE: If the data source contains policy rules, those will be ignored.
 
@@ -246,10 +407,42 @@ example you could use the default data source and still define your own values
 for `allowed_registry_prefixes` by adding a second data source that includes
 a file such as:
 
+[tabs]
+====
+YAML::
++
 [source,yaml]
 ----
-rule_data_custom:
-  allowed_registry_prefixes:
-    - trusted-registry.io/trusted-images/
-    - docker.io/acme-company/
+sources:
+  - policy:
+      - git::https://github.com/enterprise-contract/ec-policies.git//policy
+    data:
+      - oci::quay.io/lucarval/policy-data:latest
+    ruleData:
+      rule_data_custom:
+        allowed_registry_prefixes:
+          - trusted-registry.io/trusted-images/
+          - docker.io/acme-company/
 ----
+JSON::
++
+[source,json]
+----
+{
+  "sources": [
+    {
+      "policy": ["git::https://github.com/enterprise-contract/ec-policies.git//policy"],
+      "data": ["oci::quay.io/lucarval/policy-data:latest"]
+      "ruleData": {
+        "rule_data_custom": {
+          "allowed_registry_prefixes": [
+            "trusted-registry.io/trusted-images/",
+            "docker.io/acme-company/"
+          ]
+        }
+      }
+    }
+  ]
+}
+----
+====
