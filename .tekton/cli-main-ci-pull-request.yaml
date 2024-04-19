@@ -32,6 +32,8 @@ spec:
     value: '{{revision}}'
   - name: build-source-image
     value: 'true'
+  - name: build-args-file
+    value: quick-build-args.conf
   pipelineSpec:
     finally:
     - name: show-sbom
@@ -222,6 +224,8 @@ spec:
         value: $(params.image-expires-after)
       - name: COMMIT_SHA
         value: $(tasks.clone-repository.results.commit)
+      - name: BUILD_ARGS_FILE
+        value: "$(params.build-args-file)"
       runAfter:
       - prefetch-dependencies
       taskRef:
