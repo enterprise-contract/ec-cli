@@ -56,6 +56,7 @@ func init() {
 		},
 	}
 
+	VersionCmd.Flags().BoolVarP(&json, "xml", "x", false, "XML output")
 	VersionCmd.Flags().BoolVarP(&json, "json", "j", false, "JSON output")
 	VersionCmd.Flags().BoolVarP(&short, "short", "s", false, "Only output the version")
 }
