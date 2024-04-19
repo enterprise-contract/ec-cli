@@ -64,7 +64,7 @@ jobs:
         run: |
           git fetch origin "${GITHUB_BASE_REF:-$GITHUB_REF_NAME}"
           git switch -c checks --track "origin/${GITHUB_BASE_REF:-$GITHUB_REF_NAME}"
-          trap "git switch - --detach" SIGINT
+          trap "git switch - --detach" EXIT
           git rebase
           if ! git diff --exit-code -s; then
             for f in $(git diff --exit-code --name-only); do
