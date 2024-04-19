@@ -1194,6 +1194,7 @@ func TestEvaluatorLifecycle(t *testing.T) {
 		fmt.Sprintf(`{"publicKey": %s, "sources": [%s]}`, utils.TestPublicKeyJSON, strings.Join(sources, ", ")),
 		"--effective-time",
 		effectiveTimeTest,
+		"--ignore-rekor",
 	})
 
 	var out bytes.Buffer

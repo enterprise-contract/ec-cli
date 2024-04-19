@@ -28,6 +28,7 @@ import (
 
 	"github.com/google/go-containerregistry/pkg/name"
 	gcr "github.com/google/go-containerregistry/pkg/v1"
+	"github.com/google/go-containerregistry/pkg/v1/empty"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/in-toto/in-toto-golang/in_toto"
@@ -46,6 +47,7 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/attestation"
 	"github.com/enterprise-contract/ec-cli/internal/evaluation_target/application_snapshot_image"
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
+	ecoci "github.com/enterprise-contract/ec-cli/internal/fetchers/oci"
 	"github.com/enterprise-contract/ec-cli/internal/fetchers/oci/fake"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
@@ -316,6 +318,9 @@ func TestEvaluatorLifecycle(t *testing.T) {
 		signatures:   []oci.Signature{validSignature},
 		attestations: []oci.Signature{validAttestation},
 	})
+	client := fake.FakeClient{}
+	client.On("Image", name.MustParseReference(imageRegistry+"@sha256:"+imageDigest), mock.Anything).Return(empty.Image, nil)
+	ctx = ecoci.WithClient(ctx, &client)
 
 	component := app.SnapshotComponent{
 		ContainerImage: imageRef,
