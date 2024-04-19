@@ -6,7 +6,6 @@ Print version information
 -h, --help:: help for version (Default: false)
 -j, --json:: JSON output (Default: false)
 -s, --short:: Only output the version (Default: false)
--x, --xml:: XML output (Default: false)
 
 == Options inherited from parent commands
 
