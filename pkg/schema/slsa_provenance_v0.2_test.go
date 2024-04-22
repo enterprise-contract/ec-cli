@@ -19,7 +19,7 @@
 package schema
 
 import (
-	"context"
+	"encoding/json"
 	"fmt"
 	"io/fs"
 	"os"
@@ -65,10 +65,12 @@ func check(t *testing.T, patches ...string) {
 			j, err := jsonpatch.MergePatch(valid, []byte(patch))
 			assert.NoError(t, err)
 
-			errs, err := SLSA_Provenance_v0_2.ValidateBytes(context.Background(), j)
+			var v any
+			err = json.Unmarshal(j, &v)
 			assert.NoError(t, err)
 
-			snaps.MatchSnapshot(t, errs)
+			err = SLSA_Provenance_v0_2.Validate(v)
+			snaps.MatchSnapshot(t, err)
 		})
 	}
 }
@@ -291,19 +293,20 @@ func TestExamples(t *testing.T) {
 		}
 
 		t.Run(path, func(t *testing.T) {
-
-			json, err := os.ReadFile(path)
+			j, err := os.ReadFile(path)
 			assert.NoError(t, err)
 
-			errs, err := SLSA_Provenance_v0_2.ValidateBytes(context.Background(), json)
+			var v any
+			err = json.Unmarshal(j, &v)
 			assert.NoError(t, err)
 
+			err = SLSA_Provenance_v0_2.Validate(v)
 			valid := strings.HasSuffix(path, "_valid.json")
 
 			if valid {
-				assert.Len(t, errs, 0)
+				assert.Nil(t, err)
 			} else {
-				snaps.MatchSnapshot(t, errs)
+				snaps.MatchSnapshot(t, err)
 			}
 		})
 

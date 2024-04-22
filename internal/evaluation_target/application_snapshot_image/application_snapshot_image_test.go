@@ -402,7 +402,7 @@ func TestSyntaxValidation(t *testing.T) {
 			attestations: []attestation.Attestation{
 				invalid,
 			},
-			err: regexp.MustCompile(`EV003: Attestation syntax validation failed, .*, caused by:\nSchema ID: https://slsa.dev/provenance/v0.2\n - /predicate/builder/id: "invalid" invalid uri: uri missing scheme prefix`),
+			err: regexp.MustCompile(`^attestation syntax validation failed: jsonschema: '/predicate/builder/id' does not validate with https://slsa.dev/provenance/v0.2#/properties/predicate/properties/builder/properties/id/format: 'invalid' is not valid 'uri'$`),
 		},
 		{
 			name: "valid",
@@ -415,7 +415,7 @@ func TestSyntaxValidation(t *testing.T) {
 			attestations: []attestation.Attestation{
 				createSimpleAttestation(&in_toto.ProvenanceStatementSLSA02{}),
 			},
-			err: regexp.MustCompile(`EV002: Unable to decode attestation data from attestation image, .*, caused by: unexpected end of JSON input`),
+			err: regexp.MustCompile(`^attestation syntax validation failed: jsonschema: .*$`), // map order is not deterministic so each run produces a different error
 		},
 		{
 			name: "valid and invalid",
@@ -423,7 +423,7 @@ func TestSyntaxValidation(t *testing.T) {
 				valid,
 				invalid,
 			},
-			err: regexp.MustCompile(`EV003`),
+			err: regexp.MustCompile(`^attestation syntax validation failed: jsonschema: '/predicate/builder/id' does not validate with https://slsa.dev/provenance/v0.2#/properties/predicate/properties/builder/properties/id/format: 'invalid' is not valid 'uri'$`),
 		},
 	}
 
@@ -438,7 +438,7 @@ func TestSyntaxValidation(t *testing.T) {
 				assert.NoError(t, err)
 			} else {
 				assert.Error(t, err)
-				assert.Regexp(t, err, err.Error())
+				assert.Regexp(t, c.err, err.Error())
 			}
 		})
 	}

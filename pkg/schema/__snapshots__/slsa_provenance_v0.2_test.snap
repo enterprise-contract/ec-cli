@@ -1,756 +1,449 @@
 
 [TestTypeMustBeInToto/case_0 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/",
-        InvalidValue: map[string]interface {}{
-            "predicate": map[string]interface {}{
-                "buildType": "uri:val",
-                "builder":   map[string]interface {}{
-                    "id": "uri:val",
-                },
-            },
-            "predicateType": "https://slsa.dev/provenance/v0.2",
-            "subject":       []interface {}{
-                map[string]interface {}{
-                    "digest": map[string]interface {}{
-                        "sha512": "abcdef0123456789",
-                    },
-                    "name": "subject_name",
-                },
-            },
-        },
-        Message: "\"_type\" value is required",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#] [S#/required] missing properties: '_type'
 ---
 
 [TestTypeMustBeInToto/case_1 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/_type",
-        InvalidValue: "",
-        Message:      "must equal \"https://in-toto.io/...",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/_type] [S#/properties/_type/const] value must be "https://in-toto.io/Statement/v0.1"
 ---
 
 [TestTypeMustBeInToto/case_2 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/_type",
-        InvalidValue: "something else",
-        Message:      "must equal \"https://in-toto.io/...",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/_type] [S#/properties/_type/const] value must be "https://in-toto.io/Statement/v0.1"
 ---
 
 [TestTypeMustBeInToto/case_3 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestSubjectMustBeProvided/case_0 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/",
-        InvalidValue: map[string]interface {}{
-            "_type":     "https://in-toto.io/Statement/v0.1",
-            "predicate": map[string]interface {}{
-                "buildType": "uri:val",
-                "builder":   map[string]interface {}{
-                    "id": "uri:val",
-                },
-            },
-            "predicateType": "https://slsa.dev/provenance/v0.2",
-        },
-        Message: "\"subject\" value is required",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#] [S#/required] missing properties: 'subject'
 ---
 
 [TestSubjectMustBeProvided/case_1 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/subject",
-        InvalidValue: []interface {}{
-        },
-        Message: "array length 0 below 1 minimum items",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/subject] [S#/properties/subject/minItems] minimum 1 items required, but found 0 items
 ---
 
 [TestSubjectMustBeProvided/case_2 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/subject/0",
-        InvalidValue: map[string]interface {}{
-        },
-        Message: "\"name\" value is required",
-    },
-    {
-        PropertyPath: "/subject/0",
-        InvalidValue: map[string]interface {}{
-        },
-        Message: "\"digest\" value is required",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/subject/0] [S#/properties/subject/items/required] missing properties: 'name', 'digest'
 ---
 
 [TestSubjectMustBeProvided/case_3 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/subject/0",
-        InvalidValue: map[string]interface {}{
-            "name": "",
-        },
-        Message: "\"digest\" value is required",
-    },
-    {
-        PropertyPath: "/subject/0/name",
-        InvalidValue: "",
-        Message:      "min length of 1 characters required: ",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/subject/0] [S#/properties/subject/items/required] missing properties: 'digest'
+  [I#/subject/0/name] [S#/properties/subject/items/properties/name/minLength] length must be >= 1, but got 0
 ---
 
 [TestSubjectMustBeProvided/case_4 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/subject/0/digest/foo",
-        InvalidValue: "foo",
-        Message:      "should be one of [\"sha256\", \"sha224\", \"sha384\", \"sha512\", \"sha512_224\", \"sha512_256\", \"sha3_224\", \"sha3_256\", \"sha3_384\", \"sha3_512\", \"shake128\", \"shake256\", \"blake2b\", \"blake2s\", \"ripemd160\", \"sm3\", \"gost\", \"sha1\", \"md5\"]",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/subject/0/digest] [S#/properties/subject/items/properties/digest/$ref] doesn't validate with '/$defs/DigestSet'
+    [I#/subject/0/digest/foo] [S#/$defs/DigestSet/propertyNames/enum] value must be one of "sha256", "sha224", "sha384", "sha512", "sha512_224", "sha512_256", "sha3_224", "sha3_256", "sha3_384", "sha3_512", "shake128", "shake256", "blake2b", "blake2s", "ripemd160", "sm3", "gost", "sha1", "md5"
 ---
 
 [TestSubjectMustBeProvided/case_5 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/subject/0/digest/sha256",
-        InvalidValue: "",
-        Message:      "regexp pattern ^[a-f0-9]+$ mismatch on string: ",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/subject/0/digest] [S#/properties/subject/items/properties/digest/$ref] doesn't validate with '/$defs/DigestSet'
+    [I#/subject/0/digest/sha256] [S#/$defs/DigestSet/additionalProperties/pattern] does not match pattern '^[a-f0-9]+$'
 ---
 
 [TestSubjectMustBeProvided/case_6 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/subject/0/digest/sha256",
-        InvalidValue: "g%-A",
-        Message:      "regexp pattern ^[a-f0-9]+$ mismatch on string: g%-A",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/subject/0/digest] [S#/properties/subject/items/properties/digest/$ref] doesn't validate with '/$defs/DigestSet'
+    [I#/subject/0/digest/sha256] [S#/$defs/DigestSet/additionalProperties/pattern] does not match pattern '^[a-f0-9]+$'
 ---
 
 [TestTypeMustBeSLSAProvenancev02/case_0 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestTypeMustBeSLSAProvenancev02/case_1 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/predicateType",
-        InvalidValue: "",
-        Message:      "must equal \"https://slsa.dev/pr...",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/predicateType] [S#/properties/predicateType/const] value must be "https://slsa.dev/provenance/v0.2"
 ---
 
 [TestTypeMustBeSLSAProvenancev02/case_2 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/predicateType",
-        InvalidValue: "something else",
-        Message:      "must equal \"https://slsa.dev/pr...",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/predicateType] [S#/properties/predicateType/const] value must be "https://slsa.dev/provenance/v0.2"
 ---
 
 [TestTypeMustBeSLSAProvenancev02/case_3 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateBuilderId/case_0 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/predicate/builder",
-        InvalidValue: map[string]interface {}{
-        },
-        Message: "\"id\" value is required",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/predicate/builder] [S#/properties/predicate/properties/builder/required] missing properties: 'id'
 ---
 
 [TestPredicateBuilderId/case_1 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/predicate/builder/id",
-        InvalidValue: "",
-        Message:      "invalid uri: uri missing scheme prefix",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/predicate/builder/id] [S#/properties/predicate/properties/builder/properties/id/format] '' is not valid 'uri'
 ---
 
 [TestPredicateBuilderId/case_2 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/predicate/builder/id",
-        InvalidValue: "not_uri",
-        Message:      "invalid uri: uri missing scheme prefix",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/predicate/builder/id] [S#/properties/predicate/properties/builder/properties/id/format] 'not_uri' is not valid 'uri'
 ---
 
 [TestPredicateBuilderId/case_3 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateBuilderType/case_0 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/predicate",
-        InvalidValue: map[string]interface {}{
-            "builder": map[string]interface {}{
-                "id": "uri:val",
-            },
-        },
-        Message: "\"buildType\" value is required",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/predicate] [S#/properties/predicate/required] missing properties: 'buildType'
 ---
 
 [TestPredicateBuilderType/case_1 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateBuilderType/case_2 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateBuilderType/case_3 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateInvocationConfigSourceUri/case_0 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateInvocationConfigSourceUri/case_1 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateInvocationConfigSourceUri/case_2 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateInvocationConfigSourceUri/case_3 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateInvocationConfigSourceDigest/case_0 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateInvocationConfigSourceDigest/case_1 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/predicate/invocation/configSource/digest/foo",
-        InvalidValue: "foo",
-        Message:      "should be one of [\"sha256\", \"sha224\", \"sha384\", \"sha512\", \"sha512_224\", \"sha512_256\", \"sha3_224\", \"sha3_256\", \"sha3_384\", \"sha3_512\", \"shake128\", \"shake256\", \"blake2b\", \"blake2s\", \"ripemd160\", \"sm3\", \"gost\", \"sha1\", \"md5\"]",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/predicate/invocation/configSource/digest] [S#/properties/predicate/properties/invocation/properties/configSource/properties/digest/$ref] doesn't validate with '/$defs/DigestSet'
+    [I#/predicate/invocation/configSource/digest/foo] [S#/$defs/DigestSet/propertyNames/enum] value must be one of "sha256", "sha224", "sha384", "sha512", "sha512_224", "sha512_256", "sha3_224", "sha3_256", "sha3_384", "sha3_512", "shake128", "shake256", "blake2b", "blake2s", "ripemd160", "sm3", "gost", "sha1", "md5"
 ---
 
 [TestPredicateInvocationConfigSourceDigest/case_2 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/predicate/invocation/configSource/digest/sha256",
-        InvalidValue: "",
-        Message:      "regexp pattern ^[a-f0-9]+$ mismatch on string: ",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/predicate/invocation/configSource/digest] [S#/properties/predicate/properties/invocation/properties/configSource/properties/digest/$ref] doesn't validate with '/$defs/DigestSet'
+    [I#/predicate/invocation/configSource/digest/sha256] [S#/$defs/DigestSet/additionalProperties/pattern] does not match pattern '^[a-f0-9]+$'
 ---
 
 [TestPredicateInvocationConfigSourceDigest/case_3 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/predicate/invocation/configSource/digest/sha256",
-        InvalidValue: "g%-A",
-        Message:      "regexp pattern ^[a-f0-9]+$ mismatch on string: g%-A",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/predicate/invocation/configSource/digest] [S#/properties/predicate/properties/invocation/properties/configSource/properties/digest/$ref] doesn't validate with '/$defs/DigestSet'
+    [I#/predicate/invocation/configSource/digest/sha256] [S#/$defs/DigestSet/additionalProperties/pattern] does not match pattern '^[a-f0-9]+$'
 ---
 
 [TestPredicateInvocationConfigSourceDigest/case_4 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateInvocationConfigSourceEntryPoint/case_0 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateInvocationConfigSourceEntryPoint/case_1 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/predicate/invocation/configSource/entryPoint",
-        InvalidValue: "",
-        Message:      "min length of 1 characters required: ",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/predicate/invocation/configSource/entryPoint] [S#/properties/predicate/properties/invocation/properties/configSource/properties/entryPoint/minLength] length must be >= 1, but got 0
 ---
 
 [TestPredicateInvocationConfigSourceEntryPoint/case_2 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/predicate/invocation/configSource/entryPoint",
-        InvalidValue: float64(1),
-        Message:      "type should be string, got integer",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/predicate/invocation/configSource/entryPoint] [S#/properties/predicate/properties/invocation/properties/configSource/properties/entryPoint/type] expected string, but got number
 ---
 
 [TestPredicateInvocationParameters/case_0 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateInvocationParameters/case_1 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/predicate/invocation/parameters",
-        InvalidValue: float64(1),
-        Message:      "type should be object, got integer",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/predicate/invocation/parameters] [S#/properties/predicate/properties/invocation/properties/parameters/type] expected object, but got number
 ---
 
 [TestPredicateInvocationParameters/case_2 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateInvocationEnvironment/case_0 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateInvocationEnvironment/case_1 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/predicate/invocation/environment",
-        InvalidValue: float64(1),
-        Message:      "type should be object, got integer",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/predicate/invocation/environment] [S#/properties/predicate/properties/invocation/properties/environment/type] expected object, but got number
 ---
 
 [TestPredicateInvocationEnvironment/case_2 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateMetadata/case_0 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateMetadata/case_1 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/predicate/metadata",
-        InvalidValue: float64(1),
-        Message:      "type should be object, got integer",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/predicate/metadata] [S#/properties/predicate/properties/metadata/type] expected object, but got number
 ---
 
 [TestPredicateMetadataBuildInvocationId/case_0 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateMetadataBuildInvocationId/case_1 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/predicate/metadata/buildInvocationId",
-        InvalidValue: "",
-        Message:      "min length of 1 characters required: ",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/predicate/metadata/buildInvocationId] [S#/properties/predicate/properties/metadata/properties/buildInvocationId/minLength] length must be >= 1, but got 0
 ---
 
 [TestPredicateMetadataBuildInvocationId/case_2 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/predicate/metadata/buildInvocationId",
-        InvalidValue: float64(1),
-        Message:      "type should be string, got integer",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/predicate/metadata/buildInvocationId] [S#/properties/predicate/properties/metadata/properties/buildInvocationId/type] expected string, but got number
 ---
 
 [TestPredicateMetadataBuildInvocationId/case_3 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateInvocationConfigSourceEntryPoint/case_3 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateMetadataBuildStartedOn/case_0 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateMetadataBuildStartedOn/case_1 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/predicate/metadata/buildStartedOn",
-        InvalidValue: "",
-        Message:      "regexp pattern Z$ mismatch on string: ",
-    },
-    {
-        PropertyPath: "/predicate/metadata/buildStartedOn",
-        InvalidValue: "",
-        Message:      "invalid date-time: date-time incorrectly Formatted: parsing time \"\" as \"2006-01-02T15:04:05Z07:00\": cannot parse \"\" as \"2006\"",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/predicate/metadata/buildStartedOn] [S#/properties/predicate/properties/metadata/properties/buildStartedOn/$ref] doesn't validate with '/$defs/Timestamp'
+    [I#/predicate/metadata/buildStartedOn] [S#/$defs/Timestamp/format] '' is not valid 'date-time'
+    [I#/predicate/metadata/buildStartedOn] [S#/$defs/Timestamp/pattern] does not match pattern 'Z$'
 ---
 
 [TestPredicateMetadataBuildStartedOn/case_2 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/predicate/metadata/buildStartedOn",
-        InvalidValue: float64(1),
-        Message:      "type should be string, got integer",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/predicate/metadata/buildStartedOn] [S#/properties/predicate/properties/metadata/properties/buildStartedOn/$ref] doesn't validate with '/$defs/Timestamp'
+    [I#/predicate/metadata/buildStartedOn] [S#/$defs/Timestamp/type] expected string, but got number
 ---
 
 [TestPredicateMetadataBuildStartedOn/case_3 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/predicate/metadata/buildStartedOn",
-        InvalidValue: "1937-01-01T12:00:27.87+00:20",
-        Message:      "regexp pattern Z$ mismatch on string: 1937-01-01T12:00:27.87+00:20",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/predicate/metadata/buildStartedOn] [S#/properties/predicate/properties/metadata/properties/buildStartedOn/$ref] doesn't validate with '/$defs/Timestamp'
+    [I#/predicate/metadata/buildStartedOn] [S#/$defs/Timestamp/pattern] does not match pattern 'Z$'
 ---
 
 [TestPredicateMetadataBuildStartedOn/case_4 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateMetadataBuildFinishedOn/case_0 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateMetadataBuildFinishedOn/case_1 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/predicate/metadata/buildFinishedOn",
-        InvalidValue: "",
-        Message:      "regexp pattern Z$ mismatch on string: ",
-    },
-    {
-        PropertyPath: "/predicate/metadata/buildFinishedOn",
-        InvalidValue: "",
-        Message:      "invalid date-time: date-time incorrectly Formatted: parsing time \"\" as \"2006-01-02T15:04:05Z07:00\": cannot parse \"\" as \"2006\"",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/predicate/metadata/buildFinishedOn] [S#/properties/predicate/properties/metadata/properties/buildFinishedOn/$ref] doesn't validate with '/$defs/Timestamp'
+    [I#/predicate/metadata/buildFinishedOn] [S#/$defs/Timestamp/format] '' is not valid 'date-time'
+    [I#/predicate/metadata/buildFinishedOn] [S#/$defs/Timestamp/pattern] does not match pattern 'Z$'
 ---
 
 [TestPredicateMetadataBuildFinishedOn/case_2 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/predicate/metadata/buildFinishedOn",
-        InvalidValue: float64(1),
-        Message:      "type should be string, got integer",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/predicate/metadata/buildFinishedOn] [S#/properties/predicate/properties/metadata/properties/buildFinishedOn/$ref] doesn't validate with '/$defs/Timestamp'
+    [I#/predicate/metadata/buildFinishedOn] [S#/$defs/Timestamp/type] expected string, but got number
 ---
 
 [TestPredicateMetadataBuildFinishedOn/case_3 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/predicate/metadata/buildFinishedOn",
-        InvalidValue: "1937-01-01T12:00:27.87+00:20",
-        Message:      "regexp pattern Z$ mismatch on string: 1937-01-01T12:00:27.87+00:20",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/predicate/metadata/buildFinishedOn] [S#/properties/predicate/properties/metadata/properties/buildFinishedOn/$ref] doesn't validate with '/$defs/Timestamp'
+    [I#/predicate/metadata/buildFinishedOn] [S#/$defs/Timestamp/pattern] does not match pattern 'Z$'
 ---
 
 [TestPredicateMetadataBuildFinishedOn/case_4 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateMetadataCompleteness/case_0 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateMetadataCompleteness/case_1 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/predicate/metadata/completeness",
-        InvalidValue: float64(1),
-        Message:      "type should be object, got integer",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/predicate/metadata/completeness] [S#/properties/predicate/properties/metadata/properties/completeness/type] expected object, but got number
 ---
 
 [TestPredicateMetadataCompleteness/case_2 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateMetadataCompleteness/case_3 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateMetadataCompletenessParameters/case_0 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateMetadataCompletenessParameters/case_1 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/predicate/metadata/completeness/parameters",
-        InvalidValue: float64(1),
-        Message:      "type should be boolean, got integer",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/predicate/metadata/completeness/parameters] [S#/properties/predicate/properties/metadata/properties/completeness/properties/parameters/type] expected boolean, but got number
 ---
 
 [TestPredicateMetadataCompletenessParameters/case_2 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateMetadataCompletenessParameters/case_3 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateMetadataCompletenessEnvironment/case_0 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateMetadataCompletenessEnvironment/case_1 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/predicate/metadata/completeness/environment",
-        InvalidValue: float64(1),
-        Message:      "type should be boolean, got integer",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/predicate/metadata/completeness/environment] [S#/properties/predicate/properties/metadata/properties/completeness/properties/environment/type] expected boolean, but got number
 ---
 
 [TestPredicateMetadataCompletenessEnvironment/case_2 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateMetadataCompletenessEnvironment/case_3 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateMetadataCompletenessMaterials/case_0 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateMetadataCompletenessMaterials/case_1 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/predicate/metadata/completeness/materials",
-        InvalidValue: float64(1),
-        Message:      "type should be boolean, got integer",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/predicate/metadata/completeness/materials] [S#/properties/predicate/properties/metadata/properties/completeness/properties/materials/type] expected boolean, but got number
 ---
 
 [TestPredicateMetadataCompletenessMaterials/case_2 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateMetadataCompletenessMaterials/case_3 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateMetadataReproducible/case_0 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateMetadataReproducible/case_1 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/predicate/metadata/reproducible",
-        InvalidValue: float64(1),
-        Message:      "type should be boolean, got integer",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/predicate/metadata/reproducible] [S#/properties/predicate/properties/metadata/properties/reproducible/type] expected boolean, but got number
 ---
 
 [TestPredicateMetadataReproducible/case_2 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateMetadataReproducible/case_3 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateBuildConfig/case_0 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateBuildConfig/case_1 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/predicate/buildConfig",
-        InvalidValue: float64(1),
-        Message:      "type should be object, got integer",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/predicate/buildConfig] [S#/properties/predicate/properties/buildConfig/type] expected object, but got number
 ---
 
 [TestPredicateBuildConfig/case_2 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateBuildConfig/case_3 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateMaterials/case_0 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateMaterials/case_1 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/predicate/materials",
-        InvalidValue: float64(1),
-        Message:      "type should be array, got integer",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/predicate/materials] [S#/properties/predicate/properties/materials/type] expected array, but got number
 ---
 
 [TestPredicateMaterials/case_2 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/predicate/materials",
-        InvalidValue: map[string]interface {}{
-        },
-        Message: "type should be array, got object",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/predicate/materials] [S#/properties/predicate/properties/materials/type] expected array, but got object
 ---
 
 [TestPredicateMaterials/case_3 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateMaterials/case_4 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateMaterialsUri/case_0 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateMaterialsUri/case_1 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateMaterialsUri/case_2 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateMaterialsUri/case_3 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateMaterialsDigest/case_0 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestPredicateMaterialsDigest/case_1 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/predicate/materials/0/digest/foo",
-        InvalidValue: "foo",
-        Message:      "should be one of [\"sha256\", \"sha224\", \"sha384\", \"sha512\", \"sha512_224\", \"sha512_256\", \"sha3_224\", \"sha3_256\", \"sha3_384\", \"sha3_512\", \"shake128\", \"shake256\", \"blake2b\", \"blake2s\", \"ripemd160\", \"sm3\", \"gost\", \"sha1\", \"md5\"]",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/predicate/materials/0/digest] [S#/properties/predicate/properties/materials/items/properties/digest/$ref] doesn't validate with '/$defs/DigestSet'
+    [I#/predicate/materials/0/digest/foo] [S#/$defs/DigestSet/propertyNames/enum] value must be one of "sha256", "sha224", "sha384", "sha512", "sha512_224", "sha512_256", "sha3_224", "sha3_256", "sha3_384", "sha3_512", "shake128", "shake256", "blake2b", "blake2s", "ripemd160", "sm3", "gost", "sha1", "md5"
 ---
 
 [TestPredicateMaterialsDigest/case_2 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/predicate/materials/0/digest/sha256",
-        InvalidValue: "",
-        Message:      "regexp pattern ^[a-f0-9]+$ mismatch on string: ",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/predicate/materials/0/digest] [S#/properties/predicate/properties/materials/items/properties/digest/$ref] doesn't validate with '/$defs/DigestSet'
+    [I#/predicate/materials/0/digest/sha256] [S#/$defs/DigestSet/additionalProperties/pattern] does not match pattern '^[a-f0-9]+$'
 ---
 
 [TestPredicateMaterialsDigest/case_3 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/predicate/materials/0/digest/sha256",
-        InvalidValue: "g%-A",
-        Message:      "regexp pattern ^[a-f0-9]+$ mismatch on string: g%-A",
-    },
-}
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/predicate/materials/0/digest] [S#/properties/predicate/properties/materials/items/properties/digest/$ref] doesn't validate with '/$defs/DigestSet'
+    [I#/predicate/materials/0/digest/sha256] [S#/$defs/DigestSet/additionalProperties/pattern] does not match pattern '^[a-f0-9]+$'
 ---
 
 [TestPredicateMaterialsDigest/case_4 - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
 
 [TestExamples/examples/hacbs1_invalid.json - 1]
-[]jsonschema.KeyError{
-}
+nil
 ---
