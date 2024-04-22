@@ -144,13 +144,21 @@ func InlineData(source []byte) PolicySource {
 }
 
 func (s inlineData) GetPolicy(ctx context.Context, workDir string, showMsg bool) (string, error) {
-	dest := uniqueDestination(workDir, s.Subdir(), fmt.Sprintf("%x", (sha256.Sum256(s.source))))
+	dest := path.Join(workDir, s.Subdir())
 
 	if err := os.MkdirAll(dest, 0755); err != nil {
 		return "", err
 	}
 
-	return dest, os.WriteFile(path.Join(dest, "rule_data.json"), s.source, 0400)
+	f := path.Join(dest, "rule_data.json")
+
+	dfn, _ := downloadCache.LoadOrStore(f, sync.OnceValues(func() (string, error) {
+		log.Debugf("Inlined rule data cache miss: %s", f)
+		return dest, os.WriteFile(f, s.source, 0400)
+
+	}))
+
+	return dfn.(func() (string, error))()
 }
 
 func (s inlineData) PolicyUrl() string {
