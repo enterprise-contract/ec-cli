@@ -42,6 +42,8 @@ import (
 	"github.com/enterprise-contract/ec-cli/cmd/root"
 	"github.com/enterprise-contract/ec-cli/internal/applicationsnapshot"
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
+	"github.com/enterprise-contract/ec-cli/internal/fetchers/oci"
+	"github.com/enterprise-contract/ec-cli/internal/fetchers/oci/fake"
 	"github.com/enterprise-contract/ec-cli/internal/output"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/policy/source"
@@ -1038,6 +1040,7 @@ func setUpCobra(command *cobra.Command) *cobra.Command {
 	cmd.AddCommand(validateCmd)
 	return cmd
 }
+
 func TestValidateImageCommand_RunE(t *testing.T) {
 	validate := func(_ context.Context, component app.SnapshotComponent, _ policy.Policy, _ []evaluator.Evaluator, _ bool) (*output.Output, error) {
 		return &output.Output{
@@ -1075,7 +1078,12 @@ func TestValidateImageCommand_RunE(t *testing.T) {
 	validateImageCmd := validateImageCmd(validate)
 	cmd := setUpCobra(validateImageCmd)
 
-	cmd.SetContext(utils.WithFS(context.Background(), afero.NewMemMapFs()))
+	ctx := utils.WithFS(context.Background(), afero.NewMemMapFs())
+
+	client := fake.FakeClient{}
+	ctx = oci.WithClient(ctx, &client)
+
+	cmd.SetContext(ctx)
 
 	effectiveTimeTest := time.Now().UTC().Format(time.RFC3339Nano)
 
