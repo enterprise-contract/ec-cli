@@ -29,6 +29,7 @@ import (
 	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 	extv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 )
 
@@ -103,19 +104,19 @@ func TestInlineDataSource(t *testing.T) {
 
 	temp := t.TempDir()
 
-	assert.Equal(t, "data", s.Subdir())
+	require.Equal(t, "data", s.Subdir())
 
 	dest, err := s.GetPolicy(context.Background(), temp, false)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	file := path.Join(dest, "rule_data.json")
-	assert.FileExists(t, file)
+	require.FileExists(t, file)
 
 	data, err := os.ReadFile(file)
-	assert.NoError(t, err)
-	assert.Equal(t, []byte("some data"), data)
+	require.NoError(t, err)
+	require.Equal(t, []byte("some data"), data)
 
-	assert.Equal(t, "data:application/json;base64,c29tZSBkYXRh", s.PolicyUrl())
+	require.Equal(t, "data:application/json;base64,c29tZSBkYXRh", s.PolicyUrl())
 }
 
 func TestFetchPolicySources(t *testing.T) {
