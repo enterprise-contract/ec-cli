@@ -144,29 +144,6 @@
 }
 ---
 
-[TestSubjectMustBeProvided/case_7 - 1]
-[]jsonschema.KeyError{
-    {
-        PropertyPath: "/subject",
-        InvalidValue: []interface {}{
-            map[string]interface {}{
-                "digest": map[string]interface {}{
-                    "sha256": "abcdef",
-                },
-                "name": "x",
-            },
-            map[string]interface {}{
-                "digest": map[string]interface {}{
-                    "sha256": "fedcba",
-                },
-                "name": "x",
-            },
-        },
-        Message: "found non unique value for JSON paths [/name]: {\"digest\":{\"sha256\":\"fedcba\"},\"name\":\"x\"}",
-    },
-}
----
-
 [TestTypeMustBeSLSAProvenancev02/case_0 - 1]
 []jsonschema.KeyError{
 }
