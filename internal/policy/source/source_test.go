@@ -23,14 +23,18 @@ import (
 	"errors"
 	"os"
 	"path"
+	"path/filepath"
 	"regexp"
 	"testing"
 
 	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
+	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	extv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+
+	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
 func usingDownloader(ctx context.Context, m *mockDownloader) context.Context {
@@ -102,17 +106,23 @@ func TestGetPolicy(t *testing.T) {
 func TestInlineDataSource(t *testing.T) {
 	s := InlineData([]byte("some data"))
 
-	temp := t.TempDir()
-
 	require.Equal(t, "data", s.Subdir())
 
-	dest, err := s.GetPolicy(context.Background(), temp, false)
+	fs := afero.NewMemMapFs()
+	temp, err := afero.TempDir(fs, "", "")
+	require.NoError(t, err)
+
+	ctx := utils.WithFS(context.Background(), fs)
+
+	dest, err := s.GetPolicy(ctx, temp, false)
 	require.NoError(t, err)
 
 	file := path.Join(dest, "rule_data.json")
-	require.FileExists(t, file)
+	exists, err := afero.Exists(fs, file)
+	require.NoError(t, err)
+	require.True(t, exists)
 
-	data, err := os.ReadFile(file)
+	data, err := afero.ReadFile(fs, file)
 	require.NoError(t, err)
 	require.Equal(t, []byte("some data"), data)
 
@@ -171,4 +181,79 @@ func TestFetchPolicySources(t *testing.T) {
 			assert.Equal(t, sources, tt.expected)
 		})
 	}
+}
+
+type mockPolicySource struct{}
+
+func (mockPolicySource) GetPolicy(_ context.Context, _ string, _ bool) (string, error) {
+	return "", nil
+}
+
+func (mockPolicySource) PolicyUrl() string {
+	return ""
+}
+
+func (mockPolicySource) Subdir() string {
+	return "mock"
+}
+
+func TestGetPolicyThroughCache(t *testing.T) {
+	test := func(t *testing.T, fs afero.Fs, expectedDownloads int) {
+		downloadCache.Range(func(key, _ any) bool {
+			downloadCache.Delete(key)
+
+			return true
+		})
+
+		ctx := utils.WithFS(context.Background(), fs)
+
+		invocations := 0
+		data := []byte("hello")
+		dl := func(source, dest string) error {
+			invocations++
+			if err := fs.MkdirAll(dest, 0755); err != nil {
+				return err
+			}
+
+			return afero.WriteFile(fs, filepath.Join(dest, "data.json"), data, 0400)
+		}
+
+		s1, err := getPolicyThroughCache(ctx, &mockPolicySource{}, "/workdir1", dl)
+		require.NoError(t, err)
+
+		s2, err := getPolicyThroughCache(ctx, &mockPolicySource{}, "/workdir2", dl)
+		require.NoError(t, err)
+
+		assert.NotEqual(t, s1, s2)
+		assert.Equalf(t, expectedDownloads, invocations, "expected %d invocations, but was %d", expectedDownloads, invocations) // was using cache on second invocation
+
+		dataFile1 := filepath.Join(s1, "data.json")
+		data1, err := afero.ReadFile(fs, dataFile1)
+		require.NoError(t, err)
+		assert.Equal(t, data, data1)
+
+		dataFile2 := filepath.Join(s2, "data.json")
+		data2, err := afero.ReadFile(fs, dataFile2)
+		require.NoError(t, err)
+		assert.Equal(t, data, data2)
+
+		if fs, ok := fs.(afero.Symlinker); ok {
+			info, ok, err := fs.LstatIfPossible(s2)
+			require.True(t, ok)
+			require.NoError(t, err)
+			assert.True(t, info.Mode()&os.ModeSymlink == os.ModeSymlink)
+		}
+	}
+
+	t.Run("symlinkable", func(t *testing.T) {
+		temp := t.TempDir()
+		// need to use the OsFs as it implements Symlinker
+		fs := afero.NewBasePathFs(afero.NewOsFs(), temp)
+
+		test(t, fs, 1)
+	})
+
+	t.Run("non-symlinkable", func(t *testing.T) {
+		test(t, afero.NewMemMapFs(), 2)
+	})
 }
