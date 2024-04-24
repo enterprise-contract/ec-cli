@@ -93,10 +93,11 @@ components:
         data.
       solution: There is a task with result 'TEST_OUTPUT' that returned a result of
         'WARNING'. You can find which test resulted in 'WARNING' by examining the
-        'result' key in the 'TEST_OUTPUT'.
+        'result' key in the 'TEST_OUTPUT'. More information about the test should
+        be available in the logs for the build Pipeline.
       term: <NAMELESS>
       title: No tests produced warnings
-    msg: Test "<NAMELESS>" returned a warning
+    msg: The Task "<NAMELESS>" from the build Pipeline reports a test contains warnings
 ec-version: ${EC_VERSION}
 effective-time: "${TIMESTAMP}"
 key: |
@@ -159,10 +160,11 @@ components:
         data.
       solution: There is a task with result 'TEST_OUTPUT' that returned a result of
         'WARNING'. You can find which test resulted in 'WARNING' by examining the
-        'result' key in the 'TEST_OUTPUT'.
+        'result' key in the 'TEST_OUTPUT'. More information about the test should
+        be available in the logs for the build Pipeline.
       term: <NAMELESS>
       title: No tests produced warnings
-    msg: Test "<NAMELESS>" returned a warning
+    msg: The Task "<NAMELESS>" from the build Pipeline reports a test contains warnings
 ec-version: ${EC_VERSION}
 effective-time: "${TIMESTAMP}"
 key: |
