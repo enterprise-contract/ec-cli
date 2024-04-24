@@ -26,7 +26,6 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
-	"os"
 	"path"
 	"path/filepath"
 	"sync"
@@ -72,10 +71,9 @@ type PolicyUrl struct {
 // downloadCache is a concurrent map used to cache downloaded files.
 var downloadCache sync.Map
 
-// GetPolicies clones the repository for a given PolicyUrl
-func (p *PolicyUrl) GetPolicy(ctx context.Context, workDir string, showMsg bool) (string, error) {
-	sourceUrl := p.PolicyUrl()
-	dest := uniqueDestination(workDir, p.Subdir(), sourceUrl)
+func getPolicyThroughCache(ctx context.Context, s PolicySource, workDir string, dl func(string, string) error) (string, error) {
+	sourceUrl := s.PolicyUrl()
+	dest := uniqueDestination(workDir, s.Subdir(), sourceUrl)
 
 	// Load or store the downloaded policy file from the given source URL.
 	// If the file is already in the download cache, it is loaded from there.
@@ -84,36 +82,51 @@ func (p *PolicyUrl) GetPolicy(ctx context.Context, workDir string, showMsg bool)
 		log.Debugf("Download cache miss: %s", sourceUrl)
 		// Checkout policy repo into work directory.
 		log.Debugf("Downloading policy files from source url %s to destination %s", sourceUrl, dest)
-		x := ctx.Value(DownloaderFuncKey)
-		if dl, ok := x.(downloaderFunc); ok {
-			return dest, dl.Download(ctx, dest, sourceUrl, showMsg)
-		}
-		return dest, downloader.Download(ctx, dest, sourceUrl, showMsg)
+		return dest, dl(sourceUrl, dest)
 	}))
 
 	d, err := dfn.(func() (string, error))()
+	if err != nil {
+		return "", err
+	}
 
 	// If the destination directory is different from the source directory, we
 	// need to symlink the source directory to the destination directory.
 	if filepath.Dir(dest) != filepath.Dir(d) {
 		fs := utils.FS(ctx)
+		base := filepath.Dir(dest)
+		if err := fs.MkdirAll(base, 0755); err != nil {
+			return "", err
+		}
+
 		if symlinkableFS, ok := fs.(afero.Symlinker); ok {
 			log.Debugf("Symlinking %s to %s", d, dest)
-			if err := symlinkableFS.SymlinkIfPossible(d, dest); err == nil {
-				return dest, nil
+			if err := symlinkableFS.SymlinkIfPossible(d, dest); err != nil {
+				return "", err
 			}
+
+			return dest, nil
 		} else {
-			log.Debugf("Filesystem does not support symlinking: %s", fs.Name())
-			log.Debugf("The error was: %v", err)
-			log.Debugf("Re-downloading instead")
-			x := ctx.Value(DownloaderFuncKey)
-			if dl, ok := x.(downloaderFunc); ok {
-				return dest, dl.Download(ctx, dest, sourceUrl, showMsg)
-			}
+			log.Debugf("Filesystem does not support symlinking: %q, re-downloading instead", fs.Name())
+
+			return dest, dl(sourceUrl, dest)
 		}
-		return dest, nil
 	}
+
 	return d, err
+}
+
+// GetPolicies clones the repository for a given PolicyUrl
+func (p *PolicyUrl) GetPolicy(ctx context.Context, workDir string, showMsg bool) (string, error) {
+	dl := func(source string, dest string) error {
+		x := ctx.Value(DownloaderFuncKey)
+		if dl, ok := x.(downloaderFunc); ok {
+			return dl.Download(ctx, dest, source, showMsg)
+		}
+		return downloader.Download(ctx, dest, source, showMsg)
+	}
+
+	return getPolicyThroughCache(ctx, p, workDir, dl)
 }
 
 func (p *PolicyUrl) PolicyUrl() string {
@@ -144,21 +157,19 @@ func InlineData(source []byte) PolicySource {
 }
 
 func (s inlineData) GetPolicy(ctx context.Context, workDir string, showMsg bool) (string, error) {
-	dest := path.Join(workDir, s.Subdir())
+	dl := func(source string, dest string) error {
+		fs := utils.FS(ctx)
 
-	if err := os.MkdirAll(dest, 0755); err != nil {
-		return "", err
+		if err := fs.MkdirAll(dest, 0755); err != nil {
+			return err
+		}
+
+		f := path.Join(dest, "rule_data.json")
+
+		return afero.WriteFile(fs, f, s.source, 0400)
 	}
 
-	f := path.Join(dest, "rule_data.json")
-
-	dfn, _ := downloadCache.LoadOrStore(f, sync.OnceValues(func() (string, error) {
-		log.Debugf("Inlined rule data cache miss: %s", f)
-		return dest, os.WriteFile(f, s.source, 0400)
-
-	}))
-
-	return dfn.(func() (string, error))()
+	return getPolicyThroughCache(ctx, s, workDir, dl)
 }
 
 func (s inlineData) PolicyUrl() string {
