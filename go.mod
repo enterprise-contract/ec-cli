@@ -7,12 +7,12 @@ require (
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/enterprise-contract/enterprise-contract-controller/api v0.1.41
 	github.com/evanphx/json-patch v5.9.0+incompatible
-	github.com/gkampitakis/go-snaps v0.5.2
+	github.com/gkampitakis/go-snaps v0.5.4
 	github.com/go-logr/logr v1.4.1
 	github.com/google/go-cmp v0.6.0
 	github.com/google/go-containerregistry v0.19.1
 	github.com/hako/durafmt v0.0.0-20210608085754-5c1018a4e16b
-	github.com/hashicorp/go-getter v1.7.3
+	github.com/hashicorp/go-getter v1.7.4
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/in-toto/in-toto-golang v0.9.0
 	github.com/invopop/jsonschema v0.12.0
