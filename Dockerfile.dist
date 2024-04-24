@@ -46,24 +46,41 @@ RUN /build/build.sh "${BUILD_LIST}"
 # Extract this so we can download the matching cosign version below
 RUN go list --mod=readonly -f '{{.Version}}' -m github.com/sigstore/cosign/v2 | tee cosign_version.txt
 
+#---------------------------------
 ## Downloads
 
-FROM registry.access.redhat.com/ubi9/ubi-minimal:9.3@sha256:bc552efb4966aaa44b02532be3168ac1ff18e2af299d0fe89502a1d9fabafbc5 AS download
+#FROM registry.access.redhat.com/ubi9/ubi-minimal:9.3@sha256:bc552efb4966aaa44b02532be3168ac1ff18e2af299d0fe89502a1d9fabafbc5 AS download
+#
+#ARG TARGETOS
+#ARG TARGETARCH
+#
+#WORKDIR /download
+#
+#COPY --from=build /build/cosign_version.txt /download/
+#
+## Download the matching version of cosign
+#RUN COSIGN_VERSION=$(cat /download/cosign_version.txt) && \
+#    curl -sLO https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign-${TARGETOS}-${TARGETARCH} && \
+#    curl -sLO https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign_checksums.txt && \
+#    sha256sum --check <(grep -w "cosign-${TARGETOS}-${TARGETARCH}" < cosign_checksums.txt) && \
+#    mv "cosign-${TARGETOS}-${TARGETARCH}" cosign && \
+#    chmod +x cosign
+#---------------------------------
+
+# ********************************
+# DNM: Experimental hack to make hermetic work.
+# The downside here is that we're ignoring /build/cosign_version.txt
+# Maybe the impact of that is minimal, but let's thinkg about that a little before merging a change like this.
+#
+FROM quay.io/redhat-user-workloads/rhtas-tenant/cli/cosign@sha256:1295e3268dce50b2c8eb79fc3273aebdd03cabc964fdeabf4a06369c7d684eff AS cosign
 
 ARG TARGETOS
 ARG TARGETARCH
 
-WORKDIR /download
+RUN cp /usr/local/bin/cosign-${TARGETOS}-${TARGETARCH}.gz /usr/local/bin/cosign.gz
+# ********************************
 
-COPY --from=build /build/cosign_version.txt /download/
-
-# Download the matching version of cosign
-RUN COSIGN_VERSION=$(cat /download/cosign_version.txt) && \
-    curl -sLO https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign-${TARGETOS}-${TARGETARCH} && \
-    curl -sLO https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign_checksums.txt && \
-    sha256sum --check <(grep -w "cosign-${TARGETOS}-${TARGETARCH}" < cosign_checksums.txt) && \
-    mv "cosign-${TARGETOS}-${TARGETARCH}" cosign && \
-    chmod +x cosign
+#---------------------------------
 
 ## Final image
 
@@ -82,8 +99,10 @@ LABEL \
   com.redhat.component="ec-cli"
 
 # Install cosign and other tools we want to use in the Tekton task
+# Todo: How to prefetch these rpms in the prefetch-dependencies task??
 RUN microdnf -y --nodocs --setopt=keepcache=0 install git-core jq
-COPY --from=download /download/cosign /usr/local/bin/cosign
+COPY --from=cosign /usr/local/bin/cosign.gz /usr/local/bin/cosign.gz
+RUN gzip -d /usr/local/bin/cosign.gz && chmod +x /usr/local/bin/cosign
 
 # Copy all the binaries so they're available to extract and download
 # (Beware if you're testing this locally it will copy everything from
