@@ -9,7 +9,7 @@ require (
 	github.com/doiit/picocolors v1.0.1
 	github.com/enterprise-contract/enterprise-contract-controller/api v0.1.41
 	github.com/evanphx/json-patch/v5 v5.9.0
-	github.com/gkampitakis/go-snaps v0.5.3 // we need custom snapshot directory & file support from https://github.com/gkampitakis/go-snaps/pull/60
+	github.com/gkampitakis/go-snaps v0.5.4
 	github.com/go-git/go-billy/v5 v5.5.0
 	github.com/go-git/go-git/v5 v5.12.0
 	github.com/go-openapi/strfmt v0.23.0
@@ -248,7 +248,3 @@ require (
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
 )
-
-// until the fix is merged and released
-// see https://github.com/gkampitakis/go-snaps/pull/98
-replace github.com/gkampitakis/go-snaps => github.com/zregvart/go-snaps v0.0.0-20240422135241-0890b470048e
