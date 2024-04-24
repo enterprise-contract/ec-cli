@@ -1,5 +1,6 @@
 MAKEFLAGS+=-j --no-print-directory
-VERSION:=v0.3.$$(git rev-list --count HEAD)-$$(git rev-parse --short HEAD)
+VERSION_FILE=./VERSION
+VERSION:=$$(hack/derive-version.sh)
 # a list of "dist/ec_{platform}_{arch}" that we support
 ALL_SUPPORTED_OS_ARCH:=$(shell go tool dist list -json|jq -r '.[] | select((.FirstClass == true or .GOARCH == "ppc64le") and .GOARCH != "386") | "dist/ec_\(.GOOS)_\(.GOARCH)"')
 # a list of image_* targets that we do not support
@@ -300,3 +301,15 @@ conftest-test-cmd-diff:
 	$(DIFF_TOOL) \
 	  <(curl -s https://raw.githubusercontent.com/open-policy-agent/conftest/$${CONFTEST_VER}/internal/commands/test.go) \
 	  cmd/test/test.go
+
+# Useful while hacking on build numbers and versions
+debug-version:
+	@echo $(VERSION)
+
+# It's not so hard to do this by hand, but let's save some typing
+bump-minor-version:
+	@yq ". + 0.1" -i $(VERSION_FILE) && \
+	  git add $(VERSION_FILE) && \
+	  git commit $(VERSION_FILE) \
+	    -m "Bump minor version to $$(cat $(VERSION_FILE))" \
+	    -m 'Commit generated with `make bump-minor-version`'

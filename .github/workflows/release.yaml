@@ -157,6 +157,7 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git tag -a -f -m 'Development snapshot' snapshot
+          source hack/add-auto-tag.sh
           git push -f --tags
 
       - name: Release

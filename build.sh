@@ -15,54 +15,14 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-# Notes:
-# Derive the version from the branch name with the "release-" prefix removed
-# if it's present, e.g. in the branch "release-v0.1-alpha" the version will
-# be "v0.1-alpha"
-#
-# If the branch doesn't start with release- then assume it's not a release
-# branch and build just a single binary to save time and cpu cycles. If the
-# branch is a release branch then build all the binaries in ${BUILD_LIST}.
-#
-# The normal way to get the branch name is this:
-#   EC_GIT_BRANCH=$( git rev-parse --abbrev-ref HEAD )
-# but it doesn't work because the git-clone task checks out a sha directly
-# rather than a branch. That's why we need to use `git for-each-ref`. Beware
-# that testing this locally requires that you push the relevant branches to
-# your 'origin' remote.
-#
-# Note that EC_GIT_ORIGIN_BRANCH, EC_GIT_BRANCH may be blank in a pre-merge PR
-# because the PR branch refs are generally not present. In that case we'll use
-# "_ci_build" as the version.
-#
-# For the EC_PATCH_NUM we assume there is a v0.2.0 (for example) tag created
-# by a human. Using --merges there because we assume every build happens after
-# a PR is merged.
-#
+set -o errexit
+set -o nounset
+set -o pipefail
 
 BUILDS="${1}"
 
-EC_GIT_ORIGIN_BRANCH=$( git for-each-ref --points-at HEAD --format='%(refname:short)' refs/remotes/origin/ )
-echo "EC_GIT_ORIGIN_BRANCH=$EC_GIT_ORIGIN_BRANCH"
+EC_FULL_VERSION=$(hack/derive-version.sh)
 
-EC_GIT_BRANCH=${EC_GIT_ORIGIN_BRANCH#"origin/"}
-echo "EC_GIT_BRANCH=$EC_GIT_BRANCH"
-
-EC_VERSION=${EC_GIT_BRANCH#"release-"}
-if [[ "${EC_GIT_BRANCH}" != release-* ]]; then
-    EC_VERSION=v0.3
-    EC_PATCH_NUM=$(git rev-list --count HEAD)-$(git rev-parse --short HEAD)
-else
-    EC_BASE_TAG="${EC_VERSION}.0"
-    echo "EC_BASE_TAG=$EC_BASE_TAG"
-    git log -n1 --format="%h %s" "$EC_BASE_TAG"
-    EC_PATCH_NUM=$( git rev-list --merges --count ${EC_BASE_TAG}..HEAD )
-fi
-
-EC_FULL_VERSION="${EC_VERSION}.${EC_PATCH_NUM}"
-
-echo "EC_VERSION=$EC_VERSION"
-echo "EC_PATCH_NUM=$EC_PATCH_NUM"
 echo "EC_FULL_VERSION=$EC_FULL_VERSION"
 echo "BUILDS=$BUILDS"
 
