@@ -44,6 +44,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
+	"github.com/enterprise-contract/ec-cli/internal/applicationsnapshot"
 	"github.com/enterprise-contract/ec-cli/internal/attestation"
 	"github.com/enterprise-contract/ec-cli/internal/evaluation_target/application_snapshot_image"
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
@@ -311,8 +312,18 @@ func (e *mockEvaluator) CapabilitiesPath() string {
 	return args.String(0)
 }
 
+type MockRemoteClient struct {
+	mock.Mock
+}
+
 func TestEvaluatorLifecycle(t *testing.T) {
 	ctx := context.Background()
+	imageManifestJson := `{"mediaType": "application/vnd.oci.image.manifest.v1+json"}`
+	imageManifestJsonBytes := []byte(imageManifestJson)
+	mockRemoteClient := &MockRemoteClient{}
+	mockRemoteClient.On("Get", mock.Anything).Return(&remote.Descriptor{Manifest: imageManifestJsonBytes}, nil)
+	ctx = context.WithValue(ctx, applicationsnapshot.RemoteClientKey{}, mockRemoteClient)
+
 	ctx = application_snapshot_image.WithClient(ctx, &mockASIClient{
 		head:         &gcr.Descriptor{},
 		signatures:   []oci.Signature{validSignature},

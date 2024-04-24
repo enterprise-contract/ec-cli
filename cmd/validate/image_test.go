@@ -31,6 +31,9 @@ import (
 	hd "github.com/MakeNowJust/heredoc"
 	"github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/gkampitakis/go-snaps/snaps"
+	"github.com/google/go-containerregistry/pkg/name"
+	v1 "github.com/google/go-containerregistry/pkg/v1"
+	"github.com/google/go-containerregistry/pkg/v1/remote"
 	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
 	"github.com/spf13/afero"
@@ -42,8 +45,6 @@ import (
 	"github.com/enterprise-contract/ec-cli/cmd/root"
 	"github.com/enterprise-contract/ec-cli/internal/applicationsnapshot"
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
-	"github.com/enterprise-contract/ec-cli/internal/fetchers/oci"
-	"github.com/enterprise-contract/ec-cli/internal/fetchers/oci/fake"
 	"github.com/enterprise-contract/ec-cli/internal/output"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/policy/source"
@@ -60,6 +61,35 @@ type data struct {
 var rootArgs = []string{
 	"validate",
 	"image",
+}
+
+type MockRemoteClient struct {
+	mock.Mock
+}
+
+func (m *MockRemoteClient) Get(ref name.Reference) (*remote.Descriptor, error) {
+	args := m.Called(ref)
+	result := args.Get(0)
+	if result != nil {
+		return result.(*remote.Descriptor), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+
+func (m *MockRemoteClient) Index(ref name.Reference) (v1.ImageIndex, error) {
+	args := m.Called(ref)
+	result := args.Get(0)
+	if result != nil {
+		return args.Get(0).(v1.ImageIndex), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+
+func commonMockClient(mockClient *MockRemoteClient) {
+	imageManifestJson := `{"mediaType": "application/vnd.oci.image.manifest.v1+json"}`
+	imageManifestJsonBytes := []byte(imageManifestJson)
+	// TODO: Replace mock.Anything calls with specific values
+	mockClient.On("Get", mock.Anything).Return(&remote.Descriptor{Manifest: imageManifestJsonBytes}, nil)
 }
 
 func Test_determineInputSpec(t *testing.T) {
@@ -238,10 +268,12 @@ func Test_determineInputSpec(t *testing.T) {
 			},
 		},
 	}
-
+	mockRemoteClient := &MockRemoteClient{}
+	commonMockClient(mockRemoteClient)
+	ctx := context.WithValue(context.Background(), applicationsnapshot.RemoteClientKey{}, mockRemoteClient)
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			s, err := applicationsnapshot.DetermineInputSpec(context.Background(), applicationsnapshot.Input{
+			s, err := applicationsnapshot.DetermineInputSpec(ctx, applicationsnapshot.Input{
 				File:   c.arguments.filePath,
 				JSON:   c.arguments.input,
 				Image:  c.arguments.imageRef,
@@ -294,7 +326,11 @@ func Test_ValidateImageCommand(t *testing.T) {
 	validateImageCmd := validateImageCmd(validate)
 	cmd := setUpCobra(validateImageCmd)
 
-	cmd.SetContext(utils.WithFS(context.TODO(), afero.NewMemMapFs()))
+	mockRemoteClient := &MockRemoteClient{}
+	commonMockClient(mockRemoteClient)
+	ctx := utils.WithFS(context.TODO(), afero.NewMemMapFs())
+	ctx = context.WithValue(ctx, applicationsnapshot.RemoteClientKey{}, mockRemoteClient)
+	cmd.SetContext(ctx)
 
 	effectiveTimeTest := time.Now().UTC().Format(time.RFC3339Nano)
 
@@ -370,7 +406,11 @@ func Test_ValidateImageCommandImages(t *testing.T) {
 	validateImageCmd := validateImageCmd(validate)
 	cmd := setUpCobra(validateImageCmd)
 
-	cmd.SetContext(utils.WithFS(context.Background(), afero.NewMemMapFs()))
+	mockRemoteClient := &MockRemoteClient{}
+	commonMockClient(mockRemoteClient)
+	ctx := utils.WithFS(context.TODO(), afero.NewMemMapFs())
+	ctx = context.WithValue(ctx, applicationsnapshot.RemoteClientKey{}, mockRemoteClient)
+	cmd.SetContext(ctx)
 
 	effectiveTimeTest := time.Now().UTC().Format(time.RFC3339Nano)
 
@@ -466,7 +506,11 @@ func Test_ValidateImageCommandKeyless(t *testing.T) {
 	})
 	cmd := setUpCobra(validateImageCmd)
 
-	cmd.SetContext(utils.WithFS(context.Background(), afero.NewMemMapFs()))
+	mockRemoteClient := &MockRemoteClient{}
+	commonMockClient(mockRemoteClient)
+	ctx := utils.WithFS(context.TODO(), afero.NewMemMapFs())
+	ctx = context.WithValue(ctx, applicationsnapshot.RemoteClientKey{}, mockRemoteClient)
+	cmd.SetContext(ctx)
 
 	cmd.SetArgs(append(rootArgs, []string{
 		"--image",
@@ -528,9 +572,12 @@ func Test_ValidateImageCommandYAMLPolicyFile(t *testing.T) {
 	validateImageCmd := validateImageCmd(validate)
 	cmd := setUpCobra(validateImageCmd)
 
+	mockRemoteClient := &MockRemoteClient{}
+	commonMockClient(mockRemoteClient)
 	fs := afero.NewMemMapFs()
-
-	cmd.SetContext(utils.WithFS(context.TODO(), fs))
+	ctx := utils.WithFS(context.TODO(), fs)
+	ctx = context.WithValue(ctx, applicationsnapshot.RemoteClientKey{}, mockRemoteClient)
+	cmd.SetContext(ctx)
 
 	cases := []struct {
 		name   string
@@ -642,9 +689,12 @@ func Test_ValidateImageCommandJSONPolicyFile(t *testing.T) {
 	validateImageCmd := validateImageCmd(validate)
 	cmd := setUpCobra(validateImageCmd)
 
+	mockRemoteClient := &MockRemoteClient{}
+	commonMockClient(mockRemoteClient)
 	fs := afero.NewMemMapFs()
-
-	cmd.SetContext(utils.WithFS(context.TODO(), fs))
+	ctx := utils.WithFS(context.TODO(), fs)
+	ctx = context.WithValue(ctx, applicationsnapshot.RemoteClientKey{}, mockRemoteClient)
+	cmd.SetContext(ctx)
 
 	testPolicyJSON := `sources:
   - policy:
@@ -718,9 +768,12 @@ func Test_ValidateImageCommandEmptyPolicyFile(t *testing.T) {
 	validateImageCmd := validateImageCmd(validate)
 	cmd := setUpCobra(validateImageCmd)
 
+	mockRemoteClient := &MockRemoteClient{}
+	commonMockClient(mockRemoteClient)
 	fs := afero.NewMemMapFs()
-
-	cmd.SetContext(utils.WithFS(context.TODO(), fs))
+	ctx := utils.WithFS(context.TODO(), fs)
+	ctx = context.WithValue(ctx, applicationsnapshot.RemoteClientKey{}, mockRemoteClient)
+	cmd.SetContext(ctx)
 
 	err := afero.WriteFile(fs, "/policy.yaml", []byte(nil), 0644)
 	if err != nil {
@@ -813,7 +866,11 @@ func Test_ValidateErrorCommand(t *testing.T) {
 			validateImageCmd := validateImageCmd(validate)
 			cmd := setUpCobra(validateImageCmd)
 
-			cmd.SetContext(utils.WithFS(context.TODO(), afero.NewMemMapFs()))
+			mockRemoteClient := &MockRemoteClient{}
+			commonMockClient(mockRemoteClient)
+			ctx := utils.WithFS(context.TODO(), afero.NewMemMapFs())
+			ctx = context.WithValue(ctx, applicationsnapshot.RemoteClientKey{}, mockRemoteClient)
+			cmd.SetContext(ctx)
 
 			cmd.SetArgs(append([]string{"validate", "image"}, c.args...))
 
@@ -854,7 +911,11 @@ func Test_FailureImageAccessibility(t *testing.T) {
 	cmd := setUpCobra(validateImageCmd)
 	cmd.SilenceUsage = true // The root command is set to prevent usage printouts when running the CLI directly. This setup is temporary workaround.
 
-	cmd.SetContext(utils.WithFS(context.TODO(), afero.NewMemMapFs()))
+	mockRemoteClient := &MockRemoteClient{}
+	commonMockClient(mockRemoteClient)
+	ctx := utils.WithFS(context.TODO(), afero.NewMemMapFs())
+	ctx = context.WithValue(ctx, applicationsnapshot.RemoteClientKey{}, mockRemoteClient)
+	cmd.SetContext(ctx)
 
 	effectiveTimeTest := time.Now().UTC().Format(time.RFC3339Nano)
 
@@ -920,7 +981,11 @@ func Test_FailureOutput(t *testing.T) {
 	cmd := setUpCobra(validateImageCmd)
 	cmd.SilenceUsage = true // The root command is set to prevent usage printouts when running the CLI directly. This setup is temporary workaround.
 
-	cmd.SetContext(utils.WithFS(context.TODO(), afero.NewMemMapFs()))
+	mockRemoteClient := &MockRemoteClient{}
+	commonMockClient(mockRemoteClient)
+	ctx := utils.WithFS(context.TODO(), afero.NewMemMapFs())
+	ctx = context.WithValue(ctx, applicationsnapshot.RemoteClientKey{}, mockRemoteClient)
+	cmd.SetContext(ctx)
 
 	effectiveTimeTest := time.Now().UTC().Format(time.RFC3339Nano)
 
@@ -990,7 +1055,11 @@ func Test_WarningOutput(t *testing.T) {
 	validateImageCmd := validateImageCmd(validate)
 	cmd := setUpCobra(validateImageCmd)
 
-	cmd.SetContext(utils.WithFS(context.TODO(), afero.NewMemMapFs()))
+	mockRemoteClient := &MockRemoteClient{}
+	commonMockClient(mockRemoteClient)
+	ctx := utils.WithFS(context.TODO(), afero.NewMemMapFs())
+	ctx = context.WithValue(ctx, applicationsnapshot.RemoteClientKey{}, mockRemoteClient)
+	cmd.SetContext(ctx)
 
 	effectiveTimeTest := time.Now().UTC().Format(time.RFC3339Nano)
 
@@ -1025,6 +1094,74 @@ func Test_WarningOutput(t *testing.T) {
 				{"msg": "warning for policy check 2"}
 			],
 			"success": true
+		  }
+		],
+		"policy": {
+			"publicKey": %s
+		}
+	  }`, effectiveTimeTest, utils.TestPublicKeyJSON, utils.TestPublicKeyJSON), out.String())
+}
+
+func Test_FailureImageAccessibilityNonStrict(t *testing.T) {
+	validate := func(_ context.Context, component app.SnapshotComponent, _ policy.Policy, _ []evaluator.Evaluator, _ bool) (*output.Output, error) {
+		return &output.Output{
+			ImageSignatureCheck: output.VerificationStatus{
+				Passed: true,
+			},
+			ImageAccessibleCheck: output.VerificationStatus{
+				Passed: false,
+				Result: &evaluator.Result{Message: "Image URL is not accessible: HEAD registry/image:tag: unexpected status code 404 Not Found (HEAD responses have no body, use GET for details)"},
+			},
+			ImageURL: component.ContainerImage,
+		}, nil
+	}
+
+	validateImageCmd := validateImageCmd(validate)
+	cmd := setUpCobra(validateImageCmd)
+	cmd.SilenceUsage = true // The root command is set to prevent usage printouts when running the CLI directly. This setup is temporary workaround.
+
+	mockRemoteClient := &MockRemoteClient{}
+	commonMockClient(mockRemoteClient)
+	ctx := utils.WithFS(context.TODO(), afero.NewMemMapFs())
+	ctx = context.WithValue(ctx, applicationsnapshot.RemoteClientKey{}, mockRemoteClient)
+	cmd.SetContext(ctx)
+
+	effectiveTimeTest := time.Now().UTC().Format(time.RFC3339Nano)
+
+	cmd.SetArgs(append(rootArgs,
+		"--image",
+		"registry/image:tag",
+		"--policy",
+		fmt.Sprintf(`{"publicKey": %s}`, utils.TestPublicKeyJSON),
+		"--effective-time",
+		effectiveTimeTest,
+		"--strict",
+		"false",
+		"--ignore-rekor",
+		"true"))
+
+	var out bytes.Buffer
+	cmd.SetOut(&out)
+
+	utils.SetTestRekorPublicKey(t)
+
+	err := cmd.Execute()
+	assert.Error(t, err)
+	assert.EqualError(t, err, "success criteria not met")
+	assert.JSONEq(t, fmt.Sprintf(`{
+		"success": false,
+		"ec-version": "development",
+		"effective-time": %q,
+		"key": %s,
+		"components": [
+		  {
+			"name": "Unnamed",
+			"containerImage": "registry/image:tag",
+			"source": {},
+			"violations": [
+			  {"msg": "Image URL is not accessible: HEAD registry/image:tag: unexpected status code 404 Not Found (HEAD responses have no body, use GET for details)"}
+			],
+			"success": false
 		  }
 		],
 		"policy": {
@@ -1079,9 +1216,9 @@ func TestValidateImageCommand_RunE(t *testing.T) {
 	cmd := setUpCobra(validateImageCmd)
 
 	ctx := utils.WithFS(context.Background(), afero.NewMemMapFs())
-
-	client := fake.FakeClient{}
-	ctx = oci.WithClient(ctx, &client)
+	mockRemoteClient := &MockRemoteClient{}
+	commonMockClient(mockRemoteClient)
+	ctx = context.WithValue(ctx, applicationsnapshot.RemoteClientKey{}, mockRemoteClient)
 
 	cmd.SetContext(ctx)
 
@@ -1144,6 +1281,9 @@ func (e *mockEvaluator) CapabilitiesPath() string {
 
 func TestEvaluatorLifecycle(t *testing.T) {
 	ctx := utils.WithFS(context.Background(), afero.NewMemMapFs())
+	mockRemoteClient := &MockRemoteClient{}
+	commonMockClient(mockRemoteClient)
+	ctx = context.WithValue(ctx, applicationsnapshot.RemoteClientKey{}, mockRemoteClient)
 
 	noEvaluators := 100
 
