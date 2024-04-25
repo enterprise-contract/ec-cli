@@ -18,22 +18,24 @@ package schema
 
 import (
 	_ "embed"
-	"encoding/json"
+	"strings"
 
-	"github.com/qri-io/jsonschema"
+	"github.com/santhosh-tekuri/jsonschema/v5"
 )
-
-var SLSA_Provenance_v0_2 jsonschema.Schema
 
 //go:embed slsa_provenance_v0.2.json
 var slsa_provenance_v0_2_json string
 
+var SLSA_Provenance_v0_2 *jsonschema.Schema
+
+var SLSA_Provenance_v0_2_URI = "https://slsa.dev/provenance/v0.2"
+
 func init() {
-	jsonschema.RegisterKeyword("uniqueKeys", newUniqueKeys)
+	compiler := jsonschema.NewCompiler()
+	compiler.AssertFormat = true
 
-	jsonschema.LoadDraft2019_09()
-
-	if err := json.Unmarshal([]byte(slsa_provenance_v0_2_json), &SLSA_Provenance_v0_2); err != nil {
+	if err := compiler.AddResource(SLSA_Provenance_v0_2_URI, strings.NewReader(slsa_provenance_v0_2_json)); err != nil {
 		panic(err)
 	}
+	SLSA_Provenance_v0_2 = compiler.MustCompile(SLSA_Provenance_v0_2_URI)
 }

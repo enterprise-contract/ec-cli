@@ -29,8 +29,8 @@ import (
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
-	"github.com/qri-io/jsonschema"
 	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
+	"github.com/santhosh-tekuri/jsonschema/v5"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
 	ociremote "github.com/sigstore/cosign/v2/pkg/oci/remote"
 	log "github.com/sirupsen/logrus"
@@ -51,7 +51,7 @@ import (
 // equivalent to http.DefaultTransport, with a reduced timeout and keep-alive
 var imageRefTransport = remote.WithTransport(remote.DefaultTransport)
 
-var attestationSchemas = map[string]jsonschema.Schema{
+var attestationSchemas = map[string]*jsonschema.Schema{
 	"https://slsa.dev/provenance/v0.2": schema.SLSA_Provenance_v0_2,
 }
 
@@ -252,43 +252,41 @@ func (a ApplicationSnapshotImage) ValidateAttestationSyntax(ctx context.Context)
 		return errors.New("no attestation data")
 	}
 
-	allErrors := map[string][]jsonschema.KeyError{}
+	var validationErr error
 	for _, sp := range a.attestations {
 		pt := sp.PredicateType()
 		if schema, ok := attestationSchemas[pt]; ok {
 			// Found a validator for this predicate type so let's use it
 			log.Debugf("Attempting to validate an attestation with predicateType %s", pt)
-			if errs, err := schema.ValidateBytes(ctx, sp.Statement()); err != nil {
-				// Error while trying to validate
+
+			var statement any
+			if err := json.Unmarshal(sp.Statement(), &statement); err != nil {
 				return fmt.Errorf("unable to decode attestation data from attestation image: %w", err)
-			} else {
-				if len(errs) == 0 {
-					log.Debugf("Statement schema was validated successfully against the %s schema", pt)
-				} else {
-					log.Debugf("Validated the statement against %s schema and found the following errors: %v", pt, errs)
-					allErrors[pt] = errs
+			}
+
+			if err := schema.Validate(statement); err != nil {
+				if _, ok = err.(*jsonschema.ValidationError); !ok {
+					// Error while trying to validate
+					return fmt.Errorf("unable to validate attestation data from attestation image: %w", err)
 				}
+
+				validationErr = errors.Join(validationErr, err)
+			} else {
+				log.Debugf("Statement schema was validated successfully against the %s schema", pt)
 			}
 		} else {
 			log.Debugf("No schema validation found for predicateType %s", pt)
 		}
 	}
 
-	if len(allErrors) == 0 {
+	if validationErr == nil {
 		// TODO another option might be to filter out invalid statement JSONs
 		// and keep only the valid ones
 		return nil
 	}
 
 	log.Debug("Failed to validate statements from the attestation image against all known schemas")
-	msg := ""
-	for id, errs := range allErrors {
-		msg += fmt.Sprintf("\nSchema ID: %s", id)
-		for _, e := range errs {
-			msg += fmt.Sprintf("\n - %s", e.Error())
-		}
-	}
-	return fmt.Errorf("attestation syntax validation failed: %s", msg)
+	return fmt.Errorf("attestation syntax validation failed: %s", validationErr.Error())
 }
 
 // Attestations returns the value of the attestations field of the ApplicationSnapshotImage struct
