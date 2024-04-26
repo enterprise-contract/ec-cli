@@ -317,7 +317,7 @@ spec:
         - name: name
           value: ecosystem-cert-preflight-checks
         - name: bundle
-          value: quay.io/redhat-appstudio-tekton-catalog/task-ecosystem-cert-preflight-checks:0.1@sha256:6db64d139369552b23dda73a49ed4d2870d17db7b5f534d59ec8b41ea258c6a4
+          value: quay.io/redhat-appstudio-tekton-catalog/task-ecosystem-cert-preflight-checks:0.1@sha256:6229f0824fec8b3b4d47f4960194fdd34b716747dc199eb0bb34287a7c5e1903
         - name: kind
           value: task
         resolver: bundles
