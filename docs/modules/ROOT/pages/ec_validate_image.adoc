@@ -120,6 +120,8 @@ effective dates in the future. The value can be "now" (default) - for
 current time, "attestation" - for time from the youngest attestation, or
 a RFC3339 formatted value, e.g. 2022-11-18T00:00:00Z.
  (Default: now)
+--extra-rule-data:: Extra data to be provided to the Rego policy evaluator. Use format 'key=value'. May be used multiple times.
+ (Default: [])
 -f, --file-path:: DEPRECATED - use --images: path to ApplicationSnapshot Spec JSON file
 -h, --help:: help for image (Default: false)
 --ignore-rekor:: Skip Rekor transparency log checks during validation. (Default: false)

@@ -18,9 +18,11 @@ package validate
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"sort"
+	"strings"
 
 	hd "github.com/MakeNowJust/heredoc"
 	"github.com/hashicorp/go-multierror"
@@ -28,6 +30,7 @@ import (
 	"github.com/sigstore/cosign/v2/pkg/cosign"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	extv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 
 	"github.com/enterprise-contract/ec-cli/internal/applicationsnapshot"
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
@@ -50,6 +53,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		certificateOIDCIssuer       string
 		certificateOIDCIssuerRegExp string
 		effectiveTime               string
+		extraRuleData               []string
 		filePath                    string // Deprecated: images replaced this
 		imageRef                    string
 		info                        bool
@@ -213,6 +217,52 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 			}); err != nil {
 				allErrors = multierror.Append(allErrors, err)
 			} else {
+				// inject extra variables into rule data per source
+				if len(data.extraRuleData) > 0 {
+					var policySpec = p.Spec()
+					var sources = policySpec.Sources
+					for i := range sources {
+						var source = sources[i]
+						var rule_data_raw []byte
+						unmarshaled := make(map[string]interface{})
+
+						if source.RuleData != nil {
+							rule_data_raw, err = source.RuleData.MarshalJSON()
+							if err != nil {
+								log.Errorf("Unable to parse ruledata to raw data")
+							}
+							err = json.Unmarshal(rule_data_raw, &unmarshaled)
+							if err != nil {
+								log.Errorf("Unable to parse ruledata into standard JSON object")
+							}
+						} else {
+							sources[i].RuleData = new(extv1.JSON)
+						}
+
+						for j := range data.extraRuleData {
+							parts := strings.SplitN(data.extraRuleData[j], "=", 2)
+							if len(parts) < 2 {
+								log.Errorf("Incorrect syntax for --extra-rule-data")
+							}
+							unmarshaled[parts[0]] = parts[1]
+						}
+						rule_data_raw, err = json.Marshal(unmarshaled)
+						if err != nil {
+							log.Errorf("Unable to parse updated ruledata: %s", err.Error())
+						}
+
+						if rule_data_raw == nil {
+							log.Errorf("Invalid rule data JSON")
+						}
+
+						err = sources[i].RuleData.UnmarshalJSON(rule_data_raw)
+						if err != nil {
+							log.Errorf("Unable to marshal updated JSON: %s", err.Error())
+						}
+					}
+					policySpec.Sources = sources
+					p = p.WithSpec(policySpec)
+				}
 				data.policy = p
 			}
 
@@ -419,6 +469,10 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		effective dates in the future. The value can be "now" (default) - for
 		current time, "attestation" - for time from the youngest attestation, or
 		a RFC3339 formatted value, e.g. 2022-11-18T00:00:00Z.
+	`))
+
+	cmd.Flags().StringSliceVar(&data.extraRuleData, "extra-rule-data", data.extraRuleData, hd.Doc(`
+		Extra data to be provided to the Rego policy evaluator. Use format 'key=value'. May be used multiple times.
 	`))
 
 	cmd.Flags().StringVar(&data.snapshot, "snapshot", "", hd.Doc(`

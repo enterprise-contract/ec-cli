@@ -21,6 +21,7 @@ package validate
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strconv"
@@ -729,6 +730,104 @@ configuration:
 
 	err = cmd.Execute()
 	assert.NoError(t, err)
+}
+
+func Test_ValidateImageCommandExtraData(t *testing.T) {
+	validate := func(_ context.Context, component app.SnapshotComponent, _ policy.Policy, _ []evaluator.Evaluator, _ bool) (*output.Output, error) {
+		return &output.Output{
+			ImageSignatureCheck: output.VerificationStatus{
+				Passed: true,
+			},
+			ImageAccessibleCheck: output.VerificationStatus{
+				Passed: true,
+			},
+			AttestationSignatureCheck: output.VerificationStatus{
+				Passed: true,
+			},
+			AttestationSyntaxCheck: output.VerificationStatus{
+				Passed: true,
+			},
+			PolicyCheck: []evaluator.Outcome{
+				{
+					FileName:  "test.json",
+					Namespace: "test.main",
+					Successes: []evaluator.Result{
+						{
+							Message: "Pass",
+							Metadata: map[string]interface{}{
+								"code": "policy.nice",
+							},
+						},
+					},
+				},
+			},
+			ImageURL: component.ContainerImage,
+			ExitCode: 0,
+		}, nil
+	}
+
+	validateImageCmd := validateImageCmd(validate)
+	cmd := setUpCobra(validateImageCmd)
+
+	fs := afero.NewMemMapFs()
+
+	cmd.SetContext(utils.WithFS(context.TODO(), fs))
+
+	testPolicyJSON := `sources:
+  - policy:
+      - "registry/policy:latest"
+    data:
+      - "registry/policy-data:latest"
+configuration:
+  collections:
+    - minimal
+  include:
+    - "*"
+  exclude: []
+`
+	err := afero.WriteFile(fs, "/policy.json", []byte(testPolicyJSON), 0644)
+	if err != nil {
+		panic(err)
+	}
+
+	cmd.SetArgs(append(rootArgs, []string{
+		"--image",
+		"registry/image:tag",
+		"--public-key",
+		utils.TestPublicKey,
+		"--policy",
+		"/policy.json",
+		"--extra-rule-data",
+		"key=value",
+	}...))
+
+	var out bytes.Buffer
+	cmd.SetOut(&out)
+
+	utils.SetTestRekorPublicKey(t)
+
+	err = cmd.Execute()
+	assert.NoError(t, err)
+
+	// extract one of the sources, since we can match JSON without needing to compare publicKey (which may change)
+	unmarshaled := make(map[string]interface{})
+	err = json.Unmarshal(out.Bytes(), &unmarshaled)
+	assert.NoError(t, err)
+
+	sourceSample := unmarshaled["policy"].(map[string]interface{})["sources"].([]interface{})[0].(map[string]interface{})
+	sourceSampleMarshaled, err := json.Marshal(sourceSample)
+	assert.NoError(t, err)
+	assert.JSONEq(t, `{
+		"data": [
+			"registry/policy-data:latest"
+		],
+		"policy": [
+			"registry/policy:latest"
+		],
+		"ruleData": {
+			"key":"value"
+		}
+	  }`, string(sourceSampleMarshaled))
 }
 
 func Test_ValidateImageCommandEmptyPolicyFile(t *testing.T) {
