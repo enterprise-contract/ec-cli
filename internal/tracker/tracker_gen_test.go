@@ -34,7 +34,7 @@ func TestTrackerAddKeepsOrder(t *testing.T) {
 	parameters := gopter.DefaultTestParameters()
 
 	// uncomment when test fails and set the seed to the printed value
-	// parameters.Rng.Seed(1234) -
+	// parameters.Rng.Seed(1234)
 	arbitraries := arbitrary.DefaultArbitraries()
 
 	nonEmptyIdentifier := gen.Identifier().SuchThat(func(v string) bool {
@@ -69,7 +69,7 @@ func TestTrackerAddKeepsOrder(t *testing.T) {
 			scanner := bufio.NewScanner(buff)
 			scanner.Split(bufio.ScanLines)
 
-			// at this level of identation, last string was
+			// at this level of indentation, last string was
 			lastAt := map[int]string{}
 			lastLevel := 0
 			for scanner.Scan() {
@@ -83,14 +83,14 @@ func TestTrackerAddKeepsOrder(t *testing.T) {
 				// remove quotes, they're just messing with comparisons below,
 				// i.e. `"y"`` -> "y"
 				line = strings.ReplaceAll(line, `"`, "")
-				// remove trailing colon, it also messes with comparisons below,
-				// i.e. "abc:" -> "abc"
-				line = strings.TrimSuffix(line, ":")
+				// focus only on keys, so disregard everything after and
+				// including ":"
+				line, _, _ = strings.Cut(line, ":")
 
-				// counts the identation, i.e. number of spaces on the left
+				// counts the indentation, i.e. number of spaces on the left
 				level := len(line) - len(strings.TrimLeft(line, " "))
 
-				// we're going to a lower level of identation, meaning we're now
+				// we're going to a lower level of indentation, meaning we're now
 				// processing a key that is not at the same, but at a lower
 				// level, also meaning that the lines processed below this level
 				// were were compared, i.e. we don't want to compare x and y
