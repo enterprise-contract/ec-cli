@@ -731,7 +731,12 @@ func Test_ValidateImageCommandExtraData(t *testing.T) {
 
 	fs := afero.NewMemMapFs()
 
-	cmd.SetContext(utils.WithFS(context.TODO(), fs))
+	ctx := utils.WithFS(context.TODO(), fs)
+	mockRemoteClient := &MockRemoteClient{}
+	commonMockClient(mockRemoteClient)
+	ctx = context.WithValue(ctx, applicationsnapshot.RemoteClientKey{}, mockRemoteClient)
+
+	cmd.SetContext(ctx)
 
 	testPolicyJSON := `sources:
   - policy:
