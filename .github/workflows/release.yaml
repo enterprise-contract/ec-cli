@@ -42,11 +42,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_COBRA: 1
         run: |
-          echo head_sha=$(gh api /repos/enterprise-contract/ec-cli/git/matching-refs/heads/main --jq '.[0].object.sha') >> "$GITHUB_OUTPUT"
+          echo head_sha=$(gh api /repos/enterprise-contract/ec-cli/git/matching-refs/heads/main --jq '.[0].object.sha') | tee -a "$GITHUB_OUTPUT"
       - name: Timestamp
         id: timestamp
         run: |
-          echo timestamp=$(date '+%s') >> "$GITHUB_OUTPUT"
+          echo timestamp=$(date '+%s') | tee -a "$GITHUB_OUTPUT"
 
   release:
 
