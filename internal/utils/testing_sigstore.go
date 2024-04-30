@@ -14,7 +14,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-//go:build unit
+//go:build unit || integration
 
 // The contents of this file are meant to assist in writing unit tests. It requires the "unit" build
 // tag which is not included when building the ec binary.

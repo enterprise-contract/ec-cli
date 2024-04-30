@@ -24,31 +24,20 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"strconv"
-	"strings"
 	"testing"
 	"time"
 
 	hd "github.com/MakeNowJust/heredoc"
-	"github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/gkampitakis/go-snaps/snaps"
-	"github.com/google/go-containerregistry/pkg/name"
-	v1 "github.com/google/go-containerregistry/pkg/v1"
-	"github.com/google/go-containerregistry/pkg/v1/remote"
 	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
 	"github.com/spf13/afero"
-	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/require"
 
-	"github.com/enterprise-contract/ec-cli/cmd/root"
 	"github.com/enterprise-contract/ec-cli/internal/applicationsnapshot"
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 	"github.com/enterprise-contract/ec-cli/internal/output"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
-	"github.com/enterprise-contract/ec-cli/internal/policy/source"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
@@ -62,35 +51,6 @@ type data struct {
 var rootArgs = []string{
 	"validate",
 	"image",
-}
-
-type MockRemoteClient struct {
-	mock.Mock
-}
-
-func (m *MockRemoteClient) Get(ref name.Reference) (*remote.Descriptor, error) {
-	args := m.Called(ref)
-	result := args.Get(0)
-	if result != nil {
-		return result.(*remote.Descriptor), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-
-func (m *MockRemoteClient) Index(ref name.Reference) (v1.ImageIndex, error) {
-	args := m.Called(ref)
-	result := args.Get(0)
-	if result != nil {
-		return args.Get(0).(v1.ImageIndex), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-
-func commonMockClient(mockClient *MockRemoteClient) {
-	imageManifestJson := `{"mediaType": "application/vnd.oci.image.manifest.v1+json"}`
-	imageManifestJsonBytes := []byte(imageManifestJson)
-	// TODO: Replace mock.Anything calls with specific values
-	mockClient.On("Get", mock.Anything).Return(&remote.Descriptor{Manifest: imageManifestJsonBytes}, nil)
 }
 
 func Test_determineInputSpec(t *testing.T) {
@@ -771,7 +731,12 @@ func Test_ValidateImageCommandExtraData(t *testing.T) {
 
 	fs := afero.NewMemMapFs()
 
-	cmd.SetContext(utils.WithFS(context.TODO(), fs))
+	ctx := utils.WithFS(context.TODO(), fs)
+	mockRemoteClient := &MockRemoteClient{}
+	commonMockClient(mockRemoteClient)
+	ctx = context.WithValue(ctx, applicationsnapshot.RemoteClientKey{}, mockRemoteClient)
+
+	cmd.SetContext(ctx)
 
 	testPolicyJSON := `sources:
   - policy:
@@ -1269,14 +1234,6 @@ func Test_FailureImageAccessibilityNonStrict(t *testing.T) {
 	  }`, effectiveTimeTest, utils.TestPublicKeyJSON, utils.TestPublicKeyJSON), out.String())
 }
 
-func setUpCobra(command *cobra.Command) *cobra.Command {
-	validateCmd := NewValidateCmd()
-	validateCmd.AddCommand(command)
-	cmd := root.NewRootCmd()
-	cmd.AddCommand(validateCmd)
-	return cmd
-}
-
 func TestValidateImageCommand_RunE(t *testing.T) {
 	validate := func(_ context.Context, component app.SnapshotComponent, _ policy.Policy, _ []evaluator.Evaluator, _ bool) (*output.Output, error) {
 		return &output.Output{
@@ -1356,97 +1313,4 @@ func TestValidateImageCommand_RunE(t *testing.T) {
 			"publicKey": %s
 		}
 	  }`, effectiveTimeTest, utils.TestPublicKeyJSON, utils.TestPublicKeyJSON), out.String())
-}
-
-type mockEvaluator struct {
-	mock.Mock
-}
-
-func (e *mockEvaluator) Evaluate(ctx context.Context, inputs []string) ([]evaluator.Outcome, evaluator.Data, error) {
-	args := e.Called(ctx, inputs)
-
-	return args.Get(0).([]evaluator.Outcome), args.Get(1).(evaluator.Data), args.Error(2)
-}
-
-func (e *mockEvaluator) Destroy() {
-	e.Called()
-}
-
-func (e *mockEvaluator) CapabilitiesPath() string {
-	args := e.Called()
-
-	return args.String(0)
-}
-
-func TestEvaluatorLifecycle(t *testing.T) {
-	ctx := utils.WithFS(context.Background(), afero.NewMemMapFs())
-	mockRemoteClient := &MockRemoteClient{}
-	commonMockClient(mockRemoteClient)
-	ctx = context.WithValue(ctx, applicationsnapshot.RemoteClientKey{}, mockRemoteClient)
-
-	noEvaluators := 100
-
-	evaluators := make([]*mockEvaluator, 0, noEvaluators)
-	expectations := make([]*mock.Call, 0, noEvaluators)
-
-	for i := 0; i < noEvaluators; i++ {
-		e := mockEvaluator{}
-		call := e.On("Evaluate", ctx, mock.Anything).Return([]evaluator.Outcome{}, evaluator.Data{}, nil)
-
-		evaluators = append(evaluators, &e)
-		expectations = append(expectations, call)
-	}
-
-	for i := 0; i < noEvaluators; i++ {
-		evaluators[i].On("Destroy").NotBefore(expectations...)
-	}
-
-	newConftestEvaluator = func(_ context.Context, s []source.PolicySource, _ evaluator.ConfigProvider, _ v1alpha1.Source) (evaluator.Evaluator, error) {
-		idx, err := strconv.Atoi(s[0].PolicyUrl())
-		require.NoError(t, err)
-
-		return evaluators[idx], nil
-	}
-	t.Cleanup(func() {
-		newConftestEvaluator = evaluator.NewConftestEvaluator
-	})
-
-	validate := func(_ context.Context, component app.SnapshotComponent, _ policy.Policy, evaluators []evaluator.Evaluator, _ bool) (*output.Output, error) {
-		for _, e := range evaluators {
-			_, _, err := e.Evaluate(ctx, []string{})
-			require.NoError(t, err)
-		}
-
-		return &output.Output{ImageURL: component.ContainerImage}, nil
-	}
-
-	validateImageCmd := validateImageCmd(validate)
-	cmd := setUpCobra(validateImageCmd)
-
-	cmd.SetContext(ctx)
-
-	effectiveTimeTest := time.Now().UTC().Format(time.RFC3339Nano)
-
-	sources := make([]string, 0, noEvaluators)
-	for i := 0; i < noEvaluators; i++ {
-		sources = append(sources, fmt.Sprintf(`{"policy": ["%d"]}`, i))
-	}
-
-	cmd.SetArgs([]string{
-		"validate",
-		"image",
-		"--image",
-		"registry/image:tag",
-		"--policy",
-		fmt.Sprintf(`{"publicKey": %s, "sources": [%s]}`, utils.TestPublicKeyJSON, strings.Join(sources, ", ")),
-		"--effective-time",
-		effectiveTimeTest,
-		"--ignore-rekor",
-	})
-
-	var out bytes.Buffer
-	cmd.SetOut(&out)
-
-	err := cmd.Execute()
-	assert.NoError(t, err)
 }

@@ -86,11 +86,11 @@ test: ## Run all unit tests
 	@echo "Unit tests:"
 	@go test -race -covermode=atomic -coverprofile=coverage-unit.out -timeout 1s -tags=unit ./...
 	@echo "Integration tests:"
-	@go test -race -covermode=atomic -coverprofile=coverage-integration.out -timeout 15s -tags=integration ./... | grep -v '\[no test files\]'
+	@set -o pipefail && go test -race -covermode=atomic -coverprofile=coverage-integration.out -timeout 15s -tags=integration ./... | grep -v '\[no test files\]'
 # Given the nature of generative tests the test timeout is increased from 500ms
 # to 30s to accommodate many samples being generated and test cases being run.
 	@echo "Generative tests:"
-	@go test -race -covermode=atomic -coverprofile=coverage-generative.out -timeout 30s -tags=generative ./... | grep -v '\[no test files\]'
+	@set -o pipefail && go test -race -covermode=atomic -coverprofile=coverage-generative.out -timeout 30s -tags=generative ./... | grep -v '\[no test files\]'
 
 ACCEPTANCE_TIMEOUT:=20m
 .ONESHELL:
