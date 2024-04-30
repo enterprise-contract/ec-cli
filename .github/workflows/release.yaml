@@ -175,7 +175,7 @@ jobs:
       - name: Rolling release
         uses: softprops/action-gh-release@9d7c94cfd0a1f3ed45544c887983e9fa900f0564 # v2.0.4
         with:
-          prerelease: true
+          make_latest: true
           name: Rolling release
           body: Stable rolling release. Version can be determined by running `ec version`.
           tag_name: snapshot
