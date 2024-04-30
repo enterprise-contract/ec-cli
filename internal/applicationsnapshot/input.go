@@ -20,7 +20,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
+	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
@@ -193,12 +195,32 @@ func readSnapshotSource(input []byte) (app.SnapshotSpec, error) {
 	return file, nil
 }
 
+func createRemoteOptions(ctx context.Context) []remote.Option {
+	backoff := remote.Backoff{
+		Duration: 1.0 * time.Second,
+		Factor:   2.0,
+		Jitter:   0.1,
+		Steps:    3,
+	}
+
+	return []remote.Option{
+		remote.WithTransport(remote.DefaultTransport),
+		remote.WithContext(ctx),
+		remote.WithAuthFromKeychain(authn.DefaultKeychain),
+		remote.WithRetryBackoff(backoff),
+	}
+}
+
 func (*remoteClient) Get(ref name.Reference) (*remote.Descriptor, error) {
-	return remote.Get(ref)
+	// TODO: remoteClient.Get should take a context and the actual remote options so it
+	// can simply pass them through to remote.Get.
+	return remote.Get(ref, createRemoteOptions(context.TODO())...)
 }
 
 func (*remoteClient) Index(ref name.Reference) (v1.ImageIndex, error) {
-	return remote.Index(ref)
+	// TODO: remoteClient.Index should take a context and the actual remote options so it
+	// can simply pass them through to remote.Index.
+	return remote.Index(ref, createRemoteOptions(context.TODO())...)
 }
 
 var defaultClient = &remoteClient{}
