@@ -42,11 +42,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_COBRA: 1
         run: |
-          echo head_sha=$(gh api /repos/enterprise-contract/ec-cli/git/matching-refs/heads/main --jq '.[0].object.sha') >> "$GITHUB_OUTPUT"
+          echo head_sha=$(gh api /repos/enterprise-contract/ec-cli/git/matching-refs/heads/main --jq '.[0].object.sha') | tee -a "$GITHUB_OUTPUT"
       - name: Timestamp
         id: timestamp
         run: |
-          echo timestamp=$(date '+%s') >> "$GITHUB_OUTPUT"
+          echo timestamp=$(date '+%s') | tee -a "$GITHUB_OUTPUT"
 
   release:
 
@@ -144,6 +144,7 @@ jobs:
       #   uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5
 
       - name: Delete snapshot release and tag
+        id: add_tags
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
           RELEASE_ID=$(gh api \
@@ -157,15 +158,26 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git tag -a -f -m 'Development snapshot' snapshot
+
           source hack/add-auto-tag.sh
+          echo "tag_name=$( source hack/derive-version.sh )" | tee -a "$GITHUB_OUTPUT"
+
           git push -f --tags
 
-      - name: Release
+      - name: Versioned release
         uses: softprops/action-gh-release@9d7c94cfd0a1f3ed45544c887983e9fa900f0564 # v2.0.4
         with:
-          prerelease: true
+          name: ${{ steps.add_tags.outputs.tag_name }}
+          tag_name: ${{ steps.add_tags.outputs.tag_name }}
+          generate_release_notes: false
+          files: dist/*
+
+      - name: Rolling release
+        uses: softprops/action-gh-release@9d7c94cfd0a1f3ed45544c887983e9fa900f0564 # v2.0.4
+        with:
+          make_latest: true
           name: Rolling release
-          body: Stable rolling release. Version can be determined by running `ec version`
+          body: Stable rolling release. Version can be determined by running `ec version`.
           tag_name: snapshot
           generate_release_notes: false
           files: dist/*

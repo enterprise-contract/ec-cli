@@ -24,7 +24,7 @@ AUTO_TAG=$(hack/derive-version.sh)
 if [ -z "$(git tag -l $AUTO_TAG)" ]; then
   # Create a tag
   echo "Creating tag $AUTO_TAG"
-  git tag -a -m 'Version tag added automatically after snapshot build' "$AUTO_TAG"
+  git tag -a -m 'Version tag added automatically after snapshot build.' "$AUTO_TAG"
 
 else
   # The tag exists already
