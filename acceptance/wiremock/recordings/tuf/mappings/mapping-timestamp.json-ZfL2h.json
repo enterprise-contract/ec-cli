@@ -1,20 +1,20 @@
 {
-  "id" : "60c6c4af-4145-322e-8c0a-9f4bd146ab13",
+  "id" : "17976ddc-34b8-32d7-ae4d-6bc012efff00",
   "request" : {
     "url" : "/timestamp.json",
     "method" : "GET"
   },
   "response" : {
     "status" : 200,
-    "bodyFileName" : "body-timestamp.json-qJlbf.json",
+    "bodyFileName" : "body-timestamp.json-ZfL2h.json",
     "headers" : {
       "accept-ranges" : "bytes",
       "content-type" : "application/json",
-      "date" : "Mon, 30 Oct 2023 19:59:57 GMT",
-      "last-modified" : "Mon, 30 Oct 2023 19:59:40 GMT",
+      "date" : "Wed, 01 May 2024 13:19:51 GMT",
+      "last-modified" : "Wed, 01 May 2024 13:19:35 GMT",
       "x-envoy-upstream-service-time" : "0",
       "server" : "envoy"
     }
   },
-  "uuid" : "60c6c4af-4145-322e-8c0a-9f4bd146ab13"
+  "uuid" : "17976ddc-34b8-32d7-ae4d-6bc012efff00"
 }
