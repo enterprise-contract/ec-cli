@@ -1,0 +1,32 @@
+{
+  "id" : "599d06e2-db69-33c9-bd78-b93ed02ba161",
+  "request" : {
+    "url" : "/7.snapshot.json",
+    "method" : "GET"
+  },
+  "response" : {
+    "status" : 200,
+    "bodyFileName" : "body-7.snapshot.json-slOdo.json",
+    "headers" : {
+      "x-goog-generation" : "1714310650298574",
+      "x-goog-metageneration" : "1",
+      "x-goog-stored-content-encoding" : "identity",
+      "x-goog-stored-content-length" : "498",
+      "x-goog-meta-goog-reserved-file-mtime" : "1714310501",
+      "x-goog-hash" : [ "crc32c=BBntEw==", "md5=bxJi4P05ayzLLpU/LMstEQ==" ],
+      "x-goog-storage-class" : "REGIONAL",
+      "accept-ranges" : "bytes",
+      "x-guploader-uploadid" : "ABPtcPrR_ziMVxK4SLJ-5xBuLIvgNArfOJAa6wJ7ajqrAM3fqlkio2aNxiLtI5lmPvdabS6dZLVFsnwpyw",
+      "server" : "UploadServer",
+      "via" : "1.1 google",
+      "Date" : "Wed, 01 May 2024 13:47:26 GMT",
+      "Cache-Control" : "public,max-age=86400",
+      "Last-Modified" : "Sun, 28 Apr 2024 13:24:10 GMT",
+      "ETag" : "\"6f1262e0fd396b2ccb2e953f2ccb2d11\"",
+      "Content-Type" : "application/json",
+      "Age" : "7590",
+      "Alt-Svc" : "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+    }
+  },
+  "uuid" : "599d06e2-db69-33c9-bd78-b93ed02ba161"
+}

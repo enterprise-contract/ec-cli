@@ -385,8 +385,8 @@ func setupTUF(ctx context.Context, vars map[string]string, environment []string)
 	}
 	vars["TUF"] = tufURL
 
-	vars["CERT_IDENTITY"] = "https://kubernetes.io/namespaces/default/serviceaccounts/default"
-	vars["CERT_ISSUER"] = "https://kubernetes.default.svc.cluster.local"
+	vars["CERT_IDENTITY"] = "luizcarvalho85@gmail.com"
+	vars["CERT_ISSUER"] = "https://github.com/login/oauth"
 
 	environment = append(environment, fmt.Sprintf("TUF_ROOT=%s", tuf.Root(ctx)))
 

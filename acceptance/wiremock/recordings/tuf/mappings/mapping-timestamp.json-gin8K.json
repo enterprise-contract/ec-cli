@@ -1,0 +1,31 @@
+{
+  "id" : "ae0a671c-9cf2-3b58-bc0b-b842d5b7959e",
+  "request" : {
+    "url" : "/timestamp.json",
+    "method" : "GET"
+  },
+  "response" : {
+    "status" : 200,
+    "bodyFileName" : "body-timestamp.json-gin8K.json",
+    "headers" : {
+      "date" : "Wed, 01 May 2024 15:53:55 GMT",
+      "cache-control" : "no-store",
+      "expires" : "Thu, 01 May 2025 15:53:55 GMT",
+      "last-modified" : "Wed, 01 May 2024 14:41:08 GMT",
+      "etag" : "\"48efe0d5143cc4af25a7032f2c3b3dc8\"",
+      "x-goog-generation" : "1714574468300922",
+      "x-goog-metageneration" : "1",
+      "x-goog-stored-content-encoding" : "identity",
+      "x-goog-stored-content-length" : "446",
+      "content-type" : "application/json",
+      "x-goog-hash" : [ "crc32c=+30jWA==", "md5=SO/g1RQ8xK8lpwMvLDs9yA==" ],
+      "x-goog-storage-class" : "REGIONAL",
+      "accept-ranges" : "bytes",
+      "x-guploader-uploadid" : "ABPtcPomcvUSUnUltroCZ8IpAG6IXULmraY0-VruH1n8UgGT-mZqyMWdgH7jvnHHK_NLZuz8iok",
+      "server" : "UploadServer",
+      "via" : "1.1 google",
+      "Alt-Svc" : "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+    }
+  },
+  "uuid" : "ae0a671c-9cf2-3b58-bc0b-b842d5b7959e"
+}

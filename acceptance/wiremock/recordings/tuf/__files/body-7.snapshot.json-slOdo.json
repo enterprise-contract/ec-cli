@@ -1,0 +1,22 @@
+{
+ "signatures": [
+  {
+   "keyid": "5416a7a35ef827abc651e200ac11f3d23e9db74ef890b1fedb69fb2a152ebac5",
+   "sig": "304502200f696f3e1c67905a28ef0104523baf764df3d9745cd6ee9761d9ebf434ef7cef02210096e19b2535202ab45a95f27cf857604165c0c36ddc6174478fd5db18b66bf4ba"
+  }
+ ],
+ "signed": {
+  "_type": "snapshot",
+  "expires": "2034-03-26T11:49:10Z",
+  "meta": {
+   "registry.npmjs.org.json": {
+    "version": 3
+   },
+   "targets.json": {
+    "version": 7
+   }
+  },
+  "spec_version": "1.0",
+  "version": 7
+ }
+}

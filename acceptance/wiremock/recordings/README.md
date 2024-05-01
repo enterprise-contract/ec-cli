@@ -21,7 +21,11 @@ The recordings currently placed here include:
 # Keyless Tests
 
 Some of the acceptance tests that cover the identity-based signatures, aka keyless, rely on
-pre-recorded data. This data, which includes the TUF root, inevitably expire every 6 months.
+pre-recorded data. Some of this data, i.e. the TUF root, inevitably expires every 6 months.
 
-Use the script [generate-test-signed-images.sh](/hack/generate-test-signed-images.sh) to
-regenerate it. NOTE: You must use an older version of cosign, `v2.0.2` is known to work.
+Use the script [update-tuf-root-recordings.sh](/hack/update-tuf-root-recordings.sh) to update the
+TUF root information. This should be enough to update the data that expires.
+
+If needed, use the script [generate-test-signed-images.sh](/hack/generate-test-signed-images.sh) to
+regenerate all of the data. When doing this, you may have to update the identity and issuer
+expected in the tests and the `generate-test-signed-images.sh` script.
