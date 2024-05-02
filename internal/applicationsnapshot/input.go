@@ -20,12 +20,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
-	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
-	v1 "github.com/google/go-containerregistry/pkg/v1"
-	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/hashicorp/go-multierror"
 	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 	log "github.com/sirupsen/logrus"
@@ -35,6 +31,7 @@ import (
 
 	"github.com/enterprise-contract/ec-cli/internal/kubernetes"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
+	"github.com/enterprise-contract/ec-cli/internal/utils/oci"
 )
 
 const unnamed = "Unnamed"
@@ -50,17 +47,6 @@ type Input struct {
 type snapshot struct {
 	app.SnapshotSpec
 }
-
-type client interface {
-	Get(name.Reference) (*remote.Descriptor, error)
-	Index(name.Reference) (v1.ImageIndex, error)
-}
-
-type remoteClient struct{}
-
-var _ client = (*remoteClient)(nil)
-
-type RemoteClientKey struct{}
 
 func (s *snapshot) merge(snap app.SnapshotSpec) {
 	if s.Application == "" {
@@ -195,45 +181,8 @@ func readSnapshotSource(input []byte) (app.SnapshotSpec, error) {
 	return file, nil
 }
 
-func createRemoteOptions(ctx context.Context) []remote.Option {
-	backoff := remote.Backoff{
-		Duration: 1.0 * time.Second,
-		Factor:   2.0,
-		Jitter:   0.1,
-		Steps:    3,
-	}
-
-	return []remote.Option{
-		remote.WithTransport(remote.DefaultTransport),
-		remote.WithContext(ctx),
-		remote.WithAuthFromKeychain(authn.DefaultKeychain),
-		remote.WithRetryBackoff(backoff),
-	}
-}
-
-func (*remoteClient) Get(ref name.Reference) (*remote.Descriptor, error) {
-	// TODO: remoteClient.Get should take a context and the actual remote options so it
-	// can simply pass them through to remote.Get.
-	return remote.Get(ref, createRemoteOptions(context.TODO())...)
-}
-
-func (*remoteClient) Index(ref name.Reference) (v1.ImageIndex, error) {
-	// TODO: remoteClient.Index should take a context and the actual remote options so it
-	// can simply pass them through to remote.Index.
-	return remote.Index(ref, createRemoteOptions(context.TODO())...)
-}
-
-var defaultClient = &remoteClient{}
-
-func determineClient(ctx context.Context) client {
-	if cli, ok := ctx.Value(RemoteClientKey{}).(client); ok {
-		return cli
-	}
-	return defaultClient
-}
-
 func expandImageIndex(ctx context.Context, snap *app.SnapshotSpec) {
-	client := determineClient(ctx)
+	client := oci.NewClient(ctx)
 	// For an image index, remove the original component and replace it with an expanded component with all its image manifests
 	var components []app.SnapshotComponent
 	// Do not raise an error if the image is inaccessible, it will be handled as a violation when evaluated against the policy
@@ -248,7 +197,7 @@ func expandImageIndex(ctx context.Context, snap *app.SnapshotSpec) {
 			continue
 		}
 
-		desc, err := client.Get(ref)
+		desc, err := client.Head(ref)
 		if err != nil {
 			allErrors = multierror.Append(allErrors, fmt.Errorf("unable to fetch descriptior for container image %s: %w", ref, err))
 			continue

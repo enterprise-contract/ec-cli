@@ -33,8 +33,8 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/enterprise-contract/ec-cli/internal/fetchers/oci"
-	"github.com/enterprise-contract/ec-cli/internal/fetchers/oci/fake"
+	"github.com/enterprise-contract/ec-cli/internal/utils/oci"
+	"github.com/enterprise-contract/ec-cli/internal/utils/oci/fake"
 )
 
 func TestOCIBlob(t *testing.T) {

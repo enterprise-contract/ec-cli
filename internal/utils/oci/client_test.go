@@ -20,6 +20,7 @@ package oci
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"log"
@@ -35,7 +36,50 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/enterprise-contract/ec-cli/internal/mocks"
 )
+
+func TestCreateRemoteOptions(t *testing.T) {
+	ref, _ := name.ParseReference("registry/image:tag")
+	tests := []struct {
+		name      string
+		wantErr   bool
+		wantRetry bool
+	}{
+		{
+			name:      "Retries until timeout when unable to access image ref",
+			wantErr:   false,
+			wantRetry: true,
+		},
+		{
+			name:    "Returns no error when able to access image ref",
+			wantErr: false,
+		},
+		{
+			name:    "Returns error when unable to access image ref",
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.wantRetry {
+				imageRefTransport = remote.WithTransport(&mocks.HttpTransportTimeoutFailure{})
+			} else if tt.wantErr {
+				imageRefTransport = remote.WithTransport(&mocks.HttpTransportMockFailure{})
+			} else {
+				imageRefTransport = remote.WithTransport(&mocks.HttpTransportMockSuccess{})
+			}
+
+			opts := createRemoteOptions(context.Background())
+			_, err := remote.Get(ref, opts...)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ValidateImageAccess() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
 
 func TestCacheInit(t *testing.T) {
 	// by default the cache should be on
@@ -67,7 +111,9 @@ func TestImage(t *testing.T) {
 	require.NoError(t, remote.Put(ref, img))
 
 	fetchFully := func() {
-		img, err := defaultClient.Image(ref)
+		client := defaultClient{}
+
+		img, err := client.Image(ref)
 		require.NoError(t, err)
 		layers, err := img.Layers()
 		require.NoError(t, err)
@@ -112,7 +158,10 @@ func TestLayer(t *testing.T) {
 	for i := 0; i < fetchCount; i++ {
 		d, err := name.NewDigest(layerURI)
 		require.NoError(t, err)
-		l, err := defaultClient.Layer(d)
+
+		client := defaultClient{}
+		l, err := client.Layer(d)
+
 		require.NoError(t, err)
 		r, err := l.Uncompressed()
 		require.NoError(t, err)

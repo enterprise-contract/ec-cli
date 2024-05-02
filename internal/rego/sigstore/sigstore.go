@@ -34,9 +34,9 @@ import (
 	"github.com/sigstore/cosign/v2/pkg/oci"
 
 	"github.com/enterprise-contract/ec-cli/internal/attestation"
-	"github.com/enterprise-contract/ec-cli/internal/evaluation_target/application_snapshot_image"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/signature"
+	ecoci "github.com/enterprise-contract/ec-cli/internal/utils/oci"
 )
 
 const (
@@ -112,7 +112,7 @@ func sigstoreVerifyImage(bctx rego.BuiltinContext, refTerm *ast.Term, optsTerm *
 	}
 	checkOpts.ClaimVerifier = cosign.SimpleClaimVerifier
 
-	signatures, _, err := application_snapshot_image.NewClient(ctx).VerifyImageSignatures(ctx, ref, checkOpts)
+	signatures, _, err := ecoci.NewClient(ctx).VerifyImageSignatures(ref, checkOpts)
 	if err != nil {
 		return signatureFailedResult(fmt.Errorf("verify image signature: %w", err))
 	}
@@ -173,7 +173,7 @@ func sigstoreVerifyAttestation(bctx rego.BuiltinContext, refTerm *ast.Term, opts
 	}
 	checkOpts.ClaimVerifier = cosign.IntotoSubjectClaimVerifier
 
-	attestations, _, err := application_snapshot_image.NewClient(ctx).VerifyImageAttestations(ctx, ref, checkOpts)
+	attestations, _, err := ecoci.NewClient(ctx).VerifyImageAttestations(ref, checkOpts)
 	if err != nil {
 		return attestationFailedResult(fmt.Errorf("verify image attestation signature: %w", err))
 	}

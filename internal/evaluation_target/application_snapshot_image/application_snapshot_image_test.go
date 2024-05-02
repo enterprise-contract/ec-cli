@@ -33,7 +33,6 @@ import (
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/mutate"
-	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/in-toto/in-toto-golang/in_toto"
 	"github.com/in-toto/in-toto-golang/in_toto/slsa_provenance/common"
@@ -51,91 +50,14 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/enterprise-contract/ec-cli/internal/attestation"
-	"github.com/enterprise-contract/ec-cli/internal/evaluator"
-	o "github.com/enterprise-contract/ec-cli/internal/fetchers/oci"
-	"github.com/enterprise-contract/ec-cli/internal/fetchers/oci/fake"
-	"github.com/enterprise-contract/ec-cli/internal/mocks"
 	"github.com/enterprise-contract/ec-cli/internal/signature"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
+	o "github.com/enterprise-contract/ec-cli/internal/utils/oci"
+	"github.com/enterprise-contract/ec-cli/internal/utils/oci/fake"
 )
 
 // pipelineRunBuildType is the type of attestation we're interested in evaluating
 const pipelineRunBuildType = "https://tekton.dev/attestations/chains/pipelinerun@v2"
-
-func TestApplicationSnapshotImage_ValidateImageAccess(t *testing.T) {
-	type fields struct {
-		reference    name.Reference
-		checkOpts    cosign.CheckOpts
-		attestations []attestation.Attestation
-		Evaluator    evaluator.Evaluator
-	}
-	type args struct {
-		ctx context.Context
-	}
-	ref, _ := name.ParseReference("registry/image:tag")
-	tests := []struct {
-		name      string
-		fields    fields
-		args      args
-		wantErr   bool
-		wantRetry bool
-	}{
-		{
-			name: "Retries until timeout when unable to access image ref",
-			fields: fields{
-				reference:    ref,
-				checkOpts:    cosign.CheckOpts{},
-				attestations: nil,
-				Evaluator:    nil,
-			},
-			args:      args{ctx: context.Background()},
-			wantErr:   false,
-			wantRetry: true,
-		},
-		{
-			name: "Returns no error when able to access image ref",
-			fields: fields{
-				reference:    ref,
-				checkOpts:    cosign.CheckOpts{},
-				attestations: nil,
-				Evaluator:    nil,
-			},
-			args:    args{ctx: context.Background()},
-			wantErr: false,
-		},
-		{
-			name: "Returns error when unable to access image ref",
-			fields: fields{
-				reference:    ref,
-				checkOpts:    cosign.CheckOpts{},
-				attestations: nil,
-				Evaluator:    nil,
-			},
-			args:    args{ctx: context.Background()},
-			wantErr: true,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if tt.wantRetry {
-				imageRefTransport = remote.WithTransport(&mocks.HttpTransportTimeoutFailure{})
-			} else if tt.wantErr {
-				imageRefTransport = remote.WithTransport(&mocks.HttpTransportMockFailure{})
-			} else {
-				imageRefTransport = remote.WithTransport(&mocks.HttpTransportMockSuccess{})
-			}
-			a := &ApplicationSnapshotImage{
-				reference:    tt.fields.reference,
-				checkOpts:    tt.fields.checkOpts,
-				attestations: tt.fields.attestations,
-				Evaluators:   []evaluator.Evaluator{tt.fields.Evaluator},
-			}
-			if err := a.ValidateImageAccess(tt.args.ctx); (err != nil) != tt.wantErr {
-				t.Errorf("ValidateImageAccess() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
 
 type fakeAtt struct {
 	statement  in_toto.ProvenanceStatementSLSA02
@@ -444,50 +366,24 @@ func TestSyntaxValidation(t *testing.T) {
 	}
 }
 
-type MockClient struct {
-	mock.Mock
-}
-
-func (c *MockClient) VerifyImageSignatures(ctx context.Context, name name.Reference, opts *cosign.CheckOpts) ([]oci.Signature, bool, error) {
-	args := c.Called(ctx, name, opts)
-
-	return args.Get(0).([]oci.Signature), args.Get(1).(bool), args.Error(2)
-}
-
-func (c *MockClient) VerifyImageAttestations(ctx context.Context, name name.Reference, opts *cosign.CheckOpts) ([]oci.Signature, bool, error) {
-	args := c.Called(ctx, name, opts)
-
-	return args.Get(0).([]oci.Signature), args.Get(1).(bool), args.Error(2)
-}
-
-func (c *MockClient) Head(name name.Reference, options ...remote.Option) (*v1.Descriptor, error) {
-	args := c.Called(name, options)
-
-	return args.Get(0).(*v1.Descriptor), args.Error(1)
-}
-
-func (c *MockClient) ResolveDigest(ref name.Reference, opts *cosign.CheckOpts) (string, error) {
-	return "", nil
-}
-
 func TestValidateImageSignatureClaims(t *testing.T) {
 	ref := name.MustParseReference("registry.io/repository/image:tag")
 	a := ApplicationSnapshotImage{
 		reference: ref,
 	}
 
-	c := MockClient{}
+	c := fake.FakeClient{}
 
-	ctx := WithClient(context.Background(), &c)
+	ctx := o.WithClient(context.Background(), &c)
 
-	c.On("VerifyImageSignatures", ctx, ref, mock.Anything).Return([]oci.Signature{}, false, nil)
+	c.On("VerifyImageSignatures", ref, mock.Anything).Return([]oci.Signature{}, false, nil)
 
 	err := a.ValidateImageSignature(ctx)
 	require.NoError(t, err)
 
 	call := c.Calls[0]
 
-	checkOpts := call.Arguments.Get(2).(*cosign.CheckOpts)
+	checkOpts := call.Arguments.Get(1).(*cosign.CheckOpts)
 	assert.NotNil(t, checkOpts)
 
 	claimVerifier := checkOpts.ClaimVerifier
@@ -597,18 +493,18 @@ func TestValidateAttestationSignatureClaims(t *testing.T) {
 		reference: ref,
 	}
 
-	c := MockClient{}
+	c := fake.FakeClient{}
 
-	ctx := WithClient(context.Background(), &c)
+	ctx := o.WithClient(context.Background(), &c)
 
-	c.On("VerifyImageAttestations", ctx, ref, mock.Anything).Return([]oci.Signature{}, false, nil)
+	c.On("VerifyImageAttestations", ref, mock.Anything).Return([]oci.Signature{}, false, nil)
 
 	err := a.ValidateAttestationSignature(ctx)
 	require.NoError(t, err)
 
 	call := c.Calls[0]
 
-	checkOpts := call.Arguments.Get(2).(*cosign.CheckOpts)
+	checkOpts := call.Arguments.Get(1).(*cosign.CheckOpts)
 	assert.NotNil(t, checkOpts)
 
 	claimVerifier := checkOpts.ClaimVerifier
@@ -714,9 +610,9 @@ func TestValidateImageSignatureWithCertificates(t *testing.T) {
 		reference: ref,
 	}
 
-	c := MockClient{}
+	c := fake.FakeClient{}
 
-	ctx := WithClient(context.Background(), &c)
+	ctx := o.WithClient(context.Background(), &c)
 
 	sig, err := static.NewSignature(
 		[]byte(`image`),
@@ -729,7 +625,7 @@ func TestValidateImageSignatureWithCertificates(t *testing.T) {
 	)
 	require.NoError(t, err)
 
-	c.On("VerifyImageSignatures", ctx, ref, mock.Anything).Return([]oci.Signature{sig}, false, nil)
+	c.On("VerifyImageSignatures", ref, mock.Anything).Return([]oci.Signature{sig}, false, nil)
 
 	err = a.ValidateImageSignature(ctx)
 	require.NoError(t, err)

@@ -29,12 +29,11 @@ import (
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/empty"
 	"github.com/google/go-containerregistry/pkg/v1/mutate"
-	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/enterprise-contract/ec-cli/internal/fetchers/oci"
-	"github.com/enterprise-contract/ec-cli/internal/fetchers/oci/fake"
+	"github.com/enterprise-contract/ec-cli/internal/utils/oci"
+	"github.com/enterprise-contract/ec-cli/internal/utils/oci/fake"
 )
 
 func TestImageManifests(t *testing.T) {
@@ -56,10 +55,8 @@ func TestImageManifests(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	var opts []remote.Option = nil
-
 	client := fake.FakeClient{}
-	client.On("Image", ref, opts).Return(image, nil)
+	client.On("Image", ref).Return(image, nil)
 
 	ctx := oci.WithClient(context.Background(), &client)
 
@@ -83,10 +80,8 @@ func TestDoesntFetchLayersForUnsupported(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	var opts []remote.Option = nil
-
 	client := fake.FakeClient{}
-	client.On("Image", ref, opts).Return(image, nil)
+	client.On("Image", ref).Return(image, nil)
 
 	ctx := oci.WithClient(context.Background(), &client)
 
