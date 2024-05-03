@@ -177,6 +177,7 @@ jobs:
       - name: Versioned release
         uses: softprops/action-gh-release@9d7c94cfd0a1f3ed45544c887983e9fa900f0564 # v2.0.4
         with:
+          make_latest: false
           name: ${{ steps.add_tags.outputs.tag_name }}
           tag_name: ${{ steps.add_tags.outputs.tag_name }}
           generate_release_notes: false
