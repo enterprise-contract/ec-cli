@@ -16,7 +16,7 @@
 
 ## Build
 
-FROM docker.io/library/golang:1.21 AS build
+FROM docker.io/library/golang:1.22 AS build
 
 ARG TARGETOS
 ARG TARGETARCH
@@ -37,7 +37,7 @@ RUN go list --mod=readonly -f '{{.Version}}' -m github.com/sigstore/cosign/v2 | 
 
 ## Downloads
 
-FROM registry.access.redhat.com/ubi9/ubi-minimal:9.3@sha256:bc552efb4966aaa44b02532be3168ac1ff18e2af299d0fe89502a1d9fabafbc5 AS download
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.4@sha256:2636170dc55a0931d013014a72ae26c0c2521d4b61a28354b3e2e5369fa335a3 AS download
 
 ARG TARGETOS
 ARG TARGETARCH
@@ -54,7 +54,7 @@ RUN COSIGN_VERSION=$(cat /download/cosign_version.txt) && \
     mv "cosign-${TARGETOS}-${TARGETARCH}" cosign && \
     chmod +x cosign
 
-FROM registry.access.redhat.com/ubi9/ubi-minimal:9.3@sha256:582e18f13291d7c686ec4e6e92d20b24c62ae0fc72767c46f30a69b1a6198055
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.4@sha256:2636170dc55a0931d013014a72ae26c0c2521d4b61a28354b3e2e5369fa335a3
 
 ARG TARGETOS
 ARG TARGETARCH
