@@ -35,6 +35,37 @@ Feature: Verify Enterprise Contract Tekton Tasks
      And the task logs for step "report" should match the snapshot
      And the task results should match the snapshot
 
+  Scenario: Extra rule data provided to task
+    Given a working namespace
+    Given a cluster policy with content:
+      ```
+      {
+        "publicKey": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAERhr8Zj4dZW67zucg8fDr11M4lmRp\nzN6SIcIjkvH39siYg1DkCoa2h2xMUZ10ecbM3/ECqvBV55YwQ2rcIEa7XQ==\n-----END PUBLIC KEY-----",
+        "sources": [
+          {
+            "policy": [
+              "github.com/enterprise-contract/ec-policies//policy/release",
+              "github.com/enterprise-contract/ec-policies//policy/lib"
+            ]
+          }
+        ],
+        "configuration": {
+          "include": [
+            "slsa_provenance_available"
+          ]
+        }
+      }
+      ```
+    When version 0.1 of the task named "verify-enterprise-contract" is run with parameters:
+      | IMAGES               | {"components": [{"containerImage": "quay.io/hacbs-contract-demo/golden-container@sha256:e76a4ae9dd8a52a0d191fd34ca133af5b4f2609536d32200a4a40a09fdc93a0d"}]} |
+      | POLICY_CONFIGURATION | ${NAMESPACE}/${POLICY_NAME}                                                                                                                                  |
+      | STRICT               | true                                                                                                                                                         |
+      | IGNORE_REKOR         | true                                                                                                                                                         |
+      | EXTRA_RULE_DATA      | key1=value1,key2=value2                                                                                                                                      |
+    Then the task should succeed
+     And the task logs for step "report" should match the snapshot
+     And the task results should match the snapshot
+
   Scenario: Initialize TUF succeeds
     Given a working namespace
     Given a cluster policy with content:
