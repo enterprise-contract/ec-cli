@@ -21,7 +21,10 @@ set -o pipefail
 
 BUILDS="${1}"
 
-EC_FULL_VERSION=$(hack/derive-version.sh)
+# Generally blank, but will be set to "redhat" for Konflux builds
+BUILD_SUFFIX="${2:-""}"
+
+EC_FULL_VERSION=$(hack/derive-version.sh "${BUILD_SUFFIX}")
 
 echo "EC_FULL_VERSION=$EC_FULL_VERSION"
 echo "BUILDS=$BUILDS"

@@ -65,4 +65,12 @@ else
   FULL_VERSION="v${MAJOR_MINOR}.${PATCH_NUM}"
 fi
 
+# Generally blank but will be set to "redhat" for Konflux builds
+BUILD_SUFFIX="${1:-""}"
+
+# This is build metadata in semver terms, see https://semver.org/#spec-item-10
+if [ -n "${BUILD_SUFFIX}" ]; then
+  FULL_VERSION="${FULL_VERSION}+${BUILD_SUFFIX}"
+fi
+
 echo ${FULL_VERSION}

@@ -28,6 +28,7 @@
 
 FROM registry.access.redhat.com/ubi9/ubi-minimal:9.4@sha256:2636170dc55a0931d013014a72ae26c0c2521d4b61a28354b3e2e5369fa335a3 AS build
 
+ARG BUILD_SUFFIX="redhat"
 ARG BUILD_LIST="darwin_amd64 darwin_arm64 linux_amd64 linux_arm64 linux_ppc64le linux_s390x windows_amd64"
 ARG TARGETOS
 ARG TARGETARCH
@@ -43,7 +44,7 @@ RUN go mod download
 # Now copy everything including .git
 COPY . .
 
-RUN /build/build.sh "${BUILD_LIST}"
+RUN /build/build.sh "${BUILD_LIST}" "${BUILD_SUFFIX}"
 
 # Extract this so we can download the matching cosign version below
 RUN go list --mod=readonly -f '{{.Version}}' -m github.com/sigstore/cosign/v2 | tee cosign_version.txt
