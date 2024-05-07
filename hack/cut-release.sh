@@ -40,7 +40,6 @@ KONFLUX_APPLICATION_SUFFIX="${RELEASE_NAME/./}"
 # Could be whatever, but let's adopt a consistent convention
 KONFLUX_APPLICATION_NAME=ec-${KONFLUX_APPLICATION_SUFFIX}
 KONFLUX_CLI_COMPONENT_NAME=cli-${KONFLUX_APPLICATION_SUFFIX}
-KONFLUX_TASK_COMPONENT_NAME=verify-enterprise-contract-task-${KONFLUX_APPLICATION_SUFFIX}
 
 # Show some useful values
 echo Release name: $RELEASE_NAME
@@ -73,7 +72,7 @@ Set Dockerfile to Dockerfile.dist
 Unset the "Default build pipeline" toggle
 Click "Create application"
 
-# Wait for Konflux to create PR for the ec-cli component
+# Wait for Konflux to create its automated PR for the ec-cli component
 Wait for the PR to be created
 Go look at the PR in GitHub
 Wait for the PR to pass the ${KONFLUX_CLI_COMPONENT_NAME}-on-pull-request check
@@ -90,17 +89,23 @@ Alternative options for the param value:
   enterprise-contract-service/redhat-no-hermetic
   github.com/enterprise-contract/config//redhat-no-hermetic
 
-# Apply cli pipeline modifications
+# Apply Tekton pipeline modifications for the ec-cli component
 Should be done on top of the Konflux generated PR
 git checkout ${BRANCH_NAME}
 hack/patch-release-pipelines.sh
 hack/patch-release-pipelines.sh digest_bumps # maybe
 Review the diff between the ${KONFLUX_CLI_COMPONENT_NAME}- and cli-main-ci- pipelines
 Review the generated commit, and inspect the diff as described.
+Note: There could be some significant changes here to consider, e.g. brand new tasks that are part of
+the new Konflux default pipeline. I think we should generally assume these are good changes and aim to
+port them back (up/down/sideways?) into main branch. If it's non-trivial then file a story or stories
+to do that.
 
 # Create pipeline customizations PR
-With the above commit, create a PR for the ${BRANCH_NAME} branch.
-(Todo maybe: If you want, try adding this commit to the PR created by Konflux before merging that PR.)
+With the above commit, create a PR for the ${BRANCH_NAME} branch. Be extra careful to choose the right
+target branch when creating the PR. You know who I'm talking to.. ;]
+(Todo maybe: If it's not too complicated you could consider adding this commit on top of the commit in the
+PR created by Konflux before merging that PR.)
 
 # Create a Releaseplan record via the tenants config repo
 The goal is to make a PR similar to https://github.com/redhat-appstudio/tenants-config/pull/286
