@@ -97,8 +97,11 @@ When it's done you can merge. (Continue to next section while you're waiting...)
 Go to the integration tests at ${KONFLUX_APPS_URL}/${KONFLUX_APPLICATION_NAME}/integrationtests
 Edit ${KONFLUX_APPLICATION_NAME}-enterprise-contract and add a parameter as follows:
   Name: POLICY_CONFIGURATION
-  Value: github.com/enterprise-contract/config//redhat-no-hermetic
+  Value: rhtap-releng-tenant/registry-rhtap-contract
 Save changes
+Alternative options for the param value:
+  enterprise-contract-service/redhat-no-hermetic
+  github.com/enterprise-contract/config//redhat-no-hermetic
 
 # Apply cli pipeline modifications
 Should be done on top of the Konflux generated PR
