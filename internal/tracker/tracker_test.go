@@ -100,14 +100,6 @@ func TestTrack(t *testing.T) {
 			},
 			output: hd.Doc(`
 				---
-				task-bundles:
-				  registry.com/repo:
-				    - digest: ` + sampleHashTwo.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: two
-				    - digest: ` + sampleHashOne.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: one
 				trusted_tasks:
 				  oci://registry.com/repo:one:
 				    - effective_on: "` + expectedEffectiveOn + `"
@@ -125,15 +117,6 @@ func TestTrack(t *testing.T) {
 			},
 			output: hd.Doc(`
 				---
-				task-bundles:
-				  registry.com/one:
-				    - digest: ` + sampleHashOne.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "1.0"
-				  registry.com/two:
-				    - digest: ` + sampleHashTwo.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "2.0"
 				trusted_tasks:
 				  oci://registry.com/one:1.0:
 				    - effective_on: "` + expectedEffectiveOn + `"
@@ -157,14 +140,6 @@ func TestTrack(t *testing.T) {
 			`)),
 			output: hd.Doc(
 				`---
-				task-bundles:
-				  registry.com/repo:
-				    - digest: ` + sampleHashTwo.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: two
-				    - digest: ` + sampleHashOne.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: one
 				trusted_tasks:
 				  oci://registry.com/repo:one:
 				    - effective_on: "` + expectedEffectiveOn + `"
@@ -188,15 +163,6 @@ func TestTrack(t *testing.T) {
 			`)),
 			output: hd.Doc(`
 				---
-				task-bundles:
-				  registry.com/one:
-				    - digest: ` + sampleHashOne.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "1.0"
-				  registry.com/two:
-				    - digest: ` + sampleHashTwo.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "2.0"
 				trusted_tasks:
 				  oci://registry.com/one:1.0:
 				    - effective_on: "` + expectedEffectiveOn + `"
@@ -216,11 +182,6 @@ func TestTrack(t *testing.T) {
 			`)),
 			output: hd.Doc(`
 				---
-				task-bundles:
-				  registry.com/two:
-				    - digest: ` + sampleHashTwo.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "2.0"
 				trusted_tasks:
 				  oci://registry.com/two:2.0:
 				    - effective_on: "` + expectedEffectiveOn + `"
@@ -234,11 +195,6 @@ func TestTrack(t *testing.T) {
 			},
 			output: hd.Doc(`
 				---
-				task-bundles:
-				  registry.com/mixed:
-				    - digest: ` + sampleHashOne.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "1.0"
 				trusted_tasks:
 				  oci://registry.com/mixed:1.0:
 				    - effective_on: "` + expectedEffectiveOn + `"
@@ -259,11 +215,6 @@ func TestTrack(t *testing.T) {
 			`)),
 			output: hd.Doc(`
 				---
-				task-bundles:
-				  registry.com/one:
-				    - digest: ` + sampleHashOne.String() + `
-				      effective_on: "` + tomorrow + `"
-				      tag: "1.0"
 				trusted_tasks:
 				  oci://registry.com/one:1.0:
 				    - effective_on: "` + tomorrow + `"
@@ -287,15 +238,6 @@ func TestTrack(t *testing.T) {
 			`)),
 			output: hd.Doc(`
 				---
-				task-bundles:
-				  registry.com/mixed:
-				    - digest: ` + sampleHashOne.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "1.0"
-				    - digest: ` + sampleHashThree.String() + `
-				      effective_on: "` + yesterday + `"
-				      expires_on: "` + expectedExpiresOn + `"
-				      tag: "1.0"
 				trusted_tasks:
 				  oci://registry.com/mixed:1.0:
 				    - effective_on: "` + expectedEffectiveOn + `"
@@ -327,17 +269,6 @@ func TestTrack(t *testing.T) {
 			`)),
 			output: hd.Doc(`
 				---
-				task-bundles:
-				  registry.com/mixed:
-				    - digest: ` + sampleHashOne.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "1.0"
-				    - digest: ` + sampleHashThree.String() + `
-				      effective_on: "` + inOneDay + `"
-				      tag: "0.3"
-				    - digest: ` + sampleHashTwo.String() + `
-				      effective_on: "` + inOneDay + `"
-				      tag: "0.2"
 				trusted_tasks:
 				  oci://registry.com/mixed:0.2:
 				    - effective_on: "` + inOneDay + `"
@@ -371,27 +302,6 @@ func TestTrack(t *testing.T) {
 			`)),
 			output: hd.Doc(`
 				---
-				task-bundles:
-				  registry.com/mixed:
-				    - digest: ` + sampleHashOne.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "1.0"
-				    - digest: ` + sampleHashThree.String() + `
-				      effective_on: "` + inFourDays + `"
-				      expires_on: "` + expectedExpiresOn + `"
-				      tag: "1.0"
-				    - digest: ` + sampleHashTwo.String() + `
-				      effective_on: "` + inThreeDays + `"
-				      expires_on: "` + inFourDays + `"
-				      tag: "1.0"
-				    - digest: ` + sampleHashThree.String() + `
-				      effective_on: "` + inTwoDays + `"
-				      expires_on: "` + inThreeDays + `"
-				      tag: "1.0"
-				    - digest: ` + sampleHashTwo.String() + `
-				      effective_on: "` + inOneDay + `"
-				      expires_on: "` + inTwoDays + `"
-				      tag: "1.0"
 				trusted_tasks:
 				  oci://registry.com/mixed:1.0:
 				    - effective_on: "` + expectedEffectiveOn + `"
@@ -422,15 +332,6 @@ func TestTrack(t *testing.T) {
 			`)),
 			output: hd.Doc(`
 			---
-			task-bundles:
-			  registry.com/one:
-			    - digest: ` + sampleHashOneUpdated.String() + `
-			      effective_on: "` + expectedEffectiveOn + `"
-			      tag: "1.0"
-			    - digest: ` + sampleHashOne.String() + `
-			      effective_on: "` + tomorrow + `"
-			      expires_on: "` + expectedExpiresOn + `"
-			      tag: "1.0"
 			trusted_tasks:
 			  oci://registry.com/one:1.0:
 			    - effective_on: "` + expectedEffectiveOn + `"
@@ -448,11 +349,6 @@ func TestTrack(t *testing.T) {
 			prune: true,
 			input: []byte(hd.Doc(`
 				---
-				task-bundles:
-				  registry.com/ignored:
-				    - digest: ` + sampleHashOne.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "1.0"
 				trusted_tasks:
 				  oci://registry.com/mixed:1.0:
 				    - effective_on: "` + expectedEffectiveOn + `"
@@ -460,11 +356,6 @@ func TestTrack(t *testing.T) {
 			`)),
 			output: hd.Doc(`
 				---
-				task-bundles:
-				  registry.com/mixed:
-				    - digest: ` + sampleHashOne.String() + `
-				      effective_on: "` + expectedEffectiveOn + `"
-				      tag: "1.0"
 				trusted_tasks:
 				  oci://registry.com/mixed:1.0:
 				    - effective_on: "` + expectedEffectiveOn + `"

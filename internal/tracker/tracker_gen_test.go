@@ -24,6 +24,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"unicode"
 
 	"github.com/leanovate/gopter"
 	"github.com/leanovate/gopter/arbitrary"
@@ -41,23 +42,25 @@ func TestTrackerAddKeepsOrder(t *testing.T) {
 		return len(v) > 0
 	})
 	arbitraries.RegisterGen(gen.SliceOf(
-		gen.Struct(reflect.TypeOf(bundleRecord{}), map[string]gopter.Gen{
-			"Digest":     gen.RegexMatch("^sha256:[a-f0-9]{64}$"),
-			"Tag":        gen.Identifier(),
-			"Repository": nonEmptyIdentifier,
+		gen.Struct(reflect.TypeOf(taskRecord{}), map[string]gopter.Gen{
+			"Ref":         gen.RegexMatch("^([[:alnum:]]+:)?[[:xdigit:]]+$"),
+			"EffectiveOn": gen.Time(),
+			"ExpiresOn":   gen.PtrOf(gen.Time()),
+			"Tag":         gen.Identifier(),
+			"Repository":  nonEmptyIdentifier,
 		})))
 
 	properties := gopter.NewProperties(parameters)
 
 	properties.Property("collections are sorted", arbitraries.ForAll(
-		func(records []bundleRecord) bool {
+		func(records []taskRecord) bool {
 			tracker, err := newTracker(nil)
 			if err != nil {
 				t.Fatal(err)
 			}
 
 			for _, r := range records {
-				tracker.addBundleRecord(r)
+				tracker.addTrustedTaskRecord(ociPrefix, r)
 			}
 
 			raw, err := tracker.Output()
@@ -78,6 +81,12 @@ func TestTrackerAddKeepsOrder(t *testing.T) {
 				// ignore blank lines or document separator lines
 				if line == "" || line == "---" {
 					continue
+				}
+
+				if strings.HasPrefix(strings.TrimLeftFunc(line, unicode.IsSpace), "?") {
+					// complex key, next line is the value
+					_, line, _ = strings.Cut(line, "?")
+					scanner.Scan()
 				}
 
 				// remove quotes, they're just messing with comparisons below,
