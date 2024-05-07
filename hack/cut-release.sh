@@ -112,6 +112,31 @@ Review the generated commit, and inspect the diff as described.
 With the above commit, create a PR for the ${BRANCH_NAME} branch.
 (Todo maybe: If you want, try adding this commit to the PR created by Konflux before merging that PR.)
 
+# Create a Releaseplan record via the tenants config repo
+The goal is to make a PR similar to https://github.com/redhat-appstudio/tenants-config/pull/286
+Consider also if you want to remove older release plans.
+This might be a useful snippet to copy paste, but please look at it carefully and see if you
+think it looks right:
+
+---
+apiVersion: appstudio.redhat.com/v1alpha1
+kind: ReleasePlan
+metadata:
+  labels:
+    release.appstudio.openshift.io/auto-release: "true"
+    release.appstudio.openshift.io/standing-attribution: "true"
+  namespace: rhtap-contract-tenant
+  name: ${KONFLUX_APPLICATION_NAME}-registry-redhat-io
+spec:
+  application: ${KONFLUX_APPLICATION_NAME}
+  target: rhtap-releng-tenant
+
+# Create a PR in the konflux-release-data repo to update the ReleasePlanAdmission record
+You need to change a few lines in this file:
+https://gitlab.cee.redhat.com/releng/konflux-release-data/-/blob/main/config/stone-prd-rh01.pg1f.p1/OP/ReleasePlanAdmission/rhtap-contract/ec-cli.yaml?ref_type=heads
+Specifically under "applications", "components" and "floatingTags".
+https://gitlab.cee.redhat.com/releng/konflux-release-data/-/merge_requests/235/diffs could be a useful reference.
+
 EOT
 
 # Todo: What about the RPA?
