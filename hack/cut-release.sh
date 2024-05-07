@@ -25,17 +25,7 @@ if [[ $CURRENT_BRANCH != "main" ]]; then
   exit 1
 fi
 
-RELEASE_NAME=${1:-""}
-if [[ $RELEASE_NAME == "" ]]; then
-  echo "Please provide a release name, e.g. v0.1-tech-preview, or v1.1"
-  exit 1
-fi
-
-if [[ $RELEASE_NAME != v* ]]; then
-  echo "Release name should begin with v, e.g. v0.1-tech-preview, or v1.1"
-  exit 1
-fi
-
+RELEASE_NAME="v$(cat VERSION)"
 if [[ $RELEASE_NAME != *.* || $RELEASE_NAME == *.*.* ]]; then
   echo "Release name should include one dot, e.g. v0.1-tech-preview, or v1.1"
   exit 1
