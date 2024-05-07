@@ -44,9 +44,6 @@ fi
 # Use release name as-is for the branch name
 BRANCH_NAME="release-${RELEASE_NAME}"
 
-# We'll be creating a tag later with this name
-INITIAL_TAG_NAME="${RELEASE_NAME}.0"
-
 # Konflux disallows . chars in names so remove those
 KONFLUX_APPLICATION_SUFFIX="${RELEASE_NAME/./}"
 
@@ -114,11 +111,6 @@ Review the generated commit, and inspect the diff as described.
 # Create pipeline customizations PR
 With the above commit, create a PR for the ${BRANCH_NAME} branch.
 (Todo maybe: If you want, try adding this commit to the PR created by Konflux before merging that PR.)
-
-# Merge the pipeline customizations PR and create a tag
-This is a bit clunky, but you need to create a tag as soon (within seconds) of the above PR being merged.
-Do it like this right after merging:
-  git fetch upstream && git tag ${INITIAL_TAG_NAME} upstream/${BRANCH_NAME} && git push upstream ${INITIAL_TAG_NAME}
 
 EOT
 
