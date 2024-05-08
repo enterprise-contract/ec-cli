@@ -22,10 +22,6 @@
 # This currently has go version 1.20 but we need version 1.21
 #FROM registry.access.redhat.com/ubi9/go-toolset:latest AS build
 
-# This image has go version 1.21 but requires an extra pull secret to access
-# See https://source.redhat.com/groups/public/teamnado/wiki/brew_registry for how to get your own pull secret
-# See our Konflux pull secret at https://console.redhat.com/preview/application-pipeline/secrets
-
 FROM registry.access.redhat.com/ubi9/ubi-minimal:9.4@sha256:2636170dc55a0931d013014a72ae26c0c2521d4b61a28354b3e2e5369fa335a3 AS build
 
 ARG BUILD_SUFFIX="redhat"
