@@ -25,17 +25,7 @@ if [[ $CURRENT_BRANCH != "main" ]]; then
   exit 1
 fi
 
-RELEASE_NAME=${1:-""}
-if [[ $RELEASE_NAME == "" ]]; then
-  echo "Please provide a release name, e.g. v0.1-tech-preview, or v1.1"
-  exit 1
-fi
-
-if [[ $RELEASE_NAME != v* ]]; then
-  echo "Release name should begin with v, e.g. v0.1-tech-preview, or v1.1"
-  exit 1
-fi
-
+RELEASE_NAME="v$(cat VERSION)"
 if [[ $RELEASE_NAME != *.* || $RELEASE_NAME == *.*.* ]]; then
   echo "Release name should include one dot, e.g. v0.1-tech-preview, or v1.1"
   exit 1
@@ -44,16 +34,12 @@ fi
 # Use release name as-is for the branch name
 BRANCH_NAME="release-${RELEASE_NAME}"
 
-# We'll be creating a tag later with this name
-INITIAL_TAG_NAME="${RELEASE_NAME}.0"
-
 # Konflux disallows . chars in names so remove those
 KONFLUX_APPLICATION_SUFFIX="${RELEASE_NAME/./}"
 
 # Could be whatever, but let's adopt a consistent convention
 KONFLUX_APPLICATION_NAME=ec-${KONFLUX_APPLICATION_SUFFIX}
 KONFLUX_CLI_COMPONENT_NAME=cli-${KONFLUX_APPLICATION_SUFFIX}
-KONFLUX_TASK_COMPONENT_NAME=verify-enterprise-contract-task-${KONFLUX_APPLICATION_SUFFIX}
 
 # Show some useful values
 echo Release name: $RELEASE_NAME
@@ -86,7 +72,7 @@ Set Dockerfile to Dockerfile.dist
 Unset the "Default build pipeline" toggle
 Click "Create application"
 
-# Wait for Konflux to create PR for the ec-cli component
+# Wait for Konflux to create its automated PR for the ec-cli component
 Wait for the PR to be created
 Go look at the PR in GitHub
 Wait for the PR to pass the ${KONFLUX_CLI_COMPONENT_NAME}-on-pull-request check
@@ -97,25 +83,54 @@ When it's done you can merge. (Continue to next section while you're waiting...)
 Go to the integration tests at ${KONFLUX_APPS_URL}/${KONFLUX_APPLICATION_NAME}/integrationtests
 Edit ${KONFLUX_APPLICATION_NAME}-enterprise-contract and add a parameter as follows:
   Name: POLICY_CONFIGURATION
-  Value: github.com/enterprise-contract/config//redhat-no-hermetic
+  Value: rhtap-releng-tenant/registry-rhtap-contract
 Save changes
+Alternative options for the param value:
+  enterprise-contract-service/redhat-no-hermetic
+  github.com/enterprise-contract/config//redhat-no-hermetic
 
-# Apply cli pipeline modifications
+# Apply Tekton pipeline modifications for the ec-cli component
 Should be done on top of the Konflux generated PR
 git checkout ${BRANCH_NAME}
 hack/patch-release-pipelines.sh
 hack/patch-release-pipelines.sh digest_bumps # maybe
 Review the diff between the ${KONFLUX_CLI_COMPONENT_NAME}- and cli-main-ci- pipelines
 Review the generated commit, and inspect the diff as described.
+Note: There could be some significant changes here to consider, e.g. brand new tasks that are part of
+the new Konflux default pipeline. I think we should generally assume these are good changes and aim to
+port them back (up/down/sideways?) into main branch. If it's non-trivial then file a story or stories
+to do that.
 
 # Create pipeline customizations PR
-With the above commit, create a PR for the ${BRANCH_NAME} branch.
-(Todo maybe: If you want, try adding this commit to the PR created by Konflux before merging that PR.)
+With the above commit, create a PR for the ${BRANCH_NAME} branch. Be extra careful to choose the right
+target branch when creating the PR. You know who I'm talking to.. ;]
+(Todo maybe: If it's not too complicated you could consider adding this commit on top of the commit in the
+PR created by Konflux before merging that PR.)
 
-# Merge the pipeline customizations PR and create a tag
-This is a bit clunky, but you need to create a tag as soon (within seconds) of the above PR being merged.
-Do it like this right after merging:
-  git fetch upstream && git tag ${INITIAL_TAG_NAME} upstream/${BRANCH_NAME} && git push upstream ${INITIAL_TAG_NAME}
+# Create a Releaseplan record via the tenants config repo
+The goal is to make a PR similar to https://github.com/redhat-appstudio/tenants-config/pull/286
+Consider also if you want to remove older release plans.
+This might be a useful snippet to copy paste, but please look at it carefully and see if you
+think it looks right:
+
+---
+apiVersion: appstudio.redhat.com/v1alpha1
+kind: ReleasePlan
+metadata:
+  labels:
+    release.appstudio.openshift.io/auto-release: "true"
+    release.appstudio.openshift.io/standing-attribution: "true"
+  namespace: rhtap-contract-tenant
+  name: ${KONFLUX_APPLICATION_NAME}-registry-redhat-io
+spec:
+  application: ${KONFLUX_APPLICATION_NAME}
+  target: rhtap-releng-tenant
+
+# Create a PR in the konflux-release-data repo to update the ReleasePlanAdmission record
+You need to change a few lines in this file:
+https://gitlab.cee.redhat.com/releng/konflux-release-data/-/blob/main/config/stone-prd-rh01.pg1f.p1/OP/ReleasePlanAdmission/rhtap-contract/ec-cli.yaml?ref_type=heads
+Specifically under "applications", "components" and "floatingTags".
+https://gitlab.cee.redhat.com/releng/konflux-release-data/-/merge_requests/235/diffs could be a useful reference.
 
 EOT
 
