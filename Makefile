@@ -56,16 +56,21 @@ dist: $(ALL_SUPPORTED_OS_ARCH) ## Build binaries for all supported operating sys
 
 # Dockerfile.dist is used by the Konflux build pipeline where it's built using
 # buildah not podman. This is for testing that build locally.
-# Todo: Don't hard code the platform here. Should probably do multi-arch builds similar
-# to dist-image. Also, why not use buildah here for consistency with the Konflux build?
+# Todo: Why not use buildah here for consistency with the Konflux build?
 .PHONY: dist-container
 dist-container: clean
-	podman build . --file Dockerfile.dist --tag dist-container --platform linux/amd64 # --no-cache
+	podman build . \
+	  --file Dockerfile.dist \
+	  --tag dist-container \
+	  --platform $(BUILD_LOCAL_PLATFORM) \
+	  --build-arg BUILD_SUFFIX=local \
+	  --build-arg BUILD_LIST=$(BUILD_LOCAL_ARCH)
 
 # For local debugging of the above
 dist-container-run:
 	podman run --rm -it --entrypoint=/bin/bash dist-container
 
+BUILD_LOCAL_PLATFORM:=$(shell go env GOOS)/$(shell go env GOARCH)
 BUILD_LOCAL_ARCH:=$(shell go env GOOS)_$(shell go env GOARCH)
 .PHONY: build
 build: dist/ec_$(BUILD_LOCAL_ARCH) ## Build the ec binary for the current platform
