@@ -62,7 +62,7 @@ ARG TARGETARCH
 COPY --from=download /download/cosign /usr/bin/cosign
 RUN cosign version
 
-RUN microdnf -y install git-core jq && microdnf clean all
+RUN microdnf -y --nodocs --setopt=keepcache=0 install git-core jq
 
 # Copy the one ec binary that can run in this container
 COPY --from=build "/build/dist/ec_${TARGETOS}_${TARGETARCH}" /usr/bin/ec
