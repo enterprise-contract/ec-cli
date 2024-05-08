@@ -26,11 +26,13 @@
 # See https://source.redhat.com/groups/public/teamnado/wiki/brew_registry for how to get your own pull secret
 # See our Konflux pull secret at https://console.redhat.com/preview/application-pipeline/secrets
 
-FROM brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_9_1.21@sha256:4fe910174caaaae09ff75b6f1b1c2f4460fd9acfe38ec778a818a54de7f31afc AS build
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.4@sha256:2636170dc55a0931d013014a72ae26c0c2521d4b61a28354b3e2e5369fa335a3 AS build
 
 ARG BUILD_LIST="darwin_amd64 darwin_arm64 linux_amd64 linux_arm64 linux_ppc64le linux_s390x windows_amd64"
 ARG TARGETOS
 ARG TARGETARCH
+
+RUN microdnf -y --nodocs --setopt=keepcache=0 install golang git-core
 
 WORKDIR /build
 
@@ -48,7 +50,7 @@ RUN go list --mod=readonly -f '{{.Version}}' -m github.com/sigstore/cosign/v2 | 
 
 ## Downloads
 
-FROM registry.access.redhat.com/ubi9/ubi-minimal:9.3@sha256:bc552efb4966aaa44b02532be3168ac1ff18e2af299d0fe89502a1d9fabafbc5 AS download
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.4@sha256:2636170dc55a0931d013014a72ae26c0c2521d4b61a28354b3e2e5369fa335a3 AS download
 
 ARG TARGETOS
 ARG TARGETARCH
@@ -67,7 +69,7 @@ RUN COSIGN_VERSION=$(cat /download/cosign_version.txt) && \
 
 ## Final image
 
-FROM registry.access.redhat.com/ubi9/ubi-minimal:9.3@sha256:bc552efb4966aaa44b02532be3168ac1ff18e2af299d0fe89502a1d9fabafbc5
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.4@sha256:2636170dc55a0931d013014a72ae26c0c2521d4b61a28354b3e2e5369fa335a3
 
 ARG TARGETOS
 ARG TARGETARCH
