@@ -56,15 +56,14 @@ dist: $(ALL_SUPPORTED_OS_ARCH) ## Build binaries for all supported operating sys
 
 # Dockerfile.dist is used by the Konflux build pipeline where it's built using
 # buildah not podman. This is for testing that build locally.
-# Todo: Why not use buildah here for consistency with the Konflux build?
 .PHONY: dist-container
 dist-container: clean
-	podman build . \
-	  --file Dockerfile.dist \
+	buildah bud --file Dockerfile.dist \
 	  --tag dist-container \
 	  --platform $(BUILD_LOCAL_PLATFORM) \
 	  --build-arg BUILD_SUFFIX=local \
-	  --build-arg BUILD_LIST=$(BUILD_LOCAL_ARCH)
+	  --build-arg BUILD_LIST=$(BUILD_LOCAL_ARCH) \
+	  .
 
 # For local debugging of the above
 dist-container-run:
