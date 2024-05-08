@@ -169,7 +169,7 @@ jobs:
         with:
           make_latest: true
           name: Rolling release
-          body: Stable rolling release. Version can be determined by running `ec version`.
+          body: Stable rolling release, currently the same as `${{ steps.add_tags.outputs.tag_name }}`.
           tag_name: snapshot
           generate_release_notes: false
           files: dist/*
