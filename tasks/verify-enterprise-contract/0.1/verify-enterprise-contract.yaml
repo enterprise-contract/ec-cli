@@ -110,6 +110,10 @@ spec:
       type: string
       description: Run policy checks with the provided time.
       default: "now"
+    - name: EXTRA_RULE_DATA
+      type: string
+      description: Merge additional Rego variables into the policy data. Use syntax "key=value,key2=value2..."
+      default: ""
 
   workspaces:
     - name: data
@@ -170,6 +174,7 @@ spec:
         - "--strict=false"
         - "--show-successes"
         - "--effective-time=$(params.EFFECTIVE_TIME)"
+        - "--extra-rule-data=$(params.EXTRA_RULE_DATA)"
         - "--output"
         - "yaml=$(params.HOMEDIR)/report.yaml"
         - "--output"
