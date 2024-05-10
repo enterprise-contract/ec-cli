@@ -244,20 +244,20 @@ func (k *kindCluster) CreateNamespace(ctx context.Context) (context.Context, err
 	return ctx, applyConfiguration(ctx, k, yaml)
 }
 
-// stringParam generates a Tekton Parameter optionally expanding the
-// `${NAMESPACE}` and `${POLICY_NAME}` variables
-func stringParam(name, value string, t *testState) pipeline.Param {
-	v := os.Expand(value, func(variable string) string {
-		switch variable {
-		case "NAMESPACE":
-			return t.namespace
-		case "POLICY_NAME":
-			return t.policy
-		case "REGISTRY":
-			return t.registry
-		}
+// stringParam generates a Tekton Parameter optionally expanding certain variables
+func stringParam(ctx context.Context, name, value string, t *testState) pipeline.Param {
+	vars := map[string]string{
+		"NAMESPACE":   t.namespace,
+		"POLICY_NAME": t.policy,
+		"REGISTRY":    t.registry,
+	}
+	publicKeys := crypto.PublicKeysFrom(ctx)
+	for name, key := range publicKeys {
+		vars[fmt.Sprintf("%s_PUBLIC_KEY", name)] = key
+	}
 
-		return ""
+	v := os.Expand(value, func(variable string) string {
+		return vars[variable]
 	})
 
 	return pipeline.Param{
@@ -281,7 +281,7 @@ func (k *kindCluster) RunTask(ctx context.Context, version, name, workspace stri
 
 	tknParams := make([]pipeline.Param, 0, len(params))
 	for n, v := range params {
-		tknParams = append(tknParams, stringParam(n, v, t))
+		tknParams = append(tknParams, stringParam(ctx, n, v, t))
 	}
 
 	timeout, err := time.ParseDuration("10m")
@@ -309,9 +309,9 @@ func (k *kindCluster) RunTask(ctx context.Context, version, name, workspace stri
 				ResolverRef: pipeline.ResolverRef{
 					Resolver: "bundles",
 					Params: []pipeline.Param{
-						stringParam("bundle", fmt.Sprintf("registry.image-registry.svc.cluster.local:%d/ec-task-bundle:%s", k.registryPort, version), t),
-						stringParam("name", name, t),
-						stringParam("kind", "task", t),
+						stringParam(ctx, "bundle", fmt.Sprintf("registry.image-registry.svc.cluster.local:%d/ec-task-bundle:%s", k.registryPort, version), t),
+						stringParam(ctx, "name", name, t),
+						stringParam(ctx, "kind", "task", t),
 					},
 				},
 			},
@@ -400,10 +400,16 @@ func (k *kindCluster) TaskInfo(ctx context.Context) (*types.TaskInfo, error) {
 			return nil, err
 		}
 
+		envVars, err := k.envVars(ctx, t.namespace, tr.Status.PodName, s.Container)
+		if err != nil {
+			return nil, err
+		}
+
 		info.Steps = append(info.Steps, types.Step{
-			Name:   s.Name,
-			Status: s.Terminated.Reason,
-			Logs:   logs,
+			Name:    s.Name,
+			Status:  s.Terminated.Reason,
+			Logs:    logs,
+			EnvVars: envVars,
 		})
 	}
 
@@ -436,4 +442,23 @@ func (k *kindCluster) logs(ctx context.Context, namespace, pod, container string
 	}
 
 	return string(bytes), nil
+}
+
+func (k *kindCluster) envVars(ctx context.Context, namespace, podName, containerName string) (map[string]string, error) {
+	pod, err := k.client.CoreV1().Pods(namespace).Get(ctx, podName, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	for _, container := range pod.Spec.Containers {
+		if container.Name != containerName {
+			continue
+		}
+		envVars := make(map[string]string)
+		for _, env := range container.Env {
+			envVars[env.Name] = env.Value
+		}
+		return envVars, nil
+	}
+	return nil, fmt.Errorf("could not find %q container in %q pod", containerName, podName)
 }

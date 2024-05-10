@@ -1261,3 +1261,95 @@ true
   "effective-time": "${TIMESTAMP}"
 }
 ---
+
+[PUBLIC_KEY param overwrites key from policy:report - 1]
+components:
+- attestations:
+  - predicateBuildType: https://tekton.dev/attestations/chains/pipelinerun@v2
+    predicateType: https://slsa.dev/provenance/v0.2
+    signatures:
+    - keyid: ""
+      sig: ${ATTESTATION_SIGNATURE_acceptance/public-key-param}
+    type: https://in-toto.io/Statement/v0.1
+  containerImage: ${REGISTRY}/acceptance/public-key-param@sha256:${REGISTRY_acceptance/public-key-param:latest_DIGEST}
+  name: ""
+  signatures:
+  - keyid: ""
+    sig: ${IMAGE_SIGNATURE_acceptance/public-key-param}
+  source: {}
+  success: true
+  successes:
+  - metadata:
+      code: builtin.attestation.signature_check
+      description: The attestation signature matches available signing materials.
+      title: Attestation signature check passed
+    msg: Pass
+  - metadata:
+      code: builtin.attestation.syntax_check
+      description: The attestation has correct syntax.
+      title: Attestation syntax check passed
+    msg: Pass
+  - metadata:
+      code: builtin.image.signature_check
+      description: The image signature matches available signing materials.
+      title: Image signature check passed
+    msg: Pass
+ec-version: ${EC_VERSION}
+effective-time: "${TIMESTAMP}"
+key: |
+${__known_PUBLIC_KEY}
+policy:
+  publicKey: |
+${____known_PUBLIC_KEY}
+success: true
+
+---
+
+[PUBLIC_KEY param overwrites key from policy:results - 1]
+{
+  "TEST_OUTPUT": "{\"timestamp\":\"${TIMESTAMP}\",\"namespace\":\"\",\"successes\":3,\"failures\":0,\"warnings\":0,\"result\":\"SUCCESS\"}\n"
+}
+---
+
+[Titles and descriptions can be excluded:report - 1]
+components:
+- attestations:
+  - predicateBuildType: https://tekton.dev/attestations/chains/pipelinerun@v2
+    predicateType: https://slsa.dev/provenance/v0.2
+    signatures:
+    - keyid: ""
+      sig: ${ATTESTATION_SIGNATURE_acceptance/info}
+    type: https://in-toto.io/Statement/v0.1
+  containerImage: ${REGISTRY}/acceptance/info@sha256:${REGISTRY_acceptance/info:latest_DIGEST}
+  name: ""
+  signatures:
+  - keyid: ""
+    sig: ${IMAGE_SIGNATURE_acceptance/info}
+  source: {}
+  success: true
+  successes:
+  - metadata:
+      code: builtin.attestation.signature_check
+    msg: Pass
+  - metadata:
+      code: builtin.attestation.syntax_check
+    msg: Pass
+  - metadata:
+      code: builtin.image.signature_check
+    msg: Pass
+ec-version: ${EC_VERSION}
+effective-time: "${TIMESTAMP}"
+key: |
+${__known_PUBLIC_KEY}
+policy:
+  publicKey: |
+${____known_PUBLIC_KEY}
+success: true
+
+---
+
+[Titles and descriptions can be excluded:results - 1]
+{
+  "TEST_OUTPUT": "{\"timestamp\":\"${TIMESTAMP}\",\"namespace\":\"\",\"successes\":3,\"failures\":0,\"warnings\":0,\"result\":\"SUCCESS\"}\n"
+}
+---
