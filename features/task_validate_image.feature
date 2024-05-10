@@ -4,6 +4,7 @@ Feature: Verify Enterprise Contract Tekton Tasks
   Background:
     Given a cluster running
     Given stub tuf running
+    Given stub git daemon running
 
   Scenario: Golden container image
     Given a working namespace
@@ -259,3 +260,78 @@ Feature: Verify Enterprise Contract Tekton Tasks
      And the task logs for step "assert" should match the snapshot
      And the task logs for step "report-json" should match the snapshot
      And the task results should match the snapshot
+
+  Scenario: Titles and descriptions can be excluded
+    Given a working namespace
+      And a key pair named "known"
+      And an image named "acceptance/info"
+      And a valid image signature of "acceptance/info" image signed by the "known" key
+      And a valid attestation of "acceptance/info" signed by the "known" key
+      And a cluster policy with content:
+      ```
+      {"publicKey": ${known_PUBLIC_KEY}}
+      ```
+    When version 0.1 of the task named "verify-enterprise-contract" is run with parameters:
+      | IMAGES               | {"components": [{"containerImage": "${REGISTRY}/acceptance/info"}]} |
+      | POLICY_CONFIGURATION | ${NAMESPACE}/${POLICY_NAME}                                         |
+      | IGNORE_REKOR         | true                                                                |
+      | INFO                 | false                                                               |
+    Then the task should succeed
+      And the task logs for step "report" should match the snapshot
+      And the task results should match the snapshot
+
+  Scenario: Effective-time is honored
+    Given a working namespace
+      And a key pair named "known"
+      And an image named "acceptance/effective-time"
+      And a valid image signature of "acceptance/effective-time" image signed by the "known" key
+      And a valid attestation of "acceptance/effective-time" signed by the "known" key
+      And a cluster policy with content:
+      ```
+      {"publicKey": ${known_PUBLIC_KEY}}
+      ```
+    When version 0.1 of the task named "verify-enterprise-contract" is run with parameters:
+      | IMAGES               | {"components": [{"containerImage": "${REGISTRY}/acceptance/effective-time"}]} |
+      | POLICY_CONFIGURATION | ${NAMESPACE}/${POLICY_NAME}                                                   |
+      | IGNORE_REKOR         | true                                                                          |
+      | EFFECTIVE_TIME       | 2020-01-01T00:00:00Z                                                          |
+    Then the task should succeed
+      And the task logs for step "validate" should contain "Using provided effective time 2020-01-01T00:00:00Z"
+
+  Scenario: SSL_CERT_DIR environment variable is customized
+    Given a working namespace
+    And a key pair named "known"
+    And an image named "acceptance/ssl-cert-dir"
+    And a valid image signature of "acceptance/ssl-cert-dir" image signed by the "known" key
+    And a valid attestation of "acceptance/ssl-cert-dir" signed by the "known" key
+    And a cluster policy with content:
+    ```
+    {"publicKey": ${known_PUBLIC_KEY}}
+    ```
+    When version 0.1 of the task named "verify-enterprise-contract" is run with parameters:
+      | IMAGES               | {"components": [{"containerImage": "${REGISTRY}/acceptance/ssl-cert-dir"}]} |
+      | POLICY_CONFIGURATION | ${NAMESPACE}/${POLICY_NAME}                                                 |
+      | IGNORE_REKOR         | true                                                                        |
+      | SSL_CERT_DIR         | /spam/certs                                                                 |
+    Then the task should succeed
+      And the task env var for step "validate" named "SSL_CERT_DIR" should be set to "/tekton-custom-certs:/etc/ssl/certs:/etc/pki/tls/certs:/system/etc/security/cacerts:/spam/certs"
+
+  Scenario: PUBLIC_KEY param overwrites key from policy
+    Given a working namespace
+    And a key pair named "known"
+    And an image named "acceptance/public-key-param"
+    And a valid image signature of "acceptance/public-key-param" image signed by the "known" key
+    And a valid attestation of "acceptance/public-key-param" signed by the "known" key
+    And a valid attestation of "acceptance/public-key-param" signed by the "known" key
+    And a cluster policy with content:
+    ```
+    {"publicKey": "ignored"}
+    ```
+    When version 0.1 of the task named "verify-enterprise-contract" is run with parameters:
+      | IMAGES               | {"components": [{"containerImage": "${REGISTRY}/acceptance/public-key-param"}]} |
+      | POLICY_CONFIGURATION | ${NAMESPACE}/${POLICY_NAME}                                                     |
+      | PUBLIC_KEY           | ${known_PUBLIC_KEY}                                                             |
+      | IGNORE_REKOR         | true                                                                            |
+    Then the task should succeed
+      And the task logs for step "report" should match the snapshot
+      And the task results should match the snapshot

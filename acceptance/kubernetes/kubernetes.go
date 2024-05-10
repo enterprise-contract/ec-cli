@@ -381,6 +381,59 @@ func taskResultsShouldMatchTheSnapshot(ctx context.Context) error {
 	return snaps.MatchSnapshot(ctx, "results", string(j), nil)
 }
 
+func taskLogsShouldContain(ctx context.Context, stepName, needle string) error {
+	c := testenv.FetchState[ClusterState](ctx)
+
+	if err := mustBeUp(ctx, *c); err != nil {
+		return err
+	}
+
+	info, err := c.cluster.TaskInfo(ctx)
+	if err != nil {
+		return err
+	}
+
+	var found bool
+	for _, step := range info.Steps {
+		if step.Name == stepName {
+			if strings.Contains(step.Logs, needle) {
+				found = true
+			}
+		}
+	}
+
+	if !found {
+		return fmt.Errorf("not able to find %q in the %q step logs", needle, stepName)
+	}
+
+	return nil
+}
+
+func stepEnvVarShouldBe(ctx context.Context, stepName, envName, want string) error {
+	c := testenv.FetchState[ClusterState](ctx)
+
+	if err := mustBeUp(ctx, *c); err != nil {
+		return err
+	}
+
+	info, err := c.cluster.TaskInfo(ctx)
+	if err != nil {
+		return err
+	}
+
+	for _, step := range info.Steps {
+		if step.Name != stepName {
+			continue
+		}
+		got := step.EnvVars[envName]
+		if got != want {
+			return fmt.Errorf("unexpected value for the %q env var in the %q step: got %q, want %q", envName, step.Name, got, want)
+		}
+		return nil
+	}
+	return fmt.Errorf("step %q not found when looking for the %q env var", stepName, envName)
+}
+
 // AddStepsTo adds cluster-related steps to the context
 func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^a stub cluster running$`, startAndSetupState(stub.Start))
@@ -395,6 +448,8 @@ func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^an Snapshot named "([^"]*)" with specification$`, createNamedSnapshot)
 	sc.Step(`^an Snapshot named "([^"]*)" with (\d+) components signed with "([^"]*)" key`, createNamedSnapshotWithManyComponents)
 	sc.Step(`^the task logs for step "([^"]*)" should match the snapshot$`, taskLogsShouldMatchTheSnapshot)
+	sc.Step(`^the task logs for step "([^"]*)" should contain "([^"]*)"$`, taskLogsShouldContain)
+	sc.Step(`^the task env var for step "([^"]*)" named "([^"]*)" should be set to "([^"]*)"$`, stepEnvVarShouldBe)
 	sc.Step(`^the task results should match the snapshot$`, taskResultsShouldMatchTheSnapshot)
 	sc.Step(`^policy configuration named "([^"]*)" with (\d+) policy sources from "([^"]*)"$`, createNamedPolicyWithManySources)
 	// stop usage of the cluster once a test is done, godog will call this

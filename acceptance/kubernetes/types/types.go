@@ -44,7 +44,8 @@ type TaskInfo struct {
 }
 
 type Step struct {
-	Name   string
-	Status string
-	Logs   string
+	Name    string
+	Status  string
+	Logs    string
+	EnvVars map[string]string
 }
