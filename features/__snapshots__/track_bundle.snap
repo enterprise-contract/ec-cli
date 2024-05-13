@@ -1,11 +1,6 @@
 
 [:stdout - 1]
 /-/-/-/
-task-bundles:
-  ${REGISTRY}/acceptance/bundle:
-    - digest: sha256:${REGISTRY_acceptance/bundle:tag_DIGEST}
-      effective_on: "${TIMESTAMP}"
-      tag: tag
 trusted_tasks:
   oci://${REGISTRY}/acceptance/bundle:tag:
     - effective_on: "${TIMESTAMP}"
@@ -19,15 +14,6 @@ trusted_tasks:
 
 [Fresh tags:stdout - 1]
 /-/-/-/
-task-bundles:
-  ${REGISTRY}/acceptance/bundle:
-    - digest: sha256:${REGISTRY_acceptance/bundle:tag_DIGEST}
-      effective_on: "${TIMESTAMP}"
-      tag: tag
-    - digest: sha256:0af8c4f92f4b252b3ef0cbd712e7352196bc33a96c58b6e1d891b26e171deae8
-      effective_on: "2006-01-02T15:04:05Z"
-      expires_on: "${TIMESTAMP}"
-      tag: tag
 trusted_tasks:
   oci://${REGISTRY}/acceptance/bundle:tag:
     - effective_on: "${TIMESTAMP}"
@@ -44,11 +30,6 @@ trusted_tasks:
 
 [Pipeline definition is ignored from mixed bundle:stdout - 1]
 /-/-/-/
-task-bundles:
-  ${REGISTRY}/acceptance/bundle:
-    - digest: sha256:${REGISTRY_acceptance/bundle:tag_DIGEST}
-      effective_on: "${TIMESTAMP}"
-      tag: tag
 trusted_tasks:
   oci://${REGISTRY}/acceptance/bundle:tag:
     - effective_on: "${TIMESTAMP}"
@@ -85,11 +66,6 @@ trusted_tasks:
 
 [track tekton-task alias:stdout - 1]
 /-/-/-/
-task-bundles:
-  ${REGISTRY}/acceptance/bundle:
-    - digest: sha256:${REGISTRY_acceptance/bundle:tag_DIGEST}
-      effective_on: "${TIMESTAMP}"
-      tag: tag
 trusted_tasks:
   git+https://github.com/redhat-appstudio/build-definitions.git//task/buildah/0.1/buildah.yaml:
     - effective_on: "${TIMESTAMP}"
@@ -119,11 +95,6 @@ trusted_tasks:
 
 [Track tekton-task alias:stdout - 1]
 /-/-/-/
-task-bundles:
-  ${REGISTRY}/acceptance/bundle:
-    - digest: sha256:${REGISTRY_acceptance/bundle:tag_DIGEST}
-      effective_on: "${TIMESTAMP}"
-      tag: tag
 trusted_tasks:
   git+https://github.com/redhat-appstudio/build-definitions.git//task/buildah/0.1/buildah.yaml:
     - effective_on: "${TIMESTAMP}"

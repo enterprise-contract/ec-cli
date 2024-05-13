@@ -20,40 +20,31 @@ import (
 	"context"
 
 	"github.com/tektoncd/pipeline/pkg/remote/oci"
-	"k8s.io/apimachinery/pkg/util/sets"
 
 	"github.com/enterprise-contract/ec-cli/internal/image"
 )
 
-type bundleInfo struct {
-	ref         image.ImageReference
-	collections sets.Set[string] // Set of collection where the bundle should be tracked under.
-}
-
-// newBundleInfo returns information about the bundle, such as which collections it should
-// be added to.
-func newBundleInfo(ctx context.Context, ref image.ImageReference) (*bundleInfo, error) {
-	info := bundleInfo{ref: ref, collections: sets.New[string]()}
-
+// containsTask returns if the bundle contains a Tekton Task
+func containsTask(ctx context.Context, ref image.ImageReference) (bool, error) {
 	client := NewClient(ctx)
-	img, err := client.GetImage(ctx, info.ref.Ref())
+	img, err := client.GetImage(ctx, ref.Ref())
 	if err != nil {
-		return nil, err
+		return false, err
 	}
 
 	manifest, err := img.Manifest()
 	if err != nil {
-		return nil, err
+		return false, err
 	}
 
 	for _, layer := range manifest.Layers {
 		if kind, ok := layer.Annotations[oci.KindAnnotation]; ok {
 			switch kind {
 			case "task":
-				info.collections.Insert(taskCollection)
+				return true, nil
 			}
 		}
 	}
 
-	return &info, nil
+	return false, nil
 }

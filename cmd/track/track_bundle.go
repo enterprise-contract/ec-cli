@@ -52,10 +52,6 @@ func trackBundleCmd(track trackBundleFn, pullImage pullImageFn, pushImage pushIm
 		Long: hd.Doc(`
 			Record tracking information about Tekton bundles
 
-			Given one or more Tekton Bundles, categorize each as "task-bundles",
-			ignoring those that are not. Then, generate a YAML representation of
-			this categorization.
-
 			Each Tekton Bundle is expected to be a proper OCI image reference. They
 			may contain a tag, a digest, or both. If a digest is not provided, this
 			command will query the registry to determine its value. Either a tag
