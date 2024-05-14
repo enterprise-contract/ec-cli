@@ -16,6 +16,10 @@ metadata:
   name: cli-v02-on-push
   namespace: rhtap-contract-tenant
 spec:
+  timeouts:
+    pipeline: "4h0m0s"
+    tasks: "3h0m0s"
+    finally: "1h0m0s"
   params:
   - name: dockerfile
     value: Dockerfile.dist
