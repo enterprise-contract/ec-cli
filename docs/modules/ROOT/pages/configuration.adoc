@@ -7,13 +7,13 @@ such as in this example:
 [,bash]
 ----
 ec validate image --policy '{
-    "configuration": {
-        "include": ["@minimal"]
-    }
     "sources": [
         {
             "policy": ["oci::quay.io/enterprise-contract/ec-release-policy:latest"],
-            "data": ["git::https://github.com/enterprise-contract/ec-policies//example/data"]
+            "data": ["git::https://github.com/enterprise-contract/ec-policies//example/data"],
+            "config": {
+                "include": ["@minimal"]
+            }
         }
     ]
 }' ...
@@ -121,31 +121,31 @@ YAML::
 +
 [source,yaml]
 ----
-configuration:
-  include:
-    - "@minimal"
-  exclude:
-    - attestation_task_bundle
-    - slsa_build_scripted_build
 sources:
   - policy:
       - oci::quay.io/enterprise-contract/ec-release-policy:latest
     data:
       - git::https://github.com/enterprise-contract/ec-policies//example/data
+    config:
+      include:
+        - "@minimal"
+      exclude:
+        - attestation_task_bundle
+        - slsa_build_scripted_build
 ----
 JSON::
 +
 [source,json]
 ----
 {
-    "configuration": {
-        "include": ["@minimal"]
-        "exclude": ["attestation_task_bundle", "slsa_build_scripted_build"]
-    }
     "sources": [
         {
             "policy": ["oci::quay.io/enterprise-contract/ec-release-policy:latest"],
-            "data": ["git::https://github.com/enterprise-contract/ec-policies//example/data"]
+            "data": ["git::https://github.com/enterprise-contract/ec-policies//example/data"],
+            "config": {
+                "include": ["@minimal"],
+                "exclude": ["attestation_task_bundle", "slsa_build_scripted_build"]
+            }
         }
     ]
 }
@@ -163,28 +163,28 @@ YAML::
 +
 [source,yaml]
 ----
-configuration:
-  include:
-    - test
-    - java
 sources:
   - policy:
       - oci::quay.io/enterprise-contract/ec-release-policy:latest
     data:
       - git::https://github.com/enterprise-contract/ec-policies//example/data
+    config:
+      include:
+        - test
+        - java
 ----
 JSON::
 +
 [source,json]
 ----
 {
-    "configuration": {
-        "include": ["test", "java"]
-    }
     "sources": [
         {
             "policy": ["oci::quay.io/enterprise-contract/ec-release-policy:latest"],
-            "data": ["git::https://github.com/enterprise-contract/ec-policies//example/data"]
+            "data": ["git::https://github.com/enterprise-contract/ec-policies//example/data"],
+            "config": {
+                "include": ["test", "java"]
+            }
         }
     ]
 }
@@ -203,27 +203,27 @@ YAML::
 +
 [source,yaml]
 ----
-configuration:
-  exclude:
-    - attestation_task_bundle.unacceptable_task_bundle
 sources:
   - policy:
       - oci::quay.io/enterprise-contract/ec-release-policy:latest
     data:
       - git::https://github.com/enterprise-contract/ec-policies//example/data
+    config:
+      exclude:
+        - attestation_task_bundle.unacceptable_task_bundle
 ----
 JSON::
 +
 [source,json]
 ----
 {
-    "configuration": {
-        "exclude": ["attestation_task_bundle.unacceptable_task_bundle"]
-    }
     "sources": [
         {
             "policy": ["oci::quay.io/enterprise-contract/ec-release-policy:latest"],
-            "data": ["git::https://github.com/enterprise-contract/ec-policies//example/data"]
+            "data": ["git::https://github.com/enterprise-contract/ec-policies//example/data"],
+            "config": {
+                "exclude": ["attestation_task_bundle.unacceptable_task_bundle"]
+            }
         }
     ]
 }
@@ -256,13 +256,13 @@ JSON::
 [source,json]
 ----
 {
-    "configuration": {
-        "exclude": ["test:get-clair-scan", "test:clamav-scan"]
-    }
     "sources": [
         {
             "policy": ["oci::quay.io/enterprise-contract/ec-release-policy:latest"],
-            "data": ["git::https://github.com/enterprise-contract/ec-policies//example/data"]
+            "data": ["git::https://github.com/enterprise-contract/ec-policies//example/data"],
+            "config": {
+                "exclude": ["test:get-clair-scan", "test:clamav-scan"]
+            }
         }
     ]
 }
@@ -287,31 +287,31 @@ YAML::
 +
 [source,yaml]
 ----
-configuration:
-  include:
-    - *
-    - attestation_task_bundle.unacceptable_task_bundle
-  exclude:
-    - attestation_task_bundle.*
 sources:
   - policy:
       - oci::quay.io/enterprise-contract/ec-release-policy:latest
     data:
       - git::https://github.com/enterprise-contract/ec-policies//example/data
+    config:
+      include:
+        - *
+        - attestation_task_bundle.unacceptable_task_bundle
+      exclude:
+        - attestation_task_bundle.*
 ----
 JSON::
 +
 [source,json]
 ----
 {
-    "configuration": {
-        "include": ["*", "attestation_task_bundle.unacceptable_task_bundle"],
-        "exclude": ["attestation_task_bundle.*"]
-    }
     "sources": [
         {
             "policy": ["oci::quay.io/enterprise-contract/ec-release-policy:latest"],
-            "data": ["git::https://github.com/enterprise-contract/ec-policies//example/data"]
+            "data": ["git::https://github.com/enterprise-contract/ec-policies//example/data"],
+            "config": {
+                "include": ["*", "attestation_task_bundle.unacceptable_task_bundle"],
+                "exclude": ["attestation_task_bundle.*"]
+            }
         }
     ]
 }
