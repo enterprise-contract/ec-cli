@@ -473,10 +473,10 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) ([]Out
 		result.Exceptions = exceptions
 		result.Skipped = skipped
 
-		totalRules += len(result.Warnings) + len(result.Failures) + len(result.Successes)
-
 		// Replace the placeholder successes slice with the actual successes.
 		result.Successes = c.computeSuccesses(result, rules, effectiveTime)
+
+		totalRules += len(result.Warnings) + len(result.Failures) + len(result.Successes)
 
 		results = append(results, result)
 	}

@@ -448,6 +448,30 @@ Error: success criteria not met
           "metadata": {
             "code": "builtin.image.signature_check"
           }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "main.missing_data"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "main.missing_data"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "main.unexpected_data"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "main.unexpected_data"
+          }
         }
       ],
       "success": true,
