@@ -108,6 +108,19 @@ const (
 	VSA         = "vsa"
 )
 
+var OutputFormats = []string{
+	JSON,
+	YAML,
+	APPSTUDIO,
+	Summary,
+	SummaryMarkdown,
+	JUNIT,
+	DATA,
+	ATTESTATION,
+	PolicyInput,
+	VSA,
+}
+
 // WriteReport returns a new instance of Report representing the state of
 // components from the snapshot.
 func NewReport(snapshot string, components []Component, policy policy.Policy, data any, policyInput [][]byte) (Report, error) {
