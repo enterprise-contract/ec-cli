@@ -26,8 +26,6 @@ import (
 	"testing"
 
 	"github.com/google/go-containerregistry/pkg/name"
-	v1 "github.com/google/go-containerregistry/pkg/v1"
-	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/open-policy-agent/opa/ast"
 	"github.com/open-policy-agent/opa/rego"
@@ -38,8 +36,9 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/enterprise-contract/ec-cli/internal/evaluation_target/application_snapshot_image"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
+	o "github.com/enterprise-contract/ec-cli/internal/utils/oci"
+	"github.com/enterprise-contract/ec-cli/internal/utils/oci/fake"
 )
 
 func TestSigstoreVerifyImage(t *testing.T) {
@@ -63,7 +62,7 @@ func TestSigstoreVerifyImage(t *testing.T) {
 			uri:     ast.StringTerm(goodImage.String()),
 			opts:    options{ignoreRekor: true, publicKey: utils.TestPublicKey},
 			optsVerifier: func(args mock.Arguments) {
-				checkOpts := args.Get(2).(*cosign.CheckOpts)
+				checkOpts := args.Get(1).(*cosign.CheckOpts)
 				require.NotNil(t, checkOpts)
 				require.True(t, checkOpts.IgnoreTlog)
 				require.Nil(t, checkOpts.RekorClient)
@@ -77,7 +76,7 @@ func TestSigstoreVerifyImage(t *testing.T) {
 			uri:     ast.StringTerm(goodImage.String()),
 			opts:    options{publicKey: utils.TestPublicKey, rekorURL: "https://rekor.local"},
 			optsVerifier: func(args mock.Arguments) {
-				checkOpts := args.Get(2).(*cosign.CheckOpts)
+				checkOpts := args.Get(1).(*cosign.CheckOpts)
 				require.NotNil(t, checkOpts)
 				require.False(t, checkOpts.IgnoreTlog)
 				require.Empty(t, checkOpts.Identities)
@@ -95,7 +94,7 @@ func TestSigstoreVerifyImage(t *testing.T) {
 				rekorURL:              "https://rekor.local",
 			},
 			optsVerifier: func(args mock.Arguments) {
-				checkOpts := args.Get(2).(*cosign.CheckOpts)
+				checkOpts := args.Get(1).(*cosign.CheckOpts)
 				require.NotNil(t, checkOpts)
 				require.False(t, checkOpts.IgnoreTlog)
 				require.NotNil(t, checkOpts.RekorClient)
@@ -114,7 +113,7 @@ func TestSigstoreVerifyImage(t *testing.T) {
 				rekorURL:                    "https://rekor.local",
 			},
 			optsVerifier: func(args mock.Arguments) {
-				checkOpts := args.Get(2).(*cosign.CheckOpts)
+				checkOpts := args.Get(1).(*cosign.CheckOpts)
 				require.NotNil(t, checkOpts)
 				require.False(t, checkOpts.IgnoreTlog)
 				require.NotNil(t, checkOpts.RekorClient)
@@ -165,8 +164,8 @@ func TestSigstoreVerifyImage(t *testing.T) {
 			utils.SetTestFulcioRoots(t)
 			utils.SetTestCTLogPublicKey(t)
 
-			c := MockClient{}
-			ctx := application_snapshot_image.WithClient(context.Background(), &c)
+			c := fake.FakeClient{}
+			ctx := o.WithClient(context.Background(), &c)
 
 			sig, err := static.NewSignature(
 				[]byte(`image`),
@@ -176,7 +175,7 @@ func TestSigstoreVerifyImage(t *testing.T) {
 			require.NoError(t, err)
 
 			verifyCall := c.On(
-				"VerifyImageSignatures", ctx, goodImage, mock.Anything,
+				"VerifyImageSignatures", goodImage, mock.Anything,
 			).Return([]oci.Signature{sig}, false, tt.sigError)
 
 			if tt.optsVerifier != nil {
@@ -230,7 +229,7 @@ func TestSigstoreVerifyAttestation(t *testing.T) {
 			uri:     ast.StringTerm(goodImage.String()),
 			opts:    options{ignoreRekor: true, publicKey: utils.TestPublicKey},
 			optsVerifier: func(args mock.Arguments) {
-				checkOpts := args.Get(2).(*cosign.CheckOpts)
+				checkOpts := args.Get(1).(*cosign.CheckOpts)
 				require.NotNil(t, checkOpts)
 				require.True(t, checkOpts.IgnoreTlog)
 				require.Nil(t, checkOpts.RekorClient)
@@ -245,7 +244,7 @@ func TestSigstoreVerifyAttestation(t *testing.T) {
 			uri:     ast.StringTerm(goodImage.String()),
 			opts:    options{publicKey: utils.TestPublicKey, rekorURL: "https://rekor.local"},
 			optsVerifier: func(args mock.Arguments) {
-				checkOpts := args.Get(2).(*cosign.CheckOpts)
+				checkOpts := args.Get(1).(*cosign.CheckOpts)
 				require.NotNil(t, checkOpts)
 				require.False(t, checkOpts.IgnoreTlog)
 				require.Empty(t, checkOpts.Identities)
@@ -264,7 +263,7 @@ func TestSigstoreVerifyAttestation(t *testing.T) {
 				rekorURL:              "https://rekor.local",
 			},
 			optsVerifier: func(args mock.Arguments) {
-				checkOpts := args.Get(2).(*cosign.CheckOpts)
+				checkOpts := args.Get(1).(*cosign.CheckOpts)
 				require.NotNil(t, checkOpts)
 				require.False(t, checkOpts.IgnoreTlog)
 				require.NotNil(t, checkOpts.RekorClient)
@@ -284,7 +283,7 @@ func TestSigstoreVerifyAttestation(t *testing.T) {
 				rekorURL:                    "https://rekor.local",
 			},
 			optsVerifier: func(args mock.Arguments) {
-				checkOpts := args.Get(2).(*cosign.CheckOpts)
+				checkOpts := args.Get(1).(*cosign.CheckOpts)
 				require.NotNil(t, checkOpts)
 				require.False(t, checkOpts.IgnoreTlog)
 				require.NotNil(t, checkOpts.RekorClient)
@@ -346,11 +345,11 @@ func TestSigstoreVerifyAttestation(t *testing.T) {
 			utils.SetTestFulcioRoots(t)
 			utils.SetTestCTLogPublicKey(t)
 
-			c := MockClient{}
-			ctx := application_snapshot_image.WithClient(context.Background(), &c)
+			c := fake.FakeClient{}
+			ctx := o.WithClient(context.Background(), &c)
 
 			verifyCall := c.On(
-				"VerifyImageAttestations", ctx, goodImage, mock.Anything,
+				"VerifyImageAttestations", goodImage, mock.Anything,
 			).Return(tt.sigs, false, tt.sigError)
 
 			if tt.optsVerifier != nil {
@@ -366,30 +365,4 @@ func TestSigstoreVerifyAttestation(t *testing.T) {
 			require.Equal(t, tt.success, result.Get(ast.StringTerm("success")))
 		})
 	}
-}
-
-type MockClient struct {
-	mock.Mock
-}
-
-func (c *MockClient) VerifyImageSignatures(ctx context.Context, name name.Reference, opts *cosign.CheckOpts) ([]oci.Signature, bool, error) {
-	args := c.Called(ctx, name, opts)
-
-	return args.Get(0).([]oci.Signature), args.Get(1).(bool), args.Error(2)
-}
-
-func (c *MockClient) VerifyImageAttestations(ctx context.Context, name name.Reference, opts *cosign.CheckOpts) ([]oci.Signature, bool, error) {
-	args := c.Called(ctx, name, opts)
-
-	return args.Get(0).([]oci.Signature), args.Get(1).(bool), args.Error(2)
-}
-
-func (c *MockClient) Head(name name.Reference, options ...remote.Option) (*v1.Descriptor, error) {
-	args := c.Called(name, options)
-
-	return args.Get(0).(*v1.Descriptor), args.Error(1)
-}
-
-func (c *MockClient) ResolveDigest(ref name.Reference, opts *cosign.CheckOpts) (string, error) {
-	return "", nil
 }

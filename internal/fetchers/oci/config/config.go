@@ -23,14 +23,13 @@ import (
 	"strings"
 
 	"github.com/google/go-containerregistry/pkg/name"
-	"github.com/google/go-containerregistry/pkg/v1/remote"
 
-	"github.com/enterprise-contract/ec-cli/internal/fetchers/oci"
+	"github.com/enterprise-contract/ec-cli/internal/utils/oci"
 )
 
 // FetchImageConfig retrieves the config for an image from its OCI registry.
-func FetchImageConfig(ctx context.Context, ref name.Reference, opts ...remote.Option) (json.RawMessage, error) {
-	image, err := oci.NewClient(ctx).Image(ref, opts...)
+func FetchImageConfig(ctx context.Context, ref name.Reference) (json.RawMessage, error) {
+	image, err := oci.NewClient(ctx).Image(ref)
 	if err != nil {
 		return nil, err
 	}
@@ -48,8 +47,8 @@ func FetchImageConfig(ctx context.Context, ref name.Reference, opts ...remote.Op
 }
 
 // FetchParentImage retrieves the reference to an image's parent image from its OCI registry.
-func FetchParentImage(ctx context.Context, ref name.Reference, opts ...remote.Option) (name.Reference, error) {
-	image, err := oci.NewClient(ctx).Image(ref, opts...)
+func FetchParentImage(ctx context.Context, ref name.Reference) (name.Reference, error) {
+	image, err := oci.NewClient(ctx).Image(ref)
 	if err != nil {
 		return nil, err
 	}

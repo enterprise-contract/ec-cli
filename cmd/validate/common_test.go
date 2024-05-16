@@ -21,43 +21,19 @@ package validate
 import (
 	"context"
 
-	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
-	"github.com/google/go-containerregistry/pkg/v1/remote"
+	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/mock"
 
 	"github.com/enterprise-contract/ec-cli/cmd/root"
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
+	"github.com/enterprise-contract/ec-cli/internal/utils/oci/fake"
 )
 
-type MockRemoteClient struct {
-	mock.Mock
-}
-
-func (m *MockRemoteClient) Get(ref name.Reference) (*remote.Descriptor, error) {
-	args := m.Called(ref)
-	result := args.Get(0)
-	if result != nil {
-		return result.(*remote.Descriptor), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-
-func (m *MockRemoteClient) Index(ref name.Reference) (v1.ImageIndex, error) {
-	args := m.Called(ref)
-	result := args.Get(0)
-	if result != nil {
-		return args.Get(0).(v1.ImageIndex), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-
-func commonMockClient(mockClient *MockRemoteClient) {
-	imageManifestJson := `{"mediaType": "application/vnd.oci.image.manifest.v1+json"}`
-	imageManifestJsonBytes := []byte(imageManifestJson)
+func commonMockClient(client *fake.FakeClient) {
 	// TODO: Replace mock.Anything calls with specific values
-	mockClient.On("Get", mock.Anything).Return(&remote.Descriptor{Manifest: imageManifestJsonBytes}, nil)
+	client.On("Head", mock.Anything).Return(&v1.Descriptor{MediaType: types.OCIManifestSchema1}, nil)
 }
 
 type mockEvaluator struct {

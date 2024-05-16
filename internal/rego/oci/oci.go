@@ -27,16 +27,14 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
-	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/open-policy-agent/opa/ast"
 	"github.com/open-policy-agent/opa/rego"
 	"github.com/open-policy-agent/opa/types"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/enterprise-contract/ec-cli/internal/fetchers/oci"
+	"github.com/enterprise-contract/ec-cli/internal/utils/oci"
 )
 
 const (
@@ -161,13 +159,7 @@ func ociBlob(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) {
 		return nil, nil
 	}
 
-	opts := []remote.Option{
-		remote.WithTransport(remote.DefaultTransport),
-		remote.WithContext(bctx.Context),
-		remote.WithAuthFromKeychain(authn.DefaultKeychain),
-	}
-
-	rawLayer, err := oci.NewClient(bctx.Context).Layer(ref, opts...)
+	rawLayer, err := oci.NewClient(bctx.Context).Layer(ref)
 	if err != nil {
 		log.Errorf("%s fetch layer: %s", ociBlobName, err)
 		return nil, nil
@@ -220,13 +212,7 @@ func ociImageManifest(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) 
 		return nil, nil
 	}
 
-	opts := []remote.Option{
-		remote.WithTransport(remote.DefaultTransport),
-		remote.WithContext(bctx.Context),
-		remote.WithAuthFromKeychain(authn.DefaultKeychain),
-	}
-
-	image, err := oci.NewClient(bctx.Context).Image(ref, opts...)
+	image, err := oci.NewClient(bctx.Context).Image(ref)
 	if err != nil {
 		log.Errorf("fetch image: %s", err)
 		return nil, nil

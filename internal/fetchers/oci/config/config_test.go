@@ -29,20 +29,15 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/empty"
 	v1fake "github.com/google/go-containerregistry/pkg/v1/fake"
 	"github.com/google/go-containerregistry/pkg/v1/mutate"
-	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/stretchr/testify/require"
 
-	"github.com/enterprise-contract/ec-cli/internal/fetchers/oci"
-	"github.com/enterprise-contract/ec-cli/internal/fetchers/oci/fake"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
+	"github.com/enterprise-contract/ec-cli/internal/utils/oci"
+	"github.com/enterprise-contract/ec-cli/internal/utils/oci/fake"
 )
 
 func TestFetchImageConfig(t *testing.T) {
 	ref := name.MustParseReference("registry.local/test-image:latest")
-
-	opts := []remote.Option{
-		remote.WithTransport(remote.DefaultTransport),
-	}
 
 	testcases := []struct {
 		name     string
@@ -59,14 +54,14 @@ func TestFetchImageConfig(t *testing.T) {
 					},
 				})
 				require.NoError(t, err)
-				client.On("Image", ref, opts).Return(image, nil)
+				client.On("Image", ref).Return(image, nil)
 			},
 			expected: `{"Labels":{"io.k8s.display-name":"Test Image"}}`,
 		},
 		{
 			name: "error fetching image",
 			setup: func(client *fake.FakeClient) {
-				client.On("Image", ref, opts).Return(empty.Image, errors.New("kaboom!"))
+				client.On("Image", ref).Return(empty.Image, errors.New("kaboom!"))
 			},
 			err: "kaboom!",
 		},
@@ -75,7 +70,7 @@ func TestFetchImageConfig(t *testing.T) {
 			setup: func(client *fake.FakeClient) {
 				image := v1fake.FakeImage{}
 				image.ConfigFileReturns(nil, errors.New("kaboom!"))
-				client.On("Image", ref, opts).Return(&image, nil)
+				client.On("Image", ref).Return(&image, nil)
 			},
 			err: "kaboom!",
 		},
@@ -91,7 +86,7 @@ func TestFetchImageConfig(t *testing.T) {
 			}
 			ctx = oci.WithClient(ctx, &client)
 
-			out, err := FetchImageConfig(ctx, ref, opts...)
+			out, err := FetchImageConfig(ctx, ref)
 			if tt.err != "" {
 				require.ErrorContains(t, err, tt.err)
 				require.Nil(t, out)
@@ -110,10 +105,6 @@ func TestFetchParentImage(t *testing.T) {
 	parentName, parentDigest, found := strings.Cut(parentURL, "@")
 	require.True(t, found)
 
-	opts := []remote.Option{
-		remote.WithTransport(remote.DefaultTransport),
-	}
-
 	testcases := []struct {
 		name     string
 		setup    func(*fake.FakeClient)
@@ -127,7 +118,7 @@ func TestFetchParentImage(t *testing.T) {
 					oci.BaseImageNameAnnotation: parentURL,
 				})
 
-				client.On("Image", ref, opts).Return(image, nil)
+				client.On("Image", ref).Return(image, nil)
 			},
 			expected: parentURL,
 		},
@@ -139,14 +130,14 @@ func TestFetchParentImage(t *testing.T) {
 					oci.BaseImageDigestAnnotation: parentDigest,
 				})
 
-				client.On("Image", ref, opts).Return(image, nil)
+				client.On("Image", ref).Return(image, nil)
 			},
 			expected: parentURL,
 		},
 		{
 			name: "error fetching image",
 			setup: func(client *fake.FakeClient) {
-				client.On("Image", ref, opts).Return(empty.Image, errors.New("kaboom!"))
+				client.On("Image", ref).Return(empty.Image, errors.New("kaboom!"))
 			},
 			err: "kaboom!",
 		},
@@ -156,7 +147,7 @@ func TestFetchParentImage(t *testing.T) {
 				image := v1fake.FakeImage{}
 				image.ManifestReturns(nil, errors.New("kaboom!"))
 
-				client.On("Image", ref, opts).Return(&image, nil)
+				client.On("Image", ref).Return(&image, nil)
 			},
 			err: "kaboom!",
 		},
@@ -167,7 +158,7 @@ func TestFetchParentImage(t *testing.T) {
 					oci.BaseImageDigestAnnotation: parentDigest,
 				})
 
-				client.On("Image", ref, opts).Return(image, nil)
+				client.On("Image", ref).Return(image, nil)
 			},
 			err: "unable to determine parent image",
 		},
@@ -178,14 +169,14 @@ func TestFetchParentImage(t *testing.T) {
 					oci.BaseImageNameAnnotation: parentName,
 				})
 
-				client.On("Image", ref, opts).Return(image, nil)
+				client.On("Image", ref).Return(image, nil)
 			},
 			err: "unable to determine parent image",
 		},
 		{
 			name: "missing all annotations",
 			setup: func(client *fake.FakeClient) {
-				client.On("Image", ref, opts).Return(empty.Image, nil)
+				client.On("Image", ref).Return(empty.Image, nil)
 			},
 			err: "unable to determine parent image",
 		},
@@ -197,7 +188,7 @@ func TestFetchParentImage(t *testing.T) {
 					oci.BaseImageDigestAnnotation: parentDigest,
 				})
 
-				client.On("Image", ref, opts).Return(image, nil)
+				client.On("Image", ref).Return(image, nil)
 			},
 			err: "unable to parse parent image ref",
 		},
@@ -209,7 +200,7 @@ func TestFetchParentImage(t *testing.T) {
 					oci.BaseImageDigestAnnotation: "invalid",
 				})
 
-				client.On("Image", ref, opts).Return(image, nil)
+				client.On("Image", ref).Return(image, nil)
 			},
 			err: "unable to parse parent image ref",
 		},
@@ -225,7 +216,7 @@ func TestFetchParentImage(t *testing.T) {
 			}
 			ctx = oci.WithClient(ctx, &client)
 
-			out, err := FetchParentImage(ctx, ref, opts...)
+			out, err := FetchParentImage(ctx, ref)
 			if tt.err != "" {
 				require.ErrorContains(t, err, tt.err)
 				require.Nil(t, out)

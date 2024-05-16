@@ -34,19 +34,20 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/enterprise-contract/ec-cli/internal/applicationsnapshot"
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 	"github.com/enterprise-contract/ec-cli/internal/output"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/policy/source"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
+	"github.com/enterprise-contract/ec-cli/internal/utils/oci"
+	"github.com/enterprise-contract/ec-cli/internal/utils/oci/fake"
 )
 
 func TestEvaluatorLifecycle(t *testing.T) {
 	ctx := utils.WithFS(context.Background(), afero.NewMemMapFs())
-	mockRemoteClient := &MockRemoteClient{}
-	commonMockClient(mockRemoteClient)
-	ctx = context.WithValue(ctx, applicationsnapshot.RemoteClientKey{}, mockRemoteClient)
+	client := fake.FakeClient{}
+	commonMockClient(&client)
+	ctx = oci.WithClient(ctx, &client)
 
 	noEvaluators := 100
 

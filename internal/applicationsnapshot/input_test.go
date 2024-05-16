@@ -28,7 +28,7 @@ import (
 
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
-	"github.com/google/go-containerregistry/pkg/v1/remote"
+	gcrfake "github.com/google/go-containerregistry/pkg/v1/fake"
 	"github.com/google/go-containerregistry/pkg/v1/types"
 	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 	log "github.com/sirupsen/logrus"
@@ -40,73 +40,9 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/kubernetes"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
+	"github.com/enterprise-contract/ec-cli/internal/utils/oci"
+	"github.com/enterprise-contract/ec-cli/internal/utils/oci/fake"
 )
-
-type MockRemoteClient struct {
-	mock.Mock
-}
-
-func (m *MockRemoteClient) Get(ref name.Reference) (*remote.Descriptor, error) {
-	args := m.Called(ref)
-	result := args.Get(0)
-	if result != nil {
-		return result.(*remote.Descriptor), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-
-func (m *MockRemoteClient) Index(ref name.Reference) (v1.ImageIndex, error) {
-	args := m.Called(ref)
-	result := args.Get(0)
-	if result != nil {
-		return args.Get(0).(v1.ImageIndex), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-
-type mockIndex struct {
-	mock.Mock
-}
-
-// Digest implements v1.ImageIndex.
-func (m *mockIndex) Digest() (v1.Hash, error) {
-	panic("Digest for v1.ImageIndex isn't expected to be used")
-}
-
-// Image implements v1.ImageIndex.
-func (m *mockIndex) Image(v1.Hash) (v1.Image, error) {
-	panic("Image for v1.ImageIndex isn't expected to be used")
-}
-
-// ImageIndex implements v1.ImageIndex.
-func (m *mockIndex) ImageIndex(v1.Hash) (v1.ImageIndex, error) {
-	panic("ImageIndex for v1.ImageIndex isn't expected to be used")
-}
-
-// MediaType implements v1.ImageIndex.
-func (m *mockIndex) MediaType() (types.MediaType, error) {
-	panic("MediaType for v1.ImageIndex isn't expected to be used")
-}
-
-// RawManifest implements v1.ImageIndex.
-func (m *mockIndex) RawManifest() ([]byte, error) {
-	panic("RawManifest for v1.ImageIndex isn't expected to be used")
-}
-
-// Size implements v1.ImageIndex.
-func (m *mockIndex) Size() (int64, error) {
-	panic("Size for v1.ImageIndex isn't expected to be used")
-}
-
-// IndexManifest implements v1.ImageIndex
-func (m *mockIndex) IndexManifest() (*v1.IndexManifest, error) {
-	args := m.Called()
-	result := args.Get(0)
-	if result != nil {
-		return args.Get(0).(*v1.IndexManifest), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
 
 func Test_DetermineInputSpec(t *testing.T) {
 	imageRef := "registry.io/repository/image:tag"
@@ -217,21 +153,19 @@ func Test_DetermineInputSpec(t *testing.T) {
 		},
 	}
 
-	imageManifestJson := `{"mediaType": "application/vnd.oci.image.manifest.v1+json"}`
-	imageManifestJsonBytes := []byte(imageManifestJson)
-	mockRemoteClient := new(MockRemoteClient)
-	// TODO: Replace mock.Anything calls with specific values
-	mockRemoteClient.
-		On("Get", mock.Anything).Return(&remote.Descriptor{Manifest: imageManifestJsonBytes}, nil)
-
-	fs := afero.NewMemMapFs()
-	ctx := utils.WithFS(context.Background(), fs)
-	ctx = kubernetes.WithClient(ctx, &policy.FakeKubernetesClient{
-		Snapshot: *snapshot,
-	})
-	ctx = context.WithValue(ctx, RemoteClientKey{}, mockRemoteClient)
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			fs := afero.NewMemMapFs()
+			ctx := utils.WithFS(context.Background(), fs)
+			ctx = kubernetes.WithClient(ctx, &policy.FakeKubernetesClient{
+				Snapshot: *snapshot,
+			})
+
+			client := fake.FakeClient{}
+			// TODO: Replace mock.Anything calls with specific values
+			client.On("Head", mock.Anything).Return(&v1.Descriptor{MediaType: types.OCIManifestSchema1}, nil)
+			ctx = oci.WithClient(ctx, &client)
+
 			if tc.input.File != "" {
 				if err := afero.WriteFile(fs, tc.input.File, []byte(testJson), 0400); err != nil {
 					panic(err)
@@ -304,31 +238,29 @@ func TestReadSnapshotFile(t *testing.T) {
 }
 
 func TestExpandImageIndex(t *testing.T) {
-	mockRemoteClient := new(MockRemoteClient)
-	mockImageIndex := new(mockIndex)
-	expectedRef, _ := name.ParseReference("registry.io/repository/image:tag")
-	mockRemoteClient.
-		On("Get", expectedRef).Return(&remote.Descriptor{Descriptor: v1.Descriptor{MediaType: "application/vnd.oci.image.index.v1+json"}}, nil)
-	mockRemoteClient.
-		On("Index", expectedRef).Return(mockImageIndex, nil)
+	client := fake.FakeClient{}
+	expectedRef := name.MustParseReference("registry.io/repository/image:tag")
+	client.On("Head", expectedRef).Return(&v1.Descriptor{MediaType: types.OCIImageIndex}, nil)
 
-	mockImageIndex.
-		On("IndexManifest").
-		Return(&v1.IndexManifest{
-			Manifests: []v1.Descriptor{
-				{
-					MediaType: "application/vnd.oci.image.manifest.v1+json",
-					Platform:  &v1.Platform{Architecture: "amd64"},
-					Digest:    v1.Hash{Algorithm: "sha256", Hex: "digest1"},
-				},
-				{
-					MediaType: "application/vnd.oci.image.manifest.v1+json",
-					Platform:  &v1.Platform{Architecture: "arm64"},
-					Digest:    v1.Hash{Algorithm: "sha256", Hex: "digest2"},
-				},
+	index := gcrfake.FakeImageIndex{}
+	index.IndexManifestReturns(&v1.IndexManifest{
+		Manifests: []v1.Descriptor{
+			{
+				MediaType: types.OCIManifestSchema1,
+				Platform:  &v1.Platform{Architecture: "amd64"},
+				Digest:    v1.Hash{Algorithm: "sha256", Hex: "digest1"},
 			},
-		}, nil)
-	ctx := context.WithValue(context.Background(), RemoteClientKey{}, mockRemoteClient)
+			{
+				MediaType: types.OCIManifestSchema1,
+				Platform:  &v1.Platform{Architecture: "arm64"},
+				Digest:    v1.Hash{Algorithm: "sha256", Hex: "digest2"},
+			},
+		},
+	}, nil)
+
+	client.On("Index", expectedRef).Return(&index, nil)
+
+	ctx := oci.WithClient(context.Background(), &client)
 
 	snap := &app.SnapshotSpec{
 		Components: []app.SnapshotComponent{
@@ -360,29 +292,29 @@ func TestExpandImageImage_Errors(t *testing.T) {
 	imagePullspec := "registry.io/repository/image:tag"
 	expectedRef, _ := name.ParseReference(imagePullspec)
 	tests := []struct {
-		name       string
-		mockClient func(*MockRemoteClient)
-		imageRef   string
-		want       string
+		name     string
+		client   func(*fake.FakeClient)
+		imageRef string
+		want     string
 	}{
 		{
-			name:       "ParseReference error",
-			mockClient: func(c *MockRemoteClient) {},
-			imageRef:   "",
-			want:       "unable to parse container image",
+			name:     "ParseReference error",
+			client:   func(c *fake.FakeClient) {},
+			imageRef: "",
+			want:     "unable to parse container image",
 		},
 		{
 			name: "remote.Get error",
-			mockClient: func(c *MockRemoteClient) {
-				c.On("Get", expectedRef).Return(nil, fmt.Errorf("fetch failed"))
+			client: func(c *fake.FakeClient) {
+				c.On("Head", expectedRef).Return(nil, fmt.Errorf("fetch failed"))
 			},
 			imageRef: imagePullspec,
 			want:     "unable to fetch descriptior for container image",
 		},
 		{
 			name: "error fetching the index",
-			mockClient: func(c *MockRemoteClient) {
-				c.On("Get", expectedRef).Return(&remote.Descriptor{Descriptor: v1.Descriptor{MediaType: "application/vnd.oci.image.index.v1+json"}}, nil)
+			client: func(c *fake.FakeClient) {
+				c.On("Head", expectedRef).Return(&v1.Descriptor{MediaType: types.OCIImageIndex}, nil)
 				c.On("Index", expectedRef).Return(nil, fmt.Errorf("fetch index failed"))
 			},
 			imageRef: imagePullspec,
@@ -390,11 +322,11 @@ func TestExpandImageImage_Errors(t *testing.T) {
 		},
 		{
 			name: "error fetching the index manifests",
-			mockClient: func(c *MockRemoteClient) {
-				c.On("Get", expectedRef).Return(&remote.Descriptor{Descriptor: v1.Descriptor{MediaType: "application/vnd.oci.image.index.v1+json"}}, nil)
-				mockImageIndex := new(mockIndex)
-				mockImageIndex.On("IndexManifest").Return(nil, fmt.Errorf("failed to get IndexManifest"))
-				c.On("Index", expectedRef).Return(mockImageIndex, nil)
+			client: func(c *fake.FakeClient) {
+				c.On("Head", expectedRef).Return(&v1.Descriptor{MediaType: types.OCIImageIndex}, nil)
+				index := gcrfake.FakeImageIndex{}
+				index.IndexManifestReturns(nil, fmt.Errorf("failed to get IndexManifest"))
+				c.On("Index", expectedRef).Return(&index, nil)
 			},
 			imageRef: imagePullspec,
 			want:     "unable to fetch index manifest for container image",
@@ -410,9 +342,9 @@ func TestExpandImageImage_Errors(t *testing.T) {
 			log.StandardLogger().ReplaceHooks(make(log.LevelHooks))
 			log.AddHook(hook)
 
-			mockRemoteClient := &MockRemoteClient{}
-			tc.mockClient(mockRemoteClient)
-			ctx := context.WithValue(ctx, RemoteClientKey{}, mockRemoteClient)
+			client := fake.FakeClient{}
+			tc.client(&client)
+			ctx := oci.WithClient(ctx, &client)
 			snapshot := &app.SnapshotSpec{
 				Components: []app.SnapshotComponent{
 					{

@@ -27,11 +27,10 @@ import (
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/mutate"
-	"github.com/google/go-containerregistry/pkg/v1/remote"
 	log "github.com/sirupsen/logrus"
 	"sigs.k8s.io/yaml"
 
-	"github.com/enterprise-contract/ec-cli/internal/fetchers/oci"
+	"github.com/enterprise-contract/ec-cli/internal/utils/oci"
 )
 
 type extractor interface {
@@ -47,8 +46,8 @@ var supported = []extractor{
 
 var supportedExtensions = []string{".yaml", ".yml", ".json"}
 
-func ImageFiles(ctx context.Context, ref name.Reference, opts ...remote.Option) (map[string]json.RawMessage, error) {
-	img, err := oci.NewClient(ctx).Image(ref, opts...)
+func ImageFiles(ctx context.Context, ref name.Reference) (map[string]json.RawMessage, error) {
+	img, err := oci.NewClient(ctx).Image(ref)
 	if err != nil {
 		return nil, err
 	}

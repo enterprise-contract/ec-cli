@@ -28,14 +28,13 @@ import (
 
 	"github.com/google/go-containerregistry/pkg/name"
 	gcr "github.com/google/go-containerregistry/pkg/v1"
+	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/empty"
-	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/in-toto/in-toto-golang/in_toto"
 	"github.com/in-toto/in-toto-golang/in_toto/slsa_provenance/common"
 	v02 "github.com/in-toto/in-toto-golang/in_toto/slsa_provenance/v0.2"
 	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
-	"github.com/sigstore/cosign/v2/pkg/cosign"
 	"github.com/sigstore/cosign/v2/pkg/oci"
 	"github.com/sigstore/cosign/v2/pkg/oci/static"
 	cosignTypes "github.com/sigstore/cosign/v2/pkg/types"
@@ -44,14 +43,12 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/enterprise-contract/ec-cli/internal/applicationsnapshot"
 	"github.com/enterprise-contract/ec-cli/internal/attestation"
-	"github.com/enterprise-contract/ec-cli/internal/evaluation_target/application_snapshot_image"
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
-	ecoci "github.com/enterprise-contract/ec-cli/internal/fetchers/oci"
-	"github.com/enterprise-contract/ec-cli/internal/fetchers/oci/fake"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
+	ecoci "github.com/enterprise-contract/ec-cli/internal/utils/oci"
+	"github.com/enterprise-contract/ec-cli/internal/utils/oci/fake"
 )
 
 const (
@@ -61,10 +58,13 @@ const (
 	imageRef      = imageRegistry + ":" + imageTag + "@sha256:" + imageDigest
 )
 
+var ref = name.MustParseReference(imageRef)
+var refNoTag = name.MustParseReference(imageRegistry + "@sha256:" + imageDigest)
+
 func TestBuiltinChecks(t *testing.T) {
 	cases := []struct {
 		name               string
-		client             *mockASIClient
+		setup              func(*fake.FakeClient)
 		component          app.SnapshotComponent
 		expectedViolations []evaluator.Result
 		expectedWarnings   []evaluator.Result
@@ -72,10 +72,10 @@ func TestBuiltinChecks(t *testing.T) {
 	}{
 		{
 			name: "simple success",
-			client: &mockASIClient{
-				head:         &gcr.Descriptor{},
-				signatures:   []oci.Signature{validSignature},
-				attestations: []oci.Signature{validAttestation},
+			setup: func(c *fake.FakeClient) {
+				c.On("Head", ref).Return(&gcr.Descriptor{MediaType: types.OCIManifestSchema1}, nil)
+				c.On("VerifyImageSignatures", refNoTag, mock.Anything).Return([]oci.Signature{validSignature}, true, nil)
+				c.On("VerifyImageAttestations", refNoTag, mock.Anything).Return([]oci.Signature{validAttestation}, true, nil)
 			},
 			component:          app.SnapshotComponent{ContainerImage: imageRef},
 			expectedViolations: []evaluator.Result{},
@@ -83,8 +83,10 @@ func TestBuiltinChecks(t *testing.T) {
 			expectedImageURL:   imageRegistry + "@sha256:" + imageDigest,
 		},
 		{
-			name:      "unaccessible image",
-			client:    &mockASIClient{},
+			name: "unaccessible image",
+			setup: func(c *fake.FakeClient) {
+				c.On("Head", ref).Return(nil, nil)
+			},
 			component: app.SnapshotComponent{ContainerImage: imageRef},
 			expectedViolations: []evaluator.Result{
 				{Message: "Image URL is not accessible: no response received", Metadata: map[string]interface{}{
@@ -96,9 +98,10 @@ func TestBuiltinChecks(t *testing.T) {
 		},
 		{
 			name: "no image signatures",
-			client: &mockASIClient{
-				head:         &gcr.Descriptor{},
-				attestations: []oci.Signature{validAttestation},
+			setup: func(c *fake.FakeClient) {
+				c.On("Head", ref).Return(&gcr.Descriptor{MediaType: types.OCIManifestSchema1}, nil)
+				c.On("VerifyImageSignatures", refNoTag, mock.Anything).Return(nil, false, errors.New("no image signatures client error"))
+				c.On("VerifyImageAttestations", refNoTag, mock.Anything).Return([]oci.Signature{validAttestation}, true, nil)
 			},
 			component: app.SnapshotComponent{ContainerImage: imageRef},
 			expectedViolations: []evaluator.Result{
@@ -111,9 +114,10 @@ func TestBuiltinChecks(t *testing.T) {
 		},
 		{
 			name: "no image attestations",
-			client: &mockASIClient{
-				head:       &gcr.Descriptor{},
-				signatures: []oci.Signature{validSignature},
+			setup: func(c *fake.FakeClient) {
+				c.On("Head", ref).Return(&gcr.Descriptor{MediaType: types.OCIManifestSchema1}, nil)
+				c.On("VerifyImageSignatures", refNoTag, mock.Anything).Return(validSignature, true, nil)
+				c.On("VerifyImageAttestations", refNoTag, mock.Anything).Return(nil, false, errors.New("no image attestations client error"))
 			},
 			component: app.SnapshotComponent{ContainerImage: imageRef},
 			expectedViolations: []evaluator.Result{
@@ -136,8 +140,9 @@ func TestBuiltinChecks(t *testing.T) {
 
 			evaluators := []evaluator.Evaluator{}
 
-			ctx = application_snapshot_image.WithClient(ctx, c.client)
 			ctx = withImageConfig(ctx, c.component.ContainerImage)
+			client := ecoci.NewClient(ctx)
+			c.setup(client.(*fake.FakeClient))
 
 			actual, err := ValidateImage(ctx, c.component, p, evaluators, false)
 			assert.NoError(t, err)
@@ -206,34 +211,6 @@ func TestDetermineAttestationTime(t *testing.T) {
 			}
 		})
 	}
-}
-
-type mockASIClient struct {
-	head         *gcr.Descriptor
-	signatures   []oci.Signature
-	attestations []oci.Signature
-}
-
-func (c *mockASIClient) VerifyImageSignatures(ctx context.Context, ref name.Reference, opts *cosign.CheckOpts) ([]oci.Signature, bool, error) {
-	if len(c.signatures) == 0 {
-		return nil, false, errors.New("no image signatures client error")
-	}
-	return c.signatures, false, nil
-}
-
-func (c *mockASIClient) VerifyImageAttestations(ctx context.Context, ref name.Reference, opts *cosign.CheckOpts) ([]oci.Signature, bool, error) {
-	if len(c.attestations) == 0 {
-		return nil, false, errors.New("no image attestations client error")
-	}
-	return c.attestations, false, nil
-}
-
-func (c *mockASIClient) Head(ref name.Reference, opts ...remote.Option) (*gcr.Descriptor, error) {
-	return c.head, nil
-}
-
-func (c *mockASIClient) ResolveDigest(ref name.Reference, opts *cosign.CheckOpts) (string, error) {
-	return "", nil
 }
 
 func sign(statement *in_toto.Statement) oci.Signature {
@@ -312,25 +289,15 @@ func (e *mockEvaluator) CapabilitiesPath() string {
 	return args.String(0)
 }
 
-type MockRemoteClient struct {
-	mock.Mock
-}
-
 func TestEvaluatorLifecycle(t *testing.T) {
 	ctx := context.Background()
-	imageManifestJson := `{"mediaType": "application/vnd.oci.image.manifest.v1+json"}`
-	imageManifestJsonBytes := []byte(imageManifestJson)
-	mockRemoteClient := &MockRemoteClient{}
-	mockRemoteClient.On("Get", mock.Anything).Return(&remote.Descriptor{Manifest: imageManifestJsonBytes}, nil)
-	ctx = context.WithValue(ctx, applicationsnapshot.RemoteClientKey{}, mockRemoteClient)
-
-	ctx = application_snapshot_image.WithClient(ctx, &mockASIClient{
-		head:         &gcr.Descriptor{},
-		signatures:   []oci.Signature{validSignature},
-		attestations: []oci.Signature{validAttestation},
-	})
 	client := fake.FakeClient{}
+	client.On("Head", mock.Anything).Return(&v1.Descriptor{MediaType: types.OCIManifestSchema1}, nil)
+	ctx = ecoci.WithClient(ctx, &client)
 	client.On("Image", name.MustParseReference(imageRegistry+"@sha256:"+imageDigest), mock.Anything).Return(empty.Image, nil)
+	client.On("Head", ref).Return(&gcr.Descriptor{MediaType: types.OCIManifestSchema1}, nil)
+	client.On("VerifyImageSignatures", refNoTag, mock.Anything).Return([]oci.Signature{validSignature}, true, nil)
+	client.On("VerifyImageAttestations", refNoTag, mock.Anything).Return([]oci.Signature{validAttestation}, true, nil)
 	ctx = ecoci.WithClient(ctx, &client)
 
 	component := app.SnapshotComponent{

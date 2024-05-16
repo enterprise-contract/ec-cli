@@ -39,6 +39,8 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/output"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
+	"github.com/enterprise-contract/ec-cli/internal/utils/oci"
+	"github.com/enterprise-contract/ec-cli/internal/utils/oci/fake"
 )
 
 type data struct {
@@ -229,9 +231,9 @@ func Test_determineInputSpec(t *testing.T) {
 			},
 		},
 	}
-	mockRemoteClient := &MockRemoteClient{}
-	commonMockClient(mockRemoteClient)
-	ctx := context.WithValue(context.Background(), applicationsnapshot.RemoteClientKey{}, mockRemoteClient)
+	client := fake.FakeClient{}
+	commonMockClient(&client)
+	ctx := oci.WithClient(context.Background(), &client)
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			s, err := applicationsnapshot.DetermineInputSpec(ctx, applicationsnapshot.Input{
@@ -287,10 +289,10 @@ func Test_ValidateImageCommand(t *testing.T) {
 	validateImageCmd := validateImageCmd(validate)
 	cmd := setUpCobra(validateImageCmd)
 
-	mockRemoteClient := &MockRemoteClient{}
-	commonMockClient(mockRemoteClient)
-	ctx := utils.WithFS(context.TODO(), afero.NewMemMapFs())
-	ctx = context.WithValue(ctx, applicationsnapshot.RemoteClientKey{}, mockRemoteClient)
+	client := fake.FakeClient{}
+	commonMockClient(&client)
+	ctx := utils.WithFS(context.Background(), afero.NewMemMapFs())
+	ctx = oci.WithClient(ctx, &client)
 	cmd.SetContext(ctx)
 
 	effectiveTimeTest := time.Now().UTC().Format(time.RFC3339Nano)
@@ -367,10 +369,10 @@ func Test_ValidateImageCommandImages(t *testing.T) {
 	validateImageCmd := validateImageCmd(validate)
 	cmd := setUpCobra(validateImageCmd)
 
-	mockRemoteClient := &MockRemoteClient{}
-	commonMockClient(mockRemoteClient)
-	ctx := utils.WithFS(context.TODO(), afero.NewMemMapFs())
-	ctx = context.WithValue(ctx, applicationsnapshot.RemoteClientKey{}, mockRemoteClient)
+	client := fake.FakeClient{}
+	commonMockClient(&client)
+	ctx := utils.WithFS(context.Background(), afero.NewMemMapFs())
+	ctx = oci.WithClient(ctx, &client)
 	cmd.SetContext(ctx)
 
 	effectiveTimeTest := time.Now().UTC().Format(time.RFC3339Nano)
@@ -467,10 +469,10 @@ func Test_ValidateImageCommandKeyless(t *testing.T) {
 	})
 	cmd := setUpCobra(validateImageCmd)
 
-	mockRemoteClient := &MockRemoteClient{}
-	commonMockClient(mockRemoteClient)
-	ctx := utils.WithFS(context.TODO(), afero.NewMemMapFs())
-	ctx = context.WithValue(ctx, applicationsnapshot.RemoteClientKey{}, mockRemoteClient)
+	client := fake.FakeClient{}
+	commonMockClient(&client)
+	ctx := utils.WithFS(context.Background(), afero.NewMemMapFs())
+	ctx = oci.WithClient(ctx, &client)
 	cmd.SetContext(ctx)
 
 	cmd.SetArgs(append(rootArgs, []string{
@@ -533,11 +535,11 @@ func Test_ValidateImageCommandYAMLPolicyFile(t *testing.T) {
 	validateImageCmd := validateImageCmd(validate)
 	cmd := setUpCobra(validateImageCmd)
 
-	mockRemoteClient := &MockRemoteClient{}
-	commonMockClient(mockRemoteClient)
+	client := fake.FakeClient{}
+	commonMockClient(&client)
 	fs := afero.NewMemMapFs()
-	ctx := utils.WithFS(context.TODO(), fs)
-	ctx = context.WithValue(ctx, applicationsnapshot.RemoteClientKey{}, mockRemoteClient)
+	ctx := utils.WithFS(context.Background(), fs)
+	ctx = oci.WithClient(ctx, &client)
 	cmd.SetContext(ctx)
 
 	cases := []struct {
@@ -650,11 +652,11 @@ func Test_ValidateImageCommandJSONPolicyFile(t *testing.T) {
 	validateImageCmd := validateImageCmd(validate)
 	cmd := setUpCobra(validateImageCmd)
 
-	mockRemoteClient := &MockRemoteClient{}
-	commonMockClient(mockRemoteClient)
+	client := fake.FakeClient{}
+	commonMockClient(&client)
 	fs := afero.NewMemMapFs()
-	ctx := utils.WithFS(context.TODO(), fs)
-	ctx = context.WithValue(ctx, applicationsnapshot.RemoteClientKey{}, mockRemoteClient)
+	ctx := utils.WithFS(context.Background(), fs)
+	ctx = oci.WithClient(ctx, &client)
 	cmd.SetContext(ctx)
 
 	testPolicyJSON := `sources:
@@ -731,10 +733,10 @@ func Test_ValidateImageCommandExtraData(t *testing.T) {
 
 	fs := afero.NewMemMapFs()
 
-	ctx := utils.WithFS(context.TODO(), fs)
-	mockRemoteClient := &MockRemoteClient{}
-	commonMockClient(mockRemoteClient)
-	ctx = context.WithValue(ctx, applicationsnapshot.RemoteClientKey{}, mockRemoteClient)
+	ctx := utils.WithFS(context.Background(), fs)
+	client := fake.FakeClient{}
+	commonMockClient(&client)
+	ctx = oci.WithClient(ctx, &client)
 
 	cmd.SetContext(ctx)
 
@@ -832,11 +834,11 @@ func Test_ValidateImageCommandEmptyPolicyFile(t *testing.T) {
 	validateImageCmd := validateImageCmd(validate)
 	cmd := setUpCobra(validateImageCmd)
 
-	mockRemoteClient := &MockRemoteClient{}
-	commonMockClient(mockRemoteClient)
+	client := fake.FakeClient{}
+	commonMockClient(&client)
 	fs := afero.NewMemMapFs()
-	ctx := utils.WithFS(context.TODO(), fs)
-	ctx = context.WithValue(ctx, applicationsnapshot.RemoteClientKey{}, mockRemoteClient)
+	ctx := utils.WithFS(context.Background(), fs)
+	ctx = oci.WithClient(ctx, &client)
 	cmd.SetContext(ctx)
 
 	err := afero.WriteFile(fs, "/policy.yaml", []byte(nil), 0644)
@@ -930,10 +932,10 @@ func Test_ValidateErrorCommand(t *testing.T) {
 			validateImageCmd := validateImageCmd(validate)
 			cmd := setUpCobra(validateImageCmd)
 
-			mockRemoteClient := &MockRemoteClient{}
-			commonMockClient(mockRemoteClient)
-			ctx := utils.WithFS(context.TODO(), afero.NewMemMapFs())
-			ctx = context.WithValue(ctx, applicationsnapshot.RemoteClientKey{}, mockRemoteClient)
+			client := fake.FakeClient{}
+			commonMockClient(&client)
+			ctx := utils.WithFS(context.Background(), afero.NewMemMapFs())
+			ctx = oci.WithClient(ctx, &client)
 			cmd.SetContext(ctx)
 
 			cmd.SetArgs(append([]string{"validate", "image"}, c.args...))
@@ -975,10 +977,10 @@ func Test_FailureImageAccessibility(t *testing.T) {
 	cmd := setUpCobra(validateImageCmd)
 	cmd.SilenceUsage = true // The root command is set to prevent usage printouts when running the CLI directly. This setup is temporary workaround.
 
-	mockRemoteClient := &MockRemoteClient{}
-	commonMockClient(mockRemoteClient)
-	ctx := utils.WithFS(context.TODO(), afero.NewMemMapFs())
-	ctx = context.WithValue(ctx, applicationsnapshot.RemoteClientKey{}, mockRemoteClient)
+	client := fake.FakeClient{}
+	commonMockClient(&client)
+	ctx := utils.WithFS(context.Background(), afero.NewMemMapFs())
+	ctx = oci.WithClient(ctx, &client)
 	cmd.SetContext(ctx)
 
 	effectiveTimeTest := time.Now().UTC().Format(time.RFC3339Nano)
@@ -1045,10 +1047,10 @@ func Test_FailureOutput(t *testing.T) {
 	cmd := setUpCobra(validateImageCmd)
 	cmd.SilenceUsage = true // The root command is set to prevent usage printouts when running the CLI directly. This setup is temporary workaround.
 
-	mockRemoteClient := &MockRemoteClient{}
-	commonMockClient(mockRemoteClient)
-	ctx := utils.WithFS(context.TODO(), afero.NewMemMapFs())
-	ctx = context.WithValue(ctx, applicationsnapshot.RemoteClientKey{}, mockRemoteClient)
+	client := fake.FakeClient{}
+	commonMockClient(&client)
+	ctx := utils.WithFS(context.Background(), afero.NewMemMapFs())
+	ctx = oci.WithClient(ctx, &client)
 	cmd.SetContext(ctx)
 
 	effectiveTimeTest := time.Now().UTC().Format(time.RFC3339Nano)
@@ -1119,10 +1121,10 @@ func Test_WarningOutput(t *testing.T) {
 	validateImageCmd := validateImageCmd(validate)
 	cmd := setUpCobra(validateImageCmd)
 
-	mockRemoteClient := &MockRemoteClient{}
-	commonMockClient(mockRemoteClient)
-	ctx := utils.WithFS(context.TODO(), afero.NewMemMapFs())
-	ctx = context.WithValue(ctx, applicationsnapshot.RemoteClientKey{}, mockRemoteClient)
+	client := fake.FakeClient{}
+	commonMockClient(&client)
+	ctx := utils.WithFS(context.Background(), afero.NewMemMapFs())
+	ctx = oci.WithClient(ctx, &client)
 	cmd.SetContext(ctx)
 
 	effectiveTimeTest := time.Now().UTC().Format(time.RFC3339Nano)
@@ -1184,10 +1186,10 @@ func Test_FailureImageAccessibilityNonStrict(t *testing.T) {
 	cmd := setUpCobra(validateImageCmd)
 	cmd.SilenceUsage = true // The root command is set to prevent usage printouts when running the CLI directly. This setup is temporary workaround.
 
-	mockRemoteClient := &MockRemoteClient{}
-	commonMockClient(mockRemoteClient)
-	ctx := utils.WithFS(context.TODO(), afero.NewMemMapFs())
-	ctx = context.WithValue(ctx, applicationsnapshot.RemoteClientKey{}, mockRemoteClient)
+	client := fake.FakeClient{}
+	commonMockClient(&client)
+	ctx := utils.WithFS(context.Background(), afero.NewMemMapFs())
+	ctx = oci.WithClient(ctx, &client)
 	cmd.SetContext(ctx)
 
 	effectiveTimeTest := time.Now().UTC().Format(time.RFC3339Nano)
@@ -1272,10 +1274,9 @@ func TestValidateImageCommand_RunE(t *testing.T) {
 	cmd := setUpCobra(validateImageCmd)
 
 	ctx := utils.WithFS(context.Background(), afero.NewMemMapFs())
-	mockRemoteClient := &MockRemoteClient{}
-	commonMockClient(mockRemoteClient)
-	ctx = context.WithValue(ctx, applicationsnapshot.RemoteClientKey{}, mockRemoteClient)
-
+	client := fake.FakeClient{}
+	commonMockClient(&client)
+	ctx = oci.WithClient(ctx, &client)
 	cmd.SetContext(ctx)
 
 	effectiveTimeTest := time.Now().UTC().Format(time.RFC3339Nano)

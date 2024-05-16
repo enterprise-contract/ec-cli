@@ -24,15 +24,11 @@ import (
 	"fmt"
 	"os"
 	"path"
-	"time"
 
-	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
-	"github.com/google/go-containerregistry/pkg/v1/remote"
 	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
-	ociremote "github.com/sigstore/cosign/v2/pkg/oci/remote"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 
@@ -43,13 +39,9 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/signature"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
+	"github.com/enterprise-contract/ec-cli/internal/utils/oci"
 	"github.com/enterprise-contract/ec-cli/pkg/schema"
 )
-
-// imageRefTransport is used to inject the type of transport to use with the
-// remote.WithTransport function. By default, remote.DefaultTransport is
-// equivalent to http.DefaultTransport, with a reduced timeout and keep-alive
-var imageRefTransport = remote.WithTransport(remote.DefaultTransport)
 
 var attestationSchemas = map[string]*jsonschema.Schema{
 	"https://slsa.dev/provenance/v0.2": schema.SLSA_Provenance_v0_2,
@@ -73,22 +65,6 @@ func (a ApplicationSnapshotImage) GetReference() name.Reference {
 	return a.reference
 }
 
-func createRemoteOptions(ctx context.Context) []remote.Option {
-	backoff := remote.Backoff{
-		Duration: 1.0 * time.Second,
-		Factor:   2.0,
-		Jitter:   0.1,
-		Steps:    3,
-	}
-
-	return []remote.Option{
-		imageRefTransport,
-		remote.WithContext(ctx),
-		remote.WithAuthFromKeychain(authn.DefaultKeychain),
-		remote.WithRetryBackoff(backoff),
-	}
-}
-
 // NewApplicationSnapshotImage returns an ApplicationSnapshotImage struct with reference, checkOpts, and evaluator ready to use.
 func NewApplicationSnapshotImage(ctx context.Context, component app.SnapshotComponent, p policy.Policy) (*ApplicationSnapshotImage, error) {
 	opts, err := p.CheckOpts()
@@ -109,8 +85,7 @@ func NewApplicationSnapshotImage(ctx context.Context, component app.SnapshotComp
 
 // ValidateImageAccess executes the remote.Head method on the ApplicationSnapshotImage image ref
 func (a *ApplicationSnapshotImage) ValidateImageAccess(ctx context.Context) error {
-	opts := createRemoteOptions(ctx)
-	resp, err := NewClient(ctx).Head(a.reference, opts...)
+	resp, err := oci.NewClient(ctx).Head(a.reference)
 	if err != nil {
 		return err
 	}
@@ -139,37 +114,25 @@ func (a *ApplicationSnapshotImage) SetImageURL(url string) error {
 }
 
 func (a *ApplicationSnapshotImage) FetchImageConfig(ctx context.Context) error {
-	opts := createRemoteOptions(ctx)
 	var err error
-	a.configJSON, err = config.FetchImageConfig(ctx, a.reference, opts...)
+	a.configJSON, err = config.FetchImageConfig(ctx, a.reference)
 	return err
 }
 
 func (a *ApplicationSnapshotImage) FetchParentImageConfig(ctx context.Context) error {
-	opts := createRemoteOptions(ctx)
 	var err error
-	a.parentRef, err = config.FetchParentImage(ctx, a.reference, opts...)
+	a.parentRef, err = config.FetchParentImage(ctx, a.reference)
 	if err != nil {
 		return err
 	}
-	a.parentConfigJSON, err = config.FetchImageConfig(ctx, a.parentRef, opts...)
+	a.parentConfigJSON, err = config.FetchImageConfig(ctx, a.parentRef)
 	return err
 }
 
 func (a *ApplicationSnapshotImage) FetchImageFiles(ctx context.Context) error {
-	opts := createRemoteOptions(ctx)
 	var err error
-	a.files, err = files.ImageFiles(ctx, a.reference, opts...)
+	a.files, err = files.ImageFiles(ctx, a.reference)
 	return err
-}
-
-// use NewClient(ctx) for all of these
-func (a *ApplicationSnapshotImage) FetchDigest() (name.Digest, error) {
-	digest, err := ociremote.ResolveDigest(a.reference, a.checkOpts.RegistryClientOpts...)
-	if err != nil {
-		return digest, err
-	}
-	return digest, nil
 }
 
 // ValidateImageSignature executes the cosign.VerifyImageSignature method on the ApplicationSnapshotImage image ref.
@@ -177,7 +140,7 @@ func (a *ApplicationSnapshotImage) ValidateImageSignature(ctx context.Context) e
 	// Set the ClaimVerifier on a shallow *copy* of CheckOpts to avoid unexpected side-effects
 	opts := a.checkOpts
 	opts.ClaimVerifier = cosign.SimpleClaimVerifier
-	signatures, _, err := NewClient(ctx).VerifyImageSignatures(ctx, a.reference, &opts)
+	signatures, _, err := oci.NewClient(ctx).VerifyImageSignatures(a.reference, &opts)
 	if err != nil {
 		return err
 	}
@@ -199,7 +162,7 @@ func (a *ApplicationSnapshotImage) ValidateAttestationSignature(ctx context.Cont
 	opts := a.checkOpts
 	opts.ClaimVerifier = cosign.IntotoSubjectClaimVerifier
 
-	layers, _, err := NewClient(ctx).VerifyImageAttestations(ctx, a.reference, &opts)
+	layers, _, err := oci.NewClient(ctx).VerifyImageAttestations(a.reference, &opts)
 	if err != nil {
 		return err
 	}
@@ -299,7 +262,7 @@ func (a *ApplicationSnapshotImage) Signatures() []signature.EntitySignature {
 }
 
 func (a *ApplicationSnapshotImage) ResolveDigest(ctx context.Context) (string, error) {
-	digest, err := NewClient(ctx).ResolveDigest(a.reference, &a.checkOpts)
+	digest, err := oci.NewClient(ctx).ResolveDigest(a.reference)
 	if err != nil {
 		return "", err
 	}
