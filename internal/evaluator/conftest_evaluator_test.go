@@ -263,36 +263,59 @@ func TestConftestEvaluatorCapabilities(t *testing.T) {
 	assert.Equal(t, []string{""}, capabilities.AllowNet)
 }
 func TestConftestEvaluatorEvaluateNoSuccessWarningsOrFailures(t *testing.T) {
-	results := []Outcome{
+	tests := []struct {
+		name         string
+		results      []Outcome
+		sourceConfig *ecc.SourceConfig
+	}{
 		{
-			Failures:  []Result{},
-			Warnings:  []Result{},
-			Successes: []Result{},
+			name: "no results",
+			results: []Outcome{
+				{
+					Failures:  []Result{},
+					Warnings:  []Result{},
+					Successes: []Result{},
+				},
+			},
+		},
+		{
+			name: "no included results",
+			results: []Outcome{
+				{
+					Failures:  []Result{{Metadata: map[string]any{"code": "breakfast.spam"}}},
+					Warnings:  []Result{{Metadata: map[string]any{"code": "lunch.spam"}}},
+					Successes: []Result{{Metadata: map[string]any{"code": "dinner.spam"}}},
+				},
+			},
+			sourceConfig: &ecc.SourceConfig{
+				Include: []string{"brunch.spam"},
+			},
 		},
 	}
 
-	r := mockTestRunner{}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := mockTestRunner{}
+			dl := mockDownloader{}
+			inputs := []string{"inputs"}
+			ctx := setupTestContext(&r, &dl)
 
-	dl := mockDownloader{}
+			r.On("Run", ctx, inputs).Return(tt.results, Data(nil), nil)
 
-	inputs := []string{"inputs"}
+			p, err := policy.NewOfflinePolicy(ctx, policy.Now)
+			assert.NoError(t, err)
 
-	ctx := setupTestContext(&r, &dl)
+			evaluator, err := NewConftestEvaluator(ctx, []source.PolicySource{
+				testPolicySource{},
+			}, p, ecc.Source{Config: tt.sourceConfig})
 
-	r.On("Run", ctx, inputs).Return(results, Data(nil), nil)
-
-	p, err := policy.NewOfflinePolicy(ctx, policy.Now)
-	assert.NoError(t, err)
-
-	evaluator, err := NewConftestEvaluator(ctx, []source.PolicySource{
-		testPolicySource{},
-	}, p, ecc.Source{})
-
-	assert.NoError(t, err)
-	actualResults, data, err := evaluator.Evaluate(ctx, inputs)
-	assert.ErrorContains(t, err, "no successes, warnings, or failures, check input")
-	assert.Nil(t, actualResults)
-	assert.Nil(t, data)
+			assert.NoError(t, err)
+			actualResults, data, err := evaluator.Evaluate(ctx, inputs)
+			assert.ErrorContains(t, err, "no successes, warnings, or failures, check input")
+			assert.Nil(t, actualResults)
+			assert.Nil(t, data)
+		})
+	}
 }
 
 func TestConftestEvaluatorIncludeExclude(t *testing.T) {
