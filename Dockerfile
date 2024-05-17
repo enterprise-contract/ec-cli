@@ -59,12 +59,12 @@ FROM registry.access.redhat.com/ubi9/ubi-minimal:9.4@sha256:2636170dc55a0931d013
 ARG TARGETOS
 ARG TARGETARCH
 
-COPY --from=download /download/cosign /usr/bin/cosign
+COPY --from=download /download/cosign /usr/local/bin/cosign
 RUN cosign version
 
 RUN microdnf -y --nodocs --setopt=keepcache=0 install git-core jq
 
 # Copy the one ec binary that can run in this container
-COPY --from=build "/build/dist/ec_${TARGETOS}_${TARGETARCH}" /usr/bin/ec
+COPY --from=build "/build/dist/ec_${TARGETOS}_${TARGETARCH}" /usr/local/bin/ec
 
-ENTRYPOINT ["/usr/bin/ec"]
+ENTRYPOINT ["/usr/local/bin/ec"]
