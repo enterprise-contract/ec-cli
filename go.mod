@@ -6,7 +6,7 @@ require (
 	cuelang.org/go v0.8.2
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/Maldris/go-billy-afero v0.0.0-20200815120323-e9d3de59c99a
-	github.com/enterprise-contract/enterprise-contract-controller/api v0.1.44
+	github.com/enterprise-contract/enterprise-contract-controller/api v0.1.46
 	github.com/evanphx/json-patch v5.9.0+incompatible
 	github.com/gkampitakis/go-snaps v0.5.4
 	github.com/go-git/go-git/v5 v5.12.0
@@ -22,7 +22,7 @@ require (
 	github.com/leanovate/gopter v0.2.11
 	github.com/open-policy-agent/conftest v0.52.0
 	github.com/open-policy-agent/opa v0.64.1
-	github.com/package-url/packageurl-go v0.1.2
+	github.com/package-url/packageurl-go v0.1.3
 	github.com/qri-io/jsonpointer v0.1.1
 	github.com/redhat-appstudio/application-api v0.0.0-20231026192857-89515ad2504f
 	github.com/santhosh-tekuri/jsonschema/v5 v5.3.1
@@ -39,9 +39,9 @@ require (
 	github.com/tektoncd/pipeline v0.54.0
 	golang.org/x/exp v0.0.0-20231214170342-aacd6d4b4611
 	golang.org/x/net v0.25.0
-	k8s.io/apiextensions-apiserver v0.29.4
-	k8s.io/apimachinery v0.29.4
-	k8s.io/client-go v0.29.4
+	k8s.io/apiextensions-apiserver v0.29.5
+	k8s.io/apimachinery v0.29.5
+	k8s.io/client-go v0.29.5
 	k8s.io/klog/v2 v2.120.1
 	k8s.io/kube-openapi v0.0.0-20231010175941-2dd684a91f00
 	sigs.k8s.io/yaml v1.4.0
@@ -330,13 +330,13 @@ require (
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/api v0.29.4 // indirect
+	k8s.io/api v0.29.5 // indirect
 	k8s.io/utils v0.0.0-20240102154912-e7106e64919e // indirect
 	knative.dev/pkg v0.0.0-20231023150739-56bfe0dd9626 // indirect
 	muzzammil.xyz/jsonc v1.0.0 // indirect
 	olympos.io/encoding/edn v0.0.0-20201019073823-d3554ca0b0a3 // indirect
 	oras.land/oras-go/v2 v2.4.0 // indirect
-	sigs.k8s.io/controller-runtime v0.17.3 // indirect
+	sigs.k8s.io/controller-runtime v0.17.4 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/release-utils v0.7.7 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
