@@ -150,7 +150,7 @@ spec:
         - name: name
           value: git-clone-oci-ta
         - name: bundle
-          value: quay.io/redhat-appstudio-tekton-catalog/task-git-clone-oci-ta:0.1@sha256:09f285d6239c36f86296b17e9b0fbff8e23dffe247a1012e47876ee081752732
+          value: quay.io/redhat-appstudio-tekton-catalog/task-git-clone-oci-ta:0.1@sha256:c18dc89b0c35f425a5dd10aa48a7e5177deb6addcc06db99646df17fcdde5a2d
         - name: kind
           value: task
         resolver: bundles
@@ -166,11 +166,11 @@ spec:
       params:
       - name: input
         value: $(params.prefetch-input)
-      - name: source-artifact
-        value: $(tasks.clone-repository.results.sourceArtifact)
-      - name: oci-storage
+      - name: SOURCE_ARTIFACT
+        value: $(tasks.clone-repository.results.SOURCE_ARTIFACT)
+      - name: ociStorage
         value: $(params.output-image).prefetch
-      - name: oci-artifact-expires-after
+      - name: ociArtifactExpiresAfter
         value: $(params.image-expires-after)
       runAfter:
       - clone-repository
@@ -179,7 +179,7 @@ spec:
         - name: name
           value: prefetch-dependencies-oci-ta
         - name: bundle
-          value: quay.io/redhat-appstudio-tekton-catalog/task-prefetch-dependencies-oci-ta:0.1@sha256:591f890cc97885457c7460cf142850628770f37d4e1a801fec2c78d004e324ec
+          value: quay.io/redhat-appstudio-tekton-catalog/task-prefetch-dependencies-oci-ta:0.1@sha256:fe351ee58ed07d7455b32a01dddecf7512dc56506b6260c17fa9a1b4513d02dc
         - name: kind
           value: task
         resolver: bundles
@@ -202,9 +202,9 @@ spec:
       - name: BUILD_ARGS_FILE
         value: "$(params.build-args-file)"
       - name: SOURCE_ARTIFACT
-        value: $(tasks.prefetch-dependencies.results.source-artifact)
+        value: $(tasks.prefetch-dependencies.results.SOURCE_ARTIFACT)
       - name: CACHI2_ARTIFACT
-        value: $(tasks.prefetch-dependencies.results.cachi2-artifact)
+        value: $(tasks.prefetch-dependencies.results.CACHI2_ARTIFACT)
       runAfter:
       - prefetch-dependencies
       taskRef:
@@ -228,9 +228,9 @@ spec:
       - name: BASE_IMAGES
         value: $(tasks.build-container.results.BASE_IMAGES_DIGESTS)
       - name: SOURCE_ARTIFACT
-        value: $(tasks.prefetch-dependencies.results.source-artifact)
+        value: $(tasks.prefetch-dependencies.results.SOURCE_ARTIFACT)
       - name: CACHI2_ARTIFACT
-        value: $(tasks.prefetch-dependencies.results.cachi2-artifact)
+        value: $(tasks.prefetch-dependencies.results.CACHI2_ARTIFACT)
       runAfter:
       - build-container
       taskRef:
@@ -320,7 +320,7 @@ spec:
     - name: sast-snyk-check
       params:
       - name: SOURCE_ARTIFACT
-        value: $(tasks.prefetch-dependencies.results.source-artifact)
+        value: $(tasks.prefetch-dependencies.results.SOURCE_ARTIFACT)
       runAfter:
       - clone-repository
       taskRef:
