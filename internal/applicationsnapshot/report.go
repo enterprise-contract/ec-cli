@@ -18,6 +18,8 @@ package applicationsnapshot
 
 import (
 	"bytes"
+	"embed"
+	_ "embed"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
@@ -33,6 +35,7 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/format"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/signature"
+	"github.com/enterprise-contract/ec-cli/internal/utils"
 	"github.com/enterprise-contract/ec-cli/internal/version"
 )
 
@@ -96,6 +99,7 @@ type TestReport struct {
 const (
 	JSON            = "json"
 	YAML            = "yaml"
+	Text            = "text"
 	AppStudio       = "appstudio"
 	Summary         = "summary"
 	SummaryMarkdown = "summary-markdown"
@@ -111,6 +115,7 @@ const (
 var OutputFormats = []string{
 	JSON,
 	YAML,
+	Text,
 	AppStudio,
 	Summary,
 	SummaryMarkdown,
@@ -188,6 +193,8 @@ func (r *Report) toFormat(format string) (data []byte, err error) {
 		data, err = json.Marshal(r)
 	case YAML:
 		data, err = yaml.Marshal(r)
+	case Text:
+		data, err = generateTextReport(r)
 	case AppStudio, HACBS:
 		data, err = json.Marshal(r.toAppstudioReport())
 	case Summary:
@@ -297,6 +304,13 @@ func generateMarkdownSummary(r *Report) ([]byte, error) {
 	writeMarkdownField(&markdownBuffer, "Warnings", totalWarnings, writeIcon(totalWarnings == 0))
 	writeMarkdownField(&markdownBuffer, "Result", "", writeIcon(r.Success))
 	return markdownBuffer.Bytes(), nil
+}
+
+//go:embed templates/*.tmpl
+var efs embed.FS
+
+func generateTextReport(r *Report) ([]byte, error) {
+	return utils.RenderFromTemplatesWithMain(r, "text_report.tmpl", efs)
 }
 
 func writeMarkdownField(buffer *bytes.Buffer, name string, value any, icon string) {

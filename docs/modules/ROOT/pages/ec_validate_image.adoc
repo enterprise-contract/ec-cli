@@ -133,7 +133,7 @@ rule. (Default: false)
 -j, --json-input:: DEPRECATED - use --images: JSON representation of an ApplicationSnapshot Spec
 --output:: write output to a file in a specific format. Use empty string path for stdout.
 May be used multiple times. Possible formats are:
-json, yaml, appstudio, summary, summary-markdown, junit, data, attestation, policy-input, vsa.
+json, yaml, text, appstudio, summary, summary-markdown, junit, data, attestation, policy-input, vsa.
  (Default: [])
 -o, --output-file:: [DEPRECATED] write output to a file. Use empty string for stdout, default behavior
 -p, --policy:: Policy configuration as:
