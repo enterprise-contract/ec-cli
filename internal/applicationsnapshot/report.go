@@ -94,19 +94,32 @@ type TestReport struct {
 
 // Possible formats the report can be written as.
 const (
-	SummaryMarkdown = "summary-markdown"
 	JSON            = "json"
 	YAML            = "yaml"
-	APPSTUDIO       = "appstudio"
-	// Deprecated. Remove when hacbs output is removed
-	HACBS       = "hacbs"
-	Summary     = "summary"
-	JUNIT       = "junit"
-	DATA        = "data"
-	ATTESTATION = "attestation"
-	PolicyInput = "policy-input"
-	VSA         = "vsa"
+	AppStudio       = "appstudio"
+	Summary         = "summary"
+	SummaryMarkdown = "summary-markdown"
+	JUnit           = "junit"
+	Data            = "data"
+	Attestation     = "attestation"
+	PolicyInput     = "policy-input"
+	VSA             = "vsa"
+	// Deprecated old version of appstudio. Remove some day.
+	HACBS = "hacbs"
 )
+
+var OutputFormats = []string{
+	JSON,
+	YAML,
+	AppStudio,
+	Summary,
+	SummaryMarkdown,
+	JUnit,
+	Data,
+	Attestation,
+	PolicyInput,
+	VSA,
+}
 
 // WriteReport returns a new instance of Report representing the state of
 // components from the snapshot.
@@ -171,24 +184,21 @@ func (r Report) WriteAll(targets []string, p format.TargetParser) (allErrors err
 // toFormat converts the report into the given format.
 func (r *Report) toFormat(format string) (data []byte, err error) {
 	switch format {
-	case SummaryMarkdown:
-		data, err = generateMarkdownSummary(r)
 	case JSON:
 		data, err = json.Marshal(r)
 	case YAML:
 		data, err = yaml.Marshal(r)
+	case AppStudio, HACBS:
+		data, err = json.Marshal(r.toAppstudioReport())
 	case Summary:
 		data, err = json.Marshal(r.toSummary())
-	case APPSTUDIO:
-		data, err = json.Marshal(r.toAppstudioReport())
-	// Deprecated. Remove when hacbs output is removed
-	case HACBS:
-		data, err = json.Marshal(r.toAppstudioReport())
-	case JUNIT:
+	case SummaryMarkdown:
+		data, err = generateMarkdownSummary(r)
+	case JUnit:
 		data, err = xml.Marshal(r.toJUnit())
-	case DATA:
+	case Data:
 		data, err = yaml.Marshal(r.Data)
-	case ATTESTATION:
+	case Attestation:
 		data, err = r.renderAttestations()
 	case PolicyInput:
 		data = bytes.Join(r.PolicyInput, []byte("\n"))
