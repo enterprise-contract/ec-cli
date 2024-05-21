@@ -83,7 +83,7 @@ func passWarnFailChooser(color string, choices []string) string {
 }
 
 func ansiColorText(code string, str string) string {
-	if code == "" {
+	if code == "" || !ColorEnabled {
 		return str
 	}
 	return fmt.Sprintf("\x1b[%sm%s\x1b[0m", code, str)

@@ -377,7 +377,7 @@ Feature: evaluate enterprise contract
       ]
     }
     """
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/image --policy acceptance/ec-policy --rekor-url ${REKOR} --public-key ${known_PUBLIC_KEY} --info --show-successes --output text=${TMPDIR}/output.txt --output json"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/image --policy acceptance/ec-policy --rekor-url ${REKOR} --public-key ${known_PUBLIC_KEY} --info --show-successes --output text=${TMPDIR}/output.txt --color --output json"
     Then the exit status should be 1
     Then the output should match the snapshot
     # Throw in some test coverage for `--output text` here

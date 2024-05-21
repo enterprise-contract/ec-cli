@@ -115,6 +115,7 @@ Use a regular expression to match certificate attributes.
 --certificate-identity-regexp:: Regular expression for the URL of the certificate identity for keyless verification
 --certificate-oidc-issuer:: URL of the certificate OIDC issuer for keyless verification
 --certificate-oidc-issuer-regexp:: Regular expresssion for the URL of the certificate OIDC issuer for keyless verification
+--color:: Enable color when using text output even when the current terminal does not support it (Default: false)
 --effective-time:: Run policy checks with the provided time. Useful for testing rules with
 effective dates in the future. The value can be "now" (default) - for
 current time, "attestation" - for time from the youngest attestation, or
@@ -131,6 +132,7 @@ a RFC3339 formatted value, e.g. 2022-11-18T00:00:00Z.
 violations, include the title and the description of the failed policy
 rule. (Default: false)
 -j, --json-input:: DEPRECATED - use --images: JSON representation of an ApplicationSnapshot Spec
+--no-color:: Disable color when using text output even when the current terminal supports it (Default: false)
 --output:: write output to a file in a specific format. Use empty string path for stdout.
 May be used multiple times. Possible formats are:
 json, yaml, text, appstudio, summary, summary-markdown, junit, data, attestation, policy-input, vsa.
