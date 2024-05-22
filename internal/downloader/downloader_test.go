@@ -78,7 +78,6 @@ func TestDownloader_Download(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 func TestIsSecure(t *testing.T) {

@@ -261,7 +261,6 @@ func setupSigs(ctx context.Context, vars map[string]string, environment []string
 		if err := setVar(n, v); err != nil {
 			return environment, vars, err
 		}
-
 	}
 
 	return environment, vars, nil

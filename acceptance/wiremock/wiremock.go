@@ -50,11 +50,13 @@ const (
 // we re-expose functions from the wiremock package, add others
 // as needed
 
-var Get = wiremock.Get
-var Post = wiremock.Post
-var URLPathEqualTo = wiremock.URLPathEqualTo
-var MatchingJsonPath = wiremock.MatchingJsonPath
-var NewResponse = wiremock.NewResponse
+var (
+	Get              = wiremock.Get
+	Post             = wiremock.Post
+	URLPathEqualTo   = wiremock.URLPathEqualTo
+	MatchingJsonPath = wiremock.MatchingJsonPath
+	NewResponse      = wiremock.NewResponse
+)
 
 type client struct {
 	*wiremock.Client

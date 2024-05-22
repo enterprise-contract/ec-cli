@@ -47,7 +47,7 @@ type imageValidationFunc func(context.Context, app.SnapshotComponent, policy.Pol
 var newConftestEvaluator = evaluator.NewConftestEvaluator
 
 func validateImageCmd(validate imageValidationFunc) *cobra.Command {
-	var data = struct {
+	data := struct {
 		certificateIdentity         string
 		certificateIdentityRegExp   string
 		certificateOIDCIssuer       string
@@ -222,10 +222,10 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 			} else {
 				// inject extra variables into rule data per source
 				if len(data.extraRuleData) > 0 {
-					var policySpec = p.Spec()
-					var sources = policySpec.Sources
+					policySpec := p.Spec()
+					sources := policySpec.Sources
 					for i := range sources {
-						var source = sources[i]
+						source := sources[i]
 						var rule_data_raw []byte
 						unmarshaled := make(map[string]interface{})
 

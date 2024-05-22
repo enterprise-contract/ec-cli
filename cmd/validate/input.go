@@ -39,7 +39,7 @@ import (
 type InputValidationFunc func(context.Context, string, policy.Policy, bool) (*output.Output, error)
 
 func validateInputCmd(validate InputValidationFunc) *cobra.Command {
-	var data = struct {
+	data := struct {
 		effectiveTime       string
 		filePaths           []string
 		info                bool
@@ -101,7 +101,6 @@ func validateInputCmd(validate InputValidationFunc) *cobra.Command {
 			return
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-
 			type result struct {
 				err         error
 				input       input.Input

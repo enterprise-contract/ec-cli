@@ -32,7 +32,6 @@ import (
 )
 
 func TestRedHatManifest(t *testing.T) {
-
 	malformedImage := fake.FakeImage{}
 	kaboom := errors.New("kaboom!")
 	malformedImage.ConfigFileReturns(nil, kaboom)

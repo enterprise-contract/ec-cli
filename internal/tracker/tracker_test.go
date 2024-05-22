@@ -70,8 +70,10 @@ var sampleHashThree = v1.Hash{
 	Hex:       "284e3029cce3ae5ee0b05866100e300046359f53ae4c77fe6b34c05aa7a72cee",
 }
 
-var expectedEffectiveOn = effectiveOn().Format(time.RFC3339)
-var expectedExpiresOn = expectedEffectiveOn
+var (
+	expectedEffectiveOn = effectiveOn().Format(time.RFC3339)
+	expectedExpiresOn   = expectedEffectiveOn
+)
 
 var (
 	todayUTC    = time.Now().UTC()
@@ -376,7 +378,6 @@ func TestTrack(t *testing.T) {
 			require.Equal(t, tt.output, string(output))
 		})
 	}
-
 }
 
 type fakeClient struct {

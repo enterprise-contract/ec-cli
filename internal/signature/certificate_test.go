@@ -43,7 +43,6 @@ func TestAddCertificateMetadata(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-
 			p, _ := pem.Decode(c.cert)
 			cer, err := x509.ParseCertificate(p.Bytes)
 			require.NoError(t, err)
@@ -53,7 +52,6 @@ func TestAddCertificateMetadata(t *testing.T) {
 			assert.NoError(t, err)
 
 			snaps.MatchSnapshot(t, metadata)
-
 		})
 	}
 }

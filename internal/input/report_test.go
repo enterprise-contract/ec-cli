@@ -239,7 +239,6 @@ func Test_ReportSummary(t *testing.T) {
 			assert.Equal(t, tc.want, report.toSummary())
 		})
 	}
-
 }
 
 func testInputsFor(filePaths []string) []Input {

@@ -31,8 +31,10 @@ import (
 
 const DirectoryPermissions = 0755
 
-var man = flag.String("man", "", "Location of the generated Man files")
-var adoc = flag.String("adoc", "", "Location of the generated Asciidoc files")
+var (
+	man  = flag.String("man", "", "Location of the generated Man files")
+	adoc = flag.String("adoc", "", "Location of the generated Asciidoc files")
+)
 
 func init() {
 	cmd.RootCmd.AddCommand(test.TestCmd)

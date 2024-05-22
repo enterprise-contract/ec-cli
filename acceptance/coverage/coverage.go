@@ -219,7 +219,6 @@ func parseMainGoFile(fset *token.FileSet, filePath string) (*ast.File, error) {
 // heurestics for resolving conflicts. Conflicts will have to be solved by a
 // human.
 func mergeASTTrees(fset *token.FileSet, t1 *ast.File, t2 *ast.File) (*bytes.Buffer, error) {
-
 	// Merge the imports from both files
 	ast.Inspect(t1, func(n ast.Node) bool {
 		switch x := n.(type) {
@@ -241,7 +240,6 @@ func mergeASTTrees(fset *token.FileSet, t1 *ast.File, t2 *ast.File) (*bytes.Buff
 			}
 		}
 		return true
-
 	})
 
 	// Merge the declarations from t2 into t1

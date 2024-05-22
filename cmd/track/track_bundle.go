@@ -28,12 +28,14 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
-type trackBundleFn func(context.Context, []string, []byte, bool, bool) ([]byte, error)
-type pullImageFn func(context.Context, string) ([]byte, error)
-type pushImageFn func(context.Context, string, []byte, string) error
+type (
+	trackBundleFn func(context.Context, []string, []byte, bool, bool) ([]byte, error)
+	pullImageFn   func(context.Context, string) ([]byte, error)
+	pushImageFn   func(context.Context, string, []byte, string) error
+)
 
 func trackBundleCmd(track trackBundleFn, pullImage pullImageFn, pushImage pushImageFn) *cobra.Command {
-	var params = struct {
+	params := struct {
 		bundles []string
 		gits    []string
 		input   string

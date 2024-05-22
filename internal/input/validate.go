@@ -33,7 +33,6 @@ import (
 var inputFile = input.NewInput
 
 func ValidateInput(ctx context.Context, fpath string, policy policy.Policy, detailed bool) (*output.Output, error) {
-
 	log.Debugf("Current input filePath: %q", fpath)
 	inputFiles, err := detectInput(ctx, fpath)
 	if err != nil {
@@ -41,7 +40,6 @@ func ValidateInput(ctx context.Context, fpath string, policy policy.Policy, deta
 	}
 
 	p, err := inputFile(ctx, inputFiles, policy)
-
 	if err != nil {
 		log.Debug("Failed to create input!")
 		return nil, err

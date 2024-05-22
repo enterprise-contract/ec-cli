@@ -158,6 +158,7 @@ func Test_hasPrefix(t *testing.T) {
 		})
 	}
 }
+
 func TestCreateWorkDir(t *testing.T) {
 	temp, err := CreateWorkDir(afero.NewMemMapFs())
 

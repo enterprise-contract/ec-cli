@@ -30,7 +30,7 @@ import (
 type policyValidationFunc func(context.Context, string) error
 
 func ValidatePolicyCmd(validate policyValidationFunc) *cobra.Command {
-	var data = struct {
+	data := struct {
 		policyConfiguration string
 		output              []string
 		strict              bool
@@ -61,7 +61,6 @@ func ValidatePolicyCmd(validate policyValidationFunc) *cobra.Command {
 			data.policyConfiguration = policyConfiguration
 
 			return
-
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// Policy conforms to the schema.

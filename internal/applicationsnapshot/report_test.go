@@ -255,7 +255,6 @@ func Test_GenerateMarkdownSummary(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-
 			ctx := context.Background()
 			report, err := NewReport(c.snapshot, c.components, createTestPolicy(t, ctx), nil, nil)
 			assert.NoError(t, err)
@@ -509,7 +508,6 @@ func Test_ReportSummary(t *testing.T) {
 			assert.Equal(t, tc.want, report.toSummary())
 		})
 	}
-
 }
 
 func Test_ReportAppstudio(t *testing.T) {

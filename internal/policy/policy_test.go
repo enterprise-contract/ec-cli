@@ -58,7 +58,8 @@ func TestNewPolicy(t *testing.T) {
 			name:      "simple JSON inline",
 			policyRef: toJson(&ecc.EnterpriseContractPolicySpec{PublicKey: utils.TestPublicKey}),
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: utils.TestPublicKey}, effectiveTime: &timeNow, choosenTime: timeNowStr},
+				PublicKey: utils.TestPublicKey,
+			}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 		{
 			name: "k8s JSON inline",
@@ -71,13 +72,15 @@ func TestNewPolicy(t *testing.T) {
 				},
 			}),
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: utils.TestPublicKey}, effectiveTime: &timeNow, choosenTime: timeNowStr},
+				PublicKey: utils.TestPublicKey,
+			}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 		{
 			name:      "simple YAML inline",
 			policyRef: toYAML(&ecc.EnterpriseContractPolicySpec{PublicKey: utils.TestPublicKey}),
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: utils.TestPublicKey}, effectiveTime: &timeNow, choosenTime: timeNowStr},
+				PublicKey: utils.TestPublicKey,
+			}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 		{
 			name: "k8s YAML inline",
@@ -90,54 +93,62 @@ func TestNewPolicy(t *testing.T) {
 				},
 			}),
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: utils.TestPublicKey}, effectiveTime: &timeNow, choosenTime: timeNowStr},
+				PublicKey: utils.TestPublicKey,
+			}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 		{
 			name:      "JSON inline with public key overwrite",
 			policyRef: toJson(&ecc.EnterpriseContractPolicySpec{PublicKey: "ignored"}),
 			publicKey: utils.TestPublicKey,
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: utils.TestPublicKey}, effectiveTime: &timeNow, choosenTime: timeNowStr},
+				PublicKey: utils.TestPublicKey,
+			}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 		{
 			name:      "YAML inline with public key overwrite",
 			policyRef: toYAML(&ecc.EnterpriseContractPolicySpec{PublicKey: "ignored"}),
 			publicKey: utils.TestPublicKey,
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: utils.TestPublicKey}, effectiveTime: &timeNow, choosenTime: timeNowStr},
+				PublicKey: utils.TestPublicKey,
+			}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 		{
 			name:      "JSON inline with rekor URL",
 			policyRef: toJson(&ecc.EnterpriseContractPolicySpec{PublicKey: utils.TestPublicKey, RekorUrl: utils.TestRekorURL}),
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: utils.TestPublicKey, RekorUrl: utils.TestRekorURL}, effectiveTime: &timeNow, choosenTime: timeNowStr},
+				PublicKey: utils.TestPublicKey, RekorUrl: utils.TestRekorURL,
+			}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 		{
 			name:      "YAML inline with rekor URL",
 			policyRef: toYAML(&ecc.EnterpriseContractPolicySpec{PublicKey: utils.TestPublicKey, RekorUrl: utils.TestRekorURL}),
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: utils.TestPublicKey, RekorUrl: utils.TestRekorURL}, effectiveTime: &timeNow, choosenTime: timeNowStr},
+				PublicKey: utils.TestPublicKey, RekorUrl: utils.TestRekorURL,
+			}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 		{
 			name:      "JSON inline with rekor URL overwrite",
 			policyRef: toJson(&ecc.EnterpriseContractPolicySpec{PublicKey: utils.TestPublicKey, RekorUrl: "ignored"}),
 			rekorUrl:  utils.TestRekorURL,
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: utils.TestPublicKey, RekorUrl: utils.TestRekorURL}, effectiveTime: &timeNow, choosenTime: timeNowStr},
+				PublicKey: utils.TestPublicKey, RekorUrl: utils.TestRekorURL,
+			}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 		{
 			name:      "YAML inline with rekor URL overwrite",
 			policyRef: toYAML(&ecc.EnterpriseContractPolicySpec{PublicKey: utils.TestPublicKey, RekorUrl: "ignored"}),
 			rekorUrl:  utils.TestRekorURL,
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: utils.TestPublicKey, RekorUrl: utils.TestRekorURL}, effectiveTime: &timeNow, choosenTime: timeNowStr},
+				PublicKey: utils.TestPublicKey, RekorUrl: utils.TestRekorURL,
+			}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 		{
 			name:        "simple k8sPath",
 			policyRef:   "ec-policy",
 			k8sResource: &ecc.EnterpriseContractPolicySpec{PublicKey: utils.TestPublicKey},
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: utils.TestPublicKey}, effectiveTime: &timeNow, choosenTime: timeNowStr},
+				PublicKey: utils.TestPublicKey,
+			}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 		{
 			name:        "k8sPath with public key overwrite",
@@ -145,14 +156,16 @@ func TestNewPolicy(t *testing.T) {
 			k8sResource: &ecc.EnterpriseContractPolicySpec{PublicKey: "ignored"},
 			publicKey:   utils.TestPublicKey,
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: utils.TestPublicKey}, effectiveTime: &timeNow, choosenTime: timeNowStr},
+				PublicKey: utils.TestPublicKey,
+			}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 		{
 			name:        "k8sPath with rekor URL",
 			policyRef:   "ec-policy",
 			k8sResource: &ecc.EnterpriseContractPolicySpec{PublicKey: utils.TestPublicKey, RekorUrl: utils.TestRekorURL},
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: utils.TestPublicKey, RekorUrl: utils.TestRekorURL}, effectiveTime: &timeNow, choosenTime: timeNowStr},
+				PublicKey: utils.TestPublicKey, RekorUrl: utils.TestRekorURL,
+			}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 		{
 			name:        "k8sPath with rekor overwrite",
@@ -160,13 +173,15 @@ func TestNewPolicy(t *testing.T) {
 			k8sResource: &ecc.EnterpriseContractPolicySpec{PublicKey: utils.TestPublicKey},
 			rekorUrl:    utils.TestRekorURL,
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: utils.TestPublicKey, RekorUrl: utils.TestRekorURL}, effectiveTime: &timeNow, choosenTime: timeNowStr},
+				PublicKey: utils.TestPublicKey, RekorUrl: utils.TestRekorURL,
+			}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 		{
 			name:      "default empty policy",
 			publicKey: utils.TestPublicKey,
 			expected: &policy{EnterpriseContractPolicySpec: ecc.EnterpriseContractPolicySpec{
-				PublicKey: utils.TestPublicKey}, effectiveTime: &timeNow, choosenTime: timeNowStr},
+				PublicKey: utils.TestPublicKey,
+			}, effectiveTime: &timeNow, choosenTime: timeNowStr},
 		},
 	}
 
@@ -450,7 +465,8 @@ func TestPublicKeyPEM(t *testing.T) {
 				return NewPolicy(ctx, Options{
 					EffectiveTime: Now,
 					Identity: cosign.Identity{
-						Subject: "my-subject", Issuer: "my-issuer"},
+						Subject: "my-subject", Issuer: "my-issuer",
+					},
 				})
 			},
 		},
@@ -652,6 +668,7 @@ func toYAML(policy any) string {
 	}
 	return string(inline)
 }
+
 func TestIsConformant(t *testing.T) {
 	cases := []struct {
 		name       string
@@ -698,6 +715,7 @@ func TestIsConformant(t *testing.T) {
 		})
 	}
 }
+
 func TestJsonSchemaFromPolicySpec(t *testing.T) {
 	ecp := &ecc.EnterpriseContractPolicySpec{
 		PublicKey: "testPublicKey",

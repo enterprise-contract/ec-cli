@@ -58,8 +58,10 @@ const (
 	imageRef      = imageRegistry + ":" + imageTag + "@sha256:" + imageDigest
 )
 
-var ref = name.MustParseReference(imageRef)
-var refNoTag = name.MustParseReference(imageRegistry + "@sha256:" + imageDigest)
+var (
+	ref      = name.MustParseReference(imageRef)
+	refNoTag = name.MustParseReference(imageRegistry + "@sha256:" + imageDigest)
+)
 
 func TestBuiltinChecks(t *testing.T) {
 	cases := []struct {

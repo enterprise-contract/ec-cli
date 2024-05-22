@@ -81,7 +81,6 @@ func (k *kindCluster) createPolicyObject(ctx context.Context, specification stri
 		},
 		Spec: policySpec,
 	}, nil
-
 }
 
 // createPolicy creates the EnterpriseContractPolicy custom resource in the test
@@ -127,7 +126,6 @@ func (k *kindCluster) createSnapshotObject(ctx context.Context, specification st
 		},
 		Spec: snapshotSpec,
 	}, nil
-
 }
 
 // createSnapshot creates the Snapshot custom resource in the test

@@ -94,7 +94,6 @@ func TestFetchImageConfig(t *testing.T) {
 			}
 			require.NoError(t, err)
 			require.Equal(t, tt.expected, string(out))
-
 		})
 	}
 }
@@ -224,7 +223,6 @@ func TestFetchParentImage(t *testing.T) {
 			}
 			require.NoError(t, err)
 			require.Equal(t, tt.expected, out.String())
-
 		})
 	}
 }

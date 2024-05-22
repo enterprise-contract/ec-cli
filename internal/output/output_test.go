@@ -363,7 +363,8 @@ func Test_Violations(t *testing.T) {
 			},
 			expected: []evaluator.Result{
 				{Message: "failed policy check 1"},
-				{Message: "failed policy check 2"}},
+				{Message: "failed policy check 2"},
+			},
 		},
 		{
 			name: "failing everything",
@@ -912,6 +913,7 @@ func TestSetImageSignatureCheckFromError(t *testing.T) {
 		})
 	}
 }
+
 func TestSetAttestationSignatureCheckFromError(t *testing.T) {
 	noMatchingAttestations := cosign.ErrNoMatchingAttestations{}
 	f := reflect.ValueOf(&noMatchingAttestations).Elem().Field(0)

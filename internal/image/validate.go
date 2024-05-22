@@ -40,7 +40,6 @@ func ValidateImage(ctx context.Context, comp app.SnapshotComponent, p policy.Pol
 
 	out := &output.Output{ImageURL: comp.ContainerImage, Detailed: detailed, Policy: p}
 	a, err := application_snapshot_image.NewApplicationSnapshotImage(ctx, comp, p)
-
 	if err != nil {
 		log.Debug("Failed to create application snapshot image!")
 		return nil, err

@@ -29,11 +29,13 @@ import (
 
 var cancel context.CancelFunc
 
-var quiet bool = false
-var verbose bool = false
-var debug bool = false
-var trace bool = false
-var globalTimeout = 5 * time.Minute
+var (
+	quiet         bool = false
+	verbose       bool = false
+	debug         bool = false
+	trace         bool = false
+	globalTimeout      = 5 * time.Minute
+)
 
 func NewRootCmd() *cobra.Command {
 	rootCmd := &cobra.Command{

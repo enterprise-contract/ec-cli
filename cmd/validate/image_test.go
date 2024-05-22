@@ -498,6 +498,7 @@ func Test_ValidateImageCommandKeyless(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, called)
 }
+
 func Test_ValidateImageCommandYAMLPolicyFile(t *testing.T) {
 	validate := func(_ context.Context, component app.SnapshotComponent, _ policy.Policy, _ []evaluator.Evaluator, _ bool) (*output.Output, error) {
 		return &output.Output{
@@ -546,7 +547,8 @@ func Test_ValidateImageCommandYAMLPolicyFile(t *testing.T) {
 		name   string
 		config string
 	}{
-		{name: "spec",
+		{
+			name: "spec",
 			config: `
 description: My custom enterprise contract policy configuration
 sources:
@@ -863,6 +865,7 @@ func Test_ValidateImageCommandEmptyPolicyFile(t *testing.T) {
 	err = cmd.Execute()
 	assert.EqualError(t, err, "1 error occurred:\n\t* file /policy.yaml is empty\n\n")
 }
+
 func Test_ValidateErrorCommand(t *testing.T) {
 	cases := []struct {
 		name     string

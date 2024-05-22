@@ -35,7 +35,7 @@ import (
 type definitionValidationFn func(context.Context, string, []source.PolicySource, []string) (*output.Output, error)
 
 func validateDefinitionCmd(validate definitionValidationFn) *cobra.Command {
-	var data = struct {
+	data := struct {
 		filePaths  []string
 		policyURLs []string
 		dataURLs   []string
@@ -103,7 +103,6 @@ func validateDefinitionCmd(validate definitionValidationFn) *cobra.Command {
 						for i := range out.PolicyCheck {
 							out.PolicyCheck[i].Successes = []evaluator.Result{}
 						}
-
 					}
 					report.Add(*out)
 				}

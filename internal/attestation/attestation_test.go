@@ -36,7 +36,6 @@ import (
 // internal/attestation/slsa_provenance_02_test.go
 
 func TestProvenanceFromSignature(t *testing.T) {
-
 	sig1 := `{"keyid": "key-id-1", "sig": "sig-1"}`
 
 	payloadJson1 := `{
@@ -107,7 +106,7 @@ func TestProvenanceFromSignature(t *testing.T) {
 				l.On("Chain").Return(signature.ParseSigstoreChainCert(), nil)
 			},
 			data: payloadJson2, // String payload remains as a string
-			//data: payloadJson1, // String payload is marshaled
+			// data: payloadJson1, // String payload is marshaled
 		},
 	}
 

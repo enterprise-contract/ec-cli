@@ -88,7 +88,6 @@ func setupDebugMode() {
 
 	// Tweak the output since the defaults are not good
 	customTextFormatter := &log.TextFormatter{
-
 		CallerPrettyfier: func(f *runtime.Frame) (string, string) {
 			// The full path is way too long. Extract just the file name.
 			shortFile := filepath.Base(f.File)

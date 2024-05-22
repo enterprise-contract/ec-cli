@@ -39,8 +39,10 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
-type key int
-type policyKind string
+type (
+	key        int
+	policyKind string
+)
 
 const (
 	DownloaderFuncKey key        = 0

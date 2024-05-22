@@ -32,8 +32,7 @@ import (
 	"github.com/enterprise-contract/ec-cli/acceptance/wiremock"
 )
 
-type stubCluster struct {
-}
+type stubCluster struct{}
 
 // stubApiserverRunning starts the stub apiserver using WireMock
 func Start(ctx context.Context) (context.Context, types.Cluster, error) {

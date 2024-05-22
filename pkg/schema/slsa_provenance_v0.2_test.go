@@ -276,6 +276,7 @@ func TestPredicateMaterialsUri(t *testing.T) {
 		`{"predicate": {"materials": [{"uri": "scheme:authority"}]}}`,
 	)
 }
+
 func TestPredicateMaterialsDigest(t *testing.T) {
 	check(t,
 		`{"predicate": {"materials": [{"digest": null}]}}`, // is optional, so `null` is allowed
