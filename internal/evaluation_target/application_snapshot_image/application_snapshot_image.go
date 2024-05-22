@@ -94,7 +94,6 @@ func (a *ApplicationSnapshotImage) ValidateImageAccess(ctx context.Context) erro
 	}
 	log.Debugf("Resp: %+v", resp)
 	return nil
-
 }
 
 func (a *ApplicationSnapshotImage) SetImageURL(url string) error {
@@ -183,7 +182,6 @@ func (a *ApplicationSnapshotImage) ValidateAttestationSignature(ctx context.Cont
 			// over again. We could refactor so we're not doing that twice,
 			// but it's not super important IMO.
 			sp, err := attestation.SLSAProvenanceFromSignature(sig)
-
 			if err != nil {
 				return fmt.Errorf("unable to parse as SLSA v0.2: %w", err)
 			}

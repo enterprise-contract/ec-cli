@@ -135,7 +135,6 @@ func inspectPolicyDataCmd() *cobra.Command {
 
 					return nil
 				})
-
 				if err != nil {
 					return err
 				}

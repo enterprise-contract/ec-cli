@@ -35,8 +35,10 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
-type mockEvaluator struct{}
-type badMockEvaluator struct{}
+type (
+	mockEvaluator    struct{}
+	badMockEvaluator struct{}
+)
 
 func (e mockEvaluator) Evaluate(ctx context.Context, inputs []string) ([]evaluator.Outcome, evaluator.Data, error) {
 	return []evaluator.Outcome{}, nil, nil

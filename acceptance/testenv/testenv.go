@@ -49,12 +49,16 @@ const (
 	persistedFile = ".persisted"
 )
 
-var loader = os.ReadFile
-var persister = os.WriteFile
+var (
+	loader    = os.ReadFile
+	persister = os.WriteFile
+)
 
-var version sync.Once
-var ecVersion = "undefined"
-var ecVersionErr error
+var (
+	version      sync.Once
+	ecVersion    = "undefined"
+	ecVersionErr error
+)
 
 // Persist persists the environment stored in context in a ".persisted" file as JSON
 func Persist(ctx context.Context) (bool, error) {

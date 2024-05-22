@@ -544,7 +544,6 @@ func validateIdentity(identity cosign.Identity) error {
 
 func validatePolicyConfig(policyConfig string) error {
 	policySchema, err := jsonschema.CompileString("schema.json", ecc.Schema)
-
 	if err != nil {
 		log.Errorf("Failed to compile schema: %s", err)
 		return err
@@ -572,5 +571,4 @@ func validatePolicyConfig(policyConfig string) error {
 		return err
 	}
 	return nil
-
 }

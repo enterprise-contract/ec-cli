@@ -248,7 +248,6 @@ func (r conftestRunner) Run(ctx context.Context, fileList []string) (result []Ou
 // Evaluator interface
 func NewConftestEvaluator(ctx context.Context, policySources []source.PolicySource, p ConfigProvider, source ecc.Source) (Evaluator, error) {
 	return NewConftestEvaluatorWithNamespace(ctx, policySources, p, source, nil)
-
 }
 
 // set the policy namespace
@@ -658,7 +657,7 @@ func createConfigJSON(ctx context.Context, dataDir string, p ConfigProvider) err
 	}
 	configFilePath := filepath.Join(dataDir, "config.json")
 
-	var config = map[string]interface{}{
+	config := map[string]interface{}{
 		"config": map[string]interface{}{},
 	}
 

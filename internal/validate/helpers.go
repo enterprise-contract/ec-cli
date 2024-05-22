@@ -60,7 +60,6 @@ func GetPolicyConfig(ctx context.Context, policyConfiguration string) (string, e
 	// If policyConfiguration is not a file path, git url, or https url,
 	// we assume it's a string and return it as is.
 	return policyConfiguration, nil
-
 }
 
 // Read policyConfiguration file and return its contents.
@@ -79,5 +78,4 @@ func readPolicyConfigurationFile(ctx context.Context, policyConfiguration string
 	}
 	log.Debugf("Loaded %s as policyConfiguration", policyConfiguration)
 	return string(policyBytes), nil
-
 }

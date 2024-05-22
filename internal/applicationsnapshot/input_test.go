@@ -188,7 +188,6 @@ func Test_DetermineInputSpec(t *testing.T) {
 }
 
 func TestReadSnapshotFile(t *testing.T) {
-
 	t.Run("Successful file read and unmarshal", func(t *testing.T) {
 		snapshotSpec := app.SnapshotSpec{
 			Components: []app.SnapshotComponent{
@@ -234,7 +233,6 @@ func TestReadSnapshotFile(t *testing.T) {
 		expected := fmt.Errorf("unable to parse Snapshot specification from %s: %w", spec, wrapped)
 		assert.Error(t, err, expected)
 	})
-
 }
 
 func TestExpandImageIndex(t *testing.T) {

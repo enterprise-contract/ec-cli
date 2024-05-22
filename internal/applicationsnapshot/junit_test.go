@@ -45,7 +45,6 @@ func TestMapResults(t *testing.T) {
 			{Name: "2"},
 		},
 	}, s)
-
 }
 
 func TestAsTestCase(t *testing.T) {

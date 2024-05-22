@@ -54,7 +54,6 @@ func (k *kindCluster) buildCliImage(ctx context.Context) error {
 // only the task of a particular version. The image reference to the ec-cli
 // image is replaced with the image reference from buildCliImage.
 func (k *kindCluster) buildTaskBundleImage(ctx context.Context) error {
-
 	taskBundles := make(map[string][]string)
 
 	basePath := "tasks/"

@@ -106,7 +106,6 @@ func (g *gitTracker) GitResolve(ctx context.Context, repository, path string) (s
 		FileName: &path,
 		Order:    git.LogOrderCommitterTime,
 	})
-
 	if err != nil {
 		return "", err
 	}

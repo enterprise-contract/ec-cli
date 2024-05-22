@@ -40,7 +40,7 @@ func TestReport(t *testing.T) {
 			name: "success",
 			output: []output.Output{
 				{PolicyCheck: []evaluator.Outcome{
-					evaluator.Outcome{FileName: "/path/to/pipeline.json"},
+					{FileName: "/path/to/pipeline.json"},
 				}},
 			},
 			expect: `{"definitions": [{
@@ -58,7 +58,7 @@ func TestReport(t *testing.T) {
 			output: []output.Output{
 				{
 					PolicyCheck: []evaluator.Outcome{
-						evaluator.Outcome{
+						{
 							FileName: "/path/to/pipeline.json",
 							Warnings: []evaluator.Result{
 								{Message: "running low in spam"},
@@ -83,7 +83,7 @@ func TestReport(t *testing.T) {
 			output: []output.Output{
 				{
 					PolicyCheck: []evaluator.Outcome{
-						evaluator.Outcome{
+						{
 							FileName: "/path/to/pipeline.json",
 							Failures: []evaluator.Result{
 								{Message: "out of spam!"},
@@ -108,7 +108,7 @@ func TestReport(t *testing.T) {
 			output: []output.Output{
 				{
 					PolicyCheck: []evaluator.Outcome{
-						evaluator.Outcome{
+						{
 							FileName: "/path/to/pipeline.json",
 							Successes: []evaluator.Result{
 								{Message: "Nice"},

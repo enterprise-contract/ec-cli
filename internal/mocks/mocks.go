@@ -22,10 +22,8 @@ import (
 	"net/http"
 )
 
-type HttpTransportMockSuccess struct {
-}
-type HttpTransportMockFailure struct {
-}
+type HttpTransportMockSuccess struct{}
+type HttpTransportMockFailure struct{}
 type HttpTransportTimeoutFailure struct {
 	CallCount int
 }
@@ -39,6 +37,7 @@ func (h *HttpTransportMockSuccess) RoundTrip(_ *http.Request) (*http.Response, e
 		},
 	}, nil
 }
+
 func (h *HttpTransportMockFailure) RoundTrip(_ *http.Request) (*http.Response, error) {
 	return &http.Response{
 		StatusCode: 403,

@@ -77,7 +77,7 @@ type startFunc func(context.Context) (context.Context, types.Cluster, error)
 // sure we don't start the cluster multiple times per Context is handled here
 func startAndSetupState(start startFunc) func(context.Context) (context.Context, error) {
 	return func(ctx context.Context) (context.Context, error) {
-		var c = &ClusterState{}
+		c := &ClusterState{}
 		ctx, err := testenv.SetupState(ctx, &c)
 		if err != nil {
 			return ctx, err
@@ -476,7 +476,6 @@ func AddStepsTo(sc *godog.ScenarioContext) {
 
 		return c.cluster.Stop(ctx)
 	})
-
 }
 
 func InitializeSuite(ctx context.Context, tsc *godog.TestSuiteContext) {

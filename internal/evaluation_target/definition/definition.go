@@ -46,7 +46,6 @@ func NewDefinition(ctx context.Context, fpath []string, sources []source.PolicyS
 	}
 
 	c, err := newConftestEvaluator(ctx, sources, pol, ecc.Source{}, namespace)
-
 	if err != nil {
 		return nil, err
 	}

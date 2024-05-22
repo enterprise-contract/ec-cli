@@ -244,7 +244,6 @@ func dependsOn(a *ast.AnnotationsRef) []string {
 	default:
 		return []string{fmt.Sprint(d)}
 	}
-
 }
 
 type RuleKind string

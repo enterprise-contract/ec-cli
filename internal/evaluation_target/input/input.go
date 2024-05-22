@@ -43,7 +43,6 @@ func NewInput(ctx context.Context, paths []string, p policy.Policy) (*Input, err
 	for _, sourceGroup := range p.Spec().Sources {
 		// Todo: Make each fetch run concurrently
 		policySources, err := source.FetchPolicySources(sourceGroup)
-
 		if err != nil {
 			log.Debugf("Failed to fetch policy source group '%s'!", sourceGroup.Name)
 			return nil, err

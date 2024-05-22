@@ -262,6 +262,7 @@ func TestConftestEvaluatorCapabilities(t *testing.T) {
 
 	assert.Equal(t, []string{""}, capabilities.AllowNet)
 }
+
 func TestConftestEvaluatorEvaluateNoSuccessWarningsOrFailures(t *testing.T) {
 	tests := []struct {
 		name         string
@@ -1149,16 +1150,23 @@ func TestMakeMatchers(t *testing.T) {
 		term string
 		want []string
 	}{
-		{name: "valid", code: "breakfast.spam", term: "eggs",
+		{
+			name: "valid", code: "breakfast.spam", term: "eggs",
 			want: []string{
 				"breakfast", "breakfast.*", "breakfast.spam", "breakfast:eggs", "breakfast.*:eggs",
-				"breakfast.spam:eggs", "*"}},
-		{name: "valid without term", code: "breakfast.spam",
-			want: []string{"breakfast", "breakfast.*", "breakfast.spam", "*"}},
+				"breakfast.spam:eggs", "*",
+			},
+		},
+		{
+			name: "valid without term", code: "breakfast.spam",
+			want: []string{"breakfast", "breakfast.*", "breakfast.spam", "*"},
+		},
 		{name: "incomplete code", code: "spam", want: []string{"*"}},
 		{name: "incomplete code with term", code: "spam", term: "eggs", want: []string{"*"}},
-		{name: "extra code info ignored", code: "this.is.ignored.breakfast.spam",
-			want: []string{"breakfast", "breakfast.*", "breakfast.spam", "*"}},
+		{
+			name: "extra code info ignored", code: "this.is.ignored.breakfast.spam",
+			want: []string{"breakfast", "breakfast.*", "breakfast.spam", "*"},
+		},
 		{name: "empty code", code: "", want: []string{"*"}},
 		{name: "empty code with term", code: "", term: "eggs", want: []string{"*"}},
 	}
@@ -1173,7 +1181,6 @@ func TestMakeMatchers(t *testing.T) {
 				result.Metadata["term"] = tt.term
 			}
 			assert.Equal(t, tt.want, makeMatchers(result))
-
 		})
 	}
 }
@@ -1897,7 +1904,6 @@ func TestNewConftestEvaluatorComputeIncludeExclude(t *testing.T) {
 			require.Equal(t, tt.expectedExclude, ce.exclude)
 		})
 	}
-
 }
 
 var testCapabilities string
