@@ -1,17 +1,24 @@
-{{ range .Components -}}
-Name:       {{ .Name }}
-ImageRef:   {{ .ContainerImage }}
-Summary:    Violations: {{ len .Violations }}, Warnings: {{ len .Warnings }}, Successes: {{ .SuccessCount }}
-{{ if gt (len .Violations) 0 -}}
-Violations:
-{{ template "_results.tmpl" (toMap "Results" .Violations "Color" "red") }}
+{{- $t := .TestReport -}}
+{{- $r := .Report -}}
+{{- $c := $r.Components -}}
+
+{{- $showSuccesses := (index $c 0).Successes -}}
+
+Success: {{ $r.Success }}
+Result: {{ $t.Result }}
+Violations: {{ $t.Failures }}, Warnings: {{ $t.Warnings }}, Successes: {{ $t.Successes }}{{ nl -}}
+
+{{- template "_components.tmpl" $c -}}
+
+Results:{{ nl -}}
+{{- if gt $t.Failures 0 -}}
+  {{- template "_results.tmpl" (toMap "Components" $c "Type" "Violation") -}}
 {{- end -}}
-{{ if gt (len .Warnings) 0 -}}
-Warnings:
-{{ template "_results.tmpl" (toMap "Results" .Warnings "Color" "yellow") }}
+
+{{- if gt $t.Warnings 0 -}}
+  {{- template "_results.tmpl" (toMap "Components" $c "Type" "Warning") -}}
 {{- end -}}
-{{ if and (gt .SuccessCount 0) (.Successes) -}}
-Successes:
-{{ template "_results.tmpl" (toMap "Results" .Successes "Color" "green") }}
+
+{{- if and (gt $t.Successes 0) $showSuccesses -}}
+  {{- template "_results.tmpl" (toMap "Components" $c "Type" "Success") -}}
 {{- end -}}
-{{- end }}

@@ -310,7 +310,19 @@ func generateMarkdownSummary(r *Report) ([]byte, error) {
 var efs embed.FS
 
 func generateTextReport(r *Report) ([]byte, error) {
-	return utils.RenderFromTemplatesWithMain(r, "text_report.tmpl", efs)
+	// Prepare some template input
+	input := struct {
+		Report     *Report
+		TestReport TestReport
+	}{
+		// This includes everything in the yaml/json output
+		Report: r,
+		// This has useful stuff we want to output, so let's reuse it
+		// even though this is not what it was originally designed for
+		TestReport: r.toAppstudioReport(),
+	}
+
+	return utils.RenderFromTemplatesWithMain(input, "text_report.tmpl", efs)
 }
 
 func writeMarkdownField(buffer *bytes.Buffer, name string, value any, icon string) {

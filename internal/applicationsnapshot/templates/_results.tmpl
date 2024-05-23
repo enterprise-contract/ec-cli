@@ -1,18 +1,42 @@
-{{- $color := .Color -}}
+{{- $type := .Type -}}
+{{- $wrap := 130 -}}
 {{- $indent := 2 -}}
-{{- $wrap := 78 -}}
-{{- range .Results -}}
-{{- colorIndicator $color }} {{ colorText $color .Metadata.code }}
-{{ if and (ne .Message "Pass") .Message -}}
-  {{- indentWrap $indent $wrap .Message }}
-{{ end -}}
-{{ if .Metadata.title -}}
-  {{- indentWrap $indent $wrap .Metadata.title }}
-{{ end -}}
-{{ if .Metadata.description -}}
-  {{- indentWrap $indent $wrap (printf "Description: %s" .Metadata.description) }}
-{{ end -}}
-{{ if and (ne .Message "Pass") .Metadata.solution -}}
-  {{- indentWrap $indent $wrap (printf "Solution: %s" .Metadata.solution) }}
-{{ end }}
-{{ end -}}
+
+{{- range .Components -}}
+  {{- $imageRef := .ContainerImage -}}
+
+  {{ $results := "" }}
+  {{- if eq $type "Violation" -}}{{- $results = .Violations -}}
+  {{- else if eq $type "Warning" -}}{{- $results = .Warnings -}}
+  {{- else if eq $type "Success" -}}{{- $results = .Successes  -}}
+  {{- end -}}
+
+  {{- range $results -}}
+    {{/* Assume .Metadata.code is always present */}}
+    {{- colorIndicator $type }} {{ colorText $type (printf "[%s] %s" $type .Metadata.code) }}{{ nl -}}
+
+    {{- if $imageRef -}}
+      {{- indentWrap $indent $wrap (printf "ImageRef: %s" $imageRef ) }}{{ nl -}}
+    {{- end -}}
+
+    {{/* For a success the message is generally just "Pass" so don't show it */}}
+    {{- if and (ne $type "Success") .Message -}}
+      {{- indentWrap $indent $wrap (printf "Reason: %s" .Message) }}{{ nl -}}
+    {{- end -}}
+
+    {{- if .Metadata.title }}
+      {{- indentWrap $indent $wrap (printf "Title: %s" .Metadata.title) }}{{ nl -}}
+    {{- end -}}
+
+    {{- if .Metadata.description -}}
+      {{- indentWrap $indent $wrap (printf "Description: %s" .Metadata.description) -}}{{ nl -}}
+    {{- end -}}
+
+    {{/* Don't show the solution text for a success either */}}
+    {{- if and (ne $type "Success") .Metadata.solution -}}
+      {{- indentWrap $indent $wrap (printf "Solution: %s" .Metadata.solution) -}}{{ nl -}}
+    {{- end -}}
+
+    {{- nl -}}
+  {{- end -}}
+{{- end -}}

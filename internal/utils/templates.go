@@ -147,6 +147,11 @@ func toMap(values ...interface{}) (map[string]interface{}, error) {
 	return m, nil
 }
 
+// Can make it easier to get the right number of line breaks
+func nl() (string, error) {
+	return "\n", nil
+}
+
 // For use in template.Funcs above
 // Todo maybe: Use reflect to find the functions and make this dynamic
 var templateHelpers = template.FuncMap{
@@ -156,4 +161,5 @@ var templateHelpers = template.FuncMap{
 	"wrap":           wrap,
 	"indentWrap":     indentWrap,
 	"toMap":          toMap,
+	"nl":             nl,
 }
