@@ -1721,7 +1721,54 @@ Error: success criteria not met
 Error: success criteria not met
 
 ---
+[detailed failures output:${TMPDIR}/output.txt - 1]
+Name:       Unnamed
+ImageRef:   ${REGISTRY}/acceptance/image@sha256:${REGISTRY_acceptance/image:latest_DIGEST}
+Summary:    Violations: 3, Warnings: 0, Successes: 4
+Violations:
+[31m✕[0m [31mmain.reject_with_term[0m
+  Fails always (term1)
+  Reject with term rule
+  Description: This rule will always fail. To exclude this rule add
+  "main.reject_with_term:term1" to the `exclude` section of the policy
+  configuration.
+  Solution: None
 
+[31m✕[0m [31mmain.reject_with_term[0m
+  Fails always (term2)
+  Reject with term rule
+  Description: This rule will always fail. To exclude this rule add
+  "main.reject_with_term:term2" to the `exclude` section of the policy
+  configuration.
+  Solution: None
+
+[31m✕[0m [31mmain.rejector[0m
+  Fails always
+  Reject rule
+  Description: This rule will always fail. To exclude this rule add
+  "main.rejector" to the `exclude` section of the policy configuration.
+  Solution: None
+
+Successes:
+[32m✓[0m [32mbuiltin.attestation.signature_check[0m
+  Attestation signature check passed
+  Description: The attestation signature matches available signing materials.
+
+[32m✓[0m [32mbuiltin.attestation.syntax_check[0m
+  Attestation syntax check passed
+  Description: The attestation has correct syntax.
+
+[32m✓[0m [32mbuiltin.image.signature_check[0m
+  Image signature check passed
+  Description: The image signature matches available signing materials.
+
+[32m✓[0m [32mmain.acceptor[0m
+  Allow rule
+  Description: This rule will never fail
+
+
+
+---
 [future failure is a deny when using effective-date flag:stdout - 1]
 {
   "success": false,

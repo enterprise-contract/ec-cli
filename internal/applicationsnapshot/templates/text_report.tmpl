@@ -1,0 +1,17 @@
+{{ range .Components -}}
+Name:       {{ .Name }}
+ImageRef:   {{ .ContainerImage }}
+Summary:    Violations: {{ len .Violations }}, Warnings: {{ len .Warnings }}, Successes: {{ .SuccessCount }}
+{{ if gt (len .Violations) 0 -}}
+Violations:
+{{ template "_results.tmpl" (toMap "Results" .Violations "Color" "red") }}
+{{- end -}}
+{{ if gt (len .Warnings) 0 -}}
+Warnings:
+{{ template "_results.tmpl" (toMap "Results" .Warnings "Color" "yellow") }}
+{{- end -}}
+{{ if and (gt .SuccessCount 0) (.Successes) -}}
+Successes:
+{{ template "_results.tmpl" (toMap "Results" .Successes "Color" "green") }}
+{{- end -}}
+{{- end }}

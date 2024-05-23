@@ -1,0 +1,18 @@
+{{- $color := .Color -}}
+{{- $indent := 2 -}}
+{{- $wrap := 78 -}}
+{{- range .Results -}}
+{{- colorIndicator $color }} {{ colorText $color .Metadata.code }}
+{{ if and (ne .Message "Pass") .Message -}}
+  {{- indentWrap $indent $wrap .Message }}
+{{ end -}}
+{{ if .Metadata.title -}}
+  {{- indentWrap $indent $wrap .Metadata.title }}
+{{ end -}}
+{{ if .Metadata.description -}}
+  {{- indentWrap $indent $wrap (printf "Description: %s" .Metadata.description) }}
+{{ end -}}
+{{ if and (ne .Message "Pass") .Metadata.solution -}}
+  {{- indentWrap $indent $wrap (printf "Solution: %s" .Metadata.solution) }}
+{{ end }}
+{{ end -}}

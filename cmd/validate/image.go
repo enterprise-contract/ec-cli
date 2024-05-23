@@ -69,6 +69,8 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		spec                        *app.SnapshotSpec
 		strict                      bool
 		images                      string
+		noColor                     bool
+		forceColor                  bool
 	}{
 		strict: true,
 	}
@@ -402,6 +404,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 				return err
 			}
 			p := format.NewTargetParser(applicationsnapshot.JSON, cmd.OutOrStdout(), utils.FS(cmd.Context()))
+			utils.SetColorEnabled(data.noColor, data.forceColor)
 			if err := report.WriteAll(data.output, p); err != nil {
 				return err
 			}
@@ -486,6 +489,12 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		Include additional information on the failures. For instance for policy
 		violations, include the title and the description of the failed policy
 		rule.`))
+
+	cmd.Flags().BoolVar(&data.noColor, "no-color", data.info, hd.Doc(`
+		Disable color when using text output even when the current terminal supports it`))
+
+	cmd.Flags().BoolVar(&data.forceColor, "color", data.info, hd.Doc(`
+		Enable color when using text output even when the current terminal does not support it`))
 
 	if len(data.input) > 0 || len(data.filePath) > 0 || len(data.images) > 0 {
 		if err := cmd.MarkFlagRequired("image"); err != nil {

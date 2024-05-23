@@ -26,6 +26,7 @@ import (
 	"strings"
 	"unicode"
 
+	isatty "github.com/mattn/go-isatty"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 	"sigs.k8s.io/yaml"
@@ -154,4 +155,32 @@ func HasSuffix(str string, extensions []string) bool {
 
 func HasJsonOrYamlExt(str string) bool {
 	return HasSuffix(str, []string{".json", ".yaml", ".yml"})
+}
+
+var ColorEnabled bool
+
+func SetColorEnabled(flagNoColor, flagForceColor bool) {
+	ColorEnabled = setColorEnabled(flagNoColor, flagForceColor)
+}
+
+func setColorEnabled(flagNoColor, flagForceColor bool) bool {
+	if flagNoColor || anyEnvSet([]string{"EC_NO_COLOR", "EC_NO_COLOUR", "NO_COLOR", "NO_COLOUR"}) {
+		// Force no color
+		return false
+	}
+	if flagForceColor || anyEnvSet([]string{"EC_FORCE_COLOR", "EC_FORCE_COLOUR", "FORCE_COLOR", "FORCE_COLOUR"}) {
+		// Force color
+		return true
+	}
+	// Use color if we're in a terminal that can presumably display it
+	return isatty.IsTerminal(os.Stdout.Fd()) || isatty.IsCygwinTerminal(os.Stdout.Fd())
+}
+
+func anyEnvSet(varNames []string) bool {
+	for _, varName := range varNames {
+		if os.Getenv(varName) != "" {
+			return true
+		}
+	}
+	return false
 }
