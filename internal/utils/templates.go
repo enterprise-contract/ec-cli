@@ -35,6 +35,28 @@ const (
 	defaultGlob         = "*/*.tmpl"
 )
 
+// Here we assume the caller will do the Execute or ExecuteTemplate themselves
+func SetupTemplate(efs embed.FS) (*template.Template, error) {
+	return SetupTemplateWithGlob([]string{defaultGlob}, efs)
+}
+
+func SetupTemplateWithGlob(glob []string, efs embed.FS) (*template.Template, error) {
+	// Create blank template
+	t := template.New(defaultMainTemplate)
+
+	// Bring in helper functions
+	t = t.Funcs(templateHelpers)
+
+	// Bring in all the templates
+	t, err := t.ParseFS(efs, glob...)
+	if err != nil {
+		return nil, err
+	}
+
+	return t, nil
+}
+
+// Here we do the ExecuteTemplate for the caller and return just the output
 func RenderFromTemplates(input any, efs embed.FS) ([]byte, error) {
 	return RenderFromTemplatesWithMain(input, defaultMainTemplate, efs)
 }
@@ -44,14 +66,7 @@ func RenderFromTemplatesWithMain(input any, main string, efs embed.FS) ([]byte, 
 }
 
 func RenderFromTemplatesWithGlob(input any, main string, glob []string, efs embed.FS) ([]byte, error) {
-	// Create blank template
-	t := template.New("_")
-
-	// Bring in helper functions
-	t = t.Funcs(templateHelpers)
-
-	// Bring in all the templates
-	t, err := t.ParseFS(efs, glob...)
+	t, err := SetupTemplateWithGlob(glob, efs)
 	if err != nil {
 		return nil, err
 	}
