@@ -6,11 +6,11 @@ require (
 	cuelang.org/go v0.8.2
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/Maldris/go-billy-afero v0.0.0-20200815120323-e9d3de59c99a
-	github.com/enterprise-contract/enterprise-contract-controller/api v0.1.46
+	github.com/enterprise-contract/enterprise-contract-controller/api v0.1.47
 	github.com/evanphx/json-patch v5.9.0+incompatible
 	github.com/gkampitakis/go-snaps v0.5.4
 	github.com/go-git/go-git/v5 v5.12.0
-	github.com/go-logr/logr v1.4.1
+	github.com/go-logr/logr v1.4.2
 	github.com/google/go-cmp v0.6.0
 	github.com/google/go-containerregistry v0.19.1
 	github.com/hako/durafmt v0.0.0-20210608085754-5c1018a4e16b
@@ -337,7 +337,7 @@ require (
 	muzzammil.xyz/jsonc v1.0.0 // indirect
 	olympos.io/encoding/edn v0.0.0-20201019073823-d3554ca0b0a3 // indirect
 	oras.land/oras-go/v2 v2.4.0 // indirect
-	sigs.k8s.io/controller-runtime v0.17.4 // indirect
+	sigs.k8s.io/controller-runtime v0.17.5 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/release-utils v0.7.7 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
