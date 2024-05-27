@@ -20,6 +20,8 @@ require (
 	github.com/invopop/jsonschema v0.12.0
 	github.com/jstemmer/go-junit-report/v2 v2.1.0
 	github.com/leanovate/gopter v0.2.11
+	github.com/mattn/go-isatty v0.0.20
+	github.com/mitchellh/go-wordwrap v1.0.1
 	github.com/open-policy-agent/conftest v0.52.0
 	github.com/open-policy-agent/opa v0.64.1
 	github.com/package-url/packageurl-go v0.1.3
@@ -221,12 +223,10 @@ require (
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/maruel/natural v1.1.1 // indirect
-	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/miekg/pkcs11 v1.1.1 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/go-testing-interface v1.14.1 // indirect
-	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/moby/buildkit v0.13.2 // indirect
 	github.com/moby/locker v1.0.1 // indirect

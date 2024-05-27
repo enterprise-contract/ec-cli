@@ -1,0 +1,6 @@
+{{ .Package }}.{{ .ShortName }} ({{ .Kind }})
+{{ with .DocumentationUrl }}{{ . }}
+{{ end }}{{ .Title }}
+{{ .Description }}{{ if .Collections }}
+{{ .Collections }}{{ end }}
+--

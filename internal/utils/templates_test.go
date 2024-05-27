@@ -19,6 +19,7 @@
 package utils
 
 import (
+	"bytes"
 	"embed"
 	_ "embed"
 	"testing"
@@ -30,10 +31,56 @@ import (
 var testTemplatesFS embed.FS
 
 func TestTemplateRender(t *testing.T) {
-	input := map[string]any{
-		"name": "spam world",
+	tests := []struct {
+		expected string
+		input    map[string]string
+	}{
+		{
+			input:    map[string]string{"name": "world"},
+			expected: "✓ Hello and greetings, world.\n\n",
+		},
 	}
-	output, err := RenderFromTemplates(input, testTemplatesFS)
+	for _, tt := range tests {
+		output, err := RenderFromTemplates(tt.input, testTemplatesFS)
+		assert.NoError(t, err)
+		assert.Equal(t, tt.expected, string(output))
+	}
+}
+
+func TestSetupTemplate(t *testing.T) {
+	tmpl, err := SetupTemplate(testTemplatesFS)
 	assert.NoError(t, err)
-	assert.Equal(t, "✓ Hello and bonjour, spam world.\n\n", string(output))
+
+	tests := []struct {
+		main     string
+		expected string
+		input    map[string]string
+	}{
+		{
+			input:    map[string]string{"name": "friend"},
+			expected: "✓ Hello and greetings, friend.\n\n",
+		},
+		{
+			main:     "main.tmpl",
+			expected: "✓ Hello and greetings, spam.\n\n",
+			input:    map[string]string{"name": "spam"},
+		},
+		{
+			main:     "_name.tmpl",
+			expected: "and hola, amigo.\n",
+			input:    map[string]string{"greeting": "hola", "name": "amigo"},
+		},
+	}
+	for _, tt := range tests {
+		var buf bytes.Buffer
+		var err error
+		if tt.main == "" {
+			err = tmpl.Execute(&buf, tt.input)
+			assert.NoError(t, err)
+		} else {
+			err = tmpl.ExecuteTemplate(&buf, tt.main, tt.input)
+			assert.NoError(t, err)
+		}
+		assert.Equal(t, tt.expected, buf.String())
+	}
 }

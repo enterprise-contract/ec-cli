@@ -17,41 +17,28 @@
 package opa
 
 import (
+	"embed"
 	"fmt"
 	"io"
 	"strings"
-	"text/template"
 
-	hd "github.com/MakeNowJust/heredoc"
 	"github.com/open-policy-agent/opa/ast"
 	"golang.org/x/exp/slices"
 
 	"github.com/enterprise-contract/ec-cli/internal/opa/rule"
+	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
-var templates = map[string]string{
-	"text": hd.Doc(`
-		{{ .Package }}.{{ .ShortName }} ({{ .Kind }})
-		{{ with .DocumentationUrl }}{{ . }}
-		{{ end }}{{ .Title }}
-		{{ .Description }}{{ if .Collections }}
-		{{ .Collections }}{{ end }}
-		--
-	`),
-
-	"names": hd.Doc(`
-		{{ .Package }}.{{ .ShortName }}
-	`),
-
-	"short-names": hd.Doc(`
-		{{ .Code }}
-	`),
-}
+//go:embed templates/*.tmpl
+var efs embed.FS
 
 // Render using a template
 func renderAnn(out io.Writer, a *ast.AnnotationsRef, tmplName string) error {
-	t := template.Must(template.New("t").Parse(templates[tmplName]))
-	return t.Execute(out, rule.RuleInfo(a))
+	t, err := utils.SetupTemplate(efs)
+	if err != nil {
+		return err
+	}
+	return t.ExecuteTemplate(out, fmt.Sprintf("%s.tmpl", tmplName), rule.RuleInfo(a))
 }
 
 // Todo:
