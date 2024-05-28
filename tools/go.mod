@@ -8,7 +8,7 @@ require (
 	github.com/google/addlicense v1.1.1
 	github.com/open-policy-agent/conftest v0.52.0
 	github.com/tektoncd/chains v0.21.0
-	github.com/tektoncd/cli v0.32.0
+	github.com/tektoncd/cli v0.35.2
 	github.com/wadey/gocovmerge v0.0.0-20160331181800-b5bfa59ec0ad
 	helm.sh/helm/v3 v3.14.4
 	sigs.k8s.io/kustomize/kustomize/v5 v5.4.2
@@ -25,7 +25,7 @@ require (
 	cloud.google.com/go/longrunning v0.5.5 // indirect
 	cloud.google.com/go/storage v1.40.0 // indirect
 	contrib.go.opencensus.io/exporter/ocagent v0.7.1-0.20200907061046-05415f1de66d // indirect
-	contrib.go.opencensus.io/exporter/prometheus v0.4.0 // indirect
+	contrib.go.opencensus.io/exporter/prometheus v0.4.2 // indirect
 	cuelang.org/go v0.8.1 // indirect
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/4meepo/tagalign v1.3.4 // indirect
@@ -155,7 +155,6 @@ require (
 	github.com/digitorus/pkcs7 v0.0.0-20230818184609-3a137a874352 // indirect
 	github.com/digitorus/timestamp v0.0.0-20231217203849-220c5c2851b7 // indirect
 	github.com/dimchansky/utfbom v1.1.1 // indirect
-	github.com/dimfeld/httptreemux/v5 v5.5.0 // indirect
 	github.com/distribution/reference v0.5.0 // indirect
 	github.com/docker/cli v25.0.3+incompatible // indirect
 	github.com/docker/distribution v2.8.3+incompatible // indirect
@@ -171,7 +170,7 @@ require (
 	github.com/emicklei/go-restful/v3 v3.11.0 // indirect
 	github.com/ettle/strcase v0.2.0 // indirect
 	github.com/evanphx/json-patch v5.7.0+incompatible // indirect
-	github.com/evanphx/json-patch/v5 v5.6.0 // indirect
+	github.com/evanphx/json-patch/v5 v5.7.0 // indirect
 	github.com/exponent-io/jsonpath v0.0.0-20151013193312-d6023ce2651d // indirect
 	github.com/fatih/color v1.17.0 // indirect
 	github.com/fatih/structtag v1.2.0 // indirect
@@ -181,10 +180,11 @@ require (
 	github.com/fvbommel/sortorder v1.1.0 // indirect
 	github.com/fzipp/gocyclo v0.6.0 // indirect
 	github.com/gdamore/encoding v1.0.0 // indirect
-	github.com/gdamore/tcell/v2 v2.5.3 // indirect
+	github.com/gdamore/tcell/v2 v2.6.0 // indirect
 	github.com/ghostiam/protogetter v0.3.6 // indirect
 	github.com/go-akka/configuration v0.0.0-20200606091224-a002c0330665 // indirect
 	github.com/go-chi/chi v4.1.2+incompatible // indirect
+	github.com/go-chi/chi/v5 v5.0.11 // indirect
 	github.com/go-critic/go-critic v0.11.4 // indirect
 	github.com/go-errors/errors v1.4.2 // indirect
 	github.com/go-gorp/gorp/v3 v3.1.0 // indirect
@@ -249,7 +249,7 @@ require (
 	github.com/googleapis/gax-go/v2 v2.12.3 // indirect
 	github.com/gordonklaus/ineffassign v0.1.0 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
-	github.com/gorilla/websocket v1.5.0 // indirect
+	github.com/gorilla/websocket v1.5.1 // indirect
 	github.com/gostaticanalysis/analysisutil v0.7.1 // indirect
 	github.com/gostaticanalysis/comment v1.4.2 // indirect
 	github.com/gostaticanalysis/forcetypeassert v0.1.0 // indirect
@@ -305,7 +305,7 @@ require (
 	github.com/kkHAIKE/contextcheck v1.1.5 // indirect
 	github.com/klauspost/compress v1.17.7 // indirect
 	github.com/ktr0731/go-ansisgr v0.1.0 // indirect
-	github.com/ktr0731/go-fuzzyfinder v0.7.0 // indirect
+	github.com/ktr0731/go-fuzzyfinder v0.8.0 // indirect
 	github.com/kulti/thelper v0.6.3 // indirect
 	github.com/kunwardeep/paralleltest v1.0.10 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
@@ -375,7 +375,7 @@ require (
 	github.com/prometheus/client_model v0.6.1 // indirect
 	github.com/prometheus/common v0.51.1 // indirect
 	github.com/prometheus/procfs v0.12.0 // indirect
-	github.com/prometheus/statsd_exporter v0.21.0 // indirect
+	github.com/prometheus/statsd_exporter v0.22.7 // indirect
 	github.com/quasilyte/go-ruleguard v0.4.2 // indirect
 	github.com/quasilyte/go-ruleguard/dsl v0.3.22 // indirect
 	github.com/quasilyte/gogrep v0.5.0 // indirect
@@ -435,9 +435,9 @@ require (
 	github.com/t-yuki/gocover-cobertura v0.0.0-20180217150009-aaee18c8195c // indirect
 	github.com/tchap/go-patricia/v2 v2.3.1 // indirect
 	github.com/tdakkota/asciicheck v0.2.0 // indirect
-	github.com/tektoncd/hub v1.14.0 // indirect
+	github.com/tektoncd/hub v1.16.0 // indirect
 	github.com/tektoncd/pipeline v0.58.0 // indirect
-	github.com/tektoncd/triggers v0.25.0 // indirect
+	github.com/tektoncd/triggers v0.26.1 // indirect
 	github.com/tetafro/godot v1.4.16 // indirect
 	github.com/thales-e-security/pool v0.0.2 // indirect
 	github.com/theupdateframework/go-tuf v0.7.0 // indirect
@@ -487,7 +487,7 @@ require (
 	go.uber.org/automaxprocs v1.5.3 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
-	goa.design/goa/v3 v3.12.4 // indirect
+	goa.design/goa/v3 v3.14.6 // indirect
 	gocloud.dev v0.37.0 // indirect
 	gocloud.dev/docstore/mongodocstore v0.37.0 // indirect
 	gocloud.dev/pubsub/kafkapubsub v0.37.0 // indirect
@@ -529,7 +529,7 @@ require (
 	k8s.io/kube-openapi v0.0.0-20231010175941-2dd684a91f00 // indirect
 	k8s.io/kubectl v0.29.0 // indirect
 	k8s.io/utils v0.0.0-20230726121419-3b25d923346b // indirect
-	knative.dev/pkg v0.0.0-20231023150739-56bfe0dd9626 // indirect
+	knative.dev/pkg v0.0.0-20231103161548-f5b42e8dea44 // indirect
 	muzzammil.xyz/jsonc v1.0.0 // indirect
 	mvdan.cc/gofumpt v0.6.0 // indirect
 	mvdan.cc/unparam v0.0.0-20240427195214-063aff900ca1 // indirect
