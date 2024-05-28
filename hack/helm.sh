@@ -23,4 +23,7 @@ set -o nounset
 set -o errtrace
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
-go run -modfile "${ROOT}/tools/go.mod" helm.sh/helm/v3/cmd/helm "$@"
+K8_VERSION_MAJOR=$(kubectl version -o json |jq -r .serverVersion.major)
+K8_VERSION_MINOR=$(kubectl version -o json |jq -r .serverVersion.minor)
+LDFLAGS="-X helm.sh/helm/v3/pkg/chartutil.k8sVersionMajor=${K8_VERSION_MAJOR} -X helm.sh/helm/v3/pkg/chartutil.k8sVersionMinor=${K8_VERSION_MINOR}"
+go run -modfile "${ROOT}/tools/go.mod" -ldflags "${LDFLAGS}" helm.sh/helm/v3/cmd/helm --debug "$@"
