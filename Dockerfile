@@ -24,7 +24,7 @@ ARG TARGETARCH
 WORKDIR /build
 
 # Copy just the mod file for better layer caching when building locally
-COPY go.mod go.sum .
+COPY go.mod go.sum ./
 RUN go mod download
 
 # Now copy everything including .git
