@@ -48,11 +48,11 @@ COPY --from=build /build/cosign_version.txt /download/
 
 # Download the matching version of cosign
 RUN COSIGN_VERSION=$(cat /download/cosign_version.txt) && \
-    curl -sLO https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign-${TARGETOS}-${TARGETARCH} && \
-    curl -sLO https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign_checksums.txt && \
-    sha256sum --check <(grep -w "cosign-${TARGETOS}-${TARGETARCH}" < cosign_checksums.txt) && \
-    mv "cosign-${TARGETOS}-${TARGETARCH}" cosign && \
-    chmod +x cosign
+  curl -sLO https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign-${TARGETOS}-${TARGETARCH} && \
+  curl -sLO https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign_checksums.txt && \
+  sha256sum --check <(grep -w "cosign-${TARGETOS}-${TARGETARCH}" < cosign_checksums.txt) && \
+  mv "cosign-${TARGETOS}-${TARGETARCH}" cosign && \
+  chmod +x cosign
 
 FROM registry.access.redhat.com/ubi9/ubi-minimal:9.4@sha256:2636170dc55a0931d013014a72ae26c0c2521d4b61a28354b3e2e5369fa335a3
 
