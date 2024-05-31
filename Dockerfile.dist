@@ -30,6 +30,10 @@ ARG BUILD_LIST="darwin_amd64 darwin_arm64 linux_amd64 linux_arm64 linux_ppc64le 
 # Avoid safe directory git failures building with default user from go-toolset
 USER root
 
+# Pull any fixes that may not have propagated to the parent image yet. Note that the --security flag
+# is not used because sometimes a security fix is not marked as a security fix :(
+RUN dnf update --nodocs --setopt=keepcache=0 -y
+
 WORKDIR /build
 
 # Copy just the mod file for better layer caching when building locally
@@ -103,6 +107,10 @@ RUN go list --mod=readonly -f '{{.Version}}' -m github.com/sigstore/cosign/v2 | 
 
 FROM registry.access.redhat.com/ubi9/ubi-minimal:9.4@sha256:2636170dc55a0931d013014a72ae26c0c2521d4b61a28354b3e2e5369fa335a3 AS download
 
+# Pull any fixes that may not have propagated to the parent image yet. Note that the --security flag
+# is not used because sometimes a security fix is not marked as a security fix :(
+RUN microdnf update --nodocs --setopt=keepcache=0 -y
+
 ARG TARGETOS
 ARG TARGETARCH
 
@@ -134,8 +142,11 @@ LABEL \
   io.openshift.tags="rhtas rhtap trusted-artifact-signer trusted-application-pipeline enterprise-contract ec opa cosign sigstore" \
   com.redhat.component="ec-cli"
 
-# Install cosign and other tools we want to use in the Tekton task
-RUN microdnf -y --nodocs --setopt=keepcache=0 install git-core jq
+# Pull any fixes that may not have propagated to the parent image yet. Note that the --security flag
+# is not used because sometimes a security fix is not marked as a security fix :(
+# Also, install cosign and other tools we want to use in the Tekton task
+RUN microdnf update --nodocs --setopt=keepcache=0 -y && \
+    microdnf -y --nodocs --setopt=keepcache=0 install git-core jq
 COPY --from=download /download/cosign /usr/local/bin/cosign
 
 # Copy all the binaries so they're available to extract and download
