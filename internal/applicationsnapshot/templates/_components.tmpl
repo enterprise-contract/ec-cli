@@ -1,0 +1,25 @@
+{{- if gt (len .) 1 -}}
+{{/*
+  When there are multiple components we provide totals for each
+  component and change the format to make it more readable as a list
+*/}}
+Components:
+{{ range . -}}
+- Name: {{ .Name }}
+  ImageRef: {{ .ContainerImage }}
+  Violations: {{ len .Violations }}, Warnings: {{ len .Warnings }}, Successes: {{ .SuccessCount }}
+
+{{ end -}}
+
+{{- else -}}
+{{/*
+  When there is only one component the summary counts are the same
+  as the overall counts, so we don't need to repeat them.
+  (Using range here even though we know there is only one item.)
+*/}}
+{{- range . -}}
+Component: {{ .Name }}
+ImageRef: {{ .ContainerImage }}
+
+{{ end -}}
+{{- end -}}

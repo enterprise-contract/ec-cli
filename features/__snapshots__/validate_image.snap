@@ -1722,50 +1722,56 @@ Error: success criteria not met
 
 ---
 [detailed failures output:${TMPDIR}/output.txt - 1]
-Name:       Unnamed
-ImageRef:   ${REGISTRY}/acceptance/image@sha256:${REGISTRY_acceptance/image:latest_DIGEST}
-Summary:    Violations: 3, Warnings: 0, Successes: 4
-Violations:
-[31m✕[0m [31mmain.reject_with_term[0m
-  Fails always (term1)
-  Reject with term rule
-  Description: This rule will always fail. To exclude this rule add
-  "main.reject_with_term:term1" to the `exclude` section of the policy
+Success: false
+Result: FAILURE
+Violations: 3, Warnings: 0, Successes: 4
+Component: Unnamed
+ImageRef: ${REGISTRY}/acceptance/image@sha256:${REGISTRY_acceptance/image:latest_DIGEST}
+
+Results:
+[31m✕[0m [31m[Violation] main.reject_with_term[0m
+  ImageRef: ${REGISTRY}/acceptance/image@sha256:${REGISTRY_acceptance/image:latest_DIGEST}
+  Reason: Fails always (term1)
+  Title: Reject with term rule
+  Description: This rule will always fail. To exclude this rule add "main.reject_with_term:term1" to the `exclude` section of the
+  policy configuration.
+  Solution: None
+
+[31m✕[0m [31m[Violation] main.reject_with_term[0m
+  ImageRef: ${REGISTRY}/acceptance/image@sha256:${REGISTRY_acceptance/image:latest_DIGEST}
+  Reason: Fails always (term2)
+  Title: Reject with term rule
+  Description: This rule will always fail. To exclude this rule add "main.reject_with_term:term2" to the `exclude` section of the
+  policy configuration.
+  Solution: None
+
+[31m✕[0m [31m[Violation] main.rejector[0m
+  ImageRef: ${REGISTRY}/acceptance/image@sha256:${REGISTRY_acceptance/image:latest_DIGEST}
+  Reason: Fails always
+  Title: Reject rule
+  Description: This rule will always fail. To exclude this rule add "main.rejector" to the `exclude` section of the policy
   configuration.
   Solution: None
 
-[31m✕[0m [31mmain.reject_with_term[0m
-  Fails always (term2)
-  Reject with term rule
-  Description: This rule will always fail. To exclude this rule add
-  "main.reject_with_term:term2" to the `exclude` section of the policy
-  configuration.
-  Solution: None
-
-[31m✕[0m [31mmain.rejector[0m
-  Fails always
-  Reject rule
-  Description: This rule will always fail. To exclude this rule add
-  "main.rejector" to the `exclude` section of the policy configuration.
-  Solution: None
-
-Successes:
-[32m✓[0m [32mbuiltin.attestation.signature_check[0m
-  Attestation signature check passed
+[32m✓[0m [32m[Success] builtin.attestation.signature_check[0m
+  ImageRef: ${REGISTRY}/acceptance/image@sha256:${REGISTRY_acceptance/image:latest_DIGEST}
+  Title: Attestation signature check passed
   Description: The attestation signature matches available signing materials.
 
-[32m✓[0m [32mbuiltin.attestation.syntax_check[0m
-  Attestation syntax check passed
+[32m✓[0m [32m[Success] builtin.attestation.syntax_check[0m
+  ImageRef: ${REGISTRY}/acceptance/image@sha256:${REGISTRY_acceptance/image:latest_DIGEST}
+  Title: Attestation syntax check passed
   Description: The attestation has correct syntax.
 
-[32m✓[0m [32mbuiltin.image.signature_check[0m
-  Image signature check passed
+[32m✓[0m [32m[Success] builtin.image.signature_check[0m
+  ImageRef: ${REGISTRY}/acceptance/image@sha256:${REGISTRY_acceptance/image:latest_DIGEST}
+  Title: Image signature check passed
   Description: The image signature matches available signing materials.
 
-[32m✓[0m [32mmain.acceptor[0m
-  Allow rule
+[32m✓[0m [32m[Success] main.acceptor[0m
+  ImageRef: ${REGISTRY}/acceptance/image@sha256:${REGISTRY_acceptance/image:latest_DIGEST}
+  Title: Allow rule
   Description: This rule will never fail
-
 
 
 ---
