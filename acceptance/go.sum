@@ -870,8 +870,8 @@ github.com/tchap/go-patricia/v2 v2.3.1 h1:6rQp39lgIYZ+MHmdEq4xzuk1t7OdC35z/xm0BG
 github.com/tchap/go-patricia/v2 v2.3.1/go.mod h1:VZRHKAb53DLaG+nA9EaYYiaEx6YztwDlLElMsnSHD4k=
 github.com/tektoncd/cli v0.36.0 h1:xuOpgM6sa05rdNWaQQo4pPKBQ5ij2AVI+fo86KgL0lo=
 github.com/tektoncd/cli v0.36.0/go.mod h1:wX6X8hnJHDaJKpMkWMy/jRJQoOTkwGNiIHrJUVnl8jg=
-github.com/tektoncd/pipeline v0.60.0 h1:4CQ1ZIJcoOM8lRB1B+WccLongTVoygcrvOzZz819P1c=
-github.com/tektoncd/pipeline v0.60.0/go.mod h1:7bCvVXxBB06Ee7GVqYp+UKgUN5IadFvvH9wdLds5jZE=
+github.com/tektoncd/pipeline v0.60.1 h1:SRQ0p3LXBMtG4jcLBVmhENjrQIevah9CSo3jEvKpZDk=
+github.com/tektoncd/pipeline v0.60.1/go.mod h1:7bCvVXxBB06Ee7GVqYp+UKgUN5IadFvvH9wdLds5jZE=
 github.com/tektoncd/triggers v0.26.1 h1:zP49d0FX5Yfvu7ExD48WEB00S3KNMMVXMMNYh96csj4=
 github.com/tektoncd/triggers v0.26.1/go.mod h1:yYx6AkLl7n4SjyRf9eOyN38frAfRHbjZ3jWHDyRoc64=
 github.com/testcontainers/testcontainers-go v0.31.0 h1:W0VwIhcEVhRflwL9as3dhY6jXjVCA27AkmbnZ+UTh3U=

@@ -26,7 +26,7 @@ require (
 	github.com/sigstore/sigstore v1.8.4
 	github.com/stretchr/testify v1.9.0
 	github.com/tektoncd/cli v0.36.0
-	github.com/tektoncd/pipeline v0.60.0
+	github.com/tektoncd/pipeline v0.60.1
 	github.com/testcontainers/testcontainers-go v0.31.0
 	github.com/transparency-dev/merkle v0.0.2
 	github.com/walkerus/go-wiremock v1.7.0
