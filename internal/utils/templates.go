@@ -125,10 +125,19 @@ func wrap(width int, s string) string {
 	return wordwrap.WrapString(s, uint(width))
 }
 
+// A string with n spaces
+func indentStr(n int) string {
+	return strings.Repeat(" ", n)
+}
+
+// Indent a certain number of spaces
+func indent(n int, s string) string {
+	return indentStr(n) + s
+}
+
 // Indent with spaces and also wrap
-func indentWrap(indent int, width int, s string) string {
-	indentStr := strings.Repeat(" ", indent)
-	return indentStr + strings.ReplaceAll(wrap(width-indent, s), "\n", "\n"+indentStr)
+func indentWrap(n int, width int, s string) string {
+	return indent(n, strings.ReplaceAll(wrap(width-n, s), "\n", "\n"+indentStr(n)))
 }
 
 // A way to assemble a map from keys and values in a template
@@ -159,6 +168,7 @@ var templateHelpers = template.FuncMap{
 	"indicator":      indicator,
 	"colorIndicator": colorIndicator,
 	"wrap":           wrap,
+	"indent":         indent,
 	"indentWrap":     indentWrap,
 	"toMap":          toMap,
 	"nl":             nl,
