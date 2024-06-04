@@ -30,10 +30,10 @@ import (
 	"github.com/enterprise-contract/ec-cli/cmd"
 )
 
-//go:embed cli.template
+//go:embed cli.tmpl
 var cliTemplateText string
 
-//go:embed nav.template
+//go:embed nav.tmpl
 var cliNavTemplateText string
 
 var commandTemplate *template.Template

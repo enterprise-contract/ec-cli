@@ -30,13 +30,13 @@ import (
 	_ "github.com/enterprise-contract/ec-cli/internal/rego"
 )
 
-//go:embed rego.template
+//go:embed rego.tmpl
 var regoTemplateText string
 
-//go:embed nav.template
+//go:embed nav.tmpl
 var regoNavTemplateText string
 
-//go:embed builtins.template
+//go:embed builtins.tmpl
 var regoBuiltinsTemplateText string
 
 var regoTemplate *template.Template
