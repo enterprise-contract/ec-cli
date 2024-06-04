@@ -29,7 +29,7 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
-//go:embed templates/*.tmpl
+//go:embed templates/*.template
 var efs embed.FS
 
 // Render using a template
@@ -38,7 +38,7 @@ func renderAnn(out io.Writer, a *ast.AnnotationsRef, tmplName string) error {
 	if err != nil {
 		return err
 	}
-	return t.ExecuteTemplate(out, fmt.Sprintf("%s.tmpl", tmplName), rule.RuleInfo(a))
+	return t.ExecuteTemplate(out, fmt.Sprintf("%s.template", tmplName), rule.RuleInfo(a))
 }
 
 // Todo:

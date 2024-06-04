@@ -27,7 +27,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-//go:embed test_templates/*.tmpl
+//go:embed test_templates/*.template
 var testTemplatesFS embed.FS
 
 func TestTemplateRender(t *testing.T) {
@@ -61,12 +61,12 @@ func TestSetupTemplate(t *testing.T) {
 			expected: "✓ Hello and greetings, friend.\n\n",
 		},
 		{
-			main:     "main.tmpl",
+			main:     "main.template",
 			expected: "✓ Hello and greetings, spam.\n\n",
 			input:    map[string]string{"name": "spam"},
 		},
 		{
-			main:     "_name.tmpl",
+			main:     "_name.template",
 			expected: "and hola, amigo.\n",
 			input:    map[string]string{"greeting": "hola", "name": "amigo"},
 		},

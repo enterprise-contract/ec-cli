@@ -306,7 +306,7 @@ func generateMarkdownSummary(r *Report) ([]byte, error) {
 	return markdownBuffer.Bytes(), nil
 }
 
-//go:embed templates/*.tmpl
+//go:embed templates/*.template
 var efs embed.FS
 
 func generateTextReport(r *Report) ([]byte, error) {
@@ -322,7 +322,7 @@ func generateTextReport(r *Report) ([]byte, error) {
 		TestReport: r.toAppstudioReport(),
 	}
 
-	return utils.RenderFromTemplatesWithMain(input, "text_report.tmpl", efs)
+	return utils.RenderFromTemplatesWithMain(input, "text_report.template", efs)
 }
 
 func writeMarkdownField(buffer *bytes.Buffer, name string, value any, icon string) {

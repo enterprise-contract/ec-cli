@@ -31,8 +31,8 @@ import (
 )
 
 const (
-	defaultMainTemplate = "main.tmpl"
-	defaultGlob         = "*/*.tmpl"
+	defaultMainTemplate = "main.template"
+	defaultGlob         = "*/*.template"
 )
 
 // Here we assume the caller will do the Execute or ExecuteTemplate themselves

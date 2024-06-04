@@ -8,17 +8,17 @@ Success: {{ $r.Success }}
 Result: {{ $t.Result }}
 Violations: {{ $t.Failures }}, Warnings: {{ $t.Warnings }}, Successes: {{ $t.Successes }}{{ nl -}}
 
-{{- template "_components.tmpl" $c -}}
+{{- template "_components.template" $c -}}
 
 Results:{{ nl -}}
 {{- if gt $t.Failures 0 -}}
-  {{- template "_results.tmpl" (toMap "Components" $c "Type" "Violation") -}}
+  {{- template "_results.template" (toMap "Components" $c "Type" "Violation") -}}
 {{- end -}}
 
 {{- if gt $t.Warnings 0 -}}
-  {{- template "_results.tmpl" (toMap "Components" $c "Type" "Warning") -}}
+  {{- template "_results.template" (toMap "Components" $c "Type" "Warning") -}}
 {{- end -}}
 
 {{- if and (gt $t.Successes 0) $showSuccesses -}}
-  {{- template "_results.tmpl" (toMap "Components" $c "Type" "Success") -}}
+  {{- template "_results.template" (toMap "Components" $c "Type" "Success") -}}
 {{- end -}}

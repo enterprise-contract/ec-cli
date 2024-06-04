@@ -1,0 +1,1 @@
+{{ indicator "green" }} Hello {{ template "_name.template" (toMap "greeting" "greetings" "name" .name) }}
