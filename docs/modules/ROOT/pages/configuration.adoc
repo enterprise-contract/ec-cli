@@ -67,6 +67,10 @@ xref:ec-policies:ROOT:release_policy.adoc#test_package[Test package] emits resul
 test case. A particular test case can be ignored without ignoring the remaining
 ones.
 
+It is also possible that a policy rule emits a list of terms. In such cases, the matcher only needs
+to match one of those terms. For example, if a policy rule emits multiple terms (`a`, `b`, and `c`),
+then a matcher that includes `b` will successfully match it.
+
 A "rule name:term"::
 
 This is similar to "package name:term", but allows finer granularity by only

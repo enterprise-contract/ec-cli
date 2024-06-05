@@ -449,6 +449,42 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 			},
 		},
 		{
+			name: "exclude by package name with multiple terms",
+			results: []Outcome{
+				{
+					Failures: []Result{
+						{Metadata: map[string]any{"code": "breakfast.spam", "term": []any{"eggs", "sgge"}}},
+						{Metadata: map[string]any{"code": "breakfast.spam", "term": []any{"bacon", "nocab"}}},
+						{Metadata: map[string]any{"code": "breakfast.sausage"}},
+						{Metadata: map[string]any{"code": "not_breakfast.spam", "term": []any{"eggs", "sgge"}}},
+					},
+					Warnings: []Result{
+						{Metadata: map[string]any{"code": "breakfast.ham", "term": []any{"eggs", "sgge"}}},
+						{Metadata: map[string]any{"code": "breakfast.ham", "term": []any{"bacon", "nocab"}}},
+						{Metadata: map[string]any{"code": "breakfast.hash"}},
+						{Metadata: map[string]any{"code": "not_breakfast.ham", "term": []any{"eggs", "sgge"}}},
+					},
+				},
+			},
+			config: &ecc.EnterpriseContractPolicyConfiguration{Exclude: []string{"breakfast:eggs"}},
+			want: []Outcome{
+				{
+					Failures: []Result{
+						{Metadata: map[string]any{"code": "breakfast.spam", "term": []any{"bacon", "nocab"}}},
+						{Metadata: map[string]any{"code": "breakfast.sausage"}},
+						{Metadata: map[string]any{"code": "not_breakfast.spam", "term": []any{"eggs", "sgge"}}},
+					},
+					Warnings: []Result{
+						{Metadata: map[string]any{"code": "breakfast.ham", "term": []any{"bacon", "nocab"}}},
+						{Metadata: map[string]any{"code": "breakfast.hash"}},
+						{Metadata: map[string]any{"code": "not_breakfast.ham", "term": []any{"eggs", "sgge"}}},
+					},
+					Skipped:    []Result{},
+					Exceptions: []Result{},
+				},
+			},
+		},
+		{
 			name: "exclude by package name with wildcard and term",
 			results: []Outcome{
 				{
@@ -717,6 +753,38 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 					},
 					Warnings: []Result{
 						{Metadata: map[string]any{"code": "breakfast.ham", "term": "eggs"}},
+					},
+					Skipped:    []Result{},
+					Exceptions: []Result{},
+				},
+			},
+		},
+		{
+			name: "include by package with multiple terms",
+			results: []Outcome{
+				{
+					Failures: []Result{
+						{Metadata: map[string]any{"code": "breakfast.spam", "term": []any{"eggs", "sgge"}}},
+						{Metadata: map[string]any{"code": "breakfast.spam", "term": []any{"bacon", "nocab"}}},
+						{Metadata: map[string]any{"code": "breakfast.sausage"}},
+						{Metadata: map[string]any{"code": "not_breakfast.spam", "term": []any{"eggs", "sgge"}}},
+					},
+					Warnings: []Result{
+						{Metadata: map[string]any{"code": "breakfast.ham", "term": []any{"eggs", "sgge"}}},
+						{Metadata: map[string]any{"code": "breakfast.ham", "term": []any{"bacon", "nocab"}}},
+						{Metadata: map[string]any{"code": "breakfast.hash"}},
+						{Metadata: map[string]any{"code": "not_breakfast.ham", "term": []any{"eggs", "sgge"}}},
+					},
+				},
+			},
+			config: &ecc.EnterpriseContractPolicyConfiguration{Include: []string{"breakfast:eggs"}},
+			want: []Outcome{
+				{
+					Failures: []Result{
+						{Metadata: map[string]any{"code": "breakfast.spam", "term": []any{"eggs", "sgge"}}},
+					},
+					Warnings: []Result{
+						{Metadata: map[string]any{"code": "breakfast.ham", "term": []any{"eggs", "sgge"}}},
 					},
 					Skipped:    []Result{},
 					Exceptions: []Result{},
@@ -1147,7 +1215,7 @@ func TestMakeMatchers(t *testing.T) {
 	cases := []struct {
 		name string
 		code string
-		term string
+		term any
 		want []string
 	}{
 		{
@@ -1155,6 +1223,15 @@ func TestMakeMatchers(t *testing.T) {
 			want: []string{
 				"breakfast", "breakfast.*", "breakfast.spam", "breakfast:eggs", "breakfast.*:eggs",
 				"breakfast.spam:eggs", "*",
+			},
+		},
+		{
+			name: "valid with multiple terms", code: "breakfast.spam", term: []any{"eggs", "ham"},
+			want: []string{
+				"breakfast", "breakfast.*", "breakfast.spam",
+				"breakfast:eggs", "breakfast.*:eggs", "breakfast.spam:eggs",
+				"breakfast:ham", "breakfast.*:ham", "breakfast.spam:ham",
+				"*",
 			},
 		},
 		{
