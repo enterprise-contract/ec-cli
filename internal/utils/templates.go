@@ -157,8 +157,8 @@ func toMap(values ...interface{}) (map[string]interface{}, error) {
 }
 
 // Can make it easier to get the right number of line breaks
-func nl() (string, error) {
-	return "\n", nil
+func nl() string {
+	return "\n"
 }
 
 // For use in template.Funcs above
