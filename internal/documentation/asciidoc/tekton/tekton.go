@@ -29,10 +29,10 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
-//go:embed task.template
+//go:embed task.tmpl
 var tektonTaskTemplateText string
 
-//go:embed nav.template
+//go:embed nav.tmpl
 var tektonNavTemplateText string
 
 var tektonTaskTemplate *template.Template
