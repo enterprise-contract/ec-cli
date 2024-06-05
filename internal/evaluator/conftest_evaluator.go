@@ -826,7 +826,7 @@ func score(name string) int {
 // makeMatchers returns the possible matching strings for the result.
 func makeMatchers(result Result) []string {
 	code := ExtractStringFromMetadata(result, metadataCode)
-	term := ExtractStringFromMetadata(result, metadataTerm)
+	terms := extractStringsFromMetadata(result, metadataTerm)
 	parts := strings.Split(code, ".")
 	var pkg string
 	if len(parts) >= 2 {
@@ -840,12 +840,18 @@ func makeMatchers(result Result) []string {
 		matchers = append(matchers, pkg, fmt.Sprintf("%s.*", pkg), fmt.Sprintf("%s.%s", pkg, rule))
 	}
 
-	// A term can be applied to any of the package matchers above.
-	if term != "" {
-		for i, l := 0, len(matchers); i < l; i++ {
-			matchers = append(matchers, fmt.Sprintf("%s:%s", matchers[i], term))
+	// A term can be applied to any of the package matchers above. But we don't want to apply a term
+	// matcher to a matcher that already includes a term.
+	var termMatchers []string
+	for _, term := range terms {
+		if len(term) == 0 {
+			continue
+		}
+		for _, matcher := range matchers {
+			termMatchers = append(termMatchers, fmt.Sprintf("%s:%s", matcher, term))
 		}
 	}
+	matchers = append(matchers, termMatchers...)
 
 	matchers = append(matchers, "*")
 
@@ -871,12 +877,27 @@ func extractCollections(result Result) []string {
 
 // ExtractStringFromMetadata returns the string value from the result metadata at the given key.
 func ExtractStringFromMetadata(result Result, key string) string {
-	if maybeValue, exists := result.Metadata[key]; exists {
-		if value, ok := maybeValue.(string); ok {
-			return value
-		}
+	values := extractStringsFromMetadata(result, key)
+	if len(values) > 0 {
+		return values[0]
 	}
 	return ""
+}
+
+func extractStringsFromMetadata(result Result, key string) []string {
+	if value, ok := result.Metadata[key].(string); ok && len(value) > 0 {
+		return []string{value}
+	}
+	if anyValues, ok := result.Metadata[key].([]any); ok {
+		var values []string
+		for _, anyValue := range anyValues {
+			if value, ok := anyValue.(string); ok && len(value) > 0 {
+				values = append(values, value)
+			}
+		}
+		return values
+	}
+	return []string{}
 }
 
 func withCapabilities(ctx context.Context, capabilities string) context.Context {
