@@ -16,7 +16,7 @@
     {{- colorIndicator $type }} {{ colorText $type (printf "[%s] %s" $type .Metadata.code) }}{{ nl -}}
 
     {{- if $imageRef -}}
-      {{- indentWrap $indent $wrap (printf "ImageRef: %s" $imageRef ) }}{{ nl -}}
+      {{- indent $indent (printf "ImageRef: %s" $imageRef ) }}{{ nl -}}
     {{- end -}}
 
     {{/* For a success the message is generally just "Pass" so don't show it */}}
