@@ -253,6 +253,12 @@ func TestExpandImageIndex(t *testing.T) {
 				Platform:  &v1.Platform{Architecture: "arm64"},
 				Digest:    v1.Hash{Algorithm: "sha256", Hex: "digest2"},
 			},
+			{
+				MediaType: types.OCIManifestSchema1,
+				// No Platform since that's an optional attribute:
+				//	https://github.com/opencontainers/image-spec/blob/main/image-index.md
+				Digest: v1.Hash{Algorithm: "sha256", Hex: "digest3"},
+			},
 		},
 	}, nil)
 
@@ -270,20 +276,23 @@ func TestExpandImageIndex(t *testing.T) {
 	}
 
 	expandImageIndex(ctx, snap)
-	assert.True(t, len(snap.Components) == 2, "Image Index itself should be removed and be replaced by individual image manifests")
+	assert.True(t, len(snap.Components) == 3, "Image Index itself should be removed and be replaced by individual image manifests")
 
-	amd64Image, arm64Image := false, false
+	amd64Image, arm64Image, noarchImage := false, false, false
 	for _, archImage := range snap.Components {
 		switch {
 		case strings.Contains(archImage.Name, "some-image-name-sha256:digest1-amd64"):
 			amd64Image = true
 		case strings.Contains(archImage.Name, "some-image-name-sha256:digest2-arm64"):
 			arm64Image = true
+		case strings.Contains(archImage.Name, "some-image-name-sha256:digest3-noarch-2"):
+			noarchImage = true
 		}
 	}
 
 	assert.True(t, amd64Image, "An amd64 image should be present in the component")
 	assert.True(t, arm64Image, "An arm64 image should be present in the component")
+	assert.True(t, noarchImage, "A noarch image should be present in the component")
 }
 
 func TestExpandImageImage_Errors(t *testing.T) {

@@ -221,9 +221,15 @@ func expandImageIndex(ctx context.Context, snap *app.SnapshotSpec) {
 
 		// The image is an image index and accessible so remove the image index itself and add index manifests
 		components = components[:len(components)-1]
-		for _, manifest := range indexManifest.Manifests {
+		for i, manifest := range indexManifest.Manifests {
+			var arch string
+			if manifest.Platform != nil && manifest.Platform.Architecture != "" {
+				arch = manifest.Platform.Architecture
+			} else {
+				arch = fmt.Sprintf("noarch-%d", i)
+			}
 			archComponent := component
-			archComponent.Name = fmt.Sprintf("%s-%s-%s", component.Name, manifest.Digest, manifest.Platform.Architecture)
+			archComponent.Name = fmt.Sprintf("%s-%s-%s", component.Name, manifest.Digest, arch)
 			archComponent.ContainerImage = fmt.Sprintf("%s@%s", ref.Context().Name(), manifest.Digest)
 			components = append(components, archComponent)
 		}
