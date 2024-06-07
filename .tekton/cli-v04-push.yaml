@@ -7,13 +7,13 @@ metadata:
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
     pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch
-      == "main"
+      == "release-v0.4"
   creationTimestamp: null
   labels:
-    appstudio.openshift.io/application: ec-main-ci
-    appstudio.openshift.io/component: cli-main-ci
+    appstudio.openshift.io/application: ec-v04
+    appstudio.openshift.io/component: cli-v04
     pipelines.appstudio.openshift.io/type: build
-  name: cli-main-ci-on-push
+  name: cli-v04-on-push
   namespace: rhtap-contract-tenant
 spec:
   params:
@@ -24,7 +24,7 @@ spec:
   - name: image-expires-after
     value: ''
   - name: output-image
-    value: quay.io/redhat-user-workloads/rhtap-contract-tenant/ec-main-ci/cli-main-ci:{{revision}}
+    value: quay.io/redhat-user-workloads/rhtap-contract-tenant/ec-v04/cli-v04:{{revision}}
   - name: path-context
     value: .
   - name: revision
@@ -98,6 +98,14 @@ spec:
     - default: "false"
       description: Build a source image.
       name: build-source-image
+      type: string
+    - default: []
+      description: Array of --build-arg values ("arg=value" strings) for buildah
+      name: build-args
+      type: array
+    - default: ""
+      description: Path to a file with build arguments for buildah, see https://www.mankier.com/1/buildah-build#--build-arg-file
+      name: build-args-file
       type: string
     results:
     - description: ""
@@ -187,6 +195,14 @@ spec:
         - name: kind
           value: task
         resolver: bundles
+      when:
+      - input: $(params.prefetch-input)
+        operator: notin
+        values:
+        - ""
+      workspaces:
+      - name: git-basic-auth
+        workspace: git-auth
     - name: build-container
       params:
       - name: IMAGE
@@ -203,6 +219,9 @@ spec:
         value: $(params.image-expires-after)
       - name: COMMIT_SHA
         value: $(tasks.clone-repository.results.commit)
+      - name: BUILD_ARGS
+        value:
+        - $(params.build-args[*])
       - name: BUILD_ARGS_FILE
         value: "$(params.build-args-file)"
       - name: SOURCE_ARTIFACT
@@ -385,6 +404,21 @@ spec:
         operator: in
         values:
         - "false"
+    - name: apply-tags
+      params:
+      - name: IMAGE
+        value: $(tasks.build-container.results.IMAGE_URL)
+      runAfter:
+      - build-container
+      taskRef:
+        params:
+        - name: name
+          value: apply-tags
+        - name: bundle
+          value: quay.io/konflux-ci/tekton-catalog/task-apply-tags:0.1@sha256:175162b0a1c55e911d0d25ddef97e90932b5043f0b523cf83ed4824363840d74
+        - name: kind
+          value: task
+        resolver: bundles
     workspaces:
     - name: git-auth
       optional: true
