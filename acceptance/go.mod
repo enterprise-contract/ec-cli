@@ -32,7 +32,7 @@ require (
 	github.com/walkerus/go-wiremock v1.7.0
 	github.com/yudai/gojsondiff v1.0.0
 	golang.org/x/exp v0.0.0-20231108232855-2478ac86f678
-	gopkg.in/square/go-jose.v2 v2.6.0
+	gopkg.in/go-jose/go-jose.v2 v2.6.3
 	k8s.io/api v0.29.5
 	k8s.io/apimachinery v0.29.5
 	k8s.io/client-go v0.29.5
@@ -232,7 +232,6 @@ require (
 	google.golang.org/grpc v1.64.0 // indirect
 	google.golang.org/protobuf v1.34.1 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.12.0 // indirect
-	gopkg.in/go-jose/go-jose.v2 v2.6.3 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
