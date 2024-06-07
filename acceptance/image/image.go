@@ -52,7 +52,7 @@ import (
 	"github.com/sigstore/cosign/v2/pkg/oci/static"
 	cosigntypes "github.com/sigstore/cosign/v2/pkg/types"
 	"github.com/sigstore/sigstore/pkg/signature"
-	"gopkg.in/square/go-jose.v2/json"
+	"gopkg.in/go-jose/go-jose.v2/json"
 
 	"github.com/enterprise-contract/ec-cli/acceptance/attestation"
 	"github.com/enterprise-contract/ec-cli/acceptance/crypto"
