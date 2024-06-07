@@ -21,14 +21,14 @@ set -o pipefail
 
 CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 if [[ $CURRENT_BRANCH != "main" ]]; then
-  echo "Expecting to be in main branch!"
-  exit 1
+	echo "Expecting to be in main branch!"
+	exit 1
 fi
 
 RELEASE_NAME="v$(cat VERSION)"
 if [[ $RELEASE_NAME != *.* || $RELEASE_NAME == *.*.* ]]; then
-  echo "Release name should include one dot, e.g. v0.1-tech-preview, or v1.1"
-  exit 1
+	echo "Release name should include one dot, e.g. v0.5 or v1.1-candidate"
+	exit 1
 fi
 
 # Use release name as-is for the branch name
@@ -49,70 +49,98 @@ echo Konflux cli component name: $KONFLUX_CLI_COMPONENT_NAME
 
 KONFLUX_APPS_URL=https://console.redhat.com/preview/application-pipeline/workspaces/rhtap-contract/applications
 
-# Explain what needs to be done next
-# (We could make this more automated in future.)
-cat <<EOT
+nice_title() {
+	echo -e "\033[1m» $*\033[0m"
+}
 
+# Explain what needs to be done next
+# This is like slightly interactive documentation.
+# (We could make this more automated in future.)
+cat <<EOT1
 Next steps:
 
-# Create the new release branch in the upstream repo
+$(nice_title Create new release branch)
+
 git fetch upstream
 git push upstream refs/remotes/upstream/main:refs/heads/${BRANCH_NAME}
-
-# Make your local version of the release branch
 git checkout -b ${BRANCH_NAME} upstream/${BRANCH_NAME}
 
-# Create the new application in Konflux
+$(nice_title Create new application in Konflux)
+
 Login at ${KONFLUX_APPS_URL}
-Create a new application by importing code from https://github.com/enterprise-contract/ec-cli
-Set Git reference to ${BRANCH_NAME} and click "Import code"
-Set the application name to ${KONFLUX_APPLICATION_NAME}
-Set the component name to ${KONFLUX_CLI_COMPONENT_NAME}
-Set Dockerfile to Dockerfile.dist
-Unset the "Default build pipeline" toggle
 Click "Create application"
+  Application name: ${KONFLUX_APPLICATION_NAME}
+Click "Add component"
+  Git repository url: https://github.com/enterprise-contract/ec-cli
+  Git reference: ${BRANCH_NAME} (under "Advanced Options")
+  Dockerfile: Dockerfile.dist
+  Component name: ${KONFLUX_CLI_COMPONENT_NAME}
+  Pipeline: docker-build
+Click "Create application" to submit
 
-# Wait for Konflux to create its automated PR for the ec-cli component
-Wait for the PR to be created
-Go look at the PR in GitHub
+$(nice_title Wait for Konflux to generate its pipeline definition PR)
+
+The PR should appear at https://github.com/enterprise-contract/ec-cli/pulls
 Wait for the PR to pass the ${KONFLUX_CLI_COMPONENT_NAME}-on-pull-request check
-You can also watch the activity at ${KONFLUX_APPS_URL}/${KONFLUX_APPLICATION_NAME}/activity/pipelineruns
-When it's done you can merge. (Continue to next section while you're waiting...)
+You can also find the pipeline run at ${KONFLUX_APPS_URL}/${KONFLUX_APPLICATION_NAME}/activity/pipelineruns
+When it's done you can merge, or you can leave it unmerged and push more commits to it shortly.
+(Either way you can continue to next section while you're waiting.)
 
-# Modify EC policy config
-Go to the integration tests at ${KONFLUX_APPS_URL}/${KONFLUX_APPLICATION_NAME}/integrationtests
+EOT1
+
+# (Breaking up the long heredoc)
+cat <<EOT2
+$(nice_title Modify the EC integration test policy param)
+
+Go to the automatically created integration tests at
+${KONFLUX_APPS_URL}/${KONFLUX_APPLICATION_NAME}/integrationtests
 Edit ${KONFLUX_APPLICATION_NAME}-enterprise-contract and add a parameter as follows:
   Name: POLICY_CONFIGURATION
   Value: rhtap-releng-tenant/registry-rhtap-contract
 Save changes
-Alternative options for the param value:
-  enterprise-contract-service/redhat-no-hermetic
-  github.com/enterprise-contract/config//redhat-no-hermetic
 
-# Apply Tekton pipeline modifications for the ec-cli component
-Should be done on top of the Konflux generated PR
+$(nice_title Apply pipeline customizations from main branch to the new release branch)
+
+This should be done on top of the Konflux generated PR, (either before it's merged or after).
+
 git checkout ${BRANCH_NAME}
 hack/patch-release-pipelines.sh
-hack/patch-release-pipelines.sh digest_bumps # maybe
+hack/patch-release-pipelines.sh digest_bumps # Maybe not needed now since digests should be pretty current
+
+Notes:
+- The script tries to apply hunks one by one, but some of the hunks may be already applied
+  and some of them might not apply cleanly.
+- For that reason always say "no" when it offers to force apply or apply in reverse
+- The manual diff review is super important since we expect this script to not get everying right
+- There could be some significant changes in the new generated pipeline that aren't in main branch,
+  e.g. brand new tasks, or modified task params. We should generally assume these are good changes
+  and keep them, and also aim to port them back (up/down/sideways?) into main branch. If this work
+  is non-trivial then file a story or stories to do that.
+
 Review the diff between the ${KONFLUX_CLI_COMPONENT_NAME}- and cli-main-ci- pipelines
-Review the generated commit, and inspect the diff as described.
-Note: There could be some significant changes here to consider, e.g. brand new tasks that are part of
-the new Konflux default pipeline. I think we should generally assume these are good changes and aim to
-port them back (up/down/sideways?) into main branch. If it's non-trivial then file a story or stories
-to do that.
+Make changes that need to be made that weren't handled by the script. The vimdiff commands
+suggested below are a good way to do that. Amend the commit until you're happy with it.
 
-# Create pipeline customizations PR
-With the above commit, create a PR for the ${BRANCH_NAME} branch. Be extra careful to choose the right
-target branch when creating the PR. You know who I'm talking to.. ;]
-(Todo maybe: If it's not too complicated you could consider adding this commit on top of the commit in the
-PR created by Konflux before merging that PR.)
+Vimdiff commands:
+ vimdiff +'set ft=yaml' <(git show main:.tekton/cli-main-ci-pull-request.yaml) .tekton/cli-${KONFLUX_APPLICATION_SUFFIX}-pull-request.yaml
+ vimdiff +'set ft=yaml' <(git show main:.tekton/cli-main-ci-push.yaml) .tekton/cli-${KONFLUX_APPLICATION_SUFFIX}-push.yaml
 
-# Create a Releaseplan record via the tenants config repo
+EOT2
+
+cat <<EOT3
+$(nice_title Create pipeline customizations PR)
+
+With the above commit, create a new PR if the Konflux PR was merged already, or push an
+extra commit to that generated PR, for the ${BRANCH_NAME} branch. If creating a PR, be extra
+careful to choose the right target branch when creating the PR e.g. it must be release-v0.4
+not main, and not the konflux/references/release-v0.x branch used for PRs.
+
+$(nice_title Create a ReleasePlan record in the tenants config repo)
+
 The goal is to make a PR similar to https://github.com/redhat-appstudio/tenants-config/pull/286
-Consider also if you want to remove older release plans.
-This might be a useful snippet to copy paste, but please look at it carefully and see if you
-think it looks right:
-
+or https://github.com/redhat-appstudio/tenants-config/pull/397 .
+Consider also if you want to remove older release plans. The new release plan should look
+something like this:
 ---
 apiVersion: appstudio.redhat.com/v1alpha1
 kind: ReleasePlan
@@ -126,12 +154,27 @@ spec:
   application: ${KONFLUX_APPLICATION_NAME}
   target: rhtap-releng-tenant
 
-# Create a PR in the konflux-release-data repo to update the ReleasePlanAdmission record
-You need to change a few lines in this file:
-https://gitlab.cee.redhat.com/releng/konflux-release-data/-/blob/main/config/stone-prd-rh01.pg1f.p1/OP/ReleasePlanAdmission/rhtap-contract/ec-cli.yaml?ref_type=heads
-Specifically under "applications", "components" and "floatingTags".
-https://gitlab.cee.redhat.com/releng/konflux-release-data/-/merge_requests/235/diffs could be a useful reference.
+Note that you have to run the ./build-manifests.sh script in that repo and check in the
+resulting changes.
 
-EOT
+EOT3
 
-# Todo: What about the RPA?
+cat <<EOT4
+$(nice_title Create a PR in the konflux-release-data repo to update the ReleasePlanAdmission record)
+
+You need to change a few lines in the ec-cli.yaml ReleasePlanAdmission file in the konflux-release-data repo.
+https://gitlab.cee.redhat.com/releng/konflux-release-data/-/merge_requests/557/diffs?commit_id=43c03446f2330f31913613fb5a0f757832780fba
+should be a useful reference. Again, consider if you want to retire one of our older repo mappings.
+
+$(nice_title Confirming it\'s working)
+
+If the RP and the RPA PRs are both merged, any changed merged to the release branch should push out a release.
+You can see releases in the releases tab:
+https://console.redhat.com/preview/application-pipeline/workspaces/rhtap-contract/applications/ec-${KONFLUX_APPLICATION_SUFFIX}/releases
+Viewing the release pipeline itself requires permissions in the rhtap-releng workspace.
+
+You can confirm what images were released using the show-latest-build-versions.sh script in the hacks repo,
+or by look at https://catalog.redhat.com/software/containers/rhtas/ec-rhel9/65f1f9dcfc649a18c6075de5.
+or using skopeo, e.g. 'skopeo inspect docker://registry.redhat.io/rhtas/ec-rhel9:latest' or podman, e.g.
+'podman run --rm registry.redhat.io/rhtas/ec-rhel9:latest version'.
+EOT4
