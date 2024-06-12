@@ -40,28 +40,6 @@ COPY . .
 
 RUN /build/build.sh "${BUILD_LIST}" "${BUILD_SUFFIX}"
 
-# Extract this so we can download the matching cosign version below
-RUN go list --mod=readonly -f '{{.Version}}' -m github.com/sigstore/cosign/v2 | tee cosign_version.txt
-
-## Downloads
-
-FROM registry.access.redhat.com/ubi9/ubi-minimal:9.4@sha256:ef6fb6b3b38ef6c85daebeabebc7ff3151b9dd1500056e6abc9c3295e4b78a51 AS download
-
-ARG TARGETOS
-ARG TARGETARCH
-
-WORKDIR /download
-
-COPY --from=build /build/cosign_version.txt /download/
-
-# Download the matching version of cosign
-RUN COSIGN_VERSION=$(cat /download/cosign_version.txt) && \
-  curl -sLO https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign-${TARGETOS}-${TARGETARCH} && \
-  curl -sLO https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign_checksums.txt && \
-  sha256sum --check <(grep -w "cosign-${TARGETOS}-${TARGETARCH}" < cosign_checksums.txt) && \
-  mv "cosign-${TARGETOS}-${TARGETARCH}" cosign && \
-  chmod +x cosign
-
 ## Final image
 
 FROM registry.access.redhat.com/ubi9/ubi-minimal:9.4@sha256:ef6fb6b3b38ef6c85daebeabebc7ff3151b9dd1500056e6abc9c3295e4b78a51
@@ -78,9 +56,8 @@ LABEL \
   io.openshift.tags="rhtas rhtap trusted-artifact-signer trusted-application-pipeline enterprise-contract ec opa cosign sigstore" \
   com.redhat.component="ec-cli"
 
-# Install cosign and other tools we want to use in the Tekton task
+# Install tools we want to use in the Tekton task
 RUN microdnf upgrade --assumeyes --nodocs --setopt=keepcache=0 --refresh && microdnf -y --nodocs --setopt=keepcache=0 install git-core jq
-COPY --from=download /download/cosign /usr/local/bin/cosign
 
 # Copy all the binaries so they're available to extract and download
 # (Beware if you're testing this locally it will copy everything from
@@ -101,6 +78,6 @@ COPY --from=build /build/LICENSE /licenses/LICENSE
 USER 1001
 
 # Show some version numbers for troubleshooting purposes
-RUN git version && jq --version && cosign version && ec version && ls -l /usr/local/bin
+RUN git version && jq --version && ec version && ls -l /usr/local/bin
 
 ENTRYPOINT ["/usr/local/bin/ec"]
