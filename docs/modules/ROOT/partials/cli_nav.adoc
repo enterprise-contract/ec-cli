@@ -22,6 +22,8 @@
 ** xref:ec_opa_sign.adoc[ec opa sign]
 ** xref:ec_opa_test.adoc[ec opa test]
 ** xref:ec_opa_version.adoc[ec opa version]
+** xref:ec_sigstore.adoc[ec sigstore]
+** xref:ec_sigstore_initialize.adoc[ec sigstore initialize]
 ** xref:ec_test.adoc[ec test]
 ** xref:ec_track.adoc[ec track]
 ** xref:ec_track_bundle.adoc[ec track bundle]
