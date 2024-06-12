@@ -32,35 +32,10 @@ COPY . .
 
 RUN /build/build.sh "${TARGETOS}_${TARGETARCH}"
 
-# Extract this so we can download the matching cosign version below
-RUN go list --mod=readonly -f '{{.Version}}' -m github.com/sigstore/cosign/v2 | tee cosign_version.txt
-
-## Downloads
-
-FROM registry.access.redhat.com/ubi9/ubi-minimal:9.4@sha256:ef6fb6b3b38ef6c85daebeabebc7ff3151b9dd1500056e6abc9c3295e4b78a51 AS download
-
-ARG TARGETOS
-ARG TARGETARCH
-
-WORKDIR /download
-
-COPY --from=build /build/cosign_version.txt /download/
-
-# Download the matching version of cosign
-RUN COSIGN_VERSION=$(cat /download/cosign_version.txt) && \
-  curl -sLO https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign-${TARGETOS}-${TARGETARCH} && \
-  curl -sLO https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign_checksums.txt && \
-  sha256sum --check <(grep -w "cosign-${TARGETOS}-${TARGETARCH}" < cosign_checksums.txt) && \
-  mv "cosign-${TARGETOS}-${TARGETARCH}" cosign && \
-  chmod +x cosign
-
 FROM registry.access.redhat.com/ubi9/ubi-minimal:9.4@sha256:ef6fb6b3b38ef6c85daebeabebc7ff3151b9dd1500056e6abc9c3295e4b78a51
 
 ARG TARGETOS
 ARG TARGETARCH
-
-COPY --from=download /download/cosign /usr/local/bin/cosign
-RUN cosign version
 
 RUN microdnf upgrade --assumeyes --nodocs --setopt=keepcache=0 --refresh && microdnf -y --nodocs --setopt=keepcache=0 install git-core jq
 
