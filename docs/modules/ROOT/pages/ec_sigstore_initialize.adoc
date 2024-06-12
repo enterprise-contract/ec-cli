@@ -1,0 +1,55 @@
+= ec sigstore initialize
+
+Initializes Sigstore root to retrieve trusted certificate and key targets for verification== Synopsis
+
+Initializes Sigstore root to retrieve trusted certificate and key targets for verification.
+
+The following options are used by default:
+- The current trusted Sigstore TUF root is embedded inside ec at the time of release.
+- Sigstore remote TUF repository is pulled from the CDN mirror at tuf-repo-cdn.sigstore.dev.
+
+To provide an out-of-band trusted initial root.json, use the --root flag with a file or
+URL reference. This will enable you to point ec to a separate TUF root.
+
+Any updated TUF repository will be written to $HOME/.sigstore/root/.
+
+Trusted keys and certificate used in ec verification (e.g. verifying Fulcio issued certificates
+with Fulcio root CA) are pulled form the trusted metadata.
+
+This command is mostly a wrapper around "cosign initialize".
+
+[source,shell]
+----
+ec sigstore initialize [flags]
+----
+
+== Examples
+ec initialize -mirror <url> -out <file>
+
+Initialize root with distributed root keys, default mirror, and default out path.
+ec initialize
+
+Initialize with an out-of-band root key file, using the default mirror.
+ec initialize -root <url>
+
+Initialize with an out-of-band root key file and custom repository mirror.
+ec initialize -mirror <url> -root <url>
+
+== Options
+
+-h, --help:: help for initialize (Default: false)
+--mirror:: GCS bucket to a SigStore TUF repository, or HTTP(S) base URL, or file:/// for local filestore remote (air-gap) (Default: https://tuf-repo-cdn.sigstore.dev)
+--root:: path to trusted initial root. defaults to embedded root
+
+== Options inherited from parent commands
+
+--debug:: same as verbose but also show function names and line numbers (Default: false)
+--kubeconfig:: path to the Kubernetes config file to use
+--quiet:: less verbose output (Default: false)
+--timeout:: max overall execution duration (Default: 5m0s)
+--trace:: enable trace logging (Default: false)
+--verbose:: more verbose output (Default: false)
+
+== See also
+
+ * xref:ec_sigstore.adoc[ec sigstore - Perform certain sigstore operations]
