@@ -35,7 +35,7 @@ for os_arch in ${BUILDS}; do
     [[ "$GOOS" == "windows" ]] && DOT_EXE=".exe" || DOT_EXE=""
     BINFILE="ec_${GOOS}_${GOARCH}${DOT_EXE}"
     echo "Building ${BINFILE} for ${EC_FULL_VERSION}"
-    go build \
+    GOOS="${GOOS}" GOARCH="${GOARCH}" go build \
         -trimpath \
         --mod=readonly \
         -ldflags="-s -w -X github.com/enterprise-contract/ec-cli/internal/version.Version=${EC_FULL_VERSION}" \
