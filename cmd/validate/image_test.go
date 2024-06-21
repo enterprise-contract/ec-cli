@@ -24,6 +24,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -31,6 +32,8 @@ import (
 	"github.com/gkampitakis/go-snaps/snaps"
 	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
+	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus/hooks/test"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 
@@ -747,6 +750,10 @@ func Test_ValidateImageCommandExtraData(t *testing.T) {
       - "registry/policy:latest"
     data:
       - "registry/policy-data:latest"
+    ruleData:
+      custom_rule_data:
+        prefix_data:
+          - registry1
 configuration:
   collections:
     - minimal
@@ -759,6 +766,22 @@ configuration:
 		panic(err)
 	}
 
+	testExtraRuleDataYAML := `---
+kind: ReleasePlanAdmission
+spec:
+  application: [some-app]
+  data:
+    mapping:
+      components:
+        - name: some-name
+          repository: quay.io/some-namespace/msd
+`
+
+	err = afero.WriteFile(fs, "/value.yaml", []byte(testExtraRuleDataYAML), 0644)
+	if err != nil {
+		panic(err)
+	}
+
 	cmd.SetArgs(append(rootArgs, []string{
 		"--image",
 		"registry/image:tag",
@@ -767,7 +790,7 @@ configuration:
 		"--policy",
 		"/policy.json",
 		"--extra-rule-data",
-		"key=value",
+		"key=/value.yaml,key2=value2",
 	}...))
 
 	var out bytes.Buffer
@@ -794,7 +817,9 @@ configuration:
 			"registry/policy:latest"
 		],
 		"ruleData": {
-			"key":"value"
+			"custom_rule_data":{"prefix_data":["registry1"]},
+			"key": "---\nkind: ReleasePlanAdmission\nspec:\n  application: [some-app]\n  data:\n    mapping:\n      components:\n        - name: some-name\n          repository: quay.io/some-namespace/msd\n",
+			"key2": "value2"
 		}
 	  }`, string(sourceSampleMarshaled))
 }
@@ -864,6 +889,110 @@ func Test_ValidateImageCommandEmptyPolicyFile(t *testing.T) {
 
 	err = cmd.Execute()
 	assert.EqualError(t, err, "1 error occurred:\n\t* file /policy.yaml is empty\n\n")
+}
+
+func Test_ValidateImageErrorLog(t *testing.T) {
+	// TODO: Enhance this test to cover other Error Log messages
+	validate := func(_ context.Context, component app.SnapshotComponent, _ policy.Policy, _ []evaluator.Evaluator, _ bool) (*output.Output, error) {
+		return &output.Output{
+			ImageSignatureCheck: output.VerificationStatus{
+				Passed: true,
+			},
+			ImageAccessibleCheck: output.VerificationStatus{
+				Passed: true,
+			},
+			AttestationSignatureCheck: output.VerificationStatus{
+				Passed: true,
+			},
+			AttestationSyntaxCheck: output.VerificationStatus{
+				Passed: true,
+			},
+			PolicyCheck: []evaluator.Outcome{
+				{
+					FileName:  "test.json",
+					Namespace: "test.main",
+					Successes: []evaluator.Result{
+						{
+							Message: "Pass",
+							Metadata: map[string]interface{}{
+								"code": "policy.nice",
+							},
+						},
+					},
+				},
+			},
+			ImageURL: component.ContainerImage,
+			ExitCode: 0,
+		}, nil
+	}
+	logger, hook := test.NewNullLogger()
+	logger.SetLevel(log.DebugLevel)
+	log.StandardLogger().ReplaceHooks(make(log.LevelHooks))
+	log.AddHook(hook)
+
+	validateImageCmd := validateImageCmd(validate)
+	cmd := setUpCobra(validateImageCmd)
+
+	fs := afero.NewMemMapFs()
+
+	ctx := utils.WithFS(context.Background(), fs)
+	client := fake.FakeClient{}
+	commonMockClient(&client)
+	ctx = oci.WithClient(ctx, &client)
+
+	cmd.SetContext(ctx)
+
+	testPolicyJSON := `sources:
+  - policy:
+      - "registry/policy:latest"
+    data:
+      - "registry/policy-data:latest"
+configuration:
+  collections:
+    - minimal
+  include:
+    - "*"
+  exclude: []
+`
+	err := afero.WriteFile(fs, "/policy.yaml", []byte(testPolicyJSON), 0644)
+	if err != nil {
+		panic(err)
+	}
+
+	err = afero.WriteFile(fs, "/value.json", []byte(nil), 0644)
+	if err != nil {
+		panic(err)
+	}
+	args := append(rootArgs, []string{
+		"--image",
+		"registry/image:tag",
+		"--public-key",
+		utils.TestPublicKey,
+		"--policy",
+		"/policy.yaml",
+		"--extra-rule-data",
+		"key=/value.json",
+	}...)
+	cmd.SetArgs(args)
+
+	var out bytes.Buffer
+	cmd.SetOut(&out)
+
+	utils.SetTestRekorPublicKey(t)
+
+	err = cmd.Execute()
+	assert.NoError(t, err)
+
+	errorMsg := "Unable to load data from extraRuleData: file /value.json is empty"
+	found := false
+	for _, entry := range hook.AllEntries() {
+		if strings.Contains(entry.Message, errorMsg) {
+			found = true
+			break
+		}
+	}
+	assert.True(t, found, "Error message should have the pre-defined string", errorMsg)
+	log.StandardLogger().ReplaceHooks(make(log.LevelHooks))
 }
 
 func Test_ValidateErrorCommand(t *testing.T) {

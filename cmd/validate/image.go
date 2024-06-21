@@ -227,12 +227,12 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 					policySpec := p.Spec()
 					sources := policySpec.Sources
 					for i := range sources {
-						source := sources[i]
+						src := sources[i]
 						var rule_data_raw []byte
 						unmarshaled := make(map[string]interface{})
 
-						if source.RuleData != nil {
-							rule_data_raw, err = source.RuleData.MarshalJSON()
+						if src.RuleData != nil {
+							rule_data_raw, err = src.RuleData.MarshalJSON()
 							if err != nil {
 								log.Errorf("Unable to parse ruledata to raw data")
 							}
@@ -249,7 +249,11 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 							if len(parts) < 2 {
 								log.Errorf("Incorrect syntax for --extra-rule-data")
 							}
-							unmarshaled[parts[0]] = parts[1]
+							extraRuleDataPolicyConfig, err := validate_utils.GetPolicyConfig(ctx, parts[1])
+							if err != nil {
+								log.Errorf("Unable to load data from extraRuleData: %s", err.Error())
+							}
+							unmarshaled[parts[0]] = extraRuleDataPolicyConfig
 						}
 						rule_data_raw, err = json.Marshal(unmarshaled)
 						if err != nil {
