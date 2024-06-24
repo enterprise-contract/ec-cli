@@ -6,7 +6,7 @@ require (
 	cuelang.org/go v0.9.1
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/Maldris/go-billy-afero v0.0.0-20200815120323-e9d3de59c99a
-	github.com/enterprise-contract/enterprise-contract-controller/api v0.1.47
+	github.com/enterprise-contract/enterprise-contract-controller/api v0.1.48
 	github.com/evanphx/json-patch v5.9.0+incompatible
 	github.com/gkampitakis/go-snaps v0.5.4
 	github.com/go-git/go-git/v5 v5.12.0
@@ -14,7 +14,7 @@ require (
 	github.com/google/go-cmp v0.6.0
 	github.com/google/go-containerregistry v0.19.2
 	github.com/hako/durafmt v0.0.0-20210608085754-5c1018a4e16b
-	github.com/hashicorp/go-getter v1.7.4
+	github.com/hashicorp/go-getter v1.7.5
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/in-toto/in-toto-golang v0.9.0
 	github.com/invopop/jsonschema v0.12.0
@@ -44,7 +44,7 @@ require (
 	k8s.io/apiextensions-apiserver v0.29.6
 	k8s.io/apimachinery v0.29.6
 	k8s.io/client-go v0.29.6
-	k8s.io/klog/v2 v2.130.0
+	k8s.io/klog/v2 v2.130.1
 	k8s.io/kube-openapi v0.0.0-20231010175941-2dd684a91f00
 	sigs.k8s.io/yaml v1.4.0
 )
