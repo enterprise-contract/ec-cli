@@ -7,7 +7,7 @@ require (
 	github.com/cucumber/godog v0.14.1
 	github.com/cyberphone/json-canonicalization v0.0.0-20231011164504-785e29786b46
 	github.com/doiit/picocolors v1.0.1
-	github.com/enterprise-contract/enterprise-contract-controller/api v0.1.47
+	github.com/enterprise-contract/enterprise-contract-controller/api v0.1.48
 	github.com/evanphx/json-patch/v5 v5.9.0
 	github.com/gkampitakis/go-snaps v0.5.4
 	github.com/go-git/go-billy/v5 v5.5.0
