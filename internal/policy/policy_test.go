@@ -29,6 +29,7 @@ import (
 
 	hd "github.com/MakeNowJust/heredoc"
 	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
+	"github.com/gkampitakis/go-snaps/snaps"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
 	cosignSig "github.com/sigstore/cosign/v2/pkg/signature"
 	sigstoreSig "github.com/sigstore/sigstore/pkg/signature"
@@ -722,178 +723,10 @@ func TestJsonSchemaFromPolicySpec(t *testing.T) {
 		RekorUrl:  "testRekorUrl",
 	}
 
-	expectedSchema := `{
-		"$schema": "https://json-schema.org/draft/2020-12/schema",
-		"$id": "https://github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1/enterprise-contract-policy-spec",
-		"$ref": "#/$defs/EnterpriseContractPolicySpec",
-		"$defs": {
-		  "EnterpriseContractPolicyConfiguration": {
-			"properties": {
-			  "exclude": {
-				"items": {
-				  "type": "string"
-				},
-				"type": "array"
-			  },
-			  "include": {
-				"items": {
-				  "type": "string"
-				},
-				"type": "array"
-			  },
-			  "collections": {
-				"items": {
-				  "type": "string"
-				},
-				"type": "array"
-			  }
-			},
-			"additionalProperties": false,
-			"type": "object"
-		  },
-		  "EnterpriseContractPolicySpec": {
-			"properties": {
-			  "name": {
-				"type": "string"
-			  },
-			  "description": {
-				"type": "string"
-			  },
-			  "sources": {
-				"items": {
-				  "$ref": "#/$defs/Source"
-				},
-				"type": "array"
-			  },
-			  "configuration": {
-				"$ref": "#/$defs/EnterpriseContractPolicyConfiguration"
-			  },
-			  "rekorUrl": {
-				"type": "string"
-			  },
-			  "publicKey": {
-				"type": "string"
-			  },
-			  "identity": {
-				"$ref": "#/$defs/Identity"
-			  }
-			},
-			"additionalProperties": false,
-			"type": "object"
-		  },
-		  "Identity": {
-			"properties": {
-			  "subject": {
-				"type": "string"
-			  },
-			  "subjectRegExp": {
-				"type": "string"
-			  },
-			  "issuer": {
-				"type": "string"
-			  },
-			  "issuerRegExp": {
-				"type": "string"
-			  }
-			},
-			"additionalProperties": false,
-			"type": "object"
-		  },
-		  "JSON": {
-			"properties": {},
-			"additionalProperties": false,
-			"type": "object"
-		  },
-		  "Source": {
-			"properties": {
-			  "name": {
-				"type": "string"
-			  },
-			  "policy": {
-				"items": {
-				  "type": "string"
-				},
-				"type": "array"
-			  },
-			  "data": {
-				"items": {
-				  "type": "string"
-				},
-				"type": "array"
-			  },
-			  "ruleData": {
-				"$ref": "#/$defs/JSON"
-			  },
-			  "config": {
-				"$ref": "#/$defs/SourceConfig"
-			  },
-			  "volatileConfig": {
-				"$ref": "#/$defs/VolatileSourceConfig"
-			  }
-			},
-			"additionalProperties": false,
-			"type": "object"
-		  },
-		  "SourceConfig": {
-			"properties": {
-			  "exclude": {
-				"items": {
-				  "type": "string"
-				},
-				"type": "array"
-			  },
-			  "include": {
-				"items": {
-				  "type": "string"
-				},
-				"type": "array"
-			  }
-			},
-			"additionalProperties": false,
-			"type": "object"
-		  },
-		  "VolatileCriteria": {
-			"properties": {
-			  "value": {
-				"type": "string"
-			  },
-			  "effectiveOn": {
-				"type": "string"
-			  },
-			  "effectiveUntil": {
-				"type": "string"
-			  }
-			},
-			"additionalProperties": false,
-			"type": "object",
-			"required": [
-			  "value"
-			]
-		  },
-		  "VolatileSourceConfig": {
-			"properties": {
-			  "exclude": {
-				"items": {
-				  "$ref": "#/$defs/VolatileCriteria"
-				},
-				"type": "array"
-			  },
-			  "include": {
-				"items": {
-				  "$ref": "#/$defs/VolatileCriteria"
-				},
-				"type": "array"
-			  }
-			},
-			"additionalProperties": false,
-			"type": "object"
-		  }
-		}
-	  }`
-
 	schemaJson, err := jsonSchemaFromPolicySpec(ecp)
 	assert.NoError(t, err)
-	assert.JSONEq(t, expectedSchema, string(schemaJson))
+
+	snaps.MatchJSON(t, schemaJson)
 }
 
 func TestSigstoreOpts(t *testing.T) {
