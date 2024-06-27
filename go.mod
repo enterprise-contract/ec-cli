@@ -49,6 +49,10 @@ require (
 	sigs.k8s.io/yaml v1.4.0
 )
 
+// use forked version until we can get a fix merged
+// see https://github.com/google/go-containerregistry/pull/1966
+replace github.com/google/go-containerregistry => github.com/zregvart/go-containerregistry v0.0.0-20240627132555-cec55a14ea32
+
 require (
 	cloud.google.com/go v0.112.1 // indirect
 	cloud.google.com/go/compute/metadata v0.3.0 // indirect

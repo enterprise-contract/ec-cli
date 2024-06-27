@@ -1,0 +1,16 @@
+{
+    "auths": {
+        "registry.io/foo/bar/baz": {
+            "auth": "YmF6OnBhc3N3b3Jk"
+        },
+        "registry.io/foo/bar": {
+            "auth": "YmFyOnBhc3N3b3Jk"
+        },
+        "registry.io/foo": {
+            "auth": "Zm9vOnBhc3N3b3Jk"
+        },
+        "registry.io": {
+            "auth": "cXVheTpwYXNzd29yZA=="
+        }
+    }
+}
