@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 
 	"k8s.io/client-go/tools/clientcmd"
@@ -46,12 +47,56 @@ func (s stubCluster) CreateNamespace(ctx context.Context) (context.Context, erro
 	return ctx, nil
 }
 
+func expandSpecification(ctx context.Context, specification string) (string, error) {
+	vars := make(map[string]string)
+	if registry.IsRunning(ctx) {
+		digests, err := registry.AllDigests(ctx)
+		if err != nil {
+			return "", err
+		}
+
+		for repositoryAndTag, digest := range digests {
+			vars[fmt.Sprintf("REGISTRY_%s_DIGEST", repositoryAndTag)] = digest
+		}
+	}
+
+	return os.Expand(specification, func(key string) string {
+		// Handle predefined keys
+		switch key {
+		case "GITHOST":
+			return git.Host(ctx)
+		case "REGISTRY":
+			uri, err := registry.Url(ctx)
+			if err != nil {
+				panic(err)
+			}
+			return uri
+		}
+
+		// Use a regular expression to match and extract dynamic keys
+		re := regexp.MustCompile(`^REGISTRY_(.+)_DIGEST$`)
+		matches := re.FindStringSubmatch(key)
+		if len(matches) == 2 {
+			if value, ok := vars[key]; ok {
+				return value
+			}
+		}
+		return ""
+	}), nil
+}
+
 // CreateNamedPolicy stubs a response from the apiserver to fetch a EnterpriseContractPolicy
 // custom resource from the `acceptance` namespace with the given name and specification
 // the specification part can be templated using ${...} notation and supports
 // `GITHOST` and `REGISTRY` variable substitution
 func (s stubCluster) CreateNamedPolicy(ctx context.Context, name string, specification string) error {
 	ns := "acceptance" // TODO: namespace support
+
+	specification, err := expandSpecification(ctx, specification)
+	if err != nil {
+		return err
+	}
+
 	return wiremock.StubFor(ctx, wiremock.Get(wiremock.URLPathEqualTo(fmt.Sprintf("/apis/appstudio.redhat.com/v1alpha1/namespaces/%s/enterprisecontractpolicies/%s", ns, name))).
 		WillReturnResponse(wiremock.NewResponse().WithBody(fmt.Sprintf(`{
 				"apiVersion": "appstudio.redhat.com/v1alpha1",
@@ -61,20 +106,7 @@ func (s stubCluster) CreateNamedPolicy(ctx context.Context, name string, specifi
 				  "namespace": "%s"
 				},
 				"spec": %s
-			  }`, name, ns, os.Expand(specification, func(key string) string {
-			switch key {
-			case "GITHOST":
-				return git.Host(ctx)
-			case "REGISTRY":
-				uri, err := registry.Url(ctx)
-				if err != nil {
-					panic(err)
-				}
-				return uri
-			}
-
-			return ""
-		}))).WithHeaders(map[string]string{"Content-Type": "application/json"}).WithStatus(200)))
+			  }`, name, ns, specification)).WithHeaders(map[string]string{"Content-Type": "application/json"}).WithStatus(200)))
 }
 
 // CreateNamedSnapshot stubs a response from the apiserver to fetch a Snapshot

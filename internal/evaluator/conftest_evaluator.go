@@ -193,8 +193,8 @@ type conftestEvaluator struct {
 	dataDir       string
 	policyDir     string
 	policy        ConfigProvider
-	include       []string
-	exclude       []string
+	include       *Criteria
+	exclude       *Criteria
 	fs            afero.Fs
 	namespace     []string
 }
@@ -355,7 +355,7 @@ func (r *policyRules) collect(a *ast.AnnotationsRef) error {
 	return nil
 }
 
-func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) ([]Outcome, Data, error) {
+func (c conftestEvaluator) Evaluate(ctx context.Context, target EvaluationTarget) ([]Outcome, Data, error) {
 	var results []Outcome
 
 	// hold all rule annotations from all policy sources
@@ -435,9 +435,9 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) ([]Out
 	}
 
 	log.Debugf("runner: %#v", r)
-	log.Debugf("inputs: %#v", inputs)
+	log.Debugf("inputs: %#v", target.Inputs)
 
-	runResults, data, err := r.Run(ctx, inputs)
+	runResults, data, err := r.Run(ctx, target.Inputs)
 	if err != nil {
 		// TODO do we want to evaluate further policies instead of erroring out?
 		return nil, nil, err
@@ -463,7 +463,7 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) ([]Out
 			warning := result.Warnings[i]
 			addRuleMetadata(ctx, &warning, rules)
 
-			if !c.isResultIncluded(warning) {
+			if !c.isResultIncluded(warning, target.Target) {
 				log.Debugf("Skipping result warning: %#v", warning)
 				continue
 			}
@@ -474,7 +474,7 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) ([]Out
 			failure := result.Failures[i]
 			addRuleMetadata(ctx, &failure, rules)
 
-			if !c.isResultIncluded(failure) {
+			if !c.isResultIncluded(failure, target.Target) {
 				log.Debugf("Skipping result failure: %#v", failure)
 				continue
 			}
@@ -505,7 +505,7 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, inputs []string) ([]Out
 		result.Skipped = skipped
 
 		// Replace the placeholder successes slice with the actual successes.
-		result.Successes = c.computeSuccesses(result, rules, effectiveTime)
+		result.Successes = c.computeSuccesses(result, rules, effectiveTime, target.Target)
 
 		totalRules += len(result.Warnings) + len(result.Failures) + len(result.Successes)
 
@@ -540,7 +540,7 @@ func toRules(results []output.Result) []Result {
 // computeSuccesses generates success results, these are not provided in the
 // Conftest results, so we reconstruct these from the parsed rules, any rule
 // that hasn't been touched by adding metadata must have succeeded
-func (c conftestEvaluator) computeSuccesses(result Outcome, rules policyRules, effectiveTime time.Time) []Result {
+func (c conftestEvaluator) computeSuccesses(result Outcome, rules policyRules, effectiveTime time.Time, target string) []Result {
 	// what rules, by code, have we seen in the Conftest results, use map to
 	// take advantage of hashing for quicker lookup
 	seenRules := map[string]bool{}
@@ -592,7 +592,7 @@ func (c conftestEvaluator) computeSuccesses(result Outcome, rules policyRules, e
 			success.Metadata[metadataDependsOn] = rule.DependsOn
 		}
 
-		if !c.isResultIncluded(success) {
+		if !c.isResultIncluded(success, target) {
 			log.Debugf("Skipping result success: %#v", success)
 			continue
 		}
@@ -804,10 +804,10 @@ func isResultEffective(failure Result, now time.Time) bool {
 
 // isResultIncluded returns whether or not the result should be included or
 // discarded based on the policy configuration.
-func (c conftestEvaluator) isResultIncluded(result Result) bool {
+func (c conftestEvaluator) isResultIncluded(result Result, target string) bool {
 	ruleMatchers := makeMatchers(result)
-	includeScore := scoreMatches(ruleMatchers, c.include)
-	excludeScore := scoreMatches(ruleMatchers, c.exclude)
+	includeScore := scoreMatches(ruleMatchers, c.include.get(target))
+	excludeScore := scoreMatches(ruleMatchers, c.exclude.get(target))
 	return includeScore > excludeScore
 }
 
@@ -978,63 +978,4 @@ func strictCapabilities(ctx context.Context) (string, error) {
 		return "", err
 	}
 	return string(blob), nil
-}
-
-func computeIncludeExclude(src ecc.Source, p ConfigProvider) ([]string, []string) {
-	var include, exclude []string
-
-	sc := src.Config
-
-	// The lines below take care to make a copy of the includes/excludes slices in order
-	// to ensure mutations are not unexpectedly propagated.
-	if sc != nil && (len(sc.Include) != 0 || len(sc.Exclude) != 0) {
-		include = append(include, sc.Include...)
-		exclude = append(exclude, sc.Exclude...)
-	}
-
-	vc := src.VolatileConfig
-	if vc != nil {
-		at := p.EffectiveTime()
-		filter := func(items []string, criteria []ecc.VolatileCriteria) []string {
-			for _, c := range criteria {
-				from, err := time.Parse(time.RFC3339, c.EffectiveOn)
-				if err != nil {
-					if c.EffectiveOn != "" {
-						log.Warnf("unable to parse time for criteria %q, was given %q: %v", c.Value, c.EffectiveOn, err)
-					}
-					from = at
-				}
-				until, err := time.Parse(time.RFC3339, c.EffectiveUntil)
-				if err != nil {
-					if c.EffectiveUntil != "" {
-						log.Warnf("unable to parse time for criteria %q, was given %q: %v", c.Value, c.EffectiveUntil, err)
-					}
-					until = at
-				}
-				if until.Compare(at) >= 0 && from.Compare(at) <= 0 {
-					items = append(items, c.Value)
-				}
-			}
-
-			return items
-		}
-
-		include = filter(include, vc.Include)
-		exclude = filter(exclude, vc.Exclude)
-	}
-
-	if policyConfig := p.Spec().Configuration; len(include) == 0 && len(exclude) == 0 && policyConfig != nil {
-		include = append(include, policyConfig.Include...)
-		exclude = append(exclude, policyConfig.Exclude...)
-		// If the old way of specifying collections are used, convert them.
-		for _, collection := range policyConfig.Collections {
-			include = append(include, fmt.Sprintf("@%s", collection))
-		}
-	}
-
-	if len(include) == 0 {
-		include = []string{"*"}
-	}
-
-	return include, exclude
 }

@@ -722,7 +722,6 @@ func TestJsonSchemaFromPolicySpec(t *testing.T) {
 		PublicKey: "testPublicKey",
 		RekorUrl:  "testRekorUrl",
 	}
-
 	schemaJson, err := jsonSchemaFromPolicySpec(ecp)
 	assert.NoError(t, err)
 
