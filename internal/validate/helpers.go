@@ -50,11 +50,13 @@ func GetPolicyConfig(ctx context.Context, policyConfiguration string) (string, e
 		if err != nil {
 			return "", err
 		}
-		return readPolicyConfigurationFile(ctx, configFile)
+		log.Debugf("Loading %s as policy configuration", configFile)
+		return ReadFile(ctx, configFile)
 	} else if source.SourceIsFile(policyConfiguration) && utils.HasJsonOrYamlExt(policyConfiguration) {
 		// If policyConfiguration is detected as a file and it has a json or yaml extension,
 		// we read its contents and return it.
-		return readPolicyConfigurationFile(ctx, policyConfiguration)
+		log.Debugf("Loading %s as policy configuration", policyConfiguration)
+		return ReadFile(ctx, policyConfiguration)
 	}
 
 	// If policyConfiguration is not a file path, git url, or https url,
@@ -62,20 +64,18 @@ func GetPolicyConfig(ctx context.Context, policyConfiguration string) (string, e
 	return policyConfiguration, nil
 }
 
-// Read policyConfiguration file and return its contents.
-func readPolicyConfigurationFile(ctx context.Context, policyConfiguration string) (string, error) {
-	// Check if policyConfig is a file path. If so, try to read it.
-	// If successful we write that into the data.policyConfiguration var.
+// Read file from the workspace and return its contents.
+func ReadFile(ctx context.Context, fileName string) (string, error) {
 	fs := utils.FS(ctx)
-	policyBytes, err := afero.ReadFile(fs, policyConfiguration)
+	fileBytes, err := afero.ReadFile(fs, fileName)
 	if err != nil {
 		return "", err
 	}
 	// Check for empty file as that would cause a false "success"
-	if len(policyBytes) == 0 {
-		err := fmt.Errorf("file %s is empty", policyConfiguration)
+	if len(fileBytes) == 0 {
+		err := fmt.Errorf("file %s is empty", fileName)
 		return "", err
 	}
-	log.Debugf("Loaded %s as policyConfiguration", policyConfiguration)
-	return string(policyBytes), nil
+	log.Debugf("Loaded %s", fileName)
+	return string(fileBytes), nil
 }
