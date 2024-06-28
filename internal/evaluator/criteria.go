@@ -21,10 +21,13 @@ func (c *Criteria) len() int {
 	return totalLength
 }
 
-func (c *Criteria) add(key, value string) {
+func (c *Criteria) addItem(key, value string) {
 	if key == "" {
 		c.defaultItems = append(c.defaultItems, value)
 	} else {
+		if c.digestItems == nil {
+			c.digestItems = make(map[string][]string)
+		}
 		c.digestItems[key] = append(c.digestItems[key], value)
 	}
 }
@@ -33,6 +36,9 @@ func (c *Criteria) addArray(key string, values []string) {
 	if key == "" {
 		c.defaultItems = append(c.defaultItems, values...)
 	} else {
+		if c.digestItems == nil {
+			c.digestItems = make(map[string][]string)
+		}
 		c.digestItems[key] = append(c.digestItems[key], values...)
 	}
 }
@@ -44,27 +50,23 @@ func (c *Criteria) get(key string) []string {
 	return c.defaultItems
 }
 
-func computeIncludeExclude(src ecc.Source, p ConfigProvider) (Criteria, Criteria) {
-	include := Criteria{
-		digestItems: make(map[string][]string),
-	}
-	exclude := Criteria{
-		digestItems: make(map[string][]string),
-	}
+func computeIncludeExclude(src ecc.Source, p ConfigProvider) (*Criteria, *Criteria) {
+	include := &Criteria{}
+	exclude := &Criteria{}
 
 	sc := src.Config
 
 	// The lines below take care to make a copy of the includes/excludes slices in order
 	// to ensure mutations are not unexpectedly propagated.
 	if sc != nil && (len(sc.Include) != 0 || len(sc.Exclude) != 0) {
-		include.defaultItems = append(include.defaultItems, sc.Include...)
-		exclude.defaultItems = append(exclude.defaultItems, sc.Exclude...)
+		include.addArray("", sc.Include)
+		exclude.addArray("", sc.Exclude)
 	}
 
 	vc := src.VolatileConfig
 	if vc != nil {
 		at := p.EffectiveTime()
-		filter := func(items Criteria, volatileCriteria []ecc.VolatileCriteria) Criteria {
+		filter := func(items *Criteria, volatileCriteria []ecc.VolatileCriteria) *Criteria {
 			for _, c := range volatileCriteria {
 				from, err := time.Parse(time.RFC3339, c.EffectiveOn)
 				if err != nil {
@@ -81,7 +83,7 @@ func computeIncludeExclude(src ecc.Source, p ConfigProvider) (Criteria, Criteria
 					until = at
 				}
 				if until.Compare(at) >= 0 && from.Compare(at) <= 0 {
-					items.add(c.ImageRef, c.Value)
+					items.addItem("", c.Value)
 				}
 			}
 
@@ -97,12 +99,12 @@ func computeIncludeExclude(src ecc.Source, p ConfigProvider) (Criteria, Criteria
 		exclude.addArray("", policyConfig.Exclude)
 		// If the old way of specifying collections are used, convert them.
 		for _, collection := range policyConfig.Collections {
-			include.defaultItems = append(include.defaultItems, fmt.Sprintf("@%s", collection))
+			include.addItem("", fmt.Sprintf("@%s", collection))
 		}
 	}
 
 	if include.len() == 0 {
-		include.add("", "*")
+		include.addItem("", "*")
 	}
 
 	return include, exclude

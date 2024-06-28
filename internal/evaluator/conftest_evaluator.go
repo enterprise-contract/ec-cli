@@ -36,7 +36,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"oras.land/oras-go/pkg/target"
 
 	"github.com/enterprise-contract/ec-cli/internal/opa"
 	"github.com/enterprise-contract/ec-cli/internal/opa/rule"
@@ -162,8 +161,8 @@ type conftestEvaluator struct {
 	dataDir       string
 	policyDir     string
 	policy        ConfigProvider
-	include       Criteria
-	exclude       Criteria
+	include       *Criteria
+	exclude       *Criteria
 	fs            afero.Fs
 	namespace     []string
 }
@@ -474,7 +473,7 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, target EvaluationTarget
 		result.Skipped = skipped
 
 		// Replace the placeholder successes slice with the actual successes.
-		result.Successes = c.computeSuccesses(result, rules, effectiveTime)
+		result.Successes = c.computeSuccesses(result, rules, effectiveTime, target.Target)
 
 		totalRules += len(result.Warnings) + len(result.Failures) + len(result.Successes)
 
@@ -509,7 +508,7 @@ func toRules(results []output.Result) []Result {
 // computeSuccesses generates success results, these are not provided in the
 // Conftest results, so we reconstruct these from the parsed rules, any rule
 // that hasn't been touched by adding metadata must have succeeded
-func (c conftestEvaluator) computeSuccesses(result Outcome, rules policyRules, effectiveTime time.Time) []Result {
+func (c conftestEvaluator) computeSuccesses(result Outcome, rules policyRules, effectiveTime time.Time, target string) []Result {
 	// what rules, by code, have we seen in the Conftest results, use map to
 	// take advantage of hashing for quicker lookup
 	seenRules := map[string]bool{}
@@ -561,7 +560,7 @@ func (c conftestEvaluator) computeSuccesses(result Outcome, rules policyRules, e
 			success.Metadata[metadataDependsOn] = rule.DependsOn
 		}
 
-		if !c.isResultIncluded(success, target.Target) {
+		if !c.isResultIncluded(success, target) {
 			log.Debugf("Skipping result success: %#v", success)
 			continue
 		}
