@@ -46,6 +46,7 @@ require (
 	k8s.io/client-go v0.29.6
 	k8s.io/klog/v2 v2.130.1
 	k8s.io/kube-openapi v0.0.0-20231010175941-2dd684a91f00
+	oras.land/oras-go v1.2.5
 	sigs.k8s.io/yaml v1.4.0
 )
 

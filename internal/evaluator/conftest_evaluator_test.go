@@ -181,7 +181,7 @@ func TestConftestEvaluatorEvaluateTimeBased(t *testing.T) {
 
 	dl := mockDownloader{}
 
-	inputs := []string{"inputs"}
+	inputs := EvaluationTarget{Inputs: []string{"inputs"}}
 
 	expectedData := Data(map[string]any{
 		"a": 1,
@@ -298,7 +298,7 @@ func TestConftestEvaluatorEvaluateNoSuccessWarningsOrFailures(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			r := mockTestRunner{}
 			dl := mockDownloader{}
-			inputs := []string{"inputs"}
+			inputs := EvaluationTarget{Inputs: []string{"inputs"}}
 			ctx := setupTestContext(&r, &dl)
 
 			r.On("Run", ctx, inputs).Return(tt.results, Data(nil), nil)
@@ -1187,7 +1187,7 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			r := mockTestRunner{}
 			dl := mockDownloader{}
-			inputs := []string{"inputs"}
+			inputs := EvaluationTarget{Inputs: []string{"inputs"}}
 			ctx := setupTestContext(&r, &dl)
 			r.On("Run", ctx, inputs).Return(tt.results, Data(nil), nil)
 
@@ -1723,7 +1723,7 @@ func TestConftestEvaluatorEvaluate(t *testing.T) {
 	}, config, ecc.Source{})
 	require.NoError(t, err)
 
-	results, data, err := evaluator.Evaluate(ctx, []string{path.Join(dir, "inputs")})
+	results, data, err := evaluator.Evaluate(ctx, EvaluationTarget{Inputs: []string{path.Join(dir, "inputs")}})
 	require.NoError(t, err)
 
 	// sort the slice by code for test stability
@@ -1786,7 +1786,7 @@ func TestUnconformingRule(t *testing.T) {
 	}, p, ecc.Source{})
 	require.NoError(t, err)
 
-	_, _, err = evaluator.Evaluate(ctx, []string{path.Join(dir, "inputs")})
+	_, _, err = evaluator.Evaluate(ctx, EvaluationTarget{Inputs: []string{path.Join(dir, "inputs")}})
 	assert.EqualError(t, err, `the rule "deny = true { true }" returns an unsupported value, at no_msg.rego:3`)
 }
 
