@@ -177,4 +177,28 @@ You can confirm what images were released using the show-latest-build-versions.s
 or by look at https://catalog.redhat.com/software/containers/rhtas/ec-rhel9/65f1f9dcfc649a18c6075de5.
 or using skopeo, e.g. 'skopeo inspect docker://registry.redhat.io/rhtas/ec-rhel9:latest' or podman, e.g.
 'podman run --rm registry.redhat.io/rhtas/ec-rhel9:latest version'.
+
 EOT4
+
+cat <<EOT5
+$(nice_title Create stable versioned branch in ec-policies repo and corresponding config in the config repo)
+
+For better or for worse, we create a branch in the ec-policies repo and a corresponding config file that RHTAP templates can use.
+(This may change in future if something like https://github.com/redhat-appstudio/tssc-sample-pipelines/pull/42 is adopted.)
+
+For example (in ec-policies repo):
+  git push upstream upstream/main:refs/heads/release-${RELEASE_NAME}
+You have some flexibility around what sha to use, but the current upstream/main is probably good choice.
+
+The config PR should add one more of these for ${RELEASE_NAME}:
+https://github.com/enterprise-contract/config/blob/ddfe77d02b8feb20e0701290dcf84e6d6d10abf0/src/data.json#L31-L40
+Don't forget to do 'make refresh' and check in the changes.
+When it's merged we should see it at https://github.com/enterprise-contract/config/blob/main/default-${RELEASE_NAME}/policy.yaml
+
+Deciding when to update the tssc-sample-pipelines repo is up to the RHTAP developers and may depend on their release
+schedule and the release schedule of RHTAS. Note that there are two places to change it:
+https://github.com/redhat-appstudio/tssc-sample-pipelines/blob/37a514dee543f730831d1d078ce4a11f7778e79b/hack/patches/pipelines/gitops-pull-request/patch.yaml#L9
+https://github.com/redhat-appstudio/tssc-sample-pipelines/blob/37a514dee543f730831d1d078ce4a11f7778e79b/pac/pipelines/gitops-pull-request-rhtap.yaml#L18
+(It's probably a good idea to sync with RHTAP and RHTAS folks to understand their release schedules and let them know what version of EC they'll likely be using.)
+
+EOT5
