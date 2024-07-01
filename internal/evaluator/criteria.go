@@ -24,6 +24,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// contains include/exclude items
+// digestItems stores include/exclude items that are specific with an imageRef
+// - the imageRef is the key, value is the policy to include/exclude.
+// defaultItems are include/exclude items without an imageRef
 type Criteria struct {
 	digestItems  map[string][]string
 	defaultItems []string
@@ -61,6 +65,7 @@ func (c *Criteria) addArray(key string, values []string) {
 
 func (c *Criteria) get(key string) []string {
 	if items, ok := c.digestItems[key]; ok {
+		items = append(items, c.defaultItems...)
 		return items
 	}
 	return c.defaultItems

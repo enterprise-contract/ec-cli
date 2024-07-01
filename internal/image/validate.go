@@ -19,12 +19,10 @@ package image
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"sort"
 	"time"
 
-	"github.com/distribution/reference"
 	"github.com/qri-io/jsonpointer"
 	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 	log "github.com/sirupsen/logrus"
@@ -113,10 +111,10 @@ func ValidateImage(ctx context.Context, comp app.SnapshotComponent, p policy.Pol
 	for _, e := range evaluators {
 		// Todo maybe: Handle each one concurrently
 		target := evaluator.EvaluationTarget{Inputs: []string{inputPath}}
-		if digest, err := parseDigest(comp.ContainerImage); err != nil {
+		if digest, err := a.ResolveDigest(ctx); err != nil {
 			log.Debugf("Problem parsing digest from image")
 		} else {
-			target.Target = digest
+			target.Target = fmt.Sprintf("sha256:%s", digest)
 		}
 		results, data, err := e.Evaluate(ctx, target)
 		log.Debug("\n\nRunning conftest policy check\n\n")
@@ -218,20 +216,4 @@ func determineAttestationTime(ctx context.Context, attestations []attestation.At
 	}
 
 	return &attestationTime
-}
-
-func parseDigest(image string) (string, error) {
-	// Parse the image reference
-	ref, err := reference.ParseNormalizedNamed(image)
-	if err != nil {
-		fmt.Println("Error parsing image reference:", err)
-		return "", err
-	}
-
-	canonicalRef, ok := ref.(reference.Canonical)
-	if !ok {
-		return "", errors.New("no digest found in image reference")
-	}
-
-	return canonicalRef.Digest().String(), nil
 }

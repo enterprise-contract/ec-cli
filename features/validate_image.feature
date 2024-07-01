@@ -430,7 +430,7 @@ Feature: evaluate enterprise contract
             "include": [
               {
                 "value": "filtering.always_pass",
-                "imageRef": "sha256:1234"
+                "imageRef": "sha256:${REGISTRY_acceptance/ec-happy-day:latest_DIGEST}"
               }
             ]
           },
@@ -441,7 +441,7 @@ Feature: evaluate enterprise contract
       ]
     }
     """
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day@sha256:1234 --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR}  --show-successes"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR}  --show-successes"
     Then the exit status should be 0
     Then the output should match the snapshot
 

@@ -1877,6 +1877,9 @@ func TestNewConftestEvaluatorComputeIncludeExclude(t *testing.T) {
 							Value:    "include-me",
 							ImageRef: "included-image-ref",
 						},
+						{
+							Value: "include-me2",
+						},
 					},
 					Exclude: []ecc.VolatileCriteria{
 						{
@@ -1886,7 +1889,7 @@ func TestNewConftestEvaluatorComputeIncludeExclude(t *testing.T) {
 					},
 				},
 			},
-			expectedInclude: &Criteria{digestItems: map[string][]string{"included-image-ref": {"include-me"}}},
+			expectedInclude: &Criteria{digestItems: map[string][]string{"included-image-ref": {"include-me"}}, defaultItems: []string{"include-me2"}},
 			expectedExclude: &Criteria{digestItems: map[string][]string{"excluded-image-ref": {"exclude-me"}}},
 		},
 		{
