@@ -29,6 +29,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/google/go-containerregistry/pkg/registry"
 	"github.com/google/go-containerregistry/pkg/v1/random"
@@ -172,4 +173,41 @@ func TestLayer(t *testing.T) {
 	msg := fmt.Sprintf("GET /v2/repository/image/blobs/%s", digest)
 	blobDownloadCount := strings.Count(l.String(), msg)
 	assert.Equal(t, fetchCount, blobDownloadCount)
+}
+
+func TestScopedAuth(t *testing.T) {
+	cases := []struct {
+		repository string
+		user       string
+	}{
+		{"registry.io/foo/bar/baz", "baz"},
+		{"registry.io/foo/bar", "bar"},
+		{"registry.io/foo", "foo"},
+		{"registry.io", "quay"},
+		{"registry.io/foo/bar/baz:tag", "baz"},
+		{"registry.io/foo/bar/baz/fiz", "baz"},
+		{"registry.io/foo/for", "foo"},
+	}
+	t.Setenv("DOCKER_CONFIG", "__test__")
+
+	for _, c := range cases {
+		t.Run(c.repository, func(t *testing.T) {
+			repository, err := name.NewTag(c.repository, name.WithDefaultRegistry(""))
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			authenticator, err := authn.DefaultKeychain.Resolve(repository)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			authconfig, err := authenticator.Authorization()
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			assert.Equal(t, c.user, authconfig.Username)
+		})
+	}
 }
