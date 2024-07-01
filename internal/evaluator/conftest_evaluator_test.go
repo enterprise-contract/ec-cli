@@ -1869,6 +1869,27 @@ func TestNewConftestEvaluatorComputeIncludeExclude(t *testing.T) {
 			expectedExclude: &Criteria{defaultItems: []string{"exclude-me"}},
 		},
 		{
+			name: "imageRef used in volatile source config",
+			source: ecc.Source{
+				VolatileConfig: &ecc.VolatileSourceConfig{
+					Include: []ecc.VolatileCriteria{
+						{
+							Value:    "include-me",
+							ImageRef: "included-image-ref",
+						},
+					},
+					Exclude: []ecc.VolatileCriteria{
+						{
+							Value:    "exclude-me",
+							ImageRef: "excluded-image-ref",
+						},
+					},
+				},
+			},
+			expectedInclude: &Criteria{digestItems: map[string][]string{"included-image-ref": {"include-me"}}},
+			expectedExclude: &Criteria{digestItems: map[string][]string{"excluded-image-ref": {"exclude-me"}}},
+		},
+		{
 			name: "volatile source config not applicable",
 			source: ecc.Source{
 				VolatileConfig: &ecc.VolatileSourceConfig{
