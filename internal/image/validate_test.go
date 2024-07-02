@@ -300,6 +300,7 @@ func TestEvaluatorLifecycle(t *testing.T) {
 	client.On("Head", ref).Return(&gcr.Descriptor{MediaType: types.OCIManifestSchema1}, nil)
 	client.On("VerifyImageSignatures", refNoTag, mock.Anything).Return([]oci.Signature{validSignature}, true, nil)
 	client.On("VerifyImageAttestations", refNoTag, mock.Anything).Return([]oci.Signature{validAttestation}, true, nil)
+	client.On("ResolveDigest", refNoTag).Return("@sha256:"+imageDigest, nil)
 	ctx = ecoci.WithClient(ctx, &client)
 
 	component := app.SnapshotComponent{

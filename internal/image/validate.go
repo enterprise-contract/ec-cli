@@ -19,7 +19,6 @@ package image
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"sort"
 	"time"
 
@@ -114,7 +113,7 @@ func ValidateImage(ctx context.Context, comp app.SnapshotComponent, p policy.Pol
 		if digest, err := a.ResolveDigest(ctx); err != nil {
 			log.Debugf("Problem parsing digest from image")
 		} else {
-			target.Target = fmt.Sprintf("sha256:%s", digest)
+			target.Target = digest
 		}
 		results, data, err := e.Evaluate(ctx, target)
 		log.Debug("\n\nRunning conftest policy check\n\n")
