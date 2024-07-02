@@ -21,6 +21,7 @@ package evaluator
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -203,4 +204,22 @@ func TestAddArray(t *testing.T) {
 			require.Equal(t, tt.initial, tt.expected)
 		})
 	}
+}
+
+func TestGet(t *testing.T) {
+	c := &Criteria{
+		digestItems: map[string][]string{
+			"key1": {"item1", "item2"},
+		},
+		defaultItems: []string{"default1", "default2"},
+	}
+
+	// Test getting items for a key that exists
+	expectedItems := []string{"item1", "item2", "default1", "default2"}
+	assert.ElementsMatch(t, expectedItems, c.get("key1"))
+
+	// Test getting items for a key that does not exist
+	expectedDefaultItems := []string{"default1", "default2"}
+	assert.ElementsMatch(t, expectedDefaultItems, c.get("key2"))
+
 }

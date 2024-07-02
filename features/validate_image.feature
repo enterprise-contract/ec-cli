@@ -429,8 +429,8 @@ Feature: evaluate enterprise contract
           "volatileConfig": {
             "include": [
               {
-                "value": "filtering.always_pass",
-                "imageRef": "sha256:${REGISTRY_acceptance/ec-happy-day:latest_DIGEST}"
+                "value": "filtering.always_pass"
+                
               }
             ]
           },
