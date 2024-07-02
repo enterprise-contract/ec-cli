@@ -808,7 +808,7 @@ Error: success criteria not met
 
 ---
 
-[policy rule filtering imageRef:stdout - 1]
+[policy rule filtering on imageRef:stdout - 1]
 {
   "success": true,
   "components": [
@@ -889,7 +889,7 @@ Error: success criteria not met
 }
 ---
 
-[policy rule filtering imageRef:stderr - 1]
+[policy rule filtering on imageRef:stderr - 1]
 
 ---
 
