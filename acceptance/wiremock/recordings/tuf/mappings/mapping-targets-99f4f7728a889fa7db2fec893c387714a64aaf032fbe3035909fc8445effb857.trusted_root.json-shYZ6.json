@@ -1,0 +1,32 @@
+{
+  "id" : "947fb372-630b-37c1-93fa-b6ed66417d3e",
+  "request" : {
+    "url" : "/targets/99f4f7728a889fa7db2fec893c387714a64aaf032fbe3035909fc8445effb857.trusted_root.json",
+    "method" : "GET"
+  },
+  "response" : {
+    "status" : 200,
+    "bodyFileName" : "body-targets-99f4f7728a889fa7db2fec893c387714a64aaf032fbe3035909fc8445effb857.trusted_root.json-shYZ6.json",
+    "headers" : {
+      "x-goog-generation" : "1714310650363548",
+      "x-goog-metageneration" : "1",
+      "x-goog-stored-content-encoding" : "identity",
+      "x-goog-stored-content-length" : "7256",
+      "x-goog-meta-goog-reserved-file-mtime" : "1714310501",
+      "x-goog-hash" : [ "crc32c=KvBKSQ==", "md5=bao42ZO5QQXQNwRSfzIDVw==" ],
+      "x-goog-storage-class" : "REGIONAL",
+      "accept-ranges" : "bytes",
+      "x-guploader-uploadid" : "ABPtcPq3zYJ3rBp1lKa6ogLQaAib69LOaesnALGXQo_VpGeyKd9ovvDQbea941KjEeUHg2n800ngu_NWWQ",
+      "server" : "UploadServer",
+      "via" : "1.1 google",
+      "Date" : "Wed, 01 May 2024 13:54:45 GMT",
+      "Cache-Control" : "public,max-age=86400",
+      "Last-Modified" : "Sun, 28 Apr 2024 13:24:10 GMT",
+      "ETag" : "\"6daa38d993b94105d03704527f320357\"",
+      "Content-Type" : "application/json",
+      "Age" : "7151",
+      "Alt-Svc" : "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+    }
+  },
+  "uuid" : "947fb372-630b-37c1-93fa-b6ed66417d3e"
+}

@@ -146,6 +146,7 @@ LICENSE_IGNORE=\
 -ignore 'configs/*/*.yaml' \
 -ignore 'node_modules/**' \
 -ignore 'hack/**/charts/**' \
+-ignore 'acceptance/wiremock/recordings/**' \
 -ignore '.tekton/*.yaml'
 
 LINT_TO_GITHUB_ANNOTATIONS='map(map(.)[])[][] as $$d | $$d.posn | split(":") as $$posn | "::warning file=\($$posn[0]),line=\($$posn[1]),col=\($$posn[2])::\($$d.message)"'

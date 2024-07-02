@@ -1,0 +1,146 @@
+{
+ "signatures": [
+  {
+   "keyid": "762cb22caca65de5e9b7b6baecb84ca989d337280ce6914b6440aea95769ad93",
+   "sig": "304502202664d636ca5beb8684e27dd73a5e1888b8bc9218a55cbffa3eba9a28e123680a022100eae337de68de83ca7f575f28d21b741670409dd58aa4766341f3bf37d259c6c9"
+  },
+  {
+   "keyid": "d7d2d47a3f644fc3a685bac7b39c81ed9f9cee48ff861b44fbd86b91e34e7829",
+   "sig": "304502206b8d4ea34d123a8b9959ba648443cee28efedc5734ce33e883739dbe62514853022100c7a7c9683b7dc5cd3a654a4cc69605b6dcdad3926d52b0fc2560e47adf2d5e4e"
+  },
+  {
+   "keyid": "b78c9e4ff9048a1d9876a20f97fa1b3cb03223a0c520c7de730cfa9f5c7b77e5",
+   "sig": "3045022064044f78cbe7215e2fe2aaa10695f94487a8e23efb938db5b83aeb1a753403be022100a2d35caa2e1a22bda153e4c60e8cebc6adb9dc267383ab31677e3af059af8069"
+  },
+  {
+   "keyid": "afd6a6ebad62a0dd091db368c1806eeb172c893c80bece1098fed116e985ba35",
+   "sig": "304402205c5167cb4af91d255e57cf704c01e93b4f508221a7b7b3de812008bec84f93fe02204df6a3694cc227527f07f8130e4a414b064d620deb8c0b8ba2a8231b28867e46"
+  }
+ ],
+ "signed": {
+  "_type": "targets",
+  "delegations": {
+   "keys": {
+    "762cb22caca65de5e9b7b6baecb84ca989d337280ce6914b6440aea95769ad93": {
+     "keytype": "ecdsa",
+     "keyval": {
+      "public": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEohqIdE+yTl4OxpX8ZxNUPrg3SL9H\nBDnhZuceKkxy2oMhUOxhWweZeG3bfM1T4ZLnJimC6CAYVU5+F5jZCoftRw==\n-----END PUBLIC KEY-----\n"
+     },
+     "scheme": "ecdsa-sha2-nistp256",
+     "x-tuf-on-ci-keyowner": "@jku"
+    }
+   },
+   "roles": [
+    {
+     "keyids": [
+      "762cb22caca65de5e9b7b6baecb84ca989d337280ce6914b6440aea95769ad93"
+     ],
+     "name": "registry.npmjs.org",
+     "paths": [
+      "registry.npmjs.org/*"
+     ],
+     "terminating": true,
+     "threshold": 1
+    }
+   ]
+  },
+  "expires": "2024-06-26T12:38:57Z",
+  "spec_version": "1.0",
+  "targets": {
+   "ctfe.pub": {
+    "custom": {
+     "sigstore": {
+      "status": "Active",
+      "uri": "https://ctfe.sigstage.dev/test",
+      "usage": "CTFE"
+     }
+    },
+    "hashes": {
+     "sha256": "bd7a6812a1f239dfddbbb19d36c7423d21510da56d466ba5018401959cd66037",
+     "sha512": "b861189e48df51186a39612230fba6b02af951f7b35ad9375e8ca182d0e085d470e26d69f7cd4d7450a0f223991e8e5a4ddf8f1968caa15255de8e37035af43a"
+    },
+    "length": 775
+   },
+   "ctfe_2022.pub": {
+    "custom": {
+     "sigstore": {
+      "status": "Active",
+      "uri": "https://ctfe.sigstage.dev/2022",
+      "usage": "CTFE"
+     }
+    },
+    "hashes": {
+     "sha256": "910d899c7763563095a0fe684c8477573fedc19a78586de6ecfbfd8f289f5423",
+     "sha512": "ab975a75600fc366a837536d0dcba841b755552d21bb114498ff8ac9d2403f76643f5b91269bce5d124a365514719a3edee9dcc2b046cb173f51af659911fcd3"
+    },
+    "length": 178
+   },
+   "ctfe_2022_2.pub": {
+    "custom": {
+     "sigstore": {
+      "status": "Active",
+      "uri": "https://ctfe.sigstage.dev/2022-2",
+      "usage": "CTFE"
+     }
+    },
+    "hashes": {
+     "sha256": "7054b4f15f969daca1c242bb9e77527abaf0b9acf9818a2a35144e4b32b20dc6",
+     "sha512": "3d035f94e1b14ac84627a28afdbed9a34861fb84239f76d73aa1a99f52262bfd95c4fa0ee71f1fd7e3bfb998d89cd5e0f0eafcff9fa7fa87c6e23484fc1e0cec"
+    },
+    "length": 178
+   },
+   "fulcio.crt.pem": {
+    "custom": {
+     "sigstore": {
+      "status": "Active",
+      "uri": "https://fulcio.sigstage.dev",
+      "usage": "Fulcio"
+     }
+    },
+    "hashes": {
+     "sha256": "0e6b0442485ad552bea5f62f11c29e2acfda35307d7538430b4cc1dbef49bff1",
+     "sha512": "c69ae618883a0c89c282c0943a1ad0c16b0a7788f74e47a1adefc631dac48a0c4449d8c3de7455ae7d772e43c4a87e341f180b0614a46a86006969f8a7b84532"
+    },
+    "length": 741
+   },
+   "fulcio_intermediate.crt.pem": {
+    "custom": {
+     "sigstore": {
+      "status": "Active",
+      "uri": "https://fulcio.sigstage.dev",
+      "usage": "Fulcio"
+     }
+    },
+    "hashes": {
+     "sha256": "782868913fe13c385105ddf33e827191386f58da40a931f2075a7e27b1b6ac7b",
+     "sha512": "90659875a02f73d1026055427c6d857c556e410e23748ff88aeb493227610fd2f5fbdd95ef2a21565f91438dfb3e073f50c4c9dd06f9a601b5d9b064d5cb60b4"
+    },
+    "length": 790
+   },
+   "rekor.pub": {
+    "custom": {
+     "sigstore": {
+      "status": "Active",
+      "uri": "https://rekor.sigstage.dev",
+      "usage": "Rekor"
+     }
+    },
+    "hashes": {
+     "sha256": "1d80b8f72505a43e65e6e125247cd508f61b459dc457c1d1bcb78d96e1760959",
+     "sha512": "09ab08698a67354a95d3b8897d9ce7eaef05f06f5ed5f0202d79c228579858ecc5816b7e1b7cc6786abe7d6aaa758e1fcb05900cb749235186c3bf9522d6d7ce"
+    },
+    "length": 178
+   },
+   "trusted_root.json": {
+    "hashes": {
+     "sha256": "99f4f7728a889fa7db2fec893c387714a64aaf032fbe3035909fc8445effb857",
+     "sha512": "acf0438a71de70bbf1813c908545281e0c4a1e3aafa2ce36b82c1cc24a9cce5169e9dcfe85c31bb4f662e94fdd9a686fa54fbbfccff1888e51ebd73924c12495"
+    },
+    "length": 7256
+   }
+  },
+  "version": 7,
+  "x-tuf-on-ci-expiry-period": 91,
+  "x-tuf-on-ci-signing-period": 35
+ }
+}

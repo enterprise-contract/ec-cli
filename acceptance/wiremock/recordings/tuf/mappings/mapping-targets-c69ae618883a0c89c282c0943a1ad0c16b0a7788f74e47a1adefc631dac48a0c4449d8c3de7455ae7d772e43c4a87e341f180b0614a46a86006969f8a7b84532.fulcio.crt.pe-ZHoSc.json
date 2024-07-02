@@ -1,0 +1,31 @@
+{
+  "id" : "c03c5249-1760-330e-8250-9bab9fddcb81",
+  "request" : {
+    "url" : "/targets/c69ae618883a0c89c282c0943a1ad0c16b0a7788f74e47a1adefc631dac48a0c4449d8c3de7455ae7d772e43c4a87e341f180b0614a46a86006969f8a7b84532.fulcio.crt.pem",
+    "method" : "GET"
+  },
+  "response" : {
+    "status" : 200,
+    "bodyFileName" : "body-targets-c69ae618883a0c89c282c0943a1ad0c16b0a7788f74e47a1adefc631dac48a0c4449d8c3de7455ae7d772e43c4a87e341f180b0614a46a86006969f8a7b84532.fulcio.crt.pe-ZHoSc.pem",
+    "headers" : {
+      "date" : "Wed, 01 May 2024 15:53:57 GMT",
+      "Cache-Control" : "public,max-age=86400",
+      "last-modified" : "Wed, 01 May 2024 14:41:06 GMT",
+      "etag" : "\"a1f3c3d3d1fbcac687aeb898a13e1a1d\"",
+      "x-goog-generation" : "1714574466896074",
+      "x-goog-metageneration" : "1",
+      "x-goog-stored-content-encoding" : "identity",
+      "x-goog-stored-content-length" : "741",
+      "x-goog-meta-goog-reserved-file-mtime" : "1714569708",
+      "content-type" : "application/pem-certificate-chain",
+      "x-goog-hash" : [ "crc32c=qOl90g==", "md5=ofPD09H7ysaHrriYoT4aHQ==" ],
+      "x-goog-storage-class" : "REGIONAL",
+      "accept-ranges" : "bytes",
+      "x-guploader-uploadid" : "ABPtcPosEMS6BXPreSU2mYQryye17fh324FOoPzWCQu7STxQ29VaWLOa1vKiIS1nbzrOgPmlJAo",
+      "server" : "UploadServer",
+      "via" : "1.1 google",
+      "Alt-Svc" : "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+    }
+  },
+  "uuid" : "c03c5249-1760-330e-8250-9bab9fddcb81"
+}

@@ -26,7 +26,6 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/pem"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -603,14 +602,17 @@ func createAndPushKeylessImage(ctx context.Context, imageName string) (context.C
 				sig.Certificate = certPEM
 			}
 
-			if cert, ok := l.Annotations[static.ChainAnnotationKey]; ok {
-				if strings.Contains(cert, "-\n-") {
-					return errors.New("thus far we have only seen chain of length 1, fix the test to support more than one certificate in chain")
+			if certs, ok := l.Annotations[static.ChainAnnotationKey]; ok {
+				for block, rest := pem.Decode([]byte(certs)); block != nil; block, rest = pem.Decode(rest) {
+					if block.Type != "CERTIFICATE" {
+						continue
+					}
+					cert := new(strings.Builder)
+					if err := pem.Encode(cert, block); err != nil {
+						return err
+					}
+					sig.Chain = append(sig.Chain, cert.String())
 				}
-				if !strings.HasSuffix(cert, "\n") { // for whatever reason the trailing newline is missing in the annotation
-					cert += "\n"
-				}
-				sig.Chain = []string{cert} // TODO hmm
 			}
 
 			where[imageName] = sig
