@@ -25,8 +25,11 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/enterprise-contract/go-gather/gather"
 	"github.com/open-policy-agent/conftest/downloader"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
 type key int
@@ -36,6 +39,8 @@ const downloadImplKey key = 0
 type downloadImpl interface {
 	Download(context.Context, string, []string) error
 }
+
+var gatherFunc = gather.Gather
 
 var dlMutex sync.Mutex
 
@@ -59,17 +64,35 @@ func Download(ctx context.Context, destDir string, sourceUrl string, showMsg boo
 		fmt.Println(msg)
 	}
 
-	if d, ok := ctx.Value(downloadImplKey).(downloadImpl); ok {
-		err = d.Download(ctx, destDir, []string{sourceUrl})
-	} else {
+	dl := func(ctx context.Context, sourceUrl, destDir string) error {
 		// conftest's Download function leverages oras under the hood to fetch from OCI. It uses the
 		// global oras client and sets the user agent to "conftest". This is not a thread safe
 		// operation. Here we get around this limitation by ensuring a single download happens at a
 		// time.
 		dlMutex.Lock()
-		err = downloader.Download(ctx, destDir, []string{sourceUrl})
-		dlMutex.Unlock()
+		defer dlMutex.Unlock()
+		return downloader.Download(ctx, destDir, []string{sourceUrl})
 	}
+
+	if utils.UseGoGather() {
+		dl = func(ctx context.Context, sourceUrl, destDir string) error {
+			_, err := gatherFunc(ctx, sourceUrl, destDir)
+			if err != nil {
+				log.Debug("Download failed!")
+			}
+			return err
+		}
+	} else if d, ok := ctx.Value(downloadImplKey).(downloadImpl); ok {
+		dl = func(ctx context.Context, sourceUrl, destDir string) error {
+			err = d.Download(ctx, destDir, []string{sourceUrl})
+			if err != nil {
+				log.Debug("Download failed!")
+			}
+			return err
+		}
+	}
+
+	err = dl(ctx, sourceUrl, destDir)
 
 	if err != nil {
 		log.Debug("Download failed!")

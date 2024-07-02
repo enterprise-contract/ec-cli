@@ -21,8 +21,10 @@ package downloader
 import (
 	"context"
 	"errors"
+	"os"
 	"testing"
 
+	"github.com/enterprise-contract/go-gather/metadata"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -39,27 +41,45 @@ func (m *mockDownloader) Download(ctx context.Context, dest string, sourceUrls [
 
 func TestDownloader_Download(t *testing.T) {
 	tests := []struct {
-		name   string
-		dest   string
-		source string
-		err    error
+		name        string
+		dest        string
+		source      string
+		errExpected bool
+		err         error
+		useGoGather bool
 	}{
 		{
 			name:   "Downloads",
 			dest:   "dir",
-			source: "example.com/repo.git",
+			source: "https://example.com/org/repo.git",
 		},
 		{
-			name:   "Fails to download",
-			dest:   "dir",
-			source: "example.com/repo.git",
-			err:    errors.New("expected"),
+			name:        "Downloads with go-gather",
+			dest:        "dir",
+			source:      "https://example.com/org/repo.git",
+			useGoGather: true,
 		},
 		{
-			name:   "insecure download",
-			dest:   "dir",
-			source: "http://example.com",
-			err:    errors.New("attempting to download from insecure source: http://example.com"),
+			name:        "Fails to download with go-gather",
+			dest:        "dir",
+			source:      "https://example.com/org/repo.git",
+			errExpected: true,
+			err:         errors.New("expected error with go-gather"),
+			useGoGather: true,
+		},
+		{
+			name:        "Fails to download",
+			dest:        "dir",
+			source:      "https://example.com/org/repo.git",
+			errExpected: true,
+			err:         errors.New("expected error"),
+		},
+		{
+			name:        "insecure download",
+			dest:        "dir",
+			source:      "http://example.com/org/repo.git",
+			errExpected: true,
+			err:         errors.New("attempting to download from insecure source: http://example.com/org/repo.git"),
 		},
 	}
 
@@ -67,14 +87,30 @@ func TestDownloader_Download(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			d := mockDownloader{}
 			ctx := WithDownloadImpl(context.TODO(), &d)
-			d.On("Download", ctx, tt.dest, []string{tt.source}).Return(tt.err)
+
+			originalGatherFunction := gatherFunc
+			defer func() {
+				gatherFunc = originalGatherFunction
+			}()
+
+			if tt.useGoGather {
+				t.Setenv("USEGOGATHER", "1")
+				gatherFunc = func(_ context.Context, _ string, _ string) (metadata.Metadata, error) {
+					return nil, tt.err
+				}
+			} else {
+				os.Unsetenv("USEGOGATHER")
+				d.On("Download", ctx, tt.dest, []string{tt.source}).Return(tt.err)
+			}
 
 			err := Download(ctx, tt.dest, tt.source, false)
-			if tt.err == nil {
+
+			if tt.errExpected {
+				assert.Error(t, err)
+				assert.EqualError(t, err, tt.err.Error())
+			} else {
 				assert.NoError(t, err)
 				mock.AssertExpectationsForObjects(t, &d)
-			} else {
-				assert.True(t, err.Error() == tt.err.Error())
 			}
 		})
 	}

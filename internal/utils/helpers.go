@@ -124,6 +124,10 @@ func Experimental() bool {
 	return os.Getenv("EC_EXPERIMENTAL") == "1"
 }
 
+func UseGoGather() bool {
+	return os.Getenv("USEGOGATHER") == "1"
+}
+
 // detect if the string is json
 func IsJson(data string) bool {
 	var jsMsg json.RawMessage
