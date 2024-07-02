@@ -430,7 +430,14 @@ Feature: evaluate enterprise contract
             "include": [
               {
                 "value": "filtering.always_pass",
-                "imageRef": "sha256:${REGISTRY_acceptance/ec-happy-day:latest_DIGEST}"
+              }
+            ],
+            "exclude": [
+              {
+                "value": "filtering.always_fail",
+              },
+              {
+                "value": "filtering.always_fail_with_collection",
               }
             ]
           },
