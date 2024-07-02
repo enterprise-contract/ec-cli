@@ -181,7 +181,7 @@ func TestConftestEvaluatorEvaluateTimeBased(t *testing.T) {
 
 	dl := mockDownloader{}
 
-	inputs := []string{"inputs"}
+	inputs := EvaluationTarget{Inputs: []string{"inputs"}}
 
 	expectedData := Data(map[string]any{
 		"a": 1,
@@ -189,7 +189,7 @@ func TestConftestEvaluatorEvaluateTimeBased(t *testing.T) {
 
 	ctx := setupTestContext(&r, &dl)
 
-	r.On("Run", ctx, inputs).Return(results, expectedData, nil)
+	r.On("Run", ctx, inputs.Inputs).Return(results, expectedData, nil)
 
 	pol, err := policy.NewOfflinePolicy(ctx, policy.Now)
 	assert.NoError(t, err)
@@ -298,10 +298,10 @@ func TestConftestEvaluatorEvaluateNoSuccessWarningsOrFailures(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			r := mockTestRunner{}
 			dl := mockDownloader{}
-			inputs := []string{"inputs"}
+			inputs := EvaluationTarget{Inputs: []string{"inputs"}}
 			ctx := setupTestContext(&r, &dl)
 
-			r.On("Run", ctx, inputs).Return(tt.results, Data(nil), nil)
+			r.On("Run", ctx, inputs.Inputs).Return(tt.results, Data(nil), nil)
 
 			p, err := policy.NewOfflinePolicy(ctx, policy.Now)
 			assert.NoError(t, err)
@@ -1187,9 +1187,9 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			r := mockTestRunner{}
 			dl := mockDownloader{}
-			inputs := []string{"inputs"}
+			inputs := EvaluationTarget{Inputs: []string{"inputs"}}
 			ctx := setupTestContext(&r, &dl)
-			r.On("Run", ctx, inputs).Return(tt.results, Data(nil), nil)
+			r.On("Run", ctx, inputs.Inputs).Return(tt.results, Data(nil), nil)
 
 			p, err := policy.NewOfflinePolicy(ctx, policy.Now)
 			assert.NoError(t, err)
@@ -1723,7 +1723,7 @@ func TestConftestEvaluatorEvaluate(t *testing.T) {
 	}, config, ecc.Source{})
 	require.NoError(t, err)
 
-	results, data, err := evaluator.Evaluate(ctx, []string{path.Join(dir, "inputs")})
+	results, data, err := evaluator.Evaluate(ctx, EvaluationTarget{Inputs: []string{path.Join(dir, "inputs")}})
 	require.NoError(t, err)
 
 	// sort the slice by code for test stability
@@ -1786,7 +1786,7 @@ func TestUnconformingRule(t *testing.T) {
 	}, p, ecc.Source{})
 	require.NoError(t, err)
 
-	_, _, err = evaluator.Evaluate(ctx, []string{path.Join(dir, "inputs")})
+	_, _, err = evaluator.Evaluate(ctx, EvaluationTarget{Inputs: []string{path.Join(dir, "inputs")}})
 	assert.EqualError(t, err, `the rule "deny = true { true }" returns an unsupported value, at no_msg.rego:3`)
 }
 
@@ -1795,14 +1795,15 @@ func TestNewConftestEvaluatorComputeIncludeExclude(t *testing.T) {
 		name            string
 		globalConfig    *ecc.EnterpriseContractPolicyConfiguration
 		source          ecc.Source
-		expectedInclude []string
-		expectedExclude []string
+		expectedInclude *Criteria
+		expectedExclude *Criteria
 	}{
-		{name: "no config", expectedInclude: []string{"*"}},
+		{name: "no config", expectedInclude: &Criteria{defaultItems: []string{"*"}}, expectedExclude: &Criteria{}},
 		{
 			name:            "empty global config",
 			globalConfig:    &ecc.EnterpriseContractPolicyConfiguration{},
-			expectedInclude: []string{"*"},
+			expectedInclude: &Criteria{defaultItems: []string{"*"}},
+			expectedExclude: &Criteria{},
 		},
 		{
 			name: "global config",
@@ -1811,15 +1812,15 @@ func TestNewConftestEvaluatorComputeIncludeExclude(t *testing.T) {
 				Exclude:     []string{"exclude-me"},
 				Collections: []string{"collect-me"},
 			},
-			expectedInclude: []string{"include-me", "@collect-me"},
-			expectedExclude: []string{"exclude-me"},
+			expectedInclude: &Criteria{defaultItems: []string{"include-me", "@collect-me"}},
+			expectedExclude: &Criteria{defaultItems: []string{"exclude-me"}},
 		},
 		{
 			name: "empty source config",
 			source: ecc.Source{
 				Config: &ecc.SourceConfig{},
 			},
-			expectedInclude: []string{"*"},
+			expectedInclude: &Criteria{defaultItems: []string{"*"}}, expectedExclude: &Criteria{},
 		},
 		{
 			name: "source config",
@@ -1829,8 +1830,8 @@ func TestNewConftestEvaluatorComputeIncludeExclude(t *testing.T) {
 					Exclude: []string{"exclude-me"},
 				},
 			},
-			expectedInclude: []string{"include-me"},
-			expectedExclude: []string{"exclude-me"},
+			expectedInclude: &Criteria{defaultItems: []string{"include-me"}},
+			expectedExclude: &Criteria{defaultItems: []string{"exclude-me"}},
 		},
 		{
 			name: "source config over global config",
@@ -1845,8 +1846,8 @@ func TestNewConftestEvaluatorComputeIncludeExclude(t *testing.T) {
 					Exclude: []string{"exclude-me"},
 				},
 			},
-			expectedInclude: []string{"include-me"},
-			expectedExclude: []string{"exclude-me"},
+			expectedInclude: &Criteria{defaultItems: []string{"include-me"}},
+			expectedExclude: &Criteria{defaultItems: []string{"exclude-me"}},
 		},
 		{
 			name: "volatile source config",
@@ -1864,8 +1865,32 @@ func TestNewConftestEvaluatorComputeIncludeExclude(t *testing.T) {
 					},
 				},
 			},
-			expectedInclude: []string{"include-me"},
-			expectedExclude: []string{"exclude-me"},
+			expectedInclude: &Criteria{defaultItems: []string{"include-me"}},
+			expectedExclude: &Criteria{defaultItems: []string{"exclude-me"}},
+		},
+		{
+			name: "imageRef used in volatile source config",
+			source: ecc.Source{
+				VolatileConfig: &ecc.VolatileSourceConfig{
+					Include: []ecc.VolatileCriteria{
+						{
+							Value:    "include-me",
+							ImageRef: "included-image-ref",
+						},
+						{
+							Value: "include-me2",
+						},
+					},
+					Exclude: []ecc.VolatileCriteria{
+						{
+							Value:    "exclude-me",
+							ImageRef: "excluded-image-ref",
+						},
+					},
+				},
+			},
+			expectedInclude: &Criteria{digestItems: map[string][]string{"included-image-ref": {"include-me"}}, defaultItems: []string{"include-me2"}},
+			expectedExclude: &Criteria{digestItems: map[string][]string{"excluded-image-ref": {"exclude-me"}}},
 		},
 		{
 			name: "volatile source config not applicable",
@@ -1913,7 +1938,8 @@ func TestNewConftestEvaluatorComputeIncludeExclude(t *testing.T) {
 					},
 				},
 			},
-			expectedInclude: []string{"*"},
+			expectedInclude: &Criteria{defaultItems: []string{"*"}},
+			expectedExclude: &Criteria{},
 		},
 		{
 			name: "volatile source config applicable",
@@ -1951,8 +1977,8 @@ func TestNewConftestEvaluatorComputeIncludeExclude(t *testing.T) {
 					},
 				},
 			},
-			expectedInclude: []string{"include-open-ended", "include-un-expired", "include-in-range"},
-			expectedExclude: []string{"exclude-open-ended", "exclude-un-expired", "exclude-in-range"},
+			expectedInclude: &Criteria{defaultItems: []string{"include-open-ended", "include-un-expired", "include-in-range"}},
+			expectedExclude: &Criteria{defaultItems: []string{"exclude-open-ended", "exclude-un-expired", "exclude-in-range"}},
 		},
 	}
 

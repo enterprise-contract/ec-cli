@@ -78,7 +78,7 @@ func TestEvaluatorLifecycle(t *testing.T) {
 
 	validate := func(_ context.Context, component app.SnapshotComponent, _ policy.Policy, evaluators []evaluator.Evaluator, _ bool) (*output.Output, error) {
 		for _, e := range evaluators {
-			_, _, err := e.Evaluate(ctx, []string{})
+			_, _, err := e.Evaluate(ctx, evaluator.EvaluationTarget{Inputs: []string{}})
 			require.NoError(t, err)
 		}
 
