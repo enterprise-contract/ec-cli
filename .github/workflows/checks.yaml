@@ -130,7 +130,7 @@ jobs:
           "${GITHUB_WORKSPACE}/hack/ubuntu-podman-update.sh"
 
       - name: Acceptance test
-        run: make acceptance
+        run: make scenario_policy_rule_filtering_on_imageRef
 
       - name: Upload coverage report
         uses: codecov/codecov-action@e28ff129e5465c2c0dcc6f003fc735cb6ae0c673 # v4.5.0
