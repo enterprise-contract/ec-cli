@@ -429,15 +429,15 @@ Feature: evaluate enterprise contract
           "volatileConfig": {
             "include": [
               {
-                "value": "filtering.always_pass",
+                "value": "filtering.always_pass"
               }
             ],
             "exclude": [
               {
-                "value": "filtering.always_fail",
+                "value": "filtering.always_fail"
               },
               {
-                "value": "filtering.always_fail_with_collection",
+                "value": "filtering.always_fail_with_collection"
               }
             ]
           },
