@@ -424,15 +424,12 @@ Feature: evaluate enterprise contract
     Given policy configuration named "ec-policy" with specification
     """
     {
+      "configuration": {
+        "include": ["@stamps", "filtering.always_pass"]
+      },
       "sources": [
         {
           "volatileConfig": {
-            "include": [
-              {
-                "value": "filtering.always_pass",
-                "imageRef": "sha256:${REGISTRY_acceptance/ec-happy-day:latest_DIGEST}"
-              }
-            ],
             "exclude": [
               {
                 "value": "filtering.always_fail",

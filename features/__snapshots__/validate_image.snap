@@ -840,6 +840,12 @@ Error: success criteria not met
           "metadata": {
             "code": "filtering.always_pass"
           }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "filtering.always_pass_with_collection"
+          }
         }
       ],
       "success": true,
