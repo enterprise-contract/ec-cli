@@ -872,11 +872,11 @@ Error: success criteria not met
   ],
   "key": "${known_PUBLIC_KEY_JSON}",
   "policy": {
-    "configuration": {
-      "include": ["@stamps", "filtering.always_pass"]
-    },
     "sources": [
       {
+        "policy": [
+          "git::https://${GITHOST}/git/happy-day-policy.git"
+        ],
         "volatileConfig": {
           "exclude": [
             {
@@ -888,12 +888,15 @@ Error: success criteria not met
               "imageRef": "sha256:${REGISTRY_acceptance/ec-happy-day:latest_DIGEST}"
             }
           ]
-        },
-        "policy": [
-          "git::https://${GITHOST}/git/happy-day-policy.git"
-        ]
+        }
       }
     ],
+    "configuration": {
+      "include": [
+        "@stamps",
+        "filtering.always_pass"
+      ]
+    },
     "rekorUrl": "${REKOR}",
     "publicKey": "${known_PUBLIC_KEY}"
   },
