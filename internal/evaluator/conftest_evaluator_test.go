@@ -23,6 +23,7 @@ import (
 	"context"
 	"embed"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/fs"
 	"os"
@@ -1979,6 +1980,58 @@ func TestNewConftestEvaluatorComputeIncludeExclude(t *testing.T) {
 			ce := evaluator.(conftestEvaluator)
 			require.Equal(t, tt.expectedInclude, ce.include)
 			require.Equal(t, tt.expectedExclude, ce.exclude)
+		})
+	}
+}
+
+// This test is not high value but it should make Codecov happier
+func TestExcludeDirectives(t *testing.T) {
+	cases := []struct {
+		code     string
+		term     any
+		expected string
+	}{
+		// Normal behavior
+		{
+			code:     "foo",
+			term:     nil,
+			expected: `"foo"`,
+		},
+		{
+			code:     "foo",
+			term:     "bar",
+			expected: `"foo:bar"`,
+		},
+		{
+			code:     "foo",
+			term:     []any{"bar", "baz"},
+			expected: `one or more of "foo:bar", "foo:baz"`,
+		},
+		// Unlikely edge cases
+		{
+			code:     "foo",
+			term:     "",
+			expected: `"foo"`,
+		},
+		{
+			code:     "foo",
+			term:     []any{nil},
+			expected: `"foo"`,
+		},
+		{
+			code:     "foo",
+			term:     []any{nil, ""},
+			expected: `"foo"`,
+		},
+		{
+			code:     "foo",
+			term:     []any{nil, "bar", 42},
+			expected: `"foo:bar"`,
+		},
+	}
+	for i, tt := range cases {
+		t.Run(fmt.Sprintf("case %d", i), func(t *testing.T) {
+			assert.Equal(t, excludeDirectives(tt.code, tt.term), tt.expected)
 		})
 	}
 }

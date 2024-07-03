@@ -111,10 +111,7 @@ func trim(results *[]Outcome) {
 				continue
 			}
 
-			if term, ok := results[i].Metadata[metadataTerm]; ok {
-				code = fmt.Sprintf("%s:%s", code, term)
-			}
-			results[i].Metadata[metadataDescription] = fmt.Sprintf("%s. To exclude this rule add %q to the `exclude` section of the policy configuration.", strings.TrimSuffix(description, "."), code)
+			results[i].Metadata[metadataDescription] = fmt.Sprintf("%s. To exclude this rule add %s to the `exclude` section of the policy configuration.", strings.TrimSuffix(description, "."), excludeDirectives(code, results[i].Metadata[metadataTerm]))
 		}
 
 		return results
@@ -126,6 +123,41 @@ func trim(results *[]Outcome) {
 		(*results)[i].Skipped = trimOutput(checks.Skipped)
 		(*results)[i].Successes = trimOutput(checks.Successes)
 	}
+}
+
+// Used above to suggest what to exclude to skip a certain violation.
+// Use the term if one is provided so it's as specific as possible.
+func excludeDirectives(code string, rawTerm any) string {
+	output := []string{}
+
+	if term, ok := rawTerm.(string); ok && term != "" {
+		// A single term was provided
+		output = append(output, fmt.Sprintf(`"%s:%s"`, code, term))
+	}
+
+	if rawTerms, ok := rawTerm.([]any); ok {
+		// Multiple terms were provided
+		for _, t := range rawTerms {
+			if term, ok := t.(string); ok && term != "" {
+				output = append(output, fmt.Sprintf(`"%s:%s"`, code, term))
+			}
+		}
+	}
+
+	if len(output) == 0 {
+		// No terms were provided (or some unexpected edge case)
+		output = append(output, fmt.Sprintf(`"%s"`, code))
+	}
+
+	prefix := ""
+	if len(output) > 1 {
+		// For required tasks I think just the first one would be sufficient, but I'm
+		// not sure if that's always true, so let's give some slightly vague advice
+		prefix = "one or more of "
+	}
+
+	// Put it all together and return a string
+	return fmt.Sprintf("%s%s", prefix, strings.Join(output, ", "))
 }
 
 type testRunner interface {

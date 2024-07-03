@@ -1622,9 +1622,12 @@ Error: success criteria not met
             "collections": [
               "A"
             ],
-            "description": "This rule will always fail. To exclude this rule add \"main.reject_with_term:term2\" to the `exclude` section of the policy configuration.",
+            "description": "This rule will always fail. To exclude this rule add one or more of \"main.reject_with_term:term2\", \"main.reject_with_term:term3\" to the `exclude` section of the policy configuration.",
             "solution": "None",
-            "term": "term2",
+            "term": [
+              "term2",
+              "term3"
+            ],
             "title": "Reject with term rule"
           }
         },
@@ -1741,8 +1744,8 @@ Results:
   ImageRef: ${REGISTRY}/acceptance/image@sha256:${REGISTRY_acceptance/image:latest_DIGEST}
   Reason: Fails always (term2)
   Title: Reject with term rule
-  Description: This rule will always fail. To exclude this rule add "main.reject_with_term:term2" to the `exclude` section of the
-  policy configuration.
+  Description: This rule will always fail. To exclude this rule add one or more of "main.reject_with_term:term2",
+  "main.reject_with_term:term3" to the `exclude` section of the policy configuration.
   Solution: None
 
 [31m✕[0m [31m[Violation] main.rejector[0m

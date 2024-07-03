@@ -47,7 +47,7 @@ deny contains result if {
 		},
 		{
 			"code": "main.reject_with_term",
-			"term": "term2",
+			"term": ["term2", "term3"],
 			"collections": ["A"],
 			"effective_on": "2022-01-01T00:00:00Z",
 			"msg": "Fails always (term2)",
