@@ -28,7 +28,7 @@ import (
 	"time"
 
 	"github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
-	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
+	app "github.com/konflux-ci/application-api/api/v1alpha1"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

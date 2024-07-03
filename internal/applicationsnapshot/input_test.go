@@ -30,7 +30,7 @@ import (
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	gcrfake "github.com/google/go-containerregistry/pkg/v1/fake"
 	"github.com/google/go-containerregistry/pkg/v1/types"
-	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
+	app "github.com/konflux-ci/application-api/api/v1alpha1"
 	log "github.com/sirupsen/logrus"
 	"github.com/sirupsen/logrus/hooks/test"
 	"github.com/spf13/afero"

@@ -30,7 +30,7 @@ import (
 
 	hd "github.com/MakeNowJust/heredoc"
 	"github.com/gkampitakis/go-snaps/snaps"
-	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
+	app "github.com/konflux-ci/application-api/api/v1alpha1"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
 	log "github.com/sirupsen/logrus"
 	"github.com/sirupsen/logrus/hooks/test"
