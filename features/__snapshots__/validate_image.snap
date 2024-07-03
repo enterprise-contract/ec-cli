@@ -872,13 +872,20 @@ Error: success criteria not met
   ],
   "key": "${known_PUBLIC_KEY_JSON}",
   "policy": {
+    "configuration": {
+      "include": ["@stamps", "filtering.always_pass"]
+    },
     "sources": [
       {
         "volatileConfig": {
-          "include": [
+          "exclude": [
             {
-              "value": "filtering.always_pass",
-              "imageRef": "sha256:1234"
+              "value": "filtering.always_fail",
+              "imageRef": "sha256:${REGISTRY_acceptance/ec-happy-day:latest_DIGEST}"
+            },
+            {
+              "value": "filtering.always_fail_with_collection",
+              "imageRef": "sha256:${REGISTRY_acceptance/ec-happy-day:latest_DIGEST}"
             }
           ]
         },
