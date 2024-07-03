@@ -22,7 +22,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 	"text/tabwriter"
 
@@ -121,25 +120,7 @@ func createNamedPolicy(ctx context.Context, name string, specification *godog.Do
 		return err
 	}
 
-	vars := make(map[string]string)
-	digests, err := registry.AllDigests(ctx)
-	if err != nil {
-		return err
-	}
-
-	for repositoryAndTag, digest := range digests {
-		vars[fmt.Sprintf("REGISTRY_%s_DIGEST", repositoryAndTag)] = digest
-	}
-
-	expand := func(text string) string {
-		return os.Expand(text, func(key string) string {
-			return vars[key]
-		})
-	}
-
-	data := expand(specification.Content)
-
-	return c.cluster.CreateNamedPolicy(ctx, name, data)
+	return c.cluster.CreateNamedPolicy(ctx, name, specification.Content)
 }
 
 func createNamedPolicyWithManySources(ctx context.Context, name string, amount int, source string) error {
