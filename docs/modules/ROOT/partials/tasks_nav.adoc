@@ -1,3 +1,3 @@
 * xref:tasks.adoc[Tekton Tasks]
-** xref:verify-definition[verify-definition]
-** xref:verify-enterprise-contract[verify-enterprise-contract]
+** xref:verify-definition.adoc[verify-definition]
+** xref:verify-enterprise-contract.adoc[verify-enterprise-contract]
