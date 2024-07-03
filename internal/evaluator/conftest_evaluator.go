@@ -774,7 +774,8 @@ func isResultEffective(failure Result, now time.Time) bool {
 // discarded based on the policy configuration.
 func (c conftestEvaluator) isResultIncluded(result Result, target string) bool {
 	log.Debug(target)
-	log.Debug(c.include)
+	log.Debug("including policies: %q:", c.include)
+	log.Debugf("excluding policies: %q", c.exclude)
 	ruleMatchers := makeMatchers(result)
 	includeScore := scoreMatches(ruleMatchers, c.include.get(target))
 	excludeScore := scoreMatches(ruleMatchers, c.exclude.get(target))
