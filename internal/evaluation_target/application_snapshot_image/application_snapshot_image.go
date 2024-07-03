@@ -59,6 +59,7 @@ type ApplicationSnapshotImage struct {
 	Evaluators       []evaluator.Evaluator
 	files            map[string]json.RawMessage
 	component        app.SnapshotComponent
+	snapshot         app.SnapshotSpec
 }
 
 func (a ApplicationSnapshotImage) GetReference() name.Reference {
@@ -66,7 +67,7 @@ func (a ApplicationSnapshotImage) GetReference() name.Reference {
 }
 
 // NewApplicationSnapshotImage returns an ApplicationSnapshotImage struct with reference, checkOpts, and evaluator ready to use.
-func NewApplicationSnapshotImage(ctx context.Context, component app.SnapshotComponent, p policy.Policy) (*ApplicationSnapshotImage, error) {
+func NewApplicationSnapshotImage(ctx context.Context, component app.SnapshotComponent, p policy.Policy, snap app.SnapshotSpec) (*ApplicationSnapshotImage, error) {
 	opts, err := p.CheckOpts()
 	if err != nil {
 		return nil, err
@@ -74,6 +75,7 @@ func NewApplicationSnapshotImage(ctx context.Context, component app.SnapshotComp
 	a := &ApplicationSnapshotImage{
 		checkOpts: *opts,
 		component: component,
+		snapshot:  snap,
 	}
 
 	if err := a.SetImageURL(component.ContainerImage); err != nil {
@@ -326,6 +328,7 @@ type image struct {
 type Input struct {
 	Attestations []attestationData `json:"attestations"`
 	Image        image             `json:"image"`
+	AppSnapshot  app.SnapshotSpec  `json:"snapshot"`
 }
 
 // WriteInputFile writes the JSON from the attestations to input.json in a random temp dir
@@ -349,6 +352,7 @@ func (a *ApplicationSnapshotImage) WriteInputFile(ctx context.Context) (string, 
 			Files:      a.files,
 			Source:     a.component.Source,
 		},
+		AppSnapshot: a.snapshot,
 	}
 
 	if a.parentRef != nil {

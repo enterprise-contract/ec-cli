@@ -42,7 +42,7 @@ import (
 	validate_utils "github.com/enterprise-contract/ec-cli/internal/validate"
 )
 
-type imageValidationFunc func(context.Context, app.SnapshotComponent, policy.Policy, []evaluator.Evaluator, bool) (*output.Output, error)
+type imageValidationFunc func(context.Context, app.SnapshotComponent, *app.SnapshotSpec, policy.Policy, []evaluator.Evaluator, bool) (*output.Output, error)
 
 var newConftestEvaluator = evaluator.NewConftestEvaluator
 
@@ -320,7 +320,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 				for comp := range jobs {
 					log.Debugf("Worker %d got a component %q", id, comp.ContainerImage)
 					ctx := cmd.Context()
-					out, err := validate(ctx, comp, data.policy, evaluators, data.info)
+					out, err := validate(ctx, comp, data.spec, data.policy, evaluators, data.info)
 					res := result{
 						err: err,
 						component: applicationsnapshot.Component{

@@ -23,6 +23,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"strings"
 	"testing"
 	"time"
 
@@ -141,13 +142,26 @@ func TestBuiltinChecks(t *testing.T) {
 			assert.NoError(t, err)
 
 			evaluators := []evaluator.Evaluator{}
+			snap := app.SnapshotSpec{
+				Components: []app.SnapshotComponent{
+					{
+						ContainerImage: "registry.io/repository/image:tag",
+					},
+					{
+						ContainerImage: "registry.io/other-repository/image2:tag",
+					},
+				},
+			}
 
 			ctx = withImageConfig(ctx, c.component.ContainerImage)
 			client := ecoci.NewClient(ctx)
 			c.setup(client.(*fake.FakeClient))
 
-			actual, err := ValidateImage(ctx, c.component, p, evaluators, false)
+			actual, err := ValidateImage(ctx, c.component, &snap, p, evaluators, false)
 			assert.NoError(t, err)
+
+			// Verify application snapshot was a part of input
+			strings.Contains(string(actual.PolicyInput), "snapshot\":{\"application\":\"\",\"components\":[{\"name\":\"\",\"containerImage\":\"registry.io/repository/image:tag\",\"source\":{}},{\"name\":\"\",\"containerImage\":\"registry.io/other-repository/image2:tag\",\"source\":{}}],\"artifacts\":{}}")
 
 			assert.Equal(t, c.expectedWarnings, actual.Warnings())
 			assert.Equal(t, c.expectedViolations, actual.Violations())
@@ -316,7 +330,18 @@ func TestEvaluatorLifecycle(t *testing.T) {
 
 	evaluators := []evaluator.Evaluator{e}
 
-	_, err = ValidateImage(ctx, component, policy, evaluators, false)
+	snap := app.SnapshotSpec{
+		Components: []app.SnapshotComponent{
+			{
+				ContainerImage: "registry.io/repository/image:tag",
+			},
+			{
+				ContainerImage: "registry.io/other-repository/image2:tag",
+			},
+		},
+	}
+
+	_, err = ValidateImage(ctx, component, &snap, policy, evaluators, false)
 
 	require.NoError(t, err)
 }
