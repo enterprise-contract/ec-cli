@@ -16,6 +16,7 @@ require (
 	github.com/google/go-containerregistry v0.19.2
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/in-toto/in-toto-golang v0.9.0
+	github.com/konflux-ci/application-api v0.0.0-20240527211352-be061932d497
 	github.com/otiai10/copy v1.14.0
 	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
 	github.com/pkg/diff v0.0.0-20210226163009-20ebb0f2a09e
@@ -41,8 +42,6 @@ require (
 	sigs.k8s.io/kustomize/kyaml v0.17.1
 	sigs.k8s.io/yaml v1.4.0
 )
-
-require github.com/redhat-appstudio/application-api v0.0.0-20231026192857-89515ad2504f
 
 require (
 	contrib.go.opencensus.io/exporter/ocagent v0.7.1-0.20200907061046-05415f1de66d // indirect

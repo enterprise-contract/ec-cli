@@ -21,6 +21,7 @@ require (
 	github.com/in-toto/in-toto-golang v0.9.0
 	github.com/invopop/jsonschema v0.12.0
 	github.com/jstemmer/go-junit-report/v2 v2.1.0
+	github.com/konflux-ci/application-api v0.0.0-20240527211352-be061932d497
 	github.com/leanovate/gopter v0.2.11
 	github.com/mattn/go-isatty v0.0.20
 	github.com/mitchellh/go-wordwrap v1.0.1
@@ -28,7 +29,6 @@ require (
 	github.com/open-policy-agent/opa v0.66.0
 	github.com/package-url/packageurl-go v0.1.3
 	github.com/qri-io/jsonpointer v0.1.1
-	github.com/redhat-appstudio/application-api v0.0.0-20231026192857-89515ad2504f
 	github.com/santhosh-tekuri/jsonschema/v5 v5.3.1
 	github.com/secure-systems-lab/go-securesystemslib v0.8.0
 	github.com/sigstore/cosign/v2 v2.2.4

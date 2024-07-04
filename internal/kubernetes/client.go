@@ -21,7 +21,7 @@ import (
 	"errors"
 
 	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
-	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
+	app "github.com/konflux-ci/application-api/api/v1alpha1"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"

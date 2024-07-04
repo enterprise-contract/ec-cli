@@ -22,8 +22,8 @@ import (
 	"sort"
 	"time"
 
+	app "github.com/konflux-ci/application-api/api/v1alpha1"
 	"github.com/qri-io/jsonpointer"
-	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/enterprise-contract/ec-cli/internal/attestation"

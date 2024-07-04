@@ -23,7 +23,7 @@ import (
 
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/hashicorp/go-multierror"
-	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
+	app "github.com/konflux-ci/application-api/api/v1alpha1"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 	"golang.org/x/exp/slices"

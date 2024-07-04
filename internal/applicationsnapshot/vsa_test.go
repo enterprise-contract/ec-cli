@@ -26,7 +26,7 @@ import (
 
 	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/in-toto/in-toto-golang/in_toto"
-	app "github.com/redhat-appstudio/application-api/api/v1alpha1"
+	app "github.com/konflux-ci/application-api/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/enterprise-contract/ec-cli/internal/attestation"
