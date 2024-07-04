@@ -34,6 +34,22 @@
  "image": {
   "ref": "registry.io/repository/image:tag",
   "source": {}
+ },
+ "snapshot": {
+  "application": "",
+  "artifacts": {},
+  "components": [
+   {
+    "containerImage": "registry.io/repository/image:tag",
+    "name": "",
+    "source": {}
+   },
+   {
+    "containerImage": "registry.io/other-repository/image2:tag",
+    "name": "",
+    "source": {}
+   }
+  ]
  }
 }
 ---
@@ -77,6 +93,22 @@
  "image": {
   "ref": "registry.io/repository/image:tag",
   "source": {}
+ },
+ "snapshot": {
+  "application": "",
+  "artifacts": {},
+  "components": [
+   {
+    "containerImage": "registry.io/repository/image:tag",
+    "name": "",
+    "source": {}
+   },
+   {
+    "containerImage": "registry.io/other-repository/image2:tag",
+    "name": "",
+    "source": {}
+   }
+  ]
  }
 }
 ---
@@ -118,6 +150,22 @@
    }
   ],
   "source": {}
+ },
+ "snapshot": {
+  "application": "",
+  "artifacts": {},
+  "components": [
+   {
+    "containerImage": "registry.io/repository/image:tag",
+    "name": "",
+    "source": {}
+   },
+   {
+    "containerImage": "registry.io/other-repository/image2:tag",
+    "name": "",
+    "source": {}
+   }
+  ]
  }
 }
 ---
@@ -133,6 +181,22 @@
   },
   "ref": "registry.io/repository/image:tag",
   "source": {}
+ },
+ "snapshot": {
+  "application": "",
+  "artifacts": {},
+  "components": [
+   {
+    "containerImage": "registry.io/repository/image:tag",
+    "name": "",
+    "source": {}
+   },
+   {
+    "containerImage": "registry.io/other-repository/image2:tag",
+    "name": "",
+    "source": {}
+   }
+  ]
  }
 }
 ---
@@ -151,6 +215,22 @@
   },
   "ref": "registry.io/repository/image:tag",
   "source": {}
+ },
+ "snapshot": {
+  "application": "",
+  "artifacts": {},
+  "components": [
+   {
+    "containerImage": "registry.io/repository/image:tag",
+    "name": "",
+    "source": {}
+   },
+   {
+    "containerImage": "registry.io/other-repository/image2:tag",
+    "name": "",
+    "source": {}
+   }
+  ]
  }
 }
 ---
@@ -194,6 +274,22 @@
  "image": {
   "ref": "registry.io/repository/image:tag",
   "source": {}
+ },
+ "snapshot": {
+  "application": "",
+  "artifacts": {},
+  "components": [
+   {
+    "containerImage": "registry.io/repository/image:tag",
+    "name": "",
+    "source": {}
+   },
+   {
+    "containerImage": "registry.io/other-repository/image2:tag",
+    "name": "",
+    "source": {}
+   }
+  ]
  }
 }
 ---
@@ -221,6 +317,22 @@
  "image": {
   "ref": "registry.io/repository/image:tag",
   "source": {}
+ },
+ "snapshot": {
+  "application": "",
+  "artifacts": {},
+  "components": [
+   {
+    "containerImage": "registry.io/repository/image:tag",
+    "name": "",
+    "source": {}
+   },
+   {
+    "containerImage": "registry.io/other-repository/image2:tag",
+    "name": "",
+    "source": {}
+   }
+  ]
  }
 }
 ---
@@ -236,6 +348,22 @@
     "url": "git.local/repository"
    }
   }
+ },
+ "snapshot": {
+  "application": "",
+  "artifacts": {},
+  "components": [
+   {
+    "containerImage": "registry.io/repository/image:tag",
+    "name": "",
+    "source": {}
+   },
+   {
+    "containerImage": "registry.io/other-repository/image2:tag",
+    "name": "",
+    "source": {}
+   }
+  ]
  }
 }
 ---

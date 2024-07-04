@@ -50,6 +50,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/enterprise-contract/ec-cli/internal/attestation"
+	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/signature"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 	o "github.com/enterprise-contract/ec-cli/internal/utils/oci"
@@ -214,6 +215,16 @@ func TestWriteInputFile(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			fs := afero.NewMemMapFs()
 			ctx := utils.WithFS(context.Background(), fs)
+			tt.snapshot.snapshot = app.SnapshotSpec{
+				Components: []app.SnapshotComponent{
+					{
+						ContainerImage: "registry.io/repository/image:tag",
+					},
+					{
+						ContainerImage: "registry.io/other-repository/image2:tag",
+					},
+				},
+			}
 			inputPath, inputJSON, err := tt.snapshot.WriteInputFile(ctx)
 
 			assert.NoError(t, err)
@@ -234,9 +245,20 @@ func TestWriteInputFile(t *testing.T) {
 
 func TestWriteInputFileMultipleAttestations(t *testing.T) {
 	att := createSimpleAttestation(nil)
+	snapshot := app.SnapshotSpec{
+		Components: []app.SnapshotComponent{
+			{
+				ContainerImage: "registry.io/repository/image:tag",
+			},
+			{
+				ContainerImage: "registry.io/other-repository/image2:tag",
+			},
+		},
+	}
 	a := ApplicationSnapshotImage{
 		reference:    name.MustParseReference("registry.io/repository/image:tag"),
 		attestations: []attestation.Attestation{att},
+		snapshot:     snapshot,
 	}
 
 	fs := afero.NewMemMapFs()
@@ -255,6 +277,34 @@ func TestWriteInputFileMultipleAttestations(t *testing.T) {
 	snaps.MatchJSON(t, bytes)
 
 	assert.JSONEq(t, string(inputJSON), string(bytes))
+}
+
+func TestNewApplicationSnapshotImage(t *testing.T) {
+	ctx := context.Background()
+
+	component := app.SnapshotComponent{
+		ContainerImage: "registry.io/repository/image:tag",
+	}
+	policy, err := policy.NewOfflinePolicy(ctx, policy.Now)
+	require.NoError(t, err)
+
+	snapshot := app.SnapshotSpec{
+		Components: []app.SnapshotComponent{
+			{
+				ContainerImage: "registry.io/repository/image:tag",
+			},
+			{
+				ContainerImage: "registry.io/other-repository/image2:tag",
+			},
+		},
+	}
+	actual, err := NewApplicationSnapshotImage(ctx, component, policy, snapshot)
+	assert.NoError(t, err)
+
+	assert.Equal(t, len(actual.snapshot.Components), 2)
+	assert.Equal(t, actual.component.ContainerImage, component.ContainerImage)
+	assert.Equal(t, actual.snapshot.Components[0].ContainerImage, snapshot.Components[0].ContainerImage)
+	assert.Equal(t, actual.snapshot.Components[1].ContainerImage, snapshot.Components[1].ContainerImage)
 }
 
 func TestSyntaxValidationWithoutAttestations(t *testing.T) {

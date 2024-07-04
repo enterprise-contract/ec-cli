@@ -2550,6 +2550,17 @@ ${__________known_PUBLIC_KEY}
       }
     },
     "source": {}
+  },
+  "snapshot": {
+    "application": "",
+    "components": [
+      {
+        "name": "Unnamed",
+        "containerImage": "${REGISTRY}/acceptance/policy-input-output",
+        "source": {}
+      }
+    ],
+    "artifacts": {}
   }
 }
 ---
@@ -2902,6 +2913,17 @@ Error: success criteria not met
       }
     },
     "source": {}
+  },
+  "snapshot": {
+    "application": "",
+    "components": [
+      {
+        "name": "Unnamed",
+        "containerImage": "${REGISTRY}/acceptance/image",
+        "source": {}
+      }
+    ],
+    "artifacts": {}
   }
 }
 ---
@@ -3244,6 +3266,17 @@ Error: success criteria not met
       }
     },
     "source": {}
+  },
+  "snapshot": {
+    "application": "",
+    "components": [
+      {
+        "name": "Unnamed",
+        "containerImage": "${REGISTRY}/acceptance/image",
+        "source": {}
+      }
+    ],
+    "artifacts": {}
   }
 }
 ---

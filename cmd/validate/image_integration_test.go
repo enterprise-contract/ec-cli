@@ -76,7 +76,7 @@ func TestEvaluatorLifecycle(t *testing.T) {
 		newConftestEvaluator = evaluator.NewConftestEvaluator
 	})
 
-	validate := func(_ context.Context, component app.SnapshotComponent, _ policy.Policy, evaluators []evaluator.Evaluator, _ bool) (*output.Output, error) {
+	validate := func(_ context.Context, component app.SnapshotComponent, _ *app.SnapshotSpec, _ policy.Policy, evaluators []evaluator.Evaluator, _ bool) (*output.Output, error) {
 		for _, e := range evaluators {
 			_, _, err := e.Evaluate(ctx, []string{})
 			require.NoError(t, err)
