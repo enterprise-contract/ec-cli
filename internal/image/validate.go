@@ -109,7 +109,13 @@ func ValidateImage(ctx context.Context, comp app.SnapshotComponent, snap *app.Sn
 
 	for _, e := range evaluators {
 		// Todo maybe: Handle each one concurrently
-		results, data, err := e.Evaluate(ctx, []string{inputPath})
+		target := evaluator.EvaluationTarget{Inputs: []string{inputPath}}
+		if digest, err := a.ResolveDigest(ctx); err != nil {
+			log.Debugf("Problem parsing digest from image")
+		} else {
+			target.Target = digest
+		}
+		results, data, err := e.Evaluate(ctx, target)
 		log.Debug("\n\nRunning conftest policy check\n\n")
 
 		if err != nil {

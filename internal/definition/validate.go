@@ -25,6 +25,7 @@ import (
 	"github.com/spf13/afero"
 
 	"github.com/enterprise-contract/ec-cli/internal/evaluation_target/definition"
+	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 	"github.com/enterprise-contract/ec-cli/internal/output"
 	"github.com/enterprise-contract/ec-cli/internal/policy/source"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
@@ -45,7 +46,7 @@ func ValidateDefinition(ctx context.Context, fpath string, sources []source.Poli
 		return nil, err
 	}
 
-	results, _, err := p.Evaluator.Evaluate(ctx, defFiles)
+	results, _, err := p.Evaluator.Evaluate(ctx, evaluator.EvaluationTarget{Inputs: defFiles})
 	if err != nil {
 		log.Debug("Problem running conftest policy check!")
 		return nil, err

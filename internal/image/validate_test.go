@@ -289,8 +289,8 @@ type mockEvaluator struct {
 	mock.Mock
 }
 
-func (e *mockEvaluator) Evaluate(ctx context.Context, inputs []string) ([]evaluator.Outcome, evaluator.Data, error) {
-	args := e.Called(ctx, inputs)
+func (e *mockEvaluator) Evaluate(ctx context.Context, target evaluator.EvaluationTarget) ([]evaluator.Outcome, evaluator.Data, error) {
+	args := e.Called(ctx, target.Inputs)
 
 	return args.Get(0).([]evaluator.Outcome), args.Get(1).(evaluator.Data), args.Error(2)
 }
@@ -314,6 +314,7 @@ func TestEvaluatorLifecycle(t *testing.T) {
 	client.On("Head", ref).Return(&gcr.Descriptor{MediaType: types.OCIManifestSchema1}, nil)
 	client.On("VerifyImageSignatures", refNoTag, mock.Anything).Return([]oci.Signature{validSignature}, true, nil)
 	client.On("VerifyImageAttestations", refNoTag, mock.Anything).Return([]oci.Signature{validAttestation}, true, nil)
+	client.On("ResolveDigest", refNoTag).Return("@sha256:"+imageDigest, nil)
 	ctx = ecoci.WithClient(ctx, &client)
 
 	component := app.SnapshotComponent{
