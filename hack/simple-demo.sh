@@ -19,11 +19,28 @@
 # See https://github.com/enterprise-contract/golden-container
 IMAGE=${IMAGE:-"quay.io/redhat-appstudio/ec-golden-image:latest"}
 
+# Assume the latest image was pushed already
+GIT_REPO=enterprise-contract/golden-container
+GIT_SHA=$(curl -s "https://api.github.com/repos/${GIT_REPO}/commits?per_page=1" | jq -r '.[0].sha')
+
 # We can use `ec validate image --image $IMAGE` but to be more
-# realistic let's use the application snapshot format for the input
-APPLICATION_SNAPSHOT='{"components":[
-  {"name":"golden-container","containerImage":"'${IMAGE}'"}
-]}'
+# realistic let's use the application snapshot format for the input.
+# Also, this allows us to add the "source" key which is needed for
+# the `slsa_source_correlated` checks to pass
+APPLICATION_SNAPSHOT='{
+  "components": [
+    {
+      "name": "golden-container",
+      "containerImage": "'${IMAGE}'",
+      "source": {
+        "git": {
+          "url": "https://github.com/'${GIT_REPO}'",
+          "revision": "'${GIT_SHA}'"
+        }
+      }
+    }
+  ]
+}'
 
 # The key defined here should work, but if it doesn't then you can get a fresh one from the cluster:
 # - Visit https://oauth-openshift.apps.stone-prd-rh01.pg1f.p1.openshiftapps.com/oauth/token/request
