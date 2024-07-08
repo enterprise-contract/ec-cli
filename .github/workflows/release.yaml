@@ -125,23 +125,21 @@ jobs:
           TASKS: "tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml tasks/verify-definition/0.1/verify-definition.yaml"
         run: make task-bundle-snapshot TASK_REPO=$TASK_REPO TASK_TAG=$TAG ADD_TASK_TAG="$TAG_TIMESTAMP" TASKS=<( yq e ".spec.steps[].image? = \"$IMAGE_REPO:$TAG\"" $TASKS | yq 'select(. != null)')
 
-      # TODO: Temporarily disabled because there are currently no releases. Let's re-enabled it
-      # once we have one, or even better, adjust this so it can handle if there are no releases.
-      # - name: Download statistics
-      #   env:
-      #     GH_TOKEN: ${{ github.token }}
-      #   run: hack/stats.sh
+      - name: Download statistics
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: hack/stats.sh
 
-      # - name: Configure statistics pages
-      #   uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5.0.0
+      - name: Configure statistics pages
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5.0.0
 
-      # - name: Upload statistics
-      #   uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
-      #   with:
-      #     path: stats
+      - name: Upload statistics
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
+        with:
+          path: stats
 
-      # - name: Deploy statistics
-      #   uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5
+      - name: Deploy statistics
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5
 
       - name: Delete snapshot release and tag
         id: add_tags
