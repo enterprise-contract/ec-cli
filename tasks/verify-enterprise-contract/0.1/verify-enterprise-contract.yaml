@@ -115,6 +115,11 @@ spec:
       description: Merge additional Rego variables into the policy data. Use syntax "key=value,key2=value2..."
       default: ""
 
+    - name: TIMEOUT
+      type: string
+      description: Timeout setting for `ec validate`.
+      default: "5m0s"
+
   workspaces:
     - name: data
       description: The workspace where the snapshot spec json file resides
@@ -171,6 +176,7 @@ spec:
         - "--ignore-rekor=$(params.IGNORE_REKOR)"
         # NOTE: The syntax below is required to negate boolean parameters
         - "--info=$(params.INFO)"
+        - "--timeout=$(params.TIMEOUT)"
         - "--strict=false"
         - "--show-successes"
         - "--effective-time=$(params.EFFECTIVE_TIME)"
