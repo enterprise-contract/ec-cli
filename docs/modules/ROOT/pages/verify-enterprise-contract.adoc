@@ -58,6 +58,9 @@ paths can be provided by using the `:` separator.
 +
 *Default*: `now`
 *EXTRA_RULE_DATA* (`string`):: Merge additional Rego variables into the policy data. Use syntax "key=value,key2=value2..."
+*TIMEOUT* (`string`):: Timeout setting for `ec validate`.
++
+*Default*: `5m0s`
 
 == Results
 
