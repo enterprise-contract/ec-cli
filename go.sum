@@ -531,8 +531,8 @@ github.com/emicklei/proto v1.12.1 h1:6n/Z2pZAnBwuhU66Gs8160B8rrrYKo7h2F2sCOnNceE
 github.com/emicklei/proto v1.12.1/go.mod h1:rn1FgRS/FANiZdD2djyH7TMA9jdRDcYQ9IEN9yvjX0A=
 github.com/emirpasic/gods v1.18.1 h1:FXtiHYKDGKCW2KzwZKx0iC0PQmdlorYgdFG9jPXJ1Bc=
 github.com/emirpasic/gods v1.18.1/go.mod h1:8tpGGwCnJ5H4r6BWwaV6OrWmMoPhUl5jm/FMNAnJvWQ=
-github.com/enterprise-contract/enterprise-contract-controller/api v0.1.48 h1:jE4szEZ0kQS9N08b95T/znlATGSlIIur1pt8TjT3NPs=
-github.com/enterprise-contract/enterprise-contract-controller/api v0.1.48/go.mod h1:QgUezi253+QIvTWVlMX+gqyfAek1eKV3qChzm++kpI8=
+github.com/enterprise-contract/enterprise-contract-controller/api v0.1.49 h1:sCgecUVogFj/RXyVlDGar3DJw6jRLrDMA4rpzE0lWWc=
+github.com/enterprise-contract/enterprise-contract-controller/api v0.1.49/go.mod h1:cGzA0UrPmcVADvE6LM0GJG+EDneK+Dtv7J63OV5mJyk=
 github.com/enterprise-contract/go-gather v0.0.3 h1:Qh4CJhOPdMit4Z/BK3rv7S3GkZ5XLzAlAus1eMKLDA4=
 github.com/enterprise-contract/go-gather v0.0.3/go.mod h1:gXqnYRW9uTD06xli3pE+9cwtPVcIdqyPIqBcKQ+kK8I=
 github.com/enterprise-contract/go-gather/expander v0.0.1 h1:CRJX7crqNyuuo82DtFbyIpJB/2hV62zWof4t1dOmCC0=
