@@ -50,5 +50,5 @@ mkdir -p stats
         "downloads": .downloadCount
         }
     ]
-    }'
+    }' || true
 } > stats/stats.json
