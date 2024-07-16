@@ -30,11 +30,13 @@ spec:
   - name: revision
     value: '{{revision}}'
   - name: prefetch-input
-    value: gomod
+    value: '[{"type": "gomod"}, {"type": "rpm"}]'
   - name: build-source-image
     value: 'true'
   - name: build-args-file
     value: ''
+  - name: hermetic
+    value: 'true'
   pipelineRef:
     name: cli-build
   workspaces:
