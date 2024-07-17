@@ -37,6 +37,14 @@ FROM registry.access.redhat.com/ubi9/ubi-minimal:9.4@sha256:a7d837b00520a32502ad
 ARG TARGETOS
 ARG TARGETARCH
 
+LABEL \
+  name="ec-cli" \
+  description="Enterprise Contract verifies and checks supply chain artifacts to ensure they meet security and business policies." \
+  io.k8s.description="Enterprise Contract verifies and checks supply chain artifacts to ensure they meet security and business policies." \
+  summary="Provides the binaries for downloading the EC CLI. Also used as a Tekton task runner image for EC tasks. Upstream build." \
+  io.k8s.display-name="Enterprise Contract" \
+  io.openshift.tags="enterprise-contract ec opa cosign sigstore"
+
 RUN microdnf upgrade --assumeyes --nodocs --setopt=keepcache=0 --refresh && microdnf -y --nodocs --setopt=keepcache=0 install git-core jq
 
 # Copy the one ec binary that can run in this container

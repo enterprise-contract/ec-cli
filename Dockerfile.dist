@@ -51,7 +51,7 @@ LABEL \
   name="ec-cli" \
   description="Enterprise Contract verifies and checks supply chain artifacts to ensure they meet security and business policies." \
   io.k8s.description="Enterprise Contract verifies and checks supply chain artifacts to ensure they meet security and business policies." \
-  summary="Provides the binaries for downloading the EC CLI. Also used as a Tekton task runner image for EC tasks." \
+  summary="Provides the binaries for downloading the EC CLI. Also used as a Tekton task runner image for EC tasks. Red Hat build." \
   io.k8s.display-name="Enterprise Contract for Red Hat Trusted Artifact Signer" \
   io.openshift.tags="rhtas rhtap trusted-artifact-signer trusted-application-pipeline enterprise-contract ec opa cosign sigstore" \
   com.redhat.component="ec-cli"
