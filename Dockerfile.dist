@@ -65,7 +65,7 @@ RUN microdnf upgrade --assumeyes --nodocs --setopt=keepcache=0 --refresh && micr
 COPY --from=build /build/dist/* /usr/local/bin/
 
 # Gzip them because that's what the cli downloader image expects, see
-# https://github.com/securesign/sigstore-ocp/blob/main/images/Dockerfile-clientserver
+# https://github.com/securesign/cosign/blob/main/Dockerfile.client-server-re.rh
 RUN gzip /usr/local/bin/ec_*
 
 # Copy the one ec binary that can run in this container
