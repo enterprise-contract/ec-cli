@@ -23,6 +23,9 @@ ARG TARGETARCH
 ARG BUILD_SUFFIX=""
 ARG BUILD_LIST="${TARGETOS}_${TARGETARCH}"
 
+# Avoid safe directory git failures building with default user from go-toolset
+USER root
+
 WORKDIR /build
 
 # Copy just the mod file for better layer caching when building locally
@@ -47,9 +50,28 @@ LABEL \
   io.k8s.display-name="Enterprise Contract" \
   io.openshift.tags="enterprise-contract ec opa cosign sigstore"
 
+# Install tools we want to use in the Tekton task
 RUN microdnf upgrade --assumeyes --nodocs --setopt=keepcache=0 --refresh && microdnf -y --nodocs --setopt=keepcache=0 install git-core jq
+
+# Copy all the binaries so they're available to extract and download
+# (Beware if you're testing this locally it will copy everything from
+# your dist directory, not just the freshly built binaries.)
+COPY --from=build /build/dist/* /usr/local/bin/
+
+# Gzip them because that's what the cli downloader image expects, see
+# https://github.com/securesign/sigstore-ocp/blob/main/images/Dockerfile-clientserver
+RUN gzip /usr/local/bin/ec_*
 
 # Copy the one ec binary that can run in this container
 COPY --from=build "/build/dist/ec_${TARGETOS}_${TARGETARCH}" /usr/local/bin/ec
+
+# OpenShift preflight check requires a license
+COPY --from=build /build/LICENSE /licenses/LICENSE
+
+# OpenShift preflight check requires a non-root user
+USER 1001
+
+# Show some version numbers for troubleshooting purposes
+RUN git version && jq --version && ec version && ls -l /usr/local/bin
 
 ENTRYPOINT ["/usr/local/bin/ec"]
