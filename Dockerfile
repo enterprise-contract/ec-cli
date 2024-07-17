@@ -20,6 +20,8 @@ FROM docker.io/library/golang:1.21 AS build
 
 ARG TARGETOS
 ARG TARGETARCH
+ARG BUILD_SUFFIX=""
+ARG BUILD_LIST="${TARGETOS}_${TARGETARCH}"
 
 WORKDIR /build
 
@@ -30,7 +32,7 @@ RUN go mod download
 # Now copy everything including .git
 COPY . .
 
-RUN /build/build.sh "${TARGETOS}_${TARGETARCH}"
+RUN /build/build.sh "${BUILD_LIST}" "${BUILD_SUFFIX}"
 
 FROM registry.access.redhat.com/ubi9/ubi-minimal:9.4@sha256:a7d837b00520a32502ada85ae339e33510cdfdbc8d2ddf460cc838e12ec5fa5a
 
