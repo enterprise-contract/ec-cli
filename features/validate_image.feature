@@ -411,7 +411,7 @@ Feature: evaluate enterprise contract
     When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR}  --show-successes"
     Then the exit status should be 0
     Then the output should match the snapshot
-  
+
   Scenario: policy rule filtering on imageRef
     Given a key pair named "known"
     Given an image named "acceptance/ec-happy-day"
@@ -1103,10 +1103,20 @@ Feature: evaluate enterprise contract
 
   Scenario: many components and sources
     Given a key pair named "known"
-    Given a git repository named "multitude-policy" with
+      And a git repository named "multitude-policy" with
       | main.rego | examples/happy_day.rego |
-    Given policy configuration named "ec-policy" with 10 policy sources from "git::https://${GITHOST}/git/multitude-policy.git"
-    Given an Snapshot named "multitude" with 10 components signed with "known" key
+      And policy configuration named "ec-policy" with 10 policy sources from "git::https://${GITHOST}/git/multitude-policy.git", patched with
+      | [{"op": "add", "path": "/sources/0/ruleData", "value": {"key": "value"}}]      |
+      | [{"op": "add", "path": "/sources/1/ruleData", "value": {"something": "here"}}] |
+      | [{"op": "add", "path": "/sources/2/ruleData", "value": {"key": "different"}}]  |
+      | [{"op": "add", "path": "/sources/3/ruleData", "value": {"hello": "world"}}]    |
+      | [{"op": "add", "path": "/sources/4/ruleData", "value": {"foo": "bar"}}]        |
+      | [{"op": "add", "path": "/sources/5/ruleData", "value": {"peek": "poke"}}]      |
+      | [{"op": "add", "path": "/sources/6/ruleData", "value": {"hide": "seek"}}]      |
+      | [{"op": "add", "path": "/sources/7/ruleData", "value": {"hokus": "pokus"}}]    |
+      | [{"op": "add", "path": "/sources/8/ruleData", "value": {"mr": "mxyzptlk"}}]    |
+      | [{"op": "add", "path": "/sources/9/ruleData", "value": {"more": "data"}}]      |
+      And an Snapshot named "multitude" with 10 components signed with "known" key
     When ec command is run with "validate image --snapshot acceptance/multitude --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR}  --show-successes"
     Then the exit status should be 0
-    Then the output should match the snapshot
+     And the output should match the snapshot

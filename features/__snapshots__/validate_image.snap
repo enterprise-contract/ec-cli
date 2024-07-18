@@ -4873,52 +4873,82 @@ Error: success criteria not met
       {
         "policy": [
           "git::https://${GITHOST}/git/multitude-policy.git"
-        ]
+        ],
+        "ruleData": {
+          "key": "value"
+        }
       },
       {
         "policy": [
           "git::https://${GITHOST}/git/multitude-policy.git"
-        ]
+        ],
+        "ruleData": {
+          "something": "here"
+        }
       },
       {
         "policy": [
           "git::https://${GITHOST}/git/multitude-policy.git"
-        ]
+        ],
+        "ruleData": {
+          "key": "different"
+        }
       },
       {
         "policy": [
           "git::https://${GITHOST}/git/multitude-policy.git"
-        ]
+        ],
+        "ruleData": {
+          "hello": "world"
+        }
       },
       {
         "policy": [
           "git::https://${GITHOST}/git/multitude-policy.git"
-        ]
+        ],
+        "ruleData": {
+          "foo": "bar"
+        }
       },
       {
         "policy": [
           "git::https://${GITHOST}/git/multitude-policy.git"
-        ]
+        ],
+        "ruleData": {
+          "peek": "poke"
+        }
       },
       {
         "policy": [
           "git::https://${GITHOST}/git/multitude-policy.git"
-        ]
+        ],
+        "ruleData": {
+          "hide": "seek"
+        }
       },
       {
         "policy": [
           "git::https://${GITHOST}/git/multitude-policy.git"
-        ]
+        ],
+        "ruleData": {
+          "hokus": "pokus"
+        }
       },
       {
         "policy": [
           "git::https://${GITHOST}/git/multitude-policy.git"
-        ]
+        ],
+        "ruleData": {
+          "mr": "mxyzptlk"
+        }
       },
       {
         "policy": [
           "git::https://${GITHOST}/git/multitude-policy.git"
-        ]
+        ],
+        "ruleData": {
+          "more": "data"
+        }
       }
     ],
     "rekorUrl": "${REKOR}",

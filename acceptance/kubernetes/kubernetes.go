@@ -27,6 +27,7 @@ import (
 
 	"github.com/cucumber/godog"
 	clr "github.com/doiit/picocolors"
+	jsonpatch "github.com/evanphx/json-patch/v5"
 	"golang.org/x/exp/maps"
 
 	"github.com/enterprise-contract/ec-cli/acceptance/crypto"
@@ -123,7 +124,7 @@ func createNamedPolicy(ctx context.Context, name string, specification *godog.Do
 	return c.cluster.CreateNamedPolicy(ctx, name, specification.Content)
 }
 
-func createNamedPolicyWithManySources(ctx context.Context, name string, amount int, source string) error {
+func createNamedPolicyWithManySources(ctx context.Context, name string, amount int, source string, patches *godog.Table) error {
 	c := testenv.FetchState[ClusterState](ctx)
 
 	if err := mustBeUp(ctx, *c); err != nil {
@@ -135,9 +136,22 @@ func createNamedPolicyWithManySources(ctx context.Context, name string, amount i
 		sources = append(sources, fmt.Sprintf(`{"policy": ["%s"]}`, source))
 	}
 
-	policy := fmt.Sprintf(`{"sources": [%s]}`, strings.Join(sources, ", "))
+	policy := []byte(fmt.Sprintf(`{"sources": [%s]}`, strings.Join(sources, ", ")))
 
-	return c.cluster.CreateNamedPolicy(ctx, name, policy)
+	for _, patch := range patches.Rows {
+		val := patch.Cells[0].Value
+		jp, err := jsonpatch.DecodePatch([]byte(val))
+		if err != nil {
+			return err
+		}
+
+		policy, err = jp.Apply(policy)
+		if err != nil {
+			return err
+		}
+	}
+
+	return c.cluster.CreateNamedPolicy(ctx, name, string(policy))
 }
 
 func createNamedSnapshot(ctx context.Context, name string, specification *godog.DocString) error {
@@ -446,12 +460,12 @@ func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^the task should succeed$`, theTaskShouldSucceed)
 	sc.Step(`^the task should fail$`, theTaskShouldFail)
 	sc.Step(`^an Snapshot named "([^"]*)" with specification$`, createNamedSnapshot)
-	sc.Step(`^an Snapshot named "([^"]*)" with (\d+) components signed with "([^"]*)" key`, createNamedSnapshotWithManyComponents)
+	sc.Step(`^an Snapshot named "([^"]*)" with (\d+) components signed with "([^"]*)" key$`, createNamedSnapshotWithManyComponents)
 	sc.Step(`^the task logs for step "([^"]*)" should match the snapshot$`, taskLogsShouldMatchTheSnapshot)
 	sc.Step(`^the task logs for step "([^"]*)" should contain "([^"]*)"$`, taskLogsShouldContain)
 	sc.Step(`^the task env var for step "([^"]*)" named "([^"]*)" should be set to "([^"]*)"$`, stepEnvVarShouldBe)
 	sc.Step(`^the task results should match the snapshot$`, taskResultsShouldMatchTheSnapshot)
-	sc.Step(`^policy configuration named "([^"]*)" with (\d+) policy sources from "([^"]*)"$`, createNamedPolicyWithManySources)
+	sc.Step(`^policy configuration named "([^"]*)" with (\d+) policy sources from "([^"]*)"(?:, patched with)$`, createNamedPolicyWithManySources)
 	// stop usage of the cluster once a test is done, godog will call this
 	// function on failure and on the last step, so more than once if the
 	// failure is not on the last step and once if there was no failure or the
