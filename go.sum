@@ -426,6 +426,8 @@ github.com/cespare/xxhash v1.1.0/go.mod h1:XrSqR1VqqWfGrhpAt58auRo0WTKS1nRRg3ghf
 github.com/cespare/xxhash/v2 v2.1.1/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
 github.com/cespare/xxhash/v2 v2.2.0 h1:DC2CZ1Ep5Y4k3ZQ899DldepgrayRUGE6BBZ/cd9Cj44=
 github.com/cespare/xxhash/v2 v2.2.0/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
+github.com/chainguard-dev/git-urls v1.0.2 h1:pSpT7ifrpc5X55n4aTTm7FFUE+ZQHKiqpiwNkJrVcKQ=
+github.com/chainguard-dev/git-urls v1.0.2/go.mod h1:rbGgj10OS7UgZlbzdUQIQpT0k/D4+An04HJY7Ol+Y/o=
 github.com/cheggaaa/pb v1.0.27/go.mod h1:pQciLPpbU0oxA0h+VJYYLxO+XeDQb5pZijXscXHm81s=
 github.com/chrismellard/docker-credential-acr-env v0.0.0-20230304212654-82a0ddb27589 h1:krfRl01rzPzxSxyLyrChD+U+MzsBXbm0OwYYB67uF+4=
 github.com/chrismellard/docker-credential-acr-env v0.0.0-20230304212654-82a0ddb27589/go.mod h1:OuDyvmLnMCwa2ep4Jkm6nyA0ocJuZlGyk2gGseVzERM=
@@ -541,8 +543,8 @@ github.com/enterprise-contract/go-gather/gather v0.0.2 h1:ndkHJHJemunUF6Ik8XG2u3
 github.com/enterprise-contract/go-gather/gather v0.0.2/go.mod h1:Ap0QGx0fKVMgNuzOugZTp20KfIlvGPz2gq7fqx0syyI=
 github.com/enterprise-contract/go-gather/gather/file v0.0.1 h1:UOec5Gc7+Q9u3x0Cyw8l2JDYCH7RTtHVnC57Rqs0Nyg=
 github.com/enterprise-contract/go-gather/gather/file v0.0.1/go.mod h1:tHsShLa5XpNSZbH8paHZR3Ltgu/7wtxpdCTVP8EXk/U=
-github.com/enterprise-contract/go-gather/gather/git v0.0.3 h1:5YAjbgFjJPjiDaWtfLqLdK6mqL163Lo9GLhY1YoiLNk=
-github.com/enterprise-contract/go-gather/gather/git v0.0.3/go.mod h1:KOVdeeJrG1XNq/juDJXQUNaEthx9j2rHjgmM50GyQd8=
+github.com/enterprise-contract/go-gather/gather/git v0.0.4 h1:UcQkvq2Cm7MFONvtECoNIbPe1R85+xraJRungQym78o=
+github.com/enterprise-contract/go-gather/gather/git v0.0.4/go.mod h1:8pSBY25NpofcTrEsnmRv4h1s30ukwkgFwew1iA19Fnc=
 github.com/enterprise-contract/go-gather/gather/http v0.0.1 h1:qMRcMNWiOEE/oFZJfD8Jj7jihNZpS3MwtmHq5qh38vQ=
 github.com/enterprise-contract/go-gather/gather/http v0.0.1/go.mod h1:Fx0Anvh8Os39BaeTxxcvOwX1E9xisXehEueOkQ+qK3I=
 github.com/enterprise-contract/go-gather/gather/oci v0.0.3 h1:AH7HfogbGBuP8pc06vOB3mdWQV76bXLIxcYilVWtUSA=
@@ -551,12 +553,12 @@ github.com/enterprise-contract/go-gather/metadata v0.0.2 h1:BxPXXZFjX7lrYnlJosPm
 github.com/enterprise-contract/go-gather/metadata v0.0.2/go.mod h1:m2HxByQBWZyc99HDs/Lqy7QzU9+XQ2tU0X/mzkCPgPw=
 github.com/enterprise-contract/go-gather/metadata/file v0.0.1 h1:DRhTGKRXFRh/FVn2LNX8yIJZHHYKc5x5260hnYxQ4DY=
 github.com/enterprise-contract/go-gather/metadata/file v0.0.1/go.mod h1:4PckwLejZstUEBp2QUAdQYQ0O+h5tijrs48j+7OY4OY=
-github.com/enterprise-contract/go-gather/metadata/git v0.0.1 h1:tBzKlmAxmkrI0IbfrDjQwzucZJh7eTMVwaz+nY2cLaU=
-github.com/enterprise-contract/go-gather/metadata/git v0.0.1/go.mod h1:Gb6z7fKBr5hiF4lbkJbRupS+zHe0imCPn3ukTDlg+dc=
+github.com/enterprise-contract/go-gather/metadata/git v0.0.2 h1:dsIFe2uxbSzO2wRM+MPjL6cjcJxvG00zrXUUoWj4vg8=
+github.com/enterprise-contract/go-gather/metadata/git v0.0.2/go.mod h1:lSI/5buGHKqQk+AZGOSRejk5tuC76XCvV1Zv/JZUEbE=
 github.com/enterprise-contract/go-gather/metadata/http v0.0.1 h1:ebhT9h93v/Et+5c1t5PJzGj6V2g18elm1VDrQg6y63A=
 github.com/enterprise-contract/go-gather/metadata/http v0.0.1/go.mod h1:VjjTqsJ+sM7MVsVkEFgpcJzY9hur9pIBEMptrVvAwoI=
-github.com/enterprise-contract/go-gather/metadata/oci v0.0.2 h1:FkXQTKnGr5Hci+4mrfXJLhmjMqHTJvgtubVsFB3KgJI=
-github.com/enterprise-contract/go-gather/metadata/oci v0.0.2/go.mod h1:kJSMxYth37g604Cvsa18ibgTU33zagsadeQ7p1DYIak=
+github.com/enterprise-contract/go-gather/metadata/oci v0.0.3 h1:J/HoOAusiVxiedO93jdT4QsKkfRCbNqgCPd95U8Ohvk=
+github.com/enterprise-contract/go-gather/metadata/oci v0.0.3/go.mod h1:qa2BXIR4M85SjfVVDaqqMVksSmvK4JlfsR89tadqobg=
 github.com/enterprise-contract/go-gather/saver v0.0.1 h1:f+oHdg83kwbVDqIs6Or9BatytNKm+ISO9ChztDcnqXA=
 github.com/enterprise-contract/go-gather/saver v0.0.1/go.mod h1:uOt8X/CztOGi0YC5jERopBQpjXqkU6UPUqPellgBBG8=
 github.com/enterprise-contract/go-gather/saver/file v0.0.1 h1:rLDMb7AW5kJLqRaKXazZroT8wfqy43tth6O6XLKY0MY=
@@ -1293,8 +1295,6 @@ github.com/ulikunitz/xz v0.5.11/go.mod h1:nbz6k7qbPmH4IRqmfOplQw/tblSgqTqBwxkY0o
 github.com/vbatts/tar-split v0.11.5 h1:3bHCTIheBm1qFTcgh9oPu+nNBtX+XJIupG/vacinCts=
 github.com/vbatts/tar-split v0.11.5/go.mod h1:yZbwRsSeGjusneWgA781EKej9HF8vme8okylkAeNKLk=
 github.com/vektah/gqlparser v1.2.0/go.mod h1:bkVf0FX+Stjg/MHnm8mEyubuaArhNEqfQhF+OTiAL74=
-github.com/whilp/git-urls v1.0.0 h1:95f6UMWN5FKW71ECsXRUd3FVYiXdrE7aX4NZKcPmIjU=
-github.com/whilp/git-urls v1.0.0/go.mod h1:J16SAmobsqc3Qcy98brfl5f5+e0clUvg1krgwk/qCfE=
 github.com/willf/bitset v1.1.10/go.mod h1:RjeCKbqT1RxIR/KWY6phxZiaY1IyutSBfGjNPySAYV4=
 github.com/wk8/go-ordered-map/v2 v2.1.8 h1:5h/BUHu93oj4gIdvHHHGsScSTMijfx5PeYkE/fJgbpc=
 github.com/wk8/go-ordered-map/v2 v2.1.8/go.mod h1:5nJHM5DyteebpVlHnWMV0rPz6Zp7+xBAnxjb1X5vnTw=
