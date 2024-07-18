@@ -28,15 +28,21 @@ latest_release=$(gh api '/repos/konflux-ci/rpm-lockfile-prototype/tags?per_page=
 # build the image for running the RPM lock tool
 echo Building RPM lock tooling image...
 image=$(podman build --quiet --file <(cat <<DOCKERFILE
+FROM quay.io/openshift/origin-cli:latest as oc-cli
+
 # Python version needs to match whatever version of Python dnf itself depends on
 FROM registry.access.redhat.com/ubi9/python-39:latest
 
+# need to switch to root for dnf install below and for the script to run dnf
+# config-manager which demands root user
 USER 0
 
 RUN dnf install --assumeyes --nodocs --setopt=keepcache=0 --refresh skopeo jq
 
 RUN pip install https://github.com/konflux-ci/rpm-lockfile-prototype/archive/refs/tags/${latest_release}.tar.gz
 RUN pip install dockerfile-parse
+
+COPY --from=oc-cli /usr/bin/oc /usr/bin
 
 ENV PYTHONPATH=/usr/lib64/python3.9/site-packages:/usr/lib/python3.9/site-packages
 DOCKERFILE
@@ -45,46 +51,46 @@ DOCKERFILE
 echo "Built: ${image}"
 
 # script that performs everything within the image built above
-# shellcheck disable=SC2016,SC2125
-script='
+script="$(cat <<"RPM_LOCK_SCRIPT"
 set -o errexit
 set -o pipefail
 set -o nounset
-shopt -s extglob
 
 # determine the base image
 base_img=$(python <<SCRIPT
 from dockerfile_parse import DockerfileParser
 
-dfp = DockerfileParser()
-with open("Dockerfile") as d:
-    dfp.content = d.read()
-
-# the last FROM image is the image we want to base on
-print(dfp.parent_images[-1])
-
+with open("Dockerfile", "r") as d:
+    dfp = DockerfileParser(fileobj=d)
+    # the last FROM image is the image we want to base on
+    print(dfp.parent_images[-1])
 SCRIPT
 )
 
-# copy the base image to temporary directory
-base_img_dir=$(mktemp -d --tmpdir)
-skopeo copy --quiet "docker://${base_img/:!(:)@/@}" "dir:/${base_img_dir}"
+echo $base_img
+
+# where the .repo files will be extracted from the base image
+base_image_repos=$(mktemp -d --tmpdir)
 
 # extract all /etc/yum.repos.d/* files from the base image
-for l in $(jq -r '\''.layers[].digest | sub("sha256:"; "")'\'' "${base_img_dir}/manifest.json"); do
-    tar --dir "${base_img_dir}" --extract --ignore-zeros 'etc/yum.repos.d/*' -f "${base_img_dir}/${l}"
-done
+oc image extract "${base_img}" --path /etc/yum.repos.d/*.repo:"${base_image_repos}"
 
 # enable source repositories
-for r in $(dnf repolist --setopt=reposdir="${base_img_dir}/etc/yum.repos.d" --disabled --quiet|grep -- '\''-source'\'' | sed '\''s/ .*//'\''); do
-    dnf config-manager --quiet --setopt=reposdir="${base_img_dir}/etc/yum.repos.d" "${r}" --set-enabled
+for r in $(dnf repolist --setopt=reposdir="${base_image_repos}" --disabled --quiet|grep -- -source | sed "s/ .*//"); do
+    dnf config-manager --quiet --setopt=reposdir="${base_image_repos}" "${r}" --set-enabled
 done
 
-cp "${base_img_dir}/etc/yum.repos.d"/*.repo /opt/app-root/src/
+cp "${base_image_repos}"/*.repo /opt/app-root/src/
 
 # generate/update the RPM lock file
 /opt/app-root/bin/rpm-lockfile-prototype --outfile rpms.lock.yaml --image "${base_img}" rpms.in.yaml
-'
+
+RPM_LOCK_SCRIPT
+)"
+
+if [ ! -f "${root_dir}/rpms.lock.yaml" ]; then
+    touch "${root_dir}/rpms.lock.yaml"
+fi
 
 echo Running RPM lock tooling...
 podman run \
