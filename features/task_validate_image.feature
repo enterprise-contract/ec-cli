@@ -296,7 +296,7 @@ Feature: Verify Enterprise Contract Tekton Tasks
       | IGNORE_REKOR         | true                                                                          |
       | EFFECTIVE_TIME       | 2020-01-01T00:00:00Z                                                          |
     Then the task should succeed
-      And the task logs for step "validate" should contain "Using provided effective time 2020-01-01T00:00:00Z"
+      And the task logs for step "debug-log" should contain "Using provided effective time 2020-01-01T00:00:00Z"
 
   Scenario: SSL_CERT_DIR environment variable is customized
     Given a working namespace

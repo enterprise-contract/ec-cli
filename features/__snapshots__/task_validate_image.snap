@@ -471,7 +471,7 @@ success: true
 ---
 
 [Initialize TUF succeeds:initialize-tuf - 1]
-TUF_MIRROR not set. Skipping TUF root initialization.
+TUF_MIRROR parameter not provided. Skipping TUF root initialization.
 
 ---
 
@@ -522,7 +522,7 @@ TUF_MIRROR not set. Skipping TUF root initialization.
 ---
 
 [Outputs are there:initialize-tuf - 1]
-TUF_MIRROR not set. Skipping TUF root initialization.
+TUF_MIRROR parameter not provided. Skipping TUF root initialization.
 
 ---
 
