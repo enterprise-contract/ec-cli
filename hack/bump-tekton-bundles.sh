@@ -23,7 +23,7 @@ set -o nounset
 
 root_dir=$(git rev-parse --show-toplevel)
 
-bundles="$(crane blob quay.io/redhat-appstudio-tekton-catalog/data-acceptable-bundles@"$(crane manifest quay.io/redhat-appstudio-tekton-catalog/data-acceptable-bundles:latest | jq -r '.layers[0].digest')")"
+bundles="$(go run github.com/enterprise-contract/ec-cli inspect policy-data --source oci://quay.io/redhat-appstudio-tekton-catalog/data-acceptable-bundles)"
 
 for f in "${root_dir}"/.tekton/*-build.yaml; do
   # shellcheck disable=SC2016,SC2094
