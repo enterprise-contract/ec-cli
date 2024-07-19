@@ -30,7 +30,7 @@ require (
 	github.com/tektoncd/pipeline v0.60.2
 	github.com/testcontainers/testcontainers-go v0.31.0
 	github.com/transparency-dev/merkle v0.0.2
-	github.com/walkerus/go-wiremock v1.7.0
+	github.com/wiremock/go-wiremock v1.9.0
 	github.com/yudai/gojsondiff v1.0.0
 	golang.org/x/exp v0.0.0-20231108232855-2478ac86f678
 	gopkg.in/go-jose/go-jose.v2 v2.6.3
