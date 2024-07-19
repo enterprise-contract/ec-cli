@@ -902,8 +902,8 @@ github.com/transparency-dev/merkle v0.0.2 h1:Q9nBoQcZcgPamMkGn7ghV8XiTZ/kRxn1yCG
 github.com/transparency-dev/merkle v0.0.2/go.mod h1:pqSy+OXefQ1EDUVmAJ8MUhHB9TXGuzVAT58PqBoHz1A=
 github.com/vbatts/tar-split v0.11.5 h1:3bHCTIheBm1qFTcgh9oPu+nNBtX+XJIupG/vacinCts=
 github.com/vbatts/tar-split v0.11.5/go.mod h1:yZbwRsSeGjusneWgA781EKej9HF8vme8okylkAeNKLk=
-github.com/walkerus/go-wiremock v1.7.0 h1:5J83+bKxR6Pam4+S6VwXPHJk3MC2l3jTgleYpRFsORQ=
-github.com/walkerus/go-wiremock v1.7.0/go.mod h1:gMzQpReT5mG5T/PaW8pSFiPhazrcHb1mnf6JHdKwY5w=
+github.com/wiremock/go-wiremock v1.9.0 h1:9xcU4/IoEfgCaH4TGhQTtiQyBh2eMtu9JB6ppWduK+E=
+github.com/wiremock/go-wiremock v1.9.0/go.mod h1:/uvO0XFheyy8XetvQqm4TbNQRsGPlByeNegzLzvXs0c=
 github.com/xanzy/go-gitlab v0.102.0 h1:ExHuJ1OTQ2yt25zBMMj0G96ChBirGYv8U7HyUiYkZ+4=
 github.com/xanzy/go-gitlab v0.102.0/go.mod h1:ETg8tcj4OhrB84UEgeE8dSuV/0h4BBL1uOV/qK0vlyI=
 github.com/xanzy/ssh-agent v0.3.3 h1:+/15pJfg/RsTxqYcX6fHqOXZwwMP+2VyYWJeWM2qQFM=

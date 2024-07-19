@@ -33,7 +33,7 @@ import (
 	"github.com/otiai10/copy"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
-	"github.com/walkerus/go-wiremock"
+	"github.com/wiremock/go-wiremock"
 
 	"github.com/enterprise-contract/ec-cli/acceptance/log"
 	"github.com/enterprise-contract/ec-cli/acceptance/testenv"
