@@ -11,7 +11,7 @@ require (
 	github.com/tektoncd/cli v0.35.2
 	github.com/wadey/gocovmerge v0.0.0-20160331181800-b5bfa59ec0ad
 	helm.sh/helm/v3 v3.14.4
-	sigs.k8s.io/kustomize/kustomize/v5 v5.4.2
+	sigs.k8s.io/kustomize/kustomize/v5 v5.4.3
 )
 
 require (
@@ -400,6 +400,7 @@ require (
 	github.com/secure-systems-lab/go-securesystemslib v0.8.0 // indirect
 	github.com/securego/gosec/v2 v2.20.1-0.20240525090044-5f0084eb01a9 // indirect
 	github.com/segmentio/ksuid v1.0.4 // indirect
+	github.com/sergi/go-diff v1.3.1 // indirect
 	github.com/shazow/go-diff v0.0.0-20160112020656-b6b7b6733b8c // indirect
 	github.com/shibumi/go-pathspec v1.3.0 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
@@ -539,9 +540,9 @@ require (
 	oras.land/oras-go v1.2.5 // indirect
 	oras.land/oras-go/v2 v2.4.0 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
-	sigs.k8s.io/kustomize/api v0.17.2 // indirect
-	sigs.k8s.io/kustomize/cmd/config v0.14.1 // indirect
-	sigs.k8s.io/kustomize/kyaml v0.17.1 // indirect
+	sigs.k8s.io/kustomize/api v0.17.3 // indirect
+	sigs.k8s.io/kustomize/cmd/config v0.14.2 // indirect
+	sigs.k8s.io/kustomize/kyaml v0.17.2 // indirect
 	sigs.k8s.io/release-utils v0.7.7 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
