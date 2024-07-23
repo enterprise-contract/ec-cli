@@ -7,13 +7,13 @@ require (
 	github.com/cucumber/godog v0.14.1
 	github.com/cyberphone/json-canonicalization v0.0.0-20231011164504-785e29786b46
 	github.com/doiit/picocolors v1.0.1
-	github.com/enterprise-contract/enterprise-contract-controller/api v0.1.48
+	github.com/enterprise-contract/enterprise-contract-controller/api v0.1.50
 	github.com/evanphx/json-patch/v5 v5.9.0
-	github.com/gkampitakis/go-snaps v0.5.4
+	github.com/gkampitakis/go-snaps v0.5.5
 	github.com/go-git/go-billy/v5 v5.5.0
 	github.com/go-git/go-git/v5 v5.12.0
 	github.com/go-openapi/strfmt v0.23.0
-	github.com/google/go-containerregistry v0.19.2
+	github.com/google/go-containerregistry v0.20.1
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/in-toto/in-toto-golang v0.9.0
 	github.com/konflux-ci/application-api v0.0.0-20240527211352-be061932d497
@@ -28,18 +28,18 @@ require (
 	github.com/stretchr/testify v1.9.0
 	github.com/tektoncd/cli v0.36.0
 	github.com/tektoncd/pipeline v0.60.2
-	github.com/testcontainers/testcontainers-go v0.31.0
+	github.com/testcontainers/testcontainers-go v0.32.0
 	github.com/transparency-dev/merkle v0.0.2
 	github.com/wiremock/go-wiremock v1.9.0
 	github.com/yudai/gojsondiff v1.0.0
 	golang.org/x/exp v0.0.0-20231108232855-2478ac86f678
 	gopkg.in/go-jose/go-jose.v2 v2.6.3
-	k8s.io/api v0.29.6
-	k8s.io/apimachinery v0.29.6
-	k8s.io/client-go v0.29.6
+	k8s.io/api v0.29.7
+	k8s.io/apimachinery v0.29.7
+	k8s.io/client-go v0.29.7
 	sigs.k8s.io/kind v0.23.0
-	sigs.k8s.io/kustomize/api v0.17.2
-	sigs.k8s.io/kustomize/kyaml v0.17.1
+	sigs.k8s.io/kustomize/api v0.17.3
+	sigs.k8s.io/kustomize/kyaml v0.17.2
 	sigs.k8s.io/yaml v1.4.0
 )
 
@@ -64,7 +64,8 @@ require (
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/cloudflare/circl v1.3.7 // indirect
 	github.com/cockroachdb/apd/v3 v3.2.1 // indirect
-	github.com/containerd/containerd v1.7.17 // indirect
+	github.com/containerd/containerd v1.7.18 // indirect
+	github.com/containerd/errdefs v0.1.0 // indirect
 	github.com/containerd/log v0.1.0 // indirect
 	github.com/containerd/stargz-snapshotter/estargz v0.14.3 // indirect
 	github.com/cpuguy83/dockercfg v0.3.1 // indirect
@@ -74,10 +75,10 @@ require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/digitorus/pkcs7 v0.0.0-20230818184609-3a137a874352 // indirect
 	github.com/digitorus/timestamp v0.0.0-20231217203849-220c5c2851b7 // indirect
-	github.com/distribution/reference v0.5.0 // indirect
+	github.com/distribution/reference v0.6.0 // indirect
 	github.com/docker/cli v25.0.4+incompatible // indirect
 	github.com/docker/distribution v2.8.3+incompatible // indirect
-	github.com/docker/docker v26.0.2+incompatible // indirect
+	github.com/docker/docker v27.0.3+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.8.0 // indirect
 	github.com/docker/go-connections v0.5.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
@@ -236,7 +237,7 @@ require (
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/apiextensions-apiserver v0.29.3 // indirect
+	k8s.io/apiextensions-apiserver v0.29.7 // indirect
 	k8s.io/klog/v2 v2.120.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20231010175941-2dd684a91f00 // indirect
 	k8s.io/utils v0.0.0-20230726121419-3b25d923346b // indirect
