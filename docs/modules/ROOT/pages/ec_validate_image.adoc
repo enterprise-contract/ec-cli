@@ -135,7 +135,9 @@ rule. (Default: false)
 --no-color:: Disable color when using text output even when the current terminal supports it (Default: false)
 --output:: write output to a file in a specific format. Use empty string path for stdout.
 May be used multiple times. Possible formats are:
-json, yaml, text, appstudio, summary, summary-markdown, junit, data, attestation, policy-input, vsa.
+json, yaml, text, appstudio, summary, summary-markdown, junit, data, attestation, policy-input, vsa. In following format and file path
+additional options can be provided in key=value form following the question
+mark (?) sign, for example: --output text=output.txt?show-successes=false
  (Default: [])
 -o, --output-file:: [DEPRECATED] write output to a file. Use empty string for stdout, default behavior
 -p, --policy:: Policy configuration as:

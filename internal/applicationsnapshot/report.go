@@ -19,7 +19,6 @@ package applicationsnapshot
 import (
 	"bytes"
 	"embed"
-	_ "embed"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
@@ -170,11 +169,17 @@ func (r Report) WriteAll(targets []string, p format.TargetParser) (allErrors err
 		targets = append(targets, JSON)
 	}
 	for _, targetName := range targets {
-		target := p.Parse(targetName)
+		target, err := p.Parse(targetName)
+		if err != nil {
+			allErrors = multierror.Append(allErrors, err)
+			continue
+		}
+		r.applyOptions(target.Options)
 
 		data, err := r.toFormat(target.Format)
 		if err != nil {
 			allErrors = multierror.Append(allErrors, err)
+			continue
 		}
 
 		if !bytes.HasSuffix(data, []byte{'\n'}) {
@@ -254,6 +259,10 @@ func (r *Report) toSummary() summary {
 	}
 	pr.Key = r.Key
 	return pr
+}
+
+func (r *Report) applyOptions(opts format.Options) {
+	r.ShowSuccesses = opts.ShowSuccesses
 }
 
 // condensedMsg reduces repetitive error messages.

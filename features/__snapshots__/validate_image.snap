@@ -4962,3 +4962,124 @@ Error: success criteria not met
 [many components and sources:stderr - 1]
 
 ---
+
+[Format options:stdout - 1]
+Success: false
+Result: FAILURE
+Violations: 3, Warnings: 0, Successes: 4
+Component: Unnamed
+ImageRef: ${REGISTRY}/acceptance/image@sha256:${REGISTRY_acceptance/image:latest_DIGEST}
+
+Results:
+✕ [Violation] main.reject_with_term
+  ImageRef: ${REGISTRY}/acceptance/image@sha256:${REGISTRY_acceptance/image:latest_DIGEST}
+  Reason: Fails always (term1)
+
+✕ [Violation] main.reject_with_term
+  ImageRef: ${REGISTRY}/acceptance/image@sha256:${REGISTRY_acceptance/image:latest_DIGEST}
+  Reason: Fails always (term2)
+
+✕ [Violation] main.rejector
+  ImageRef: ${REGISTRY}/acceptance/image@sha256:${REGISTRY_acceptance/image:latest_DIGEST}
+  Reason: Fails always
+
+
+---
+
+[Format options:stderr - 1]
+Error: success criteria not met
+
+---
+
+[Format options:${TMPDIR}/output.json - 1]
+{
+  "success": false,
+  "components": [
+    {
+      "name": "Unnamed",
+      "containerImage": "${REGISTRY}/acceptance/image@sha256:${REGISTRY_acceptance/image:latest_DIGEST}",
+      "source": {},
+      "violations": [
+        {
+          "msg": "Fails always (term1)",
+          "metadata": {
+            "code": "main.reject_with_term"
+          }
+        },
+        {
+          "msg": "Fails always (term2)",
+          "metadata": {
+            "code": "main.reject_with_term"
+          }
+        },
+        {
+          "msg": "Fails always",
+          "metadata": {
+            "code": "main.rejector"
+          }
+        }
+      ],
+      "successes": [
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.syntax_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.image.signature_check"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "main.acceptor"
+          }
+        }
+      ],
+      "success": false,
+      "signatures": [
+        {
+          "keyid": "",
+          "sig": "${IMAGE_SIGNATURE_acceptance/image}"
+        }
+      ],
+      "attestations": [
+        {
+          "type": "https://in-toto.io/Statement/v0.1",
+          "predicateType": "https://slsa.dev/provenance/v0.2",
+          "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+          "signatures": [
+            {
+              "keyid": "",
+              "sig": "${ATTESTATION_SIGNATURE_acceptance/image}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "key": "${known_PUBLIC_KEY_JSON}",
+  "policy": {
+    "sources": [
+      {
+        "policy": [
+          "git::https://${GITHOST}/git/my-policy.git"
+        ]
+      }
+    ],
+    "rekorUrl": "${REKOR}",
+    "publicKey": "${known_PUBLIC_KEY}"
+  },
+  "ec-version": "${EC_VERSION}",
+  "effective-time": "${TIMESTAMP}"
+}
+---

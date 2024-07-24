@@ -21,12 +21,14 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strings"
 	"sync"
 
 	hd "github.com/MakeNowJust/heredoc"
 	"github.com/hashicorp/go-multierror"
 	"github.com/spf13/cobra"
 
+	"github.com/enterprise-contract/ec-cli/internal/applicationsnapshot"
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 	"github.com/enterprise-contract/ec-cli/internal/format"
 	"github.com/enterprise-contract/ec-cli/internal/input"
@@ -56,7 +58,7 @@ func validateInputCmd(validate InputValidationFunc) *cobra.Command {
 		Short: "Validate arbitrary JSON or yaml file input conformance with the Enterprise Contract",
 		Long: hd.Doc(`
 			Validate conformance of arbitrary JSON or yaml file input with the Enterprise Contract
-			
+
 			For each file, validation is performed to determine if the file conforms to rego policies
 			defined in the the EnterpriseContractPolicy.
 			`),
@@ -112,6 +114,8 @@ func validateInputCmd(validate InputValidationFunc) *cobra.Command {
 
 			var lock sync.WaitGroup
 
+			showSuccesses, _ := cmd.Flags().GetBool("show-successes")
+
 			for _, f := range data.filePaths {
 				lock.Add(1)
 				go func(fpath string) {
@@ -129,7 +133,6 @@ func validateInputCmd(validate InputValidationFunc) *cobra.Command {
 					// Skip on err to not panic. Error is return on routine completion.
 					if err == nil {
 						res.input.Violations = out.Violations()
-						showSuccesses, _ := cmd.Flags().GetBool("show-successes")
 						res.input.Warnings = out.Warnings()
 
 						successes := out.Successes()
@@ -176,7 +179,7 @@ func validateInputCmd(validate InputValidationFunc) *cobra.Command {
 				return err
 			}
 
-			p := format.NewTargetParser(input.JSON, cmd.OutOrStdout(), utils.FS(cmd.Context()))
+			p := format.NewTargetParser(input.JSON, format.Options{ShowSuccesses: showSuccesses}, cmd.OutOrStdout(), utils.FS(cmd.Context()))
 			if err := report.WriteAll(data.output, p); err != nil {
 				return err
 			}
@@ -197,10 +200,14 @@ func validateInputCmd(validate InputValidationFunc) *cobra.Command {
 		* git reference (github.com/user/repo//default?ref=main), or
 		* inline JSON ('{sources: {...}, configuration: {...}}')")`))
 
+	validOutputFormats := applicationsnapshot.OutputFormats
 	cmd.Flags().StringSliceVarP(&data.output, "output", "o", data.output, hd.Doc(`
 		Write output to a file in a specific format, e.g. yaml=/tmp/output.yaml. Use empty string
-		path for stdout, e.g. yaml. May be used multiple times. Possible formats are json, yaml, 
-		and summary`))
+		path for stdout, e.g. yaml. May be used multiple times. Possible formats are:
+		`+strings.Join(validOutputFormats, ", ")+`. In following format and file path
+		additional options can be provided in key=value form following the question
+		mark (?) sign, for example: --output text=output.txt?show-successes=false
+	`))
 
 	cmd.Flags().BoolVarP(&data.strict, "strict", "s", data.strict,
 		"Return non-zero status on non-successful validation")

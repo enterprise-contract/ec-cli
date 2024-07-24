@@ -92,11 +92,12 @@ func (r *Report) Write(targetName string, p format.TargetParser) error {
 		return nil
 	}
 
+	target, err := p.Parse(targetName)
+	if err != nil {
+		return err
+	}
+
 	var data []byte
-	var err error
-
-	target := p.Parse(targetName)
-
 	switch target.Format {
 	case JSONReport:
 		if data, err = json.Marshal(r); err != nil {

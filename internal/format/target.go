@@ -18,6 +18,8 @@ package format
 
 import (
 	"io"
+	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/spf13/afero"
@@ -25,8 +27,33 @@ import (
 
 // Target represents a writer with a specified format.
 type Target struct {
-	Format string
-	writer io.Writer
+	Format  string
+	Options Options
+	writer  io.Writer
+}
+
+// options that can be configured per Target
+type Options struct {
+	ShowSuccesses bool
+}
+
+// mutate parses the given string as URL query parameters and sets the fields
+// according to the parsed values
+func (o *Options) mutate(given string) error {
+	vals, err := url.ParseQuery(given)
+	if err != nil {
+		return err
+	}
+
+	if v := vals.Get("show-successes"); v != "" {
+		if f, err := strconv.ParseBool(v); err == nil {
+			o.ShowSuccesses = f
+		} else {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // Write proxies the write operation to the underlying writer.
@@ -36,37 +63,42 @@ func (t *Target) Write(data []byte) (int, error) {
 
 // TargetParser is responsible for creating Target objects.
 type TargetParser struct {
-	defaultFormat string
-	defaultWriter io.Writer
-	fs            afero.Fs
+	defaultFormat  string
+	defaultWriter  io.Writer
+	defaultOptions Options
+	fs             afero.Fs
 }
 
 // NewTargetParser creates a new TargetParser with the given options.
-func NewTargetParser(targetName string, writer io.Writer, fs afero.Fs) TargetParser {
-	return TargetParser{defaultFormat: targetName, defaultWriter: writer, fs: fs}
+func NewTargetParser(targetName string, options Options, writer io.Writer, fs afero.Fs) TargetParser {
+	return TargetParser{defaultFormat: targetName, defaultOptions: options, defaultWriter: writer, fs: fs}
 }
 
 // Parse creates a new Target given the provided target name.
-func (tm *TargetParser) Parse(name string) Target {
+func (tm *TargetParser) Parse(given string) (*Target, error) {
 	target := Target{writer: tm.defaultWriter}
 
+	formatAndPath, opts, foundOpts := strings.Cut(given, "?")
+
+	target.Options = tm.defaultOptions
+	if foundOpts {
+		if err := target.Options.mutate(opts); err != nil {
+			return nil, err
+		}
+	}
+
 	var path string
+	target.Format, path, _ = strings.Cut(formatAndPath, "=")
 
-	parts := strings.SplitN(name, "=", 2)
-
-	target.Format = parts[0]
 	if target.Format == "" {
 		target.Format = tm.defaultFormat
 	}
 
-	if len(parts) == 2 {
-		path = parts[1]
-	}
 	if path != "" {
 		target.writer = &fileWriter{path: path, fs: tm.fs}
 	}
 
-	return target
+	return &target, nil
 }
 
 // fileWriter implements a simple Writer wrapper for afero.Fs.

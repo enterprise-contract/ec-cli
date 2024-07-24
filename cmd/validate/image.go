@@ -408,7 +408,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			p := format.NewTargetParser(applicationsnapshot.JSON, cmd.OutOrStdout(), utils.FS(cmd.Context()))
+			p := format.NewTargetParser(applicationsnapshot.JSON, format.Options{ShowSuccesses: showSuccesses}, cmd.OutOrStdout(), utils.FS(cmd.Context()))
 			utils.SetColorEnabled(data.noColor, data.forceColor)
 			if err := report.WriteAll(data.output, p); err != nil {
 				return err
@@ -466,7 +466,9 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 	cmd.Flags().StringSliceVar(&data.output, "output", data.output, hd.Doc(`
 		write output to a file in a specific format. Use empty string path for stdout.
 		May be used multiple times. Possible formats are:
-		`+strings.Join(validOutputFormats, ", ")+`.
+		`+strings.Join(validOutputFormats, ", ")+`. In following format and file path
+		additional options can be provided in key=value form following the question
+		mark (?) sign, for example: --output text=output.txt?show-successes=false
 	`))
 
 	cmd.Flags().StringVarP(&data.outputFile, "output-file", "o", data.outputFile,

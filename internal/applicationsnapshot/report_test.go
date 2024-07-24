@@ -647,7 +647,7 @@ func Test_ReportAppstudio(t *testing.T) {
 
 			report.created = time.Unix(0, 0).UTC()
 
-			p := format.NewTargetParser(JSON, defaultWriter, fs)
+			p := format.NewTargetParser(JSON, format.Options{}, defaultWriter, fs)
 			assert.NoError(t, report.WriteAll([]string{"appstudio=report.json", "appstudio"}, p))
 
 			reportText, err := afero.ReadFile(fs, "report.json")
@@ -795,7 +795,7 @@ func Test_ReportHACBS(t *testing.T) {
 
 			report.created = time.Unix(0, 0).UTC()
 
-			p := format.NewTargetParser(JSON, defaultWriter, fs)
+			p := format.NewTargetParser(JSON, format.Options{}, defaultWriter, fs)
 			assert.NoError(t, report.WriteAll([]string{"hacbs=report.json", "hacbs"}, p))
 
 			reportText, err := afero.ReadFile(fs, "report.json")
@@ -823,7 +823,7 @@ func Test_ReportPolicyInput(t *testing.T) {
 	report, err := NewReport("snapshot", nil, createTestPolicy(t, ctx), "data", policyInput, true)
 	require.NoError(t, err)
 
-	p := format.NewTargetParser(JSON, defaultWriter, fs)
+	p := format.NewTargetParser(JSON, format.Options{}, defaultWriter, fs)
 	require.NoError(t, report.WriteAll([]string{"policy-input=policy-input.yaml", "policy-input"}, p))
 
 	matchesJSONLFile(t, fs, policyInput, "policy-input.yaml")
@@ -925,7 +925,8 @@ func Test_TextReport(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			output, err := generateTextReport(&c.report)
+			r := c.report
+			output, err := generateTextReport(&r)
 			require.NoError(t, err)
 
 			snaps.MatchSnapshot(t, string(output))

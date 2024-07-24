@@ -142,7 +142,7 @@ func TestReport(t *testing.T) {
 				r.Add(o)
 			}
 			fs := afero.NewMemMapFs()
-			parser := format.NewTargetParser("ignored", nil, fs)
+			parser := format.NewTargetParser("ignored", format.Options{}, nil, fs)
 
 			for _, format := range []string{"json", "yaml"} {
 				fname := "out." + format

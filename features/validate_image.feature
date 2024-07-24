@@ -1120,3 +1120,30 @@ Feature: evaluate enterprise contract
     When ec command is run with "validate image --snapshot acceptance/multitude --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR}  --show-successes"
     Then the exit status should be 0
      And the output should match the snapshot
+
+  Scenario: Format options
+    Given a key pair named "known"
+      And an image named "acceptance/image"
+      And a valid image signature of "acceptance/image" image signed by the "known" key
+      And a valid Rekor entry for image signature of "acceptance/image"
+      And a valid attestation of "acceptance/image" signed by the "known" key
+      And a valid Rekor entry for attestation of "acceptance/image"
+      And a git repository named "my-policy" with
+      | happy_day.rego | examples/happy_day.rego      |
+      | reject.rego    | examples/reject.rego         |
+      And policy configuration named "ec-policy" with specification
+    """
+    {
+      "sources": [
+        {
+          "policy": [
+            "git::https://${GITHOST}/git/my-policy.git"
+          ]
+        }
+      ]
+    }
+    """
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/image --policy acceptance/ec-policy --rekor-url ${REKOR} --public-key ${known_PUBLIC_KEY} --output text?show-successes=false --output json=${TMPDIR}/output.json --show-successes"
+    Then the exit status should be 1
+     And the output should match the snapshot
+     And the "${TMPDIR}/output.json" file should match the snapshot
