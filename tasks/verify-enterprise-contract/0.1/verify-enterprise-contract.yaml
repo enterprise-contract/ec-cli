@@ -187,6 +187,8 @@ spec:
         - "appstudio=$(results.TEST_OUTPUT.path)"
         - "--output"
         - "json=$(params.HOMEDIR)/report-json.json"
+        - "2>"
+        - "debug.log"
       env:
         - name: SSL_CERT_DIR
           # The Tekton Operator automatically sets the SSL_CERT_DIR env to the value below but,
@@ -239,3 +241,9 @@ spec:
         - >
           .result == "SUCCESS" or .result == "WARNING" or ($strict | not)
         - "$(results.TEST_OUTPUT.path)"
+
+    - name: debug
+      image: quay.io/enterprise-contract/ec-cli:snapshot
+      command: [cat]
+      args:
+        - "debug.log"
