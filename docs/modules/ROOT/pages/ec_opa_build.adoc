@@ -188,6 +188,7 @@ ec opa build <path> [<path> [...]] [flags]
 == Options inherited from parent commands
 
 --kubeconfig:: path to the Kubernetes config file to use
+--logfile:: file to write the logging output. If not specified logging output will be written to stderr
 --quiet:: less verbose output (Default: false)
 --timeout:: max overall execution duration (Default: 5m0s)
 --trace:: enable trace logging (Default: false)

@@ -27,6 +27,7 @@ Flags:
 Global Flags:
       --debug               same as verbose but also show function names and line numbers
       --kubeconfig string   path to the Kubernetes config file to use
+      --logfile string      file to write the logging output. If not specified logging output will be written to stderr
       --quiet               less verbose output
       --timeout duration    max overall execution duration (default 5m0s)
       --trace               enable trace logging

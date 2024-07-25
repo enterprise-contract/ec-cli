@@ -72,6 +72,7 @@ Update existing acceptable bundles:
 
 --debug:: same as verbose but also show function names and line numbers (Default: false)
 --kubeconfig:: path to the Kubernetes config file to use
+--logfile:: file to write the logging output. If not specified logging output will be written to stderr
 --quiet:: less verbose output (Default: false)
 --timeout:: max overall execution duration (Default: 5m0s)
 --trace:: enable trace logging (Default: false)
