@@ -109,7 +109,7 @@ func TestImage(t *testing.T) {
 	ref, err := name.ParseReference(fmt.Sprintf("localhost:%s/repository/image:tag", u.Port()))
 	require.NoError(t, err)
 
-	require.NoError(t, remote.Put(ref, img))
+	require.NoError(t, remote.Push(ref, img))
 
 	fetchFully := func() {
 		client := defaultClient{}

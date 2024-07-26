@@ -53,7 +53,7 @@ require (
 
 // use forked version until we can get a fix merged
 // see https://github.com/google/go-containerregistry/pull/1966
-replace github.com/google/go-containerregistry => github.com/zregvart/go-containerregistry v0.0.0-20240627132555-cec55a14ea32
+replace github.com/google/go-containerregistry => github.com/zregvart/go-containerregistry v0.0.0-20240726110327-85bb4872bb26
 
 require (
 	cloud.google.com/go v0.112.1 // indirect
