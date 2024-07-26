@@ -64,7 +64,8 @@ POLICY_YAML=${POLICY_YAML:-"github.com/enterprise-contract/config//default"}
 #POLICY_YAML=${POLICY_YAML:-"github.com/enterprise-contract/config//redhat-no-hermetic"}
 #POLICY_YAML=${POLICY_YAML:-"./policy.yaml"}
 
-OUTPUT=${OUTPUT:-yaml}
+OUTPUT=${OUTPUT:-text}
+#OUTPUT=${OUTPUT:-yaml}
 
 MAIN_GO=$(git rev-parse --show-toplevel)/main.go
 
