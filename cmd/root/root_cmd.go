@@ -18,9 +18,11 @@ package root
 
 import (
 	"context"
+	"io"
 	"time"
 
 	hd "github.com/MakeNowJust/heredoc"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/enterprise-contract/ec-cli/internal/kubernetes"
@@ -35,6 +37,7 @@ var (
 	debug         bool = false
 	trace         bool = false
 	globalTimeout      = 5 * time.Minute
+	logfile       string
 )
 
 func NewRootCmd() *cobra.Command {
@@ -51,7 +54,7 @@ func NewRootCmd() *cobra.Command {
 		SilenceUsage: true,
 
 		PersistentPreRun: func(cmd *cobra.Command, _ []string) {
-			logging.InitLogging(verbose, quiet, debug, trace)
+			logging.InitLogging(verbose, quiet, debug, trace, logfile)
 
 			// Create a new context now that flags have been parsed so a custom timeout can be used.
 			ctx := cmd.Context()
@@ -60,6 +63,9 @@ func NewRootCmd() *cobra.Command {
 		},
 
 		PersistentPostRun: func(cmd *cobra.Command, _ []string) {
+			if f, ok := logrus.StandardLogger().Out.(io.Closer); ok {
+				f.Close()
+			}
 			if cancel != nil {
 				cancel()
 			}
@@ -77,5 +83,6 @@ func setFlags(rootCmd *cobra.Command) {
 	rootCmd.PersistentFlags().BoolVar(&debug, "debug", debug, "same as verbose but also show function names and line numbers")
 	rootCmd.PersistentFlags().BoolVar(&trace, "trace", trace, "enable trace logging")
 	rootCmd.PersistentFlags().DurationVar(&globalTimeout, "timeout", globalTimeout, "max overall execution duration")
+	rootCmd.PersistentFlags().StringVar(&logfile, "logfile", "", "file to write the logging output. If not specified logging output will be written to stderr")
 	kubernetes.AddKubeconfigFlag(rootCmd)
 }

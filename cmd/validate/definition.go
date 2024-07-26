@@ -85,6 +85,7 @@ func validateDefinitionCmd(validate definitionValidationFn) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var allErrors error
 			report := definition.NewReport()
+			showSuccesses, _ := cmd.Flags().GetBool("show-successes")
 			for i := range data.filePaths {
 				fpath := data.filePaths[i]
 				var sources []source.PolicySource
@@ -98,7 +99,6 @@ func validateDefinitionCmd(validate definitionValidationFn) *cobra.Command {
 				if out, err := validate(ctx, fpath, sources, data.namespaces); err != nil {
 					allErrors = multierror.Append(allErrors, err)
 				} else {
-					showSuccesses, _ := cmd.Flags().GetBool("show-successes")
 					if !showSuccesses {
 						for i := range out.PolicyCheck {
 							out.PolicyCheck[i].Successes = []evaluator.Result{}
@@ -107,7 +107,7 @@ func validateDefinitionCmd(validate definitionValidationFn) *cobra.Command {
 					report.Add(*out)
 				}
 			}
-			p := format.NewTargetParser(definition.JSONReport, cmd.OutOrStdout(), utils.FS(cmd.Context()))
+			p := format.NewTargetParser(definition.JSONReport, format.Options{ShowSuccesses: showSuccesses}, cmd.OutOrStdout(), utils.FS(cmd.Context()))
 			for _, target := range data.output {
 				if err := report.Write(target, p); err != nil {
 					allErrors = multierror.Append(allErrors, err)

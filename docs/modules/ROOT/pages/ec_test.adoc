@@ -97,6 +97,7 @@ the output will include a detailed trace of how the policy was evaluated, e.g.
 
 --debug:: same as verbose but also show function names and line numbers (Default: false)
 --kubeconfig:: path to the Kubernetes config file to use
+--logfile:: file to write the logging output. If not specified logging output will be written to stderr
 --timeout:: max overall execution duration (Default: 5m0s)
 --verbose:: more verbose output (Default: false)
 

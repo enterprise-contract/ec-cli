@@ -19,6 +19,7 @@ package logging
 import (
 	"flag"
 	"fmt"
+	"os"
 	"path/filepath"
 	"runtime"
 
@@ -42,7 +43,7 @@ import (
 // We're expecting only one of the bool params to be set, but if
 // there are multiple set we'll accept it and the more verbose
 // option will take precedence.
-func InitLogging(verbose, quiet, debug, trace bool) {
+func InitLogging(verbose, quiet, debug, trace bool, logfile string) {
 	var level log.Level
 	var v string
 	switch {
@@ -79,6 +80,14 @@ func InitLogging(verbose, quiet, debug, trace bool) {
 	klog.InitFlags(flags)
 	if err := flags.Set("v", v); err != nil {
 		panic(err)
+	}
+
+	if logfile != "" {
+		if l, err := os.OpenFile(logfile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600); err == nil {
+			log.SetOutput(l)
+		} else {
+			fmt.Fprintf(os.Stderr, "Unable to create log file %q, log lines will appear on standard error. Error was: %s\n", logfile, err.Error())
+		}
 	}
 }
 

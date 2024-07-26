@@ -23,36 +23,48 @@ import (
 
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestTargetParser(t *testing.T) {
 	defaultFormat := "default"
 	defaultPath := "default.out"
+	defaultOptions := Options{
+		ShowSuccesses: false,
+	}
+
 	cases := []struct {
-		name                string
-		expectFormat        string
-		expectDefaultWriter bool
-		targetName          string
+		name            string
+		expectedFormat  string
+		expectedPath    string
+		expectedOptions Options
+		targetName      string
 	}{
-		{name: "all defaults", expectFormat: defaultFormat, expectDefaultWriter: true},
-		{name: "all defaults", expectFormat: "spam", targetName: "spam", expectDefaultWriter: true},
-		{name: "all defaults", expectFormat: "spam", targetName: "spam=", expectDefaultWriter: true},
-		{name: "all defaults", expectFormat: "spam", targetName: "spam=spam.out"},
+		{name: "all defaults", expectedFormat: defaultFormat, expectedOptions: defaultOptions},
+		{name: "format", expectedFormat: "spam", expectedOptions: defaultOptions, targetName: "spam"},
+		{name: "format no file", expectedFormat: "spam", expectedOptions: defaultOptions, targetName: "spam="},
+		{name: "format and file", expectedFormat: "spam", expectedOptions: defaultOptions, targetName: "spam=spam.out", expectedPath: "spam.out"},
+		{name: "format and option", expectedFormat: "spam", expectedOptions: Options{ShowSuccesses: true}, targetName: "spam?show-successes=true"},
+		{name: "format no file with option", expectedFormat: "spam", expectedOptions: Options{ShowSuccesses: true}, targetName: "spam=?show-successes=true"},
+		{name: "format with file and option", expectedFormat: "spam", expectedOptions: Options{ShowSuccesses: true}, targetName: "spam=spam.out?show-successes=true", expectedPath: "spam.out"},
 	}
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			fs := afero.NewMemMapFs()
 			defaultWriter := fileWriter{path: defaultPath, fs: fs}
-			parser := NewTargetParser(defaultFormat, defaultWriter, fs)
-			target := parser.Parse(c.targetName)
+			parser := NewTargetParser(defaultFormat, defaultOptions, defaultWriter, fs)
+			target, err := parser.Parse(c.targetName)
+			require.NoError(t, err)
 
-			assert.Equal(t, target.Format, c.expectFormat)
-			if c.expectDefaultWriter {
-				assert.Equal(t, target.writer, defaultWriter)
+			assert.Equal(t, c.expectedFormat, target.Format)
+			if c.expectedPath == "" {
+				assert.Equal(t, defaultWriter, target.writer)
 			} else {
-				assert.NotEqual(t, target.writer, defaultWriter)
+				assert.Equal(t, c.expectedPath, target.writer.(*fileWriter).path)
 			}
+
+			assert.Equal(t, c.expectedOptions, target.Options)
 		})
 	}
 }

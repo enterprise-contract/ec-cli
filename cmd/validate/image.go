@@ -313,6 +313,8 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 				defer c.Destroy()
 			}
 
+			showSuccesses, _ := cmd.Flags().GetBool("show-successes")
+
 			// worker is responsible for processing one component at a time from the jobs channel,
 			// and for emitting a corresponding result for the component on the results channel.
 			worker := func(id int, jobs <-chan app.SnapshotComponent, results chan<- result) {
@@ -332,7 +334,6 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 					// Skip on err to not panic. Error is return on routine completion.
 					if err == nil {
 						res.component.Violations = out.Violations()
-						showSuccesses, _ := cmd.Flags().GetBool("show-successes")
 						res.component.Warnings = out.Warnings()
 
 						successes := out.Successes()
@@ -403,11 +404,11 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 				data.output = append(data.output, fmt.Sprintf("%s=%s", applicationsnapshot.JSON, data.outputFile))
 			}
 
-			report, err := applicationsnapshot.NewReport(data.snapshot, components, data.policy, manyData, manyPolicyInput)
+			report, err := applicationsnapshot.NewReport(data.snapshot, components, data.policy, manyData, manyPolicyInput, showSuccesses)
 			if err != nil {
 				return err
 			}
-			p := format.NewTargetParser(applicationsnapshot.JSON, cmd.OutOrStdout(), utils.FS(cmd.Context()))
+			p := format.NewTargetParser(applicationsnapshot.JSON, format.Options{ShowSuccesses: showSuccesses}, cmd.OutOrStdout(), utils.FS(cmd.Context()))
 			utils.SetColorEnabled(data.noColor, data.forceColor)
 			if err := report.WriteAll(data.output, p); err != nil {
 				return err
@@ -465,7 +466,9 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 	cmd.Flags().StringSliceVar(&data.output, "output", data.output, hd.Doc(`
 		write output to a file in a specific format. Use empty string path for stdout.
 		May be used multiple times. Possible formats are:
-		`+strings.Join(validOutputFormats, ", ")+`.
+		`+strings.Join(validOutputFormats, ", ")+`. In following format and file path
+		additional options can be provided in key=value form following the question
+		mark (?) sign, for example: --output text=output.txt?show-successes=false
 	`))
 
 	cmd.Flags().StringVarP(&data.outputFile, "output-file", "o", data.outputFile,

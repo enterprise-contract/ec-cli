@@ -64,3 +64,96 @@
 | Result |  | :x: |
 
 ---
+
+[Test_TextReport/nothing - 1]
+Success: false
+Result: SKIPPED
+Violations: 0, Warnings: 0, Successes: 0
+
+---
+
+[Test_TextReport/bunch - 1]
+Success: false
+Result: FAILURE
+Violations: 4, Warnings: 4, Successes: 4
+
+Components:
+- Name: 
+  ImageRef: registry.io/repository/component-1:tag
+  Violations: 2, Warnings: 0, Successes: 0
+
+- Name: 
+  ImageRef: registry.io/repository/component-2:tag
+  Violations: 0, Warnings: 2, Successes: 0
+
+- Name: 
+  ImageRef: registry.io/repository/component-3:tag
+  Violations: 0, Warnings: 0, Successes: 2
+
+- Name: 
+  ImageRef: registry.io/repository/component-4:tag
+  Violations: 2, Warnings: 2, Successes: 2
+
+Results:
+✕ [Violation] violation-1
+  ImageRef: registry.io/repository/component-1:tag
+  Reason: Violation 1 message
+  Title: Violation 1 title
+  Description: Violation 1 description
+  Solution: Violation 1 solution
+
+✕ [Violation] violation-2
+  ImageRef: registry.io/repository/component-1:tag
+  Reason: Violation 2 message
+
+✕ [Violation] violation-1
+  ImageRef: registry.io/repository/component-4:tag
+  Reason: Violation 1 message
+  Title: Violation 1 title
+  Description: Violation 1 description
+  Solution: Violation 1 solution
+
+✕ [Violation] violation-2
+  ImageRef: registry.io/repository/component-4:tag
+  Reason: Violation 2 message
+
+› [Warning] warning-1
+  ImageRef: registry.io/repository/component-2:tag
+  Reason: Warning 1 message
+  Title: Warning 1 title
+  Description: Warning 1 description
+  Solution: Warning 1 solution
+
+› [Warning] warning-2
+  ImageRef: registry.io/repository/component-2:tag
+  Reason: Warning 2 message
+
+› [Warning] warning-1
+  ImageRef: registry.io/repository/component-4:tag
+  Reason: Warning 1 message
+  Title: Warning 1 title
+  Description: Warning 1 description
+  Solution: Warning 1 solution
+
+› [Warning] warning-2
+  ImageRef: registry.io/repository/component-4:tag
+  Reason: Warning 2 message
+
+✓ [Success] success-1
+  ImageRef: registry.io/repository/component-3:tag
+  Title: Success 1 title
+  Description: Success 1 description
+
+✓ [Success] success-2
+  ImageRef: registry.io/repository/component-3:tag
+
+✓ [Success] success-1
+  ImageRef: registry.io/repository/component-4:tag
+  Title: Success 1 title
+  Description: Success 1 description
+
+✓ [Success] success-2
+  ImageRef: registry.io/repository/component-4:tag
+
+
+---

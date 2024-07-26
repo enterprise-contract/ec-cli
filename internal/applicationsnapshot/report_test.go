@@ -51,7 +51,7 @@ func Test_ReportJson(t *testing.T) {
 
 	ctx := context.Background()
 	testPolicy := createTestPolicy(t, ctx)
-	report, err := NewReport("snappy", components, testPolicy, "data here", nil)
+	report, err := NewReport("snappy", components, testPolicy, "data here", nil, true)
 	assert.NoError(t, err)
 
 	testEffectiveTime := testPolicy.EffectiveTime().UTC().Format(time.RFC3339Nano)
@@ -109,7 +109,7 @@ func Test_ReportYaml(t *testing.T) {
 
 	ctx := context.Background()
 	testPolicy := createTestPolicy(t, ctx)
-	report, err := NewReport("snappy", components, testPolicy, "data here", nil)
+	report, err := NewReport("snappy", components, testPolicy, "data here", nil, true)
 	assert.NoError(t, err)
 
 	testEffectiveTime := testPolicy.EffectiveTime().UTC().Format(time.RFC3339Nano)
@@ -256,7 +256,7 @@ func Test_GenerateMarkdownSummary(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			ctx := context.Background()
-			report, err := NewReport(c.snapshot, c.components, createTestPolicy(t, ctx), nil, nil)
+			report, err := NewReport(c.snapshot, c.components, createTestPolicy(t, ctx), nil, nil, true)
 			assert.NoError(t, err)
 			report.created = time.Unix(0, 0).UTC()
 
@@ -503,7 +503,7 @@ func Test_ReportSummary(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("NewReport=%s", tc.name), func(t *testing.T) {
 			ctx := context.Background()
-			report, err := NewReport(tc.snapshot, []Component{tc.input}, createTestPolicy(t, ctx), "data here", nil)
+			report, err := NewReport(tc.snapshot, []Component{tc.input}, createTestPolicy(t, ctx), "data here", nil, true)
 			assert.NoError(t, err)
 			assert.Equal(t, tc.want, report.toSummary())
 		})
@@ -640,14 +640,14 @@ func Test_ReportAppstudio(t *testing.T) {
 			assert.NoError(t, err)
 
 			ctx := context.Background()
-			report, err := NewReport(c.snapshot, c.components, createTestPolicy(t, ctx), nil, nil)
+			report, err := NewReport(c.snapshot, c.components, createTestPolicy(t, ctx), nil, nil, true)
 			assert.NoError(t, err)
 			assert.False(t, report.created.IsZero())
 			assert.Equal(t, c.success, report.Success)
 
 			report.created = time.Unix(0, 0).UTC()
 
-			p := format.NewTargetParser(JSON, defaultWriter, fs)
+			p := format.NewTargetParser(JSON, format.Options{}, defaultWriter, fs)
 			assert.NoError(t, report.WriteAll([]string{"appstudio=report.json", "appstudio"}, p))
 
 			reportText, err := afero.ReadFile(fs, "report.json")
@@ -788,14 +788,14 @@ func Test_ReportHACBS(t *testing.T) {
 			assert.NoError(t, err)
 
 			ctx := context.Background()
-			report, err := NewReport(c.snapshot, c.components, createTestPolicy(t, ctx), "data here", nil)
+			report, err := NewReport(c.snapshot, c.components, createTestPolicy(t, ctx), "data here", nil, true)
 			assert.NoError(t, err)
 			assert.False(t, report.created.IsZero())
 			assert.Equal(t, c.success, report.Success)
 
 			report.created = time.Unix(0, 0).UTC()
 
-			p := format.NewTargetParser(JSON, defaultWriter, fs)
+			p := format.NewTargetParser(JSON, format.Options{}, defaultWriter, fs)
 			assert.NoError(t, report.WriteAll([]string{"hacbs=report.json", "hacbs"}, p))
 
 			reportText, err := afero.ReadFile(fs, "report.json")
@@ -820,14 +820,118 @@ func Test_ReportPolicyInput(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	report, err := NewReport("snapshot", nil, createTestPolicy(t, ctx), "data", policyInput)
+	report, err := NewReport("snapshot", nil, createTestPolicy(t, ctx), "data", policyInput, true)
 	require.NoError(t, err)
 
-	p := format.NewTargetParser(JSON, defaultWriter, fs)
+	p := format.NewTargetParser(JSON, format.Options{}, defaultWriter, fs)
 	require.NoError(t, report.WriteAll([]string{"policy-input=policy-input.yaml", "policy-input"}, p))
 
 	matchesJSONLFile(t, fs, policyInput, "policy-input.yaml")
 	matchesJSONLFile(t, fs, policyInput, "default")
+}
+
+func Test_TextReport(t *testing.T) {
+	warnings := []evaluator.Result{
+		{
+			Metadata: map[string]interface{}{
+				"code":        "warning-1",
+				"title":       "Warning 1 title",
+				"description": "Warning 1 description",
+				"solution":    "Warning 1 solution",
+			},
+			Message: "Warning 1 message",
+		},
+		{
+			Metadata: map[string]interface{}{
+				"code": "warning-2",
+			},
+			Message: "Warning 2 message",
+		},
+	}
+	violations := []evaluator.Result{
+		{
+			Metadata: map[string]interface{}{
+				"code":        "violation-1",
+				"title":       "Violation 1 title",
+				"description": "Violation 1 description",
+				"solution":    "Violation 1 solution",
+			},
+			Message: "Violation 1 message",
+		},
+		{
+			Metadata: map[string]interface{}{
+				"code": "violation-2",
+			},
+			Message: "Violation 2 message",
+		},
+	}
+	successes := []evaluator.Result{
+		{
+			Metadata: map[string]interface{}{
+				"code":        "success-1",
+				"title":       "Success 1 title",
+				"description": "Success 1 description",
+				"solution":    "Success 1 solution",
+			},
+			Message: "Success 1 message",
+		},
+		{
+			Metadata: map[string]interface{}{
+				"code": "success-2",
+			},
+			Message: "Success 2 message",
+		},
+	}
+
+	cases := []struct {
+		name   string
+		report Report
+	}{
+		{"nothing", Report{}},
+		{"bunch", Report{
+			ShowSuccesses: true,
+			Components: []Component{
+				{
+					SnapshotComponent: app.SnapshotComponent{
+						ContainerImage: "registry.io/repository/component-1:tag",
+					},
+					Violations: violations,
+				},
+				{
+					SnapshotComponent: app.SnapshotComponent{
+						ContainerImage: "registry.io/repository/component-2:tag",
+					},
+					Warnings: warnings,
+				},
+				{
+					SnapshotComponent: app.SnapshotComponent{
+						ContainerImage: "registry.io/repository/component-3:tag",
+					},
+					Successes:    successes,
+					SuccessCount: 2,
+				},
+				{
+					SnapshotComponent: app.SnapshotComponent{
+						ContainerImage: "registry.io/repository/component-4:tag",
+					},
+					Warnings:     warnings,
+					Violations:   violations,
+					Successes:    successes,
+					SuccessCount: 2,
+				},
+			},
+		}},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			r := c.report
+			output, err := generateTextReport(&r)
+			require.NoError(t, err)
+
+			snaps.MatchSnapshot(t, string(output))
+		})
+	}
 }
 
 func matchesJSONLFile(t *testing.T, fs afero.Fs, expected [][]byte, filename string) {
