@@ -448,7 +448,7 @@ func labelImage(ctx context.Context, imageName string, labels *godog.Table) (con
 		return ctx, err
 	}
 
-	return ctx, remote.Put(ref, img)
+	return ctx, remote.Push(ref, img)
 }
 
 type patchFn func(v1.Image) (v1.Image, error)
