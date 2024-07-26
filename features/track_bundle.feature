@@ -95,14 +95,14 @@ Feature: track bundles
     Then the output should match the snapshot
 
   Scenario: Track git references
-    When ec command is run with "track bundle --git git+https://github.com/redhat-appstudio/build-definitions.git//task/buildah/0.1/buildah.yaml@3672a457e3e89c0591369f609eba727b8e84108f"
+    When ec command is run with "track bundle --git git+https://github.com/konflux-ci/build-definitions.git//task/buildah/0.1/buildah.yaml@3672a457e3e89c0591369f609eba727b8e84108f"
     Then the exit status should be 0
     Then the output should match the snapshot
 
   Scenario: Track tekton-task alias
     Given a tekton bundle image named "acceptance/bundle:tag" containing
       | Task     | task1     |
-    When ec command is run with "track tekton-task --bundle ${REGISTRY}/acceptance/bundle:tag --git git+https://github.com/redhat-appstudio/build-definitions.git//task/buildah/0.1/buildah.yaml@3672a457e3e89c0591369f609eba727b8e84108f"
+    When ec command is run with "track tekton-task --bundle ${REGISTRY}/acceptance/bundle:tag --git git+https://github.com/konflux-ci/build-definitions.git//task/buildah/0.1/buildah.yaml@3672a457e3e89c0591369f609eba727b8e84108f"
     Then the exit status should be 0
     Then the output should match the snapshot
 
