@@ -17,7 +17,7 @@
 
 # This is an image regularly built in Konflux for testing purposes.
 # See https://github.com/enterprise-contract/golden-container
-IMAGE=${IMAGE:-"quay.io/redhat-appstudio/ec-golden-image:latest"}
+IMAGE=${IMAGE:-"quay.io/konflux-ci/ec-golden-image:latest"}
 
 # Assume the latest image was pushed already
 GIT_REPO=enterprise-contract/golden-container
