@@ -17,11 +17,11 @@
 
 # This is an image regularly built in Konflux for testing purposes.
 # See https://github.com/enterprise-contract/golden-container
-IMAGE=${IMAGE:-"quay.io/redhat-appstudio/ec-golden-image:latest"}
+IMAGE=${IMAGE:-"quay.io/konflux-ci/ec-golden-image:latest"}
 
 # Assume the latest image was pushed already
 GIT_REPO=enterprise-contract/golden-container
-GIT_SHA=$(curl -s "https://api.github.com/repos/${GIT_REPO}/commits?per_page=1" | jq -r '.[0].sha')
+GIT_SHA=${GIT_SHA:-$(curl -s "https://api.github.com/repos/${GIT_REPO}/commits?per_page=1" | jq -r '.[0].sha')}
 
 # We can use `ec validate image --image $IMAGE` but to be more
 # realistic let's use the application snapshot format for the input.
@@ -64,7 +64,8 @@ POLICY_YAML=${POLICY_YAML:-"github.com/enterprise-contract/config//default"}
 #POLICY_YAML=${POLICY_YAML:-"github.com/enterprise-contract/config//redhat-no-hermetic"}
 #POLICY_YAML=${POLICY_YAML:-"./policy.yaml"}
 
-OUTPUT=${OUTPUT:-yaml}
+OUTPUT=${OUTPUT:-text}
+#OUTPUT=${OUTPUT:-yaml}
 
 MAIN_GO=$(git rev-parse --show-toplevel)/main.go
 

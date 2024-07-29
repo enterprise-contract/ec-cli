@@ -137,6 +137,10 @@ not main, and not the konflux/references/release-v0.x branch used for PRs.
 
 $(nice_title Create a ReleasePlan record in the tenants config repo)
 
+Note: The tenants-config repo was retired. The ReleasePlans are in
+https://gitlab.cee.redhat.com/releng/konflux-release-data now. Todo: Update
+these instructions (https://issues.redhat.com/browse/EC-759).
+
 The goal is to make a PR similar to https://github.com/redhat-appstudio/tenants-config/pull/286
 or https://github.com/redhat-appstudio/tenants-config/pull/397 .
 Consider also if you want to remove older release plans. The new release plan should look

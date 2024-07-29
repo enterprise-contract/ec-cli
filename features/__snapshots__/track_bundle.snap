@@ -54,7 +54,7 @@ trusted_tasks:
 [Track git references:stdout - 1]
 /-/-/-/
 trusted_tasks:
-  git+https://github.com/redhat-appstudio/build-definitions.git//task/buildah/0.1/buildah.yaml:
+  git+https://github.com/konflux-ci/build-definitions.git//task/buildah/0.1/buildah.yaml:
     - effective_on: "${TIMESTAMP}"
       ref: 3672a457e3e89c0591369f609eba727b8e84108f
 
@@ -67,7 +67,7 @@ trusted_tasks:
 [track tekton-task alias:stdout - 1]
 /-/-/-/
 trusted_tasks:
-  git+https://github.com/redhat-appstudio/build-definitions.git//task/buildah/0.1/buildah.yaml:
+  git+https://github.com/konflux-ci/build-definitions.git//task/buildah/0.1/buildah.yaml:
     - effective_on: "${TIMESTAMP}"
       ref: 3672a457e3e89c0591369f609eba727b8e84108f
   oci://${REGISTRY}/acceptance/bundle:tag:
@@ -96,7 +96,7 @@ trusted_tasks:
 [Track tekton-task alias:stdout - 1]
 /-/-/-/
 trusted_tasks:
-  git+https://github.com/redhat-appstudio/build-definitions.git//task/buildah/0.1/buildah.yaml:
+  git+https://github.com/konflux-ci/build-definitions.git//task/buildah/0.1/buildah.yaml:
     - effective_on: "${TIMESTAMP}"
       ref: 3672a457e3e89c0591369f609eba727b8e84108f
   oci://${REGISTRY}/acceptance/bundle:tag:

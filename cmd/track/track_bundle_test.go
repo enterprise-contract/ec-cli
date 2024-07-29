@@ -184,11 +184,11 @@ func Test_TrackBundleCommand(t *testing.T) {
 			name: "tracking git references",
 			args: []string{
 				"--git",
-				"git+https://github.com/redhat-appstudio/build-definitions.git//task/buildah/0.1/buildah.yaml@3672a457e3e89c0591369f609eba727b8e84108f",
+				"git+https://github.com/konflux-ci/build-definitions.git//task/buildah/0.1/buildah.yaml@3672a457e3e89c0591369f609eba727b8e84108f",
 			},
 			expectStdout: true,
 			expectPrune:  true,
-			expectUrls:   []string{"git+https://github.com/redhat-appstudio/build-definitions.git//task/buildah/0.1/buildah.yaml@3672a457e3e89c0591369f609eba727b8e84108f"},
+			expectUrls:   []string{"git+https://github.com/konflux-ci/build-definitions.git//task/buildah/0.1/buildah.yaml@3672a457e3e89c0591369f609eba727b8e84108f"},
 		},
 	}
 
