@@ -21,12 +21,15 @@ the OPA configuration) against each input file. This can be overridden by
 specifying the --decision argument and pointing at a specific policy decision,
 e.g., opa exec --decision /foo/bar/baz ...
 
-Alternative Usage:
-  documentation exec [<path> [...]] --stdin-input [flags]
 [source,shell]
 ----
 ec opa exec <path> [<path> [...]] [flags]
 ----
+
+== Examples
+  Loading input from stdin:
+    documentation exec [<path> [...]] --stdin-input [flags]
+
 == Options
 
 -b, --bundle:: set bundle file(s) or directory path(s). This flag can be repeated.

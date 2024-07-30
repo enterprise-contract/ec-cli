@@ -27,6 +27,7 @@ ec opa fmt [path [...]] [flags]
 ----
 == Options
 
+--check-result:: assert that the formatted code is valid and can be successfully parsed (default true) (Default: true)
 -d, --diff:: only display a diff of the changes (Default: false)
 --fail:: non zero exit code on reformat (Default: false)
 -h, --help:: help for fmt (Default: false)

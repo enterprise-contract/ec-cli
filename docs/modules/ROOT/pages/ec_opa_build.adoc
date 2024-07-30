@@ -169,6 +169,7 @@ ec opa build <path> [<path> [...]] [flags]
 --debug:: enable debug output (Default: false)
 -e, --entrypoint:: set slash separated entrypoint path
 --exclude-files-verify:: set file names to exclude during bundle verification (Default: [])
+--follow-symlinks:: follow symlinks in the input set of paths when building the bundle (Default: false)
 -h, --help:: help for build (Default: false)
 --ignore:: set file and directory names to ignore during loading (e.g., '.*' excludes hidden files) (Default: [])
 -O, --optimize:: set optimization level (Default: 0)
