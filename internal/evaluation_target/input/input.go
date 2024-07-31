@@ -30,8 +30,8 @@ var newConftestEvaluator = evaluator.NewConftestEvaluator
 
 // Input represents the structure needed to evaluate a generic file input
 type Input struct {
-	Paths     []string
-	Evaluator evaluator.Evaluator
+	Paths      []string
+	Evaluators []evaluator.Evaluator
 }
 
 // NewInput returns a Input struct with FPath and evaluator ready to use
@@ -59,7 +59,7 @@ func NewInput(ctx context.Context, paths []string, p policy.Policy) (*Input, err
 		}
 
 		log.Debug("Conftest evaluator initialized")
-		i.Evaluator = c
+		i.Evaluators = append(i.Evaluators, c)
 
 	}
 	return i, nil
