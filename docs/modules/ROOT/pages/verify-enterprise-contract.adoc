@@ -45,6 +45,12 @@ certificates issued by a not-commonly trusted root CA. In such cases,
 `/var/run/secrets/kubernetes.io/serviceaccount` is a good value. Multiple
 paths can be provided by using the `:` separator.
 
+*CA_TRUST_CONFIGMAP_NAME* (`string`):: The name of the ConfigMap to read CA bundle data from.
++
+*Default*: `trusted-ca`
+*CA_TRUST_CONFIG_MAP_KEY* (`string`):: The name of the key in the ConfigMap that contains the CA bundle data.
++
+*Default*: `ca-bundle.crt`
 *INFO* (`string`):: Include rule titles and descriptions in the output. Set to `"false"` to disable it.
 +
 *Default*: `true`
