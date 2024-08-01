@@ -17,6 +17,8 @@ kubectl apply -f https://raw.githubusercontent.com/enterprise-contract/ec-cli/ma
 * **REKOR_HOST**: Rekor host for transparency log lookups
 * **SSL_CERT_DIR**: Path to a directory containing SSL certs to be used when communicating
         with external services.
+* **CA_TRUST_CONFIGMAP_NAME**: The name of the ConfigMap to read CA bundle data from.
+* **CA_TRUST_CONFIG_MAP_KEY**: The name of the key in the ConfigMap that contains the CA bundle data.
 * **STRICT**: Fail the task if policy fails. Set to "false" to disable it.
 * **HOMEDIR**: Value for the HOME environment variable.
 * **EFFECTIVE_TIME**: Run policy checks with the provided time.

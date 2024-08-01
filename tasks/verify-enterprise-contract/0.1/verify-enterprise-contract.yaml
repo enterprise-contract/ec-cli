@@ -91,6 +91,16 @@ spec:
         paths can be provided by using the `:` separator.
       default: ""
 
+    - name: CA_TRUST_CONFIGMAP_NAME
+      type: string
+      description: The name of the ConfigMap to read CA bundle data from.
+      default: trusted-ca
+
+    - name: CA_TRUST_CONFIG_MAP_KEY
+      type: string
+      description: The name of the key in the ConfigMap that contains the CA bundle data.
+      default: ca-bundle.crt
+
     - name: INFO
       type: string
       description: Include rule titles and descriptions in the output. Set to `"false"` to disable it.
@@ -207,6 +217,11 @@ spec:
           memory: 2Gi
         limits:
           memory: 2Gi
+      volumeMounts:
+        - name: trusted-ca
+          mountPath: /etc/pki/tls/certs/ca-custom-bundle.crt
+          subPath: ca-bundle.crt
+          readOnly: true
 
     - name: report
       image: quay.io/enterprise-contract/ec-cli:snapshot
@@ -259,3 +274,12 @@ spec:
         - >
           .result == "SUCCESS" or .result == "WARNING" or ($strict | not)
         - "$(results.TEST_OUTPUT.path)"
+
+  volumes:
+    - name: trusted-ca
+      configMap:
+        name: $(params.CA_TRUST_CONFIGMAP_NAME)
+        items:
+          - key: $(params.CA_TRUST_CONFIG_MAP_KEY)
+            path: ca-bundle.crt
+        optional: true
