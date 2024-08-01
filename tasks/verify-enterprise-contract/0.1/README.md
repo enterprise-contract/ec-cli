@@ -22,6 +22,7 @@ kubectl apply -f https://raw.githubusercontent.com/enterprise-contract/ec-cli/ma
 * **STRICT**: Fail the task if policy fails. Set to "false" to disable it.
 * **HOMEDIR**: Value for the HOME environment variable.
 * **EFFECTIVE_TIME**: Run policy checks with the provided time.
+* **WORKERS**: Number of parallel workers to use for validation.
 
 
 ## Usage

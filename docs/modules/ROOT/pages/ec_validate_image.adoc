@@ -150,6 +150,7 @@ mark (?) sign, for example: --output text=output.txt?show-successes=false
 --snapshot:: Provide the AppStudio Snapshot as a source of the images to validate, as inline
 JSON of the "spec" or a reference to a Kubernetes object [<namespace>/]<name>
 -s, --strict:: Return non-zero status on non-successful validation. Defaults to true. Use --strict=false to return a zero status code. (Default: true)
+--workers:: Number of workers to use for validation. Defaults to 5. (Default: 5)
 
 == Options inherited from parent commands
 
