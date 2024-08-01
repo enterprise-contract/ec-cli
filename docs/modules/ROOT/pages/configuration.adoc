@@ -107,6 +107,57 @@ Except for collections, the score is cumulative. If a name is covered by multipl
 guidelines, they are added together. For example, "release.test.test_result_failures:clamav-scan"
 scores at 210.
 
+=== Volatile inclusions and exclusions
+
+It is also possible to specify a time for which an inclusion or an exclusions is applicable. For
+example, you may want to specify that particular policy rule is excluded only until a certain date.
+To do so, use the `volatileConfig` attribute. For example:
+
+[tabs]
+====
+YAML::
++
+[source,yaml]
+----
+sources:
+  - policy:
+      - oci::quay.io/enterprise-contract/ec-release-policy:latest
+    data:
+      - git::https://github.com/enterprise-contract/ec-policies//example/data
+    volatileConfig:
+      exclude:
+        # Ignore violations from the `test` package until the end of 2024.
+        - value: test
+          effectiveUntil: "2024-12-31T00:00:00Z"
+        # Ignore violations from the `java` package starting on 2025.
+        - value: java
+          effectiveOn: "2024-12-31T00:00:00Z"
+----
+
+If both `volatileConfig` and `config` are used, they are both processed by the EC CLI as if they
+were merged together.
+
+With `volatileConfig` you can also specify an inclusion or exclusion for a particular image
+reference. For example:
+
+[tabs]
+====
+YAML::
++
+[source,yaml]
+----
+sources:
+  - policy:
+      - oci::quay.io/enterprise-contract/ec-release-policy:latest
+    data:
+      - git::https://github.com/enterprise-contract/ec-policies//example/data
+    volatileConfig:
+      exclude:
+        # Ignore violations from the `test` package for any image matching the digest.
+        - value: test
+          imageRef: sha256:4e388ab32b10dc8dbc7e28144f552830adc74787c1e2c0824032078a79f227fb
+----
+
 == Examples
 
 The examples here are shown as the contents of `config.policy` formatted as
