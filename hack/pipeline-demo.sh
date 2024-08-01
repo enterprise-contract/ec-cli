@@ -15,6 +15,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-BUNDLE="quay.io/redhat-appstudio-tekton-catalog/pipeline-docker-build:devel"
+BUNDLE="quay.io/konflux-ci/tekton-catalog/pipeline-docker-build:devel"
 MAIN_GO=$(git rev-parse --show-toplevel)/main.go
 go run $MAIN_GO validate pipeline --pipeline-file <(tkn bundle list $BUNDLE -o json) | yq -P
