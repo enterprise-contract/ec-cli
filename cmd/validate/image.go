@@ -71,8 +71,10 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		images                      string
 		noColor                     bool
 		forceColor                  bool
+		workers                     int
 	}{
-		strict: true,
+		strict:  true,
+		workers: 5,
 	}
 
 	validOutputFormats := applicationsnapshot.OutputFormats
@@ -357,9 +359,9 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 			}
 
 			numComponents := len(appComponents)
-			// TODO: Eventually, this should either be set as a parameter or adjusted based on the
-			// available resources. The main constraint seems to be memory.
-			numWorkers := 5
+
+			// Set numWorkers to the value from our flag. The default is 5.
+			numWorkers := data.workers
 
 			jobs := make(chan app.SnapshotComponent, numComponents)
 			results := make(chan result, numComponents)
@@ -502,6 +504,9 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 
 	cmd.Flags().BoolVar(&data.forceColor, "color", data.info, hd.Doc(`
 		Enable color when using text output even when the current terminal does not support it`))
+
+	cmd.Flags().IntVar(&data.workers, "workers", data.workers, hd.Doc(`
+		Number of workers to use for validation. Defaults to 5.`))
 
 	if len(data.input) > 0 || len(data.filePath) > 0 || len(data.images) > 0 {
 		if err := cmd.MarkFlagRequired("image"); err != nil {

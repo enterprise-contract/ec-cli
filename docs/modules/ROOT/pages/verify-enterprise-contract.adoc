@@ -67,6 +67,9 @@ paths can be provided by using the `:` separator.
 *TIMEOUT* (`string`):: Timeout setting for `ec validate`.
 +
 *Default*: `5m0s`
+*WORKERS* (`string`):: Number of parallel workers to use for policy evaluation.
++
+*Default*: `1`
 
 == Results
 

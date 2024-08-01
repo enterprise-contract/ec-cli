@@ -130,6 +130,11 @@ spec:
       description: Timeout setting for `ec validate`.
       default: "5m0s"
 
+    - name: WORKERS
+      type: string
+      description: Number of parallel workers to use for policy evaluation.
+      default: "1"
+
   workspaces:
     - name: data
       description: The workspace where the snapshot spec json file resides
@@ -180,6 +185,8 @@ spec:
         - "--rekor-url"
         - "$(params.REKOR_HOST)"
         - "--ignore-rekor=$(params.IGNORE_REKOR)"
+        - "--workers"
+        - "$(params.WORKERS)"
         # NOTE: The syntax below is required to negate boolean parameters
         - "--info=$(params.INFO)"
         - "--timeout=$(params.TIMEOUT)"
