@@ -133,6 +133,36 @@ sources:
         - value: java
           effectiveOn: "2024-12-31T00:00:00Z"
 ----
+JSON::
++
+[source,json]
+----
+{
+  "sources": [
+    {
+      "policy": [
+        "oci::quay.io/enterprise-contract/ec-release-policy:latest"
+      ],
+      "data": [
+        "git::https://github.com/enterprise-contract/ec-policies//example/data"
+      ],
+      "volatileConfig": {
+        "exclude": [
+          {
+            "value": "test",
+            "effectiveUntil": "2024-12-31T00:00:00Z"
+          },
+          {
+            "value": "java",
+            "effectiveOn": "2024-12-31T00:00:00Z"
+          }
+        ]
+      }
+    }
+  ]
+}
+----
+===
 
 If both `volatileConfig` and `config` are used, they are both processed by the EC CLI as if they
 were merged together.
@@ -157,6 +187,32 @@ sources:
         - value: test
           imageRef: sha256:4e388ab32b10dc8dbc7e28144f552830adc74787c1e2c0824032078a79f227fb
 ----
+JSON::
++
+[source,json]
+----
+{
+  "sources": [
+    {
+      "policy": [
+        "oci::quay.io/enterprise-contract/ec-release-policy:latest"
+      ],
+      "data": [
+        "git::https://github.com/enterprise-contract/ec-policies//example/data"
+      ],
+      "volatileConfig": {
+        "exclude": [
+          {
+            "value": "test",
+            "imageRef": "sha256:4e388ab32b10dc8dbc7e28144f552830adc74787c1e2c0824032078a79f227fb"
+          }
+        ]
+      }
+    }
+  ]
+}
+----
+===
 
 == Examples
 
