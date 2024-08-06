@@ -162,7 +162,7 @@ JSON::
   ]
 }
 ----
-===
+====
 
 If both `volatileConfig` and `config` are used, they are both processed by the EC CLI as if they
 were merged together.
@@ -212,7 +212,7 @@ JSON::
   ]
 }
 ----
-===
+====
 
 == Examples
 
