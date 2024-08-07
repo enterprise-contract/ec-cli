@@ -119,7 +119,13 @@ WORKDIR /download
 COPY --from=build /build/cosign_version.txt /download/
 
 # Download the matching version of cosign
-RUN COSIGN_VERSION=$(cat /download/cosign_version.txt) && \
+# IMPORTANT: The version of cosign is hard-coded here because the version of cosign from go.mod
+# pulls in a version of docker that contains a CVE. In the go.mod we can make it use a patched
+# version of the docker library. However, the pre-compiled version of cosign will not contain the
+# docker fix. The lowest version of cosign that contains the docker fix is v2.4.0. Unfortunately,
+# that version requires go 1.22 which is not yet supported in the build chain. Thus, we cannot
+# update go.mod to use it. For this reason, we use a different cosign version here.
+RUN COSIGN_VERSION='v2.4.0' && \
     curl -sLO https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign-${TARGETOS}-${TARGETARCH} && \
     curl -sLO https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign_checksums.txt && \
     sha256sum --check <(grep -w "cosign-${TARGETOS}-${TARGETARCH}" < cosign_checksums.txt) && \
