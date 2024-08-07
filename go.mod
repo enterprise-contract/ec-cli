@@ -6,11 +6,11 @@ require (
 	cuelang.org/go v0.9.2
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/Maldris/go-billy-afero v0.0.0-20200815120323-e9d3de59c99a
-	github.com/enterprise-contract/enterprise-contract-controller/api v0.1.50
+	github.com/enterprise-contract/enterprise-contract-controller/api v0.1.51
 	github.com/enterprise-contract/go-gather/gather v0.0.2
 	github.com/enterprise-contract/go-gather/metadata v0.0.2
 	github.com/evanphx/json-patch v5.9.0+incompatible
-	github.com/gkampitakis/go-snaps v0.5.6
+	github.com/gkampitakis/go-snaps v0.5.7
 	github.com/go-git/go-git/v5 v5.12.0
 	github.com/go-logr/logr v1.4.2
 	github.com/google/go-cmp v0.6.0
