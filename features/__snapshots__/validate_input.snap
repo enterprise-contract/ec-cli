@@ -35,7 +35,7 @@
 
 [policy URL with no rego files:stderr - 1]
 Error: 1 error occurred:
-    * error validating file pipeline_definition.yaml: no rego files found in policy subdirectory
+    * error validating file pipeline_definition.yaml: evaluating policy: no rego files found in policy subdirectory
 
 
 

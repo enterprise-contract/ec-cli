@@ -50,14 +50,7 @@ func ValidateInput(ctx context.Context, fpath string, policy policy.Policy, deta
 	for _, e := range p.Evaluators {
 		results, _, err := e.Evaluate(ctx, evaluator.EvaluationTarget{Inputs: inputFiles})
 		if err != nil {
-			log.Debug("Problem running conftest policy check!")
-			return nil, err
-		}
-		log.Debug("\n\nRunning conftest policy check\n\n")
-
-		if err != nil {
-			log.Debug("Problem running conftest policy check!")
-			return nil, err
+			return nil, fmt.Errorf("evaluating policy: %w", err)
 		}
 		allResults = append(allResults, results...)
 	}
