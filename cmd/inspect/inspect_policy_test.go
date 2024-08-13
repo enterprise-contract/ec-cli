@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/enterprise-contract/go-gather/metadata"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
@@ -38,10 +39,10 @@ type mockDownloader struct {
 	mock.Mock
 }
 
-func (m *mockDownloader) Download(_ context.Context, dest string, sourceUrl string, showMsg bool) error {
+func (m *mockDownloader) Download(_ context.Context, dest string, sourceUrl string, showMsg bool) (metadata.Metadata, error) {
 	args := m.Called(dest, sourceUrl, showMsg)
 
-	return args.Error(0)
+	return nil, args.Error(0)
 }
 
 func TestFetchSourcesFromPolicy(t *testing.T) {

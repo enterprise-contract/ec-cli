@@ -103,7 +103,7 @@ func TestDownloader_Download(t *testing.T) {
 				d.On("Download", ctx, tt.dest, []string{tt.source}).Return(tt.err)
 			}
 
-			err := Download(ctx, tt.dest, tt.source, false)
+			_, err := Download(ctx, tt.dest, tt.source, false)
 
 			if tt.errExpected {
 				assert.Error(t, err)

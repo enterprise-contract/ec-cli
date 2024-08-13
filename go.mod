@@ -7,8 +7,11 @@ require (
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/Maldris/go-billy-afero v0.0.0-20200815120323-e9d3de59c99a
 	github.com/enterprise-contract/enterprise-contract-controller/api v0.1.51
-	github.com/enterprise-contract/go-gather/gather v0.0.2
+	github.com/enterprise-contract/go-gather/gather v0.0.3
 	github.com/enterprise-contract/go-gather/metadata v0.0.2
+	github.com/enterprise-contract/go-gather/metadata/file v0.0.1
+	github.com/enterprise-contract/go-gather/metadata/git v0.0.2
+	github.com/enterprise-contract/go-gather/metadata/oci v0.0.3
 	github.com/evanphx/json-patch v5.9.0+incompatible
 	github.com/gkampitakis/go-snaps v0.5.7
 	github.com/go-git/go-git/v5 v5.12.0
@@ -41,7 +44,7 @@ require (
 	github.com/stretchr/testify v1.9.0
 	github.com/stuart-warren/yamlfmt v0.2.0
 	github.com/tektoncd/pipeline v0.54.0
-	golang.org/x/exp v0.0.0-20231214170342-aacd6d4b4611
+	golang.org/x/exp v0.0.0-20240613232115-7f521ea00fb8
 	golang.org/x/net v0.28.0
 	k8s.io/apiextensions-apiserver v0.29.7
 	k8s.io/apimachinery v0.29.7
@@ -132,7 +135,7 @@ require (
 	github.com/chainguard-dev/git-urls v1.0.2 // indirect
 	github.com/chrismellard/docker-credential-acr-env v0.0.0-20230304212654-82a0ddb27589 // indirect
 	github.com/clbanning/mxj/v2 v2.7.0 // indirect
-	github.com/cloudflare/circl v1.3.8 // indirect
+	github.com/cloudflare/circl v1.3.9 // indirect
 	github.com/cockroachdb/apd/v3 v3.2.1 // indirect
 	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be // indirect
 	github.com/containerd/containerd v1.7.20 // indirect
@@ -161,13 +164,10 @@ require (
 	github.com/enterprise-contract/go-gather v0.0.3 // indirect
 	github.com/enterprise-contract/go-gather/expander v0.0.1 // indirect
 	github.com/enterprise-contract/go-gather/gather/file v0.0.1 // indirect
-	github.com/enterprise-contract/go-gather/gather/git v0.0.4 // indirect
-	github.com/enterprise-contract/go-gather/gather/http v0.0.1 // indirect
-	github.com/enterprise-contract/go-gather/gather/oci v0.0.3 // indirect
-	github.com/enterprise-contract/go-gather/metadata/file v0.0.1 // indirect
-	github.com/enterprise-contract/go-gather/metadata/git v0.0.2 // indirect
+	github.com/enterprise-contract/go-gather/gather/git v0.0.5 // indirect
+	github.com/enterprise-contract/go-gather/gather/http v0.0.2 // indirect
+	github.com/enterprise-contract/go-gather/gather/oci v0.0.4 // indirect
 	github.com/enterprise-contract/go-gather/metadata/http v0.0.1 // indirect
-	github.com/enterprise-contract/go-gather/metadata/oci v0.0.3 // indirect
 	github.com/enterprise-contract/go-gather/saver v0.0.1 // indirect
 	github.com/enterprise-contract/go-gather/saver/file v0.0.1 // indirect
 	github.com/evanphx/json-patch/v5 v5.8.0 // indirect
@@ -272,7 +272,7 @@ require (
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/rogpeppe/go-internal v1.12.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
-	github.com/sagikazarmark/locafero v0.4.0 // indirect
+	github.com/sagikazarmark/locafero v0.6.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/sassoftware/relic v7.2.1+incompatible // indirect
 	github.com/segmentio/ksuid v1.0.4 // indirect
@@ -329,7 +329,7 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/crypto v0.26.0 // indirect
-	golang.org/x/mod v0.17.0 // indirect
+	golang.org/x/mod v0.18.0 // indirect
 	golang.org/x/oauth2 v0.20.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
 	golang.org/x/sys v0.23.0 // indirect

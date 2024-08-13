@@ -32,6 +32,10 @@ import (
 	"time"
 
 	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
+	"github.com/enterprise-contract/go-gather/metadata"
+	fileMetadata "github.com/enterprise-contract/go-gather/metadata/file"
+	gitMetadata "github.com/enterprise-contract/go-gather/metadata/git"
+	ociMetadata "github.com/enterprise-contract/go-gather/metadata/oci"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 
@@ -52,7 +56,7 @@ const (
 )
 
 type downloaderFunc interface {
-	Download(context.Context, string, string, bool) error
+	Download(context.Context, string, string, bool) (metadata.Metadata, error)
 }
 
 // PolicySource in an interface representing the location a policy source.
@@ -73,23 +77,31 @@ type PolicyUrl struct {
 // downloadCache is a concurrent map used to cache downloaded files.
 var downloadCache sync.Map
 
-func getPolicyThroughCache(ctx context.Context, s PolicySource, workDir string, dl func(string, string) error) (string, error) {
+type cacheContent struct {
+	sourceUrl string
+	metadata  metadata.Metadata
+	err       error
+}
+
+func getPolicyThroughCache(ctx context.Context, s PolicySource, workDir string, dl func(string, string) (metadata.Metadata, error)) (string, error) {
 	sourceUrl := s.PolicyUrl()
 	dest := uniqueDestination(workDir, s.Subdir(), sourceUrl)
 
 	// Load or store the downloaded policy file from the given source URL.
 	// If the file is already in the download cache, it is loaded from there.
 	// Otherwise, it is downloaded from the source URL and stored in the cache.
-	dfn, _ := downloadCache.LoadOrStore(sourceUrl, sync.OnceValues(func() (string, error) {
+	dfn, _ := downloadCache.LoadOrStore(sourceUrl, sync.OnceValues(func() (string, cacheContent) {
 		log.Debugf("Download cache miss: %s", sourceUrl)
 		// Checkout policy repo into work directory.
 		log.Debugf("Downloading policy files from source url %s to destination %s", sourceUrl, dest)
-		return dest, dl(sourceUrl, dest)
+		m, err := dl(sourceUrl, dest)
+		c := &cacheContent{sourceUrl, m, err}
+		return dest, *c
 	}))
 
-	d, err := dfn.(func() (string, error))()
-	if err != nil {
-		return "", err
+	d, c := dfn.(func() (string, cacheContent))()
+	if c.err != nil {
+		return "", c.err
 	}
 
 	// If the destination directory is different from the source directory, we
@@ -106,21 +118,39 @@ func getPolicyThroughCache(ctx context.Context, s PolicySource, workDir string, 
 			if err := symlinkableFS.SymlinkIfPossible(d, dest); err != nil {
 				return "", err
 			}
-
+			if c.metadata != nil {
+				if _, ok := c.metadata.(*gitMetadata.GitMetadata); ok {
+					log.Debugf("SHA for source(%s): %s\n", s.PolicyUrl(), c.metadata.(*gitMetadata.GitMetadata).LatestCommit)
+				}
+				if _, ok := c.metadata.(*ociMetadata.OCIMetadata); ok {
+					log.Debugf("Image digest for source(%s): %s\n", s.PolicyUrl(), c.metadata.(*ociMetadata.OCIMetadata).Digest)
+				}
+			}
 			return dest, nil
 		} else {
 			log.Debugf("Filesystem does not support symlinking: %q, re-downloading instead", fs.Name())
-
-			return dest, dl(sourceUrl, dest)
+			m, err := dl(sourceUrl, dest)
+			if _, ok := m.(*gitMetadata.GitMetadata); ok {
+				log.Debugf("SHA for source(%s): %s\n", s.PolicyUrl(), m.(*gitMetadata.GitMetadata).LatestCommit)
+			}
+			return dest, err
 		}
 	}
 
-	return d, err
+	if c.metadata != nil {
+		if _, ok := c.metadata.(*gitMetadata.GitMetadata); ok {
+			log.Debugf("SHA for source(%s): %s\n", s.PolicyUrl(), c.metadata.(*gitMetadata.GitMetadata).LatestCommit)
+		}
+		if _, ok := c.metadata.(*ociMetadata.OCIMetadata); ok {
+			log.Debugf("Image digest for source(%s): %s\n", s.PolicyUrl(), c.metadata.(*ociMetadata.OCIMetadata).Digest)
+		}
+	}
+	return d, c.err
 }
 
 // GetPolicies clones the repository for a given PolicyUrl
 func (p *PolicyUrl) GetPolicy(ctx context.Context, workDir string, showMsg bool) (string, error) {
-	dl := func(source string, dest string) error {
+	dl := func(source string, dest string) (metadata.Metadata, error) {
 		x := ctx.Value(DownloaderFuncKey)
 		if dl, ok := x.(downloaderFunc); ok {
 			return dl.Download(ctx, dest, source, showMsg)
@@ -159,16 +189,21 @@ func InlineData(source []byte) PolicySource {
 }
 
 func (s inlineData) GetPolicy(ctx context.Context, workDir string, showMsg bool) (string, error) {
-	dl := func(source string, dest string) error {
+	dl := func(source string, dest string) (metadata.Metadata, error) {
 		fs := utils.FS(ctx)
 
 		if err := fs.MkdirAll(dest, 0755); err != nil {
-			return err
+			return nil, err
 		}
 
 		f := path.Join(dest, "rule_data.json")
+		m := &fileMetadata.FileMetadata{
+			Path: dest,
+			Size: int64(len(dest)),
+			SHA:  "",
+		}
 
-		return afero.WriteFile(fs, f, s.source, 0400)
+		return m, afero.WriteFile(fs, f, s.source, 0400)
 	}
 
 	return getPolicyThroughCache(ctx, s, workDir, dl)
