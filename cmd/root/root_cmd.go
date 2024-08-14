@@ -19,17 +19,19 @@ package root
 import (
 	"context"
 	"io"
+	"os"
+	"runtime"
+	"runtime/pprof"
+	"sync"
 	"time"
 
 	hd "github.com/MakeNowJust/heredoc"
-	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/enterprise-contract/ec-cli/internal/kubernetes"
 	"github.com/enterprise-contract/ec-cli/internal/logging"
 )
-
-var cancel context.CancelFunc
 
 var (
 	quiet         bool = false
@@ -38,6 +40,7 @@ var (
 	trace         bool = false
 	globalTimeout      = 5 * time.Minute
 	logfile       string
+	OnExit        func() = func() {}
 )
 
 func NewRootCmd() *cobra.Command {
@@ -57,18 +60,52 @@ func NewRootCmd() *cobra.Command {
 			logging.InitLogging(verbose, quiet, debug, trace, logfile)
 
 			// Create a new context now that flags have been parsed so a custom timeout can be used.
-			ctx := cmd.Context()
-			ctx, cancel = context.WithTimeout(ctx, globalTimeout)
+			ctx, cancel := context.WithTimeout(cmd.Context(), globalTimeout)
 			cmd.SetContext(ctx)
-		},
 
-		PersistentPostRun: func(cmd *cobra.Command, _ []string) {
-			if f, ok := logrus.StandardLogger().Out.(io.Closer); ok {
-				f.Close()
+			// if trace is enabled setup CPU profiling
+			var cpuprofile *os.File
+			if trace {
+				var err error
+				if cpuprofile, err = os.CreateTemp("", "cpuprofile.*"); err != nil {
+					log.Fatal("could not create CPU profile: ", err)
+				}
+				if err := pprof.StartCPUProfile(cpuprofile); err != nil {
+					log.Fatal("could not start CPU profile: ", err)
+				}
 			}
-			if cancel != nil {
-				cancel()
-			}
+
+			OnExit = sync.OnceFunc(func() {
+				if trace {
+					// dump memory profile
+					if memprofile, err := os.CreateTemp("", "memprofile.*"); err != nil {
+						log.Fatal("could not create memory profile: ", err)
+					} else {
+						defer memprofile.Close()
+						runtime.GC()
+						if err := pprof.WriteHeapProfile(memprofile); err != nil {
+							log.Fatal("could not start CPU profile: ", err)
+						}
+
+						log.Tracef("wrote memory profile to: %s", memprofile.Name())
+					}
+
+					// dump the CPU profile
+					pprof.StopCPUProfile()
+					if cpuprofile != nil {
+						_ = cpuprofile.Close() // ignore errors
+						log.Tracef("wrote CPU profile to: %s", cpuprofile.Name())
+					}
+				}
+
+				// perform resource cleanup
+				if f, ok := log.StandardLogger().Out.(io.Closer); ok {
+					f.Close()
+				}
+				if cancel != nil {
+					cancel()
+				}
+			})
 		},
 	}
 
