@@ -19,6 +19,7 @@ package oci
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"path"
 	"strconv"
@@ -46,6 +47,23 @@ type contextKey string
 const clientContextKey contextKey = "ec.oci.client"
 
 var imgCache = sync.OnceValue(initCache)
+
+type tracingRoundTripper struct{}
+
+func (t *tracingRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	log.Tracef("START: %s %s", req.Method, req.URL)
+	resp, err := remote.DefaultTransport.RoundTrip(req)
+
+	log.Tracef("DONE: %s %s (%d)", req.Method, req.URL, resp.ContentLength)
+
+	return resp, err
+}
+
+func init() {
+	if log.IsLevelEnabled(log.TraceLevel) {
+		imageRefTransport = remote.WithTransport(&tracingRoundTripper{})
+	}
+}
 
 func initCache() cache.Cache {
 	// if a value was set and it is parsed as false, turn the cache off
