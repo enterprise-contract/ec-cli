@@ -18,6 +18,7 @@ package root
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"os"
 	"runtime"
@@ -43,6 +44,14 @@ var (
 	OnExit        func() = func() {}
 )
 
+type customDeadlineExceededError struct{}
+
+func (customDeadlineExceededError) Error() string {
+	return fmt.Sprintf("exceeded allowed execution time of %s, the timeout can be adjusted using the --timeout command line argument", globalTimeout)
+}
+func (customDeadlineExceededError) Timeout() bool   { return true }
+func (customDeadlineExceededError) Temporary() bool { return true }
+
 func NewRootCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:   "ec",
@@ -58,6 +67,9 @@ func NewRootCmd() *cobra.Command {
 
 		PersistentPreRun: func(cmd *cobra.Command, _ []string) {
 			logging.InitLogging(verbose, quiet, debug, trace, logfile)
+
+			// set a custom message for context.DeadlineExceeded error
+			context.DeadlineExceeded = customDeadlineExceededError{}
 
 			// Create a new context now that flags have been parsed so a custom timeout can be used.
 			ctx, cancel := context.WithTimeout(cmd.Context(), globalTimeout)
