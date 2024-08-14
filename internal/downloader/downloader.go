@@ -26,6 +26,7 @@ import (
 	"sync"
 
 	"github.com/enterprise-contract/go-gather/gather"
+	"github.com/enterprise-contract/go-gather/metadata"
 	"github.com/open-policy-agent/conftest/downloader"
 	log "github.com/sirupsen/logrus"
 
@@ -53,9 +54,9 @@ func WithDownloadImpl(ctx context.Context, d downloadImpl) context.Context {
 //
 // Note that it handles just one url at a time even though the equivalent
 // Conftest function can take a list of source urls.
-func Download(ctx context.Context, destDir string, sourceUrl string, showMsg bool) (err error) {
+func Download(ctx context.Context, destDir string, sourceUrl string, showMsg bool) (metadata.Metadata, error) {
 	if !isSecure(sourceUrl) {
-		return fmt.Errorf("attempting to download from insecure source: %s", sourceUrl)
+		return nil, fmt.Errorf("attempting to download from insecure source: %s", sourceUrl)
 	}
 
 	msg := fmt.Sprintf("Downloading %s to %s", sourceUrl, destDir)
@@ -64,41 +65,41 @@ func Download(ctx context.Context, destDir string, sourceUrl string, showMsg boo
 		fmt.Println(msg)
 	}
 
-	dl := func(ctx context.Context, sourceUrl, destDir string) error {
+	dl := func(ctx context.Context, sourceUrl, destDir string) (metadata.Metadata, error) {
 		// conftest's Download function leverages oras under the hood to fetch from OCI. It uses the
 		// global oras client and sets the user agent to "conftest". This is not a thread safe
 		// operation. Here we get around this limitation by ensuring a single download happens at a
 		// time.
 		dlMutex.Lock()
 		defer dlMutex.Unlock()
-		return downloader.Download(ctx, destDir, []string{sourceUrl})
+		return nil, downloader.Download(ctx, destDir, []string{sourceUrl})
 	}
 
 	if utils.UseGoGather() {
-		dl = func(ctx context.Context, sourceUrl, destDir string) error {
-			_, err := gatherFunc(ctx, sourceUrl, destDir)
+		dl = func(ctx context.Context, sourceUrl, destDir string) (metadata.Metadata, error) {
+			m, err := gatherFunc(ctx, sourceUrl, destDir)
 			if err != nil {
 				log.Debug("Download failed!")
 			}
-			return err
+			return m, err
 		}
 	} else if d, ok := ctx.Value(downloadImplKey).(downloadImpl); ok {
-		dl = func(ctx context.Context, sourceUrl, destDir string) error {
-			err = d.Download(ctx, destDir, []string{sourceUrl})
+		dl = func(ctx context.Context, sourceUrl, destDir string) (metadata.Metadata, error) {
+			err := d.Download(ctx, destDir, []string{sourceUrl})
 			if err != nil {
 				log.Debug("Download failed!")
 			}
-			return err
+			return nil, err
 		}
 	}
 
-	err = dl(ctx, sourceUrl, destDir)
+	m, err := dl(ctx, sourceUrl, destDir)
 
 	if err != nil {
 		log.Debug("Download failed!")
 	}
 
-	return
+	return m, err
 }
 
 // matches insecure protocols, such as `git::http://...`

@@ -28,6 +28,7 @@ import (
 	"testing"
 
 	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
+	"github.com/enterprise-contract/go-gather/metadata"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -45,10 +46,10 @@ type mockDownloader struct {
 	mock.Mock
 }
 
-func (m *mockDownloader) Download(_ context.Context, dest string, sourceUrl string, showMsg bool) error {
+func (m *mockDownloader) Download(_ context.Context, dest string, sourceUrl string, showMsg bool) (metadata.Metadata, error) {
 	args := m.Called(dest, sourceUrl, showMsg)
 
-	return args.Error(0)
+	return nil, args.Error(0)
 }
 
 func TestGetPolicy(t *testing.T) {
@@ -209,13 +210,13 @@ func TestGetPolicyThroughCache(t *testing.T) {
 
 		invocations := 0
 		data := []byte("hello")
-		dl := func(source, dest string) error {
+		dl := func(source, dest string) (metadata.Metadata, error) {
 			invocations++
 			if err := fs.MkdirAll(dest, 0755); err != nil {
-				return err
+				return nil, err
 			}
 
-			return afero.WriteFile(fs, filepath.Join(dest, "data.json"), data, 0400)
+			return nil, afero.WriteFile(fs, filepath.Join(dest, "data.json"), data, 0400)
 		}
 
 		s1, err := getPolicyThroughCache(ctx, &mockPolicySource{}, "/workdir1", dl)
