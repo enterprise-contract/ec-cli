@@ -51,9 +51,8 @@ require (
 	sigs.k8s.io/yaml v1.4.0
 )
 
-// use forked version until we can get a fix merged
-// see https://github.com/google/go-containerregistry/pull/1966
-replace github.com/google/go-containerregistry => github.com/zregvart/go-containerregistry v0.0.0-20240726110327-85bb4872bb26
+// use forked version until we can get the fixes merged see https://github.com/enterprise-contract/go-containerregistry/blob/main/hack/ec-patches.sh for a list of patches we carry
+replace github.com/google/go-containerregistry => github.com/enterprise-contract/go-containerregistry v0.20.3-0.20240814111759-1368a664d919
 
 require (
 	cloud.google.com/go v0.112.1 // indirect
@@ -151,7 +150,7 @@ require (
 	github.com/digitorus/pkcs7 v0.0.0-20230818184609-3a137a874352 // indirect
 	github.com/digitorus/timestamp v0.0.0-20231217203849-220c5c2851b7 // indirect
 	github.com/dimchansky/utfbom v1.1.1 // indirect
-	github.com/docker/cli v27.0.3+incompatible // indirect
+	github.com/docker/cli v27.1.1+incompatible // indirect
 	github.com/docker/distribution v2.8.3+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.8.2 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
