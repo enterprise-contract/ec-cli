@@ -46,14 +46,21 @@ func ValidateInput(ctx context.Context, fpath string, policy policy.Policy, deta
 		return nil, err
 	}
 
-	results, _, err := p.Evaluator.Evaluate(ctx, evaluator.EvaluationTarget{Inputs: inputFiles})
-	if err != nil {
-		log.Debug("Problem running conftest policy check!")
-		return nil, err
+	var allResults []evaluator.Outcome
+	for _, e := range p.Evaluators {
+		results, _, err := e.Evaluate(ctx, evaluator.EvaluationTarget{Inputs: inputFiles})
+		if err != nil {
+			return nil, fmt.Errorf("evaluating policy: %w", err)
+		}
+		allResults = append(allResults, results...)
 	}
 
 	log.Debug("Conftest policy check complete")
-	return &output.Output{PolicyCheck: results, Detailed: detailed}, nil
+
+	out := output.Output{Detailed: detailed}
+	out.SetPolicyCheck(allResults)
+
+	return &out, nil
 }
 
 // detect if a file or directory was passed. if a directory, gather all files in it

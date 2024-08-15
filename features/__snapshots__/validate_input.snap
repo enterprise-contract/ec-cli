@@ -35,8 +35,58 @@
 
 [policy URL with no rego files:stderr - 1]
 Error: 1 error occurred:
-    * error validating file pipeline_definition.yaml: no rego files found in policy subdirectory
+    * error validating file pipeline_definition.yaml: evaluating policy: no rego files found in policy subdirectory
 
 
+
+---
+
+[policy with multiple sources:stdout - 1]
+{
+  "success": false,
+  "filepaths": [
+    {
+      "filepath": "input.yaml",
+      "violations": [
+        {
+          "msg": "ham is not delicious",
+          "metadata": {
+            "code": "ham.delicious"
+          }
+        },
+        {
+          "msg": "spam is not true",
+          "metadata": {
+            "code": "spam.valid"
+          }
+        }
+      ],
+      "warnings": [],
+      "successes": null,
+      "success": false,
+      "success-count": 0
+    }
+  ],
+  "policy": {
+    "sources": [
+      {
+        "policy": [
+          "git::https://${GITHOST}/git/ham-policy"
+        ]
+      },
+      {
+        "policy": [
+          "git::https://${GITHOST}/git/spam-policy"
+        ]
+      }
+    ]
+  },
+  "ec-version": "${EC_VERSION}",
+  "effective-time": "${TIMESTAMP}"
+}
+---
+
+[policy with multiple sources:stderr - 1]
+Error: success criteria not met
 
 ---

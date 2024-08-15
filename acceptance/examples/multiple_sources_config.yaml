@@ -1,0 +1,6 @@
+---
+sources:
+  - policy:
+      - "git::https://${GITHOST}/git/ham-policy"
+  - policy:
+      - "git::https://${GITHOST}/git/spam-policy"

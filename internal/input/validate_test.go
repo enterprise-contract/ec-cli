@@ -64,13 +64,13 @@ func (e badMockEvaluator) CapabilitiesPath() string {
 
 func mockNewPipelineDefinitionFile(ctx context.Context, fpath []string, policy policy.Policy) (*input.Input, error) {
 	return &input.Input{
-		Evaluator: mockEvaluator{},
+		Evaluators: []evaluator.Evaluator{mockEvaluator{}},
 	}, nil
 }
 
 func badMockNewPipelineDefinitionFile(ctx context.Context, fpath []string, policy policy.Policy) (*input.Input, error) {
 	return &input.Input{
-		Evaluator: badMockEvaluator{},
+		Evaluators: []evaluator.Evaluator{badMockEvaluator{}},
 	}, nil
 }
 
@@ -91,7 +91,7 @@ func Test_ValidatePipeline(t *testing.T) {
 			name:    "validation succeeds",
 			fpath:   validFile,
 			err:     nil,
-			output:  &output.Output{PolicyCheck: []evaluator.Outcome{}},
+			output:  &output.Output{},
 			defFunc: mockNewPipelineDefinitionFile,
 		},
 		{
@@ -111,7 +111,7 @@ func Test_ValidatePipeline(t *testing.T) {
 		{
 			name:    "valid file, but evaluator fails",
 			fpath:   validFile,
-			err:     errors.New("Evaluator error"),
+			err:     fmt.Errorf("evaluating policy: %w", errors.New("Evaluator error")),
 			output:  nil,
 			defFunc: badMockNewPipelineDefinitionFile,
 		},
@@ -119,14 +119,14 @@ func Test_ValidatePipeline(t *testing.T) {
 			name:    "validation succeeds with json input",
 			fpath:   "{\"json\": 1}",
 			err:     nil,
-			output:  &output.Output{PolicyCheck: []evaluator.Outcome{}},
+			output:  &output.Output{},
 			defFunc: mockNewPipelineDefinitionFile,
 		},
 		{
 			name:    "validation succeeds with yaml input",
 			fpath:   "kind: task",
 			err:     nil,
-			output:  &output.Output{PolicyCheck: []evaluator.Outcome{}},
+			output:  &output.Output{},
 			defFunc: mockNewPipelineDefinitionFile,
 		},
 		{
