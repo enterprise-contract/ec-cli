@@ -18,7 +18,8 @@ package cmd
 
 import (
 	"context"
-	"os"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/enterprise-contract/ec-cli/cmd/fetch"
 	"github.com/enterprise-contract/ec-cli/cmd/initialize"
@@ -42,8 +43,11 @@ var RootCmd = root.NewRootCmd()
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := RootCmd.ExecuteContext(context.Background()); err != nil {
-		os.Exit(1)
+		root.OnExit()
+		log.Fatalf("error executing command: %v", err)
 	}
+
+	root.OnExit()
 }
 
 func init() {
