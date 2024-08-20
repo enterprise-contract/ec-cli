@@ -6,7 +6,7 @@ require (
 	cuelang.org/go v0.9.2
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/Maldris/go-billy-afero v0.0.0-20200815120323-e9d3de59c99a
-	github.com/enterprise-contract/enterprise-contract-controller/api v0.1.51
+	github.com/enterprise-contract/enterprise-contract-controller/api v0.1.52
 	github.com/enterprise-contract/go-gather/gather v0.0.3
 	github.com/enterprise-contract/go-gather/metadata v0.0.2
 	github.com/enterprise-contract/go-gather/metadata/file v0.0.1
@@ -19,7 +19,7 @@ require (
 	github.com/google/go-cmp v0.6.0
 	github.com/google/go-containerregistry v0.19.2
 	github.com/hako/durafmt v0.0.0-20210608085754-5c1018a4e16b
-	github.com/hashicorp/go-getter v1.7.5
+	github.com/hashicorp/go-getter v1.7.6
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/in-toto/in-toto-golang v0.9.0
 	github.com/invopop/jsonschema v0.12.0
@@ -46,9 +46,9 @@ require (
 	github.com/tektoncd/pipeline v0.54.0
 	golang.org/x/exp v0.0.0-20240613232115-7f521ea00fb8
 	golang.org/x/net v0.28.0
-	k8s.io/apiextensions-apiserver v0.29.7
-	k8s.io/apimachinery v0.29.7
-	k8s.io/client-go v0.29.7
+	k8s.io/apiextensions-apiserver v0.29.8
+	k8s.io/apimachinery v0.29.8
+	k8s.io/client-go v0.29.8
 	k8s.io/klog/v2 v2.130.1
 	k8s.io/kube-openapi v0.0.0-20231010175941-2dd684a91f00
 	sigs.k8s.io/yaml v1.4.0
@@ -348,7 +348,7 @@ require (
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/api v0.29.7 // indirect
+	k8s.io/api v0.29.8 // indirect
 	k8s.io/utils v0.0.0-20240102154912-e7106e64919e // indirect
 	knative.dev/pkg v0.0.0-20231023150739-56bfe0dd9626 // indirect
 	muzzammil.xyz/jsonc v1.0.0 // indirect
