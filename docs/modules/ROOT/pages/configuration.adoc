@@ -557,3 +557,84 @@ JSON::
 }
 ----
 ====
+== Policy & Data Source URL formats
+
+The `policy` and `data` fields in the configuration represent the URI of the policy and data sources, respectively. The following formats are supported:
+
+=== Local File
+
+A local file path scheme, such as the following, may be utilized. 
+
+* `file://<path>`
+
+You may also use the `file::` prefix to specify a local file path.
+
+* `file::<path>`
+
+NOTE: In both formats the path can be absolute, if a leading `/` is included, or relative without a leading `/`, to the current working directory.
+
+_Examples_:
+
+  - `file:///home/user/example/policy`
+  - `file::../example/policy`
+
+=== Git Repository
+
+A Git Hub or GitLab repository URL may be utilized:
+
+* `github.com/<org>/<repo>.git?ref=<reference>//<path>`
+* `git@github.com:<org>/<repo>.git?ref=<reference>//<path>`
+
+NOTE: `gitlab` can be used in place of `github` for GitLab repositories.
+
+You may also use the `git::` prefix to specify a Git repository URL. The following formats are supported:
+
+* `git::git@example.com:<user>/<repo>.git?ref=<reference>//<path>`
+* `git::example.com/<org>/<repo>.git?ref=<reference>//<path>`
+
+NOTE: In all git URL forms, the `.git` extension is optional.
+
+NOTE: In all git URL forms, the `?ref=<reference>` is optional and defaults to the repository's default branch. 
+
+NOTE: In all git URL forms, the `//<path>` is optional and defaults to the  root of the repository.
+
+_Examples_:
+
+  - `github.com/enterprise-contract/ec-policies`
+  - `github.com/enterprise-contract/ec-policies.git?ref=tag//path/to/data`
+  - `git::git@example.com:enterprise-contract/ec-policies?ref=tag//example/data`
+
+=== HTTPS
+
+An HTTPS URL may be utilized:
+
+* https://example.com/file.ext
+
+You may also use the `http::` prefix to specify an HTTPS URL.
+
+* `http::example.com/file.ext`
+
+NOTE: All URLs must use secure transport.
+
+NOTE: The URL must be a direct link to the file.
+
+=== OCI
+
+An OCI registry URL may be utilized. The following registry hosts have automatic support:
+
+* azurecr.io
+* gcr.io
+* registry.gitlab.com
+* pkg.dev
+* [0-9]{12}.dkr.ecr.[a-z0-9-]*.amazonaws.com
+* quay.io
+
+You may also use the `oci::` prefix to specify an OCI registry URL:
+
+* `oci://<registry>/<repository>:<tag>`
+* `oci://<registry>/<repository>@<digest>` 
+* `oci::<registry>/<repository>:<tag>`
+* `oci::<registry>/<repository>:<tag>@<digest>` 
+
+NOTE: the <tag> is optional and defaults to `latest`.
+NOTE: the <digest> is optional and defaults to the latest digest.
