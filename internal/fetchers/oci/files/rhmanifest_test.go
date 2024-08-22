@@ -70,7 +70,7 @@ func TestRedHatManifest(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			matcher, err := redHatManifest{}.matcher(c.img)
+			matcher, err := RedHatManifest{}.Matcher(c.img)
 			if c.err != nil {
 				require.Equal(t, c.err, err)
 				require.Nil(t, matcher)

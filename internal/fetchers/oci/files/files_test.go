@@ -60,7 +60,8 @@ func TestImageManifests(t *testing.T) {
 
 	ctx := oci.WithClient(context.Background(), &client)
 
-	files, err := ImageFiles(ctx, ref)
+	extractors := []Extractor{OLMManifest{}, RedHatManifest{}}
+	files, err := ImageFiles(ctx, ref, extractors)
 
 	assert.NoError(t, err)
 
@@ -85,7 +86,8 @@ func TestDoesntFetchLayersForUnsupported(t *testing.T) {
 
 	ctx := oci.WithClient(context.Background(), &client)
 
-	files, err := ImageFiles(ctx, ref)
+	extractors := []Extractor{OLMManifest{}, RedHatManifest{}}
+	files, err := ImageFiles(ctx, ref, extractors)
 
 	assert.NoError(t, err)
 	assert.Nil(t, files)
@@ -93,10 +95,39 @@ func TestDoesntFetchLayersForUnsupported(t *testing.T) {
 	client.AssertNotCalled(t, "Layers")
 }
 
+func TestCustomExtractor(t *testing.T) {
+	ref := name.MustParseReference("registry.io/repository/image:tag")
+
+	image, err := crane.Image(map[string][]byte{
+		"autoexec.bat":              []byte(`@ECHO OFF`),
+		"manifests/a.json":          []byte(`{"a":1}`),
+		"manifests/b.yaml":          []byte(`b: 2`),
+		"manifests/c.xml":           []byte(`<?xml version="1.0" encoding="UTF-8"?>`),
+		"manifests/unreadable.yaml": []byte(`***`),
+		"manifests/unreadable.json": []byte(`***`),
+	})
+	require.NoError(t, err)
+
+	client := fake.FakeClient{}
+	client.On("Image", ref).Return(image, nil)
+
+	ctx := oci.WithClient(context.Background(), &client)
+
+	extractors := []Extractor{PathExtractor{Path: "manifests"}}
+	files, err := ImageFiles(ctx, ref, extractors)
+
+	assert.NoError(t, err)
+
+	assert.Equal(t, map[string]json.RawMessage{
+		"manifests/a.json": []byte(`{"a":1}`),
+		"manifests/b.yaml": []byte(`{"b":2}`),
+	}, files)
+}
+
 func TestShouldFilter(t *testing.T) {
 	cases := []struct {
 		name     string
-		matcher  pathMatcher
+		matcher  PathMatcher
 		header   *tar.Header
 		decision bool
 	}{
@@ -105,28 +136,28 @@ func TestShouldFilter(t *testing.T) {
 		{name: "zero header", header: &tar.Header{}},
 		{
 			name:    "unrelated file",
-			matcher: pathMatcher{"path"},
+			matcher: PathMatcher{"path"},
 			header: &tar.Header{
 				Name: "autoexec.bat",
 			},
 		},
 		{
 			name:    "not in considered path",
-			matcher: pathMatcher{"one/"},
+			matcher: PathMatcher{"one/"},
 			header: &tar.Header{
 				Name: "else/manifest.json",
 			},
 		},
 		{
 			name:    "unsupported extension",
-			matcher: pathMatcher{"manifests/"},
+			matcher: PathMatcher{"manifests/"},
 			header: &tar.Header{
 				Name: "manifests/autoexec.bat",
 			},
 		},
 		{
 			name:    "happy day",
-			matcher: pathMatcher{"manifests/"},
+			matcher: PathMatcher{"manifests/"},
 			header: &tar.Header{
 				Name: "manifests/something.json",
 			},
@@ -134,7 +165,7 @@ func TestShouldFilter(t *testing.T) {
 		},
 		{
 			name:    "happy day - no trailing slash",
-			matcher: pathMatcher{"manifests"},
+			matcher: PathMatcher{"manifests"},
 			header: &tar.Header{
 				Name: "manifests/something.json",
 			},
@@ -144,7 +175,7 @@ func TestShouldFilter(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			decision := c.matcher.match(c.header)
+			decision := c.matcher.Match(c.header)
 			assert.Equal(t, c.decision, decision)
 		})
 	}

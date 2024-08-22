@@ -74,7 +74,7 @@ func TestApplicableTo(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			matcher, err := olmManifest{}.matcher(c.img)
+			matcher, err := OLMManifest{}.Matcher(c.img)
 			if c.err == nil {
 				assert.NoError(t, err)
 			} else {

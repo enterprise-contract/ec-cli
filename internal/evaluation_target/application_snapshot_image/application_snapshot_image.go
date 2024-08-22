@@ -132,7 +132,11 @@ func (a *ApplicationSnapshotImage) FetchParentImageConfig(ctx context.Context) e
 
 func (a *ApplicationSnapshotImage) FetchImageFiles(ctx context.Context) error {
 	var err error
-	a.files, err = files.ImageFiles(ctx, a.reference)
+	extractors := []files.Extractor{
+		files.OLMManifest{},
+		files.RedHatManifest{},
+	}
+	a.files, err = files.ImageFiles(ctx, a.reference, extractors)
 	return err
 }
 

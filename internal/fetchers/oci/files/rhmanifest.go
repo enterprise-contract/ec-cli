@@ -26,9 +26,9 @@ const (
 	redHatManifestPath     = "root/buildinfo/content_manifests"
 )
 
-type redHatManifest struct{}
+type RedHatManifest struct{}
 
-func (redHatManifest) matcher(img v1.Image) (matcher, error) {
+func (RedHatManifest) Matcher(img v1.Image) (Matcher, error) {
 	if img == nil {
 		return nil, nil
 	}
@@ -39,8 +39,8 @@ func (redHatManifest) matcher(img v1.Image) (matcher, error) {
 	}
 
 	if vendor := config.Config.Labels[redHatVendorLabelName]; vendor == redHatVendorLabelValue {
-		matcher := pathMatcher{redHatManifestPath}
-		return matcher.match, nil
+		matcher := PathMatcher{redHatManifestPath}
+		return matcher.Match, nil
 	}
 
 	return nil, nil
