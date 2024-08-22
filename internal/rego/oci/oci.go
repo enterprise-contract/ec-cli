@@ -31,15 +31,18 @@ import (
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/open-policy-agent/opa/ast"
 	"github.com/open-policy-agent/opa/rego"
+	"github.com/open-policy-agent/opa/topdown/builtins"
 	"github.com/open-policy-agent/opa/types"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/enterprise-contract/ec-cli/internal/fetchers/oci/files"
 	"github.com/enterprise-contract/ec-cli/internal/utils/oci"
 )
 
 const (
 	ociBlobName          = "ec.oci.blob"
 	ociImageManifestName = "ec.oci.image_manifest"
+	ociImageFilesName    = "ec.oci.image_files"
 )
 
 func registerOCIBlob() {
@@ -143,6 +146,35 @@ func registerOCIImageManifest() {
 		Decl:             decl.Decl,
 		Nondeterministic: decl.Nondeterministic,
 	})
+}
+
+func registerOCIImageFiles() {
+	filesObject := types.NewObject(
+		nil,
+		types.NewDynamicProperty(
+			types.Named("path", types.S).Description("the full path of the file within the image"),
+			types.Named("content", types.A).Description("the file contents"),
+		),
+	)
+
+	decl := rego.Function{
+		Name:        ociImageFilesName,
+		Description: "Fetch structured files (YAML or JSON) from within an image.",
+		Decl: types.NewFunction(
+			types.Args(
+				types.Named("ref", types.S).Description("OCI image reference"),
+				types.Named("paths", types.NewArray([]types.Type{types.S}, nil)).Description("the list of paths"),
+			),
+			types.Named("files", filesObject).Description("object representing the extracted files"),
+		),
+		// As per the documentation, enable memoization to ensure function evaluation is
+		// deterministic. But also mark it as non-deterministic because it does rely on external
+		// entities, i.e. OCI registry. https://www.openpolicyagent.org/docs/latest/extensions/
+		Memoize:          true,
+		Nondeterministic: true,
+	}
+
+	rego.RegisterBuiltin2(&decl, ociImageFiles)
 }
 
 const maxBytes = 10 * 1024 * 1024 // 10 MB
@@ -249,6 +281,55 @@ func ociImageManifest(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) 
 	return ast.ObjectTerm(manifestTerms...), nil
 }
 
+func ociImageFiles(bctx rego.BuiltinContext, refTerm *ast.Term, pathsTerm *ast.Term) (*ast.Term, error) {
+	log := log.WithField("rego", ociImageFilesName)
+	uri, ok := refTerm.Value.(ast.String)
+	if !ok {
+		return nil, nil
+	}
+
+	ref, err := name.NewDigest(string(uri))
+	if err != nil {
+		log.Errorf("new digest: %s", err)
+		return nil, nil
+	}
+
+	pathsArray, err := builtins.ArrayOperand(pathsTerm.Value, 1)
+	if err != nil {
+		log.Errorf("paths to array operand: %s", err)
+		return nil, nil
+	}
+
+	var extractors []files.Extractor
+
+	err = pathsArray.Iter(func(pathTerm *ast.Term) error {
+		pathString, ok := pathTerm.Value.(ast.String)
+		if !ok {
+			return fmt.Errorf("path is not a string: %#v", pathTerm)
+		}
+		extractors = append(extractors, files.PathExtractor{Path: string(pathString)})
+		return nil
+	})
+	if err != nil {
+		log.Errorf("paths iteration: %s", err)
+		return nil, nil
+	}
+
+	files, err := files.ImageFiles(bctx.Context, ref, extractors)
+	if err != nil {
+		log.Errorf("extracting image files: %s", err)
+		return nil, nil
+	}
+
+	filesValue, err := ast.InterfaceToValue(files)
+	if err != nil {
+		log.Errorf("converting files object to value: %s", err)
+		return nil, nil
+	}
+
+	return ast.NewTerm(filesValue), nil
+}
+
 func newPlatformTerm(p v1.Platform) *ast.Term {
 	osFeatures := []*ast.Term{}
 	for _, f := range p.OSFeatures {
@@ -303,5 +384,6 @@ func newAnnotationsTerm(annotations map[string]string) *ast.Term {
 
 func init() {
 	registerOCIBlob()
+	registerOCIImageFiles()
 	registerOCIImageManifest()
 }

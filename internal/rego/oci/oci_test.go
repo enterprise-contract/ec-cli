@@ -24,6 +24,7 @@ import (
 	"testing"
 
 	"github.com/gkampitakis/go-snaps/snaps"
+	"github.com/google/go-containerregistry/pkg/crane"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	v1fake "github.com/google/go-containerregistry/pkg/v1/fake"
 	"github.com/google/go-containerregistry/pkg/v1/static"
@@ -280,10 +281,86 @@ func TestOCIImageManifest(t *testing.T) {
 		})
 	}
 }
+func TestOCIImageFiles(t *testing.T) {
+
+	image, err := crane.Image(map[string][]byte{
+		"autoexec.bat":              []byte(`@ECHO OFF`),
+		"manifests/a.json":          []byte(`{"a":1}`),
+		"manifests/b.yaml":          []byte(`b: 2`),
+		"manifests/c.xml":           []byte(`<?xml version="1.0" encoding="UTF-8"?>`),
+		"manifests/unreadable.yaml": []byte(`***`),
+		"manifests/unreadable.json": []byte(`***`),
+	})
+	require.NoError(t, err)
+
+	cases := []struct {
+		name      string
+		paths     *ast.Term
+		expected  string
+		uri       *ast.Term
+		err       bool
+		remoteErr error
+	}{
+		{
+			name:     "success",
+			paths:    ast.ArrayTerm(ast.StringTerm("manifests")),
+			expected: `{"manifests/a.json": {"a": 1}, "manifests/b.yaml": {"b": 2}}`,
+			uri:      ast.StringTerm("registry.local/spam@sha256:4bbf56a3a9231f752d3b9c174637975f0f83ed2b15e65799837c571e4ef3374b"),
+		},
+		{
+			name: "non string URI",
+			uri:  ast.BooleanTerm(true),
+		},
+		{
+			name: "unpinned",
+			uri:  ast.StringTerm("registry.local/spam:latest"),
+		},
+		{
+			name:  "paths not an Array",
+			paths: ast.BooleanTerm(true),
+			uri:   ast.StringTerm("registry.local/spam@sha256:4bbf56a3a9231f752d3b9c174637975f0f83ed2b15e65799837c571e4ef3374b"),
+		},
+		{
+			name:  "path not a String",
+			paths: ast.ArrayTerm(ast.BooleanTerm(true)),
+			uri:   ast.StringTerm("registry.local/spam@sha256:4bbf56a3a9231f752d3b9c174637975f0f83ed2b15e65799837c571e4ef3374b"),
+		},
+		{
+			name:      "remote error",
+			paths:     ast.ArrayTerm(ast.StringTerm("manifests")),
+			uri:       ast.StringTerm("registry.local/spam@sha256:4bbf56a3a9231f752d3b9c174637975f0f83ed2b15e65799837c571e4ef3374b"),
+			remoteErr: errors.New("kaboom!"),
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			client := fake.FakeClient{}
+			if c.remoteErr != nil {
+				client.On("Image", mock.Anything).Return(nil, c.remoteErr)
+			} else {
+				client.On("Image", mock.Anything).Return(image, nil)
+			}
+
+			ctx := oci.WithClient(context.Background(), &client)
+			bctx := rego.BuiltinContext{Context: ctx}
+
+			files, err := ociImageFiles(bctx, c.uri, c.paths)
+			require.NoError(t, err)
+			if c.err || c.expected == "" {
+				require.Nil(t, files)
+			} else {
+				require.NotNil(t, files)
+				require.JSONEq(t, c.expected, files.String())
+			}
+		})
+	}
+}
 
 func TestFunctionsRegistered(t *testing.T) {
 	names := []string{
 		ociBlobName,
+		ociImageFilesName,
 		ociImageManifestName,
 	}
 	for _, name := range names {

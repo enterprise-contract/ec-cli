@@ -57,6 +57,16 @@
 `{{ .Decl.NamedResult.Name }}` (`{{ if $isObject }}object{{ else }}{{ .Decl.NamedResult.Type }}{{ end }}`): {{.Decl.NamedResult.Descr}}
 {{- if $isObject }}
 
+{{ if gt (len .Decl.NamedResult.Type.StaticProperties) 0 -}}
 The object contains the following attributes:
 {{ template "properties" (params (.Decl.NamedResult.Type.StaticProperties) 1) -}}
+{{ end }}
+
+{{- if .Decl.NamedResult.Type.DynamicProperties -}}
+{{- with .Decl.NamedResult.Type.DynamicProperties -}}
+The object contains dynamic attributes.
+The attributes are of `{{ .Key.Type }}` type and represent {{ .Key.Descr }}.
+The values are of `{{ .Value.Type }}` type and hold {{ .Value.Descr }}.
+{{- end }}
+{{ end }}
 {{- end }}
