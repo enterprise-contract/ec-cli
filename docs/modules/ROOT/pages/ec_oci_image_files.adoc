@@ -1,0 +1,21 @@
+= ec.oci.image_files
+
+Fetch structured files (YAML or JSON) from within an image.
+
+== Usage
+
+  files = ec.oci.image_files(ref: string, paths: array<string>)
+
+== Parameters
+
+* `ref` (`string`): OCI image reference
+* `paths` (`array<string>`): the list of paths
+
+== Return
+
+`files` (`object`): object representing the extracted files
+
+The object contains dynamic attributes.
+The attributes are of `string` type and represent the full path of the file within the image.
+The values are of `any` type and hold the file contents.
+

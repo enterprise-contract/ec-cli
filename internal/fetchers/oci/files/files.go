@@ -33,28 +33,23 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/utils/oci"
 )
 
-type extractor interface {
-	matcher(v1.Image) (matcher, error)
+type Extractor interface {
+	Matcher(v1.Image) (Matcher, error)
 }
 
-type matcher func(*tar.Header) bool
-
-var supported = []extractor{
-	olmManifest{},
-	redHatManifest{},
-}
+type Matcher func(*tar.Header) bool
 
 var supportedExtensions = []string{".yaml", ".yml", ".json"}
 
-func ImageFiles(ctx context.Context, ref name.Reference) (map[string]json.RawMessage, error) {
+func ImageFiles(ctx context.Context, ref name.Reference, extractors []Extractor) (map[string]json.RawMessage, error) {
 	img, err := oci.NewClient(ctx).Image(ref)
 	if err != nil {
 		return nil, err
 	}
 
-	matchers := make([]matcher, 0, len(supported))
-	for _, f := range supported {
-		if m, err := f.matcher(img); err != nil {
+	matchers := make([]Matcher, 0, len(extractors))
+	for _, f := range extractors {
+		if m, err := f.Matcher(img); err != nil {
 			return nil, err
 		} else if m != nil {
 			matchers = append(matchers, m)
@@ -109,11 +104,11 @@ func ImageFiles(ctx context.Context, ref name.Reference) (map[string]json.RawMes
 	return files, nil
 }
 
-type pathMatcher struct {
-	path string
+type PathMatcher struct {
+	Path string
 }
 
-func (f *pathMatcher) match(header *tar.Header) bool {
+func (f *PathMatcher) Match(header *tar.Header) bool {
 	if header == nil {
 		return false
 	}
@@ -121,7 +116,7 @@ func (f *pathMatcher) match(header *tar.Header) bool {
 	name := header.Name
 
 	// we're only interested in files in `<path>/*`
-	if !strings.EqualFold(path.Dir(name), path.Clean(f.path)) {
+	if !strings.EqualFold(path.Dir(name), path.Clean(f.Path)) {
 		return false
 	}
 
@@ -134,4 +129,15 @@ func (f *pathMatcher) match(header *tar.Header) bool {
 	}
 
 	return false
+}
+
+type PathExtractor struct {
+	Path string
+}
+
+func (p PathExtractor) Matcher(img v1.Image) (Matcher, error) {
+	if img == nil {
+		return nil, nil
+	}
+	return (&PathMatcher{Path: p.Path}).Match, nil
 }

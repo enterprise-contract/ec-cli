@@ -22,9 +22,9 @@ import (
 
 const olm_manifest_v1 = "operators.operatorframework.io.bundle.manifests.v1"
 
-type olmManifest struct{}
+type OLMManifest struct{}
 
-func (olmManifest) matcher(img v1.Image) (matcher, error) {
+func (OLMManifest) Matcher(img v1.Image) (Matcher, error) {
 	if img == nil {
 		return nil, nil
 	}
@@ -35,8 +35,8 @@ func (olmManifest) matcher(img v1.Image) (matcher, error) {
 	}
 
 	if path, ok := config.Config.Labels[olm_manifest_v1]; ok {
-		matcher := pathMatcher{path}
-		return matcher.match, nil
+		matcher := PathMatcher{path}
+		return matcher.Match, nil
 	}
 
 	return nil, nil
