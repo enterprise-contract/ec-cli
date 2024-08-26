@@ -17,14 +17,14 @@ Feature: Verify Enterprise Contract Tekton Tasks
             "policy": [
               "github.com/enterprise-contract/ec-policies//policy/release",
               "github.com/enterprise-contract/ec-policies//policy/lib"
-            ]
+            ],
+            "config": {
+              "include": [
+                "slsa_provenance_available"
+              ]
+            }
           }
-        ],
-        "configuration": {
-          "include": [
-            "slsa_provenance_available"
-          ]
-        }
+        ]
       }
       ```
     When version 0.1 of the task named "verify-enterprise-contract" is run with parameters:
@@ -47,14 +47,14 @@ Feature: Verify Enterprise Contract Tekton Tasks
             "policy": [
               "github.com/enterprise-contract/ec-policies//policy/release",
               "github.com/enterprise-contract/ec-policies//policy/lib"
-            ]
+            ],
+            "config": {
+              "include": [
+                "slsa_provenance_available"
+              ]
+            }
           }
-        ],
-        "configuration": {
-          "include": [
-            "slsa_provenance_available"
-          ]
-        }
+        ]
       }
       ```
     When version 0.1 of the task named "verify-enterprise-contract" is run with parameters:
@@ -78,14 +78,14 @@ Feature: Verify Enterprise Contract Tekton Tasks
             "policy": [
               "github.com/enterprise-contract/ec-policies//policy/release",
               "github.com/enterprise-contract/ec-policies//policy/lib"
-            ]
+            ],
+            "config": {
+              "include": [
+                "slsa_provenance_available"
+              ]
+            }
           }
-        ],
-        "configuration": {
-          "include": [
-            "slsa_provenance_available"
-          ]
-        }
+        ]
       }
       ```
     When version 0.1 of the task named "verify-enterprise-contract" is run with parameters:
@@ -110,14 +110,14 @@ Feature: Verify Enterprise Contract Tekton Tasks
             "policy": [
               "github.com/enterprise-contract/ec-policies//policy/release",
               "github.com/enterprise-contract/ec-policies//policy/lib"
-            ]
+            ],
+            "config": {
+              "include": [
+                "slsa_provenance_available"
+              ]
+            }
           }
-        ],
-        "configuration": {
-          "include": [
-            "slsa_provenance_available"
-          ]
-        }
+        ]
       }
       ```
     When version 0.1 of the task named "verify-enterprise-contract" is run with parameters:
@@ -147,14 +147,14 @@ Feature: Verify Enterprise Contract Tekton Tasks
             "policy": [
               "github.com/enterprise-contract/ec-policies//policy/release",
               "github.com/enterprise-contract/ec-policies//policy/lib"
-            ]
+            ],
+            "config": {
+              "include": [
+                "test.no_test_warnings"
+              ]
+            }
           }
-        ],
-        "configuration": {
-          "include": [
-            "test.no_test_warnings"
-          ]
-        }
+        ]
       }
       ```
     When version 0.1 of the task named "verify-enterprise-contract" is run with parameters:
@@ -182,14 +182,14 @@ Feature: Verify Enterprise Contract Tekton Tasks
             "policy": [
               "github.com/enterprise-contract/ec-policies//policy/release",
               "github.com/enterprise-contract/ec-policies//policy/lib"
-            ]
+            ],
+            "config": {
+              "include": [
+                "test.no_test_warnings"
+              ]
+            }
           }
-        ],
-        "configuration": {
-          "include": [
-            "test.no_test_warnings"
-          ]
-        }
+        ]
       }
       ```
     When version 0.1 of the task named "verify-enterprise-contract" is run with parameters:

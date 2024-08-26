@@ -144,7 +144,7 @@ mark (?) sign, for example: --output text=output.txt?show-successes=false
   * Kubernetes reference ([<namespace>/]<name>)
   * file (policy.yaml)
   * git reference (github.com/user/repo//default?ref=main), or
-  * inline JSON ('{sources: {...}, configuration: {...}}')")
+  * inline JSON ('{sources: {...}, identity: {...}}')")
 -k, --public-key:: path to the public key. Overrides publicKey from EnterpriseContractPolicy
 -r, --rekor-url:: Rekor URL. Overrides rekorURL from EnterpriseContractPolicy
 --snapshot:: Provide the AppStudio Snapshot as a source of the images to validate, as inline

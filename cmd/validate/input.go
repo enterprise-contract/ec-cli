@@ -198,7 +198,7 @@ func validateInputCmd(validate InputValidationFunc) *cobra.Command {
 		Policy configuration as:
 		* file (policy.yaml)
 		* git reference (github.com/user/repo//default?ref=main), or
-		* inline JSON ('{sources: {...}, configuration: {...}}')")`))
+		* inline JSON ('{sources: {...}}')")`))
 
 	validOutputFormats := applicationsnapshot.OutputFormats
 	cmd.Flags().StringSliceVarP(&data.output, "output", "o", data.output, hd.Doc(`
