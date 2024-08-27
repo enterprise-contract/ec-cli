@@ -56,6 +56,8 @@ type data struct {
 var rootArgs = []string{
 	"validate",
 	"image",
+	"--output",
+	"json",
 }
 
 func happyValidator() imageValidationFunc {
@@ -472,16 +474,6 @@ func Test_ValidateImageCommandKeyless(t *testing.T) {
 }
 
 func Test_ValidateImageCommandYAMLPolicyFile(t *testing.T) {
-	validateImageCmd := validateImageCmd(happyValidator())
-	cmd := setUpCobra(validateImageCmd)
-
-	client := fake.FakeClient{}
-	commonMockClient(&client)
-	fs := afero.NewMemMapFs()
-	ctx := utils.WithFS(context.Background(), fs)
-	ctx = oci.WithClient(ctx, &client)
-	cmd.SetContext(ctx)
-
 	cases := []struct {
 		name   string
 		config string
@@ -527,6 +519,16 @@ spec:
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
+			validateImageCmd := validateImageCmd(happyValidator())
+			cmd := setUpCobra(validateImageCmd)
+
+			client := fake.FakeClient{}
+			commonMockClient(&client)
+			fs := afero.NewMemMapFs()
+			ctx := utils.WithFS(context.Background(), fs)
+			ctx = oci.WithClient(ctx, &client)
+			cmd.SetContext(ctx)
+
 			err := afero.WriteFile(fs, "/policy.yaml", []byte(c.config), 0644)
 			if err != nil {
 				panic(err)
