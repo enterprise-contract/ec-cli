@@ -563,7 +563,7 @@ The `policy` and `data` fields in the configuration represent the URI of the pol
 
 === Local File
 
-A local file path scheme, such as the following, may be utilized. 
+A local file path scheme, such as the following, may be utilized.
 
 * `file://<path>`
 
@@ -594,7 +594,7 @@ You may also use the `git::` prefix to specify a Git repository URL. The followi
 
 NOTE: In all git URL forms, the `.git` extension is optional.
 
-NOTE: In all git URL forms, the `?ref=<reference>` is optional and defaults to the repository's default branch. 
+NOTE: In all git URL forms, the `?ref=<reference>` is optional and defaults to the repository's default branch.
 
 NOTE: In all git URL forms, the `//<path>` is optional and defaults to the  root of the repository.
 
@@ -626,15 +626,15 @@ An OCI registry URL may be utilized. The following registry hosts have automatic
 * gcr.io
 * registry.gitlab.com
 * pkg.dev
-* [0-9]{12}.dkr.ecr.[a-z0-9-]*.amazonaws.com
+* [0-9]\{12\}.dkr.ecr.[a-z0-9-]*.amazonaws.com
 * quay.io
 
 You may also use the `oci::` prefix to specify an OCI registry URL:
 
 * `oci://<registry>/<repository>:<tag>`
-* `oci://<registry>/<repository>@<digest>` 
+* `oci://<registry>/<repository>@<digest>`
 * `oci::<registry>/<repository>:<tag>`
-* `oci::<registry>/<repository>:<tag>@<digest>` 
+* `oci::<registry>/<repository>:<tag>@<digest>`
 
 NOTE: the <tag> is optional and defaults to `latest`.
 NOTE: the <digest> is optional and defaults to the latest digest.
