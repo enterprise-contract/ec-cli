@@ -23,4 +23,8 @@ RUN microdnf -y install git-core jq && microdnf clean all
 
 COPY "dist/ec_"$TARGETOS"_"$TARGETARCH /usr/bin/ec
 
+# Add a cosign wrapper command to handle "cosign initialize" for backwards
+# compatibility with older task definitions
+COPY hack/fake-cosign.sh /usr/local/bin/cosign
+
 ENTRYPOINT ["/usr/bin/ec"]

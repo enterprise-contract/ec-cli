@@ -138,7 +138,7 @@ spec:
         fi
 
         echo 'Initializing TUF root...'
-        ec sigstore initialize --mirror "${TUF_MIRROR}" --root "${TUF_MIRROR}/root.json"
+        cosign initialize --mirror "${TUF_MIRROR}" --root "${TUF_MIRROR}/root.json"
         echo 'Done!'
       env:
         - name: TUF_MIRROR
