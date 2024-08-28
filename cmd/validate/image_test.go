@@ -83,7 +83,8 @@ func happyValidator() imageValidationFunc {
 						{
 							Message: "Pass",
 							Metadata: map[string]interface{}{
-								"code": "policy.nice",
+								"code":  "policy.nice",
+								"title": "Very nice",
 							},
 						},
 					},
@@ -1220,4 +1221,68 @@ func TestValidateImageCommand_RunE(t *testing.T) {
 			"publicKey": %s
 		}
 	  }`, effectiveTimeTest, utils.TestPublicKeyJSON, utils.TestPublicKeyJSON), out.String())
+}
+
+func TestValidateImageDefaultOutput(t *testing.T) {
+	commonArgs := []string{
+		"validate",
+		"image",
+		"--image",
+		"registry/image:tag",
+		"--policy",
+		fmt.Sprintf(`{"publicKey": %s}`, utils.TestPublicKeyJSON),
+	}
+
+	commonOutput := hd.Doc(`
+		Success: true
+		Result: SUCCESS
+		Violations: 0, Warnings: 0, Successes: 1
+		Component: Unnamed
+		ImageRef: registry/image:tag
+
+		Results:
+	`)
+
+	cases := []struct {
+		args     []string
+		expected string
+	}{
+		{
+			args:     commonArgs,
+			expected: commonOutput,
+		},
+		{
+			args: append(commonArgs, "--show-successes"),
+			expected: fmt.Sprintf("%s%s", commonOutput, hd.Doc(`
+				✓ [Success] policy.nice
+				  ImageRef: registry/image:tag
+				  Title: Very nice
+
+			`)),
+		},
+	}
+
+	for _, c := range cases {
+		validateImageCmd := validateImageCmd(happyValidator())
+		cmd := setUpCobra(validateImageCmd)
+
+		ctx := utils.WithFS(context.Background(), afero.NewMemMapFs())
+		client := fake.FakeClient{}
+		commonMockClient(&client)
+		ctx = oci.WithClient(ctx, &client)
+		cmd.SetContext(ctx)
+
+		// Notice there is no --output flag here
+		cmd.SetArgs(c.args)
+
+		var out bytes.Buffer
+		cmd.SetOut(&out)
+
+		utils.SetTestRekorPublicKey(t)
+
+		err := cmd.Execute()
+		assert.NoError(t, err)
+
+		assert.Equal(t, c.expected, out.String())
+	}
 }
