@@ -1240,7 +1240,6 @@ func TestValidateImageDefaultOutput(t *testing.T) {
 		Component: Unnamed
 		ImageRef: registry/image:tag
 
-		Results:
 	`)
 
 	cases := []struct {
@@ -1254,6 +1253,7 @@ func TestValidateImageDefaultOutput(t *testing.T) {
 		{
 			args: append(commonArgs, "--show-successes"),
 			expected: fmt.Sprintf("%s%s", commonOutput, hd.Doc(`
+				Results:
 				✓ [Success] policy.nice
 				  ImageRef: registry/image:tag
 				  Title: Very nice
