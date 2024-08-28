@@ -42,4 +42,8 @@ RUN microdnf upgrade --assumeyes --nodocs --setopt=keepcache=0 --refresh && micr
 # Copy the one ec binary that can run in this container
 COPY --from=build "/build/dist/ec_${TARGETOS}_${TARGETARCH}" /usr/local/bin/ec
 
+# Add a cosign wrapper command to handle "cosign initialize" for backwards
+# compatibility with older task definitions
+COPY --from=build /build/hack/fake-cosign.sh /usr/local/bin/cosign
+
 ENTRYPOINT ["/usr/local/bin/ec"]
