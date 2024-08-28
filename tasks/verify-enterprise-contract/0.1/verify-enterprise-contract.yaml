@@ -135,6 +135,16 @@ spec:
       description: Number of parallel workers to use for policy evaluation.
       default: "1"
 
+    - name: SINGLE_COMPONENT
+      description: Reduce the Snapshot to only the component whose build caused the Snapshot to be created
+      type: string
+      default: "false"
+
+    - name: PIPELINERUN_ID
+      description: Name of current PipelineRun.
+      type: string
+      default: "unknown"
+
   workspaces:
     - name: data
       description: The workspace where the snapshot spec json file resides
@@ -168,6 +178,67 @@ spec:
         - name: TUF_MIRROR
           value: "$(params.TUF_MIRROR)"
 
+    - name: reduce
+      image: quay.io/konflux-ci/appstudio-utils:ab6b0b8e40e440158e7288c73aff1cf83a2cc8a9@sha256:24179f0efd06c65d16868c2d7eb82573cce8e43533de6cea14fec3b7446e0b14
+      env:
+        - name: SNAPSHOT
+          value: $(params.IMAGES)
+        - name: SINGLE_COMPONENT
+          value: $(params.SINGLE_COMPONENT)
+        - name: PIPELINERUN_ID
+          value: $(params.PIPELINERUN_ID)
+      script: |
+        #!/usr/bin/env bash
+        set -eu
+
+        SNAPSHOT_PATH="$(params.HOMEDIR)/snapshot.json"
+
+        echo "Single Component mode? ${SINGLE_COMPONENT}"
+        if [ "${SINGLE_COMPONENT}" == "true" ]; then
+          SNAPSHOT_CREATION_TYPE=$(oc get "pr/$PIPELINERUN_ID" -ojson | jq -rec '.metadata.labels."test.appstudio.openshift.io/type" // ""')
+          SNAPSHOT_CREATION_COMPONENT=$(oc get "pr/$PIPELINERUN_ID" -ojson | jq -rec '.metadata.labels."appstudio.openshift.io/component" // ""')
+
+          echo "SNAPSHOT_CREATION_TYPE: ${SNAPSHOT_CREATION_TYPE}"
+          echo "SNAPSHOT_CREATION_COMPONENT: ${SNAPSHOT_CREATION_COMPONENT}"
+          if [ "${SNAPSHOT_CREATION_TYPE}" == "component" ] && [ "${SNAPSHOT_CREATION_COMPONENT}" != "" ]; then
+            echo "Single Component mode is ${SINGLE_COMPONENT} and Snapshot type is component"
+            # verify if in json form
+            set +e
+            echo "${SNAPSHOT}" | jq -e > /dev/null 2>&1
+            CHECK_JSON=$?
+            set -e
+            if [ "${CHECK_JSON}" != "0" ]; then
+              # try to load as file first
+              set +e
+              cat "${SNAPSHOT}" | jq -e > /dev/null 2>&1
+              CHECK_JSON_FILE=$?
+              set -e
+              if [ "${CHECK_JSON_FILE}" != "0" ]; then
+                echo "Cannot load snapshot from json string or file"
+                exit 1
+              fi
+              SNAPSHOT=$(cat "${SNAPSHOT}")
+            fi
+            REDUCED_SNAPSHOT=$(echo "${SNAPSHOT}" | jq --arg component "${SNAPSHOT_CREATION_COMPONENT}" \
+            'del(.components[] | select(.name != $component))')
+
+            ## make sure we still have 1 component
+            COMPONENT_COUNT=$(echo "$REDUCED_SNAPSHOT" | jq -r '[ .components[] ] | length')
+            echo "COMPONENT_COUNT: ${COMPONENT_COUNT}"
+            if [ "${COMPONENT_COUNT}" != "1" ] ; then
+              echo "Error: Reduced Snapshot has ${COMPONENT_COUNT} components. It should contain 1"
+              echo "       Verify that the Snapshot contains the built component: ${SNAPSHOT_CREATION_COMPONENT}"
+              exit 1
+            fi
+
+            echo "Reducing Snapshot to:"
+            echo "$REDUCED_SNAPSHOT" | jq .
+            SNAPSHOT=$(echo "$REDUCED_SNAPSHOT" | tr -d ' ' | tr -d '\n')
+          fi
+        fi
+
+        echo "$SNAPSHOT" > "${SNAPSHOT_PATH}"
+
     - name: validate
       image: quay.io/enterprise-contract/ec-cli:snapshot
       onError: continue # progress even if the step fails so we can see the debug logs
@@ -177,7 +248,7 @@ spec:
         - image
         - "--verbose"
         - "--images"
-        - "$(params.IMAGES)"
+        - "$(params.HOMEDIR)/snapshot.json"
         - "--policy"
         - "$(params.POLICY_CONFIGURATION)"
         - "--public-key"
