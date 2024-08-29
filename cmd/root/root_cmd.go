@@ -74,6 +74,7 @@ func NewRootCmd() *cobra.Command {
 			// Create a new context now that flags have been parsed so a custom timeout can be used.
 			ctx, cancel := context.WithTimeout(cmd.Context(), globalTimeout)
 			cmd.SetContext(ctx)
+			log.Debugf("globalTimeout is %d", globalTimeout)
 
 			// if trace is enabled setup CPU profiling
 			var cpuprofile *os.File
