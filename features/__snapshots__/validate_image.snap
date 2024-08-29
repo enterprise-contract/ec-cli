@@ -783,19 +783,19 @@ Error: success criteria not met
       {
         "policy": [
           "git::https://${GITHOST}/git/happy-day-policy.git"
-        ]
+        ],
+        "config": {
+          "exclude": [
+            "filtering.always_fail",
+            "filtering.always_fail_with_collection"
+          ],
+          "include": [
+            "@stamps",
+            "filtering.always_pass"
+          ]
+        }
       }
     ],
-    "configuration": {
-      "exclude": [
-        "filtering.always_fail",
-        "filtering.always_fail_with_collection"
-      ],
-      "include": [
-        "@stamps",
-        "filtering.always_pass"
-      ]
-    },
     "rekorUrl": "${REKOR}",
     "publicKey": "${known_PUBLIC_KEY}"
   },
@@ -877,6 +877,12 @@ Error: success criteria not met
         "policy": [
           "git::https://${GITHOST}/git/happy-day-policy.git"
         ],
+        "config": {
+          "include": [
+            "@stamps",
+            "filtering.always_pass"
+          ]
+        },
         "volatileConfig": {
           "exclude": [
             {
@@ -891,12 +897,6 @@ Error: success criteria not met
         }
       }
     ],
-    "configuration": {
-      "include": [
-        "@stamps",
-        "filtering.always_pass"
-      ]
-    },
     "rekorUrl": "${REKOR}",
     "publicKey": "${known_PUBLIC_KEY}"
   },
@@ -1246,19 +1246,19 @@ Error: success criteria not met
       {
         "policy": [
           "git::https://${GITHOST}/git/happy-day-policy.git"
-        ]
+        ],
+        "config": {
+          "exclude": [
+            "filtering.always_pass_with_collection",
+            "filtering.always_fail_with_collection"
+          ],
+          "include": [
+            "@stamps",
+            "filtering.always_pass"
+          ]
+        }
       }
     ],
-    "configuration": {
-      "exclude": [
-        "filtering.always_pass_with_collection",
-        "filtering.always_fail_with_collection"
-      ],
-      "include": [
-        "@stamps",
-        "filtering.always_pass"
-      ]
-    },
     "rekorUrl": "${REKOR}",
     "publicKey": "${known_PUBLIC_KEY}"
   },

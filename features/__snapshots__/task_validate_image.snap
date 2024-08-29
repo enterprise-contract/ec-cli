@@ -103,13 +103,13 @@ effective-time: "${TIMESTAMP}"
 key: |
 ${__known_PUBLIC_KEY}
 policy:
-  configuration:
-    include:
-    - test.no_test_warnings
   publicKey: |
 ${____known_PUBLIC_KEY}
   sources:
-  - policy:
+  - config:
+      include:
+      - test.no_test_warnings
+    policy:
     - github.com/enterprise-contract/ec-policies//policy/release
     - github.com/enterprise-contract/ec-policies//policy/lib
 success: true
@@ -170,13 +170,13 @@ effective-time: "${TIMESTAMP}"
 key: |
 ${__known_PUBLIC_KEY}
 policy:
-  configuration:
-    include:
-    - test.no_test_warnings
   publicKey: |
 ${____known_PUBLIC_KEY}
   sources:
-  - policy:
+  - config:
+      include:
+      - test.no_test_warnings
+    policy:
     - github.com/enterprise-contract/ec-policies//policy/release
     - github.com/enterprise-contract/ec-policies//policy/lib
 success: true
@@ -258,16 +258,16 @@ key: |
   zN6SIcIjkvH39siYg1DkCoa2h2xMUZ10ecbM3/ECqvBV55YwQ2rcIEa7XQ==
   -----END PUBLIC KEY-----
 policy:
-  configuration:
-    include:
-    - slsa_provenance_available
   publicKey: |-
     -----BEGIN PUBLIC KEY-----
     MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAERhr8Zj4dZW67zucg8fDr11M4lmRp
     zN6SIcIjkvH39siYg1DkCoa2h2xMUZ10ecbM3/ECqvBV55YwQ2rcIEa7XQ==
     -----END PUBLIC KEY-----
   sources:
-  - policy:
+  - config:
+      include:
+      - slsa_provenance_available
+    policy:
     - github.com/enterprise-contract/ec-policies//policy/release
     - github.com/enterprise-contract/ec-policies//policy/lib
 success: true
@@ -349,16 +349,16 @@ key: |
   zN6SIcIjkvH39siYg1DkCoa2h2xMUZ10ecbM3/ECqvBV55YwQ2rcIEa7XQ==
   -----END PUBLIC KEY-----
 policy:
-  configuration:
-    include:
-    - slsa_provenance_available
   publicKey: |-
     -----BEGIN PUBLIC KEY-----
     MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAERhr8Zj4dZW67zucg8fDr11M4lmRp
     zN6SIcIjkvH39siYg1DkCoa2h2xMUZ10ecbM3/ECqvBV55YwQ2rcIEa7XQ==
     -----END PUBLIC KEY-----
   sources:
-  - policy:
+  - config:
+      include:
+      - slsa_provenance_available
+    policy:
     - github.com/enterprise-contract/ec-policies//policy/release
     - github.com/enterprise-contract/ec-policies//policy/lib
     ruleData:
@@ -454,16 +454,16 @@ key: |
   zN6SIcIjkvH39siYg1DkCoa2h2xMUZ10ecbM3/ECqvBV55YwQ2rcIEa7XQ==
   -----END PUBLIC KEY-----
 policy:
-  configuration:
-    include:
-    - slsa_provenance_available
   publicKey: |-
     -----BEGIN PUBLIC KEY-----
     MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAERhr8Zj4dZW67zucg8fDr11M4lmRp
     zN6SIcIjkvH39siYg1DkCoa2h2xMUZ10ecbM3/ECqvBV55YwQ2rcIEa7XQ==
     -----END PUBLIC KEY-----
   sources:
-  - policy:
+  - config:
+      include:
+      - slsa_provenance_available
+    policy:
     - github.com/enterprise-contract/ec-policies//policy/release
     - github.com/enterprise-contract/ec-policies//policy/lib
 success: true
@@ -731,14 +731,14 @@ true
         "policy": [
           "github.com/enterprise-contract/ec-policies//policy/release",
           "github.com/enterprise-contract/ec-policies//policy/lib"
-        ]
+        ],
+        "config": {
+          "include": [
+            "test.no_skipped_tests"
+          ]
+        }
       }
     ],
-    "configuration": {
-      "include": [
-        "test.no_skipped_tests"
-      ]
-    },
     "publicKey": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEH5DnqwEI3+1Emku0l2j3Iu1hnxdr\nf3GMYMQxVX2YZnoJPf8uDBCw5Nc8+ieMV8ymoDft0gnhPaycAZF7LMPwLQ==\n-----END PUBLIC KEY-----\n"
   },
   "ec-version": "${EC_VERSION}",
@@ -827,14 +827,14 @@ true
         "policy": [
           "github.com/enterprise-contract/ec-policies//policy/release",
           "github.com/enterprise-contract/ec-policies//policy/lib"
-        ]
+        ],
+        "config": {
+          "include": [
+            "test.no_skipped_tests"
+          ]
+        }
       }
     ],
-    "configuration": {
-      "include": [
-        "test.no_skipped_tests"
-      ]
-    },
     "publicKey": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAER5ajiJOZnGNbPCF0TUHRUXIytPW7\nXWB6BaZOE4N0DDK4ub7K6Qe9Q6W/YfI/vEZVZYUjFMcZOih2cmY5ddQhWg==\n-----END PUBLIC KEY-----\n"
   },
   "ec-version": "${EC_VERSION}",
@@ -945,14 +945,14 @@ true
         "policy": [
           "github.com/enterprise-contract/ec-policies//policy/release",
           "github.com/enterprise-contract/ec-policies//policy/lib"
-        ]
+        ],
+        "config": {
+          "include": [
+            "slsa_provenance_available"
+          ]
+        }
       }
     ],
-    "configuration": {
-      "include": [
-        "slsa_provenance_available"
-      ]
-    },
     "publicKey": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAERhr8Zj4dZW67zucg8fDr11M4lmRp\nzN6SIcIjkvH39siYg1DkCoa2h2xMUZ10ecbM3/ECqvBV55YwQ2rcIEa7XQ==\n-----END PUBLIC KEY-----"
   },
   "ec-version": "${EC_VERSION}",
@@ -1063,14 +1063,14 @@ true
         "policy": [
           "github.com/enterprise-contract/ec-policies//policy/release",
           "github.com/enterprise-contract/ec-policies//policy/lib"
-        ]
+        ],
+        "config": {
+          "include": [
+            "slsa_provenance_available"
+          ]
+        }
       }
     ],
-    "configuration": {
-      "include": [
-        "slsa_provenance_available"
-      ]
-    },
     "publicKey": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAERhr8Zj4dZW67zucg8fDr11M4lmRp\nzN6SIcIjkvH39siYg1DkCoa2h2xMUZ10ecbM3/ECqvBV55YwQ2rcIEa7XQ==\n-----END PUBLIC KEY-----"
   },
   "ec-version": "${EC_VERSION}",
@@ -1181,14 +1181,14 @@ true
         "policy": [
           "github.com/enterprise-contract/ec-policies//policy/release",
           "github.com/enterprise-contract/ec-policies//policy/lib"
-        ]
+        ],
+        "config": {
+          "include": [
+            "slsa_provenance_available"
+          ]
+        }
       }
     ],
-    "configuration": {
-      "include": [
-        "slsa_provenance_available"
-      ]
-    },
     "publicKey": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAERhr8Zj4dZW67zucg8fDr11M4lmRp\nzN6SIcIjkvH39siYg1DkCoa2h2xMUZ10ecbM3/ECqvBV55YwQ2rcIEa7XQ==\n-----END PUBLIC KEY-----"
   },
   "ec-version": "${EC_VERSION}",

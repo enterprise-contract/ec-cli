@@ -352,15 +352,15 @@ YAML::
 +
 [source,yaml]
 ----
-configuration:
-  exclude:
-    - test:get-clair-scan
-    - test:clamav-scan
 sources:
   - policy:
       - oci::quay.io/enterprise-contract/ec-release-policy:latest
     data:
       - git::https://github.com/enterprise-contract/ec-policies//example/data
+    config:
+      exclude:
+        - test:get-clair-scan
+        - test:clamav-scan
 ----
 JSON::
 +

@@ -557,13 +557,13 @@ description: My custom enterprise contract policy configuration
 sources:
   - policy:
       - quay.io/hacbs-contract/ec-release-policy:latest
-configuration:
-  exclude:
-    - not_useful
-    - test:conftest-clair
-  include:
-    - always_checked
-    - "@salsa_one_collection"
+    config:
+      exclude:
+        - not_useful
+        - test:conftest-clair
+      include:
+        - always_checked
+        - "@salsa_one_collection"
 `,
 		},
 		{
@@ -578,13 +578,13 @@ spec:
   sources:
     - policy:
         - quay.io/hacbs-contract/ec-release-policy:latest
-  configuration:
-    exclude:
-      - not_useful
-      - test:conftest-clair
-    include:
-      - always_checked
-      - "@salsa_one_collection"
+      config:
+        exclude:
+          - not_useful
+          - test:conftest-clair
+        include:
+          - always_checked
+          - "@salsa_one_collection"
 `,
 		},
 	}
@@ -669,12 +669,10 @@ func Test_ValidateImageCommandJSONPolicyFile(t *testing.T) {
       - "registry/policy:latest"
     data:
       - "registry/policy-data:latest"
-configuration:
-  collections:
-    - minimal
-  include:
-    - "*"
-  exclude: []
+    config:
+      include:
+        - '@minimal'
+      exclude: []
 `
 	err := afero.WriteFile(fs, "/policy.json", []byte(testPolicyJSON), 0644)
 	if err != nil {
@@ -754,12 +752,10 @@ func Test_ValidateImageCommandExtraData(t *testing.T) {
       custom_rule_data:
         prefix_data:
           - registry1
-configuration:
-  collections:
-    - minimal
-  include:
-    - "*"
-  exclude: []
+    config:
+      include:
+        - '@minimal'
+      exclude: []
 `
 	err := afero.WriteFile(fs, "/policy.json", []byte(testPolicyJSON), 0644)
 	if err != nil {
@@ -820,6 +816,9 @@ spec:
 			"custom_rule_data":{"prefix_data":["registry1"]},
 			"key": "---\nkind: ReleasePlanAdmission\nspec:\n  application: [some-app]\n  data:\n    mapping:\n      components:\n        - name: some-name\n          repository: quay.io/some-namespace/msd\n",
 			"key2": "value2"
+		},
+		"config": {
+		  "include": ["@minimal"]
 		}
 	  }`, string(sourceSampleMarshaled))
 }
@@ -947,12 +946,10 @@ func Test_ValidateImageErrorLog(t *testing.T) {
       - "registry/policy:latest"
     data:
       - "registry/policy-data:latest"
-configuration:
-  collections:
-    - minimal
-  include:
-    - "*"
-  exclude: []
+    config:
+      include:
+        - '@minimal'
+      exclude: []
 `
 	err := afero.WriteFile(fs, "/policy.yaml", []byte(testPolicyJSON), 0644)
 	if err != nil {

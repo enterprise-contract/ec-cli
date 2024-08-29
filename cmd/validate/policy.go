@@ -78,7 +78,7 @@ func ValidatePolicyCmd(validate policyValidationFunc) *cobra.Command {
 	Policy configuration as:
 	* file (policy.yaml)
 	* git reference (github.com/user/repo//default?ref=main), or
-	* inline JSON ('{sources: {...}, configuration: {...}}')")`))
+	* inline JSON ('{sources: {...}}')")`))
 
 	if err := cmd.MarkFlagRequired("policy"); err != nil {
 		panic(err)

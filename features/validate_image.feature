@@ -395,15 +395,15 @@ Feature: evaluate enterprise contract
     Given policy configuration named "ec-policy" with specification
     """
     {
-      "configuration": {
-        "include": ["@stamps", "filtering.always_pass"],
-        "exclude": ["filtering.always_fail", "filtering.always_fail_with_collection"]
-      },
       "sources": [
         {
           "policy": [
             "git::https://${GITHOST}/git/happy-day-policy.git"
-          ]
+          ],
+          "config": {
+            "include": ["@stamps", "filtering.always_pass"],
+            "exclude": ["filtering.always_fail", "filtering.always_fail_with_collection"]
+          }
         }
       ]
     }
@@ -424,9 +424,6 @@ Feature: evaluate enterprise contract
     Given policy configuration named "ec-policy" with specification
     """
     {
-      "configuration": {
-        "include": ["@stamps", "filtering.always_pass"]
-      },
       "sources": [
         {
           "volatileConfig": {
@@ -440,6 +437,9 @@ Feature: evaluate enterprise contract
                 "imageRef": "sha256:${REGISTRY_acceptance/ec-happy-day:latest_DIGEST}"
               }
             ]
+          },
+          "config": {
+            "include": ["@stamps", "filtering.always_pass"]
           },
           "policy": [
             "git::https://${GITHOST}/git/happy-day-policy.git"
@@ -464,15 +464,15 @@ Feature: evaluate enterprise contract
     Given policy configuration named "ec-policy" with specification
     """
     {
-      "configuration": {
-        "include": ["@stamps", "filtering.always_pass"],
-        "exclude": ["filtering.always_pass_with_collection", "filtering.always_fail_with_collection"]
-      },
       "sources": [
         {
           "policy": [
             "git::https://${GITHOST}/git/happy-day-policy.git"
-          ]
+          ],
+          "config": {
+            "include": ["@stamps", "filtering.always_pass"],
+            "exclude": ["filtering.always_pass_with_collection", "filtering.always_fail_with_collection"]
+          }
         }
       ]
     }

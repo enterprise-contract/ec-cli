@@ -22,7 +22,7 @@ ec validate policy --policy-configuration github.com/org/repo/policy.yaml
 -p, --policy:: Policy configuration as:
 * file (policy.yaml)
 * git reference (github.com/user/repo//default?ref=main), or
-* inline JSON ('{sources: {...}, configuration: {...}}')")
+* inline JSON ('{sources: {...}}')")
 
 == Options inherited from parent commands
 

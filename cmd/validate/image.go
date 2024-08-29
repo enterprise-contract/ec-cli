@@ -429,7 +429,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		  * Kubernetes reference ([<namespace>/]<name>)
 		  * file (policy.yaml)
 		  * git reference (github.com/user/repo//default?ref=main), or
-		  * inline JSON ('{sources: {...}, configuration: {...}}')")`))
+		  * inline JSON ('{sources: {...}, identity: {...}}')")`))
 
 	cmd.Flags().StringVarP(&data.imageRef, "image", "i", data.imageRef, "OCI image reference")
 
