@@ -282,7 +282,6 @@ ${TIMESTAMP} Skipping step because a previous step failed
 [Initialize TUF fails:initialize-tuf - 1]
 Initializing TUF root...
 Error: Get "http://tuf.invalid/root.json": dial tcp: lookup tuf.invalid on 10.96.0.10:53: no such host
-main.go:74: error during command execution: Get "http://tuf.invalid/root.json": dial tcp: lookup tuf.invalid on 10.96.0.10:53: no such host
 
 ---
 
