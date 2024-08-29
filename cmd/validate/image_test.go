@@ -56,6 +56,44 @@ type data struct {
 var rootArgs = []string{
 	"validate",
 	"image",
+	"--output",
+	"json",
+}
+
+func happyValidator() imageValidationFunc {
+	return func(_ context.Context, component app.SnapshotComponent, _ *app.SnapshotSpec, _ policy.Policy, _ []evaluator.Evaluator, _ bool) (*output.Output, error) {
+		return &output.Output{
+			ImageSignatureCheck: output.VerificationStatus{
+				Passed: true,
+			},
+			ImageAccessibleCheck: output.VerificationStatus{
+				Passed: true,
+			},
+			AttestationSignatureCheck: output.VerificationStatus{
+				Passed: true,
+			},
+			AttestationSyntaxCheck: output.VerificationStatus{
+				Passed: true,
+			},
+			PolicyCheck: []evaluator.Outcome{
+				{
+					FileName:  "test.json",
+					Namespace: "test.main",
+					Successes: []evaluator.Result{
+						{
+							Message: "Pass",
+							Metadata: map[string]interface{}{
+								"code":  "policy.nice",
+								"title": "Very nice",
+							},
+						},
+					},
+				},
+			},
+			ImageURL: component.ContainerImage,
+			ExitCode: 0,
+		}, nil
+	}
 }
 
 func Test_determineInputSpec(t *testing.T) {
@@ -256,40 +294,7 @@ func Test_determineInputSpec(t *testing.T) {
 }
 
 func Test_ValidateImageCommand(t *testing.T) {
-	validate := func(_ context.Context, component app.SnapshotComponent, _ *app.SnapshotSpec, _ policy.Policy, _ []evaluator.Evaluator, _ bool) (*output.Output, error) {
-		return &output.Output{
-			ImageSignatureCheck: output.VerificationStatus{
-				Passed: true,
-			},
-			ImageAccessibleCheck: output.VerificationStatus{
-				Passed: true,
-			},
-			AttestationSignatureCheck: output.VerificationStatus{
-				Passed: true,
-			},
-			AttestationSyntaxCheck: output.VerificationStatus{
-				Passed: true,
-			},
-			PolicyCheck: []evaluator.Outcome{
-				{
-					FileName:  "test.json",
-					Namespace: "test.main",
-					Successes: []evaluator.Result{
-						{
-							Message: "Pass",
-							Metadata: map[string]interface{}{
-								"code": "policy.nice",
-							},
-						},
-					},
-				},
-			},
-			ImageURL: component.ContainerImage,
-			ExitCode: 0,
-		}, nil
-	}
-
-	validateImageCmd := validateImageCmd(validate)
+	validateImageCmd := validateImageCmd(happyValidator())
 	cmd := setUpCobra(validateImageCmd)
 
 	client := fake.FakeClient{}
@@ -336,40 +341,7 @@ func Test_ValidateImageCommand(t *testing.T) {
 }
 
 func Test_ValidateImageCommandImages(t *testing.T) {
-	validate := func(_ context.Context, component app.SnapshotComponent, _ *app.SnapshotSpec, _ policy.Policy, _ []evaluator.Evaluator, _ bool) (*output.Output, error) {
-		return &output.Output{
-			ImageSignatureCheck: output.VerificationStatus{
-				Passed: true,
-			},
-			ImageAccessibleCheck: output.VerificationStatus{
-				Passed: true,
-			},
-			AttestationSignatureCheck: output.VerificationStatus{
-				Passed: true,
-			},
-			AttestationSyntaxCheck: output.VerificationStatus{
-				Passed: true,
-			},
-			PolicyCheck: []evaluator.Outcome{
-				{
-					FileName:  "test.json",
-					Namespace: "test.main",
-					Successes: []evaluator.Result{
-						{
-							Message: "Pass",
-							Metadata: map[string]interface{}{
-								"code": "policy.nice",
-							},
-						},
-					},
-				},
-			},
-			ImageURL: component.ContainerImage,
-			ExitCode: 0,
-		}, nil
-	}
-
-	validateImageCmd := validateImageCmd(validate)
+	validateImageCmd := validateImageCmd(happyValidator())
 	cmd := setUpCobra(validateImageCmd)
 
 	client := fake.FakeClient{}
@@ -503,49 +475,6 @@ func Test_ValidateImageCommandKeyless(t *testing.T) {
 }
 
 func Test_ValidateImageCommandYAMLPolicyFile(t *testing.T) {
-	validate := func(_ context.Context, component app.SnapshotComponent, _ *app.SnapshotSpec, _ policy.Policy, _ []evaluator.Evaluator, _ bool) (*output.Output, error) {
-		return &output.Output{
-			ImageSignatureCheck: output.VerificationStatus{
-				Passed: true,
-			},
-			ImageAccessibleCheck: output.VerificationStatus{
-				Passed: true,
-			},
-			AttestationSignatureCheck: output.VerificationStatus{
-				Passed: true,
-			},
-			AttestationSyntaxCheck: output.VerificationStatus{
-				Passed: true,
-			},
-			PolicyCheck: []evaluator.Outcome{
-				{
-					FileName:  "test.json",
-					Namespace: "test.main",
-					Successes: []evaluator.Result{
-						{
-							Message: "Pass",
-							Metadata: map[string]interface{}{
-								"code": "policy.nice",
-							},
-						},
-					},
-				},
-			},
-			ImageURL: component.ContainerImage,
-			ExitCode: 0,
-		}, nil
-	}
-
-	validateImageCmd := validateImageCmd(validate)
-	cmd := setUpCobra(validateImageCmd)
-
-	client := fake.FakeClient{}
-	commonMockClient(&client)
-	fs := afero.NewMemMapFs()
-	ctx := utils.WithFS(context.Background(), fs)
-	ctx = oci.WithClient(ctx, &client)
-	cmd.SetContext(ctx)
-
 	cases := []struct {
 		name   string
 		config string
@@ -591,6 +520,16 @@ spec:
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
+			validateImageCmd := validateImageCmd(happyValidator())
+			cmd := setUpCobra(validateImageCmd)
+
+			client := fake.FakeClient{}
+			commonMockClient(&client)
+			fs := afero.NewMemMapFs()
+			ctx := utils.WithFS(context.Background(), fs)
+			ctx = oci.WithClient(ctx, &client)
+			cmd.SetContext(ctx)
+
 			err := afero.WriteFile(fs, "/policy.yaml", []byte(c.config), 0644)
 			if err != nil {
 				panic(err)
@@ -621,40 +560,7 @@ spec:
 }
 
 func Test_ValidateImageCommandJSONPolicyFile(t *testing.T) {
-	validate := func(_ context.Context, component app.SnapshotComponent, _ *app.SnapshotSpec, _ policy.Policy, _ []evaluator.Evaluator, _ bool) (*output.Output, error) {
-		return &output.Output{
-			ImageSignatureCheck: output.VerificationStatus{
-				Passed: true,
-			},
-			ImageAccessibleCheck: output.VerificationStatus{
-				Passed: true,
-			},
-			AttestationSignatureCheck: output.VerificationStatus{
-				Passed: true,
-			},
-			AttestationSyntaxCheck: output.VerificationStatus{
-				Passed: true,
-			},
-			PolicyCheck: []evaluator.Outcome{
-				{
-					FileName:  "test.json",
-					Namespace: "test.main",
-					Successes: []evaluator.Result{
-						{
-							Message: "Pass",
-							Metadata: map[string]interface{}{
-								"code": "policy.nice",
-							},
-						},
-					},
-				},
-			},
-			ImageURL: component.ContainerImage,
-			ExitCode: 0,
-		}, nil
-	}
-
-	validateImageCmd := validateImageCmd(validate)
+	validateImageCmd := validateImageCmd(happyValidator())
 	cmd := setUpCobra(validateImageCmd)
 
 	client := fake.FakeClient{}
@@ -698,40 +604,7 @@ func Test_ValidateImageCommandJSONPolicyFile(t *testing.T) {
 }
 
 func Test_ValidateImageCommandExtraData(t *testing.T) {
-	validate := func(_ context.Context, component app.SnapshotComponent, _ *app.SnapshotSpec, _ policy.Policy, _ []evaluator.Evaluator, _ bool) (*output.Output, error) {
-		return &output.Output{
-			ImageSignatureCheck: output.VerificationStatus{
-				Passed: true,
-			},
-			ImageAccessibleCheck: output.VerificationStatus{
-				Passed: true,
-			},
-			AttestationSignatureCheck: output.VerificationStatus{
-				Passed: true,
-			},
-			AttestationSyntaxCheck: output.VerificationStatus{
-				Passed: true,
-			},
-			PolicyCheck: []evaluator.Outcome{
-				{
-					FileName:  "test.json",
-					Namespace: "test.main",
-					Successes: []evaluator.Result{
-						{
-							Message: "Pass",
-							Metadata: map[string]interface{}{
-								"code": "policy.nice",
-							},
-						},
-					},
-				},
-			},
-			ImageURL: component.ContainerImage,
-			ExitCode: 0,
-		}, nil
-	}
-
-	validateImageCmd := validateImageCmd(validate)
+	validateImageCmd := validateImageCmd(happyValidator())
 	cmd := setUpCobra(validateImageCmd)
 
 	fs := afero.NewMemMapFs()
@@ -824,40 +697,7 @@ spec:
 }
 
 func Test_ValidateImageCommandEmptyPolicyFile(t *testing.T) {
-	validate := func(_ context.Context, component app.SnapshotComponent, _ *app.SnapshotSpec, _ policy.Policy, _ []evaluator.Evaluator, _ bool) (*output.Output, error) {
-		return &output.Output{
-			ImageSignatureCheck: output.VerificationStatus{
-				Passed: true,
-			},
-			ImageAccessibleCheck: output.VerificationStatus{
-				Passed: true,
-			},
-			AttestationSignatureCheck: output.VerificationStatus{
-				Passed: true,
-			},
-			AttestationSyntaxCheck: output.VerificationStatus{
-				Passed: true,
-			},
-			PolicyCheck: []evaluator.Outcome{
-				{
-					FileName:  "test.json",
-					Namespace: "test.main",
-					Successes: []evaluator.Result{
-						{
-							Message: "Pass",
-							Metadata: map[string]interface{}{
-								"code": "policy.nice",
-							},
-						},
-					},
-				},
-			},
-			ImageURL: component.ContainerImage,
-			ExitCode: 0,
-		}, nil
-	}
-
-	validateImageCmd := validateImageCmd(validate)
+	validateImageCmd := validateImageCmd(happyValidator())
 	cmd := setUpCobra(validateImageCmd)
 
 	client := fake.FakeClient{}
@@ -892,44 +732,12 @@ func Test_ValidateImageCommandEmptyPolicyFile(t *testing.T) {
 
 func Test_ValidateImageErrorLog(t *testing.T) {
 	// TODO: Enhance this test to cover other Error Log messages
-	validate := func(_ context.Context, component app.SnapshotComponent, _ *app.SnapshotSpec, _ policy.Policy, _ []evaluator.Evaluator, _ bool) (*output.Output, error) {
-		return &output.Output{
-			ImageSignatureCheck: output.VerificationStatus{
-				Passed: true,
-			},
-			ImageAccessibleCheck: output.VerificationStatus{
-				Passed: true,
-			},
-			AttestationSignatureCheck: output.VerificationStatus{
-				Passed: true,
-			},
-			AttestationSyntaxCheck: output.VerificationStatus{
-				Passed: true,
-			},
-			PolicyCheck: []evaluator.Outcome{
-				{
-					FileName:  "test.json",
-					Namespace: "test.main",
-					Successes: []evaluator.Result{
-						{
-							Message: "Pass",
-							Metadata: map[string]interface{}{
-								"code": "policy.nice",
-							},
-						},
-					},
-				},
-			},
-			ImageURL: component.ContainerImage,
-			ExitCode: 0,
-		}, nil
-	}
 	logger, hook := test.NewNullLogger()
 	logger.SetLevel(log.DebugLevel)
 	log.StandardLogger().ReplaceHooks(make(log.LevelHooks))
 	log.AddHook(hook)
 
-	validateImageCmd := validateImageCmd(validate)
+	validateImageCmd := validateImageCmd(happyValidator())
 	cmd := setUpCobra(validateImageCmd)
 
 	fs := afero.NewMemMapFs()
@@ -1366,40 +1174,7 @@ func Test_FailureImageAccessibilityNonStrict(t *testing.T) {
 }
 
 func TestValidateImageCommand_RunE(t *testing.T) {
-	validate := func(_ context.Context, component app.SnapshotComponent, _ *app.SnapshotSpec, _ policy.Policy, _ []evaluator.Evaluator, _ bool) (*output.Output, error) {
-		return &output.Output{
-			ImageSignatureCheck: output.VerificationStatus{
-				Passed: true,
-			},
-			ImageAccessibleCheck: output.VerificationStatus{
-				Passed: true,
-			},
-			AttestationSignatureCheck: output.VerificationStatus{
-				Passed: true,
-			},
-			AttestationSyntaxCheck: output.VerificationStatus{
-				Passed: true,
-			},
-			PolicyCheck: []evaluator.Outcome{
-				{
-					FileName:  "test.json",
-					Namespace: "test.main",
-					Successes: []evaluator.Result{
-						{
-							Message: "Pass",
-							Metadata: map[string]interface{}{
-								"code": "policy.nice",
-							},
-						},
-					},
-				},
-			},
-			ImageURL: component.ContainerImage,
-			ExitCode: 0,
-		}, nil
-	}
-
-	validateImageCmd := validateImageCmd(validate)
+	validateImageCmd := validateImageCmd(happyValidator())
 	cmd := setUpCobra(validateImageCmd)
 
 	ctx := utils.WithFS(context.Background(), afero.NewMemMapFs())
@@ -1443,4 +1218,68 @@ func TestValidateImageCommand_RunE(t *testing.T) {
 			"publicKey": %s
 		}
 	  }`, effectiveTimeTest, utils.TestPublicKeyJSON, utils.TestPublicKeyJSON), out.String())
+}
+
+func TestValidateImageDefaultOutput(t *testing.T) {
+	commonArgs := []string{
+		"validate",
+		"image",
+		"--image",
+		"registry/image:tag",
+		"--policy",
+		fmt.Sprintf(`{"publicKey": %s}`, utils.TestPublicKeyJSON),
+	}
+
+	commonOutput := hd.Doc(`
+		Success: true
+		Result: SUCCESS
+		Violations: 0, Warnings: 0, Successes: 1
+		Component: Unnamed
+		ImageRef: registry/image:tag
+
+	`)
+
+	cases := []struct {
+		args     []string
+		expected string
+	}{
+		{
+			args:     commonArgs,
+			expected: commonOutput,
+		},
+		{
+			args: append(commonArgs, "--show-successes"),
+			expected: fmt.Sprintf("%s%s", commonOutput, hd.Doc(`
+				Results:
+				✓ [Success] policy.nice
+				  ImageRef: registry/image:tag
+				  Title: Very nice
+
+			`)),
+		},
+	}
+
+	for _, c := range cases {
+		validateImageCmd := validateImageCmd(happyValidator())
+		cmd := setUpCobra(validateImageCmd)
+
+		ctx := utils.WithFS(context.Background(), afero.NewMemMapFs())
+		client := fake.FakeClient{}
+		commonMockClient(&client)
+		ctx = oci.WithClient(ctx, &client)
+		cmd.SetContext(ctx)
+
+		// Notice there is no --output flag here
+		cmd.SetArgs(c.args)
+
+		var out bytes.Buffer
+		cmd.SetOut(&out)
+
+		utils.SetTestRekorPublicKey(t)
+
+		err := cmd.Execute()
+		assert.NoError(t, err)
+
+		assert.Equal(t, c.expected, out.String())
+	}
 }

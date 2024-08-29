@@ -166,7 +166,7 @@ func NewReport(snapshot string, components []Component, policy policy.Policy, da
 // WriteAll writes the report to all the given targets.
 func (r Report) WriteAll(targets []string, p format.TargetParser) (allErrors error) {
 	if len(targets) == 0 {
-		targets = append(targets, JSON)
+		targets = append(targets, Text)
 	}
 	for _, targetName := range targets {
 		target, err := p.Parse(targetName)
