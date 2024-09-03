@@ -405,7 +405,7 @@ func (k *kindCluster) TaskInfo(ctx context.Context) (*types.TaskInfo, error) {
 
 		info.Steps = append(info.Steps, types.Step{
 			Name:    s.Name,
-			Status:  s.Terminated.Reason,
+			Status:  s.TerminationReason,
 			Logs:    logs,
 			EnvVars: envVars,
 		})
