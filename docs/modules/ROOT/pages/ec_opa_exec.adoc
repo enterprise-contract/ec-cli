@@ -38,7 +38,7 @@ ec opa exec <path> [<path> [...]] [flags]
 --fail:: exits with non-zero exit code on undefined result and errors (Default: false)
 --fail-defined:: exits with non-zero exit code on defined result and errors (Default: false)
 --fail-non-empty:: exits with non-zero exit code on non-empty result and errors (Default: false)
--f, --format:: set output format (Default: pretty)
+-f, --format:: set output format (Default: json)
 -h, --help:: help for exec (Default: false)
 --log-format:: set log format (Default: json)
 -l, --log-level:: set log level (Default: error)
