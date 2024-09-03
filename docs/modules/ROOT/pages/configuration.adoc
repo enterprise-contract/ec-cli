@@ -167,8 +167,7 @@ JSON::
 If both `volatileConfig` and `config` are used, they are both processed by the EC CLI as if they
 were merged together.
 
-With `volatileConfig` you can also specify an inclusion or exclusion for a particular image
-reference. For example:
+With `volatileConfig` you can also specify an exclusion for a particular image reference. For example:
 
 [tabs]
 ====
@@ -213,6 +212,61 @@ JSON::
 }
 ----
 ====
+
+Although unusual, it is also possible to specify an inclusion for an image reference. In the
+example below, the `java` and `test` packages are executed for the image matching the reference,
+while for all other image references only the `java` package is executed.
+
+[tabs]
+====
+YAML::
++
+[source,yaml]
+----
+sources:
+  - policy:
+      - oci::quay.io/enterprise-contract/ec-release-policy:latest
+    data:
+      - git::https://github.com/enterprise-contract/ec-policies//example/data
+    volatileConfig:
+      include:
+        - value: java
+        - value: test
+          imageRef: sha256:4e388ab32b10dc8dbc7e28144f552830adc74787c1e2c0824032078a79f227fb
+----
+JSON::
++
+[source,json]
+----
+{
+  "sources": [
+    {
+      "policy": [
+        "oci::quay.io/enterprise-contract/ec-release-policy:latest"
+      ],
+      "data": [
+        "git::https://github.com/enterprise-contract/ec-policies//example/data"
+      ],
+      "volatileConfig": {
+        "include": [
+          {
+            "value": "java"
+          },
+          {
+            "value": "test",
+            "imageRef": "sha256:4e388ab32b10dc8dbc7e28144f552830adc74787c1e2c0824032078a79f227fb"
+          }
+        ]
+      }
+    }
+  ]
+}
+----
+====
+
+NOTE: In the example above, omitting the `java` entry would cause an error when verifying any image
+for which its reference is different than the one mentioned in the `test` package inclusion. This is
+because no rules will be executed for such images.
 
 == Examples
 
