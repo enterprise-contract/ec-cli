@@ -830,7 +830,7 @@ func TestSetImageAccessibleCheckFromError(t *testing.T) {
 func TestSetImageSignatureCheckFromError(t *testing.T) {
 	noMatchingSignatures := cosign.ErrNoMatchingSignatures{}
 	f := reflect.ValueOf(&noMatchingSignatures).Elem().Field(0)
-	f = reflect.NewAt(f.Type(), unsafe.Pointer(f.UnsafeAddr())).Elem()
+	f = reflect.NewAt(f.Type(), unsafe.Pointer(f.UnsafeAddr())).Elem() //nolint:gosec // G115 - seems to be a false positive
 	f.Set(reflect.ValueOf(errors.New("kaboom!")))
 
 	cases := []struct {
@@ -917,7 +917,7 @@ func TestSetImageSignatureCheckFromError(t *testing.T) {
 func TestSetAttestationSignatureCheckFromError(t *testing.T) {
 	noMatchingAttestations := cosign.ErrNoMatchingAttestations{}
 	f := reflect.ValueOf(&noMatchingAttestations).Elem().Field(0)
-	f = reflect.NewAt(f.Type(), unsafe.Pointer(f.UnsafeAddr())).Elem()
+	f = reflect.NewAt(f.Type(), unsafe.Pointer(f.UnsafeAddr())).Elem() //nolint:gosec // G115 - seems to be a false positive
 	f.Set(reflect.ValueOf(errors.New("kaboom!")))
 
 	cases := []struct {
