@@ -22,6 +22,7 @@ ARG TARGETOS
 ARG TARGETARCH
 ARG BUILD_SUFFIX=""
 ARG BUILD_LIST="${TARGETOS}_${TARGETARCH}"
+ARG KUBECTL_VERSION=1.27.2
 
 # Avoid safe directory git failures building with default user from go-toolset
 USER root
@@ -67,6 +68,9 @@ COPY --from=build "/build/dist/ec_${TARGETOS}_${TARGETARCH}" /usr/local/bin/ec
 
 # OpenShift preflight check requires a license
 COPY --from=build /build/LICENSE /licenses/LICENSE
+
+# Install kubectl
+RUN curl -L https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl -o /usr/bin/kubectl
 
 # OpenShift preflight check requires a non-root user
 USER 1001
