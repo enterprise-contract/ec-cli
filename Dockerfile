@@ -32,6 +32,10 @@ WORKDIR /build
 COPY go.mod go.sum ./
 RUN go mod download
 
+# Copy the tools mod file for better layer caching when building locally
+COPY tools/go.mod tools/go.sum ./tools/
+RUN cd tools && go mod download
+
 # Now copy everything including .git
 COPY . .
 
@@ -56,7 +60,7 @@ RUN microdnf upgrade --assumeyes --nodocs --setopt=keepcache=0 --refresh && micr
 # Copy all the binaries so they're available to extract and download
 # (Beware if you're testing this locally it will copy everything from
 # your dist directory, not just the freshly built binaries.)
-COPY --from=build /build/dist/* /usr/local/bin/
+COPY --from=build /build/dist/ec* /usr/local/bin/
 
 # Gzip them because that's what the cli downloader image expects, see
 # https://github.com/securesign/cosign/blob/main/Dockerfile.client-server-re.rh
@@ -64,6 +68,9 @@ RUN gzip /usr/local/bin/ec_*
 
 # Copy the one ec binary that can run in this container
 COPY --from=build "/build/dist/ec_${TARGETOS}_${TARGETARCH}" /usr/local/bin/ec
+
+# Copy the one kubectl binary that can run in this container
+COPY --from=build "/build/dist/kubectl_${TARGETOS}_${TARGETARCH}" /usr/local/bin/kubectl
 
 # OpenShift preflight check requires a license
 COPY --from=build /build/LICENSE /licenses/LICENSE
