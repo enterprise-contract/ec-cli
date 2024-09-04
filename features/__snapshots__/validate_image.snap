@@ -3652,7 +3652,6 @@ Error: 1 error occurred:
 ---
 
 [PURL functions:stderr - 1]
-time="${TIMESTAMP}" level=error msg="Parsing PURL \"this-is-not-a-valid-purl\" failed: purl scheme is not \"pkg\": \"\""
 Error: success criteria not met
 
 ---

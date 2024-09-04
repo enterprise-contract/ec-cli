@@ -114,7 +114,7 @@ func purlIsValid(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) {
 	}
 	_, err := packageurl.FromString(string(uri))
 	if err != nil {
-		log.Errorf("Parsing PURL %s failed: %s", uri, err)
+		log.Debugf("Parsing PURL %s failed: %s", uri, err)
 		return ast.BooleanTerm(false), nil
 	}
 	return ast.BooleanTerm(true), nil
