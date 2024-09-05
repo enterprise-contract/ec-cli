@@ -34,9 +34,9 @@ WORKDIR /build
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Copy the tools mod file for better layer caching when building locally
-COPY tools/go.mod tools/go.sum ./tools/
-RUN cd tools && go mod download
+# Copy the tools/kubectl mod file for better layer caching when building locally
+COPY tools/kubectl/go.mod tools/kubectl/go.sum ./tools/kubectl/
+RUN cd tools/kubectl && go mod download
 
 # Now copy everything including .git
 COPY . .

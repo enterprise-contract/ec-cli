@@ -42,7 +42,7 @@ build_ec() {
 
 build_kubectl() {
     GOOS="$1" GOARCH="$2" go install \
-        -modfile tools/go.mod \
+        -modfile tools/kubectl/go.mod \
         -trimpath \
         --mod=readonly \
         k8s.io/kubernetes/cmd/kubectl
