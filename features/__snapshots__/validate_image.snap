@@ -3580,6 +3580,12 @@ Error: 1 error occurred:
           }
         },
         {
+          "msg": "PURL can't be parsed \"this-is-not-a-valid-purl\"",
+          "metadata": {
+            "code": "purl.parse_fail"
+          }
+        },
+        {
           "msg": "PURL parsed as: type: \"rpm\", namespace: \"rhel\", name: \"coreutils-single\", version: \"8.32-34.el9\", qualifiers: \"[{\\\"key\\\": \\\"arch\\\", \\\"value\\\": \\\"x86_64\\\"}, {\\\"key\\\": \\\"distro\\\", \\\"value\\\": \\\"rhel-9.3\\\"}, {\\\"key\\\": \\\"upstream\\\", \\\"value\\\": \\\"coreutils-8.32-34.el9.src.rpm\\\"}]\", subpath: \"\"",
           "metadata": {
             "code": "purl.parsed"
