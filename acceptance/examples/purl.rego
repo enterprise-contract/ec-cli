@@ -18,6 +18,18 @@ deny contains result if {
 
 # METADATA
 # custom:
+#   short_name: parse_fail
+deny contains result if {
+    # This will emit a failure too but this time an error is logged
+    not ec.purl.parse(_bad)
+    result := {
+        "code": "purl.parse_fail",
+        "msg": sprintf("PURL can't be parsed %q", [_bad])
+    }
+}
+
+# METADATA
+# custom:
 #   short_name: is_valid_pass
 deny contains result if {
     # This rule never emits a failure
