@@ -21,7 +21,6 @@ package downloader
 import (
 	"context"
 	"errors"
-	"os"
 	"testing"
 
 	"github.com/enterprise-contract/go-gather/metadata"
@@ -46,26 +45,11 @@ func TestDownloader_Download(t *testing.T) {
 		source      string
 		errExpected bool
 		err         error
-		useGoGather bool
 	}{
 		{
 			name:   "Downloads",
 			dest:   "dir",
 			source: "https://example.com/org/repo.git",
-		},
-		{
-			name:        "Downloads with go-gather",
-			dest:        "dir",
-			source:      "https://example.com/org/repo.git",
-			useGoGather: true,
-		},
-		{
-			name:        "Fails to download with go-gather",
-			dest:        "dir",
-			source:      "https://example.com/org/repo.git",
-			errExpected: true,
-			err:         errors.New("expected error with go-gather"),
-			useGoGather: true,
 		},
 		{
 			name:        "Fails to download",
@@ -93,14 +77,8 @@ func TestDownloader_Download(t *testing.T) {
 				gatherFunc = originalGatherFunction
 			}()
 
-			if tt.useGoGather {
-				t.Setenv("USEGOGATHER", "1")
-				gatherFunc = func(_ context.Context, _ string, _ string) (metadata.Metadata, error) {
-					return nil, tt.err
-				}
-			} else {
-				os.Unsetenv("USEGOGATHER")
-				d.On("Download", ctx, tt.dest, []string{tt.source}).Return(tt.err)
+			gatherFunc = func(_ context.Context, _ string, _ string) (metadata.Metadata, error) {
+				return nil, tt.err
 			}
 
 			_, err := Download(ctx, tt.dest, tt.source, false)
