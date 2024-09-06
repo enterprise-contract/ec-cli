@@ -2,7 +2,7 @@ module github.com/enterprise-contract/ec-cli/tools/kubectl
 
 go 1.22.5
 
-require k8s.io/kubernetes v1.27.16
+require k8s.io/kubernetes v1.31.0
 
 require (
 	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
@@ -65,7 +65,6 @@ require (
 	github.com/sergi/go-diff v1.3.2-0.20230802210424-5b0b94c5c0d3 // indirect
 	github.com/spf13/cobra v1.8.1 // indirect
 	github.com/spf13/pflag v1.0.6-0.20210604193023-d5e0c0615ace // indirect
-	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/xlab/treeprint v1.2.0 // indirect
 	go.starlark.net v0.0.0-20240725214946-42030a7cedce // indirect
