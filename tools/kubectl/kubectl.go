@@ -14,18 +14,9 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// Tracks tooling dependencies, i.e. those that are not used by the code directly
-package tools
+// Tracks kubectl dependency
+package kubectl
 
 import (
-	_ "github.com/daixiang0/gci"
-	_ "github.com/golangci/golangci-lint/cmd/golangci-lint"
-	_ "github.com/google/addlicense"
-	_ "github.com/open-policy-agent/conftest"
-	_ "github.com/tektoncd/chains/pkg/chains"
-	_ "github.com/tektoncd/cli/cmd/tkn"
-	_ "github.com/wadey/gocovmerge"
-	_ "helm.sh/helm/v3/cmd/helm"
 	_ "k8s.io/kubernetes/cmd/kubectl"
-	_ "sigs.k8s.io/kustomize/kustomize/v5"
 )

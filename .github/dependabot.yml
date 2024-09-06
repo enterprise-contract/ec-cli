@@ -58,6 +58,16 @@ updates:
         patterns:
           - "*"
   - package-ecosystem: "gomod"
+    directory: "/tools/kubectl/"
+    schedule:
+      interval: weekly
+      time: '15:00'
+      timezone: Etc/UTC
+    groups:
+      all:
+        patterns:
+          - "*"
+  - package-ecosystem: "gomod"
     directory: "/acceptance/"
     schedule:
       interval: weekly

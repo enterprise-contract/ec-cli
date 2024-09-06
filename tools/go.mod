@@ -11,6 +11,7 @@ require (
 	github.com/tektoncd/cli v0.38.0
 	github.com/wadey/gocovmerge v0.0.0-20160331181800-b5bfa59ec0ad
 	helm.sh/helm/v3 v3.15.4
+	k8s.io/kubernetes v1.27.2
 	sigs.k8s.io/kustomize/kustomize/v5 v5.4.3
 )
 
@@ -156,6 +157,7 @@ require (
 	github.com/cyberphone/json-canonicalization v0.0.0-20231217050601-ba74d44ecf5f // indirect
 	github.com/cyphar/filepath-securejoin v0.3.1 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
+	github.com/daviddengcn/go-colortext v1.0.0 // indirect
 	github.com/denis-tingaikin/go-header v0.5.0 // indirect
 	github.com/digitorus/pkcs7 v0.0.0-20230818184609-3a137a874352 // indirect
 	github.com/digitorus/timestamp v0.0.0-20231217203849-220c5c2851b7 // indirect
@@ -177,12 +179,12 @@ require (
 	github.com/evanphx/json-patch v5.9.0+incompatible // indirect
 	github.com/evanphx/json-patch/v5 v5.9.0 // indirect
 	github.com/exponent-io/jsonpath v0.0.0-20210407135951-1de76d718b3f // indirect
+	github.com/fatih/camelcase v1.0.0 // indirect
 	github.com/fatih/color v1.17.0 // indirect
 	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/firefart/nonamedreturns v1.0.5 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
-	github.com/fvbommel/sortorder v1.1.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
 	github.com/fzipp/gocyclo v0.6.0 // indirect
 	github.com/gdamore/encoding v1.0.1 // indirect
@@ -325,6 +327,7 @@ require (
 	github.com/letsencrypt/boulder v0.0.0-20240830194243-1fcf0ee08180 // indirect
 	github.com/lib/pq v1.10.9 // indirect
 	github.com/liggitt/tabwriter v0.0.0-20181228230101-89fcab3d43de // indirect
+	github.com/lithammer/dedent v1.1.0 // indirect
 	github.com/logrusorgru/aurora v2.0.3+incompatible // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/lufeee/execinquery v1.2.1 // indirect
@@ -533,9 +536,11 @@ require (
 	k8s.io/cli-runtime v0.31.0 // indirect
 	k8s.io/client-go v0.31.0 // indirect
 	k8s.io/component-base v0.31.0 // indirect
+	k8s.io/component-helpers v0.31.0 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20240903163716-9e1beecbcb38 // indirect
 	k8s.io/kubectl v0.31.0 // indirect
+	k8s.io/metrics v0.31.0 // indirect
 	k8s.io/utils v0.0.0-20240902221715-702e33fdd3c3 // indirect
 	knative.dev/pkg v0.0.0-20240815051656-89743d9bbf7c // indirect
 	muzzammil.xyz/jsonc v1.0.0 // indirect
@@ -552,5 +557,3 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
-
-replace k8s.io/kubectl => k8s.io/kubectl v0.29.0-alpha.0 // pull in the gnostic to gnostic-model refactor (https://github.com/kubernetes/kubectl/commit/90ca180ce06151e5bd8ff1e73756ed3d5e03f069)
