@@ -165,7 +165,7 @@ require (
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/enterprise-contract/go-gather v0.0.3 // indirect
 	github.com/enterprise-contract/go-gather/expander v0.0.1 // indirect
-	github.com/enterprise-contract/go-gather/gather/file v0.0.1 // indirect
+	github.com/enterprise-contract/go-gather/gather/file v0.0.2-0.20240906185922-e8ebd246dc19 // indirect
 	github.com/enterprise-contract/go-gather/gather/git v0.0.5 // indirect
 	github.com/enterprise-contract/go-gather/gather/http v0.0.2 // indirect
 	github.com/enterprise-contract/go-gather/gather/oci v0.0.4 // indirect
