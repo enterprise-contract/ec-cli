@@ -555,6 +555,8 @@ github.com/enterprise-contract/go-gather/gather v0.0.3 h1:rSOLqY+ydsqMtqx4IZ+jQK
 github.com/enterprise-contract/go-gather/gather v0.0.3/go.mod h1:chij1Nq6vbJP/2sii0sxCuwvrJCJV3hEbH1PpJ/DhwQ=
 github.com/enterprise-contract/go-gather/gather/file v0.0.1 h1:UOec5Gc7+Q9u3x0Cyw8l2JDYCH7RTtHVnC57Rqs0Nyg=
 github.com/enterprise-contract/go-gather/gather/file v0.0.1/go.mod h1:tHsShLa5XpNSZbH8paHZR3Ltgu/7wtxpdCTVP8EXk/U=
+github.com/enterprise-contract/go-gather/gather/file v0.0.2-0.20240906185922-e8ebd246dc19 h1:RJuPPINRrFoo8VQxJgmCeCp+JeH0058vfUOmSvZwj7k=
+github.com/enterprise-contract/go-gather/gather/file v0.0.2-0.20240906185922-e8ebd246dc19/go.mod h1:xQ3WyIZBpJ00WMo49WWL6kQ0zSj/NZ20lB3rM1sLGoU=
 github.com/enterprise-contract/go-gather/gather/git v0.0.5 h1:fWz0D42Lv2AjKkQCTfv+i5bJOOVD0RusaLTJuGfcIvc=
 github.com/enterprise-contract/go-gather/gather/git v0.0.5/go.mod h1:jEtaBsc8a4AsbXRwZaDPQAW9t5bNU/GvwNgYLAgwDhE=
 github.com/enterprise-contract/go-gather/gather/http v0.0.2 h1:Cwx+R2ECbpFZlYDD62h5lRrV/zyspxt2TOuWH8HlqYE=
