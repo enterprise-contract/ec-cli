@@ -3,7 +3,7 @@ module github.com/enterprise-contract/ec-cli/tools
 go 1.22.5
 
 require (
-	github.com/daixiang0/gci v0.13.4
+	github.com/daixiang0/gci v0.13.5
 	github.com/golangci/golangci-lint v1.60.3
 	github.com/google/addlicense v1.1.1
 	github.com/open-policy-agent/conftest v0.55.0
@@ -11,7 +11,7 @@ require (
 	github.com/tektoncd/cli v0.38.0
 	github.com/wadey/gocovmerge v0.0.0-20160331181800-b5bfa59ec0ad
 	helm.sh/helm/v3 v3.15.4
-	k8s.io/kubernetes v1.27.2
+	k8s.io/kubernetes v1.31.0
 	sigs.k8s.io/kustomize/kustomize/v5 v5.4.3
 )
 
