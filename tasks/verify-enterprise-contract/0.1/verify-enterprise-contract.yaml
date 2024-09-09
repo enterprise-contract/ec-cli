@@ -140,8 +140,8 @@ spec:
       type: string
       default: "false"
 
-    - name: PIPELINERUN_ID
-      description: Name of current PipelineRun.
+    - name: CR_TO_QUERY
+      description: Name of CR to query for labels. for example, pr/somepipeline
       type: string
       default: "unknown"
 
@@ -154,10 +154,17 @@ spec:
     - name: TEST_OUTPUT
       description: Short summary of the policy evaluation for each image
 
-  stepTemplate:
-    env:
-      - name: HOME
-        value: "$(params.HOMEDIR)"
+# due to https://github.com/tektoncd/pipeline/pull/7982 being fixed
+# in a later release of openshift pipelines, we cannot use the following.
+# we must replicate the `env` section to each step.
+# Otherwise, we see the error:
+# "validation.webhook.pipeline.tekton.dev" denied the request: validation failed:
+#   env cannot be used with Ref: spec.steps[1].env
+
+#  stepTemplate:
+#    env:
+#      - name: HOME
+#        value: "$(params.HOMEDIR)"
 
   steps:
 
@@ -177,6 +184,8 @@ spec:
       env:
         - name: TUF_MIRROR
           value: "$(params.TUF_MIRROR)"
+        - name: HOME
+          value: "$(params.HOMEDIR)"
 
     - name: reduce
       params:
@@ -184,10 +193,10 @@ spec:
           value: $(params.IMAGES)
         - name: SINGLE_COMPONENT
           value: $(params.SINGLE_COMPONENT)
-        - name: PIPELINERUN_ID
-          value: $(params.PIPELINERUN_ID)
-        - name: HOMEDIR
-          value: $(params.HOMEDIR)
+        - name: CR_TO_QUERY
+          value: $(params.CR_TO_QUERY)
+#        - name: HOMEDIR
+#          value: $(params.HOMEDIR)
       ref:
         resolver: git
         params:
@@ -247,6 +256,8 @@ spec:
         # files from an image, see https://github.com/enterprise-contract/ec-cli/issues/1109
         - name: EC_CACHE
           value: "false"
+        - name: HOME
+          value: "$(params.HOMEDIR)"
       computeResources:
         requests:
           cpu: 250m
@@ -263,6 +274,9 @@ spec:
       image: quay.io/enterprise-contract/ec-cli:snapshot
       onError: continue  # progress even if the step fails so we can see the debug logs
       command: [cat]
+      env:
+        - name: HOME
+          value: "$(params.HOMEDIR)"
       args:
         - "$(params.HOMEDIR)/report.yaml"
 
@@ -270,6 +284,9 @@ spec:
       image: quay.io/enterprise-contract/ec-cli:snapshot
       onError: continue  # progress even if the step fails so we can see the debug logs
       command: [cat]
+      env:
+        - name: HOME
+          value: "$(params.HOMEDIR)"
       args:
         - "$(params.HOMEDIR)/report-json.json"
 
@@ -277,6 +294,9 @@ spec:
       image: quay.io/enterprise-contract/ec-cli:snapshot
       onError: continue  # progress even if the step fails so we can see the debug logs
       command: [jq]
+      env:
+        - name: HOME
+          value: "$(params.HOMEDIR)"
       args:
         - "."
         - "$(results.TEST_OUTPUT.path)"
@@ -284,12 +304,18 @@ spec:
     - name: info
       image: quay.io/enterprise-contract/ec-cli:snapshot
       command: [printf]
+      env:
+        - name: HOME
+          value: "$(params.HOMEDIR)"
       args:
         - "----- DEBUG OUTPUT -----\n"
 
     - name: version
       image: quay.io/enterprise-contract/ec-cli:snapshot
       command: [ec]
+      env:
+        - name: HOME
+          value: "$(params.HOMEDIR)"
       args:
         - version
 
@@ -302,6 +328,9 @@ spec:
     - name: assert
       image: quay.io/enterprise-contract/ec-cli:snapshot
       command: [jq]
+      env:
+        - name: HOME
+          value: "$(params.HOMEDIR)"
       args:
         - "--argjson"
         - "strict"
