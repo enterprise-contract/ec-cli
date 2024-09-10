@@ -7,7 +7,7 @@ spec:
     - name: show-sbom
       params:
         - name: IMAGE_URL
-          value: $(tasks.build-container.results.IMAGE_URL)
+          value: $(tasks.build-image-index.results.IMAGE_URL)
       taskRef:
         params:
           - name: name
@@ -52,16 +52,16 @@ spec:
       description: Build dependencies to be prefetched by Cachi2
       name: prefetch-input
       type: string
-    - default: "false"
-      description: Java build
-      name: java
-      type: string
     - default: ""
       description: Image tag expiration time, time values could be something like 1h, 2d, 3w for hours, days, and weeks, respectively.
       name: image-expires-after
     - default: "false"
       description: Build a source image.
       name: build-source-image
+      type: string
+    - default: "false"
+      description: Add built image into an OCI image index
+      name: build-image-index
       type: string
     - default: []
       description: Array of --build-arg values ("arg=value" strings) for buildah
@@ -74,19 +74,16 @@ spec:
   results:
     - description: ""
       name: IMAGE_URL
-      value: $(tasks.build-container.results.IMAGE_URL)
+      value: $(tasks.build-image-index.results.IMAGE_URL)
     - description: ""
       name: IMAGE_DIGEST
-      value: $(tasks.build-container.results.IMAGE_DIGEST)
+      value: $(tasks.build-image-index.results.IMAGE_DIGEST)
     - description: ""
       name: CHAINS-GIT_URL
       value: $(tasks.clone-repository.results.url)
     - description: ""
       name: CHAINS-GIT_COMMIT
       value: $(tasks.clone-repository.results.commit)
-    - description: ""
-      name: JAVA_COMMUNITY_DEPENDENCIES
-      value: $(tasks.build-container.results.JAVA_COMMUNITY_DEPENDENCIES)
   tasks:
     - name: init
       params:
@@ -161,14 +158,11 @@ spec:
           - name: kind
             value: task
         resolver: bundles
-      when:
-        - input: $(params.prefetch-input)
-          operator: notin
-          values:
-            - ""
       workspaces:
         - name: git-basic-auth
           workspace: git-auth
+        - name: netrc
+          workspace: netrc
     - name: build-container
       params:
         - name: IMAGE
@@ -210,6 +204,35 @@ spec:
           operator: in
           values:
             - "true"
+    - name: build-image-index
+      params:
+        - name: IMAGE
+          value: $(params.output-image)
+        - name: COMMIT_SHA
+          value: $(tasks.clone-repository.results.commit)
+        - name: IMAGE_EXPIRES_AFTER
+          value: $(params.image-expires-after)
+        - name: ALWAYS_BUILD_INDEX
+          value: $(params.build-image-index)
+        - name: IMAGES
+          value:
+            - $(tasks.build-container.results.IMAGE_URL)@$(tasks.build-container.results.IMAGE_DIGEST)
+      runAfter:
+        - build-container
+      taskRef:
+        params:
+          - name: name
+            value: build-image-index
+          - name: bundle
+            value: quay.io/konflux-ci/tekton-catalog/task-build-image-index:0.1@sha256:18eecec92fcdb96dc346aecbbe88fb5fd95e34ee6ef4ad714dc1303723a8e4ea
+          - name: kind
+            value: task
+        resolver: bundles
+      when:
+        - input: $(tasks.init.results.build)
+          operator: in
+          values:
+            - "true"
     - name: build-source-image
       params:
         - name: BINARY_IMAGE
@@ -219,7 +242,7 @@ spec:
         - name: CACHI2_ARTIFACT
           value: $(tasks.prefetch-dependencies.results.CACHI2_ARTIFACT)
       runAfter:
-        - build-container
+        - build-image-index
       taskRef:
         params:
           - name: name
@@ -241,11 +264,11 @@ spec:
     - name: deprecated-base-image-check
       params:
         - name: IMAGE_URL
-          value: $(tasks.build-container.results.IMAGE_URL)
+          value: $(tasks.build-image-index.results.IMAGE_URL)
         - name: IMAGE_DIGEST
-          value: $(tasks.build-container.results.IMAGE_DIGEST)
+          value: $(tasks.build-image-index.results.IMAGE_DIGEST)
       runAfter:
-        - build-container
+        - build-image-index
       taskRef:
         params:
           - name: name
@@ -263,11 +286,11 @@ spec:
     - name: clair-scan
       params:
         - name: image-digest
-          value: $(tasks.build-container.results.IMAGE_DIGEST)
+          value: $(tasks.build-image-index.results.IMAGE_DIGEST)
         - name: image-url
-          value: $(tasks.build-container.results.IMAGE_URL)
+          value: $(tasks.build-image-index.results.IMAGE_URL)
       runAfter:
-        - build-container
+        - build-image-index
       taskRef:
         params:
           - name: name
@@ -285,9 +308,9 @@ spec:
     - name: ecosystem-cert-preflight-checks
       params:
         - name: image-url
-          value: $(tasks.build-container.results.IMAGE_URL)
+          value: $(tasks.build-image-index.results.IMAGE_URL)
       runAfter:
-        - build-container
+        - build-image-index
       taskRef:
         params:
           - name: name
@@ -304,14 +327,16 @@ spec:
             - "false"
     - name: sast-snyk-check
       params:
+        - name: image-digest
+          value: $(tasks.build-image-index.results.IMAGE_DIGEST)
+        - name: image-url
+          value: $(tasks.build-image-index.results.IMAGE_URL)
         - name: SOURCE_ARTIFACT
           value: $(tasks.prefetch-dependencies.results.SOURCE_ARTIFACT)
-        - name: image-digest
-          value: $(tasks.build-container.results.IMAGE_DIGEST)
-        - name: image-url
-          value: $(tasks.build-container.results.IMAGE_URL)
+        - name: CACHI2_ARTIFACT
+          value: $(tasks.prefetch-dependencies.results.CACHI2_ARTIFACT)
       runAfter:
-        - build-container
+        - build-image-index
       taskRef:
         params:
           - name: name
@@ -329,11 +354,11 @@ spec:
     - name: clamav-scan
       params:
         - name: image-digest
-          value: $(tasks.build-container.results.IMAGE_DIGEST)
+          value: $(tasks.build-image-index.results.IMAGE_DIGEST)
         - name: image-url
-          value: $(tasks.build-container.results.IMAGE_URL)
+          value: $(tasks.build-image-index.results.IMAGE_URL)
       runAfter:
-        - build-container
+        - build-image-index
       taskRef:
         params:
           - name: name
@@ -351,9 +376,9 @@ spec:
     - name: apply-tags
       params:
         - name: IMAGE
-          value: $(tasks.build-container.results.IMAGE_URL)
+          value: $(tasks.build-image-index.results.IMAGE_URL)
       runAfter:
-        - build-container
+        - build-image-index
       taskRef:
         params:
           - name: name
@@ -363,6 +388,31 @@ spec:
           - name: kind
             value: task
         resolver: bundles
+    - name: push-dockerfile
+      params:
+        - name: IMAGE
+          value: $(tasks.build-image-index.results.IMAGE_URL)
+        - name: IMAGE_DIGEST
+          value: $(tasks.build-image-index.results.IMAGE_DIGEST)
+        - name: DOCKERFILE
+          value: $(params.dockerfile)
+        - name: CONTEXT
+          value: $(params.path-context)
+        - name: SOURCE_ARTIFACT
+          value: $(tasks.prefetch-dependencies.results.SOURCE_ARTIFACT)
+      runAfter:
+        - build-image-index
+      taskRef:
+        params:
+          - name: name
+            value: push-dockerfile-oci-ta
+          - name: bundle
+            value: quay.io/konflux-ci/tekton-catalog/task-push-dockerfile-oci-ta:0.1@sha256:170af10a5b17c2854b855f2c052704bbe40f27e44075f5b0584a662177f21e97
+          - name: kind
+            value: task
+        resolver: bundles
   workspaces:
     - name: git-auth
+      optional: true
+    - name: netrc
       optional: true
