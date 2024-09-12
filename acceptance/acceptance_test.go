@@ -55,6 +55,9 @@ var noColors = flag.Bool("no-colors", false, "disable colored output")
 // specify a subset of scenarios to run filtering by given tags
 var tags = flag.String("tags", "", "select scenarios to run based on tags")
 
+// random seed to use
+var seed = flag.Int64("seed", -1, "random seed to use for the tests")
+
 // initializeScenario adds all steps and registers all hooks to the
 // provided godog.ScenarioContext
 func initializeScenario(sc *godog.ScenarioContext) {
@@ -120,7 +123,7 @@ func TestFeatures(t *testing.T) {
 	opts := godog.Options{
 		Format:         "pretty",
 		Paths:          []string{featuresDir},
-		Randomize:      -1,
+		Randomize:      *seed,
 		Concurrency:    runtime.NumCPU(),
 		TestingT:       t,
 		DefaultContext: ctx,
