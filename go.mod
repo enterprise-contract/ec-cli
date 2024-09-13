@@ -166,7 +166,7 @@ require (
 	github.com/enterprise-contract/go-gather v0.0.3 // indirect
 	github.com/enterprise-contract/go-gather/expander v0.0.1 // indirect
 	github.com/enterprise-contract/go-gather/gather/file v0.0.2-0.20240906185922-e8ebd246dc19 // indirect
-	github.com/enterprise-contract/go-gather/gather/git v0.0.5 // indirect
+	github.com/enterprise-contract/go-gather/gather/git v0.0.6-0.20240911082231-b67aa65913d1 // indirect
 	github.com/enterprise-contract/go-gather/gather/http v0.0.2 // indirect
 	github.com/enterprise-contract/go-gather/gather/oci v0.0.4 // indirect
 	github.com/enterprise-contract/go-gather/metadata/http v0.0.1 // indirect
