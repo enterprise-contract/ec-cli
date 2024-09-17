@@ -64,8 +64,6 @@ if [ "${SINGLE_COMPONENT}" == "true" ]; then
     fi
 
     echo "Reducing Snapshot to:"
-    echo "$REDUCED_SNAPSHOT" | jq .
-    SNAPSHOT=$(echo "$REDUCED_SNAPSHOT" | tr -d ' ' | tr -d '\n')
-    echo "$SNAPSHOT" | jq -c . > "${SNAPSHOT_PATH}"
+    echo "$REDUCED_SNAPSHOT" | jq '.' | tee "${SNAPSHOT_PATH}"
   fi
 fi
