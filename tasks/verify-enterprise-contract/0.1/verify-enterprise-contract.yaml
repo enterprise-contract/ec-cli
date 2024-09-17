@@ -135,6 +135,25 @@ spec:
       description: Number of parallel workers to use for policy evaluation.
       default: "1"
 
+    - name: SINGLE_COMPONENT
+      description: Reduce the Snapshot to only the component whose build caused the Snapshot to be created
+      type: string
+      default: "false"
+
+    - name: SINGLE_COMPONENT_CUSTOM_RESOURCE
+      description: >
+        Name, including kind, of the Kubernetes resource to query for labels when single
+        component mode is enabled, e.g. pr/somepipeline.
+      type: string
+      default: "unknown"
+
+    - name: SINGLE_COMPONENT_CUSTOM_RESOURCE_NS
+      description: >
+        Kubernetes namespace where the SINGLE_COMPONENT_NAME is found. Only used
+        when single component mode is enabled.
+      type: string
+      default: ""
+
   workspaces:
     - name: data
       description: The workspace where the snapshot spec json file resides
@@ -168,6 +187,21 @@ spec:
         - name: TUF_MIRROR
           value: "$(params.TUF_MIRROR)"
 
+    - name: reduce
+      env:
+        - name: SNAPSHOT
+          value: $(params.IMAGES)
+        - name: SINGLE_COMPONENT
+          value: $(params.SINGLE_COMPONENT)
+        - name: CUSTOM_RESOURCE
+          value: $(params.SINGLE_COMPONENT_CUSTOM_RESOURCE)
+        - name: CUSTOM_RESOURCE_NAMESPACE
+          value: $(params.SINGLE_COMPONENT_CUSTOM_RESOURCE_NS)
+        - name: SNAPSHOT_PATH
+          value: $(params.HOMEDIR)/snapshot.json
+      image: quay.io/enterprise-contract/ec-cli:snapshot
+      onError: continue # progress even if the step fails so we can see the debug logs
+      command: [reduce-snapshot.sh]
     - name: validate
       image: quay.io/enterprise-contract/ec-cli:snapshot
       onError: continue # progress even if the step fails so we can see the debug logs
@@ -177,7 +211,7 @@ spec:
         - image
         - "--verbose"
         - "--images"
-        - "$(params.IMAGES)"
+        - "/tekton/home/snapshot.json"
         - "--policy"
         - "$(params.POLICY_CONFIGURATION)"
         - "--public-key"

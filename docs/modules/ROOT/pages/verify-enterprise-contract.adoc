@@ -70,6 +70,15 @@ paths can be provided by using the `:` separator.
 *WORKERS* (`string`):: Number of parallel workers to use for policy evaluation.
 +
 *Default*: `1`
+*SINGLE_COMPONENT* (`string`):: Reduce the Snapshot to only the component whose build caused the Snapshot to be created
++
+*Default*: `false`
+*SINGLE_COMPONENT_CUSTOM_RESOURCE* (`string`):: Name, including kind, of the Kubernetes resource to query for labels when single component mode is enabled, e.g. pr/somepipeline.
+
++
+*Default*: `unknown`
+*SINGLE_COMPONENT_CUSTOM_RESOURCE_NS* (`string`):: Kubernetes namespace where the SINGLE_COMPONENT_NAME is found. Only used when single component mode is enabled.
+
 
 == Results
 
