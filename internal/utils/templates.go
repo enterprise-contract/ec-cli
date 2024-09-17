@@ -122,7 +122,7 @@ func colorIndicator(color string) string {
 
 // Wrap text to a certain width
 func wrap(width int, s string) string {
-	return wordwrap.WrapString(s, uint(width))
+	return wordwrap.WrapString(s, uint(width)) //nolint:gosec // G115 - not very likely to overflow here
 }
 
 // A string with n spaces
