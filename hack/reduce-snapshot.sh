@@ -29,6 +29,10 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+# verify if in json form
+SNAPSHOT="$(cat "${SNAPSHOT}" 2> /dev/null || echo "${SNAPSHOT}")"
+[[ ! "${SNAPSHOT}" =~ ^\s*\{ ]] && echo 'Error: Cannot load snapshot from JSON string or file' && exit 1
+
 echo "Single Component mode? ${SINGLE_COMPONENT}"
 if [ "${SINGLE_COMPONENT}" == "true" ]; then
 
@@ -46,24 +50,19 @@ if [ "${SINGLE_COMPONENT}" == "true" ]; then
   if [ "${SNAPSHOT_CREATION_TYPE}" == "component" ] && [ "${SNAPSHOT_CREATION_COMPONENT}" != "" ]; then
     echo "Single Component mode is ${SINGLE_COMPONENT} and Snapshot type is component"
 
-    # verify if in json form
-    SNAPSHOT="$(cat "${SNAPSHOT}" 2> /dev/null || echo "${SNAPSHOT}")"
-
-    [[ ! "${SNAPSHOT}" =~ ^\s*\{ ]] && echo 'Error: Cannot load snapshot from JSON string or file' && exit 1
-
-    REDUCED_SNAPSHOT=$(echo "${SNAPSHOT}" | jq --arg component "${SNAPSHOT_CREATION_COMPONENT}" \
+    SNAPSHOT=$(echo "${SNAPSHOT}" | jq --arg component "${SNAPSHOT_CREATION_COMPONENT}" \
     'del(.components[] | select(.name != $component))')
 
     ## make sure we still have 1 component
-    COMPONENT_COUNT=$(echo "$REDUCED_SNAPSHOT" | jq -r '[ .components[] ] | length')
+    COMPONENT_COUNT=$(echo "$SNAPSHOT" | jq -r '[ .components[] ] | length')
     echo "COMPONENT_COUNT: ${COMPONENT_COUNT}"
     if [ "${COMPONENT_COUNT}" != "1" ] ; then
       echo "Error: Reduced Snapshot has ${COMPONENT_COUNT} components. It should contain 1"
       echo "       Verify that the Snapshot contains the built component: ${SNAPSHOT_CREATION_COMPONENT}"
       exit 1
     fi
-
-    echo "Reducing Snapshot to:"
-    echo "$REDUCED_SNAPSHOT" | jq '.' | tee "${SNAPSHOT_PATH}"
   fi
 fi
+
+# we need to create snapshot file to be passed to later stages.
+echo "${SNAPSHOT}" | jq '.' | tee "${SNAPSHOT_PATH}"
