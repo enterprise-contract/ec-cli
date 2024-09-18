@@ -28,6 +28,8 @@ type EvaluationTarget struct {
 type Evaluator interface {
 	Evaluate(ctx context.Context, target EvaluationTarget) ([]Outcome, Data, error)
 
+	EvaluateAndReturnMetadata(ctx context.Context, target EvaluationTarget) ([]Outcome, Data, map[string][]string, error)
+	
 	// Destroy performs any cleanup needed
 	Destroy()
 

@@ -35,6 +35,7 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/signature"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
+	"github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 )
 
 func Test_PrintExpectedJSON(t *testing.T) {
@@ -92,6 +93,10 @@ func Test_PrintExpectedJSON(t *testing.T) {
 		Signatures: []signature.EntitySignature{
 			{KeyID: "key-id", Signature: "signature"},
 		},
+		PinnedPolicyURLs: v1alpha1.Source{
+			Policy: []string{"http://example.com?ref=f00b4r//policy/lib", "http://example.com?ref=b4z//policy"},
+			Data:  []string{"http://example.com?ref=b4c0n//data"},
+		},
 		ExitCode: 42,
 	}
 
@@ -117,6 +122,15 @@ func Test_PrintExpectedJSON(t *testing.T) {
 		    "msg": "message3"
 		  }
 		},
+		"pinnedPolicyUrls": {
+			"policy": [
+				"http://example.com?ref=f00b4r//policy/lib",
+				"http://example.com?ref=b4z//policy"
+			],
+			"data": [
+				"http://example.com?ref=b4c0n//data"
+			]
+    	},
 		"attestationSyntaxCheck": {
 		  "passed": false,
 		  "result": {
@@ -201,6 +215,7 @@ func Test_PrintOutputsExpectedJSON(t *testing.T) {
 		  "attestationSyntaxCheck": {
 			"passed": false
 		  },
+		  "pinnedPolicyUrls": {},
 		  "policyCheck": null
 		},
 		{
@@ -216,6 +231,7 @@ func Test_PrintOutputsExpectedJSON(t *testing.T) {
 		  "attestationSyntaxCheck": {
 			"passed": false
 		  },
+		  "pinnedPolicyUrls": {},
 		  "policyCheck": null
 		}
 	  ]`, buff.String())

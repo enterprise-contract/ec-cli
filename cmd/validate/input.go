@@ -36,6 +36,7 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 	validate_utils "github.com/enterprise-contract/ec-cli/internal/validate"
+	// "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 )
 
 type InputValidationFunc func(context.Context, string, policy.Policy, bool) (*output.Output, error)
@@ -116,6 +117,7 @@ func validateInputCmd(validate InputValidationFunc) *cobra.Command {
 
 			showSuccesses, _ := cmd.Flags().GetBool("show-successes")
 
+			// pinnedPolicyURLs := v1alpha1.Source{}
 			for _, f := range data.filePaths {
 				lock.Add(1)
 				go func(fpath string) {
@@ -123,6 +125,7 @@ func validateInputCmd(validate InputValidationFunc) *cobra.Command {
 
 					ctx := cmd.Context()
 					out, err := validate(ctx, fpath, data.policy, data.info)
+					// pinnedPolicyURLs = out.PinnedPolicyURLs
 					res := result{
 						err: err,
 						input: input.Input{
@@ -173,6 +176,10 @@ func validateInputCmd(validate InputValidationFunc) *cobra.Command {
 			sort.Slice(inputs, func(i, j int) bool {
 				return inputs[i].FilePath > inputs[j].FilePath
 			})
+
+			// data.policy.SetSpecSources(v1alpha1.EnterpriseContractPolicySpec{
+			// 	Sources: []v1alpha1.Source{pinnedPolicyURLs},
+			// })
 
 			report, err := input.NewReport(inputs, data.policy, manyData, manyPolicyInput)
 			if err != nil {

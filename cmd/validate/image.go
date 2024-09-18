@@ -40,6 +40,7 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/policy/source"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 	validate_utils "github.com/enterprise-contract/ec-cli/internal/validate"
+	"github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 )
 
 type imageValidationFunc func(context.Context, app.SnapshotComponent, *app.SnapshotSpec, policy.Policy, []evaluator.Evaluator, bool) (*output.Output, error)
@@ -286,6 +287,8 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 				component   applicationsnapshot.Component
 				data        []evaluator.Data
 				policyInput []byte
+				pinnedPolicyURLs v1alpha1.Source
+
 			}
 
 			appComponents := data.spec.Components
@@ -331,6 +334,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 							SnapshotComponent: comp,
 							Success:           err == nil,
 						},
+						pinnedPolicyURLs: out.PinnedPolicyURLs,
 					}
 
 					// Skip on err to not panic. Error is return on routine completion.
@@ -380,6 +384,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 			var components []applicationsnapshot.Component
 			var manyData [][]evaluator.Data
 			var manyPolicyInput [][]byte
+			var combinedPinnedPolicyURLs []v1alpha1.Source
 			var allErrors error = nil
 			for i := 0; i < numComponents; i++ {
 				r := <-results
@@ -390,6 +395,9 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 					components = append(components, r.component)
 					manyData = append(manyData, r.data)
 					manyPolicyInput = append(manyPolicyInput, r.policyInput)
+					
+					combinedPinnedPolicyURLs = append(combinedPinnedPolicyURLs, r.pinnedPolicyURLs)
+
 				}
 			}
 			close(results)
@@ -402,6 +410,11 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 				return components[i].ContainerImage > components[j].ContainerImage
 			})
 
+			// Update the Sources field with pinnedPolicyURLs
+			if len(combinedPinnedPolicyURLs) > 0 {
+				data.policy.SetSpecSources(combinedPinnedPolicyURLs)
+			}
+			
 			if len(data.outputFile) > 0 {
 				data.output = append(data.output, fmt.Sprintf("%s=%s", applicationsnapshot.JSON, data.outputFile))
 			}

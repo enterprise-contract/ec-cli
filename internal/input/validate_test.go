@@ -44,6 +44,10 @@ func (e mockEvaluator) Evaluate(ctx context.Context, target evaluator.Evaluation
 	return []evaluator.Outcome{}, nil, nil
 }
 
+func (e mockEvaluator) EvaluateAndReturnMetadata(ctx context.Context, target evaluator.EvaluationTarget) ([]evaluator.Outcome, evaluator.Data, map[string][]string, error) {
+	return []evaluator.Outcome{}, nil, map[string][]string{}, nil
+}
+
 func (e mockEvaluator) Destroy() {
 }
 
@@ -53,6 +57,10 @@ func (e mockEvaluator) CapabilitiesPath() string {
 
 func (b badMockEvaluator) Evaluate(ctx context.Context, target evaluator.EvaluationTarget) ([]evaluator.Outcome, evaluator.Data, error) {
 	return nil, nil, errors.New("Evaluator error")
+}
+
+func (b badMockEvaluator) EvaluateAndReturnMetadata(ctx context.Context, target evaluator.EvaluationTarget) ([]evaluator.Outcome, evaluator.Data, map[string][]string, error) {
+	return nil, nil, map[string][]string{}, errors.New("Evaluator error")
 }
 
 func (e badMockEvaluator) Destroy() {

@@ -29,6 +29,7 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/signature"
+	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 )
 
 const missingSignatureMessage = "No image signatures found matching the given public key. " +
@@ -88,6 +89,7 @@ type Output struct {
 	Data                      []evaluator.Data            `json:"-"`
 	Policy                    policy.Policy               `json:"-"`
 	PolicyInput               []byte                      `json:"-"`
+	PinnedPolicyURLs          ecc.Source                  `json:"pinnedPolicyUrls,omitempty"`
 }
 
 // SetImageAccessibleCheck sets the passed and result.message fields of the ImageAccessibleCheck to the given values.
@@ -209,6 +211,10 @@ func (o *Output) SetPolicyCheck(results []evaluator.Outcome) {
 		}
 	}
 	o.PolicyCheck = results
+}
+
+func (o *Output) SetPinnedPolicyURLs(pinnedUrls ecc.Source) {
+	o.PinnedPolicyURLs = pinnedUrls
 }
 
 func keepSomeMetadata(results []evaluator.Result) {

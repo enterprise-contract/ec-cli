@@ -31,6 +31,7 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 	"github.com/enterprise-contract/ec-cli/internal/output"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
+	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 )
 
 // ValidateImage executes the required method calls to evaluate a given policy
@@ -106,7 +107,7 @@ func ValidateImage(ctx context.Context, comp app.SnapshotComponent, snap *app.Sn
 	}
 
 	var allResults []evaluator.Outcome
-
+	pinnedPolicyUrls := ecc.Source{}
 	for _, e := range evaluators {
 		// Todo maybe: Handle each one concurrently
 		target := evaluator.EvaluationTarget{Inputs: []string{inputPath}}
@@ -115,7 +116,7 @@ func ValidateImage(ctx context.Context, comp app.SnapshotComponent, snap *app.Sn
 		} else {
 			target.Target = digest
 		}
-		results, data, err := e.Evaluate(ctx, target)
+		results, data, pinnedPolicySources, err := e.EvaluateAndReturnMetadata(ctx, target)
 		log.Debug("\n\nRunning conftest policy check\n\n")
 
 		if err != nil {
@@ -123,6 +124,15 @@ func ValidateImage(ctx context.Context, comp app.SnapshotComponent, snap *app.Sn
 			return nil, err
 		}
 		allResults = append(allResults, results...)
+		for urlType, url := range pinnedPolicySources {
+			switch urlType {
+			case "data":
+				pinnedPolicyUrls.Data = append(pinnedPolicyUrls.Data, url...)
+			case "policy":
+				pinnedPolicyUrls.Policy = append(pinnedPolicyUrls.Policy, url...)
+			}
+		}
+		out.SetPinnedPolicyURLs(pinnedPolicyUrls)
 		out.Data = append(out.Data, data)
 	}
 

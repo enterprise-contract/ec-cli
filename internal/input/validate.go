@@ -29,6 +29,7 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/output"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
+	"github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 )
 
 var inputFile = input.NewInput
@@ -47,19 +48,28 @@ func ValidateInput(ctx context.Context, fpath string, policy policy.Policy, deta
 	}
 
 	var allResults []evaluator.Outcome
+	pinnedPolicyUrls := v1alpha1.Source{}
 	for _, e := range p.Evaluators {
-		results, _, err := e.Evaluate(ctx, evaluator.EvaluationTarget{Inputs: inputFiles})
+		results, _, pinnedPolicySources, err := e.EvaluateAndReturnMetadata(ctx, evaluator.EvaluationTarget{Inputs: inputFiles})
 		if err != nil {
 			return nil, fmt.Errorf("evaluating policy: %w", err)
 		}
 		allResults = append(allResults, results...)
+		for urlType, url := range pinnedPolicySources {
+			switch urlType {
+			case "data":
+				pinnedPolicyUrls.Data = append(pinnedPolicyUrls.Data, url...)
+			case "policy":
+				pinnedPolicyUrls.Policy = append(pinnedPolicyUrls.Policy, url...)
+			}
+		}
 	}
 
 	log.Debug("Conftest policy check complete")
 
 	out := output.Output{Detailed: detailed}
 	out.SetPolicyCheck(allResults)
-
+	out.SetPinnedPolicyURLs(pinnedPolicyUrls)
 	return &out, nil
 }
 

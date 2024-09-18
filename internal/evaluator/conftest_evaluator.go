@@ -28,6 +28,7 @@ import (
 	"time"
 
 	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
+	"github.com/enterprise-contract/go-gather/metadata"
 	"github.com/open-policy-agent/conftest/output"
 	conftest "github.com/open-policy-agent/conftest/policy"
 	"github.com/open-policy-agent/conftest/runner"
@@ -42,6 +43,9 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/policy/source"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
+
+	gitMetadata "github.com/enterprise-contract/go-gather/metadata/git"
+	ociMetadata "github.com/enterprise-contract/go-gather/metadata/oci"
 )
 
 type contextKey string
@@ -355,6 +359,13 @@ func (r *policyRules) collect(a *ast.AnnotationsRef) error {
 	return nil
 }
 
+type PolicyMetadata struct {
+	Type      string            `json:"type"`
+	Source    string            `json:"source"`
+	PinnedURL string            `json:"pinned-url"`
+	Metadata  metadata.Metadata `json:"-"`
+}
+
 func (c conftestEvaluator) Evaluate(ctx context.Context, target EvaluationTarget) ([]Outcome, Data, error) {
 	var results []Outcome
 
@@ -522,6 +533,193 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, target EvaluationTarget
 	}
 
 	return results, data, nil
+}
+
+// EvaluateAndReturnMetadata is equivalent to Evaluate but also returns the pinned URLs for each policy source
+func (c conftestEvaluator) EvaluateAndReturnMetadata(ctx context.Context, target EvaluationTarget) ([]Outcome, Data, map[string][]string, error) {
+	var results []Outcome
+	pinnedUrls := make(map[string][]string, len(c.policySources))
+	// hold all rule annotations from all policy sources
+	// NOTE: emphasis on _all rules from all sources_; meaning that if two rules
+	// exist with the same code in two separate sources the collected rule
+	// information is not deterministic
+	rules := policyRules{}
+	// Download all sources
+	for _, s := range c.policySources {
+		dir, m, err := s.GetPolicyWithMetadata(ctx, c.workDir, false)
+		if err != nil {
+			log.Debugf("Unable to download source from %s!", s.PolicyUrl())
+			// TODO do we want to download other policies instead of erroring out?
+			return nil, nil, nil, err
+		}
+		var ref string
+		switch v := m.(type) {
+		case *gitMetadata.GitMetadata:
+			ref = string(v.LatestCommit)
+			pinned := fmt.Sprintf("%s?ref=%s", strings.Split(strings.Split(s.PolicyUrl(), "//")[0], "?")[0], ref)
+			if strings.Split(s.PolicyUrl(), "//")[1] != "" {
+				pinned = pinned + "//" + strings.Split(s.PolicyUrl(), "//")[1]
+			}
+			pinnedUrls[s.Subdir()] = append(pinnedUrls[s.Subdir()], pinned)
+		case *ociMetadata.OCIMetadata:
+			ref = strings.Split(v.Digest, ":")[1]
+			pinned := fmt.Sprintf("%s:%s", strings.Split(s.PolicyUrl(), ":")[0], ref)
+			pinnedUrls[s.Subdir()] = append(pinnedUrls[s.Subdir()], pinned)
+		default:
+			pinnedUrls[s.Subdir()] = append(pinnedUrls[s.Subdir()], s.PolicyUrl())
+			log.Debugf("Metadata from %s: %v", s.PolicyUrl(), v)
+		}
+
+		annotations := []*ast.AnnotationsRef{}
+		fs := utils.FS(ctx)
+		// We only want to inspect the directory of policy subdirs, not config or data subdirs.
+		if s.Subdir() == "policy" {
+			annotations, err = opa.InspectDir(fs, dir)
+			if err != nil {
+				errMsg := err
+				if err.Error() == "no rego files found in policy subdirectory" {
+					// Let's try to give some more robust messaging to the user.
+					policyURL, err := url.Parse(s.PolicyUrl())
+					if err != nil {
+						return nil, nil, nil, errMsg
+					}
+					// Do we have a prefix at the end of the URL path?
+					// If not, this means we aren't trying to access a specific file.
+					// TODO: Determine if we want to check for a .git suffix as well?
+					pos := strings.LastIndex(policyURL.Path, ".")
+					if pos == -1 {
+						// Are we accessing a GitHub or GitLab URL? If so, are we beginning with 'https' or 'http'?
+						if (policyURL.Host == "github.com" || policyURL.Host == "gitlab.com") && (policyURL.Scheme == "https" || policyURL.Scheme == "http") {
+							log.Debug("Git Hub or GitLab, http transport, and no file extension, this could be a problem.")
+							errMsg = fmt.Errorf("%s.\nYou've specified a %s URL with an %s:// scheme.\nDid you mean: %s instead?", errMsg, policyURL.Hostname(), policyURL.Scheme, fmt.Sprint(policyURL.Host+policyURL.RequestURI()))
+						}
+					}
+				}
+				return nil, nil, nil, errMsg
+			}
+		}
+
+		for _, a := range annotations {
+			if a.Annotations == nil {
+				continue
+			}
+			if err := rules.collect(a); err != nil {
+				return nil, nil, nil, err
+			}
+		}
+	}
+
+	var r testRunner
+	var ok bool
+	if r, ok = ctx.Value(runnerKey).(testRunner); r == nil || !ok {
+
+		// should there be a namespace defined or not
+		allNamespaces := true
+		if len(c.namespace) > 0 {
+			allNamespaces = false
+		}
+
+		r = &conftestRunner{
+			runner.TestRunner{
+				Data:          []string{c.dataDir},
+				Policy:        []string{c.policyDir},
+				Namespace:     c.namespace,
+				AllNamespaces: allNamespaces,
+				NoFail:        true,
+				Output:        c.outputFormat,
+				Capabilities:  c.CapabilitiesPath(),
+			},
+		}
+	}
+
+	log.Debugf("runner: %#v", r)
+	log.Debugf("inputs: %#v", target.Inputs)
+
+	runResults, data, err := r.Run(ctx, target.Inputs)
+	if err != nil {
+		// TODO do we want to evaluate further policies instead of erroring out?
+		return nil, nil, nil, err
+	}
+
+	effectiveTime := c.policy.EffectiveTime()
+	ctx = context.WithValue(ctx, effectiveTimeKey, effectiveTime)
+
+	// Track how many rules have been processed. This is used later on to determine if anything
+	// at all was processed.
+	totalRules := 0
+
+	// loop over each policy (namespace) evaluation
+	// effectively replacing the results returned from conftest
+	for i, result := range runResults {
+		log.Debugf("Evaluation result at %d: %#v", i, result)
+		warnings := []Result{}
+		failures := []Result{}
+		exceptions := []Result{}
+		skipped := []Result{}
+
+		for i := range result.Warnings {
+			warning := result.Warnings[i]
+			addRuleMetadata(ctx, &warning, rules)
+
+			if !c.isResultIncluded(warning, target.Target) {
+				log.Debugf("Skipping result warning: %#v", warning)
+				continue
+			}
+			warnings = append(warnings, warning)
+		}
+
+		for i := range result.Failures {
+			failure := result.Failures[i]
+			addRuleMetadata(ctx, &failure, rules)
+
+			if !c.isResultIncluded(failure, target.Target) {
+				log.Debugf("Skipping result failure: %#v", failure)
+				continue
+			}
+
+			if !isResultEffective(failure, effectiveTime) {
+				// TODO: Instead of moving to warnings, create new attribute: "futureViolations"
+				warnings = append(warnings, failure)
+			} else {
+				failures = append(failures, failure)
+			}
+		}
+
+		for i := range result.Exceptions {
+			exception := result.Exceptions[i]
+			addRuleMetadata(ctx, &exception, rules)
+			exceptions = append(exceptions, exception)
+		}
+
+		for i := range result.Skipped {
+			skip := result.Skipped[i]
+			addRuleMetadata(ctx, &skip, rules)
+			skipped = append(skipped, skip)
+		}
+
+		result.Warnings = warnings
+		result.Failures = failures
+		result.Exceptions = exceptions
+		result.Skipped = skipped
+
+		// Replace the placeholder successes slice with the actual successes.
+		result.Successes = c.computeSuccesses(result, rules, effectiveTime, target.Target)
+
+		totalRules += len(result.Warnings) + len(result.Failures) + len(result.Successes)
+
+		results = append(results, result)
+	}
+
+	trim(&results)
+
+	// If no rules were checked, then we have effectively failed, because no tests were actually
+	// ran due to input error, etc.
+	if totalRules == 0 {
+		log.Error("no successes, warnings, or failures, check input")
+		return nil, nil, nil, fmt.Errorf("no successes, warnings, or failures, check input")
+	}
+
+	return results, data, pinnedUrls, nil
 }
 
 func toRules(results []output.Result) []Result {

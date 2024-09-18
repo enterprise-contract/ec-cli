@@ -190,6 +190,9 @@ func (mockPolicySource) GetPolicy(_ context.Context, _ string, _ bool) (string, 
 	return "", nil
 }
 
+func (mockPolicySource) GetPolicyWithMetadata(_ context.Context, _ string, _ bool) (string, metadata.Metadata, error) {
+	return "", nil, nil
+}
 func (mockPolicySource) PolicyUrl() string {
 	return ""
 }
@@ -219,10 +222,10 @@ func TestGetPolicyThroughCache(t *testing.T) {
 			return nil, afero.WriteFile(fs, filepath.Join(dest, "data.json"), data, 0400)
 		}
 
-		s1, err := getPolicyThroughCache(ctx, &mockPolicySource{}, "/workdir1", dl)
+		s1, _, err := getPolicyThroughCache(ctx, &mockPolicySource{}, "/workdir1", dl)
 		require.NoError(t, err)
 
-		s2, err := getPolicyThroughCache(ctx, &mockPolicySource{}, "/workdir2", dl)
+		s2, _, err := getPolicyThroughCache(ctx, &mockPolicySource{}, "/workdir2", dl)
 		require.NoError(t, err)
 
 		assert.NotEqual(t, s1, s2)

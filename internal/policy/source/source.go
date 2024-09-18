@@ -63,6 +63,7 @@ type downloaderFunc interface {
 // Must implement the GetPolicy() method.
 type PolicySource interface {
 	GetPolicy(ctx context.Context, dest string, showMsg bool) (string, error)
+	GetPolicyWithMetadata(ctx context.Context, dest string, showMsg bool) (string, metadata.Metadata, error)
 	PolicyUrl() string
 	Subdir() string
 }
@@ -83,7 +84,7 @@ type cacheContent struct {
 	err       error
 }
 
-func getPolicyThroughCache(ctx context.Context, s PolicySource, workDir string, dl func(string, string) (metadata.Metadata, error)) (string, error) {
+func getPolicyThroughCache(ctx context.Context, s PolicySource, workDir string, dl func(string, string) (metadata.Metadata, error)) (string, metadata.Metadata, error) {
 	sourceUrl := s.PolicyUrl()
 	dest := uniqueDestination(workDir, s.Subdir(), sourceUrl)
 
@@ -101,7 +102,7 @@ func getPolicyThroughCache(ctx context.Context, s PolicySource, workDir string, 
 
 	d, c := dfn.(func() (string, cacheContent))()
 	if c.err != nil {
-		return "", c.err
+		return "", nil, c.err
 	}
 
 	// If the destination directory is different from the source directory, we
@@ -110,13 +111,13 @@ func getPolicyThroughCache(ctx context.Context, s PolicySource, workDir string, 
 		fs := utils.FS(ctx)
 		base := filepath.Dir(dest)
 		if err := fs.MkdirAll(base, 0755); err != nil {
-			return "", err
+			return "", nil, err
 		}
 
 		if symlinkableFS, ok := fs.(afero.Symlinker); ok {
 			log.Debugf("Symlinking %s to %s", d, dest)
 			if err := symlinkableFS.SymlinkIfPossible(d, dest); err != nil {
-				return "", err
+				return "", nil, err
 			}
 			if c.metadata != nil {
 				if _, ok := c.metadata.(*gitMetadata.GitMetadata); ok {
@@ -126,14 +127,14 @@ func getPolicyThroughCache(ctx context.Context, s PolicySource, workDir string, 
 					log.Debugf("Image digest for source(%s): %s\n", s.PolicyUrl(), c.metadata.(*ociMetadata.OCIMetadata).Digest)
 				}
 			}
-			return dest, nil
+			return dest, c.metadata, nil
 		} else {
 			log.Debugf("Filesystem does not support symlinking: %q, re-downloading instead", fs.Name())
 			m, err := dl(sourceUrl, dest)
 			if _, ok := m.(*gitMetadata.GitMetadata); ok {
 				log.Debugf("SHA for source(%s): %s\n", s.PolicyUrl(), m.(*gitMetadata.GitMetadata).LatestCommit)
 			}
-			return dest, err
+			return dest, m, err
 		}
 	}
 
@@ -145,11 +146,25 @@ func getPolicyThroughCache(ctx context.Context, s PolicySource, workDir string, 
 			log.Debugf("Image digest for source(%s): %s\n", s.PolicyUrl(), c.metadata.(*ociMetadata.OCIMetadata).Digest)
 		}
 	}
-	return d, c.err
+	return d, c.metadata, c.err
 }
 
 // GetPolicies clones the repository for a given PolicyUrl
 func (p *PolicyUrl) GetPolicy(ctx context.Context, workDir string, showMsg bool) (string, error) {
+	dl := func(source string, dest string) (metadata.Metadata, error) {
+		x := ctx.Value(DownloaderFuncKey)
+		if dl, ok := x.(downloaderFunc); ok {
+			return dl.Download(ctx, dest, source, showMsg)
+		}
+		return downloader.Download(ctx, dest, source, showMsg)
+	}
+
+	dest, _, err := getPolicyThroughCache(ctx, p, workDir, dl)
+	return dest, err
+}
+
+// GetPolicyWithMetadata clones the repository for a given PolicyUrl and returns metadata
+func (p *PolicyUrl) GetPolicyWithMetadata(ctx context.Context, workDir string, showMsg bool) (string, metadata.Metadata, error) {
 	dl := func(source string, dest string) (metadata.Metadata, error) {
 		x := ctx.Value(DownloaderFuncKey)
 		if dl, ok := x.(downloaderFunc); ok {
@@ -189,6 +204,28 @@ func InlineData(source []byte) PolicySource {
 }
 
 func (s inlineData) GetPolicy(ctx context.Context, workDir string, showMsg bool) (string, error) {
+	dl := func(source string, dest string) (metadata.Metadata, error) {
+		fs := utils.FS(ctx)
+
+		if err := fs.MkdirAll(dest, 0755); err != nil {
+			return nil, err
+		}
+
+		f := path.Join(dest, "rule_data.json")
+		m := &fileMetadata.FileMetadata{
+			Path: dest,
+			Size: int64(len(dest)),
+			SHA:  "",
+		}
+
+		return m, afero.WriteFile(fs, f, s.source, 0400)
+	}
+
+	dest,_,err := getPolicyThroughCache(ctx, s, workDir, dl)
+	return dest, err
+}
+
+func (s inlineData) GetPolicyWithMetadata(ctx context.Context, workDir string, showMsg bool) (string, metadata.Metadata, error) {
 	dl := func(source string, dest string) (metadata.Metadata, error) {
 		fs := utils.FS(ctx)
 

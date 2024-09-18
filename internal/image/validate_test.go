@@ -295,6 +295,12 @@ func (e *mockEvaluator) Evaluate(ctx context.Context, target evaluator.Evaluatio
 	return args.Get(0).([]evaluator.Outcome), args.Get(1).(evaluator.Data), args.Error(2)
 }
 
+func (e *mockEvaluator) EvaluateAndReturnMetadata(ctx context.Context, target evaluator.EvaluationTarget) ([]evaluator.Outcome, evaluator.Data, map[string][]string, error) {
+	args := e.Called(ctx, target.Inputs)
+
+	return args.Get(0).([]evaluator.Outcome), args.Get(1).(evaluator.Data), args.Get(2).(map[string][]string), args.Error(3)
+}
+
 func (e *mockEvaluator) Destroy() {
 	e.Called()
 }
@@ -325,7 +331,7 @@ func TestEvaluatorLifecycle(t *testing.T) {
 	require.NoError(t, err)
 
 	e := &mockEvaluator{}
-	e.On("Evaluate", ctx, mock.Anything).Return([]evaluator.Outcome{}, evaluator.Data{}, nil)
+	e.On("EvaluateAndReturnMetadata", ctx, mock.Anything).Return([]evaluator.Outcome{}, evaluator.Data{}, map[string][]string{}, nil)
 
 	// e.Destroy() should not be invoked
 

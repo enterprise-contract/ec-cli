@@ -87,6 +87,7 @@ type Policy interface {
 	Identity() cosign.Identity
 	Keyless() bool
 	SigstoreOpts() (SigstoreOpts, error)
+	SetSpecSources(sources []ecc.Source)
 }
 
 type policy struct {
@@ -97,6 +98,10 @@ type policy struct {
 	attestationTime *time.Time
 	identity        cosign.Identity
 	ignoreRekor     bool
+}
+
+func (p *policy) SetSpecSources(sources []ecc.Source) {
+	p.EnterpriseContractPolicySpec.Sources = sources
 }
 
 // PublicKeyPEM returns the PublicKey in PEM format.
