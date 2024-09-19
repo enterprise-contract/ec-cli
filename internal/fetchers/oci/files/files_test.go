@@ -60,7 +60,7 @@ func TestImageManifests(t *testing.T) {
 
 	ctx := oci.WithClient(context.Background(), &client)
 
-	extractors := []Extractor{OLMManifest{}, RedHatManifest{}}
+	extractors := []Extractor{OLMManifest{}}
 	files, err := ImageFiles(ctx, ref, extractors)
 
 	assert.NoError(t, err)
@@ -86,7 +86,7 @@ func TestDoesntFetchLayersForUnsupported(t *testing.T) {
 
 	ctx := oci.WithClient(context.Background(), &client)
 
-	extractors := []Extractor{OLMManifest{}, RedHatManifest{}}
+	extractors := []Extractor{OLMManifest{}}
 	files, err := ImageFiles(ctx, ref, extractors)
 
 	assert.NoError(t, err)
