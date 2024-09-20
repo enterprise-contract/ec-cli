@@ -179,7 +179,7 @@ spec:
           - name: name
             value: tkn-bundle
           - name: bundle
-            value: quay.io/konflux-ci/tekton-catalog/task-tkn-bundle:0.1@sha256:75bc11cf43b4ee05330ce6cdc1e5289e109b0fd6781a78ef3bd1ce2cca86a8a8
+            value: quay.io/konflux-ci/tekton-catalog/task-tkn-bundle:0.1@sha256:29b53072809df78b238fbaa6fdbf404399400edc50e90eb860401c9b3e59cd93
           - name: kind
             value: task
         resolver: bundles
@@ -206,7 +206,7 @@ spec:
           - name: name
             value: clair-scan
           - name: bundle
-            value: quay.io/konflux-ci/tekton-catalog/task-clair-scan:0.2@sha256:772233e807b0bb27e32566b3a6fe13da4c7588b573319a09b20c52c1225b0002
+            value: quay.io/konflux-ci/tekton-catalog/task-clair-scan:0.2@sha256:9f4ddafd599e06b319cece5a4b8ac36b9e7ec46bea378bc6c6af735d3f7f8060
           - name: kind
             value: task
         resolver: bundles
@@ -224,7 +224,7 @@ spec:
           - name: name
             value: sast-snyk-check
           - name: bundle
-            value: quay.io/konflux-ci/tekton-catalog/task-sast-snyk-check:0.2@sha256:60ef0fa39e101f007e0abfdaafa69f0ab71ebe443c8a0923e1892035acc91dda
+            value: quay.io/konflux-ci/tekton-catalog/task-sast-snyk-check:0.2@sha256:06d9b14bed7c7f50593a289f723b074e3c0d6b025f74e61692224425713ece7e
           - name: kind
             value: task
         resolver: bundles
@@ -254,7 +254,7 @@ spec:
           - name: name
             value: clamav-scan
           - name: bundle
-            value: quay.io/konflux-ci/tekton-catalog/task-clamav-scan:0.1@sha256:412e96edae67c8a0ad9500756dab5b611e0a665535879902155060064a72f28e
+            value: quay.io/konflux-ci/tekton-catalog/task-clamav-scan:0.1@sha256:37a2dcca17429a0e06f36a77c362d2f9b3cb4d0ad9c20393167bd740650a4657
           - name: kind
             value: task
         resolver: bundles
