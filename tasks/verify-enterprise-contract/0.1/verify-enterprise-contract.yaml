@@ -202,6 +202,7 @@ spec:
       image: quay.io/enterprise-contract/ec-cli:snapshot
       onError: continue # progress even if the step fails so we can see the debug logs
       command: [reduce-snapshot.sh]
+
     - name: validate
       image: quay.io/enterprise-contract/ec-cli:snapshot
       onError: continue # progress even if the step fails so we can see the debug logs
@@ -230,8 +231,6 @@ spec:
         - "--extra-rule-data=$(params.EXTRA_RULE_DATA)"
         - "--output"
         - "text?show-successes=false"
-        - "--output"
-        - "yaml=$(params.HOMEDIR)/report.yaml"
         - "--output"
         - "appstudio=$(results.TEST_OUTPUT.path)"
         - "--output"
@@ -263,13 +262,6 @@ spec:
           mountPath: /etc/pki/tls/certs/ca-custom-bundle.crt
           subPath: ca-bundle.crt
           readOnly: true
-
-    - name: report
-      image: quay.io/enterprise-contract/ec-cli:snapshot
-      onError: continue  # progress even if the step fails so we can see the debug logs
-      command: [cat]
-      args:
-        - "$(params.HOMEDIR)/report.yaml"
 
     - name: report-json
       image: quay.io/enterprise-contract/ec-cli:snapshot
