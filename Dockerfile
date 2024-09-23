@@ -41,7 +41,7 @@ COPY . .
 
 RUN /build/build.sh "${BUILD_LIST}" "${BUILD_SUFFIX}"
 
-FROM registry.access.redhat.com/ubi9/ubi-minimal:9.4@sha256:1b6d711648229a1c987f39cfdfccaebe2bd92d0b5d8caa5dbaa5234a9278a0b2
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.4@sha256:c0e70387664f30cd9cf2795b547e4a9a51002c44a4a86aa9335ab030134bf392
 
 ARG TARGETOS
 ARG TARGETARCH
