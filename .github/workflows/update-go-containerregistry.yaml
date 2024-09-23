@@ -1,0 +1,71 @@
+---
+# Copyright The Enterprise Contract Contributors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# SPDX-License-Identifier: Apache-2.0
+
+name: Update go-containerregistry
+
+"on":
+  workflow_dispatch:
+  schedule:
+    # Mondays at 9:30 AM
+    - cron: "30 9 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+
+      - uses: actions/cache/restore@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+        with:
+          key: main
+          path: '**'
+
+      - uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      - name: update
+        run: |
+          go mod edit -replace github.com/google/go-containerregistry=github.com/enterprise-contract/go-containerregistry@main
+          go mod tidy
+        env:
+          # Hack to ensure this repo is always updated, see:
+          #   https://github.com/golang/go/issues/45413
+          GOPRIVATE: github.com/enterprise-contract/go-containerregistry
+
+      - uses: actions/create-github-app-token@5d869da34e18e7287c1daad50e0b8ea0f506ce69 # v1.11.0
+        id: generate-token
+        with:
+          app-id: 32872589
+          private-key: ${{ secrets.EC_AUTOMATION_KEY }}
+
+      - name: pull-request
+        uses: peter-evans/create-pull-request@5e914681df9dc83aa4e4905692ca88beb2f9e91f # v7.0.5
+        with:
+          add-paths: |
+            go.mod
+            go.sum
+          branch: ci/update-go-containerregistry
+          commit-message: Bump enterprise-contract/go-containerregistry
+          sign-commits: true
+          signoff: true
+          title: Bump enterprise-contract/go-containerregistry
+          token: ${{ steps.generate-token.outputs.token }}
