@@ -97,11 +97,13 @@ func (t Tracker) Output() ([]byte, error) {
 	return yamlfmt.Format(bytes.NewBuffer(out), true)
 }
 
+var oneDay = time.Hour * 24
+
 // Track implements the common workflow of loading an existing tracker file and adding
 // records to one of its collections.
 // Each url is expected to reference a valid Tekton bundle. Each bundle may be added
 // to none, 1, or 2 collections depending on the Tekton resource types they include.
-func Track(ctx context.Context, urls []string, input []byte, prune bool, freshen bool) ([]byte, error) {
+func Track(ctx context.Context, urls []string, input []byte, prune bool, freshen bool, inEffectDays int) ([]byte, error) {
 	t, err := newTracker(input)
 	if err != nil {
 		return nil, err
@@ -109,11 +111,14 @@ func Track(ctx context.Context, urls []string, input []byte, prune bool, freshen
 
 	imageUrls, gitUrls := groupUrls(urls)
 
-	if err := t.trackImageReferences(ctx, imageUrls, freshen); err != nil {
+	days := oneDay * time.Duration(inEffectDays)
+	effectiveOn := time.Now().Add(days).UTC().Round(oneDay)
+
+	if err := t.trackImageReferences(ctx, imageUrls, freshen, effectiveOn); err != nil {
 		return nil, err
 	}
 
-	if err := t.trackGitReferences(ctx, gitUrls, freshen); err != nil {
+	if err := t.trackGitReferences(ctx, gitUrls, freshen, effectiveOn); err != nil {
 		return nil, err
 	}
 
@@ -138,7 +143,7 @@ func groupUrls(urls []string) ([]string, []string) {
 	return imgs, gits
 }
 
-func (t *Tracker) trackImageReferences(ctx context.Context, urls []string, freshen bool) error {
+func (t *Tracker) trackImageReferences(ctx context.Context, urls []string, freshen bool, effectiveOn time.Time) error {
 	refs, err := image.ParseAndResolveAll(ctx, urls, name.StrictValidation)
 	if err != nil {
 		return err
@@ -154,7 +159,6 @@ func (t *Tracker) trackImageReferences(ctx context.Context, urls []string, fresh
 		refs = append(refs, imageRefs...)
 	}
 
-	effective_on := effectiveOn()
 	for _, ref := range refs {
 		log.Debugf("Processing bundle %q", ref.String())
 		hasTask, err := containsTask(ctx, ref)
@@ -166,7 +170,7 @@ func (t *Tracker) trackImageReferences(ctx context.Context, urls []string, fresh
 			t.addTrustedTaskRecord(ociPrefix, taskRecord{
 				Ref:         ref.Digest,
 				Tag:         ref.Tag,
-				EffectiveOn: effective_on,
+				EffectiveOn: effectiveOn,
 				Repository:  ref.Repository,
 			})
 		}
@@ -175,9 +179,7 @@ func (t *Tracker) trackImageReferences(ctx context.Context, urls []string, fresh
 	return nil
 }
 
-func (t *Tracker) trackGitReferences(ctx context.Context, urls []string, freshen bool) error {
-	effective_on := effectiveOn()
-
+func (t *Tracker) trackGitReferences(ctx context.Context, urls []string, freshen bool, effectiveOn time.Time) error {
 	if freshen {
 		log.Debug("Freshen is enabled")
 
@@ -224,7 +226,7 @@ func (t *Tracker) trackGitReferences(ctx context.Context, urls []string, freshen
 		t.addTrustedTaskRecord("", taskRecord{
 			Repository:  fmt.Sprintf("%s//%s", repository, path),
 			Ref:         rev,
-			EffectiveOn: effective_on,
+			EffectiveOn: effectiveOn,
 		})
 	}
 
@@ -249,17 +251,6 @@ func inputBundleTags(ctx context.Context, t Tracker) ([]image.ImageReference, er
 	}
 
 	return image.ParseAndResolveAll(ctx, tagRefs, name.StrictValidation)
-}
-
-// effectiveOn returns an RFC3339 representation of the beginning of the
-// closest day 30 days into the future. 30 is a best guess number. In the
-// future, this may have to be configurable.
-func effectiveOn() time.Time {
-	day := time.Hour * 24
-	duration := day * 30
-	// Round to the 0 time of the day for consistency. Also, zero out nanoseconds
-	// to avoid RFC3339Nano from being used by MarshalJSON.
-	return time.Now().Add(duration).UTC().Round(day)
 }
 
 // filterBundles applies filterRecords to TaskBundles.

@@ -33,15 +33,16 @@ import (
 
 func Test_TrackBundleCommand(t *testing.T) {
 	cases := []struct {
-		name              string
-		args              []string
-		expectOutput      string
-		expectUrls        []string
-		expectPrune       bool
-		expectInput       string
-		expectStdout      bool
-		expectImageOutput bool
-		expectFreshen     bool
+		name               string
+		args               []string
+		expectOutput       string
+		expectUrls         []string
+		expectPrune        bool
+		expectInput        string
+		expectStdout       bool
+		expectImageOutput  bool
+		expectFreshen      bool
+		expectInEffectDays int
 	}{
 		{
 			name: "simple",
@@ -190,6 +191,19 @@ func Test_TrackBundleCommand(t *testing.T) {
 			expectPrune:  true,
 			expectUrls:   []string{"git+https://github.com/konflux-ci/build-definitions.git//task/buildah/0.1/buildah.yaml@3672a457e3e89c0591369f609eba727b8e84108f"},
 		},
+		{
+			name: "custom effective duration",
+			args: []string{
+				"--bundle",
+				"registry/image:tag",
+				"--in-effect-days",
+				"666",
+			},
+			expectUrls:         []string{"registry/image:tag"},
+			expectStdout:       true,
+			expectPrune:        true,
+			expectInEffectDays: 666,
+		},
 	}
 
 	for _, c := range cases {
@@ -203,13 +217,18 @@ func Test_TrackBundleCommand(t *testing.T) {
 				assert.NoError(t, err)
 			}
 			testOutput := `{"test": true}`
-			track := func(_ context.Context, urls []string, input []byte, prune bool, freshen bool) ([]byte, error) {
+			track := func(_ context.Context, urls []string, input []byte, prune bool, freshen bool, inEffectDays int) ([]byte, error) {
 				assert.Equal(t, c.expectUrls, urls)
 				if c.expectInput != "" {
 					assert.Equal(t, inputData, input)
 				}
 				assert.Equal(t, c.expectPrune, prune)
 				assert.Equal(t, c.expectFreshen, freshen)
+				if c.expectInEffectDays != 0 {
+					assert.Equal(t, c.expectInEffectDays, inEffectDays)
+				} else {
+					assert.Equal(t, 30, inEffectDays)
+				}
 				return []byte(testOutput), nil
 			}
 			pullImage := func(_ context.Context, imageRef string) ([]byte, error) {

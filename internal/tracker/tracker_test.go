@@ -71,8 +71,10 @@ var sampleHashThree = v1.Hash{
 }
 
 var (
-	expectedEffectiveOn = effectiveOn().Format(time.RFC3339)
-	expectedExpiresOn   = expectedEffectiveOn
+	expectedInEffectDays    = 30
+	expectedEffectiveOnTime = time.Now().Add(time.Duration(expectedInEffectDays) * oneDay).UTC().Round(oneDay)
+	expectedEffectiveOn     = expectedEffectiveOnTime.Format(time.RFC3339)
+	expectedExpiresOn       = expectedEffectiveOn
 )
 
 var (
@@ -373,7 +375,7 @@ func TestTrack(t *testing.T) {
 			client := fakeClient{objects: testObjects, images: testImages}
 			ctx = WithClient(ctx, client)
 
-			output, err := Track(ctx, tt.urls, tt.input, tt.prune, tt.freshen)
+			output, err := Track(ctx, tt.urls, tt.input, tt.prune, tt.freshen, expectedInEffectDays)
 			require.NoError(t, err)
 			require.Equal(t, tt.output, string(output))
 		})
@@ -544,18 +546,21 @@ func TestTrackGitReferences(t *testing.T) {
 		TrustedTasks: make(map[string][]taskRecord),
 	}
 
-	require.NoError(t, tracker.trackGitReferences(context.Background(), []string{"git+https://git.io/organization/repository//task1.yaml@rev1", "git+ssh://got.io/organization/repository//dir/task2.yaml@rev2"}, false))
+	require.NoError(t, tracker.trackGitReferences(context.Background(), []string{
+		"git+https://git.io/organization/repository//task1.yaml@rev1",
+		"git+ssh://got.io/organization/repository//dir/task2.yaml@rev2",
+	}, false, expectedEffectiveOnTime))
 
 	expected := map[string][]taskRecord{
 		"git+https://git.io/organization/repository//task1.yaml": {{
 			Ref:         "rev1",
 			Repository:  "git+https://git.io/organization/repository//task1.yaml",
-			EffectiveOn: effectiveOn(),
+			EffectiveOn: expectedEffectiveOnTime,
 		}},
 		"git+ssh://got.io/organization/repository//dir/task2.yaml": {{
 			Ref:         "rev2",
 			Repository:  "git+ssh://got.io/organization/repository//dir/task2.yaml",
-			EffectiveOn: effectiveOn(),
+			EffectiveOn: expectedEffectiveOnTime,
 		}},
 	}
 
@@ -585,18 +590,21 @@ func TestTrackGitReferencesWithoutCommitId(t *testing.T) {
 
 	client.InstallProtocol("test", server.NewServer(server.NewFilesystemLoader(rfs)))
 
-	require.NoError(t, tracker.trackGitReferences(ctx, []string{"git+test://git.io/repository/.git//tasks/task1/0.1/task.yaml", "git+test://git.io/repository/.git//tasks/task2/0.2/task.yaml"}, true))
+	require.NoError(t, tracker.trackGitReferences(ctx, []string{
+		"git+test://git.io/repository/.git//tasks/task1/0.1/task.yaml",
+		"git+test://git.io/repository/.git//tasks/task2/0.2/task.yaml",
+	}, true, expectedEffectiveOnTime))
 
 	expected := map[string][]taskRecord{
 		"git+test://git.io/repository/.git//tasks/task1/0.1/task.yaml": {{
 			Ref:         "0916963bac30ea708c0ded4dd9d160fc148fd46f",
 			Repository:  "git+test://git.io/repository/.git//tasks/task1/0.1/task.yaml",
-			EffectiveOn: effectiveOn(),
+			EffectiveOn: expectedEffectiveOnTime,
 		}},
 		"git+test://git.io/repository/.git//tasks/task2/0.2/task.yaml": {{
 			Ref:         "acf3f1907b51c0e15809a61536bba71809daec68",
 			Repository:  "git+test://git.io/repository/.git//tasks/task2/0.2/task.yaml",
-			EffectiveOn: effectiveOn(),
+			EffectiveOn: expectedEffectiveOnTime,
 		}},
 	}
 
@@ -616,7 +624,7 @@ func TestTrackGitReferencesWithoutFreshen(t *testing.T) {
 			"git+test://git.io/repository/.git//tasks/task1/0.1/task.yaml": {{
 				Ref:         "f0cacc1a",
 				Repository:  "git+test://git.io/repository/.git//tasks/task1/0.1/task.yaml",
-				EffectiveOn: effectiveOn(),
+				EffectiveOn: expectedEffectiveOnTime,
 			}},
 		},
 	}
@@ -637,22 +645,24 @@ func TestTrackGitReferencesWithoutFreshen(t *testing.T) {
 
 	client.InstallProtocol("test", server.NewServer(server.NewFilesystemLoader(rfs)))
 
-	require.NoError(t, tracker.trackGitReferences(ctx, []string{"git+test://git.io/repository/.git//tasks/task2/0.2/task.yaml"}, true))
+	require.NoError(t, tracker.trackGitReferences(ctx, []string{
+		"git+test://git.io/repository/.git//tasks/task2/0.2/task.yaml",
+	}, true, expectedEffectiveOnTime))
 
 	expected := map[string][]taskRecord{
 		"git+test://git.io/repository/.git//tasks/task1/0.1/task.yaml": {{
 			Ref:         "0916963bac30ea708c0ded4dd9d160fc148fd46f",
 			Repository:  "git+test://git.io/repository/.git//tasks/task1/0.1/task.yaml",
-			EffectiveOn: effectiveOn(),
+			EffectiveOn: expectedEffectiveOnTime,
 		}, {
 			Ref:         "f0cacc1a",
 			Repository:  "git+test://git.io/repository/.git//tasks/task1/0.1/task.yaml",
-			EffectiveOn: effectiveOn(),
+			EffectiveOn: expectedEffectiveOnTime,
 		}},
 		"git+test://git.io/repository/.git//tasks/task2/0.2/task.yaml": {{
 			Ref:         "acf3f1907b51c0e15809a61536bba71809daec68",
 			Repository:  "git+test://git.io/repository/.git//tasks/task2/0.2/task.yaml",
-			EffectiveOn: effectiveOn(),
+			EffectiveOn: expectedEffectiveOnTime,
 		}},
 	}
 
@@ -664,4 +674,30 @@ func TestTrackGitReferencesWithoutFreshen(t *testing.T) {
 	matches, err := afero.Glob(fs, "tmp/*")
 	require.NoError(t, err)
 	assert.Nil(t, matches)
+}
+
+func TestInEffectDays(t *testing.T) {
+	ctx := context.WithValue(context.Background(), image.RemoteHead, head)
+
+	client := fakeClient{objects: testObjects, images: testImages}
+	ctx = WithClient(ctx, client)
+
+	inEffectDays := 666
+	expectedEffectiveOn := time.Now().Add(time.Duration(inEffectDays) * oneDay).UTC().Round(oneDay).Format(time.RFC3339)
+
+	urls := []string{
+		"registry.com/mixed:1.0@" + sampleHashOne.String(),
+	}
+
+	expected := hd.Doc(`
+		---
+		trusted_tasks:
+		  oci://registry.com/mixed:1.0:
+		    - effective_on: "` + expectedEffectiveOn + `"
+		      ref: ` + sampleHashOne.String() + `
+	`)
+
+	output, err := Track(ctx, urls, nil, true, false, inEffectDays)
+	require.NoError(t, err)
+	require.Equal(t, expected, string(output))
 }
