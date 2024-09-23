@@ -6,7 +6,7 @@ require (
 	cuelang.org/go v0.10.0
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/Maldris/go-billy-afero v0.0.0-20200815120323-e9d3de59c99a
-	github.com/enterprise-contract/enterprise-contract-controller/api v0.1.55
+	github.com/enterprise-contract/enterprise-contract-controller/api v0.1.57
 	github.com/enterprise-contract/go-gather/gather v0.0.3
 	github.com/enterprise-contract/go-gather/metadata v0.0.2
 	github.com/enterprise-contract/go-gather/metadata/file v0.0.1
