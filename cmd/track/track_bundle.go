@@ -29,22 +29,24 @@ import (
 )
 
 type (
-	trackBundleFn func(context.Context, []string, []byte, bool, bool) ([]byte, error)
+	trackBundleFn func(context.Context, []string, []byte, bool, bool, int) ([]byte, error)
 	pullImageFn   func(context.Context, string) ([]byte, error)
 	pushImageFn   func(context.Context, string, []byte, string) error
 )
 
 func trackBundleCmd(track trackBundleFn, pullImage pullImageFn, pushImage pushImageFn) *cobra.Command {
 	params := struct {
-		bundles []string
-		gits    []string
-		input   string
-		prune   bool
-		replace bool
-		output  string
-		freshen bool
+		bundles      []string
+		gits         []string
+		input        string
+		prune        bool
+		replace      bool
+		output       string
+		freshen      bool
+		inEffectDays int
 	}{
-		prune: true,
+		prune:        true,
+		inEffectDays: 30,
 	}
 
 	cmd := &cobra.Command{
@@ -124,7 +126,7 @@ func trackBundleCmd(track trackBundleFn, pullImage pullImageFn, pushImage pushIm
 
 			urls := append(params.bundles, params.gits...)
 
-			out, err := track(cmd.Context(), urls, data, params.prune, params.freshen)
+			out, err := track(cmd.Context(), urls, data, params.prune, params.freshen, params.inEffectDays)
 			if err != nil {
 				return err
 			}
@@ -178,6 +180,8 @@ func trackBundleCmd(track trackBundleFn, pullImage pullImageFn, pushImage pushIm
 		"write modified tracking file to a file. Use empty string for stdout, default behavior")
 
 	cmd.Flags().BoolVar(&params.freshen, "freshen", params.freshen, "resolve image tags to catch updates and use the latest image for the tag")
+
+	cmd.Flags().IntVar(&params.inEffectDays, "in-effect-days", params.inEffectDays, "number of days representing when the added reference becomes effective")
 
 	cmd.MarkFlagsOneRequired("bundle", "git", "input")
 

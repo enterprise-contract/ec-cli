@@ -63,6 +63,7 @@ Update existing acceptable bundles:
 --freshen:: resolve image tags to catch updates and use the latest image for the tag (Default: false)
 -g, --git:: git references to track - may be used multiple times (Default: [])
 -h, --help:: help for bundle (Default: false)
+--in-effect-days:: number of days representing when the added reference becomes effective (Default: 30)
 -i, --input:: existing tracking file
 -o, --output:: write modified tracking file to a file. Use empty string for stdout, default behavior
 -p, --prune:: remove entries that are no longer acceptable, i.e. a newer entry already effective exists (Default: true)
