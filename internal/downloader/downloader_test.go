@@ -19,13 +19,33 @@
 package downloader
 
 import (
+	"bytes"
 	"context"
 	"errors"
+	"fmt"
+	standardLog "log"
+	"math/rand/v2"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
+	"path"
+	"sync"
 	"testing"
 
+	ghttp "github.com/enterprise-contract/go-gather/gather/http"
+	goci "github.com/enterprise-contract/go-gather/gather/oci"
 	"github.com/enterprise-contract/go-gather/metadata"
+	"github.com/google/go-containerregistry/pkg/name"
+	"github.com/google/go-containerregistry/pkg/registry"
+	"github.com/google/go-containerregistry/pkg/v1/random"
+	"github.com/google/go-containerregistry/pkg/v1/remote"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
+	"oras.land/oras-go/v2/registry/remote/retry"
+
+	echttp "github.com/enterprise-contract/ec-cli/internal/http"
 )
 
 type mockDownloader struct {
@@ -129,4 +149,95 @@ func TestIsSecure(t *testing.T) {
 	for _, u := range insecure {
 		assert.False(t, isSecure(u), `Expecting isSecure("%s") = false, but it was true`, u)
 	}
+}
+
+func TestOCITracing(t *testing.T) {
+	initialize = _initialize // we want it to re-execute for the test
+	t.Cleanup(func() {
+		log = logrus.StandardLogger()
+		initialize = sync.OnceFunc(_initialize)
+	})
+	requestLog := &bytes.Buffer{}
+	registry := httptest.NewServer(registry.New(registry.Logger(standardLog.New(requestLog, "", 0))))
+	t.Cleanup(registry.Close)
+
+	u, err := url.Parse(registry.URL)
+	require.NoError(t, err)
+
+	ref, err := name.ParseReference(fmt.Sprintf("localhost:%s/repository/image:tag", u.Port()))
+	require.NoError(t, err)
+
+	img, err := random.Image(4096, 2)
+	require.NoError(t, err)
+	require.NoError(t, remote.Push(ref, img))
+
+	traceLog := bytes.Buffer{}
+	log = &logrus.Logger{
+		Out:       &traceLog,
+		Formatter: &logrus.TextFormatter{},
+		Level:     logrus.TraceLevel,
+	}
+
+	_, err = gatherFunc(context.Background(), ref.String(), t.TempDir())
+	require.NoError(t, err)
+
+	assert.Contains(t, requestLog.String(), "GET /v2/repository/image/manifests/tag")
+	assert.Contains(t, traceLog.String(), "START: GET http://127.0.0.1")
+}
+
+func TestHTTPTracing(t *testing.T) {
+	initialize = _initialize // we want it to re-execute for the test
+	t.Cleanup(func() {
+		log = logrus.StandardLogger()
+		initialize = sync.OnceFunc(_initialize)
+	})
+	var requests []string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests = append(requests, fmt.Sprintf("%s %s", r.Method, r.URL))
+		fmt.Fprintln(w, "body")
+	}))
+	t.Cleanup(server.Close)
+
+	traceLog := bytes.Buffer{}
+	log = &logrus.Logger{
+		Out:       &traceLog,
+		Formatter: &logrus.TextFormatter{},
+		Level:     logrus.TraceLevel,
+	}
+
+	_, err := gatherFunc(context.Background(), server.URL, path.Join(t.TempDir(), "dl"))
+	require.NoError(t, err)
+
+	assert.Equal(t, []string{"GET /"}, requests)
+	assert.Contains(t, traceLog.String(), "START: GET http://127.0.0.1")
+}
+
+func TestOCIClientConfiguration(t *testing.T) {
+	defaultMaxRetry := echttp.DefaultRetry.MaxRetry
+	t.Cleanup(func() {
+		echttp.DefaultRetry.MaxRetry = defaultMaxRetry
+	})
+	echttp.DefaultRetry.MaxRetry = rand.Int() //nolint:gosec // G404 - no need for a secure random here
+
+	_initialize()
+
+	assert.IsType(t, &retry.Transport{}, goci.Transport)
+
+	transport := goci.Transport.(*retry.Transport)
+	assert.Equal(t, echttp.DefaultRetry.MaxRetry, transport.Policy().(*retry.GenericPolicy).MaxRetry)
+}
+
+func TestHTTPClientConfiguration(t *testing.T) {
+	defaultMaxRetry := echttp.DefaultRetry.MaxRetry
+	t.Cleanup(func() {
+		echttp.DefaultRetry.MaxRetry = defaultMaxRetry
+	})
+	echttp.DefaultRetry.MaxRetry = rand.Int() //nolint:gosec // G404 - no need for a secure random here
+
+	_initialize()
+
+	assert.IsType(t, &retry.Transport{}, ghttp.Transport)
+
+	transport := ghttp.Transport.(*retry.Transport)
+	assert.Equal(t, echttp.DefaultRetry.MaxRetry, transport.Policy().(*retry.GenericPolicy).MaxRetry)
 }
