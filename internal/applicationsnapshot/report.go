@@ -21,11 +21,11 @@ import (
 	"embed"
 	"encoding/json"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"time"
 
 	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
-	"github.com/hashicorp/go-multierror"
 	app "github.com/konflux-ci/application-api/api/v1alpha1"
 	"sigs.k8s.io/yaml"
 
@@ -171,14 +171,14 @@ func (r Report) WriteAll(targets []string, p format.TargetParser) (allErrors err
 	for _, targetName := range targets {
 		target, err := p.Parse(targetName)
 		if err != nil {
-			allErrors = multierror.Append(allErrors, err)
+			allErrors = errors.Join(allErrors, err)
 			continue
 		}
 		r.applyOptions(target.Options)
 
 		data, err := r.toFormat(target.Format)
 		if err != nil {
-			allErrors = multierror.Append(allErrors, err)
+			allErrors = errors.Join(allErrors, err)
 			continue
 		}
 
@@ -187,7 +187,7 @@ func (r Report) WriteAll(targets []string, p format.TargetParser) (allErrors err
 		}
 
 		if _, err := target.Write(data); err != nil {
-			allErrors = multierror.Append(allErrors, err)
+			allErrors = errors.Join(allErrors, err)
 		}
 	}
 	return

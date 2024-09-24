@@ -31,7 +31,6 @@ import (
 
 	"github.com/cucumber/godog"
 	"github.com/gkampitakis/go-snaps/snaps"
-	"github.com/hashicorp/go-multierror"
 
 	"github.com/enterprise-contract/ec-cli/acceptance/testenv"
 )
@@ -74,8 +73,7 @@ func (e errCapture) Name() string {
 
 func (e *errCapture) Error(args ...interface{}) {
 	err := errors.New(fmt.Sprint(args...))
-	var merr error = multierror.Append(e.err, err)
-	e.err = merr
+	e.err = errors.Join(e.err, err)
 }
 
 func (e errCapture) Log(args ...interface{}) {

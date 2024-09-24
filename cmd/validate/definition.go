@@ -21,7 +21,6 @@ import (
 	"errors"
 
 	hd "github.com/MakeNowJust/heredoc"
-	"github.com/hashicorp/go-multierror"
 	"github.com/spf13/cobra"
 
 	"github.com/enterprise-contract/ec-cli/internal/definition"
@@ -97,7 +96,7 @@ func validateDefinitionCmd(validate definitionValidationFn) *cobra.Command {
 				}
 				ctx := cmd.Context()
 				if out, err := validate(ctx, fpath, sources, data.namespaces); err != nil {
-					allErrors = multierror.Append(allErrors, err)
+					allErrors = errors.Join(allErrors, err)
 				} else {
 					if !showSuccesses {
 						for i := range out.PolicyCheck {
@@ -110,7 +109,7 @@ func validateDefinitionCmd(validate definitionValidationFn) *cobra.Command {
 			p := format.NewTargetParser(definition.JSONReport, format.Options{ShowSuccesses: showSuccesses}, cmd.OutOrStdout(), utils.FS(cmd.Context()))
 			for _, target := range data.output {
 				if err := report.Write(target, p); err != nil {
-					allErrors = multierror.Append(allErrors, err)
+					allErrors = errors.Join(allErrors, err)
 				}
 			}
 			if allErrors != nil {

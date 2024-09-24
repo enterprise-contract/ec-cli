@@ -134,7 +134,7 @@ func TestSigstoreVerifyImage(t *testing.T) {
 			name:    "insufficient options",
 			success: ast.BooleanTerm(false),
 			errors: ast.ArrayTerm(
-				ast.StringTerm("opts parameter: new policy: 2 errors occurred:\n\t* certificate OIDC issuer must be provided for keyless workflow\n\t* certificate identity must be provided for keyless workflow\n\n"),
+				ast.StringTerm("opts parameter: new policy: certificate OIDC issuer must be provided for keyless workflow\ncertificate identity must be provided for keyless workflow"),
 			),
 			uri: ast.StringTerm(goodImage.String()),
 		},
@@ -305,7 +305,7 @@ func TestSigstoreVerifyAttestation(t *testing.T) {
 			name:    "insufficient options",
 			success: ast.BooleanTerm(false),
 			errors: ast.ArrayTerm(
-				ast.StringTerm("opts parameter: new policy: 2 errors occurred:\n\t* certificate OIDC issuer must be provided for keyless workflow\n\t* certificate identity must be provided for keyless workflow\n\n"),
+				ast.StringTerm("opts parameter: new policy: certificate OIDC issuer must be provided for keyless workflow\ncertificate identity must be provided for keyless workflow"),
 			),
 			uri: ast.StringTerm(goodImage.String()),
 		},

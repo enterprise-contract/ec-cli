@@ -25,7 +25,6 @@ import (
 	"strings"
 
 	hd "github.com/MakeNowJust/heredoc"
-	"github.com/hashicorp/go-multierror"
 	app "github.com/konflux-ci/application-api/api/v1alpha1"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
 	log "github.com/sirupsen/logrus"
@@ -197,14 +196,14 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 				Snapshot: data.snapshot,
 				Images:   data.images,
 			}); err != nil {
-				allErrors = multierror.Append(allErrors, err)
+				allErrors = errors.Join(allErrors, err)
 			} else {
 				data.spec = s
 			}
 
 			policyConfiguration, err := validate_utils.GetPolicyConfig(ctx, data.policyConfiguration)
 			if err != nil {
-				allErrors = multierror.Append(allErrors, err)
+				allErrors = errors.Join(allErrors, err)
 				return
 			}
 			data.policyConfiguration = policyConfiguration
@@ -222,7 +221,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 				PublicKey:   data.publicKey,
 				RekorURL:    data.rekorURL,
 			}); err != nil {
-				allErrors = multierror.Append(allErrors, err)
+				allErrors = errors.Join(allErrors, err)
 			} else {
 				// inject extra variables into rule data per source
 				if len(data.extraRuleData) > 0 {
@@ -385,7 +384,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 				r := <-results
 				if r.err != nil {
 					e := fmt.Errorf("error validating image %s of component %s: %w", r.component.ContainerImage, r.component.Name, r.err)
-					allErrors = multierror.Append(allErrors, e)
+					allErrors = errors.Join(allErrors, e)
 				} else {
 					components = append(components, r.component)
 					manyData = append(manyData, r.data)

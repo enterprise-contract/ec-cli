@@ -18,6 +18,7 @@ package image
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -25,7 +26,6 @@ import (
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
-	"github.com/hashicorp/go-multierror"
 )
 
 type key string
@@ -58,7 +58,7 @@ func ParseAndResolveAll(ctx context.Context, urls []string, opts ...name.Option)
 	for _, url := range urls {
 		ref, err := ParseAndResolve(ctx, url, opts...)
 		if err != nil {
-			errs = multierror.Append(errs, err)
+			errs = errors.Join(errs, err)
 			continue
 		}
 

@@ -96,7 +96,9 @@ func TestParseAndResolveAll(t *testing.T) {
 				"registry.com/repo:good@" + testHash.String(),
 			},
 			opts: []name.Option{name.StrictValidation},
-			err:  "3 errors occurred",
+			err: `could not parse reference: registry.com/one@sha256:123
+could not parse reference: registry/two@` + testHash.String() + `
+could not parse reference: three.com@` + testHash.String(),
 		},
 	}
 	for _, tt := range tests {

@@ -18,10 +18,10 @@ package validate
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	hd "github.com/MakeNowJust/heredoc"
-	"github.com/hashicorp/go-multierror"
 	"github.com/spf13/cobra"
 
 	validate_utils "github.com/enterprise-contract/ec-cli/internal/validate"
@@ -55,7 +55,7 @@ func ValidatePolicyCmd(validate policyValidationFunc) *cobra.Command {
 
 			policyConfiguration, err := validate_utils.GetPolicyConfig(ctx, data.policyConfiguration)
 			if err != nil {
-				allErrors = multierror.Append(allErrors, err)
+				allErrors = errors.Join(allErrors, err)
 				return
 			}
 			data.policyConfiguration = policyConfiguration
