@@ -56,13 +56,13 @@ arches:
     name: cracklib-dicts
     evr: 2.9.6-27.el9
     sourcerpm: cracklib-2.9.6-27.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/e/expat-2.5.0-2.el9_4.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/e/expat-2.5.0-2.el9_4.1.aarch64.rpm
     repoid: ubi-9-baseos-rpms
-    size: 116598
-    checksum: sha256:daa67b1b0dc73c8e0f54a893738163be5dcac31dff1e0c418871f3cd3a58b5be
+    size: 116207
+    checksum: sha256:99ef16287937c9e230bee835e8ca9c29aac03c9ae12f632005505b54025ee8a2
     name: expat
-    evr: 2.5.0-2.el9_4
-    sourcerpm: expat-2.5.0-2.el9_4.src.rpm
+    evr: 2.5.0-2.el9_4.1
+    sourcerpm: expat-2.5.0-2.el9_4.1.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/g/gzip-1.12-1.el9.aarch64.rpm
     repoid: ubi-9-baseos-rpms
     size: 169809
@@ -147,13 +147,13 @@ arches:
     name: openssh-clients
     evr: 8.7p1-38.el9_4.4
     sourcerpm: openssh-8.7p1-38.el9_4.4.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/o/openssl-3.0.7-27.el9.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/o/openssl-3.0.7-28.el9_4.aarch64.rpm
     repoid: ubi-9-baseos-rpms
-    size: 1251130
-    checksum: sha256:3e0168756aceb000f3f4f73f385e26d0a39ee8d640c0a5f1e3d7ad6133663c8c
+    size: 1246716
+    checksum: sha256:23aaee350db63934f7afc9fca10c65c1df6f95561659bbf6f3c045219b4252c9
     name: openssl
-    evr: 1:3.0.7-27.el9
-    sourcerpm: openssl-3.0.7-27.el9.src.rpm
+    evr: 1:3.0.7-28.el9_4
+    sourcerpm: openssl-3.0.7-28.el9_4.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/p/pam-1.5.1-19.el9.aarch64.rpm
     repoid: ubi-9-baseos-rpms
     size: 646757
@@ -200,12 +200,12 @@ arches:
     checksum: sha256:56a815a100d75c1d42c07090b632f05e51ea6d17df097d2936ab25d9aca49310
     name: cracklib
     evr: 2.9.6-27.el9
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/source/SRPMS/Packages/e/expat-2.5.0-2.el9_4.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/source/SRPMS/Packages/e/expat-2.5.0-2.el9_4.1.src.rpm
     repoid: ubi-9-baseos-source
-    size: 8355087
-    checksum: sha256:9f9137c6bf72b11a980423871ec7d0ade9b57838ab18cc9abb9e8a41d166bb8c
+    size: 8357631
+    checksum: sha256:7b4b7b4343d2c4c16deea0ef703c8c9bdfd68898c9ef2dce31352ec830e2a43d
     name: expat
-    evr: 2.5.0-2.el9_4
+    evr: 2.5.0-2.el9_4.1
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/source/SRPMS/Packages/g/gzip-1.12-1.el9.src.rpm
     repoid: ubi-9-baseos-source
     size: 856147
@@ -266,12 +266,12 @@ arches:
     checksum: sha256:8e0df6b6a6c50578f41d3e1d16ee71c947010e6d5abfb1df8dcc881dbd7bd13a
     name: openssh
     evr: 8.7p1-38.el9_4.4
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/source/SRPMS/Packages/o/openssl-3.0.7-27.el9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/source/SRPMS/Packages/o/openssl-3.0.7-28.el9_4.src.rpm
     repoid: ubi-9-baseos-source
-    size: 15535073
-    checksum: sha256:d463cff15a4858455dbec2aab22858d5060057eeb0455b870bc141e33ef50174
+    size: 15532127
+    checksum: sha256:6bd73879dc1bd9b14e71e477dd39b4b489433e95540f0506ec05f7ae0f72be2d
     name: openssl
-    evr: 1:3.0.7-27.el9
+    evr: 1:3.0.7-28.el9_4
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/source/SRPMS/Packages/p/pam-1.5.1-19.el9.src.rpm
     repoid: ubi-9-baseos-source
     size: 1102152
@@ -284,6 +284,7 @@ arches:
     checksum: sha256:dcbbf411fdd9bf715c4703a553f553e2f8759d873f7d6d9db97e93aef8099d48
     name: util-linux
     evr: 2.37.4-18.el9
+  module_metadata: []
 - arch: ppc64le
   packages:
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/ppc64le/appstream/os/Packages/g/git-core-2.43.5-1.el9_4.ppc64le.rpm
@@ -321,13 +322,13 @@ arches:
     name: cracklib-dicts
     evr: 2.9.6-27.el9
     sourcerpm: cracklib-2.9.6-27.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/ppc64le/baseos/os/Packages/e/expat-2.5.0-2.el9_4.ppc64le.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/ppc64le/baseos/os/Packages/e/expat-2.5.0-2.el9_4.1.ppc64le.rpm
     repoid: ubi-9-baseos-rpms
-    size: 127491
-    checksum: sha256:d7662e440f2ed3e1bb85c68f76f46359332ecba2654ce2b5df089cac72479102
+    size: 127316
+    checksum: sha256:e68f1a0bba251883ee8d04c7be063ee3b71ea60bbda0f3a8087bd702166b2935
     name: expat
-    evr: 2.5.0-2.el9_4
-    sourcerpm: expat-2.5.0-2.el9_4.src.rpm
+    evr: 2.5.0-2.el9_4.1
+    sourcerpm: expat-2.5.0-2.el9_4.1.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/ppc64le/baseos/os/Packages/g/gzip-1.12-1.el9.ppc64le.rpm
     repoid: ubi-9-baseos-rpms
     size: 175705
@@ -419,13 +420,13 @@ arches:
     name: openssh-clients
     evr: 8.7p1-38.el9_4.4
     sourcerpm: openssh-8.7p1-38.el9_4.4.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/ppc64le/baseos/os/Packages/o/openssl-3.0.7-27.el9.ppc64le.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/ppc64le/baseos/os/Packages/o/openssl-3.0.7-28.el9_4.ppc64le.rpm
     repoid: ubi-9-baseos-rpms
-    size: 1273122
-    checksum: sha256:62096b19e732fb06da9ec76934e93adecd3fcce4b46040190dfe6051132c53ad
+    size: 1268664
+    checksum: sha256:301722f48ef0238b9013595a1454009f478e13ab8325addf99fecbc48ba3da21
     name: openssl
-    evr: 1:3.0.7-27.el9
-    sourcerpm: openssl-3.0.7-27.el9.src.rpm
+    evr: 1:3.0.7-28.el9_4
+    sourcerpm: openssl-3.0.7-28.el9_4.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/ppc64le/baseos/os/Packages/p/pam-1.5.1-19.el9.ppc64le.rpm
     repoid: ubi-9-baseos-rpms
     size: 686333
@@ -472,12 +473,12 @@ arches:
     checksum: sha256:56a815a100d75c1d42c07090b632f05e51ea6d17df097d2936ab25d9aca49310
     name: cracklib
     evr: 2.9.6-27.el9
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/ppc64le/baseos/source/SRPMS/Packages/e/expat-2.5.0-2.el9_4.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/ppc64le/baseos/source/SRPMS/Packages/e/expat-2.5.0-2.el9_4.1.src.rpm
     repoid: ubi-9-baseos-source
-    size: 8355087
-    checksum: sha256:9f9137c6bf72b11a980423871ec7d0ade9b57838ab18cc9abb9e8a41d166bb8c
+    size: 8357631
+    checksum: sha256:7b4b7b4343d2c4c16deea0ef703c8c9bdfd68898c9ef2dce31352ec830e2a43d
     name: expat
-    evr: 2.5.0-2.el9_4
+    evr: 2.5.0-2.el9_4.1
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/ppc64le/baseos/source/SRPMS/Packages/g/gzip-1.12-1.el9.src.rpm
     repoid: ubi-9-baseos-source
     size: 856147
@@ -544,12 +545,12 @@ arches:
     checksum: sha256:8e0df6b6a6c50578f41d3e1d16ee71c947010e6d5abfb1df8dcc881dbd7bd13a
     name: openssh
     evr: 8.7p1-38.el9_4.4
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/ppc64le/baseos/source/SRPMS/Packages/o/openssl-3.0.7-27.el9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/ppc64le/baseos/source/SRPMS/Packages/o/openssl-3.0.7-28.el9_4.src.rpm
     repoid: ubi-9-baseos-source
-    size: 15535073
-    checksum: sha256:d463cff15a4858455dbec2aab22858d5060057eeb0455b870bc141e33ef50174
+    size: 15532127
+    checksum: sha256:6bd73879dc1bd9b14e71e477dd39b4b489433e95540f0506ec05f7ae0f72be2d
     name: openssl
-    evr: 1:3.0.7-27.el9
+    evr: 1:3.0.7-28.el9_4
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/ppc64le/baseos/source/SRPMS/Packages/p/pam-1.5.1-19.el9.src.rpm
     repoid: ubi-9-baseos-source
     size: 1102152
@@ -562,6 +563,7 @@ arches:
     checksum: sha256:dcbbf411fdd9bf715c4703a553f553e2f8759d873f7d6d9db97e93aef8099d48
     name: util-linux
     evr: 2.37.4-18.el9
+  module_metadata: []
 - arch: x86_64
   packages:
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/g/git-core-2.43.5-1.el9_4.x86_64.rpm
@@ -599,13 +601,13 @@ arches:
     name: cracklib-dicts
     evr: 2.9.6-27.el9
     sourcerpm: cracklib-2.9.6-27.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/e/expat-2.5.0-2.el9_4.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/e/expat-2.5.0-2.el9_4.1.x86_64.rpm
     repoid: ubi-9-baseos-rpms
-    size: 122245
-    checksum: sha256:2a69827d3774ea7a8dfca659d201c2fd6ba0bf5036d3bb451ec921cdda79ad4f
+    size: 121852
+    checksum: sha256:6486bdacf10803ecd1de28340eb74e85282c73ec2c06349b762fd496844a16b8
     name: expat
-    evr: 2.5.0-2.el9_4
-    sourcerpm: expat-2.5.0-2.el9_4.src.rpm
+    evr: 2.5.0-2.el9_4.1
+    sourcerpm: expat-2.5.0-2.el9_4.1.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/g/gzip-1.12-1.el9.x86_64.rpm
     repoid: ubi-9-baseos-rpms
     size: 171206
@@ -690,13 +692,13 @@ arches:
     name: openssh-clients
     evr: 8.7p1-38.el9_4.4
     sourcerpm: openssh-8.7p1-38.el9_4.4.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/o/openssl-3.0.7-27.el9.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/o/openssl-3.0.7-28.el9_4.x86_64.rpm
     repoid: ubi-9-baseos-rpms
-    size: 1272919
-    checksum: sha256:331fecb53959e90d97b49e0587a8750ca3544bc4ffa3e9683f0c4a71488150d4
+    size: 1268306
+    checksum: sha256:255fb57a1b308c1f2df2027c63953955717498a76056f4d4e1279f02001e9aa8
     name: openssl
-    evr: 1:3.0.7-27.el9
-    sourcerpm: openssl-3.0.7-27.el9.src.rpm
+    evr: 1:3.0.7-28.el9_4
+    sourcerpm: openssl-3.0.7-28.el9_4.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/p/pam-1.5.1-19.el9.x86_64.rpm
     repoid: ubi-9-baseos-rpms
     size: 646595
@@ -743,12 +745,12 @@ arches:
     checksum: sha256:56a815a100d75c1d42c07090b632f05e51ea6d17df097d2936ab25d9aca49310
     name: cracklib
     evr: 2.9.6-27.el9
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/e/expat-2.5.0-2.el9_4.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/e/expat-2.5.0-2.el9_4.1.src.rpm
     repoid: ubi-9-baseos-source
-    size: 8355087
-    checksum: sha256:9f9137c6bf72b11a980423871ec7d0ade9b57838ab18cc9abb9e8a41d166bb8c
+    size: 8357631
+    checksum: sha256:7b4b7b4343d2c4c16deea0ef703c8c9bdfd68898c9ef2dce31352ec830e2a43d
     name: expat
-    evr: 2.5.0-2.el9_4
+    evr: 2.5.0-2.el9_4.1
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/g/gzip-1.12-1.el9.src.rpm
     repoid: ubi-9-baseos-source
     size: 856147
@@ -809,12 +811,12 @@ arches:
     checksum: sha256:8e0df6b6a6c50578f41d3e1d16ee71c947010e6d5abfb1df8dcc881dbd7bd13a
     name: openssh
     evr: 8.7p1-38.el9_4.4
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/o/openssl-3.0.7-27.el9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/o/openssl-3.0.7-28.el9_4.src.rpm
     repoid: ubi-9-baseos-source
-    size: 15535073
-    checksum: sha256:d463cff15a4858455dbec2aab22858d5060057eeb0455b870bc141e33ef50174
+    size: 15532127
+    checksum: sha256:6bd73879dc1bd9b14e71e477dd39b4b489433e95540f0506ec05f7ae0f72be2d
     name: openssl
-    evr: 1:3.0.7-27.el9
+    evr: 1:3.0.7-28.el9_4
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/p/pam-1.5.1-19.el9.src.rpm
     repoid: ubi-9-baseos-source
     size: 1102152
@@ -827,3 +829,4 @@ arches:
     checksum: sha256:dcbbf411fdd9bf715c4703a553f553e2f8759d873f7d6d9db97e93aef8099d48
     name: util-linux
     evr: 2.37.4-18.el9
+  module_metadata: []
