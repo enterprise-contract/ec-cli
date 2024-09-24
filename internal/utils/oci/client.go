@@ -19,12 +19,10 @@ package oci
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"os"
 	"path"
 	"strconv"
 	"sync"
-	"time"
 
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
@@ -35,6 +33,8 @@ import (
 	"github.com/sigstore/cosign/v2/pkg/oci"
 	ociremote "github.com/sigstore/cosign/v2/pkg/oci/remote"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/enterprise-contract/ec-cli/internal/http"
 )
 
 // imageRefTransport is used to inject the type of transport to use with the
@@ -48,20 +48,9 @@ const clientContextKey contextKey = "ec.oci.client"
 
 var imgCache = sync.OnceValue(initCache)
 
-type tracingRoundTripper struct{}
-
-func (t *tracingRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	log.Tracef("START: %s %s", req.Method, req.URL)
-	resp, err := remote.DefaultTransport.RoundTrip(req)
-
-	log.Tracef("DONE: %s %s (%d)", req.Method, req.URL, resp.ContentLength)
-
-	return resp, err
-}
-
 func init() {
 	if log.IsLevelEnabled(log.TraceLevel) {
-		imageRefTransport = remote.WithTransport(&tracingRoundTripper{})
+		imageRefTransport = remote.WithTransport(http.NewTracingRoundTripper(remote.DefaultTransport))
 	}
 }
 
@@ -87,10 +76,10 @@ func initCache() cache.Cache {
 
 func createRemoteOptions(ctx context.Context) []remote.Option {
 	backoff := remote.Backoff{
-		Duration: 1.0 * time.Second,
-		Factor:   2.0,
-		Jitter:   0.1,
-		Steps:    3,
+		Duration: http.DefaultBackoff.Duration,
+		Factor:   http.DefaultBackoff.Factor,
+		Jitter:   http.DefaultBackoff.Jitter,
+		Steps:    http.DefaultRetry.MaxRetry,
 	}
 
 	return []remote.Option{

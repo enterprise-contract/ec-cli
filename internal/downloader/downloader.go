@@ -23,10 +23,16 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"sync"
 
 	"github.com/enterprise-contract/go-gather/gather"
+	ghttp "github.com/enterprise-contract/go-gather/gather/http"
+	goci "github.com/enterprise-contract/go-gather/gather/oci"
 	"github.com/enterprise-contract/go-gather/metadata"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
+	"oras.land/oras-go/v2/registry/remote/retry"
+
+	"github.com/enterprise-contract/ec-cli/internal/http"
 )
 
 type key int
@@ -37,7 +43,41 @@ type downloadImpl interface {
 	Download(context.Context, string, []string) error
 }
 
-var gatherFunc = gather.Gather
+var log = logrus.StandardLogger()
+
+var gatherFunc = func(ctx context.Context, source, destination string) (metadata.Metadata, error) {
+	initialize()
+	return gather.Gather(ctx, source, destination)
+}
+
+var _initialize = func() {
+	if log.IsLevelEnabled(logrus.TraceLevel) {
+		goci.Transport = http.NewTracingRoundTripperWithLogger(goci.Transport, log)
+		ghttp.Transport = http.NewTracingRoundTripperWithLogger(ghttp.Transport, log)
+	}
+
+	backoff := retry.ExponentialBackoff(http.DefaultBackoff.Duration, http.DefaultBackoff.Factor, http.DefaultBackoff.Jitter)
+	policy := &retry.GenericPolicy{
+		Retryable: retry.DefaultPredicate,
+		Backoff:   backoff,
+		MinWait:   http.DefaultRetry.MinWait,
+		MaxWait:   http.DefaultRetry.MaxWait,
+		MaxRetry:  http.DefaultRetry.MaxRetry,
+	}
+	policyfn := func() retry.Policy {
+		return policy
+	}
+
+	ociTransport := retry.NewTransport(goci.Transport)
+	ociTransport.Policy = policyfn
+	goci.Transport = ociTransport
+
+	httpTransport := retry.NewTransport(ghttp.Transport)
+	httpTransport.Policy = policyfn
+	ghttp.Transport = httpTransport
+}
+
+var initialize = sync.OnceFunc(_initialize)
 
 // WithDownloadImpl replaces the downloadImpl implementation used
 func WithDownloadImpl(ctx context.Context, d downloadImpl) context.Context {
