@@ -8,6 +8,8 @@ require (
 	github.com/Maldris/go-billy-afero v0.0.0-20200815120323-e9d3de59c99a
 	github.com/enterprise-contract/enterprise-contract-controller/api v0.1.57
 	github.com/enterprise-contract/go-gather/gather v0.0.3
+	github.com/enterprise-contract/go-gather/gather/http v0.0.3-0.20240923130737-4120ba0d92bf
+	github.com/enterprise-contract/go-gather/gather/oci v0.0.5-0.20240923101526-bbc07b341aed
 	github.com/enterprise-contract/go-gather/metadata v0.0.2
 	github.com/enterprise-contract/go-gather/metadata/file v0.0.1
 	github.com/enterprise-contract/go-gather/metadata/git v0.0.2
@@ -44,13 +46,14 @@ require (
 	github.com/stretchr/testify v1.9.0
 	github.com/stuart-warren/yamlfmt v0.2.0
 	github.com/tektoncd/pipeline v0.63.0
-	golang.org/x/exp v0.0.0-20240823005443-9b4947da3948
+	golang.org/x/exp v0.0.0-20240909161429-701f63a606c0
 	golang.org/x/net v0.29.0
 	k8s.io/apiextensions-apiserver v0.31.0
 	k8s.io/apimachinery v0.31.0
 	k8s.io/client-go v0.31.0
 	k8s.io/klog/v2 v2.130.1
 	k8s.io/kube-openapi v0.0.0-20240903163716-9e1beecbcb38
+	oras.land/oras-go/v2 v2.5.0
 	sigs.k8s.io/yaml v1.4.0
 )
 
@@ -149,7 +152,7 @@ require (
 	github.com/coreos/go-oidc/v3 v3.11.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.4 // indirect
 	github.com/cyberphone/json-canonicalization v0.0.0-20231217050601-ba74d44ecf5f // indirect
-	github.com/cyphar/filepath-securejoin v0.3.1 // indirect
+	github.com/cyphar/filepath-securejoin v0.3.2 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dgraph-io/badger/v3 v3.2103.5 // indirect
 	github.com/dgraph-io/ristretto v0.1.1 // indirect
@@ -167,10 +170,8 @@ require (
 	github.com/enterprise-contract/go-gather/expander v0.0.1 // indirect
 	github.com/enterprise-contract/go-gather/gather/file v0.0.2-0.20240906185922-e8ebd246dc19 // indirect
 	github.com/enterprise-contract/go-gather/gather/git v0.0.6-0.20240911082231-b67aa65913d1 // indirect
-	github.com/enterprise-contract/go-gather/gather/http v0.0.2 // indirect
-	github.com/enterprise-contract/go-gather/gather/oci v0.0.4 // indirect
 	github.com/enterprise-contract/go-gather/metadata/http v0.0.1 // indirect
-	github.com/enterprise-contract/go-gather/saver v0.0.1 // indirect
+	github.com/enterprise-contract/go-gather/saver v0.0.2 // indirect
 	github.com/enterprise-contract/go-gather/saver/file v0.0.1 // indirect
 	github.com/evanphx/json-patch/v5 v5.9.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
@@ -333,14 +334,14 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/crypto v0.27.0 // indirect
-	golang.org/x/mod v0.20.0 // indirect
+	golang.org/x/mod v0.21.0 // indirect
 	golang.org/x/oauth2 v0.22.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
 	golang.org/x/sys v0.25.0 // indirect
 	golang.org/x/term v0.24.0 // indirect
 	golang.org/x/text v0.18.0 // indirect
 	golang.org/x/time v0.6.0 // indirect
-	golang.org/x/tools v0.24.0 // indirect
+	golang.org/x/tools v0.25.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
 	google.golang.org/api v0.195.0 // indirect
 	google.golang.org/genproto v0.0.0-20240903143218-8af14fe29dc1 // indirect
@@ -359,7 +360,6 @@ require (
 	knative.dev/pkg v0.0.0-20240815051656-89743d9bbf7c // indirect
 	muzzammil.xyz/jsonc v1.0.0 // indirect
 	olympos.io/encoding/edn v0.0.0-20201019073823-d3554ca0b0a3 // indirect
-	oras.land/oras-go/v2 v2.5.0 // indirect
 	sigs.k8s.io/controller-runtime v0.19.0 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/release-utils v0.8.4 // indirect
