@@ -76,7 +76,7 @@ func (k *kindCluster) buildTaskBundleImage(ctx context.Context) error {
 		}
 		for _, versionPath := range versions {
 			pathSplit := strings.Split(versionPath, "/")
-			// there should only be versions under the task path i.e. tasks/verify-definition/0.1
+			// there should only be versions under the task path i.e. tasks/verify-enterprise-contract/0.1
 			version := pathSplit[len(pathSplit)-1]
 			// assume the task definition file is named the same as the task directory
 			fileName := filepath.Join(versionPath, fmt.Sprintf("%s.yaml", taskName))
