@@ -35,7 +35,6 @@ import (
 
 	"github.com/cucumber/godog"
 	c "github.com/doiit/picocolors"
-	"github.com/hashicorp/go-multierror"
 	"github.com/pkg/diff"
 	"github.com/yudai/gojsondiff"
 	"github.com/yudai/gojsondiff/formatter"
@@ -740,7 +739,7 @@ func matchSnapshot(ctx context.Context) error {
 		return nil
 	}
 
-	return multierror.Append(stdout, stderr)
+	return errors.Join(stdout, stderr)
 }
 
 func matchFileSnapshot(ctx context.Context, file string) error {

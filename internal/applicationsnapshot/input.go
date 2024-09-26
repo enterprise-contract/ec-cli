@@ -22,7 +22,6 @@ import (
 	"fmt"
 
 	"github.com/google/go-containerregistry/pkg/name"
-	"github.com/hashicorp/go-multierror"
 	app "github.com/konflux-ci/application-api/api/v1alpha1"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
@@ -193,13 +192,13 @@ func expandImageIndex(ctx context.Context, snap *app.SnapshotSpec) {
 		components = append(components, component)
 		ref, err := name.ParseReference(component.ContainerImage)
 		if err != nil {
-			allErrors = multierror.Append(allErrors, fmt.Errorf("unable to parse container image %s: %w", component.ContainerImage, err))
+			allErrors = errors.Join(allErrors, fmt.Errorf("unable to parse container image %s: %w", component.ContainerImage, err))
 			continue
 		}
 
 		desc, err := client.Head(ref)
 		if err != nil {
-			allErrors = multierror.Append(allErrors, fmt.Errorf("unable to fetch descriptior for container image %s: %w", ref, err))
+			allErrors = errors.Join(allErrors, fmt.Errorf("unable to fetch descriptior for container image %s: %w", ref, err))
 			continue
 		}
 
@@ -209,13 +208,13 @@ func expandImageIndex(ctx context.Context, snap *app.SnapshotSpec) {
 
 		index, err := client.Index(ref)
 		if err != nil {
-			allErrors = multierror.Append(allErrors, fmt.Errorf("unable to fetch index for container image %s: %w", component.ContainerImage, err))
+			allErrors = errors.Join(allErrors, fmt.Errorf("unable to fetch index for container image %s: %w", component.ContainerImage, err))
 			continue
 		}
 
 		indexManifest, err := index.IndexManifest()
 		if err != nil {
-			allErrors = multierror.Append(allErrors, fmt.Errorf("unable to fetch index manifest for container image %s: %w", component.ContainerImage, err))
+			allErrors = errors.Join(allErrors, fmt.Errorf("unable to fetch index manifest for container image %s: %w", component.ContainerImage, err))
 			continue
 		}
 

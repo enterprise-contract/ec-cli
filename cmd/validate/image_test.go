@@ -727,7 +727,7 @@ func Test_ValidateImageCommandEmptyPolicyFile(t *testing.T) {
 	utils.SetTestRekorPublicKey(t)
 
 	err = cmd.Execute()
-	assert.EqualError(t, err, "1 error occurred:\n\t* file /policy.yaml is empty\n\n")
+	assert.EqualError(t, err, "file /policy.yaml is empty")
 }
 
 func Test_ValidateImageErrorLog(t *testing.T) {
@@ -814,10 +814,7 @@ func Test_ValidateErrorCommand(t *testing.T) {
 				"--policy",
 				fmt.Sprintf(`{"publicKey": %s}`, utils.TestPublicKeyJSON),
 			},
-			expected: `1 error occurred:
-	* error validating image registry/image:tag of component Unnamed: expected
-
-`,
+			expected: `error validating image registry/image:tag of component Unnamed: expected`,
 		},
 		{
 			name: "invalid policy JSON",
@@ -827,10 +824,7 @@ func Test_ValidateErrorCommand(t *testing.T) {
 				"--policy",
 				`{"invalid": "json""}`,
 			},
-			expected: `1 error occurred:
-	* unable to parse EnterpriseContractPolicySpec: error converting YAML to JSON: yaml: found unexpected end of stream
-
-`,
+			expected: `unable to parse EnterpriseContractPolicySpec: error converting YAML to JSON: yaml: found unexpected end of stream`,
 		},
 		{
 			name: "invalid input JSON",
@@ -840,10 +834,7 @@ func Test_ValidateErrorCommand(t *testing.T) {
 				"--policy",
 				fmt.Sprintf(`{"publicKey": %s}`, utils.TestPublicKeyJSON),
 			},
-			expected: `1 error occurred:
-	* unable to parse Snapshot specification from {"invalid": "json""}: error converting YAML to JSON: yaml: found unexpected end of stream
-
-`,
+			expected: `unable to parse Snapshot specification from {"invalid": "json""}: error converting YAML to JSON: yaml: found unexpected end of stream`,
 		},
 		{
 			name: "invalid input and policy JSON",
@@ -853,11 +844,8 @@ func Test_ValidateErrorCommand(t *testing.T) {
 				"--policy",
 				`{"invalid": "json""}`,
 			},
-			expected: `2 errors occurred:
-	* unable to parse Snapshot specification from {"invalid": "json""}: error converting YAML to JSON: yaml: found unexpected end of stream
-	* unable to parse EnterpriseContractPolicySpec: error converting YAML to JSON: yaml: found unexpected end of stream
-
-`,
+			expected: `unable to parse Snapshot specification from {"invalid": "json""}: error converting YAML to JSON: yaml: found unexpected end of stream
+unable to parse EnterpriseContractPolicySpec: error converting YAML to JSON: yaml: found unexpected end of stream`,
 		},
 	}
 	for _, c := range cases {

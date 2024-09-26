@@ -216,7 +216,7 @@ func TestValidateDefinitionFileCommandErrors(t *testing.T) {
 	})
 
 	err := cmd.Execute()
-	assert.Error(t, err, "2 errors occurred:\n\t* /path/file1.yaml\n\t* /path/file2.yaml\n")
+	assert.Error(t, err, "/path/file1.yaml\n/path/file2.yaml\n")
 	assert.Equal(t, "Command \"definition\" is deprecated, please use \"ec validate input\" instead.\n", out.String())
 }
 

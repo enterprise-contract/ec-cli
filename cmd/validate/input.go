@@ -25,7 +25,6 @@ import (
 	"sync"
 
 	hd "github.com/MakeNowJust/heredoc"
-	"github.com/hashicorp/go-multierror"
 	"github.com/spf13/cobra"
 
 	"github.com/enterprise-contract/ec-cli/internal/applicationsnapshot"
@@ -90,13 +89,13 @@ func validateInputCmd(validate InputValidationFunc) *cobra.Command {
 
 			policyConfiguration, err := validate_utils.GetPolicyConfig(ctx, data.policyConfiguration)
 			if err != nil {
-				allErrors = multierror.Append(allErrors, err)
+				allErrors = errors.Join(allErrors, err)
 				return
 			}
 			data.policyConfiguration = policyConfiguration
 
 			if p, err := policy.NewInputPolicy(cmd.Context(), data.policyConfiguration, data.effectiveTime); err != nil {
-				allErrors = multierror.Append(allErrors, err)
+				allErrors = errors.Join(allErrors, err)
 			} else {
 				data.policy = p
 			}
@@ -158,7 +157,7 @@ func validateInputCmd(validate InputValidationFunc) *cobra.Command {
 			for r := range ch {
 				if r.err != nil {
 					e := fmt.Errorf("error validating file %s: %w", r.input.FilePath, r.err)
-					allErrors = multierror.Append(allErrors, e)
+					allErrors = errors.Join(allErrors, e)
 				} else {
 					inputs = append(inputs, r.input)
 					manyData = append(manyData, r.data)

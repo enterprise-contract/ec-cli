@@ -19,11 +19,11 @@ package input
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
 	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
-	"github.com/hashicorp/go-multierror"
 	"sigs.k8s.io/yaml"
 
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
@@ -125,13 +125,13 @@ func (r Report) WriteAll(targets []string, p format.TargetParser) (allErrors err
 	for _, targetName := range targets {
 		target, err := p.Parse(targetName)
 		if err != nil {
-			allErrors = multierror.Append(allErrors, err)
+			allErrors = errors.Join(allErrors, err)
 			continue
 		}
 
 		data, err := r.toFormat(target.Format)
 		if err != nil {
-			allErrors = multierror.Append(allErrors, err)
+			allErrors = errors.Join(allErrors, err)
 			continue
 		}
 
@@ -140,7 +140,7 @@ func (r Report) WriteAll(targets []string, p format.TargetParser) (allErrors err
 		}
 
 		if _, err := target.Write(data); err != nil {
-			allErrors = multierror.Append(allErrors, err)
+			allErrors = errors.Join(allErrors, err)
 		}
 	}
 	return

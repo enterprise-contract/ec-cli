@@ -28,7 +28,6 @@ import (
 	"time"
 
 	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
-	"github.com/hashicorp/go-multierror"
 	schemaExporter "github.com/invopop/jsonschema"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 	"github.com/sigstore/cosign/v2/cmd/cosign/cli/fulcio"
@@ -405,7 +404,7 @@ func parseEffectiveTime(choosenTime string) (*time.Time, error) {
 		}
 
 		log.Debugf("Unable to parse provided effective time `%s` using RFC3339", choosenTime)
-		errs := multierror.Append(err)
+		errs := err
 
 		if when, err := time.Parse(DateFormat, choosenTime); err == nil {
 			log.Debugf("Using provided effective time %s", when.Format(time.RFC3339))
@@ -413,7 +412,7 @@ func parseEffectiveTime(choosenTime string) (*time.Time, error) {
 			return &whenUTC, nil
 		}
 		log.Debugf("Unable to parse provided effective time string `%s` using %s format", choosenTime, DateFormat)
-		errs = multierror.Append(errs, err)
+		errs = errors.Join(errs, err)
 
 		return nil, fmt.Errorf("invalid policy time argument: %s", errs)
 	}
@@ -530,12 +529,12 @@ func validateIdentity(identity cosign.Identity) error {
 	var errs error
 
 	if identity.Issuer == "" && identity.IssuerRegExp == "" {
-		errs = multierror.Append(errs, errors.New(
+		errs = errors.Join(errs, errors.New(
 			"certificate OIDC issuer must be provided for keyless workflow"))
 	}
 
 	if identity.Subject == "" && identity.SubjectRegExp == "" {
-		errs = multierror.Append(errs, errors.New(
+		errs = errors.Join(errs, errors.New(
 			"certificate identity must be provided for keyless workflow"))
 	}
 
