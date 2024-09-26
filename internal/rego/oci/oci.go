@@ -177,8 +177,6 @@ func registerOCIImageFiles() {
 	rego.RegisterBuiltin2(&decl, ociImageFiles)
 }
 
-const maxBytes = 10 * 1024 * 1024 // 10 MB
-
 func ociBlob(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) {
 	uri, ok := a.Value.(ast.String)
 	if !ok {
@@ -208,9 +206,7 @@ func ociBlob(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) {
 	// not complete in the go-containerregistry library, e.g. name.NewDigest throws an error if
 	// sha256 is not used. This is good for now, but may need revisiting later.
 	hasher := sha256.New()
-	// Setup some safeguards. First, use LimitReader to avoid an unbounded amount of data from being
-	// read. Second, use TeeReader so we can compute the digest of the content read.
-	reader := io.TeeReader(io.LimitReader(layer, maxBytes), hasher)
+	reader := io.TeeReader(layer, hasher)
 
 	var blob bytes.Buffer
 	if _, err := io.Copy(&blob, reader); err != nil {
@@ -222,9 +218,7 @@ func ociBlob(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) {
 	// io.LimitReader truncates the layer if it exceeds its limit. The condition below catches this
 	// scenario in order to avoid unexpected behavior caused by partial data being returned.
 	if sum != ref.DigestStr() {
-		log.Errorf(
-			"%s computed digest, %q, not as expected, %q. Content may have been truncated at %d bytes",
-			ociBlobName, sum, ref.DigestStr(), maxBytes)
+		log.Errorf("%s computed digest, %q, not as expected, %q", ociBlobName, sum, ref.DigestStr())
 		return nil, nil
 	}
 
