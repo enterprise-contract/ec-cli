@@ -65,7 +65,7 @@ func Test_RegoTextOutput(t *testing.T) {
 			expected: hd.Doc(`
 				# Source: spam.io/bacon-bundle
 
-				policy.foo.bar.rule_title (deny)
+				bar.rule_title (deny)
 				https://enterprisecontract.dev/docs/ec-policies/foo_policy.html#bar__rule_title
 				Rule title
 				Rule description
@@ -78,7 +78,7 @@ func Test_RegoTextOutput(t *testing.T) {
 			source:   "spam.io/bacon-bundle",
 			annJson:  fooBarDeny,
 			template: "names",
-			expected: "policy.foo.bar.rule_title\n",
+			expected: "bar.rule_title\n",
 			err:      nil,
 		},
 		{
@@ -86,7 +86,7 @@ func Test_RegoTextOutput(t *testing.T) {
 			source:   "spam.io/bacon-bundle",
 			annJson:  fooBarDeny,
 			template: "short-names",
-			expected: "foo.bar.rule_title\n",
+			expected: "bar.rule_title\n",
 			err:      nil,
 		},
 		{
@@ -115,7 +115,7 @@ func Test_RegoTextOutput(t *testing.T) {
 			expected: hd.Doc(`
 				# Source: spam.io/bacon-bundle
 
-				policy.foo.bar. (deny)
+				bar. (deny)
 				Rule title
 				Rule description
 				[eggs]
@@ -148,7 +148,7 @@ func Test_RegoTextOutput(t *testing.T) {
 			expected: hd.Doc(`
 				# Source: spam.io/bacon-bundle
 
-				policy.foo.bar. (deny)
+				bar. (deny)
 				Rule title
 				Rule description
 				--
