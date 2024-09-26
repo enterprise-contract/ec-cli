@@ -1284,15 +1284,16 @@ func TestCollectAnnotationData(t *testing.T) {
 	require.NoError(t, rules.collect(ast.NewAnnotationsRef(module.Annotations[0])))
 
 	assert.Equal(t, policyRules{
-		"a.b.c.short": {
-			Code:        "a.b.c.short",
-			CodePackage: "a.b.c",
+		"c.short": {
+			Code:        "c.short",
+			CodePackage: "c",
 			Collections: []string{"A", "B", "C"},
+			// TODO: Hmmm this should probably be trimmed as well.
 			DependsOn:   []string{"a.b.c"},
 			Description: "Description",
 			EffectiveOn: "2022-01-01T00:00:00Z",
 			Kind:        rule.Deny,
-			Package:     "a.b.c",
+			Package:     "c",
 			ShortName:   "short",
 			Title:       "Title",
 		},

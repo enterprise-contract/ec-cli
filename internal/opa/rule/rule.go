@@ -158,11 +158,6 @@ func packageName(a *ast.AnnotationsRef) string {
 	return strings.Join(packages(a), ".")
 }
 
-var knownRuleCategories = map[string]bool{
-	"release":  true,
-	"pipeline": true,
-}
-
 func codePackage(a *ast.AnnotationsRef) string {
 	if a == nil {
 		return ""
@@ -172,17 +167,11 @@ func codePackage(a *ast.AnnotationsRef) string {
 
 	l := len(packages)
 
-	if len(packages) > 0 && packages[0] == "policy" {
-		// remove the policy package
-		packages = packages[1:]
+	if l == 0 {
+		return ""
 	}
 
-	if l > 0 && knownRuleCategories[packages[0]] {
-		// remove any known rule categories
-		packages = packages[1:]
-	}
-
-	return strings.Join(packages, ".")
+	return packages[l-1]
 }
 
 func code(a *ast.AnnotationsRef) string {
@@ -254,6 +243,7 @@ const (
 	Other RuleKind = "other"
 )
 
+// TODO: Consolidate Package and CodePackage
 type Info struct {
 	Code             string
 	CodePackage      string
@@ -280,7 +270,7 @@ func RuleInfo(a *ast.AnnotationsRef) Info {
 		EffectiveOn:      effectiveOn(a),
 		Solution:         solution(a),
 		Kind:             kind(a),
-		Package:          packageName(a),
+		Package:          codePackage(a),
 		ShortName:        shortName(a),
 		Title:            title(a),
 	}
