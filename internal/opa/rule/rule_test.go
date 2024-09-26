@@ -517,6 +517,26 @@ func TestCode(t *testing.T) {
 			expected: "a.b.c.x",
 		},
 		{
+			name: "build_task category",
+			annotation: annotationRef(heredoc.Doc(`
+				package policy.build_task.a.b.c
+				# METADATA
+				# custom:
+				#   short_name: x
+				deny() { true }`)),
+			expected: "a.b.c.x",
+		},
+		{
+			name: "task category",
+			annotation: annotationRef(heredoc.Doc(`
+				package policy.task.a.b.c
+				# METADATA
+				# custom:
+				#   short_name: x
+				deny() { true }`)),
+			expected: "a.b.c.x",
+		},
+		{
 			name: "unknown category",
 			annotation: annotationRef(heredoc.Doc(`
 				package policy.something.a.b.c
