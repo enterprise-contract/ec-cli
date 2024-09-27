@@ -54,7 +54,7 @@ jobs:
       - uses: actions/create-github-app-token@5d869da34e18e7287c1daad50e0b8ea0f506ce69 # v1.11.0
         id: generate-token
         with:
-          app-id: 245286
+          app-id: ${{ vars.EC_AUTOMATION_APP_ID }}
           private-key: ${{ secrets.EC_AUTOMATION_KEY }}
 
       - name: pull-request
@@ -68,4 +68,8 @@ jobs:
           sign-commits: true
           signoff: true
           title: Bump enterprise-contract/go-containerregistry
+          # We could use secrets.GITHUB_TOKEN here. That token is generated on-demand for any
+          # workflow by GitHub. However, actions performed when using that token do not trigger
+          # other events. So if we create a pull_request, it won't trigger all the CI checks. More:
+          # https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/triggering-a-workflow#triggering-a-workflow-from-a-workflow
           token: ${{ steps.generate-token.outputs.token }}
