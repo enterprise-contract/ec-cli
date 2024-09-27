@@ -1,9 +1,0 @@
-
-[Verifying a simple task definition:validate - 1]
-Command "definition" is deprecated, please use "ec validate input" instead.
-{"definitions":[{"filename":"${TEMP}/definition-file-${RANDOM}","violations":[],"warnings":[],"successes":[]}],"success":true,"ec-version":"${EC_VERSION}"}
----
-
-[Verifying a simple task definition:results - 1]
-{}
----
