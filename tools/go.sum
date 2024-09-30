@@ -1595,8 +1595,8 @@ github.com/tchap/go-patricia/v2 v2.3.1 h1:6rQp39lgIYZ+MHmdEq4xzuk1t7OdC35z/xm0BG
 github.com/tchap/go-patricia/v2 v2.3.1/go.mod h1:VZRHKAb53DLaG+nA9EaYYiaEx6YztwDlLElMsnSHD4k=
 github.com/tdakkota/asciicheck v0.2.0 h1:o8jvnUANo0qXtnslk2d3nMKTFNlOnJjRrNcj0j9qkHM=
 github.com/tdakkota/asciicheck v0.2.0/go.mod h1:Qb7Y9EgjCLJGup51gDHFzbI08/gbGhL/UVhYIPWG2rg=
-github.com/tektoncd/chains v0.22.1 h1:e6uvTjSQrd0beqPksRpeBYU72hIVQ9rWlLorl6Onlmk=
-github.com/tektoncd/chains v0.22.1/go.mod h1:5FsO4gIKUIlJ4ohmmMXep0GPMWN1oEwRLXiETmU7XhY=
+github.com/tektoncd/chains v0.22.2 h1:OjlEUyVw1kWBewVrZ3GRYipN8w8cLU2nMCCz0lZMG9Y=
+github.com/tektoncd/chains v0.22.2/go.mod h1:5FsO4gIKUIlJ4ohmmMXep0GPMWN1oEwRLXiETmU7XhY=
 github.com/tektoncd/cli v0.38.0 h1:mH4xMxehfPOD2Ar0KZgWtb9Wh3r3S6wSAAZo8pTcruI=
 github.com/tektoncd/cli v0.38.0/go.mod h1:MLcBL6RH70XgKeaKV3l3YcvHjASyTELZACG9ZfVA5yg=
 github.com/tektoncd/hub v1.18.0 h1:q9EN0gBKYyHsa9SnyT0LbFP47IG8nH7g1oqzKlObAww=
