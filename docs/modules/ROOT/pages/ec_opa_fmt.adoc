@@ -33,7 +33,8 @@ ec opa fmt [path [...]] [flags]
 -h, --help:: help for fmt (Default: false)
 -l, --list:: list all files who would change when formatted (Default: false)
 --rego-v1:: format module(s) to be compatible with both Rego v1 and current OPA version) (Default: false)
---v1-compatible:: opt-in to OPA features and behaviors that will be enabled by default in a future OPA v1.0 release (Default: false)
+--v0-compatible:: opt-in to OPA features and behaviors prior to the OPA v1.0 release. Takes precedence over --v1-compatible (Default: false)
+--v1-compatible:: opt-in to OPA features and behaviors that are enabled by default in OPA v1.0 (Default: false)
 -w, --write:: overwrite the original source file (Default: false)
 
 == Options inherited from parent commands

@@ -45,7 +45,7 @@ ec opa deps <query> [flags]
 -f, --format:: set output format (Default: pretty)
 -h, --help:: help for deps (Default: false)
 --ignore:: set file and directory names to ignore during loading (e.g., '.*' excludes hidden files) (Default: [])
---v1-compatible:: opt-in to OPA features and behaviors that will be enabled by default in a future OPA v1.0 release (Default: false)
+--v1-compatible:: opt-in to OPA features and behaviors that are enabled by default in OPA v1.0 (Default: false)
 
 == Options inherited from parent commands
 
