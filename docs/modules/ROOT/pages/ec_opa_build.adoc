@@ -182,7 +182,8 @@ ec opa build <path> [<path> [...]] [flags]
 --signing-key:: set the secret (HMAC) or path of the PEM file containing the private key (RSA and ECDSA)
 --signing-plugin:: name of the plugin to use for signing/verification (see https://www.openpolicyagent.org/docs/latest/management-bundles/#signature-plugin
 -t, --target:: set the output bundle target type (Default: rego)
---v1-compatible:: opt-in to OPA features and behaviors that will be enabled by default in a future OPA v1.0 release (Default: false)
+--v0-compatible:: opt-in to OPA features and behaviors prior to the OPA v1.0 release. Takes precedence over --v1-compatible (Default: false)
+--v1-compatible:: opt-in to OPA features and behaviors that are enabled by default in OPA v1.0 (Default: false)
 --verification-key:: set the secret (HMAC) or path of the PEM file containing the public key (RSA and ECDSA)
 --verification-key-id:: name assigned to the verification key used for bundle verification (Default: default)
 
