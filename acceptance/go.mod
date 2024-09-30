@@ -1,13 +1,12 @@
 module github.com/enterprise-contract/ec-cli/acceptance
 
 go 1.22.5
-
 require (
 	cuelang.org/go v0.10.0
 	github.com/cucumber/godog v0.14.1
 	github.com/cyberphone/json-canonicalization v0.0.0-20231217050601-ba74d44ecf5f
 	github.com/doiit/picocolors v1.0.1
-	github.com/enterprise-contract/enterprise-contract-controller/api v0.1.57
+	github.com/enterprise-contract/enterprise-contract-controller/api v0.1.58
 	github.com/evanphx/json-patch/v5 v5.9.0
 	github.com/gkampitakis/go-snaps v0.5.7
 	github.com/go-git/go-billy/v5 v5.5.0
@@ -29,7 +28,7 @@ require (
 	github.com/tektoncd/pipeline v0.63.0
 	github.com/testcontainers/testcontainers-go v0.33.0
 	github.com/transparency-dev/merkle v0.0.2
-	github.com/wiremock/go-wiremock v1.9.0
+	github.com/wiremock/go-wiremock v1.10.0
 	github.com/yudai/gojsondiff v1.0.0
 	golang.org/x/exp v0.0.0-20240823005443-9b4947da3948
 	gopkg.in/go-jose/go-jose.v2 v2.6.3
@@ -38,7 +37,7 @@ require (
 	k8s.io/client-go v0.31.0
 	sigs.k8s.io/kind v0.24.0
 	sigs.k8s.io/kustomize/api v0.17.3
-	sigs.k8s.io/kustomize/kyaml v0.17.2
+	sigs.k8s.io/kustomize/kyaml v0.18.0
 	sigs.k8s.io/yaml v1.4.0
 )
 
@@ -219,7 +218,6 @@ require (
 	go.opentelemetry.io/otel v1.29.0 // indirect
 	go.opentelemetry.io/otel/metric v1.29.0 // indirect
 	go.opentelemetry.io/otel/trace v1.29.0 // indirect
-	go.starlark.net v0.0.0-20240725214946-42030a7cedce // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/crypto v0.26.0 // indirect
