@@ -217,9 +217,12 @@ func keepSomeMetadata(results []evaluator.Result) {
 	}
 }
 
+// keepSomeMetadataSingle retains only specific metadata keys in the result.
+// **Updated to include "term" by default as per the acceptance criteria.**
 func keepSomeMetadataSingle(result evaluator.Result) {
 	for key := range result.Metadata {
-		if key == "code" || key == "effective_on" {
+		// Retain "code", "effective_on", and "term" keys
+		if key == "code" || key == "effective_on" || key == "term" {
 			continue
 		}
 		delete(result.Metadata, key)
