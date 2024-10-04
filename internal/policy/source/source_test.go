@@ -138,13 +138,12 @@ func TestInlineDataSource(t *testing.T) {
 	require.Equal(t, "data:application/json;base64,c29tZSBkYXRh", s.PolicyUrl())
 }
 
-func TestFetchPolicySources(t *testing.T) {
+func TestPolicySourcesFrom(t *testing.T) {
 	// var ruleData = &extv1.JSON{Raw: []byte("foo")}
 	tests := []struct {
 		name     string
 		source   ecc.Source
 		expected []PolicySource
-		err      error
 	}{
 		{
 			name: "fetches policy configs",
@@ -161,7 +160,6 @@ func TestFetchPolicySources(t *testing.T) {
 				&PolicyUrl{Url: "github.com/org/repo2//data/", Kind: DataKind},
 				&PolicyUrl{Url: "github.com/org/repo3//data/", Kind: DataKind},
 			},
-			err: nil,
 		},
 		{
 			name: "handles rule data",
@@ -176,17 +174,11 @@ func TestFetchPolicySources(t *testing.T) {
 				&PolicyUrl{Url: "github.com/org/repo1//data/", Kind: DataKind},
 				inlineData{source: []byte("{\"rule_data__configuration__\":\"foo\":\"bar\"}")},
 			},
-			err: nil,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sources, err := FetchPolicySources(tt.source)
-			if tt.err == nil {
-				assert.NoError(t, err, "FetchPolicySources returned an error")
-			} else {
-				assert.EqualError(t, err, tt.err.Error())
-			}
+			sources := PolicySourcesFrom(tt.source)
 			assert.Equal(t, sources, tt.expected)
 		})
 	}

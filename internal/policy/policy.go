@@ -56,7 +56,7 @@ const (
 var now = time.Now
 
 var (
-	FetchPolicySources     = source.FetchPolicySources
+	PolicySourcesFrom      = source.PolicySourcesFrom
 	CreateWorkDir          = utils.CreateWorkDir
 	PolicyCacheFromContext = cache.PolicyCacheFromContext
 )
@@ -600,11 +600,7 @@ func PreProcessPolicy(ctx context.Context, policyOptions Options) (Policy, *cach
 	sources := p.Spec().Sources
 	for i, sourceGroup := range sources {
 		log.Debugf("Fetching policy source group '%+v'\n", sourceGroup.Name)
-		policySources, err := FetchPolicySources(sourceGroup)
-		if err != nil {
-			log.Debugf("Failed to fetch policy source group '%s'!\n", sourceGroup.Name)
-			return nil, nil, err
-		}
+		policySources := PolicySourcesFrom(sourceGroup)
 
 		fs := utils.FS(ctx)
 		dir, err := utils.CreateWorkDir(fs)

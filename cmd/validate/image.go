@@ -298,11 +298,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 			for _, sourceGroup := range data.policy.Spec().Sources {
 				// Todo: Make each fetch run concurrently
 				log.Debugf("Fetching policy source group '%s'", sourceGroup.Name)
-				policySources, err := source.FetchPolicySources(sourceGroup)
-				if err != nil {
-					log.Debugf("Failed to fetch policy source group '%s'!", sourceGroup.Name)
-					return err
-				}
+				policySources := source.PolicySourcesFrom(sourceGroup)
 
 				for _, policySource := range policySources {
 					log.Debugf("policySource: %#v", policySource)
