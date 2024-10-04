@@ -502,7 +502,7 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, target EvaluationTarget
 		result.Skipped = skipped
 
 		// Replace the placeholder successes slice with the actual successes.
-		result.Successes = c.computeSuccesses(result, rules, effectiveTime, target.Target)
+		result.Successes = c.computeSuccesses(result, rules, target.Target)
 
 		totalRules += len(result.Warnings) + len(result.Failures) + len(result.Successes)
 
@@ -537,7 +537,7 @@ func toRules(results []output.Result) []Result {
 // computeSuccesses generates success results, these are not provided in the
 // Conftest results, so we reconstruct these from the parsed rules, any rule
 // that hasn't been touched by adding metadata must have succeeded
-func (c conftestEvaluator) computeSuccesses(result Outcome, rules policyRules, effectiveTime time.Time, target string) []Result {
+func (c conftestEvaluator) computeSuccesses(result Outcome, rules policyRules, target string) []Result {
 	// what rules, by code, have we seen in the Conftest results, use map to
 	// take advantage of hashing for quicker lookup
 	seenRules := map[string]bool{}
