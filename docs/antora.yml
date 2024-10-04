@@ -17,6 +17,6 @@
 ---
 name: ec-cli
 title: Enterprise Contract CLI
-version: main
+version: ~
 nav:
   - modules/ROOT/nav.adoc
