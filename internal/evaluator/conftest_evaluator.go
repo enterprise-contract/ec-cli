@@ -171,10 +171,16 @@ const (
 	metadataCollections = "collections"
 	metadataDependsOn   = "depends_on"
 	metadataDescription = "description"
+	metadataSeverity    = "severity"
 	metadataEffectiveOn = "effective_on"
 	metadataSolution    = "solution"
 	metadataTerm        = "term"
 	metadataTitle       = "title"
+)
+
+const (
+	severityWarning = "warning"
+	severityFailure = "failure"
 )
 
 // ConfigProvider is a subset of the policy.Policy interface. Its purpose is to codify which parts
@@ -464,7 +470,12 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, target EvaluationTarget
 				log.Debugf("Skipping result warning: %#v", warning)
 				continue
 			}
-			warnings = append(warnings, warning)
+
+			if getSeverity(warning) == severityFailure {
+				failures = append(failures, warning)
+			} else {
+				warnings = append(warnings, warning)
+			}
 		}
 
 		for i := range result.Failures {
@@ -476,8 +487,7 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, target EvaluationTarget
 				continue
 			}
 
-			if !isResultEffective(failure, effectiveTime) {
-				// TODO: Instead of moving to warnings, create new attribute: "futureViolations"
+			if getSeverity(failure) == severityWarning || !isResultEffective(failure, effectiveTime) {
 				warnings = append(warnings, failure)
 			} else {
 				failures = append(failures, failure)
@@ -647,6 +657,9 @@ func addMetadataToResults(ctx context.Context, r *Result, rule rule.Info) {
 	if rule.EffectiveOn != "" {
 		r.Metadata[metadataEffectiveOn] = rule.EffectiveOn
 	}
+	if rule.Severity != "" {
+		r.Metadata[metadataSeverity] = rule.Severity
+	}
 	if rule.Description != "" {
 		r.Metadata[metadataDescription] = rule.Description
 	}
@@ -777,6 +790,26 @@ func (c *conftestEvaluator) createCapabilitiesFile(ctx context.Context) error {
 	log.Debugf("Capabilities file written to %s", f.Name())
 
 	return nil
+}
+
+func getSeverity(r Result) string {
+	raw, found := r.Metadata[metadataSeverity]
+	if !found {
+		return ""
+	}
+	severity, ok := raw.(string)
+	if !ok {
+		log.Warnf("Ignoring non-string %q value %#v", metadataSeverity, raw)
+		return ""
+	}
+
+	switch severity {
+	case severityFailure, severityWarning:
+		return severity
+	default:
+		log.Warnf("Ignoring unexpected %q value %s", metadataSeverity, severity)
+		return ""
+	}
 }
 
 // isResultEffective returns whether or not the given result's effective date is before now.

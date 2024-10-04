@@ -4882,3 +4882,109 @@ Error: success criteria not met
 [fetch OCI image files:stderr - 1]
 
 ---
+
+[severity is dynamically adjusted:stdout - 1]
+{
+  "success": false,
+  "components": [
+    {
+      "name": "Unnamed",
+      "containerImage": "${REGISTRY}/acceptance/ec-happy-day@sha256:${REGISTRY_acceptance/ec-happy-day:latest_DIGEST}",
+      "source": {},
+      "violations": [
+        {
+          "msg": "Failure to failure",
+          "metadata": {
+            "severity": "failure"
+          }
+        },
+        {
+          "msg": "Warning to failure",
+          "metadata": {
+            "severity": "failure"
+          }
+        }
+      ],
+      "warnings": [
+        {
+          "msg": "Failure to warning",
+          "metadata": {
+            "severity": "warning"
+          }
+        },
+        {
+          "msg": "Warning to warning",
+          "metadata": {
+            "severity": "warning"
+          }
+        }
+      ],
+      "successes": [
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.signature_check",
+            "description": "The attestation signature matches available signing materials.",
+            "title": "Attestation signature check passed"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.attestation.syntax_check",
+            "description": "The attestation has correct syntax.",
+            "title": "Attestation syntax check passed"
+          }
+        },
+        {
+          "msg": "Pass",
+          "metadata": {
+            "code": "builtin.image.signature_check",
+            "description": "The image signature matches available signing materials.",
+            "title": "Image signature check passed"
+          }
+        }
+      ],
+      "success": false,
+      "signatures": [
+        {
+          "keyid": "",
+          "sig": "${IMAGE_SIGNATURE_acceptance/ec-happy-day}"
+        }
+      ],
+      "attestations": [
+        {
+          "type": "https://in-toto.io/Statement/v0.1",
+          "predicateType": "https://slsa.dev/provenance/v0.2",
+          "predicateBuildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+          "signatures": [
+            {
+              "keyid": "",
+              "sig": "${ATTESTATION_SIGNATURE_acceptance/ec-happy-day}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "key": "${known_PUBLIC_KEY_JSON}",
+  "policy": {
+    "sources": [
+      {
+        "policy": [
+          "git::https://${GITHOST}/git/dynamic-severity-policy.git?ref=${LATEST_COMMIT}"
+        ]
+      }
+    ],
+    "rekorUrl": "${REKOR}",
+    "publicKey": "${known_PUBLIC_KEY}"
+  },
+  "ec-version": "${EC_VERSION}",
+  "effective-time": "${TIMESTAMP}"
+}
+---
+
+[severity is dynamically adjusted:stderr - 1]
+Error: success criteria not met
+
+---
