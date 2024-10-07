@@ -27,6 +27,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 	schemaExporter "github.com/invopop/jsonschema"
 	"github.com/santhosh-tekuri/jsonschema/v5"
@@ -40,6 +41,9 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/enterprise-contract/ec-cli/internal/kubernetes"
+	"github.com/enterprise-contract/ec-cli/internal/policy/cache"
+	"github.com/enterprise-contract/ec-cli/internal/policy/source"
+	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
 const (
@@ -50,6 +54,12 @@ const (
 
 // allows controlling time in tests
 var now = time.Now
+
+var (
+	FetchPolicySources     = source.FetchPolicySources
+	CreateWorkDir          = utils.CreateWorkDir
+	PolicyCacheFromContext = cache.PolicyCacheFromContext
+)
 
 func ValidatePolicy(ctx context.Context, policyConfig string) error {
 	return validatePolicyConfig(policyConfig)
@@ -570,4 +580,83 @@ func validatePolicyConfig(policyConfig string) error {
 		return err
 	}
 	return nil
+}
+
+// PreProcessPolicy fetches policy sources and returns a policy object with
+// pinned SHA/image digest URL where applicable, along with a policy cache object.
+func PreProcessPolicy(ctx context.Context, policyOptions Options) (Policy, *cache.PolicyCache, error) {
+	var policyCache *cache.PolicyCache
+	pinnedPolicyUrls := map[string][]string{}
+	policyCache, err := cache.NewPolicyCache(ctx)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	p, err := NewPolicy(ctx, policyOptions)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	sources := p.Spec().Sources
+	for i, sourceGroup := range sources {
+		log.Debugf("Fetching policy source group '%+v'\n", sourceGroup.Name)
+		policySources, err := FetchPolicySources(sourceGroup)
+		if err != nil {
+			log.Debugf("Failed to fetch policy source group '%s'!\n", sourceGroup.Name)
+			return nil, nil, err
+		}
+
+		fs := utils.FS(ctx)
+		dir, err := utils.CreateWorkDir(fs)
+		if err != nil {
+			log.Debug("Failed to create work dir!")
+			return nil, nil, err
+		}
+
+		for _, policySource := range policySources {
+			if strings.HasPrefix(policySource.PolicyUrl(), "data:") {
+				continue
+			}
+
+			destDir, err := policySource.GetPolicy(ctx, dir, false)
+			if err != nil {
+				log.Debugf("Unable to download source from %s!", policySource.PolicyUrl())
+				return nil, nil, err
+			}
+			log.Debugf("Downloaded policy source from %s to %s\n", policySource.PolicyUrl(), destDir)
+
+			url := policySource.PolicyUrl()
+
+			if _, found := policyCache.Get(policySource.PolicyUrl()); !found {
+				log.Debugf("Cache miss for: %s, adding to cache", url)
+				policyCache.Set(url, destDir, nil)
+				pinnedPolicyUrls[policySource.Subdir()] = append(pinnedPolicyUrls[policySource.Subdir()], url)
+				log.Debugf("Added %s to the pinnedPolicyUrls in \"%s\"", url, policySource.Subdir())
+			} else {
+				log.Debugf("Cache hit for: %s", url)
+			}
+		}
+
+		sources[i] = v1alpha1.Source{
+			Name:           sourceGroup.Name,
+			Policy:         urls(policySources, source.PolicyKind),
+			Data:           urls(policySources, source.DataKind),
+			RuleData:       sourceGroup.RuleData,
+			Config:         sourceGroup.Config,
+			VolatileConfig: sourceGroup.VolatileConfig,
+		}
+	}
+
+	return p, policyCache, err
+}
+
+func urls(s []source.PolicySource, kind source.PolicyType) []string {
+	ret := make([]string, 0, len(s))
+	for _, u := range s {
+		if u.Type() == kind {
+			ret = append(ret, u.PolicyUrl())
+		}
+	}
+
+	return ret
 }

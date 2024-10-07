@@ -151,7 +151,7 @@ Error: expected "git+https://${GITHOST}/git/tasks.git//task.yaml" to contain the
 trusted_tasks:
   git+https://${GITHOST}/git/tasks.git//task.yaml:
     - effective_on: "${TIMESTAMP}"
-      ref: 60079661c514e31e542a55aefb8de67bd40597a9
+      ref: ${LATEST_COMMIT}
 
 ---
 

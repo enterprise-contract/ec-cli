@@ -28,7 +28,7 @@
      ]
     },
     "policy": [
-     "quay.io/hacbs-contract/ec-release-policy:latest"
+     "oci://quay.io/hacbs-contract/ec-release-policy:latest@sha256:da54bca5477bf4e3449bc37de1822888fa0fbb8d89c640218cb31b987374d357"
     ]
    }
   ]
@@ -66,7 +66,7 @@
      ]
     },
     "policy": [
-     "quay.io/hacbs-contract/ec-release-policy:latest"
+     "oci://quay.io/hacbs-contract/ec-release-policy:latest@sha256:da54bca5477bf4e3449bc37de1822888fa0fbb8d89c640218cb31b987374d357"
     ]
    }
   ]

@@ -57,6 +57,7 @@ type gitState struct {
 	HostAndPort     string
 	RepositoriesDir string
 	CertificatePath string
+	LatestCommit    string
 }
 
 func (g gitState) Key() any {
@@ -186,6 +187,10 @@ func Host(ctx context.Context) string {
 	return testenv.FetchState[gitState](ctx).HostAndPort
 }
 
+func LatestCommit(ctx context.Context) string {
+	return testenv.FetchState[gitState](ctx).LatestCommit
+}
+
 // CertificatePath returns the path to the self-signed certificate used for TLS
 // handshake
 func CertificatePath(ctx context.Context) string {
@@ -270,13 +275,15 @@ func createGitRepository(ctx context.Context, repositoryName string, files *godo
 	}
 
 	// do a `git commit`
-	_, err = w.Commit("test data", &git.CommitOptions{
+	h, err := w.Commit("test data", &git.CommitOptions{
 		Author: &object.Signature{
 			Name:  "Testy McTestface",
 			Email: "test@test.test",
 			When:  time.Date(1970, time.January, 1, 0, 9, 9, 9, time.UTC), // makes commits deterministic
 		},
 	})
+
+	state.LatestCommit = h.String()
 	if err != nil {
 		return err
 	}

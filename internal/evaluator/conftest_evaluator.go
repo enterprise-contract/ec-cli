@@ -294,22 +294,20 @@ func NewConftestEvaluatorWithNamespace(ctx context.Context, policySources []sour
 	}
 
 	c.include, c.exclude = computeIncludeExclude(source, p)
-
 	dir, err := utils.CreateWorkDir(fs)
 	if err != nil {
 		log.Debug("Failed to create work dir!")
 		return nil, err
 	}
 	c.workDir = dir
-
 	c.policyDir = filepath.Join(c.workDir, "policy")
 	c.dataDir = filepath.Join(c.workDir, "data")
-
-	log.Debugf("Created work dir %s", dir)
 
 	if err := c.createDataDirectory(ctx); err != nil {
 		return nil, err
 	}
+
+	log.Debugf("Created work dir %s", dir)
 
 	if err := c.createCapabilitiesFile(ctx); err != nil {
 		return nil, err
@@ -371,7 +369,6 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, target EvaluationTarget
 			// TODO do we want to download other policies instead of erroring out?
 			return nil, nil, err
 		}
-
 		annotations := []*ast.AnnotationsRef{}
 		fs := utils.FS(ctx)
 		// We only want to inspect the directory of policy subdirs, not config or data subdirs.

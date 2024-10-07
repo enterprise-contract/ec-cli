@@ -24,6 +24,7 @@ import (
 	"testing"
 
 	"github.com/enterprise-contract/go-gather/metadata"
+	fileMetadata "github.com/enterprise-contract/go-gather/metadata/file"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
@@ -42,7 +43,7 @@ type mockDownloader struct {
 func (m *mockDownloader) Download(_ context.Context, dest string, sourceUrl string, showMsg bool) (metadata.Metadata, error) {
 	args := m.Called(dest, sourceUrl, showMsg)
 
-	return nil, args.Error(0)
+	return args.Get(0).(metadata.Metadata), args.Error(1)
 }
 
 func TestFetchSourcesFromPolicy(t *testing.T) {
@@ -63,9 +64,9 @@ func TestFetchSourcesFromPolicy(t *testing.T) {
 		}
 	}
 
-	downloader.On("Download", mock.Anything, "one", false).Return(nil).Run(createDir)
-	downloader.On("Download", mock.Anything, "two", false).Return(nil).Run(createDir)
-	downloader.On("Download", mock.Anything, "three", false).Return(nil).Run(createDir)
+	downloader.On("Download", mock.Anything, "one", false).Return(&fileMetadata.FileMetadata{}, nil).Run(createDir)
+	downloader.On("Download", mock.Anything, "two", false).Return(&fileMetadata.FileMetadata{}, nil).Run(createDir)
+	downloader.On("Download", mock.Anything, "three", false).Return(&fileMetadata.FileMetadata{}, nil).Run(createDir)
 
 	inspectPolicyCmd := inspectPolicyCmd()
 	cmd := setUpCobra(inspectPolicyCmd)
@@ -105,9 +106,9 @@ func TestFetchSources(t *testing.T) {
 		}
 	}
 
-	downloader.On("Download", mock.Anything, "one", false).Return(nil).Run(createDir)
-	downloader.On("Download", mock.Anything, "two", false).Return(nil).Run(createDir)
-	downloader.On("Download", mock.Anything, "three", false).Return(nil).Run(createDir)
+	downloader.On("Download", mock.Anything, "one", false).Return(&fileMetadata.FileMetadata{}, nil).Run(createDir)
+	downloader.On("Download", mock.Anything, "two", false).Return(&fileMetadata.FileMetadata{}, nil).Run(createDir)
+	downloader.On("Download", mock.Anything, "three", false).Return(&fileMetadata.FileMetadata{}, nil).Run(createDir)
 
 	inspectPolicyCmd := inspectPolicyCmd()
 	cmd := setUpCobra(inspectPolicyCmd)

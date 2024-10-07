@@ -208,7 +208,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 			}
 			data.policyConfiguration = policyConfiguration
 
-			if p, err := policy.NewPolicy(cmd.Context(), policy.Options{
+			policyOptions := policy.Options{
 				EffectiveTime: data.effectiveTime,
 				Identity: cosign.Identity{
 					Issuer:        data.certificateOIDCIssuer,
@@ -220,7 +220,11 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 				PolicyRef:   data.policyConfiguration,
 				PublicKey:   data.publicKey,
 				RekorURL:    data.rekorURL,
-			}); err != nil {
+			}
+
+			// We're not currently using the policyCache returned from PreProcessPolicy, but we could
+			// use it to cache the policy for future use.
+			if p, _, err := policy.PreProcessPolicy(ctx, policyOptions); err != nil {
 				allErrors = errors.Join(allErrors, err)
 			} else {
 				// inject extra variables into rule data per source
@@ -322,8 +326,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 				log.Debugf("Starting worker %d", id)
 				for comp := range jobs {
 					log.Debugf("Worker %d got a component %q", id, comp.ContainerImage)
-					ctx := cmd.Context()
-					out, err := validate(ctx, comp, data.spec, data.policy, evaluators, data.info)
+					out, err := validate(cmd.Context(), comp, data.spec, data.policy, evaluators, data.info)
 					res := result{
 						err: err,
 						component: applicationsnapshot.Component{

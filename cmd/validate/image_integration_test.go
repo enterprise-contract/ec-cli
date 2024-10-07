@@ -28,6 +28,7 @@ import (
 	"time"
 
 	"github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
+	ociMetadata "github.com/enterprise-contract/go-gather/metadata/oci"
 	app "github.com/konflux-ci/application-api/api/v1alpha1"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
@@ -44,15 +45,19 @@ import (
 )
 
 func TestEvaluatorLifecycle(t *testing.T) {
+	noEvaluators := 100
+
 	ctx := utils.WithFS(context.Background(), afero.NewMemMapFs())
 	client := fake.FakeClient{}
 	commonMockClient(&client)
 	ctx = oci.WithClient(ctx, &client)
-
-	noEvaluators := 100
+	mdl := MockDownloader{}
+	downloaderCall := mdl.On("Download", mock.Anything, mock.Anything, false).Return(&ociMetadata.OCIMetadata{Digest: "sha256:da54bca5477bf4e3449bc37de1822888fa0fbb8d89c640218cb31b987374d357"}, nil).Times(noEvaluators)
+	ctx = context.WithValue(ctx, source.DownloaderFuncKey, &mdl)
 
 	evaluators := make([]*mockEvaluator, 0, noEvaluators)
-	expectations := make([]*mock.Call, 0, noEvaluators)
+	expectations := make([]*mock.Call, 0, noEvaluators+1)
+	expectations = append(expectations, downloaderCall)
 
 	for i := 0; i < noEvaluators; i++ {
 		e := mockEvaluator{}
@@ -67,7 +72,8 @@ func TestEvaluatorLifecycle(t *testing.T) {
 	}
 
 	newConftestEvaluator = func(_ context.Context, s []source.PolicySource, _ evaluator.ConfigProvider, _ v1alpha1.Source) (evaluator.Evaluator, error) {
-		idx, err := strconv.Atoi(s[0].PolicyUrl())
+		// We are splitting this url to get to the index of the evaluator.
+		idx, err := strconv.Atoi(strings.Split(strings.Split(s[0].PolicyUrl(), "@")[0], "://")[1])
 		require.NoError(t, err)
 
 		return evaluators[idx], nil

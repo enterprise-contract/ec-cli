@@ -28,6 +28,7 @@ import (
 	"fmt"
 	"path"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -35,6 +36,7 @@ import (
 	"github.com/enterprise-contract/go-gather/metadata"
 	fileMetadata "github.com/enterprise-contract/go-gather/metadata/file"
 	gitMetadata "github.com/enterprise-contract/go-gather/metadata/git"
+	httpMetadata "github.com/enterprise-contract/go-gather/metadata/http"
 	ociMetadata "github.com/enterprise-contract/go-gather/metadata/oci"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
@@ -45,14 +47,15 @@ import (
 
 type (
 	key        int
-	policyKind string
+	PolicyType string
 )
 
 const (
 	DownloaderFuncKey key        = 0
-	PolicyKind        policyKind = "policy"
-	DataKind          policyKind = "data"
-	ConfigKind        policyKind = "config"
+	PolicyKind        PolicyType = "policy"
+	DataKind          PolicyType = "data"
+	ConfigKind        PolicyType = "config"
+	InlineDataKind    PolicyType = "inline-data"
 )
 
 type downloaderFunc interface {
@@ -65,13 +68,13 @@ type PolicySource interface {
 	GetPolicy(ctx context.Context, dest string, showMsg bool) (string, error)
 	PolicyUrl() string
 	Subdir() string
+	Type() PolicyType
 }
 
 type PolicyUrl struct {
 	// A string containing a go-getter style source url compatible with conftest pull
-	Url string
-	// Either "data", "policy", or "config"
-	Kind policyKind
+	Url  string
+	Kind PolicyType
 }
 
 // downloadCache is a concurrent map used to cache downloaded files.
@@ -83,7 +86,7 @@ type cacheContent struct {
 	err       error
 }
 
-func getPolicyThroughCache(ctx context.Context, s PolicySource, workDir string, dl func(string, string) (metadata.Metadata, error)) (string, error) {
+func getPolicyThroughCache(ctx context.Context, s PolicySource, workDir string, dl func(string, string) (metadata.Metadata, error)) (string, metadata.Metadata, error) {
 	sourceUrl := s.PolicyUrl()
 	dest := uniqueDestination(workDir, s.Subdir(), sourceUrl)
 
@@ -101,7 +104,7 @@ func getPolicyThroughCache(ctx context.Context, s PolicySource, workDir string, 
 
 	d, c := dfn.(func() (string, cacheContent))()
 	if c.err != nil {
-		return "", c.err
+		return "", c.metadata, c.err
 	}
 
 	// If the destination directory is different from the source directory, we
@@ -110,42 +113,28 @@ func getPolicyThroughCache(ctx context.Context, s PolicySource, workDir string, 
 		fs := utils.FS(ctx)
 		base := filepath.Dir(dest)
 		if err := fs.MkdirAll(base, 0755); err != nil {
-			return "", err
+			return "", nil, err
 		}
 
 		if symlinkableFS, ok := fs.(afero.Symlinker); ok {
 			log.Debugf("Symlinking %s to %s", d, dest)
 			if err := symlinkableFS.SymlinkIfPossible(d, dest); err != nil {
-				return "", err
+				return "", nil, err
 			}
-			if c.metadata != nil {
-				if _, ok := c.metadata.(*gitMetadata.GitMetadata); ok {
-					log.Debugf("SHA for source(%s): %s\n", s.PolicyUrl(), c.metadata.(*gitMetadata.GitMetadata).LatestCommit)
-				}
-				if _, ok := c.metadata.(*ociMetadata.OCIMetadata); ok {
-					log.Debugf("Image digest for source(%s): %s\n", s.PolicyUrl(), c.metadata.(*ociMetadata.OCIMetadata).Digest)
-				}
-			}
-			return dest, nil
+			logMetadata(c.metadata)
+			return dest, c.metadata, nil
 		} else {
 			log.Debugf("Filesystem does not support symlinking: %q, re-downloading instead", fs.Name())
 			m, err := dl(sourceUrl, dest)
-			if _, ok := m.(*gitMetadata.GitMetadata); ok {
-				log.Debugf("SHA for source(%s): %s\n", s.PolicyUrl(), m.(*gitMetadata.GitMetadata).LatestCommit)
-			}
-			return dest, err
+			logMetadata(m)
+			return dest, m, err
 		}
 	}
 
 	if c.metadata != nil {
-		if _, ok := c.metadata.(*gitMetadata.GitMetadata); ok {
-			log.Debugf("SHA for source(%s): %s\n", s.PolicyUrl(), c.metadata.(*gitMetadata.GitMetadata).LatestCommit)
-		}
-		if _, ok := c.metadata.(*ociMetadata.OCIMetadata); ok {
-			log.Debugf("Image digest for source(%s): %s\n", s.PolicyUrl(), c.metadata.(*ociMetadata.OCIMetadata).Digest)
-		}
+		logMetadata(c.metadata)
 	}
-	return d, c.err
+	return d, c.metadata, c.err
 }
 
 // GetPolicies clones the repository for a given PolicyUrl
@@ -158,7 +147,17 @@ func (p *PolicyUrl) GetPolicy(ctx context.Context, workDir string, showMsg bool)
 		return downloader.Download(ctx, dest, source, showMsg)
 	}
 
-	return getPolicyThroughCache(ctx, p, workDir, dl)
+	dest, metadata, err := getPolicyThroughCache(ctx, p, workDir, dl)
+	if err != nil {
+		return "", err
+	}
+
+	p.Url, err = getPinnedUrl(p.Url, metadata)
+	if err != nil {
+		return "", err
+	}
+
+	return dest, err
 }
 
 func (p *PolicyUrl) PolicyUrl() string {
@@ -168,6 +167,62 @@ func (p *PolicyUrl) PolicyUrl() string {
 func (p *PolicyUrl) Subdir() string {
 	// Be lazy and assume the kind value is the same as the subdirectory we want
 	return string(p.Kind)
+}
+
+func (p PolicyUrl) Type() PolicyType {
+	return p.Kind
+}
+
+// getPinnedUrl returns the URL with the pinned commit or digest.
+// TODO: Move this to the go-gather library.
+func getPinnedUrl(u string, m metadata.Metadata) (string, error) {
+	if m == nil {
+		return "", fmt.Errorf("metadata is nil")
+	}
+
+	if len(u) == 0 {
+		return "", fmt.Errorf("url is empty")
+	}
+
+	switch t := m.(type) {
+	case *gitMetadata.GitMetadata:
+
+		return strings.SplitN(u, "?ref=", 2)[0] + "?ref=" + t.LatestCommit, nil
+
+	case *ociMetadata.OCIMetadata:
+		for _, scheme := range []string{"oci::", "oci://", "https://"} {
+			u = strings.TrimPrefix(u, scheme)
+		}
+		parts := strings.Split(u, "@")
+		if len(parts) > 1 {
+			u = parts[0]
+		}
+		return fmt.Sprintf("oci://%s@%s", u, t.Digest), nil
+
+	case *httpMetadata.HTTPMetadata:
+		return u, nil
+	case *fileMetadata.FileMetadata:
+		return u, nil
+	case *fileMetadata.DirectoryMetadata:
+		return u, nil
+	default:
+		return "", fmt.Errorf("unknown metadata type")
+	}
+}
+
+func logMetadata(m metadata.Metadata) {
+	if m != nil {
+		switch v := m.(type) {
+		case *gitMetadata.GitMetadata:
+			log.Debugf("SHA: %s\n", v.LatestCommit)
+		case *ociMetadata.OCIMetadata:
+			log.Debugf("Image digest: %s\n", v.Digest)
+		case *fileMetadata.FileMetadata:
+			log.Debugf("File path: %s\n", v.Path)
+		case *fileMetadata.DirectoryMetadata:
+			log.Debugf("Directory path: %s\n", v.Path)
+		}
+	}
 }
 
 func uniqueDestination(rootDir string, subdir string, sourceUrl string) string {
@@ -206,6 +261,28 @@ func (s inlineData) GetPolicy(ctx context.Context, workDir string, showMsg bool)
 		return m, afero.WriteFile(fs, f, s.source, 0400)
 	}
 
+	dest, _, err := getPolicyThroughCache(ctx, s, workDir, dl)
+	return dest, err
+}
+
+func (s inlineData) GetPolicyWithMetadata(ctx context.Context, workDir string, showMsg bool) (string, metadata.Metadata, error) {
+	dl := func(source string, dest string) (metadata.Metadata, error) {
+		fs := utils.FS(ctx)
+
+		if err := fs.MkdirAll(dest, 0755); err != nil {
+			return nil, err
+		}
+
+		f := path.Join(dest, "rule_data.json")
+		m := &fileMetadata.FileMetadata{
+			Path: dest,
+			Size: int64(len(dest)),
+			SHA:  "",
+		}
+
+		return m, afero.WriteFile(fs, f, s.source, 0400)
+	}
+
 	return getPolicyThroughCache(ctx, s, workDir, dl)
 }
 
@@ -217,17 +294,21 @@ func (s inlineData) Subdir() string {
 	return "data"
 }
 
+func (inlineData) Type() PolicyType {
+	return InlineDataKind
+}
+
 // FetchPolicySources returns an array of policy sources
 func FetchPolicySources(s ecc.Source) ([]PolicySource, error) {
 	policySources := make([]PolicySource, 0, len(s.Policy)+len(s.Data))
 
 	for _, policySourceUrl := range s.Policy {
-		url := PolicyUrl{Url: policySourceUrl, Kind: "policy"}
+		url := PolicyUrl{Url: policySourceUrl, Kind: PolicyKind}
 		policySources = append(policySources, &url)
 	}
 
 	for _, dataSourceUrl := range s.Data {
-		url := PolicyUrl{Url: dataSourceUrl, Kind: "data"}
+		url := PolicyUrl{Url: dataSourceUrl, Kind: DataKind}
 		policySources = append(policySources, &url)
 	}
 

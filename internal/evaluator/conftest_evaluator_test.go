@@ -36,6 +36,7 @@ import (
 
 	"github.com/MakeNowJust/heredoc"
 	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
+	"github.com/enterprise-contract/go-gather/metadata"
 	"github.com/gkampitakis/go-snaps/snaps"
 	"github.com/open-policy-agent/opa/ast"
 	"github.com/spf13/afero"
@@ -71,12 +72,20 @@ func (t testPolicySource) GetPolicy(ctx context.Context, dest string, showMsg bo
 	return "/policy", nil
 }
 
+func (t testPolicySource) GetPolicyWithMetadata(ctx context.Context, dest string, showMsg bool) (string, metadata.Metadata, error) {
+	return "/policy", nil, nil
+}
+
 func (t testPolicySource) PolicyUrl() string {
 	return "test-url"
 }
 
 func (t testPolicySource) Subdir() string {
 	return "policy"
+}
+
+func (testPolicySource) Type() source.PolicyType {
+	return source.PolicyKind
 }
 
 type mockDownloader struct {
