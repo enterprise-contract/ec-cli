@@ -21,6 +21,7 @@ package validate
 import (
 	"context"
 
+	"github.com/enterprise-contract/go-gather/metadata"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/spf13/cobra"
@@ -54,6 +55,16 @@ func (e *mockEvaluator) CapabilitiesPath() string {
 	args := e.Called()
 
 	return args.String(0)
+}
+
+type MockDownloader struct {
+	mock.Mock
+}
+
+func (m *MockDownloader) Download(_ context.Context, dest string, sourceUrl string, showMsg bool) (metadata.Metadata, error) {
+	args := m.Called(dest, sourceUrl, showMsg)
+
+	return args.Get(0).(metadata.Metadata), args.Error(1)
 }
 
 func setUpCobra(command *cobra.Command) *cobra.Command {

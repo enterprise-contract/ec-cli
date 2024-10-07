@@ -10,7 +10,7 @@ Error: Merge error. The 'rule_data' key was found more than once!
 
 [json output:stdout - 1]
 {
-  "git::https://${GITHOST}/git/policy.git": [
+  "git::https://${GITHOST}/git/policy.git?ref=${LATEST_COMMIT}": [
     {
       "annotations": {
         "custom": {
@@ -57,7 +57,7 @@ Error: Merge error. The 'rule_data' key was found more than once!
 ---
 
 [default output:stdout - 1]
-# Source: git::https://${GITHOST}/git/policy.git
+# Source: git::https://${GITHOST}/git/policy.git?ref=${LATEST_COMMIT}
 
 policy.release.kitty.purr (deny)
 https://enterprisecontract.dev/docs/ec-policies/release_policy.html#kitty__purr
@@ -94,14 +94,14 @@ kitty.purr
 ---
 
 [sources from ECP:stdout - 1]
-# Source: git::https://${GITHOST}/git/policy1.git
+# Source: git::https://${GITHOST}/git/policy1.git?ref=8288b21ca5e7d8863efffb47c2bc3eac1274d1ff
 
 policy.release.kitty.purr (deny)
 https://enterprisecontract.dev/docs/ec-policies/release_policy.html#kitty__purr
 Kittens
 Fluffy
 --
-# Source: git::https://${GITHOST}/git/policy2.git
+# Source: git::https://${GITHOST}/git/policy2.git?ref=${LATEST_COMMIT}
 
 main.rejector (deny)
 Reject rule

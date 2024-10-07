@@ -366,6 +366,10 @@ func setupGitHost(ctx context.Context, vars map[string]string, environment []str
 	environment = append(environment, fmt.Sprintf("SSL_CERT_FILE=%s", git.CertificatePath(ctx)), "GIT_SSL_NO_VERIFY=true")
 
 	vars["GITHOST"] = git.Host(ctx)
+	latestCommit := git.LatestCommit(ctx)
+	if latestCommit != "" {
+		vars["LATEST_COMMIT"] = latestCommit
+	}
 	return environment, vars, nil
 }
 

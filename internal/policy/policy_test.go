@@ -39,6 +39,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/enterprise-contract/ec-cli/internal/kubernetes"
+	"github.com/enterprise-contract/ec-cli/internal/policy/source"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
@@ -816,6 +817,48 @@ func TestSigstoreOpts(t *testing.T) {
 			opts, err := p.SigstoreOpts()
 			require.NoError(t, err)
 			require.Equal(t, opts, c.expectedOpts)
+		})
+	}
+}
+
+func TestUrls(t *testing.T) {
+	tests := []struct {
+		name string
+		s    []source.PolicySource
+		kind source.PolicyType
+		want []string
+	}{
+		{
+			name: "Returns URLs of the specified kind",
+			s: []source.PolicySource{
+				&source.PolicyUrl{Url: "http://example.com/policy1", Kind: source.PolicyKind},
+				&source.PolicyUrl{Url: "http://example.com/data1", Kind: source.DataKind},
+				&source.PolicyUrl{Url: "http://example.com/policy2", Kind: source.PolicyKind},
+			},
+			kind: source.PolicyKind,
+			want: []string{"http://example.com/policy1", "http://example.com/policy2"},
+		},
+		{
+			name: "Returns empty slice when no URLs of the specified kind",
+			s: []source.PolicySource{
+				&source.PolicyUrl{Url: "http://example.com/data1", Kind: source.PolicyType("data")},
+				&source.PolicyUrl{Url: "http://example.com/data2", Kind: source.PolicyType("data")},
+			},
+			kind: source.PolicyKind,
+			want: []string{},
+		},
+		{
+			name: "Returns empty slice when input slice is empty",
+			s:    []source.PolicySource{},
+			kind: source.PolicyKind,
+			want: []string{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := urls(tt.s, tt.kind)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

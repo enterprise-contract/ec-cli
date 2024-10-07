@@ -13,6 +13,7 @@ require (
 	github.com/enterprise-contract/go-gather/metadata v0.0.2
 	github.com/enterprise-contract/go-gather/metadata/file v0.0.1
 	github.com/enterprise-contract/go-gather/metadata/git v0.0.2
+	github.com/enterprise-contract/go-gather/metadata/http v0.0.1
 	github.com/enterprise-contract/go-gather/metadata/oci v0.0.3
 	github.com/evanphx/json-patch v5.9.0+incompatible
 	github.com/gkampitakis/go-snaps v0.5.7
@@ -168,8 +169,7 @@ require (
 	github.com/enterprise-contract/go-gather v0.0.3 // indirect
 	github.com/enterprise-contract/go-gather/expander v0.0.1 // indirect
 	github.com/enterprise-contract/go-gather/gather/file v0.0.2-0.20240906185922-e8ebd246dc19 // indirect
-	github.com/enterprise-contract/go-gather/gather/git v0.0.6-0.20240911082231-b67aa65913d1 // indirect
-	github.com/enterprise-contract/go-gather/metadata/http v0.0.1 // indirect
+	github.com/enterprise-contract/go-gather/gather/git v0.0.6-0.20240919182827-191282dff6cc // indirect
 	github.com/enterprise-contract/go-gather/saver v0.0.2 // indirect
 	github.com/enterprise-contract/go-gather/saver/file v0.0.1 // indirect
 	github.com/evanphx/json-patch/v5 v5.9.0 // indirect
