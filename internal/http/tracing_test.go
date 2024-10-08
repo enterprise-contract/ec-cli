@@ -18,10 +18,12 @@ package http
 
 import (
 	"net/http"
+	"net/url"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 type transport struct {
@@ -37,8 +39,16 @@ func TestDelegation(t *testing.T) {
 	delegate := &transport{}
 	tracing := NewTracingRoundTripper(delegate)
 
-	req := &http.Request{}
-	res := &http.Response{}
+	u, err := url.Parse("http://example.com")
+	require.NoError(t, err)
+
+	req := &http.Request{
+		Method: "GET",
+		URL:    u,
+	}
+	res := &http.Response{
+		ContentLength: 42,
+	}
 	delegate.On("RoundTrip", req).Return(res, nil)
 	r, err := tracing.RoundTrip(req)
 	assert.Same(t, res, r)

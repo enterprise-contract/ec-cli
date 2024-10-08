@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"path/filepath"
+	"runtime/trace"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
@@ -34,6 +35,12 @@ import (
 var inputFile = input.NewInput
 
 func ValidateInput(ctx context.Context, fpath string, policy policy.Policy, detailed bool) (*output.Output, error) {
+	if trace.IsEnabled() {
+		region := trace.StartRegion(ctx, "ec:validate-input")
+		defer region.End()
+		trace.Logf(ctx, "", "file=%q", fpath)
+	}
+
 	log.Debugf("Current input filePath: %q", fpath)
 	inputFiles, err := detectInput(ctx, fpath)
 	if err != nil {

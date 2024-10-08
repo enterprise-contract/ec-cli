@@ -24,6 +24,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"runtime/trace"
 	"strings"
 	"time"
 
@@ -290,6 +291,11 @@ func NewConftestEvaluator(ctx context.Context, policySources []source.PolicySour
 
 // set the policy namespace
 func NewConftestEvaluatorWithNamespace(ctx context.Context, policySources []source.PolicySource, p ConfigProvider, source ecc.Source, namespace []string) (Evaluator, error) {
+	if trace.IsEnabled() {
+		r := trace.StartRegion(ctx, "ec:conftest-create-evaluator")
+		defer r.End()
+	}
+
 	fs := utils.FS(ctx)
 	c := conftestEvaluator{
 		policySources: policySources,
@@ -361,6 +367,11 @@ func (r *policyRules) collect(a *ast.AnnotationsRef) error {
 
 func (c conftestEvaluator) Evaluate(ctx context.Context, target EvaluationTarget) ([]Outcome, Data, error) {
 	var results []Outcome
+
+	if trace.IsEnabled() {
+		region := trace.StartRegion(ctx, "ec:conftest-evaluate")
+		defer region.End()
+	}
 
 	// hold all rule annotations from all policy sources
 	// NOTE: emphasis on _all rules from all sources_; meaning that if two rules

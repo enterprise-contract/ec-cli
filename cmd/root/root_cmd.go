@@ -23,6 +23,7 @@ import (
 	"os"
 	"runtime"
 	"runtime/pprof"
+	"runtime/trace"
 	"sync"
 	"time"
 
@@ -38,7 +39,7 @@ var (
 	quiet         bool = false
 	verbose       bool = false
 	debug         bool = false
-	trace         bool = false
+	traceEnabled  bool = false
 	globalTimeout      = 5 * time.Minute
 	logfile       string
 	OnExit        func() = func() {}
@@ -66,7 +67,7 @@ func NewRootCmd() *cobra.Command {
 		SilenceUsage: true,
 
 		PersistentPreRun: func(cmd *cobra.Command, _ []string) {
-			logging.InitLogging(verbose, quiet, debug, trace, logfile)
+			logging.InitLogging(verbose, quiet, debug, traceEnabled, logfile)
 
 			// set a custom message for context.DeadlineExceeded error
 			context.DeadlineExceeded = customDeadlineExceededError{}
@@ -78,18 +79,26 @@ func NewRootCmd() *cobra.Command {
 
 			// if trace is enabled setup CPU profiling
 			var cpuprofile *os.File
-			if trace {
+			var tracefile *os.File
+			if traceEnabled {
 				var err error
 				if cpuprofile, err = os.CreateTemp("", "cpuprofile.*"); err != nil {
-					log.Fatal("could not create CPU profile: ", err)
+					log.Fatalf("could not create CPU profile: %v", err)
 				}
 				if err := pprof.StartCPUProfile(cpuprofile); err != nil {
-					log.Fatal("could not start CPU profile: ", err)
+					log.Fatalf("could not start CPU profile: %v", err)
+				}
+
+				if tracefile, err = os.CreateTemp("", "trace.*"); err != nil {
+					log.Fatalf("could not create trace file: %v", err)
+				}
+				if err := trace.Start(tracefile); err != nil {
+					log.Fatalf("failed to start trace: %v", err)
 				}
 			}
 
 			OnExit = sync.OnceFunc(func() {
-				if trace {
+				if traceEnabled {
 					// dump memory profile
 					if memprofile, err := os.CreateTemp("", "memprofile.*"); err != nil {
 						log.Fatal("could not create memory profile: ", err)
@@ -108,6 +117,12 @@ func NewRootCmd() *cobra.Command {
 					if cpuprofile != nil {
 						_ = cpuprofile.Close() // ignore errors
 						log.Tracef("wrote CPU profile to: %s", cpuprofile.Name())
+					}
+
+					trace.Stop()
+					if tracefile != nil {
+						_ = tracefile.Close() // ignore errors
+						log.Tracef("wrote trace to: %s", tracefile.Name())
 					}
 				}
 
@@ -131,7 +146,7 @@ func setFlags(rootCmd *cobra.Command) {
 	rootCmd.PersistentFlags().BoolVar(&quiet, "quiet", quiet, "less verbose output")
 	rootCmd.PersistentFlags().BoolVar(&verbose, "verbose", verbose, "more verbose output")
 	rootCmd.PersistentFlags().BoolVar(&debug, "debug", debug, "same as verbose but also show function names and line numbers")
-	rootCmd.PersistentFlags().BoolVar(&trace, "trace", trace, "enable trace logging")
+	rootCmd.PersistentFlags().BoolVar(&traceEnabled, "trace", traceEnabled, "enable trace logging")
 	rootCmd.PersistentFlags().DurationVar(&globalTimeout, "timeout", globalTimeout, "max overall execution duration")
 	rootCmd.PersistentFlags().StringVar(&logfile, "logfile", "", "file to write the logging output. If not specified logging output will be written to stderr")
 	kubernetes.AddKubeconfigFlag(rootCmd)

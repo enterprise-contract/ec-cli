@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"runtime/trace"
 	"strconv"
 	"sync"
 
@@ -125,21 +126,45 @@ type defaultClient struct {
 }
 
 func (c *defaultClient) VerifyImageSignatures(ref name.Reference, opts *cosign.CheckOpts) ([]oci.Signature, bool, error) {
+	if trace.IsEnabled() {
+		region := trace.StartRegion(c.ctx, "ec:validate-image-signatures")
+		defer region.End()
+		trace.Logf(c.ctx, "", "image=%q", ref)
+	}
+
 	opts.RegistryClientOpts = append(opts.RegistryClientOpts, ociremote.WithRemoteOptions(c.opts...))
 	return cosign.VerifyImageSignatures(c.ctx, ref, opts)
 }
 
 func (c *defaultClient) VerifyImageAttestations(ref name.Reference, opts *cosign.CheckOpts) ([]oci.Signature, bool, error) {
+	if trace.IsEnabled() {
+		region := trace.StartRegion(c.ctx, "ec:validate-image-attestations")
+		defer region.End()
+		trace.Logf(c.ctx, "", "image=%q", ref)
+	}
+
 	opts.RegistryClientOpts = append(opts.RegistryClientOpts, ociremote.WithRemoteOptions(c.opts...))
 	return cosign.VerifyImageAttestations(c.ctx, ref, opts)
 }
 
 func (c *defaultClient) Head(ref name.Reference) (*v1.Descriptor, error) {
+	if trace.IsEnabled() {
+		region := trace.StartRegion(c.ctx, "ec:oci-head")
+		defer region.End()
+		trace.Logf(c.ctx, "", "image=%q", ref)
+	}
+
 	return remote.Head(ref, c.opts...)
 }
 
 // gather all attestation uris and digests associated with an image
 func (c *defaultClient) AttestationUri(img string) (string, error) {
+	if trace.IsEnabled() {
+		region := trace.StartRegion(c.ctx, "ec:oci-attestation-uri")
+		defer region.End()
+		trace.Logf(c.ctx, "", "image=%q", img)
+	}
+
 	imgRef, err := name.ParseReference(img)
 	if err != nil {
 		return "", err
@@ -159,6 +184,12 @@ func (c *defaultClient) AttestationUri(img string) (string, error) {
 }
 
 func (c *defaultClient) ResolveDigest(ref name.Reference) (string, error) {
+	if trace.IsEnabled() {
+		region := trace.StartRegion(c.ctx, "ec:oci-resolve-digest")
+		defer region.End()
+		trace.Logf(c.ctx, "", "image=%q", ref)
+	}
+
 	digest, err := ociremote.ResolveDigest(ref, ociremote.WithRemoteOptions(c.opts...))
 	if err != nil {
 		return "", err
@@ -171,6 +202,12 @@ func (c *defaultClient) ResolveDigest(ref name.Reference) (string, error) {
 }
 
 func (c *defaultClient) Image(ref name.Reference) (v1.Image, error) {
+	if trace.IsEnabled() {
+		region := trace.StartRegion(c.ctx, "ec:oci-fetch-image")
+		defer region.End()
+		trace.Logf(c.ctx, "", "image=%q", ref)
+	}
+
 	img, err := remote.Image(ref, c.opts...)
 	if err != nil {
 		return nil, err
@@ -184,6 +221,12 @@ func (c *defaultClient) Image(ref name.Reference) (v1.Image, error) {
 }
 
 func (c *defaultClient) Layer(ref name.Digest) (v1.Layer, error) {
+	if trace.IsEnabled() {
+		region := trace.StartRegion(c.ctx, "ec:oci-fetch-layer")
+		defer region.End()
+		trace.Logf(c.ctx, "", "image=%q", ref)
+	}
+
 	// TODO: Caching a layer directly is difficult and may not be possible, see:
 	//   https://github.com/google/go-containerregistry/issues/1821
 	layer, err := remote.Layer(ref, c.opts...)
@@ -194,6 +237,12 @@ func (c *defaultClient) Layer(ref name.Digest) (v1.Layer, error) {
 }
 
 func (c *defaultClient) Index(ref name.Reference) (v1.ImageIndex, error) {
+	if trace.IsEnabled() {
+		region := trace.StartRegion(c.ctx, "ec:oci-fetch-index")
+		defer region.End()
+		trace.Logf(c.ctx, "", "image=%q", ref)
+	}
+
 	index, err := remote.Index(ref, c.opts...)
 	if err != nil {
 		return nil, fmt.Errorf("fetching index: %w", err)

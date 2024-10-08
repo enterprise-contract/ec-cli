@@ -52,8 +52,8 @@ var gatherFunc = func(ctx context.Context, source, destination string) (metadata
 
 var _initialize = func() {
 	if log.IsLevelEnabled(logrus.TraceLevel) {
-		goci.Transport = http.NewTracingRoundTripperWithLogger(goci.Transport, log)
-		ghttp.Transport = http.NewTracingRoundTripperWithLogger(ghttp.Transport, log)
+		goci.Transport = http.NewTracingRoundTripperWithLogger(goci.Transport)
+		ghttp.Transport = http.NewTracingRoundTripperWithLogger(ghttp.Transport)
 	}
 
 	backoff := retry.ExponentialBackoff(http.DefaultBackoff.Duration, http.DefaultBackoff.Factor, http.DefaultBackoff.Jitter)

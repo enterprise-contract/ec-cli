@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"runtime/trace"
 
 	"github.com/google/go-containerregistry/pkg/name"
 	app "github.com/konflux-ci/application-api/api/v1alpha1"
@@ -87,6 +88,11 @@ func NewApplicationSnapshotImage(ctx context.Context, component app.SnapshotComp
 
 // ValidateImageAccess executes the remote.Head method on the ApplicationSnapshotImage image ref
 func (a *ApplicationSnapshotImage) ValidateImageAccess(ctx context.Context) error {
+	if trace.IsEnabled() {
+		region := trace.StartRegion(ctx, "ec:validate-image-access")
+		defer region.End()
+	}
+
 	resp, err := oci.NewClient(ctx).Head(a.reference)
 	if err != nil {
 		return err
@@ -211,6 +217,11 @@ func (a *ApplicationSnapshotImage) ValidateAttestationSignature(ctx context.Cont
 // successful syntax check of no inputs, must invoke
 // [ValidateAttestationSignature] to prefill the attestations.
 func (a ApplicationSnapshotImage) ValidateAttestationSyntax(ctx context.Context) error {
+	if trace.IsEnabled() {
+		region := trace.StartRegion(ctx, "ec:validate-attestation-syntax")
+		defer region.End()
+	}
+
 	if len(a.attestations) == 0 {
 		log.Debug("No attestation data found, possibly due to attestation image signature not being validated beforehand")
 		return errors.New("no attestation data")

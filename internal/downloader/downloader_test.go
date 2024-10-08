@@ -23,12 +23,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	standardLog "log"
 	"math/rand/v2"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"path"
+	"regexp"
+	"runtime/trace"
 	"sync"
 	"testing"
 
@@ -43,6 +44,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+	xtrace "golang.org/x/exp/trace"
 	"oras.land/oras-go/v2/registry/remote/retry"
 
 	echttp "github.com/enterprise-contract/ec-cli/internal/http"
@@ -152,13 +154,19 @@ func TestIsSecure(t *testing.T) {
 }
 
 func TestOCITracing(t *testing.T) {
+	traceOutput := bytes.Buffer{}
+	require.NoError(t, trace.Start(&traceOutput))
+	t.Cleanup(trace.Stop)
+
+	log.Level = logrus.TraceLevel
 	initialize = _initialize // we want it to re-execute for the test
 	t.Cleanup(func() {
-		log = logrus.StandardLogger()
+		log.Level = logrus.InfoLevel
 		initialize = sync.OnceFunc(_initialize)
+		goci.Transport = http.DefaultTransport
+		ghttp.Transport = http.DefaultTransport
 	})
-	requestLog := &bytes.Buffer{}
-	registry := httptest.NewServer(registry.New(registry.Logger(standardLog.New(requestLog, "", 0))))
+	registry := httptest.NewServer(registry.New())
 	t.Cleanup(registry.Close)
 
 	u, err := url.Parse(registry.URL)
@@ -171,25 +179,48 @@ func TestOCITracing(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, remote.Push(ref, img))
 
-	traceLog := bytes.Buffer{}
-	log = &logrus.Logger{
-		Out:       &traceLog,
-		Formatter: &logrus.TextFormatter{},
-		Level:     logrus.TraceLevel,
-	}
-
 	_, err = gatherFunc(context.Background(), ref.String(), t.TempDir())
 	require.NoError(t, err)
 
-	assert.Contains(t, requestLog.String(), "GET /v2/repository/image/manifests/tag")
-	assert.Contains(t, traceLog.String(), "START: GET http://127.0.0.1")
+	trace.Stop()
+
+	traceReader, err := xtrace.NewReader(&traceOutput)
+	require.NoError(t, err)
+
+	logs := []xtrace.Log{}
+	for err == nil {
+		var e xtrace.Event
+		e, err = traceReader.ReadEvent()
+		if err == nil && e.Kind() == xtrace.EventLog {
+			logs = append(logs, e.Log())
+		}
+	}
+	assert.NotZero(t, len(logs))
+
+	expected := regexp.MustCompile(`^(method="GET")|(?:url="` + registry.URL + `(/v2/repository/image/manifests/tag|/v2/repository/image/blobs/sha256:[0-9a-f]{64})")|(received=\d+)$`)
+
+	found := 0
+	for _, l := range logs {
+		assert.Regexp(t, expected, l.Message)
+		found++
+	}
+
+	// 12 log messages for 4 requests, 3 per request
+	assert.Equal(t, 12, found)
 }
 
 func TestHTTPTracing(t *testing.T) {
+	traceOutput := bytes.Buffer{}
+	require.NoError(t, trace.Start(&traceOutput))
+	t.Cleanup(trace.Stop)
+
+	log.Level = logrus.TraceLevel
 	initialize = _initialize // we want it to re-execute for the test
 	t.Cleanup(func() {
-		log = logrus.StandardLogger()
+		log.Level = logrus.InfoLevel
 		initialize = sync.OnceFunc(_initialize)
+		goci.Transport = http.DefaultTransport
+		ghttp.Transport = http.DefaultTransport
 	})
 	var requests []string
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -198,18 +229,36 @@ func TestHTTPTracing(t *testing.T) {
 	}))
 	t.Cleanup(server.Close)
 
-	traceLog := bytes.Buffer{}
-	log = &logrus.Logger{
-		Out:       &traceLog,
-		Formatter: &logrus.TextFormatter{},
-		Level:     logrus.TraceLevel,
-	}
-
 	_, err := gatherFunc(context.Background(), server.URL, path.Join(t.TempDir(), "dl"))
 	require.NoError(t, err)
 
+	trace.Stop()
+
+	traceReader, err := xtrace.NewReader(&traceOutput)
+	require.NoError(t, err)
+
+	logs := []xtrace.Log{}
+	for err == nil {
+		var e xtrace.Event
+		e, err = traceReader.ReadEvent()
+		if err == nil && e.Kind() == xtrace.EventLog {
+			logs = append(logs, e.Log())
+		}
+	}
+	assert.NotZero(t, len(logs))
+
 	assert.Equal(t, []string{"GET /"}, requests)
-	assert.Contains(t, traceLog.String(), "START: GET http://127.0.0.1")
+
+	expected := regexp.MustCompile(`^(method="GET")|(?:url="` + server.URL + `")|(received=\d+)$`)
+
+	found := 0
+	for _, l := range logs {
+		assert.Regexp(t, expected, l.Message)
+		found++
+	}
+
+	// 3 log messages per request
+	assert.Equal(t, 3, found)
 }
 
 func TestOCIClientConfiguration(t *testing.T) {

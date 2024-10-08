@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"runtime/trace"
 	"strings"
 
 	"github.com/google/go-containerregistry/pkg/authn"
@@ -35,6 +36,12 @@ const RemoteHead key = "ec.image.remoteHead"
 // ParseAndResolve parses the url into an ImageReference object. The digest is
 // resolved if needed.
 func ParseAndResolve(ctx context.Context, url string, opts ...name.Option) (*ImageReference, error) {
+	if trace.IsEnabled() {
+		region := trace.StartRegion(ctx, "ec:image-resolve")
+		defer region.End()
+		trace.Logf(ctx, "", "image=%q", url)
+	}
+
 	ref, err := NewImageReference(url, opts...)
 	if err != nil {
 		return nil, err
