@@ -1,0 +1,39 @@
+= Troubleshooting
+
+To identify the root cause of an issue encountered when running the `ec` command
+line tool re-running the tool while gathering more information about its
+execution can be useful. In the order of increasing verbosity the command line
+options `--verbose`, `--debug`, and `--trace` emit additional log lines that can
+be written to standard error or a file with the `--logfile` option.
+
+The `--trace` option supports enabling multiple tracing subsystems, one or more
+can be combined using the comma (`,`) as a separator, defaulting to `log` to
+enable only the trace log level if none were given. For example, specifying
+`--trace=opa,log` will output both `ec` trace and the Open Policy Engine trace
+logs.
+
+Policy execution can be traced to show any debug `print` statements in the Rego
+files and the full engine execution trace by enabling the `opa` trace with
+`--trace=opa`.
+
+TIP: The trace output can be quite verbose, filtering to include only the lines
+containing the `<filename>.rego` is helpful to look at only the debug messages
+printed by from a particular file.
+
+When using the `--trace`, memory (`mem`), CPU (`cpu`), or comprehensive
+performance (`perf`) tracing metrics are written to files in the temporary
+directory, and the path to these files is provided in the last lines of the
+logging output. These files can be loaded into Golang tooling for further
+analysis.
+
+For example, performance tracing can be captured and later analyzed using
+workflow similar to:
+
+[source,sh]
+----
+$ ec validate image --trace=perf ...
+...
+Wrote performance trace to: /tmp/perf.3645083324
+$ go tool trace -http=:6060 /tmp/perf.3645083324
+# open browser at http://localhost:6060
+----
