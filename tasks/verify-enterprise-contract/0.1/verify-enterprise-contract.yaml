@@ -32,6 +32,7 @@ spec:
     - name: IMAGES
       type: string
       description: |
+        THIS IS A TEST
         Spec section of an ApplicationSnapshot resource. Not all fields of the
         resource are required. A minimal example:
 
