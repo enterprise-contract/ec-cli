@@ -298,8 +298,8 @@ func (inlineData) Type() PolicyType {
 	return InlineDataKind
 }
 
-// FetchPolicySources returns an array of policy sources
-func FetchPolicySources(s ecc.Source) ([]PolicySource, error) {
+// PolicySourcesFrom returns an array of policy sources
+func PolicySourcesFrom(s ecc.Source) []PolicySource {
 	policySources := make([]PolicySource, 0, len(s.Policy)+len(s.Data))
 
 	for _, policySourceUrl := range s.Policy {
@@ -317,5 +317,5 @@ func FetchPolicySources(s ecc.Source) ([]PolicySource, error) {
 		policySources = append(policySources, InlineData(data))
 	}
 
-	return policySources, nil
+	return policySources
 }
