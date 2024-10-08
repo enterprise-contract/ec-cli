@@ -157,7 +157,7 @@ ec opa eval <query> [flags]
 --kubeconfig:: path to the Kubernetes config file to use
 --logfile:: file to write the logging output. If not specified logging output will be written to stderr
 --quiet:: less verbose output (Default: false)
---trace:: enable trace logging (Default: false)
+--trace:: enable trace logging, set one or more comma separated values: none,all,perf,cpu,mem,opa,log (Default: none)
 --verbose:: more verbose output (Default: false)
 
 == See also

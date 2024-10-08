@@ -25,13 +25,13 @@ Flags:
   -h, --help   help for opa
 
 Global Flags:
-      --debug               same as verbose but also show function names and line numbers
-      --kubeconfig string   path to the Kubernetes config file to use
-      --logfile string      file to write the logging output. If not specified logging output will be written to stderr
-      --quiet               less verbose output
-      --timeout duration    max overall execution duration (default 5m0s)
-      --trace               enable trace logging
-      --verbose             more verbose output
+      --debug                  same as verbose but also show function names and line numbers
+      --kubeconfig string      path to the Kubernetes config file to use
+      --logfile string         file to write the logging output. If not specified logging output will be written to stderr
+      --quiet                  less verbose output
+      --timeout duration       max overall execution duration (default 5m0s)
+      --trace string[="log"]   enable trace logging, set one or more comma separated values: none,all,perf,cpu,mem,opa,log (default "none")
+      --verbose                more verbose output
 
 Use "ec opa [command] --help" for more information about a command.
 

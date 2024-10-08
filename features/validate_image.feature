@@ -1059,7 +1059,7 @@ Feature: evaluate enterprise contract
         ]
       }
       """
-    When ec command is run with "validate image --image ${REGISTRY}/acceptance/trace-debug --policy acceptance/ec-policy --public-key ${trace_debug_PUBLIC_KEY} --rekor-url ${REKOR} --show-successes --output json --trace"
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/trace-debug --policy acceptance/ec-policy --public-key ${trace_debug_PUBLIC_KEY} --rekor-url ${REKOR} --show-successes --output json --trace=opa"
     Then the exit status should be 0
      And the standard error should contain
       """

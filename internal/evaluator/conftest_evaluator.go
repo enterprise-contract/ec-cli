@@ -42,6 +42,7 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/opa/rule"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/policy/source"
+	"github.com/enterprise-contract/ec-cli/internal/tracing"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
@@ -211,9 +212,7 @@ type conftestRunner struct {
 }
 
 func (r conftestRunner) Run(ctx context.Context, fileList []string) (result []Outcome, data Data, err error) {
-	if log.IsLevelEnabled(log.TraceLevel) {
-		r.Trace = true
-	}
+	r.Trace = tracing.FromContext(ctx).Enabled(tracing.Opa)
 
 	var conftestResult []output.CheckResult
 	conftestResult, err = r.TestRunner.Run(ctx, fileList)
