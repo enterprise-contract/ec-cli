@@ -209,6 +209,19 @@ Feature: evaluate enterprise contract
     Then the exit status should be 1
     Then the output should match the snapshot
 
+  Scenario: severity is dynamically adjusted
+    Given a key pair named "known"
+    Given an image named "acceptance/ec-happy-day"
+    Given a valid image signature of "acceptance/ec-happy-day" image signed by the "known" key
+    Given a valid Rekor entry for image signature of "acceptance/ec-happy-day"
+    Given a valid attestation of "acceptance/ec-happy-day" signed by the "known" key
+    Given a valid Rekor entry for attestation of "acceptance/ec-happy-day"
+    Given a git repository named "dynamic-severity-policy" with
+      | main.rego | examples/dynamic_severity.rego |
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy {"sources":[{"policy":["git::https://${GITHOST}/git/dynamic-severity-policy.git"]}]} --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --show-successes --output json --info"
+    Then the exit status should be 1
+    Then the output should match the snapshot
+
   Scenario: multiple policy sources with multiple source groups
     Given a key pair named "known"
     Given an image named "acceptance/ec-multiple-sources"

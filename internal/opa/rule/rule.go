@@ -266,6 +266,7 @@ type Info struct {
 	DependsOn        []string
 	Description      string
 	DocumentationUrl string
+	Severity         string
 	EffectiveOn      string
 	Kind             RuleKind
 	Package          string

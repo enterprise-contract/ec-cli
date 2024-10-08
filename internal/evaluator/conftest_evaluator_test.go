@@ -98,7 +98,7 @@ func (m *mockDownloader) Download(ctx context.Context, dest string, urls []strin
 	return args.Error(0)
 }
 
-func TestConftestEvaluatorEvaluateTimeBased(t *testing.T) {
+func TestConftestEvaluatorEvaluateSeverity(t *testing.T) {
 	results := []Outcome{
 		{
 			Failures: []Result{
@@ -130,12 +130,60 @@ func TestConftestEvaluatorEvaluateTimeBased(t *testing.T) {
 						"effective_on": "3021-01-01T00:00:00Z",
 					},
 				},
+				{
+					Message: "failure to warning",
+					Metadata: map[string]any{
+						"severity": "warning",
+					},
+				},
+				{
+					Message: "failure to failure",
+					Metadata: map[string]any{
+						"severity": "failure",
+					},
+				},
+				{
+					Message: "unexpected severity value on failure",
+					Metadata: map[string]any{
+						"severity": "spam",
+					},
+				},
+				{
+					Message: "unexpected severity type on failure",
+					Metadata: map[string]any{
+						"severity": 42,
+					},
+				},
 			},
 			Warnings: []Result{
 				{
 					Message: "existing warning",
 					Metadata: map[string]any{
 						"effective_on": "2021-01-01T00:00:00Z",
+					},
+				},
+				{
+					Message: "warning to failure",
+					Metadata: map[string]any{
+						"severity": "failure",
+					},
+				},
+				{
+					Message: "warning to warning",
+					Metadata: map[string]any{
+						"severity": "warning",
+					},
+				},
+				{
+					Message: "unexpected severity value on warning",
+					Metadata: map[string]any{
+						"severity": "spam",
+					},
+				},
+				{
+					Message: "unexpected severity type on warning",
+					Metadata: map[string]any{
+						"severity": 42,
 					},
 				},
 			},
@@ -145,6 +193,12 @@ func TestConftestEvaluatorEvaluateTimeBased(t *testing.T) {
 	expectedResults := []Outcome{
 		{
 			Failures: []Result{
+				{
+					Message: "warning to failure",
+					Metadata: map[string]any{
+						"severity": "failure",
+					},
+				},
 				{
 					Message:  "missing effective date",
 					Metadata: map[string]any{},
@@ -167,6 +221,24 @@ func TestConftestEvaluatorEvaluateTimeBased(t *testing.T) {
 						"effective_on": true,
 					},
 				},
+				{
+					Message: "failure to failure",
+					Metadata: map[string]any{
+						"severity": "failure",
+					},
+				},
+				{
+					Message: "unexpected severity value on failure",
+					Metadata: map[string]any{
+						"severity": "spam",
+					},
+				},
+				{
+					Message: "unexpected severity type on failure",
+					Metadata: map[string]any{
+						"severity": 42,
+					},
+				},
 			},
 			Warnings: []Result{
 				{
@@ -176,9 +248,34 @@ func TestConftestEvaluatorEvaluateTimeBased(t *testing.T) {
 					},
 				},
 				{
+					Message: "warning to warning",
+					Metadata: map[string]any{
+						"severity": "warning",
+					},
+				},
+				{
+					Message: "unexpected severity value on warning",
+					Metadata: map[string]any{
+						"severity": "spam",
+					},
+				},
+				{
+					Message: "unexpected severity type on warning",
+					Metadata: map[string]any{
+						"severity": 42,
+					},
+				},
+
+				{
 					Message: "not yet effective",
 					Metadata: map[string]any{
 						"effective_on": "3021-01-01T00:00:00Z",
+					},
+				},
+				{
+					Message: "failure to warning",
+					Metadata: map[string]any{
+						"severity": "warning",
 					},
 				},
 			},
