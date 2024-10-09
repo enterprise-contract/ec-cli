@@ -699,10 +699,10 @@ spec:
 	assert.NoError(t, err)
 	assert.JSONEq(t, `{
 		"data": [
-			"oci://registry/policy-data:latest@sha256:da54bca5477bf4e3449bc37de1822888fa0fbb8d89c640218cb31b987374d357"
+			"oci::registry/policy-data:latest@sha256:da54bca5477bf4e3449bc37de1822888fa0fbb8d89c640218cb31b987374d357"
 		],
 		"policy": [
-			"oci://registry/policy:latest@sha256:da54bca5477bf4e3449bc37de1822888fa0fbb8d89c640218cb31b987374d357"
+			"oci::registry/policy:latest@sha256:da54bca5477bf4e3449bc37de1822888fa0fbb8d89c640218cb31b987374d357"
 		],
 		"ruleData": {
 			"custom_rule_data":{"prefix_data":["registry1"]},
@@ -773,17 +773,17 @@ func Test_ValidateImageErrorLog(t *testing.T) {
 	ctx = oci.WithClient(ctx, &client)
 
 	mdl := MockDownloader{}
-	mdl.On("Download", mock.Anything, "oci::registry/policy:latest", false).Return(&ociMetadata.OCIMetadata{Digest: "sha256:da54bca5477bf4e3449bc37de1822888fa0fbb8d89c640218cb31b987374d357"}, nil)
-	mdl.On("Download", mock.Anything, "oci::registry/policy-data:latest", false).Return(&ociMetadata.OCIMetadata{Digest: "sha256:da54bca5477bf4e3449bc37de1822888fa0fbb8d89c640218cb31b987374d357"}, nil)
+	mdl.On("Download", mock.Anything, "oci://registry/policy:latest", false).Return(&ociMetadata.OCIMetadata{Digest: "sha256:da54bca5477bf4e3449bc37de1822888fa0fbb8d89c640218cb31b987374d357"}, nil)
+	mdl.On("Download", mock.Anything, "oci://registry/policy-data:latest", false).Return(&ociMetadata.OCIMetadata{Digest: "sha256:da54bca5477bf4e3449bc37de1822888fa0fbb8d89c640218cb31b987374d357"}, nil)
 	ctx = context.WithValue(ctx, source.DownloaderFuncKey, &mdl)
 
 	cmd.SetContext(ctx)
 
 	testPolicyJSON := `sources:
   - policy:
-      - "oci::registry/policy:latest"
+      - "oci://registry/policy:latest"
     data:
-      - "oci::registry/policy-data:latest"
+      - "oci://registry/policy-data:latest"
     config:
       include:
         - '@minimal'

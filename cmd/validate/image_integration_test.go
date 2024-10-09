@@ -73,7 +73,7 @@ func TestEvaluatorLifecycle(t *testing.T) {
 
 	newConftestEvaluator = func(_ context.Context, s []source.PolicySource, _ evaluator.ConfigProvider, _ v1alpha1.Source) (evaluator.Evaluator, error) {
 		// We are splitting this url to get to the index of the evaluator.
-		idx, err := strconv.Atoi(strings.Split(strings.Split(s[0].PolicyUrl(), "@")[0], "://")[1])
+		idx, err := strconv.Atoi(strings.Split(strings.Split(s[0].PolicyUrl(), "@")[0], "::")[1])
 		require.NoError(t, err)
 
 		return evaluators[idx], nil

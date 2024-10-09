@@ -7,14 +7,13 @@ require (
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/Maldris/go-billy-afero v0.0.0-20200815120323-e9d3de59c99a
 	github.com/enterprise-contract/enterprise-contract-controller/api v0.1.60
-	github.com/enterprise-contract/go-gather/gather v0.0.3
-	github.com/enterprise-contract/go-gather/gather/http v0.0.3-0.20240923130737-4120ba0d92bf
+	github.com/enterprise-contract/go-gather/gather v0.0.4-0.20241009163919-f9697d385bbb
+	github.com/enterprise-contract/go-gather/gather/http v0.0.3-0.20241009005203-1e339603d9c3
 	github.com/enterprise-contract/go-gather/gather/oci v0.0.5-0.20240923101526-bbc07b341aed
-	github.com/enterprise-contract/go-gather/metadata v0.0.2
-	github.com/enterprise-contract/go-gather/metadata/file v0.0.1
-	github.com/enterprise-contract/go-gather/metadata/git v0.0.2
-	github.com/enterprise-contract/go-gather/metadata/http v0.0.1
-	github.com/enterprise-contract/go-gather/metadata/oci v0.0.3
+	github.com/enterprise-contract/go-gather/metadata v0.0.3-0.20241009163919-f9697d385bbb
+	github.com/enterprise-contract/go-gather/metadata/file v0.0.2-0.20241009163919-f9697d385bbb
+	github.com/enterprise-contract/go-gather/metadata/git v0.0.3-0.20241009163919-f9697d385bbb
+	github.com/enterprise-contract/go-gather/metadata/oci v0.0.4-0.20241009163919-f9697d385bbb
 	github.com/evanphx/json-patch v5.9.0+incompatible
 	github.com/gkampitakis/go-snaps v0.5.7
 	github.com/go-git/go-git/v5 v5.12.0
@@ -152,7 +151,7 @@ require (
 	github.com/coreos/go-oidc/v3 v3.11.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.4 // indirect
 	github.com/cyberphone/json-canonicalization v0.0.0-20231217050601-ba74d44ecf5f // indirect
-	github.com/cyphar/filepath-securejoin v0.3.2 // indirect
+	github.com/cyphar/filepath-securejoin v0.3.4 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dgraph-io/badger/v3 v3.2103.5 // indirect
 	github.com/dgraph-io/ristretto v0.1.1 // indirect
@@ -166,10 +165,11 @@ require (
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/emicklei/go-restful/v3 v3.12.1 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
-	github.com/enterprise-contract/go-gather v0.0.3 // indirect
+	github.com/enterprise-contract/go-gather v0.0.4-0.20241009163919-f9697d385bbb // indirect
 	github.com/enterprise-contract/go-gather/expander v0.0.1 // indirect
-	github.com/enterprise-contract/go-gather/gather/file v0.0.2-0.20240906185922-e8ebd246dc19 // indirect
-	github.com/enterprise-contract/go-gather/gather/git v0.0.6-0.20240919182827-191282dff6cc // indirect
+	github.com/enterprise-contract/go-gather/gather/file v0.0.2-0.20241009005203-1e339603d9c3 // indirect
+	github.com/enterprise-contract/go-gather/gather/git v0.0.6-0.20241009163919-f9697d385bbb // indirect
+	github.com/enterprise-contract/go-gather/metadata/http v0.0.2-0.20241009163919-f9697d385bbb // indirect
 	github.com/enterprise-contract/go-gather/saver v0.0.2 // indirect
 	github.com/enterprise-contract/go-gather/saver/file v0.0.1 // indirect
 	github.com/evanphx/json-patch/v5 v5.9.0 // indirect

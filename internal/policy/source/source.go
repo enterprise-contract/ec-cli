@@ -29,7 +29,6 @@ import (
 	"path"
 	"path/filepath"
 	"runtime/trace"
-	"strings"
 	"sync"
 	"time"
 
@@ -37,7 +36,6 @@ import (
 	"github.com/enterprise-contract/go-gather/metadata"
 	fileMetadata "github.com/enterprise-contract/go-gather/metadata/file"
 	gitMetadata "github.com/enterprise-contract/go-gather/metadata/git"
-	httpMetadata "github.com/enterprise-contract/go-gather/metadata/http"
 	ociMetadata "github.com/enterprise-contract/go-gather/metadata/oci"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
@@ -159,7 +157,8 @@ func (p *PolicyUrl) GetPolicy(ctx context.Context, workDir string, showMsg bool)
 		return "", err
 	}
 
-	p.Url, err = getPinnedUrl(p.Url, metadata)
+	p.Url, err = metadata.GetPinnedURL(p.Url)
+	log.Debug("Pinned URL: ", p.Url)
 	if err != nil {
 		return "", err
 	}
@@ -178,43 +177,6 @@ func (p *PolicyUrl) Subdir() string {
 
 func (p PolicyUrl) Type() PolicyType {
 	return p.Kind
-}
-
-// getPinnedUrl returns the URL with the pinned commit or digest.
-// TODO: Move this to the go-gather library.
-func getPinnedUrl(u string, m metadata.Metadata) (string, error) {
-	if m == nil {
-		return "", fmt.Errorf("metadata is nil")
-	}
-
-	if len(u) == 0 {
-		return "", fmt.Errorf("url is empty")
-	}
-
-	switch t := m.(type) {
-	case *gitMetadata.GitMetadata:
-
-		return strings.SplitN(u, "?ref=", 2)[0] + "?ref=" + t.LatestCommit, nil
-
-	case *ociMetadata.OCIMetadata:
-		for _, scheme := range []string{"oci::", "oci://", "https://"} {
-			u = strings.TrimPrefix(u, scheme)
-		}
-		parts := strings.Split(u, "@")
-		if len(parts) > 1 {
-			u = parts[0]
-		}
-		return fmt.Sprintf("oci://%s@%s", u, t.Digest), nil
-
-	case *httpMetadata.HTTPMetadata:
-		return u, nil
-	case *fileMetadata.FileMetadata:
-		return u, nil
-	case *fileMetadata.DirectoryMetadata:
-		return u, nil
-	default:
-		return "", fmt.Errorf("unknown metadata type")
-	}
 }
 
 func logMetadata(m metadata.Metadata) {
