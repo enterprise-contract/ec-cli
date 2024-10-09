@@ -259,6 +259,20 @@ func dependsOn(a *ast.AnnotationsRef) []string {
 	}
 }
 
+func path(a *ast.AnnotationsRef) string {
+	return a.Path.String()
+}
+
+func severity(a *ast.AnnotationsRef) string {
+	// TODO: Return constant values. Remove duplication from conftest_evaluator
+	name := a.Path[len(a.Path)-1].String()
+	name = strings.Trim(name, `"`)
+	if strings.HasPrefix(name, "deny") {
+		return "failure"
+	}
+	return "warning"
+}
+
 type RuleKind string
 
 const (
@@ -281,6 +295,7 @@ type Info struct {
 	ShortName        string
 	Solution         string
 	Title            string
+	Path             string
 }
 
 func RuleInfo(a *ast.AnnotationsRef) Info {
@@ -297,5 +312,7 @@ func RuleInfo(a *ast.AnnotationsRef) Info {
 		Package:          packageName(a),
 		ShortName:        shortName(a),
 		Title:            title(a),
+		Path:             path(a),
+		Severity:         severity(a),
 	}
 }
