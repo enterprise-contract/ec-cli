@@ -6,7 +6,7 @@ sources:
       - github.com/release-engineering/rhtap-ec-policy//data
       - oci::quay.io/konflux-ci/tekton-catalog/data-acceptable-bundles:latest
     policy:
-      - oci::quay.io/enterprise-contract/ec-release-policy:git-75c36c3@sha256:5ab1e5a7314bb5a782fea919369a324e0f288bb3b1a9e39172f5204392c34dc0
+      - oci::quay.io/enterprise-contract/ec-release-policy:latest
     config:
       include:
         - '@redhat'

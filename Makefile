@@ -333,4 +333,5 @@ sync-custom-ecp:
 	  yq '.spec' |
 	  yq '.description = "Custom pre-merge policy for ec-cli"' |
 	  yq '.sources[0] |= . + load(".ec/tweaks/cve-blockers.yaml")' |
+	  yq '.sources[0].policy = ["oci::quay.io/enterprise-contract/ec-release-policy:latest"]' |
 	  tee .ec/policy.yaml
