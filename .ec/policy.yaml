@@ -1,3 +1,4 @@
+# Use `make sync-custom-ecp` to update this file
 description: 'Custom pre-merge policy for ec-cli'
 publicKey: 'k8s://openshift-pipelines/public-key'
 sources:

@@ -331,6 +331,7 @@ ECP=curl -s --header "PRIVATE-TOKEN: $(GITLAB_TOKEN)" "$(END_POINT)$(ECP_PATH)/r
 sync-custom-ecp:
 	@$(ECP) | \
 	  yq '.spec' |
+	  yq '. head_comment = "Use `make sync-custom-ecp` to update this file"' |
 	  yq '.description = "Custom pre-merge policy for ec-cli"' |
 	  yq '.sources[0] |= . + load(".ec/tweaks/cve-blockers.yaml")' |
 	  yq '.sources[0].policy = ["oci::quay.io/enterprise-contract/ec-release-policy:latest"]' |
