@@ -85,7 +85,7 @@ func TestFetchSourcesFromPolicy(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, "[one,two,three]", inspectPolicyCmd.Flag("source").Value.String())
-	assert.Equal(t, "# Source: one\n\n# Source: three\n\n# Source: two\n\n", buffy.String())
+	assert.Equal(t, "# Source: file::one\n\n# Source: file::three\n\n# Source: file::two\n\n", buffy.String())
 }
 
 func TestFetchSources(t *testing.T) {
@@ -131,7 +131,7 @@ func TestFetchSources(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, "[one,two,three]", inspectPolicyCmd.Flag("source").Value.String())
-	assert.Equal(t, "# Source: one\n\n# Source: three\n\n# Source: two\n\n", buffy.String())
+	assert.Equal(t, "# Source: file::one\n\n# Source: file::three\n\n# Source: file::two\n\n", buffy.String())
 }
 
 func TestSourcesAndPolicyCantBeBothProvided(t *testing.T) {
