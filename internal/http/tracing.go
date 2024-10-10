@@ -18,28 +18,36 @@ package http
 
 import (
 	"net/http"
-
-	log "github.com/sirupsen/logrus"
+	"runtime/trace"
 )
 
 type tracingRoundTripper struct {
 	base http.RoundTripper
-	log  *log.Logger
 }
 
 func NewTracingRoundTripper(transport http.RoundTripper) http.RoundTripper {
-	return NewTracingRoundTripperWithLogger(transport, log.StandardLogger())
+	return NewTracingRoundTripperWithLogger(transport)
 }
 
-func NewTracingRoundTripperWithLogger(transport http.RoundTripper, l *log.Logger) http.RoundTripper {
-	return &tracingRoundTripper{transport, l}
+func NewTracingRoundTripperWithLogger(transport http.RoundTripper) http.RoundTripper {
+	return &tracingRoundTripper{transport}
 }
 
 func (t *tracingRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	t.log.Tracef("START: %s %s", req.Method, req.URL)
+	ctx := req.Context()
+	if trace.IsEnabled() {
+		region := trace.StartRegion(ctx, "http-request")
+		defer region.End()
+
+		trace.Logf(ctx, "http", "method=%q", req.Method)
+		trace.Logf(ctx, "http", "url=%q", req.URL.String())
+	}
+
 	resp, err := t.base.RoundTrip(req)
 
-	t.log.Tracef("DONE: %s %s (%d)", req.Method, req.URL, resp.ContentLength)
+	if trace.IsEnabled() {
+		trace.Logf(ctx, "http", "received=%d", resp.ContentLength)
+	}
 
 	return resp, err
 }

@@ -65,7 +65,7 @@ mark (?) sign, for example: --output text=output.txt?show-successes=false
 --quiet:: less verbose output (Default: false)
 --show-successes::  (Default: false)
 --timeout:: max overall execution duration (Default: 5m0s)
---trace:: enable trace logging (Default: false)
+--trace:: enable trace logging, set one or more comma separated values: none,all,perf,cpu,mem,opa,log (Default: none)
 --verbose:: more verbose output (Default: false)
 
 == See also

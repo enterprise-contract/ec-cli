@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"runtime/trace"
 
 	"github.com/google/go-containerregistry/pkg/name"
 	app "github.com/konflux-ci/application-api/api/v1alpha1"
@@ -181,6 +182,11 @@ func readSnapshotSource(input []byte) (app.SnapshotSpec, error) {
 }
 
 func expandImageIndex(ctx context.Context, snap *app.SnapshotSpec) {
+	if trace.IsEnabled() {
+		region := trace.StartRegion(ctx, "ec:expand-image-index")
+		defer region.End()
+	}
+
 	client := oci.NewClient(ctx)
 	// For an image index, remove the original component and replace it with an expanded component with all its image manifests
 	var components []app.SnapshotComponent

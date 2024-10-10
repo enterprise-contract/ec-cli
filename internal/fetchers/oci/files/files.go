@@ -22,6 +22,7 @@ import (
 	"encoding/json"
 	"io"
 	"path"
+	"runtime/trace"
 	"strings"
 
 	"github.com/google/go-containerregistry/pkg/name"
@@ -42,6 +43,12 @@ type Matcher func(*tar.Header) bool
 var supportedExtensions = []string{".yaml", ".yml", ".json"}
 
 func ImageFiles(ctx context.Context, ref name.Reference, extractors []Extractor) (map[string]json.RawMessage, error) {
+	if trace.IsEnabled() {
+		region := trace.StartRegion(ctx, "ec:image-fetch-image-files")
+		defer region.End()
+		trace.Logf(ctx, "", "image=%q", ref)
+	}
+
 	img, err := oci.NewClient(ctx).Image(ref)
 	if err != nil {
 		return nil, err

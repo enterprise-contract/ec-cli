@@ -28,6 +28,7 @@ import (
 	"fmt"
 	"path"
 	"path/filepath"
+	"runtime/trace"
 	"strings"
 	"sync"
 	"time"
@@ -139,6 +140,12 @@ func getPolicyThroughCache(ctx context.Context, s PolicySource, workDir string, 
 
 // GetPolicies clones the repository for a given PolicyUrl
 func (p *PolicyUrl) GetPolicy(ctx context.Context, workDir string, showMsg bool) (string, error) {
+	if trace.IsEnabled() {
+		region := trace.StartRegion(ctx, "ec:get-policy")
+		defer region.End()
+		trace.Logf(ctx, "", "policy=%q", p.Url)
+	}
+
 	dl := func(source string, dest string) (metadata.Metadata, error) {
 		x := ctx.Value(DownloaderFuncKey)
 		if dl, ok := x.(downloaderFunc); ok {

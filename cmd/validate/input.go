@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"runtime/trace"
 	"sort"
 	"strings"
 	"sync"
@@ -102,6 +103,12 @@ func validateInputCmd(validate InputValidationFunc) *cobra.Command {
 			return
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if trace.IsEnabled() {
+				ctx, task := trace.NewTask(cmd.Context(), "ec:validate-inputs")
+				cmd.SetContext(ctx)
+				defer task.End()
+			}
+
 			type result struct {
 				err         error
 				input       input.Input
@@ -118,9 +125,14 @@ func validateInputCmd(validate InputValidationFunc) *cobra.Command {
 			for _, f := range data.filePaths {
 				lock.Add(1)
 				go func(fpath string) {
+					ctx := cmd.Context()
+					var task *trace.Task
+					if trace.IsEnabled() {
+						ctx, task = trace.NewTask(ctx, "ec:validate-input")
+					}
+
 					defer lock.Done()
 
-					ctx := cmd.Context()
 					out, err := validate(ctx, fpath, data.policy, data.info)
 					res := result{
 						err: err,
@@ -142,6 +154,10 @@ func validateInputCmd(validate InputValidationFunc) *cobra.Command {
 						res.data = out.Data
 					}
 					res.input.Success = err == nil && len(res.input.Violations) == 0
+
+					if task != nil {
+						task.End()
+					}
 					ch <- res
 				}(f)
 			}

@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"runtime/trace"
 	"strings"
 
 	"github.com/google/go-containerregistry/pkg/name"
@@ -29,6 +30,12 @@ import (
 
 // FetchImageConfig retrieves the config for an image from its OCI registry.
 func FetchImageConfig(ctx context.Context, ref name.Reference) (json.RawMessage, error) {
+	if trace.IsEnabled() {
+		region := trace.StartRegion(ctx, "ec:image-fetch-config")
+		defer region.End()
+		trace.Logf(ctx, "", "image=%q", ref)
+	}
+
 	image, err := oci.NewClient(ctx).Image(ref)
 	if err != nil {
 		return nil, err
@@ -48,6 +55,12 @@ func FetchImageConfig(ctx context.Context, ref name.Reference) (json.RawMessage,
 
 // FetchParentImage retrieves the reference to an image's parent image from its OCI registry.
 func FetchParentImage(ctx context.Context, ref name.Reference) (name.Reference, error) {
+	if trace.IsEnabled() {
+		region := trace.StartRegion(ctx, "ec:image-fetch-parent-image")
+		defer region.End()
+		trace.Logf(ctx, "", "image=%q", ref)
+	}
+
 	image, err := oci.NewClient(ctx).Image(ref)
 	if err != nil {
 		return nil, err

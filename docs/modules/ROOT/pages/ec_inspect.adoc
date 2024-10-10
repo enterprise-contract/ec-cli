@@ -12,7 +12,7 @@ Inspect policy rules
 --logfile:: file to write the logging output. If not specified logging output will be written to stderr
 --quiet:: less verbose output (Default: false)
 --timeout:: max overall execution duration (Default: 5m0s)
---trace:: enable trace logging (Default: false)
+--trace:: enable trace logging, set one or more comma separated values: none,all,perf,cpu,mem,opa,log (Default: none)
 --verbose:: more verbose output (Default: false)
 
 == See also

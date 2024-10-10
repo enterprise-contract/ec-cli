@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"runtime/trace"
 	"sort"
 	"strings"
 
@@ -189,6 +190,13 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 
 		PreRunE: func(cmd *cobra.Command, args []string) (allErrors error) {
 			ctx := cmd.Context()
+			if trace.IsEnabled() {
+				var task *trace.Task
+				ctx, task = trace.NewTask(ctx, "ec:validate-image-prepare")
+				defer task.End()
+				cmd.SetContext(ctx)
+			}
+
 			if s, err := applicationsnapshot.DetermineInputSpec(ctx, applicationsnapshot.Input{
 				File:     data.filePath,
 				JSON:     data.input,
@@ -284,6 +292,12 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		},
 
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if trace.IsEnabled() {
+				ctx, task := trace.NewTask(cmd.Context(), "ec:validate-images")
+				cmd.SetContext(ctx)
+				defer task.End()
+			}
+
 			type result struct {
 				err         error
 				component   applicationsnapshot.Component
@@ -321,8 +335,15 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 			worker := func(id int, jobs <-chan app.SnapshotComponent, results chan<- result) {
 				log.Debugf("Starting worker %d", id)
 				for comp := range jobs {
+					ctx := cmd.Context()
+					var task *trace.Task
+					if trace.IsEnabled() {
+						ctx, task = trace.NewTask(ctx, "ec:validate-component")
+						trace.Logf(ctx, "", "workerID=%d", id)
+					}
+
 					log.Debugf("Worker %d got a component %q", id, comp.ContainerImage)
-					out, err := validate(cmd.Context(), comp, data.spec, data.policy, evaluators, data.info)
+					out, err := validate(ctx, comp, data.spec, data.policy, evaluators, data.info)
 					res := result{
 						err: err,
 						component: applicationsnapshot.Component{
@@ -351,6 +372,9 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 					}
 					res.component.Success = err == nil && len(res.component.Violations) == 0
 
+					if task != nil {
+						task.End()
+					}
 					results <- res
 				}
 				log.Debugf("Done with worker %d", id)

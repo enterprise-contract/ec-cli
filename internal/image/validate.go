@@ -19,6 +19,7 @@ package image
 import (
 	"context"
 	"encoding/json"
+	"runtime/trace"
 	"sort"
 	"time"
 
@@ -36,6 +37,12 @@ import (
 // ValidateImage executes the required method calls to evaluate a given policy
 // against a given image url.
 func ValidateImage(ctx context.Context, comp app.SnapshotComponent, snap *app.SnapshotSpec, p policy.Policy, evaluators []evaluator.Evaluator, detailed bool) (*output.Output, error) {
+	if trace.IsEnabled() {
+		region := trace.StartRegion(ctx, "ec:validate-image")
+		defer region.End()
+		trace.Logf(ctx, "", "image=%q", comp.ContainerImage)
+	}
+
 	log.Debugf("Validating image %s", comp.ContainerImage)
 
 	out := &output.Output{ImageURL: comp.ContainerImage, Detailed: detailed, Policy: p}
