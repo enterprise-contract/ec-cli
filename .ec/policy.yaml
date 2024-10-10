@@ -1,0 +1,33 @@
+#
+# If we need to diverge from the "official" policy for pre-merge EC checks,
+# the EC integration test scenario POLICY_CONFIGURATION param can be set to
+# github.com/enterprisecontract/ec-cli to use this file.
+#
+# Compare is to the official policy for Red Hat releases of EC here:
+# https://gitlab.cee.redhat.com/releng/konflux-release-data/-/blob/main/config/stone-prd-rh01.pg1f.p1/product/EnterpriseContractPolicy/registry-rhtap-contract.yaml
+#
+description: 'Custom pre-merge policy for ec-cli'
+publicKey: 'k8s://openshift-pipelines/public-key'
+sources:
+  - name: Release Policies
+    data:
+      - github.com/release-engineering/rhtap-ec-policy//data
+      - oci::quay.io/konflux-ci/tekton-catalog/data-acceptable-bundles:latest
+    policy:
+      # Let's not pin the digest here
+      - oci::quay.io/enterprise-contract/ec-release-policy:latest
+    config:
+      include:
+        - '@redhat'
+      exclude:
+        # Not currently doing hermetic builds, see https://issues.redhat.com/browse/EC-360
+        - hermetic_build_task.*
+    ruleData:
+      #
+      # Make high sev CVEs non-blocking temporarily
+      # Remove this when https://issues.redhat.com/browse/EC-927 is resolved
+      #
+      # (The default here is [critical,high])
+      restrict_cve_security_levels: [critical]
+      # (The default here is [])
+      warn_cve_security_levels: [high]
