@@ -150,7 +150,8 @@ LICENSE_IGNORE=\
 -ignore 'configs/*/*.yaml' \
 -ignore 'node_modules/**' \
 -ignore 'hack/**/charts/**' \
--ignore '.tekton/*.yaml'
+-ignore '.tekton/*.yaml' \
+-ignore '.ec/**'
 
 LINT_TO_GITHUB_ANNOTATIONS='map(map(.)[])[][] as $$d | $$d.posn | split(":") as $$posn | "::warning file=\($$posn[0]),line=\($$posn[1]),col=\($$posn[2])::\($$d.message)"'
 
@@ -321,3 +322,15 @@ bump-minor-version:
 	  git commit $(VERSION_FILE) \
 	    -m "Bump minor version to $$(cat $(VERSION_FILE))" \
 	    -m 'Commit generated with `make bump-minor-version`'
+
+# Copy the ECP file use for releases then patch in some tweaks
+# (Requires access to gitlab.cee.redhat.com and a token in GITLAB_TOKEN)
+END_POINT=https://gitlab.cee.redhat.com/api/v4/projects/78877/repository/files/
+ECP_PATH=config%2Fstone-prd-rh01.pg1f.p1%2Fproduct%2FEnterpriseContractPolicy%2Fregistry-rhtap-contract.yaml
+ECP=curl -s --header "PRIVATE-TOKEN: $(GITLAB_TOKEN)" "$(END_POINT)$(ECP_PATH)/raw?ref=main"
+sync-custom-ecp:
+	@$(ECP) | \
+	  yq '.spec' |
+	  yq '.description = "Custom pre-merge policy for ec-cli"' |
+	  yq '.sources[0] |= . + load(".ec/tweaks/cve-blockers.yaml")' |
+	  tee .ec/policy.yaml

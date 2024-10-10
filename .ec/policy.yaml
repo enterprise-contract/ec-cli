@@ -1,0 +1,21 @@
+description: 'Custom pre-merge policy for ec-cli'
+publicKey: 'k8s://openshift-pipelines/public-key'
+sources:
+  - name: Release Policies
+    data:
+      - github.com/release-engineering/rhtap-ec-policy//data
+      - oci::quay.io/konflux-ci/tekton-catalog/data-acceptable-bundles:latest
+    policy:
+      - oci::quay.io/enterprise-contract/ec-release-policy:git-75c36c3@sha256:5ab1e5a7314bb5a782fea919369a324e0f288bb3b1a9e39172f5204392c34dc0
+    config:
+      include:
+        - '@redhat'
+      exclude:
+        # Not currently doing hermetic builds, see https://issues.redhat.com/browse/EC-360
+        - hermetic_build_task.*
+    ruleData:
+      # Make high sev CVEs non-blocking temporarily
+      # (The default here is [critical,high])
+      restrict_cve_security_levels: [critical]
+      # (The default here is [])
+      warn_cve_security_levels: [high]
