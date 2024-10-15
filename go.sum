@@ -545,8 +545,8 @@ github.com/emirpasic/gods v1.18.1 h1:FXtiHYKDGKCW2KzwZKx0iC0PQmdlorYgdFG9jPXJ1Bc
 github.com/emirpasic/gods v1.18.1/go.mod h1:8tpGGwCnJ5H4r6BWwaV6OrWmMoPhUl5jm/FMNAnJvWQ=
 github.com/enterprise-contract/enterprise-contract-controller/api v0.1.60 h1:5gfGknt2BEn5f6RtaPVVWzGhMDoJNo2TuOG/fUbpDOE=
 github.com/enterprise-contract/enterprise-contract-controller/api v0.1.60/go.mod h1:R1eRwHUjcYWg4gJnv/zpEDog60J9wBqe2TIjlYFRUe8=
-github.com/enterprise-contract/go-containerregistry v0.20.3-0.20240923173413-d38c14c16b71 h1:twnh5eqgei+wBKtH5OgAG/oNykryn1jx4Bc85nDEAUk=
-github.com/enterprise-contract/go-containerregistry v0.20.3-0.20240923173413-d38c14c16b71/go.mod h1:z38EKdKh4h7IP2gSfUUqEvalZBqs6AoLeWfUy34nQC8=
+github.com/enterprise-contract/go-containerregistry v0.20.3-0.20241007145100-b55a3c374bf0 h1:NOJl3xiAa+oJjgiBxAm190oLv/3+4TbRekwyT64Rqn4=
+github.com/enterprise-contract/go-containerregistry v0.20.3-0.20241007145100-b55a3c374bf0/go.mod h1:z38EKdKh4h7IP2gSfUUqEvalZBqs6AoLeWfUy34nQC8=
 github.com/enterprise-contract/go-gather v0.0.4-0.20241009163919-f9697d385bbb h1:xEAfm//zUlKMV33K2hzWTUAN0qBFaQ5h/UXZfYVe7/o=
 github.com/enterprise-contract/go-gather v0.0.4-0.20241009163919-f9697d385bbb/go.mod h1:CCVO9+s9CM1varvgiIS2l4Scgo6x/XQVzWCVN0lWl0U=
 github.com/enterprise-contract/go-gather/expander v0.0.1 h1:CRJX7crqNyuuo82DtFbyIpJB/2hV62zWof4t1dOmCC0=
