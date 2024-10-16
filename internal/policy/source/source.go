@@ -234,27 +234,6 @@ func (s inlineData) GetPolicy(ctx context.Context, workDir string, showMsg bool)
 	return dest, err
 }
 
-func (s inlineData) GetPolicyWithMetadata(ctx context.Context, workDir string, showMsg bool) (string, metadata.Metadata, error) {
-	dl := func(source string, dest string) (metadata.Metadata, error) {
-		fs := utils.FS(ctx)
-
-		if err := fs.MkdirAll(dest, 0755); err != nil {
-			return nil, err
-		}
-
-		f := path.Join(dest, "rule_data.json")
-		m := &fileMetadata.FileMetadata{
-			Path: dest,
-			Size: int64(len(dest)),
-			SHA:  "",
-		}
-
-		return m, afero.WriteFile(fs, f, s.source, 0400)
-	}
-
-	return getPolicyThroughCache(ctx, s, workDir, dl)
-}
-
 func (s inlineData) PolicyUrl() string {
 	return "data:application/json;base64," + base64.StdEncoding.EncodeToString(s.source)
 }

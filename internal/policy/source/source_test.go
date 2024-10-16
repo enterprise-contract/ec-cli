@@ -187,10 +187,6 @@ func (mockPolicySource) GetPolicy(_ context.Context, _ string, _ bool) (string, 
 	return "", nil
 }
 
-func (mockPolicySource) GetPolicyWithMetadata(_ context.Context, _ string, _ bool) (string, metadata.Metadata, error) {
-	return "", nil, nil
-}
-
 func (mockPolicySource) PolicyUrl() string {
 	return ""
 }
