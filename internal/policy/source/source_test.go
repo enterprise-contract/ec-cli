@@ -25,6 +25,7 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
+	"sync"
 	"testing"
 
 	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
@@ -181,30 +182,34 @@ func TestPolicySourcesFrom(t *testing.T) {
 	}
 }
 
-type mockPolicySource struct{}
-
-func (mockPolicySource) GetPolicy(_ context.Context, _ string, _ bool) (string, error) {
-	return "", nil
+type mockPolicySource struct {
+	*mock.Mock
 }
 
-func (mockPolicySource) PolicyUrl() string {
-	return ""
+func (m mockPolicySource) GetPolicy(ctx context.Context, dest string, msgs bool) (string, error) {
+	args := m.Called(ctx, dest, msgs)
+	return args.String(0), args.Error(1)
 }
 
-func (mockPolicySource) Subdir() string {
-	return "mock"
+func (m mockPolicySource) PolicyUrl() string {
+	args := m.Called()
+	return args.String(0)
 }
 
-func (mockPolicySource) Type() PolicyType {
-	return PolicyKind
+func (m mockPolicySource) Subdir() string {
+	args := m.Called()
+	return args.String(0)
+}
+
+func (m mockPolicySource) Type() PolicyType {
+	args := m.Called()
+	return args.Get(0).(PolicyType)
 }
 
 func TestGetPolicyThroughCache(t *testing.T) {
 	test := func(t *testing.T, fs afero.Fs, expectedDownloads int) {
-		downloadCache.Range(func(key, _ any) bool {
-			downloadCache.Delete(key)
-
-			return true
+		t.Cleanup(func() {
+			downloadCache = sync.Map{}
 		})
 
 		ctx := utils.WithFS(context.Background(), fs)
@@ -220,10 +225,14 @@ func TestGetPolicyThroughCache(t *testing.T) {
 			return nil, afero.WriteFile(fs, filepath.Join(dest, "data.json"), data, 0400)
 		}
 
-		s1, _, err := getPolicyThroughCache(ctx, &mockPolicySource{}, "/workdir1", dl)
+		source := &mockPolicySource{&mock.Mock{}}
+		source.On("PolicyUrl").Return("policy-url")
+		source.On("Subdir").Return("subdir")
+
+		s1, _, err := getPolicyThroughCache(ctx, source, "/workdir1", dl)
 		require.NoError(t, err)
 
-		s2, _, err := getPolicyThroughCache(ctx, &mockPolicySource{}, "/workdir2", dl)
+		s2, _, err := getPolicyThroughCache(ctx, source, "/workdir2", dl)
 		require.NoError(t, err)
 
 		assert.NotEqual(t, s1, s2)
@@ -258,4 +267,39 @@ func TestGetPolicyThroughCache(t *testing.T) {
 	t.Run("non-symlinkable", func(t *testing.T) {
 		test(t, afero.NewMemMapFs(), 2)
 	})
+}
+
+// Test for https://issues.redhat.com/browse/EC-936, where we had multiple
+// symbolic links pointing to the same policy download within the same workdir
+// causing Rego compile issue
+func TestDownloadCacheWorkdirMismatch(t *testing.T) {
+	t.Cleanup(func() {
+		downloadCache = sync.Map{}
+	})
+	tmp := t.TempDir()
+
+	source := &mockPolicySource{&mock.Mock{}}
+	source.On("PolicyUrl").Return("policy-url")
+	source.On("Subdir").Return("subdir")
+
+	// same URL downloaded to workdir1
+	precachedDest := uniqueDestination(tmp, "subdir", source.PolicyUrl())
+	require.NoError(t, os.MkdirAll(precachedDest, 0755))
+	downloadCache.Store("policy-url", func() (string, cacheContent) {
+		return precachedDest, cacheContent{}
+	})
+
+	// when working in workdir2
+	workdir2 := filepath.Join(tmp, "workdir2")
+
+	// first invocation symlinks back to workdir1
+	destination1, _, err := getPolicyThroughCache(context.Background(), source, workdir2, func(s1, s2 string) (metadata.Metadata, error) { return nil, nil })
+	require.NoError(t, err)
+
+	// second invocation should not create a second symlink and duplicate the
+	// source files within workdir2
+	destination2, _, err := getPolicyThroughCache(context.Background(), source, workdir2, func(s1, s2 string) (metadata.Metadata, error) { return nil, nil })
+	require.NoError(t, err)
+
+	assert.Equal(t, destination1, destination2)
 }
