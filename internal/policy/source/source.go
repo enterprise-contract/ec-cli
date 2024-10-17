@@ -30,7 +30,6 @@ import (
 	"path/filepath"
 	"runtime/trace"
 	"sync"
-	"time"
 
 	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/enterprise-contract/go-gather/metadata"
@@ -106,10 +105,14 @@ func getPolicyThroughCache(ctx context.Context, s PolicySource, workDir string, 
 		return "", c.metadata, c.err
 	}
 
+	fs := utils.FS(ctx)
+	if _, err := fs.Stat(dest); err == nil {
+		return dest, c.metadata, nil
+	}
+
 	// If the destination directory is different from the source directory, we
 	// need to symlink the source directory to the destination directory.
 	if filepath.Dir(dest) != filepath.Dir(d) {
-		fs := utils.FS(ctx)
 		base := filepath.Dir(dest)
 		if err := fs.MkdirAll(base, 0755); err != nil {
 			return "", nil, err
@@ -201,7 +204,7 @@ func uniqueDestination(rootDir string, subdir string, sourceUrl string) string {
 // uniqueDir generates a reasonably unique string using an SHA224 sum with a
 // timestamp appended to the input for some extra randomness
 func uniqueDir(input string) string {
-	return fmt.Sprintf("%x", sha256.Sum224([]byte(fmt.Sprintf("%s/%s", input, time.Now()))))[:9]
+	return fmt.Sprintf("%x", sha256.Sum224([]byte(input)))[:9]
 }
 
 type inlineData struct {
