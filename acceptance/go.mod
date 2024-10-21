@@ -1,13 +1,12 @@
 module github.com/enterprise-contract/ec-cli/acceptance
 
 go 1.22.7
-
 require (
 	cuelang.org/go v0.10.0
 	github.com/cucumber/godog v0.14.1
 	github.com/cyberphone/json-canonicalization v0.0.0-20231217050601-ba74d44ecf5f
 	github.com/doiit/picocolors v1.0.1
-	github.com/enterprise-contract/enterprise-contract-controller/api v0.1.60
+	github.com/enterprise-contract/enterprise-contract-controller/api v0.1.62
 	github.com/evanphx/json-patch/v5 v5.9.0
 	github.com/gkampitakis/go-snaps v0.5.7
 	github.com/go-git/go-billy/v5 v5.5.0
@@ -23,11 +22,11 @@ require (
 	github.com/secure-systems-lab/go-securesystemslib v0.8.0
 	github.com/sigstore/cosign/v2 v2.4.1
 	github.com/sigstore/rekor v1.3.6
-	github.com/sigstore/sigstore v1.8.9
+	github.com/sigstore/sigstore v1.8.10
 	github.com/stretchr/testify v1.9.0
 	github.com/tektoncd/cli v0.38.0
 	github.com/tektoncd/pipeline v0.63.0
-	github.com/testcontainers/testcontainers-go v0.33.0
+	github.com/testcontainers/testcontainers-go v0.34.0
 	github.com/transparency-dev/merkle v0.0.2
 	github.com/wiremock/go-wiremock v1.10.0
 	github.com/yudai/gojsondiff v1.0.0
@@ -66,7 +65,7 @@ require (
 	github.com/containerd/log v0.1.0 // indirect
 	github.com/containerd/platforms v0.2.1 // indirect
 	github.com/containerd/stargz-snapshotter/estargz v0.15.1 // indirect
-	github.com/cpuguy83/dockercfg v0.3.1 // indirect
+	github.com/cpuguy83/dockercfg v0.3.2 // indirect
 	github.com/cucumber/gherkin/go/v26 v26.2.0 // indirect
 	github.com/cucumber/messages/go/v21 v21.0.1 // indirect
 	github.com/cyphar/filepath-securejoin v0.3.1 // indirect
@@ -221,14 +220,14 @@ require (
 	go.opentelemetry.io/otel/trace v1.29.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
-	golang.org/x/crypto v0.27.0 // indirect
+	golang.org/x/crypto v0.28.0 // indirect
 	golang.org/x/mod v0.20.0 // indirect
 	golang.org/x/net v0.28.0 // indirect
 	golang.org/x/oauth2 v0.23.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
-	golang.org/x/sys v0.25.0 // indirect
-	golang.org/x/term v0.24.0 // indirect
-	golang.org/x/text v0.18.0 // indirect
+	golang.org/x/sys v0.26.0 // indirect
+	golang.org/x/term v0.25.0 // indirect
+	golang.org/x/text v0.19.0 // indirect
 	golang.org/x/time v0.6.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
 	google.golang.org/api v0.196.0 // indirect
