@@ -276,23 +276,26 @@ func TestExpandImageIndex(t *testing.T) {
 	}
 
 	expandImageIndex(ctx, snap)
-	assert.True(t, len(snap.Components) == 3, "Image Index itself should be removed and be replaced by individual image manifests")
+	assert.True(t, len(snap.Components) == 4, "Image Index should NOT be removed")
 
-	amd64Image, arm64Image, noarchImage := false, false, false
-	for _, archImage := range snap.Components {
-		switch {
-		case strings.Contains(archImage.Name, "some-image-name-sha256:digest1-amd64"):
+	indexImage, amd64Image, arm64Image, noarchImage := false, false, false, false
+	for _, component := range snap.Components {
+		switch component.Name {
+		case "some-image-name":
+			indexImage = true
+		case "some-image-name-sha256:digest1-amd64":
 			amd64Image = true
-		case strings.Contains(archImage.Name, "some-image-name-sha256:digest2-arm64"):
+		case "some-image-name-sha256:digest2-arm64":
 			arm64Image = true
-		case strings.Contains(archImage.Name, "some-image-name-sha256:digest3-noarch-2"):
+		case "some-image-name-sha256:digest3-noarch-2":
 			noarchImage = true
 		}
 	}
 
-	assert.True(t, amd64Image, "An amd64 image should be present in the component")
-	assert.True(t, arm64Image, "An arm64 image should be present in the component")
-	assert.True(t, noarchImage, "A noarch image should be present in the component")
+	assert.True(t, indexImage, "Index Image should be present in components")
+	assert.True(t, amd64Image, "An amd64 image should be present in components")
+	assert.True(t, arm64Image, "An arm64 image should be present in components")
+	assert.True(t, noarchImage, "A noarch image should be present in components")
 }
 
 func TestExpandImageImage_Errors(t *testing.T) {

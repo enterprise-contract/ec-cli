@@ -224,8 +224,8 @@ func expandImageIndex(ctx context.Context, snap *app.SnapshotSpec) {
 			continue
 		}
 
-		// The image is an image index and accessible so remove the image index itself and add index manifests
-		components = components[:len(components)-1]
+		// Add the platform-specific image references (Image Manifests) to the list of components so
+		// each is validated as well as the multi-platform image reference (Image Index).
 		for i, manifest := range indexManifest.Manifests {
 			var arch string
 			if manifest.Platform != nil && manifest.Platform.Architecture != "" {
