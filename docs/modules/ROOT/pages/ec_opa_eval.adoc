@@ -1,6 +1,8 @@
 = ec opa eval
 
-Evaluate a Rego query== Synopsis
+Evaluate a Rego query
+
+== Synopsis
 
 Evaluate a Rego query and print the result.
 

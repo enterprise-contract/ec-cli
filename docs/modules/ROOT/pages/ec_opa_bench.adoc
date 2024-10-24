@@ -1,6 +1,8 @@
 = ec opa bench
 
-Benchmark a Rego query== Synopsis
+Benchmark a Rego query
+
+== Synopsis
 
 Benchmark a Rego query and print the results.
 

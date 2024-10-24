@@ -1,6 +1,8 @@
 = ec inspect policy
 
-Read policies from source urls and show information about the rules inside them== Synopsis
+Read policies from source urls and show information about the rules inside them
+
+== Synopsis
 
 Read policies from a source url and show information about the rules inside them.
 

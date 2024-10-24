@@ -1,6 +1,8 @@
 = ec opa fmt
 
-Format Rego source files== Synopsis
+Format Rego source files
+
+== Synopsis
 
 Format Rego source files.
 

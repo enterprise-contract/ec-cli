@@ -1,6 +1,7 @@
 = ec fetch
 
 Fetch remote resources
+
 == Options
 
 -h, --help:: help for fetch (Default: false)

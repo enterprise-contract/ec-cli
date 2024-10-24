@@ -1,6 +1,8 @@
 = ec opa capabilities
 
-Print the capabilities of OPA== Synopsis
+Print the capabilities of OPA
+
+== Synopsis
 
 Show capabilities for OPA.
 

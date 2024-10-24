@@ -1,6 +1,8 @@
 = ec validate image
 
-Validate conformance of container images with the Enterprise Contract== Synopsis
+Validate conformance of container images with the Enterprise Contract
+
+== Synopsis
 
 Validate conformance of container images with the Enterprise Contract
 

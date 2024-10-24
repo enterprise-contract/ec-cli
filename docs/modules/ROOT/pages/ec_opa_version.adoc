@@ -1,6 +1,8 @@
 = ec opa version
 
-Print the version of OPA== Synopsis
+Print the version of OPA
+
+== Synopsis
 
 Show version and build information for OPA.
 [source,shell]

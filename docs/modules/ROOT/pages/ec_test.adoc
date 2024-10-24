@@ -1,6 +1,8 @@
 = ec test
 
-Test your configuration files using Open Policy Agent== Synopsis
+Test your configuration files using Open Policy Agent
+
+== Synopsis
 
 
 The 'ec test' command is a thin wrapper for the 'conftest test' command. This

@@ -1,6 +1,7 @@
 = ec validate
 
 Validate conformance with the Enterprise Contract
+
 == Options
 
 -h, --help:: help for validate (Default: false)

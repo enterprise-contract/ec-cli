@@ -1,6 +1,8 @@
 = ec sigstore initialize
 
-Initializes Sigstore root to retrieve trusted certificate and key targets for verification== Synopsis
+Initializes Sigstore root to retrieve trusted certificate and key targets for verification
+
+== Synopsis
 
 Initializes Sigstore root to retrieve trusted certificate and key targets for verification.
 
