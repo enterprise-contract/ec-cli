@@ -1,6 +1,8 @@
 = ec init policies
 
-Initialize a directory with minimal EC scaffolding== Synopsis
+Initialize a directory with minimal EC scaffolding
+
+== Synopsis
 
 This command creates the necessary files for a minimal EC policy setup in the
 specified destination directory.

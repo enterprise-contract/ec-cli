@@ -1,6 +1,8 @@
 = ec opa build
 
-Build an OPA bundle== Synopsis
+Build an OPA bundle
+
+== Synopsis
 
 Build an OPA bundle.
 

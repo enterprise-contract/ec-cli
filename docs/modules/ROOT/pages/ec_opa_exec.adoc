@@ -1,6 +1,8 @@
 = ec opa exec
 
-Execute against input files== Synopsis
+Execute against input files
+
+== Synopsis
 
 Execute against input files.
 

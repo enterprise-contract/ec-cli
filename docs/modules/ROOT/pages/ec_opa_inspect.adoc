@@ -1,6 +1,8 @@
 = ec opa inspect
 
-Inspect OPA bundle(s) or Rego files.== Synopsis
+Inspect OPA bundle(s) or Rego files.
+
+== Synopsis
 
 Inspect OPA bundle(s) or Rego files.
 

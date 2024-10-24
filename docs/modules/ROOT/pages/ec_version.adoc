@@ -1,6 +1,7 @@
 = ec version
 
 Print version information
+
 == Options
 
 -h, --help:: help for version (Default: false)

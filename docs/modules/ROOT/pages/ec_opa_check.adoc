@@ -1,6 +1,8 @@
 = ec opa check
 
-Check Rego source files== Synopsis
+Check Rego source files
+
+== Synopsis
 
 Check Rego source files for parse and compilation errors.
 	

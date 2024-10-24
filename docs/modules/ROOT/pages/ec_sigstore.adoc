@@ -1,6 +1,7 @@
 = ec sigstore
 
 Perform certain sigstore operations
+
 == Options
 
 -h, --help:: help for sigstore (Default: false)

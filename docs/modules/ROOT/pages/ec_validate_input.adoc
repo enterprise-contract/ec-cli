@@ -1,6 +1,8 @@
 = ec validate input
 
-Validate arbitrary JSON or yaml file input conformance with the Enterprise Contract== Synopsis
+Validate arbitrary JSON or yaml file input conformance with the Enterprise Contract
+
+== Synopsis
 
 Validate conformance of arbitrary JSON or yaml file input with the Enterprise Contract
 
