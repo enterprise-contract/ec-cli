@@ -11,7 +11,7 @@ being available. Not all information is available for all images. This is noted 
 description of each attribute.
 
 It is important to note that this command may proccess multiple images at the same time. In such
-cases, a different input is generated for each image. In other words, policy rules only eve have
+cases, a different input is generated for each image. In other words, policy rules only ever have
 access to the information about a single image.
 
 [,json]
@@ -29,6 +29,7 @@ access to the information about a single image.
         }
     ],
     "image": #ImageDescriptor
+    "snapshot": #SnapshotDescriptor
 }
 
 #ImageDescriptor: {
@@ -53,6 +54,19 @@ access to the information about a single image.
         "revision": "<STRING>",
         "url": "<STRING>"
     }
+}
+
+#SnapshotDescriptor: {
+    "application": "<STRING>",
+    "displayName": "<STRING>",
+    "displayDescription": "<STRING>",
+    "components": [..."#SnapshotComponentDescriptor"]
+}
+
+#SnapshotComponentDescriptor: {
+    "name": "<STRING>",
+    "containerImage": "<STRING>",
+    "source": #SourceDescriptor"
 }
 ----
 
@@ -101,3 +115,7 @@ information is not given to the command.
 The SourceDescriptor contains the the single `git` attribute which hold an object with information
 about a git repository. `.revision` is a string holding a git reference. This could be a commit ID,
 branch, etc. `url` is the the URL of the git repository.
+
+The SnapshotDescriptor contains the information about the application snapshot provided to the `ec validate image` command. `.application` is a string holding the name of the application. `.displayName` is a string holding the display name of the application. `.displayDescription` is a string holding the display description of the application. `.components` is an array of SnapshotComponentDescriptor objects.
+
+The SnapshotComponentDescriptor contains the information about the components of the application snapshot provided to the `ec validate image` command. `.name` is a string holding the name of the component. `.containerImage` is a string holding the container image of the component. `.source` is a SourceDescriptor object.
