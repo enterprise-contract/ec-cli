@@ -1,6 +1,7 @@
 = ec inspect
 
 Inspect policy rules
+
 == Options
 
 -h, --help:: help for inspect (Default: false)

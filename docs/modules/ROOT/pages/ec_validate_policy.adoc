@@ -1,6 +1,8 @@
 = ec validate policy
 
-Validate the provided EnterpriseContractPolicy spec== Synopsis
+Validate the provided EnterpriseContractPolicy spec
+
+== Synopsis
 
 Validate the provided EnterpriseContractPolicy spec against the EnterpriseContractPolicy spec schema used in this version of the ec CLI
 

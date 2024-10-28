@@ -1,6 +1,8 @@
 = ec opa parse
 
-Parse Rego source file== Synopsis
+Parse Rego source file
+
+== Synopsis
 
 Parse Rego source file and print AST.
 [source,shell]

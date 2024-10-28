@@ -1,6 +1,8 @@
 = ec opa deps
 
-Analyze Rego query dependencies== Synopsis
+Analyze Rego query dependencies
+
+== Synopsis
 
 Print dependencies of provided query.
 

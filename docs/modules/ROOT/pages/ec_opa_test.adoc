@@ -1,6 +1,8 @@
 = ec opa test
 
-Execute Rego test cases== Synopsis
+Execute Rego test cases
+
+== Synopsis
 
 Execute Rego test cases.
 	

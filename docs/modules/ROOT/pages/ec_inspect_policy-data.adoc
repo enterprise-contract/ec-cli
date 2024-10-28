@@ -1,6 +1,8 @@
 = ec inspect policy-data
 
-Read policy data from source urls and displays the data== Synopsis
+Read policy data from source urls and displays the data
+
+== Synopsis
 
 Read policy data from source urls and displays the data.
 

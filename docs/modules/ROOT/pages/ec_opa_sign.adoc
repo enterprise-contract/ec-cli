@@ -1,6 +1,8 @@
 = ec opa sign
 
-Generate an OPA bundle signature== Synopsis
+Generate an OPA bundle signature
+
+== Synopsis
 
 Generate an OPA bundle signature.
 

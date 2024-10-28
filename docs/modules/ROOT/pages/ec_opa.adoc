@@ -1,6 +1,8 @@
 = ec opa
 
-Open Policy Agent (OPA) (embedded)== Synopsis
+Open Policy Agent (OPA) (embedded)
+
+== Synopsis
 
 An open source project to policy-enable your service.
 [source,shell]

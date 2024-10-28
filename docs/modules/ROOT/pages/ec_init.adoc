@@ -1,6 +1,7 @@
 = ec init
 
 Initialize a directory for use
+
 == Options
 
 -h, --help:: help for init (Default: false)

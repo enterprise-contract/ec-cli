@@ -1,6 +1,8 @@
 = ec fetch policy
 
-Fetch policy rules from a git repository or other source== Synopsis
+Fetch policy rules from a git repository or other source
+
+== Synopsis
 
 Fetch policy rules (rego files) from a git repository or other source.
 

@@ -1,6 +1,7 @@
 = ec track
 
 Record resource references for tracking purposes
+
 == Options
 
 -h, --help:: help for track (Default: false)

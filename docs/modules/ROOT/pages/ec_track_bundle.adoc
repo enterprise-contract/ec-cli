@@ -1,6 +1,8 @@
 = ec track bundle
 
-Record tracking information about Tekton bundles== Synopsis
+Record tracking information about Tekton bundles
+
+== Synopsis
 
 Record tracking information about Tekton bundles
 

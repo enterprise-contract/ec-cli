@@ -1,6 +1,8 @@
 = ec
 
-Enterprise Contract CLI== Synopsis
+Enterprise Contract CLI
+
+== Synopsis
 
 Enterprise Contract CLI
 
