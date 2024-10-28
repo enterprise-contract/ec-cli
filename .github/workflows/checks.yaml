@@ -59,6 +59,9 @@ jobs:
         with:
           go-version-file: go.mod
           cache: false
+          
+      - name: Check go versions
+        uses: enterprise-contract/github-workflows/golang-version-check@main
 
       - name: Generate
         run: make generate
