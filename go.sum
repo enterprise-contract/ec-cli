@@ -543,8 +543,8 @@ github.com/emicklei/proto v1.13.2 h1:z/etSFO3uyXeuEsVPzfl56WNgzcvIr42aQazXaQmFZY
 github.com/emicklei/proto v1.13.2/go.mod h1:rn1FgRS/FANiZdD2djyH7TMA9jdRDcYQ9IEN9yvjX0A=
 github.com/emirpasic/gods v1.18.1 h1:FXtiHYKDGKCW2KzwZKx0iC0PQmdlorYgdFG9jPXJ1Bc=
 github.com/emirpasic/gods v1.18.1/go.mod h1:8tpGGwCnJ5H4r6BWwaV6OrWmMoPhUl5jm/FMNAnJvWQ=
-github.com/enterprise-contract/enterprise-contract-controller/api v0.1.60 h1:5gfGknt2BEn5f6RtaPVVWzGhMDoJNo2TuOG/fUbpDOE=
-github.com/enterprise-contract/enterprise-contract-controller/api v0.1.60/go.mod h1:R1eRwHUjcYWg4gJnv/zpEDog60J9wBqe2TIjlYFRUe8=
+github.com/enterprise-contract/enterprise-contract-controller/api v0.1.66 h1:XLFanAUW4b7UA5J8De25j58s8nRu4uOXKt2qjW0z67g=
+github.com/enterprise-contract/enterprise-contract-controller/api v0.1.66/go.mod h1:8Cb436BWDCMZjEVeHquCJrr+O3mJiKelySnqTve1Krs=
 github.com/enterprise-contract/go-containerregistry v0.20.3-0.20241021143850-a9c1a63046bc h1:zdaYgLp9LN9Aga77qcmt911rhmdm9DDsSWGobOFq/+I=
 github.com/enterprise-contract/go-containerregistry v0.20.3-0.20241021143850-a9c1a63046bc/go.mod h1:QTzGuUYojyBy1anZvBPMhwXRE0LGZPIcpmn3K8DHYrw=
 github.com/enterprise-contract/go-gather v0.0.4 h1:ecQsWuNyPi59wkySm1JXIXIUp+Pta9ECl3PmhcV6Llc=
