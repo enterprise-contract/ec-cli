@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"runtime"
 	"runtime/pprof"
 	"runtime/trace"
 	"sync"
@@ -109,7 +108,6 @@ func NewRootCmd() *cobra.Command {
 						log.Fatal("could not create memory profile: ", err)
 					} else {
 						defer memprofile.Close()
-						runtime.GC()
 						if err := pprof.WriteHeapProfile(memprofile); err != nil {
 							log.Fatal("could not start CPU profile: ", err)
 						}
