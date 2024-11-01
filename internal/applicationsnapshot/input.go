@@ -22,13 +22,13 @@ import (
 	"fmt"
 	"runtime/trace"
 	"sort"
-	"sync"
 
 	"github.com/google/go-containerregistry/pkg/name"
 	app "github.com/konflux-ci/application-api/api/v1alpha1"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 	"golang.org/x/exp/slices"
+	"golang.org/x/sync/errgroup"
 	"sigs.k8s.io/yaml"
 
 	"github.com/enterprise-contract/ec-cli/internal/kubernetes"
@@ -183,10 +183,16 @@ func readSnapshotSource(input []byte) (app.SnapshotSpec, error) {
 	return file, nil
 }
 
-func imageIndexWorker(client oci.Client, component app.SnapshotComponent, componentChan chan<- app.SnapshotComponent, errorsChan chan<- error, wg *sync.WaitGroup) {
-	defer wg.Done()
-
-	componentChan <- component
+// For an image index, remove the original component and replace it with an expanded component with all its image manifests
+// Do not raise an error if the image is inaccessible, it will be handled as a violation when evaluated against the policy
+// This is to retain the original behavior of the `ec validate` command.
+func imageIndexWorker(client oci.Client, component app.SnapshotComponent, componentChan chan<- []app.SnapshotComponent, errorsChan chan<- error) {
+	var components []app.SnapshotComponent
+	components = append(components, component)
+	// to avoid adding to componentsChan before each return
+	defer func() {
+		componentChan <- components
+	}()
 
 	ref, err := name.ParseReference(component.ContainerImage)
 	if err != nil {
@@ -228,7 +234,7 @@ func imageIndexWorker(client oci.Client, component app.SnapshotComponent, compon
 		archComponent := component
 		archComponent.Name = fmt.Sprintf("%s-%s-%s", component.Name, manifest.Digest, arch)
 		archComponent.ContainerImage = fmt.Sprintf("%s@%s", ref.Context().Name(), manifest.Digest)
-		componentChan <- archComponent
+		components = append(components, archComponent)
 	}
 }
 
@@ -239,28 +245,29 @@ func expandImageIndex(ctx context.Context, snap *app.SnapshotSpec) {
 	}
 
 	client := oci.NewClient(ctx)
-	// For an image index, remove the original component and replace it with an expanded component with all its image manifests
-	// Do not raise an error if the image is inaccessible, it will be handled as a violation when evaluated against the policy
-	// This is to retain the original behavior of the `ec validate` command.
 
-	componentChan := make(chan app.SnapshotComponent, len(snap.Components))
+	workers := 5
+	componentChan := make(chan []app.SnapshotComponent, len(snap.Components))
 	errorsChan := make(chan error, len(snap.Components))
-	var wg sync.WaitGroup
+	g, _ := errgroup.WithContext(ctx)
+	g.SetLimit(workers)
 	for _, component := range snap.Components {
-		wg.Add(1)
 		// fetch manifests concurrently
-		go imageIndexWorker(client, component, componentChan, errorsChan, &wg)
+		g.Go(func() error {
+			imageIndexWorker(client, component, componentChan, errorsChan)
+			return nil
+		})
 	}
 
 	go func() {
-		wg.Wait()
+		_ = g.Wait()
 		close(componentChan)
 		close(errorsChan)
 	}()
 
 	var components []app.SnapshotComponent
 	for component := range componentChan {
-		components = append(components, component)
+		components = append(components, component...)
 	}
 	snap.Components = components
 
