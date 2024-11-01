@@ -21,6 +21,8 @@ import (
 	"errors"
 	"fmt"
 	"runtime/trace"
+	"sort"
+	"sync"
 
 	"github.com/google/go-containerregistry/pkg/name"
 	app "github.com/konflux-ci/application-api/api/v1alpha1"
@@ -181,6 +183,55 @@ func readSnapshotSource(input []byte) (app.SnapshotSpec, error) {
 	return file, nil
 }
 
+func imageIndexWorker(client oci.Client, component app.SnapshotComponent, componentChan chan<- app.SnapshotComponent, errorsChan chan<- error, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	componentChan <- component
+
+	ref, err := name.ParseReference(component.ContainerImage)
+	if err != nil {
+		errorsChan <- fmt.Errorf("unable to parse container image %s: %w", component.ContainerImage, err)
+		return
+	}
+
+	desc, err := client.Head(ref)
+	if err != nil {
+		errorsChan <- fmt.Errorf("unable to fetch descriptior for container image %s: %w", ref, err)
+		return
+	}
+
+	if !desc.MediaType.IsIndex() {
+		return
+	}
+
+	index, err := client.Index(ref)
+	if err != nil {
+		errorsChan <- fmt.Errorf("unable to fetch index for container image %s: %w", component.ContainerImage, err)
+		return
+	}
+
+	indexManifest, err := index.IndexManifest()
+	if err != nil {
+		errorsChan <- fmt.Errorf("unable to fetch index manifest for container image %s: %w", component.ContainerImage, err)
+		return
+	}
+
+	// Add the platform-specific image references (Image Manifests) to the list of components so
+	// each is validated as well as the multi-platform image reference (Image Index).
+	for i, manifest := range indexManifest.Manifests {
+		var arch string
+		if manifest.Platform != nil && manifest.Platform.Architecture != "" {
+			arch = manifest.Platform.Architecture
+		} else {
+			arch = fmt.Sprintf("noarch-%d", i)
+		}
+		archComponent := component
+		archComponent.Name = fmt.Sprintf("%s-%s-%s", component.Name, manifest.Digest, arch)
+		archComponent.ContainerImage = fmt.Sprintf("%s@%s", ref.Context().Name(), manifest.Digest)
+		componentChan <- archComponent
+	}
+}
+
 func expandImageIndex(ctx context.Context, snap *app.SnapshotSpec) {
 	if trace.IsEnabled() {
 		region := trace.StartRegion(ctx, "ec:expand-image-index")
@@ -189,58 +240,38 @@ func expandImageIndex(ctx context.Context, snap *app.SnapshotSpec) {
 
 	client := oci.NewClient(ctx)
 	// For an image index, remove the original component and replace it with an expanded component with all its image manifests
-	var components []app.SnapshotComponent
 	// Do not raise an error if the image is inaccessible, it will be handled as a violation when evaluated against the policy
 	// This is to retain the original behavior of the `ec validate` command.
-	var allErrors error = nil
+
+	componentChan := make(chan app.SnapshotComponent, len(snap.Components))
+	errorsChan := make(chan error, len(snap.Components))
+	var wg sync.WaitGroup
 	for _, component := range snap.Components {
-		// Assume the image is not an image index or it isn't accessible
-		components = append(components, component)
-		ref, err := name.ParseReference(component.ContainerImage)
-		if err != nil {
-			allErrors = errors.Join(allErrors, fmt.Errorf("unable to parse container image %s: %w", component.ContainerImage, err))
-			continue
-		}
-
-		desc, err := client.Head(ref)
-		if err != nil {
-			allErrors = errors.Join(allErrors, fmt.Errorf("unable to fetch descriptior for container image %s: %w", ref, err))
-			continue
-		}
-
-		if !desc.MediaType.IsIndex() {
-			continue
-		}
-
-		index, err := client.Index(ref)
-		if err != nil {
-			allErrors = errors.Join(allErrors, fmt.Errorf("unable to fetch index for container image %s: %w", component.ContainerImage, err))
-			continue
-		}
-
-		indexManifest, err := index.IndexManifest()
-		if err != nil {
-			allErrors = errors.Join(allErrors, fmt.Errorf("unable to fetch index manifest for container image %s: %w", component.ContainerImage, err))
-			continue
-		}
-
-		// Add the platform-specific image references (Image Manifests) to the list of components so
-		// each is validated as well as the multi-platform image reference (Image Index).
-		for i, manifest := range indexManifest.Manifests {
-			var arch string
-			if manifest.Platform != nil && manifest.Platform.Architecture != "" {
-				arch = manifest.Platform.Architecture
-			} else {
-				arch = fmt.Sprintf("noarch-%d", i)
-			}
-			archComponent := component
-			archComponent.Name = fmt.Sprintf("%s-%s-%s", component.Name, manifest.Digest, arch)
-			archComponent.ContainerImage = fmt.Sprintf("%s@%s", ref.Context().Name(), manifest.Digest)
-			components = append(components, archComponent)
-		}
+		wg.Add(1)
+		// fetch manifests concurrently
+		go imageIndexWorker(client, component, componentChan, errorsChan, &wg)
 	}
 
+	go func() {
+		wg.Wait()
+		close(componentChan)
+		close(errorsChan)
+	}()
+
+	var components []app.SnapshotComponent
+	for component := range componentChan {
+		components = append(components, component)
+	}
 	snap.Components = components
+
+	sort.Slice(snap.Components, func(i, j int) bool {
+		return snap.Components[i].ContainerImage < snap.Components[j].ContainerImage
+	})
+
+	var allErrors error = nil
+	for err := range errorsChan {
+		allErrors = errors.Join(allErrors, err)
+	}
 
 	if allErrors != nil {
 		log.Warnf("Encountered error while checking for Image Index: %v", allErrors)

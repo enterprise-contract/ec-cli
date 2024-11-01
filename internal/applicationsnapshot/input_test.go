@@ -119,15 +119,15 @@ func Test_DetermineInputSpec(t *testing.T) {
 			},
 			want: &app.SnapshotSpec{
 				Components: []app.SnapshotComponent{
-					snapshot.Components[0],
-					{
-						Name:           "Named",
-						ContainerImage: "registry.io/repository/image:different",
-					},
 					{
 						Name:           "Unnamed",
 						ContainerImage: "registry.io/repository/image:another",
 					},
+					{
+						Name:           "Named",
+						ContainerImage: "registry.io/repository/image:different",
+					},
+					snapshot.Components[0],
 				},
 			},
 		},
@@ -141,12 +141,12 @@ func Test_DetermineInputSpec(t *testing.T) {
 			want: &app.SnapshotSpec{
 				Components: []app.SnapshotComponent{
 					{
-						Name:           "Named",
-						ContainerImage: imageRef,
-					},
-					{
 						Name:           "Set name",
 						ContainerImage: "registry.io/repository/image:another",
+					},
+					{
+						Name:           "Named",
+						ContainerImage: imageRef,
 					},
 				},
 			},
