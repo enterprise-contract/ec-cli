@@ -153,6 +153,7 @@ ec opa run [flags]
 --log-timestamp-format:: set log timestamp format (OPA_LOG_TIMESTAMP_FORMAT environment variable)
 -m, --max-errors:: set the number of errors to allow before compilation fails early (Default: 10)
 --min-tls-version:: set minimum TLS version to be used by OPA's server (Default: 1.2)
+--optimize-store-for-read-speed:: optimize default in-memory store for read speed. Has possible negative impact on memory footprint and write speed. See https://www.openpolicyagent.org/docs/latest/policy-performance/#storage-optimization for more details. (Default: false)
 --pprof:: enables pprof endpoints (Default: false)
 --ready-timeout:: wait (in seconds) for configured plugins before starting server (value <= 0 disables ready check) (Default: 0)
 --scope:: scope to use for bundle signature verification

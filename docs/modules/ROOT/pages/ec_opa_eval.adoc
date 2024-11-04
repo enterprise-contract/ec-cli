@@ -133,6 +133,7 @@ ec opa eval <query> [flags]
 --instrument:: enable query instrumentation metrics (implies --metrics) (Default: false)
 --metrics:: report query performance metrics (Default: false)
 -O, --optimize:: set optimization level (Default: 0)
+--optimize-store-for-read-speed:: optimize default in-memory store for read speed. Has possible negative impact on memory footprint and write speed. See https://www.openpolicyagent.org/docs/latest/policy-performance/#storage-optimization for more details. (Default: false)
 --package:: set query package
 -p, --partial:: perform partial evaluation (Default: false)
 --pretty-limit:: set limit after which pretty output gets truncated (Default: 80)
