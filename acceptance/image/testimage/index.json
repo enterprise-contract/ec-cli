@@ -5,15 +5,15 @@
       {
          "mediaType": "application/vnd.oci.image.manifest.v1+json",
          "size": 498,
-         "digest": "sha256:996e60caeba5a31621dbd69fc744e2686287d10564a6510bd8ef0d902960d33c",
+         "digest": "sha256:324b385eb7a42f9d1b42fa2856256db8845dd8be1918b5762a19600d273aa089",
          "annotations": {
             "kind": "dev.cosignproject.cosign/image"
          }
       },
       {
          "mediaType": "application/vnd.oci.image.manifest.v1+json",
-         "size": 8245,
-         "digest": "sha256:3a62d4fad8e219768eadafca1629a27cf4b88d5e3f0f1bfe718fde064a4fed71",
+         "size": 8233,
+         "digest": "sha256:8782a68f662f8175fed219c1fe4d582551e54bc9f4ac5224226dad4bb2650ee5",
          "annotations": {
             "kind": "dev.cosignproject.cosign/sigs"
          }
@@ -21,7 +21,7 @@
       {
          "mediaType": "application/vnd.oci.image.manifest.v1+json",
          "size": 8153,
-         "digest": "sha256:b5ddf33cd457b635156071bf136f2fdec6bec613f7a22b885fd193a7841a84cb",
+         "digest": "sha256:3221b557483091249f0702726384dd135da6510247f61400fcd8c61b5b7e1543",
          "annotations": {
             "kind": "dev.cosignproject.cosign/atts"
          }
