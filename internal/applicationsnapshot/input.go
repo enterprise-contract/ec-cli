@@ -20,8 +20,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"runtime/trace"
 	"sort"
+	"strconv"
 
 	"github.com/google/go-containerregistry/pkg/name"
 	app "github.com/konflux-ci/application-api/api/v1alpha1"
@@ -36,7 +38,11 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/utils/oci"
 )
 
-const unnamed = "Unnamed"
+const (
+	unnamed        = "Unnamed"
+	workersEnvVar  = "IMAGE_INDEX_WORKERS"
+	defaultWorkers = 5
+)
 
 type Input struct {
 	File     string // Deprecated: replaced by images
@@ -246,11 +252,10 @@ func expandImageIndex(ctx context.Context, snap *app.SnapshotSpec) {
 
 	client := oci.NewClient(ctx)
 
-	workers := 5
 	componentChan := make(chan []app.SnapshotComponent, len(snap.Components))
 	errorsChan := make(chan error, len(snap.Components))
 	g, _ := errgroup.WithContext(ctx)
-	g.SetLimit(workers)
+	g.SetLimit(imageWorkers())
 	for _, component := range snap.Components {
 		// fetch manifests concurrently
 		g.Go(func() error {
@@ -284,4 +289,14 @@ func expandImageIndex(ctx context.Context, snap *app.SnapshotSpec) {
 		log.Warnf("Encountered error while checking for Image Index: %v", allErrors)
 	}
 	log.Debugf("Snap component after expanding the image index is %v", snap.Components)
+}
+
+func imageWorkers() int {
+	workers := defaultWorkers
+	if value, exists := os.LookupEnv(workersEnvVar); exists {
+		if parsed, err := strconv.Atoi(value); err == nil {
+			workers = parsed
+		}
+	}
+	return workers
 }
