@@ -1,20 +1,20 @@
 {
-  "id" : "93edfc9c-e9a2-34b9-a82f-a28dfbd6aa70",
+  "id" : "232cf4f1-19ad-3a77-bd43-0367cb5c53db",
   "request" : {
     "url" : "/targets/fulcio_v1.crt.pem",
     "method" : "GET"
   },
   "response" : {
     "status" : 200,
-    "bodyFileName" : "body-targets-fulcio_v1.crt.pem-FP7jc.txt",
+    "bodyFileName" : "body-targets-fulcio_v1.crt.pem-1JYme.txt",
     "headers" : {
       "accept-ranges" : "bytes",
       "content-type" : "text/plain; charset=utf-8",
-      "date" : "Wed, 01 May 2024 13:19:52 GMT",
-      "last-modified" : "Wed, 01 May 2024 13:19:35 GMT",
+      "date" : "Fri, 01 Nov 2024 18:41:32 GMT",
+      "last-modified" : "Fri, 01 Nov 2024 18:41:16 GMT",
       "x-envoy-upstream-service-time" : "0",
       "server" : "envoy"
     }
   },
-  "uuid" : "93edfc9c-e9a2-34b9-a82f-a28dfbd6aa70"
+  "uuid" : "232cf4f1-19ad-3a77-bd43-0367cb5c53db"
 }
