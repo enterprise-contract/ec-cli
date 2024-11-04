@@ -1,20 +1,20 @@
 {
-  "id" : "17976ddc-34b8-32d7-ae4d-6bc012efff00",
+  "id" : "bf1c8364-0a4b-3eff-bb2a-69c6e22d957d",
   "request" : {
     "url" : "/timestamp.json",
     "method" : "GET"
   },
   "response" : {
     "status" : 200,
-    "bodyFileName" : "body-timestamp.json-ZfL2h.json",
+    "bodyFileName" : "body-timestamp.json-YKzvR.json",
     "headers" : {
       "accept-ranges" : "bytes",
       "content-type" : "application/json",
-      "date" : "Wed, 01 May 2024 13:19:51 GMT",
-      "last-modified" : "Wed, 01 May 2024 13:19:35 GMT",
+      "date" : "Fri, 01 Nov 2024 18:41:32 GMT",
+      "last-modified" : "Fri, 01 Nov 2024 18:41:16 GMT",
       "x-envoy-upstream-service-time" : "0",
       "server" : "envoy"
     }
   },
-  "uuid" : "17976ddc-34b8-32d7-ae4d-6bc012efff00"
+  "uuid" : "bf1c8364-0a4b-3eff-bb2a-69c6e22d957d"
 }
