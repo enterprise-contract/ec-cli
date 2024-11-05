@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/open-policy-agent/opa/ast"
 )
@@ -48,9 +49,16 @@ func customAnnotationString(a *ast.AnnotationsRef, fieldName string) string {
 	if a == nil || a.Annotations == nil || a.Annotations.Custom == nil {
 		return ""
 	}
-	if value, ok := a.Annotations.Custom[fieldName].(string); ok {
-		return value
+
+	if value, ok := a.Annotations.Custom[fieldName]; ok {
+		switch value := value.(type) {
+		case string:
+			return value
+		case time.Time:
+			return value.Format(time.RFC3339)
+		}
 	}
+
 	return ""
 }
 

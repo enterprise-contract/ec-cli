@@ -289,6 +289,16 @@ func TestEffectiveOn(t *testing.T) {
 				package a
 				# METADATA
 				# custom:
+				#   effective_on: 2022-01-01T00:00:00Z
+				deny() { true }`)),
+			expected: "2022-01-01T00:00:00Z",
+		},
+		{
+			name: "with effective_on annotation as string",
+			annotation: annotationRef(heredoc.Doc(`
+				package a
+				# METADATA
+				# custom:
 				#   effective_on: '2022-01-01T00:00:00Z'
 				deny() { true }`)),
 			expected: "2022-01-01T00:00:00Z",

@@ -38,6 +38,7 @@ ec opa bench <query> [flags]
 --import:: set query import(s). This flag can be repeated.
 -i, --input:: set input file path
 --metrics:: report query performance metrics (Default: true)
+--optimize-store-for-read-speed:: optimize default in-memory store for read speed. Has possible negative impact on memory footprint and write speed. See https://www.openpolicyagent.org/docs/latest/policy-performance/#storage-optimization for more details. (Default: false)
 --package:: set query package
 -p, --partial:: perform partial evaluation (Default: false)
 -s, --schema:: set schema file path or directory path
