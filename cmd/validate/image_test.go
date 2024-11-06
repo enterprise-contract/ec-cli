@@ -173,7 +173,7 @@ func Test_determineInputSpec(t *testing.T) {
 					  {
 						"name": "single-container-app",
 						"containerImage": "quay.io/hacbs-contract-demo/single-container-app:62c06bf"
-					  }
+					  },
 					]
 				  }`,
 			},
@@ -181,16 +181,16 @@ func Test_determineInputSpec(t *testing.T) {
 				Application: "app1",
 				Components: []app.SnapshotComponent{
 					{
+						Name:           "single-container-app",
+						ContainerImage: "quay.io/hacbs-contract-demo/single-container-app:62c06bf",
+					},
+					{
 						Name:           "nodejs",
 						ContainerImage: "quay.io/hacbs-contract-demo/single-nodejs-app:877418e",
 					},
 					{
 						Name:           "petclinic",
 						ContainerImage: "quay.io/hacbs-contract-demo/spring-petclinic:dc80a7f",
-					},
-					{
-						Name:           "single-container-app",
-						ContainerImage: "quay.io/hacbs-contract-demo/single-container-app:62c06bf",
 					},
 				},
 			},
@@ -214,16 +214,16 @@ func Test_determineInputSpec(t *testing.T) {
 				Application: "app1",
 				Components: []app.SnapshotComponent{
 					{
+						Name:           "single-container-app",
+						ContainerImage: "quay.io/hacbs-contract-demo/single-container-app:62c06bf",
+					},
+					{
 						Name:           "nodejs",
 						ContainerImage: "quay.io/hacbs-contract-demo/single-nodejs-app:877418e",
 					},
 					{
 						Name:           "petclinic",
 						ContainerImage: "quay.io/hacbs-contract-demo/spring-petclinic:dc80a7f",
-					},
-					{
-						Name:           "single-container-app",
-						ContainerImage: "quay.io/hacbs-contract-demo/single-container-app:62c06bf",
 					},
 				},
 			},
@@ -237,16 +237,16 @@ func Test_determineInputSpec(t *testing.T) {
 				Application: "app1",
 				Components: []app.SnapshotComponent{
 					{
+						Name:           "single-container-app",
+						ContainerImage: "quay.io/hacbs-contract-demo/single-container-app:62c06bf",
+					},
+					{
 						Name:           "nodejs",
 						ContainerImage: "quay.io/hacbs-contract-demo/single-nodejs-app:877418e",
 					},
 					{
 						Name:           "petclinic",
 						ContainerImage: "quay.io/hacbs-contract-demo/spring-petclinic:dc80a7f",
-					},
-					{
-						Name:           "single-container-app",
-						ContainerImage: "quay.io/hacbs-contract-demo/single-container-app:62c06bf",
 					},
 				},
 			},
@@ -260,16 +260,16 @@ func Test_determineInputSpec(t *testing.T) {
 				Application: "app1",
 				Components: []app.SnapshotComponent{
 					{
+						Name:           "single-container-app",
+						ContainerImage: "quay.io/hacbs-contract-demo/single-container-app:62c06bf",
+					},
+					{
 						Name:           "nodejs",
 						ContainerImage: "quay.io/hacbs-contract-demo/single-nodejs-app:877418e",
 					},
 					{
 						Name:           "petclinic",
 						ContainerImage: "quay.io/hacbs-contract-demo/spring-petclinic:dc80a7f",
-					},
-					{
-						Name:           "single-container-app",
-						ContainerImage: "quay.io/hacbs-contract-demo/single-container-app:62c06bf",
 					},
 				},
 			},
@@ -291,6 +291,7 @@ func Test_determineInputSpec(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 			}
+
 			assert.Equal(t, c.spec, s)
 		})
 	}

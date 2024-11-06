@@ -20,13 +20,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"runtime/trace"
+	"sort"
+	"strconv"
 
 	"github.com/google/go-containerregistry/pkg/name"
 	app "github.com/konflux-ci/application-api/api/v1alpha1"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 	"golang.org/x/exp/slices"
+	"golang.org/x/sync/errgroup"
 	"sigs.k8s.io/yaml"
 
 	"github.com/enterprise-contract/ec-cli/internal/kubernetes"
@@ -34,7 +38,11 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/utils/oci"
 )
 
-const unnamed = "Unnamed"
+const (
+	unnamed        = "Unnamed"
+	workersEnvVar  = "IMAGE_INDEX_WORKERS"
+	defaultWorkers = 5
+)
 
 type Input struct {
 	File     string // Deprecated: replaced by images
@@ -181,6 +189,61 @@ func readSnapshotSource(input []byte) (app.SnapshotSpec, error) {
 	return file, nil
 }
 
+// For an image index, remove the original component and replace it with an expanded component with all its image manifests
+// Do not raise an error if the image is inaccessible, it will be handled as a violation when evaluated against the policy
+// This is to retain the original behavior of the `ec validate` command.
+func imageIndexWorker(client oci.Client, component app.SnapshotComponent, componentChan chan<- []app.SnapshotComponent, errorsChan chan<- error) {
+	var components []app.SnapshotComponent
+	components = append(components, component)
+	// to avoid adding to componentsChan before each return
+	defer func() {
+		componentChan <- components
+	}()
+
+	ref, err := name.ParseReference(component.ContainerImage)
+	if err != nil {
+		errorsChan <- fmt.Errorf("unable to parse container image %s: %w", component.ContainerImage, err)
+		return
+	}
+
+	desc, err := client.Head(ref)
+	if err != nil {
+		errorsChan <- fmt.Errorf("unable to fetch descriptior for container image %s: %w", ref, err)
+		return
+	}
+
+	if !desc.MediaType.IsIndex() {
+		return
+	}
+
+	index, err := client.Index(ref)
+	if err != nil {
+		errorsChan <- fmt.Errorf("unable to fetch index for container image %s: %w", component.ContainerImage, err)
+		return
+	}
+
+	indexManifest, err := index.IndexManifest()
+	if err != nil {
+		errorsChan <- fmt.Errorf("unable to fetch index manifest for container image %s: %w", component.ContainerImage, err)
+		return
+	}
+
+	// Add the platform-specific image references (Image Manifests) to the list of components so
+	// each is validated as well as the multi-platform image reference (Image Index).
+	for i, manifest := range indexManifest.Manifests {
+		var arch string
+		if manifest.Platform != nil && manifest.Platform.Architecture != "" {
+			arch = manifest.Platform.Architecture
+		} else {
+			arch = fmt.Sprintf("noarch-%d", i)
+		}
+		archComponent := component
+		archComponent.Name = fmt.Sprintf("%s-%s-%s", component.Name, manifest.Digest, arch)
+		archComponent.ContainerImage = fmt.Sprintf("%s@%s", ref.Context().Name(), manifest.Digest)
+		components = append(components, archComponent)
+	}
+}
+
 func expandImageIndex(ctx context.Context, snap *app.SnapshotSpec) {
 	if trace.IsEnabled() {
 		region := trace.StartRegion(ctx, "ec:expand-image-index")
@@ -188,62 +251,52 @@ func expandImageIndex(ctx context.Context, snap *app.SnapshotSpec) {
 	}
 
 	client := oci.NewClient(ctx)
-	// For an image index, remove the original component and replace it with an expanded component with all its image manifests
-	var components []app.SnapshotComponent
-	// Do not raise an error if the image is inaccessible, it will be handled as a violation when evaluated against the policy
-	// This is to retain the original behavior of the `ec validate` command.
-	var allErrors error = nil
+
+	componentChan := make(chan []app.SnapshotComponent, len(snap.Components))
+	errorsChan := make(chan error, len(snap.Components))
+	g, _ := errgroup.WithContext(ctx)
+	g.SetLimit(imageWorkers())
 	for _, component := range snap.Components {
-		// Assume the image is not an image index or it isn't accessible
-		components = append(components, component)
-		ref, err := name.ParseReference(component.ContainerImage)
-		if err != nil {
-			allErrors = errors.Join(allErrors, fmt.Errorf("unable to parse container image %s: %w", component.ContainerImage, err))
-			continue
-		}
-
-		desc, err := client.Head(ref)
-		if err != nil {
-			allErrors = errors.Join(allErrors, fmt.Errorf("unable to fetch descriptior for container image %s: %w", ref, err))
-			continue
-		}
-
-		if !desc.MediaType.IsIndex() {
-			continue
-		}
-
-		index, err := client.Index(ref)
-		if err != nil {
-			allErrors = errors.Join(allErrors, fmt.Errorf("unable to fetch index for container image %s: %w", component.ContainerImage, err))
-			continue
-		}
-
-		indexManifest, err := index.IndexManifest()
-		if err != nil {
-			allErrors = errors.Join(allErrors, fmt.Errorf("unable to fetch index manifest for container image %s: %w", component.ContainerImage, err))
-			continue
-		}
-
-		// Add the platform-specific image references (Image Manifests) to the list of components so
-		// each is validated as well as the multi-platform image reference (Image Index).
-		for i, manifest := range indexManifest.Manifests {
-			var arch string
-			if manifest.Platform != nil && manifest.Platform.Architecture != "" {
-				arch = manifest.Platform.Architecture
-			} else {
-				arch = fmt.Sprintf("noarch-%d", i)
-			}
-			archComponent := component
-			archComponent.Name = fmt.Sprintf("%s-%s-%s", component.Name, manifest.Digest, arch)
-			archComponent.ContainerImage = fmt.Sprintf("%s@%s", ref.Context().Name(), manifest.Digest)
-			components = append(components, archComponent)
-		}
+		// fetch manifests concurrently
+		g.Go(func() error {
+			imageIndexWorker(client, component, componentChan, errorsChan)
+			return nil
+		})
 	}
 
+	go func() {
+		_ = g.Wait()
+		close(componentChan)
+		close(errorsChan)
+	}()
+
+	var components []app.SnapshotComponent
+	for component := range componentChan {
+		components = append(components, component...)
+	}
 	snap.Components = components
+
+	sort.Slice(snap.Components, func(i, j int) bool {
+		return snap.Components[i].ContainerImage < snap.Components[j].ContainerImage
+	})
+
+	var allErrors error = nil
+	for err := range errorsChan {
+		allErrors = errors.Join(allErrors, err)
+	}
 
 	if allErrors != nil {
 		log.Warnf("Encountered error while checking for Image Index: %v", allErrors)
 	}
 	log.Debugf("Snap component after expanding the image index is %v", snap.Components)
+}
+
+func imageWorkers() int {
+	workers := defaultWorkers
+	if value, exists := os.LookupEnv(workersEnvVar); exists {
+		if parsed, err := strconv.Atoi(value); err == nil {
+			workers = parsed
+		}
+	}
+	return workers
 }
