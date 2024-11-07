@@ -7,6 +7,11 @@ The Pipelines are generated via [kustomize](https://kustomize.io/) from the `src
 make changes to the Pipelines, update the corresponding files in that directory and run the
 `make generate-pipelines` command (requires `kustomize`).
 
+## Setup
+
+The [setup.yaml](setup.yaml) file should be applied to the namespace where the release Pipeliens
+will run. This creates a ServiceAccount with access to perform the release.
+
 ## Why are there two Pipelines?
 
 Currently, it is not possible to specify the EC policy in the ReleasePlan, nor any general Pipeline
