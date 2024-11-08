@@ -27,7 +27,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 	schemaExporter "github.com/invopop/jsonschema"
 	"github.com/santhosh-tekuri/jsonschema/v5"
@@ -580,70 +579,6 @@ func validatePolicyConfig(policyConfig string) error {
 		return err
 	}
 	return nil
-}
-
-// PreProcessPolicy fetches policy sources and returns a policy object with
-// pinned SHA/image digest URL where applicable, along with a policy cache object.
-func PreProcessPolicy(ctx context.Context, policyOptions Options) (Policy, *cache.PolicyCache, error) {
-	var policyCache *cache.PolicyCache
-	pinnedPolicyUrls := map[string][]string{}
-	policyCache, err := cache.NewPolicyCache(ctx)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	p, err := NewPolicy(ctx, policyOptions)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	sources := p.Spec().Sources
-	for i, sourceGroup := range sources {
-		log.Debugf("Fetching policy source group '%+v'\n", sourceGroup.Name)
-		policySources := PolicySourcesFrom(sourceGroup)
-
-		fs := utils.FS(ctx)
-		dir, err := utils.CreateWorkDir(fs)
-		if err != nil {
-			log.Debug("Failed to create work dir!")
-			return nil, nil, err
-		}
-
-		for _, policySource := range policySources {
-			if strings.HasPrefix(policySource.PolicyUrl(), "data:") {
-				continue
-			}
-
-			destDir, err := policySource.GetPolicy(ctx, dir, false)
-			if err != nil {
-				log.Debugf("Unable to download source from %s!", policySource.PolicyUrl())
-				return nil, nil, err
-			}
-			log.Debugf("Downloaded policy source from %s to %s\n", policySource.PolicyUrl(), destDir)
-
-			url := policySource.PolicyUrl()
-
-			if _, found := policyCache.Get(policySource.PolicyUrl()); !found {
-				log.Debugf("Cache miss for: %s, adding to cache", url)
-				policyCache.Set(url, destDir, nil)
-				pinnedPolicyUrls[policySource.Subdir()] = append(pinnedPolicyUrls[policySource.Subdir()], url)
-				log.Debugf("Added %s to the pinnedPolicyUrls in \"%s\"", url, policySource.Subdir())
-			} else {
-				log.Debugf("Cache hit for: %s", url)
-			}
-		}
-
-		sources[i] = v1alpha1.Source{
-			Name:           sourceGroup.Name,
-			Policy:         urls(policySources, source.PolicyKind),
-			Data:           urls(policySources, source.DataKind),
-			RuleData:       sourceGroup.RuleData,
-			Config:         sourceGroup.Config,
-			VolatileConfig: sourceGroup.VolatileConfig,
-		}
-	}
-
-	return p, policyCache, err
 }
 
 func urls(s []source.PolicySource, kind source.PolicyType) []string {

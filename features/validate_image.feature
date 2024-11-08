@@ -1139,7 +1139,7 @@ Feature: evaluate enterprise contract
       And an Snapshot named "multitude" with 10 components signed with "known" key
     When ec command is run with "validate image --snapshot acceptance/multitude --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --show-successes --output json"
     Then the exit status should be 0
-     And the output should match the snapshot
+      And the output should match the snapshot
 
   Scenario: Format options
     Given a key pair named "known"

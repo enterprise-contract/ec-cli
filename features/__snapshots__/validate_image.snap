@@ -1122,7 +1122,7 @@ Error: success criteria not met
     "sources": [
       {
         "policy": [
-          "git::${GITHOST}/git/unexpected-keyless-cert.git?ref=${LATEST_COMMIT}"
+          "git::https://${GITHOST}/git/unexpected-keyless-cert.git"
         ]
       }
     ]
@@ -1167,7 +1167,7 @@ Error: success criteria not met
     "sources": [
       {
         "policy": [
-          "git::${GITHOST}/git/invalid-image-signature.git?ref=${LATEST_COMMIT}"
+          "git::https://${GITHOST}/git/invalid-image-signature.git"
         ]
       }
     ],
@@ -1598,7 +1598,7 @@ Error: success criteria not met
     "sources": [
       {
         "policy": [
-          "git::${GITHOST}/git/mismatched-image-digest.git?ref=${LATEST_COMMIT}"
+          "git::https://${GITHOST}/git/mismatched-image-digest.git"
         ]
       }
     ],
@@ -2744,7 +2744,7 @@ ${__________known_PUBLIC_KEY}
     "sources": [
       {
         "policy": [
-          "git::${GITHOST}/git/rekor-by-default.git?ref=${LATEST_COMMIT}"
+          "git::https://${GITHOST}/git/rekor-by-default.git"
         ]
       }
     ],
