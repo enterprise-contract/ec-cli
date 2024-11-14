@@ -39,6 +39,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/enterprise-contract/ec-cli/internal/kubernetes"
+	"github.com/enterprise-contract/ec-cli/internal/mutate"
 	"github.com/enterprise-contract/ec-cli/internal/policy/source"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
@@ -831,9 +832,9 @@ func TestUrls(t *testing.T) {
 		{
 			name: "Returns URLs of the specified kind",
 			s: []source.PolicySource{
-				&source.PolicyUrl{Url: "http://example.com/policy1", Kind: source.PolicyKind},
-				&source.PolicyUrl{Url: "http://example.com/data1", Kind: source.DataKind},
-				&source.PolicyUrl{Url: "http://example.com/policy2", Kind: source.PolicyKind},
+				&source.PolicyUrl{Url: mutate.Const("http://example.com/policy1"), Kind: source.PolicyKind},
+				&source.PolicyUrl{Url: mutate.Const("http://example.com/data1"), Kind: source.DataKind},
+				&source.PolicyUrl{Url: mutate.Const("http://example.com/policy2"), Kind: source.PolicyKind},
 			},
 			kind: source.PolicyKind,
 			want: []string{"http://example.com/policy1", "http://example.com/policy2"},
@@ -841,8 +842,8 @@ func TestUrls(t *testing.T) {
 		{
 			name: "Returns empty slice when no URLs of the specified kind",
 			s: []source.PolicySource{
-				&source.PolicyUrl{Url: "http://example.com/data1", Kind: source.PolicyType("data")},
-				&source.PolicyUrl{Url: "http://example.com/data2", Kind: source.PolicyType("data")},
+				&source.PolicyUrl{Url: mutate.Const("http://example.com/data1"), Kind: source.PolicyType("data")},
+				&source.PolicyUrl{Url: mutate.Const("http://example.com/data2"), Kind: source.PolicyType("data")},
 			},
 			kind: source.PolicyKind,
 			want: []string{},

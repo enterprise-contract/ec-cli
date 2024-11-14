@@ -40,6 +40,7 @@ import (
 	"github.com/spf13/afero"
 
 	"github.com/enterprise-contract/ec-cli/internal/downloader"
+	"github.com/enterprise-contract/ec-cli/internal/mutate"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
@@ -70,8 +71,7 @@ type PolicySource interface {
 }
 
 type PolicyUrl struct {
-	// A string containing a go-getter style source url compatible with conftest pull
-	Url  string
+	Url  mutate.Mut[string]
 	Kind PolicyType
 }
 
@@ -144,7 +144,7 @@ func (p *PolicyUrl) GetPolicy(ctx context.Context, workDir string, showMsg bool)
 	if trace.IsEnabled() {
 		region := trace.StartRegion(ctx, "ec:get-policy")
 		defer region.End()
-		trace.Logf(ctx, "", "policy=%q", p.Url)
+		trace.Logf(ctx, "", "policy=%q", p.Url.Value())
 	}
 
 	dl := func(source string, dest string) (metadata.Metadata, error) {
@@ -160,17 +160,18 @@ func (p *PolicyUrl) GetPolicy(ctx context.Context, workDir string, showMsg bool)
 		return "", err
 	}
 
-	p.Url, err = metadata.GetPinnedURL(p.Url)
-	log.Debug("Pinned URL: ", p.Url)
+	pinned, err := metadata.GetPinnedURL(p.Url.Value())
 	if err != nil {
 		return "", err
 	}
+	log.Debug("Pinned URL: ", pinned)
+	p.Url.Set(pinned)
 
 	return dest, err
 }
 
 func (p *PolicyUrl) PolicyUrl() string {
-	return p.Url
+	return p.Url.Value()
 }
 
 func (p *PolicyUrl) Subdir() string {
@@ -253,13 +254,13 @@ func (inlineData) Type() PolicyType {
 func PolicySourcesFrom(s ecc.Source) []PolicySource {
 	policySources := make([]PolicySource, 0, len(s.Policy)+len(s.Data))
 
-	for _, policySourceUrl := range s.Policy {
-		url := PolicyUrl{Url: policySourceUrl, Kind: PolicyKind}
+	for i := range s.Policy {
+		url := PolicyUrl{Url: mutate.Slice(s.Policy, i), Kind: PolicyKind}
 		policySources = append(policySources, &url)
 	}
 
-	for _, dataSourceUrl := range s.Data {
-		url := PolicyUrl{Url: dataSourceUrl, Kind: DataKind}
+	for i := range s.Data {
+		url := PolicyUrl{Url: mutate.Slice(s.Data, i), Kind: DataKind}
 		policySources = append(policySources, &url)
 	}
 

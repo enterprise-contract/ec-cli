@@ -15,7 +15,7 @@
     "sources": [
       {
         "policy": [
-          "git::https://${GITHOST}/git/happy-day-policy.git"
+          "git::${GITHOST}/git/happy-day-policy.git?ref=${LATEST_COMMIT}"
         ]
       }
     ]
@@ -68,12 +68,12 @@ Error: error validating file pipeline_definition.yaml: evaluating policy: no reg
     "sources": [
       {
         "policy": [
-          "git::https://${GITHOST}/git/ham-policy"
+          "git::${GITHOST}/git/ham-policy?ref=${LATEST_COMMIT}"
         ]
       },
       {
         "policy": [
-          "git::https://${GITHOST}/git/spam-policy"
+          "git::${GITHOST}/git/spam-policy?ref=4707d251d08b466389705c121d84efa2683114cf"
         ]
       }
     ]

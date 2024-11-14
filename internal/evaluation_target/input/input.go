@@ -36,7 +36,7 @@ type Input struct {
 
 // NewInput returns a Input struct with FPath and evaluator ready to use
 func NewInput(ctx context.Context, paths []string, p policy.Policy) (*Input, error) {
-	i := &Input{
+	in := &Input{
 		Paths: paths,
 	}
 
@@ -55,8 +55,8 @@ func NewInput(ctx context.Context, paths []string, p policy.Policy) (*Input, err
 		}
 
 		log.Debug("Conftest evaluator initialized")
-		i.Evaluators = append(i.Evaluators, c)
+		in.Evaluators = append(in.Evaluators, c)
 
 	}
-	return i, nil
+	return in, nil
 }

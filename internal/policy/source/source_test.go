@@ -37,6 +37,7 @@ import (
 	"github.com/stretchr/testify/require"
 	extv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 
+	"github.com/enterprise-contract/ec-cli/internal/mutate"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
@@ -86,7 +87,7 @@ func TestGetPolicy(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			p := PolicyUrl{Url: tt.sourceUrl, Kind: PolicyKind}
+			p := PolicyUrl{Url: mutate.Value(&tt.sourceUrl), Kind: PolicyKind}
 
 			dl := mockDownloader{}
 			dl.On("Download", mock.MatchedBy(func(dest string) bool {
@@ -137,6 +138,13 @@ func TestInlineDataSource(t *testing.T) {
 }
 
 func TestPolicySourcesFrom(t *testing.T) {
+
+	policies1 := []string{"github.com/org/repo1//policy/", "github.com/org/repo2//policy/", "github.com/org/repo3//policy/"}
+	data1 := []string{"github.com/org/repo1//data/", "github.com/org/repo2//data/", "github.com/org/repo3//data/"}
+
+	policies2 := []string{"github.com/org/repo1//policy/"}
+	data2 := []string{"github.com/org/repo1//data/"}
+
 	// var ruleData = &extv1.JSON{Raw: []byte("foo")}
 	tests := []struct {
 		name     string
@@ -147,29 +155,29 @@ func TestPolicySourcesFrom(t *testing.T) {
 			name: "fetches policy configs",
 			source: ecc.Source{
 				Name:   "policy1",
-				Policy: []string{"github.com/org/repo1//policy/", "github.com/org/repo2//policy/", "github.com/org/repo3//policy/"},
-				Data:   []string{"github.com/org/repo1//data/", "github.com/org/repo2//data/", "github.com/org/repo3//data/"},
+				Policy: policies1,
+				Data:   data1,
 			},
 			expected: []PolicySource{
-				&PolicyUrl{Url: "github.com/org/repo1//policy/", Kind: PolicyKind},
-				&PolicyUrl{Url: "github.com/org/repo2//policy/", Kind: PolicyKind},
-				&PolicyUrl{Url: "github.com/org/repo3//policy/", Kind: PolicyKind},
-				&PolicyUrl{Url: "github.com/org/repo1//data/", Kind: DataKind},
-				&PolicyUrl{Url: "github.com/org/repo2//data/", Kind: DataKind},
-				&PolicyUrl{Url: "github.com/org/repo3//data/", Kind: DataKind},
+				&PolicyUrl{Url: mutate.Slice(policies1, 0), Kind: PolicyKind},
+				&PolicyUrl{Url: mutate.Slice(policies1, 1), Kind: PolicyKind},
+				&PolicyUrl{Url: mutate.Slice(policies1, 2), Kind: PolicyKind},
+				&PolicyUrl{Url: mutate.Slice(data1, 0), Kind: DataKind},
+				&PolicyUrl{Url: mutate.Slice(data1, 1), Kind: DataKind},
+				&PolicyUrl{Url: mutate.Slice(data1, 2), Kind: DataKind},
 			},
 		},
 		{
 			name: "handles rule data",
 			source: ecc.Source{
 				Name:     "policy2",
-				Policy:   []string{"github.com/org/repo1//policy/"},
-				Data:     []string{"github.com/org/repo1//data/"},
+				Policy:   policies2,
+				Data:     data2,
 				RuleData: &extv1.JSON{Raw: []byte(`"foo":"bar"`)},
 			},
 			expected: []PolicySource{
-				&PolicyUrl{Url: "github.com/org/repo1//policy/", Kind: PolicyKind},
-				&PolicyUrl{Url: "github.com/org/repo1//data/", Kind: DataKind},
+				&PolicyUrl{Url: mutate.Slice(policies2, 0), Kind: PolicyKind},
+				&PolicyUrl{Url: mutate.Slice(data2, 0), Kind: DataKind},
 				inlineData{source: []byte("{\"rule_data__configuration__\":\"foo\":\"bar\"}")},
 			},
 		},
