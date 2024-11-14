@@ -31,6 +31,7 @@ import (
 	"golang.org/x/exp/slices"
 	"sigs.k8s.io/yaml"
 
+	"github.com/enterprise-contract/ec-cli/internal/mutate"
 	"github.com/enterprise-contract/ec-cli/internal/policy/source"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
@@ -88,7 +89,7 @@ func inspectPolicyDataCmd() *cobra.Command {
 
 			allData := make(map[string]interface{})
 			for _, url := range sourceUrls {
-				s := &source.PolicyUrl{Url: url, Kind: source.PolicyKind}
+				s := &source.PolicyUrl{Url: mutate.Const(url), Kind: source.PolicyKind}
 
 				// Download
 				policyDir, err := s.GetPolicy(ctx, destDir, false)
