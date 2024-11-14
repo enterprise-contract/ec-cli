@@ -18,9 +18,11 @@ package validate
 
 import (
 	"context"
+	"encoding/gob"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"runtime/trace"
 	"sort"
 	"strings"
@@ -400,21 +402,56 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 			close(jobs)
 
 			var components []applicationsnapshot.Component
-			var manyData [][]evaluator.Data
+			var manyData []evaluator.Data
 			var manyPolicyInput [][]byte
 			var allErrors error = nil
+			const batchSize = 5
+			tempFiles := []string{}
 			for i := 0; i < numComponents; i++ {
 				r := <-results
-				if r.err != nil {
-					e := fmt.Errorf("error validating image %s of component %s: %w", r.component.ContainerImage, r.component.Name, r.err)
-					allErrors = errors.Join(allErrors, e)
-				} else {
-					components = append(components, r.component)
-					manyData = append(manyData, r.data)
-					manyPolicyInput = append(manyPolicyInput, r.policyInput)
+				if r.err == nil {
+					manyData = append(manyData, r.data...)
+					if len(manyData) >= batchSize {
+						// Write batch to a temporary file
+						tempFile, err := os.CreateTemp("", "batch_*.gob")
+						if err != nil {
+							return fmt.Errorf("failed to create temp file: %w", err)
+						}
+						defer tempFile.Close()
+						tempFiles = append(tempFiles, tempFile.Name())
+
+						encoder := gob.NewEncoder(tempFile)
+						if err := encoder.Encode(manyData); err != nil {
+							return fmt.Errorf("failed to encode batch: %w", err)
+						}
+						// Clear the batch to free memory
+						manyData = nil
+					}
 				}
 			}
 			close(results)
+			// Store any remaining data in the last batch
+			if len(manyData) > 0 {
+				tempFile, err := os.CreateTemp("", "batch_*.gob")
+				if err != nil {
+					return fmt.Errorf("failed to create temp file: %w", err)
+				}
+				defer tempFile.Close()
+				tempFiles = append(tempFiles, tempFile.Name())
+
+				encoder := gob.NewEncoder(tempFile)
+				if err := encoder.Encode(manyData); err != nil {
+					fmt.Printf("failed to encode batch: %w", err)
+				}
+				manyData = nil
+			}
+
+			// Call outputBatchesToStdout to produce output to stdout
+			err := outputBatchesToStdout(tempFiles)
+			if err != nil {
+				return err
+			}
+
 			if allErrors != nil {
 				return allErrors
 			}
@@ -537,4 +574,41 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 	}
 
 	return cmd
+}
+
+func outputBatchesToStdout(tempFiles []string) error {
+	for _, fileName := range tempFiles {
+		fmt.Printf("processing: %s", fileName)
+		file, err := os.Open(fileName)
+		if err != nil {
+			return fmt.Errorf("failed to open temp file: %w", err)
+		}
+		defer file.Close()
+
+		decoder := gob.NewDecoder(file)
+		var data []evaluator.Data
+		for {
+			if err := decoder.Decode(&data); err != nil {
+				fmt.Printf("error decoding: %v", err)
+				break
+			}
+			// Pretty print JSON
+			jsonData, err := json.MarshalIndent(data, "", "  ")
+			if err != nil {
+				return fmt.Errorf("failed to marshal data to JSON: %w", err)
+			}
+			fmt.Println(string(jsonData))
+		}
+	}
+
+	// Clean up temporary files
+	for _, fileName := range tempFiles {
+		os.Remove(fileName)
+	}
+	return nil
+}
+
+func init() {
+	gob.Register(map[string]interface{}{})
+	gob.Register(json.Number(""))
 }
