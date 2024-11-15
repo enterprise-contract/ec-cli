@@ -23,6 +23,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"runtime"
 	"runtime/trace"
 	"sort"
 	"strings"
@@ -334,7 +335,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 
 			// worker is responsible for processing one component at a time from the jobs channel,
 			// and for emitting a corresponding result for the component on the results channel.
-			worker := func(id int, jobs <-chan app.SnapshotComponent, results chan<- result) {
+			worker := func(id int, jobs <-chan app.SnapshotComponent, results chan<- *result) {
 				log.Debugf("Starting worker %d", id)
 				for comp := range jobs {
 					ctx := cmd.Context()
@@ -377,7 +378,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 					if task != nil {
 						task.End()
 					}
-					results <- res
+					results <- &res
 				}
 				log.Debugf("Done with worker %d", id)
 			}
@@ -388,7 +389,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 			numWorkers := data.workers
 
 			jobs := make(chan app.SnapshotComponent, numComponents)
-			results := make(chan result, numComponents)
+			results := make(chan *result, numComponents)
 			// Initialize each worker. They will wait patiently until a job is sent to the jobs
 			// channel, or the jobs channel is closed.
 			for i := 0; i <= numWorkers; i++ {
@@ -403,6 +404,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 
 			var components []applicationsnapshot.Component
 			var manyData []evaluator.Data
+			var manyData2 [][]evaluator.Data
 			var manyPolicyInput [][]byte
 			var allErrors error = nil
 			const batchSize = 5
@@ -410,9 +412,11 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 			for i := 0; i < numComponents; i++ {
 				r := <-results
 				if r.err == nil {
+					// manyData2 = append(manyData2, r.data)
+					components = append(components, r.component)
+					manyPolicyInput = append(manyPolicyInput, r.policyInput)
 					manyData = append(manyData, r.data...)
 					if len(manyData) >= batchSize {
-						// Write batch to a temporary file
 						tempFile, err := os.CreateTemp("", "batch_*.gob")
 						if err != nil {
 							return fmt.Errorf("failed to create temp file: %w", err)
@@ -424,13 +428,12 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 						if err := encoder.Encode(manyData); err != nil {
 							return fmt.Errorf("failed to encode batch: %w", err)
 						}
-						// Clear the batch to free memory
 						manyData = nil
+						printMemoryUsage("After writing batch to disk")
 					}
 				}
 			}
 			close(results)
-			// Store any remaining data in the last batch
 			if len(manyData) > 0 {
 				tempFile, err := os.CreateTemp("", "batch_*.gob")
 				if err != nil {
@@ -441,12 +444,12 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 
 				encoder := gob.NewEncoder(tempFile)
 				if err := encoder.Encode(manyData); err != nil {
-					fmt.Printf("failed to encode batch: %w", err)
+					fmt.Errorf("failed to encode batch: %w", err)
 				}
 				manyData = nil
+				printMemoryUsage("After writing final batch to disk")
 			}
 
-			// Call outputBatchesToStdout to produce output to stdout
 			err := outputBatchesToStdout(tempFiles)
 			if err != nil {
 				return err
@@ -465,7 +468,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 				data.output = append(data.output, fmt.Sprintf("%s=%s", applicationsnapshot.JSON, data.outputFile))
 			}
 
-			report, err := applicationsnapshot.NewReport(data.snapshot, components, data.policy, manyData, manyPolicyInput, showSuccesses)
+			report, err := applicationsnapshot.NewReport(data.snapshot, components, data.policy, manyData2, manyPolicyInput, showSuccesses)
 			if err != nil {
 				return err
 			}
@@ -592,16 +595,15 @@ func outputBatchesToStdout(tempFiles []string) error {
 				fmt.Printf("error decoding: %v", err)
 				break
 			}
-			// Pretty print JSON
 			jsonData, err := json.MarshalIndent(data, "", "  ")
 			if err != nil {
 				return fmt.Errorf("failed to marshal data to JSON: %w", err)
 			}
 			fmt.Println(string(jsonData))
+			printMemoryUsage("After decoding and printing data")
 		}
 	}
 
-	// Clean up temporary files
 	for _, fileName := range tempFiles {
 		os.Remove(fileName)
 	}
@@ -611,4 +613,10 @@ func outputBatchesToStdout(tempFiles []string) error {
 func init() {
 	gob.Register(map[string]interface{}{})
 	gob.Register(json.Number(""))
+}
+
+func printMemoryUsage(stage string) {
+	var m runtime.MemStats
+	runtime.ReadMemStats(&m)
+	fmt.Printf("%s - Memory Usage: Alloc = %v MiB, TotalAlloc = %v MiB, Sys = %v MiB, NumGC = %v\n", stage, m.Alloc/1024/1024, m.TotalAlloc/1024/1024, m.Sys/1024/1024, m.NumGC)
 }
