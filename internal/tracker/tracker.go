@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/google/go-containerregistry/pkg/name"
+	"github.com/santhosh-tekuri/jsonschema/v5"
 	log "github.com/sirupsen/logrus"
 	"github.com/stuart-warren/yamlfmt"
 	"sigs.k8s.io/yaml"
@@ -50,7 +51,11 @@ type Tracker struct {
 // newTracker returns a new initialized instance of Tracker. If path
 // is "", an empty instance is returned.
 func newTracker(input []byte) (t Tracker, err error) {
-	if input != nil {
+	if input != nil && strings.TrimSpace(string(input)) != "---" {
+		err = validateBundleSchema(input)
+		if err != nil {
+			return
+		}
 		err = yaml.Unmarshal(input, &t)
 		if err != nil {
 			return
@@ -61,6 +66,22 @@ func newTracker(input []byte) (t Tracker, err error) {
 
 	t.setDefaults()
 	return
+}
+
+func validateBundleSchema(bundleConfig []byte) error {
+	var sch *jsonschema.Schema
+	sch, err := jsonschema.Compile("testdata/bundle-schema.json")
+	if err != nil {
+		return err
+	}
+	var t map[string]interface{}
+	if err := yaml.Unmarshal(bundleConfig, &t); err != nil {
+		return err
+	}
+	if err = sch.Validate(t); err != nil {
+		return err
+	}
+	return nil
 }
 
 // setDefaults initializes the required nested attributes.

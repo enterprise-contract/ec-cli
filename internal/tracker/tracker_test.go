@@ -382,6 +382,20 @@ func TestTrack(t *testing.T) {
 	}
 }
 
+func TestNewTracker_InvalidSchema(t *testing.T) {
+	invalidYAML := `
+trusted_tasks:
+  exampleKey1:
+    - effective_on: "2024-01-01"
+      expires_on: "2024-12-31"
+  `
+	_, err := newTracker([]byte(invalidYAML))
+	require.Equal(t, err.Error(),
+		"jsonschema: '/trusted_tasks/exampleKey1/0' does not validate with "+
+			"file:///Users/jstuart/Documents/repos/ec-cli/internal/tracker/testdata/bundle-schema.json#/properties/trusted_tasks/patternProperties/.%2A/items/required: "+
+			"missing properties: 'ref'")
+}
+
 type fakeClient struct {
 	objects map[string]map[string]map[string]runtime.Object
 	images  map[string]v1.Image

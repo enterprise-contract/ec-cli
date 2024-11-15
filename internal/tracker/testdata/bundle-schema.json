@@ -1,0 +1,28 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "trusted_tasks": {
+            "type": "object",
+            "patternProperties": {
+                ".*": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "effective_on": {"type": "string"},
+                            "expires_on": {"type": "string"},
+                            "ref": {"type": "string"}
+                        },
+                        "required": ["effective_on", "ref"],
+                        "additionalProperties": false
+                    },
+                    "uniqueItems": true,
+                    "minItems": 1
+                }
+            }
+        }
+    },
+    "required": ["trusted_tasks"],
+    "additionalProperties": false
+}
