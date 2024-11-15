@@ -382,6 +382,17 @@ func TestTrack(t *testing.T) {
 	}
 }
 
+func TestNewTracker_InvalidSchema(t *testing.T) {
+	invalidYAML := `
+trusted_tasks:
+  exampleKey1:
+    - effective_on: "2024-01-01"
+      expires_on: "2024-12-31"
+  `
+	val, err := newTracker([]byte(invalidYAML))
+	require.Errorf(t, err, "expected an error, but got: %v", val)
+}
+
 type fakeClient struct {
 	objects map[string]map[string]map[string]runtime.Object
 	images  map[string]v1.Image

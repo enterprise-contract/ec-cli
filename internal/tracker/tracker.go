@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/google/go-containerregistry/pkg/name"
+	"github.com/santhosh-tekuri/jsonschema/v5"
 	log "github.com/sirupsen/logrus"
 	"github.com/stuart-warren/yamlfmt"
 	"sigs.k8s.io/yaml"
@@ -32,6 +33,29 @@ import (
 )
 
 const ociPrefix = "oci://"
+
+const jsonSchema = `{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "patternProperties": {
+        ".*": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "effective_on": {"type": "string"},
+                    "expires_on": {"type": "string"},
+                    "ref": {"type": "string"}
+                },
+                "required": ["effective_on", "ref"],
+                "additionalProperties": false
+            },
+            "uniqueItems": true,
+            "minItems": 1
+        }
+    },
+    "additionalProperties": false
+}`
 
 type taskRecord struct {
 	Ref         string    `json:"ref"`
@@ -50,7 +74,11 @@ type Tracker struct {
 // newTracker returns a new initialized instance of Tracker. If path
 // is "", an empty instance is returned.
 func newTracker(input []byte) (t Tracker, err error) {
-	if input != nil {
+	if input != nil && strings.TrimSpace(string(input)) != "---" {
+		err = validateBundleSchema(input)
+		if err != nil {
+			return
+		}
 		err = yaml.Unmarshal(input, &t)
 		if err != nil {
 			return
@@ -61,6 +89,28 @@ func newTracker(input []byte) (t Tracker, err error) {
 
 	t.setDefaults()
 	return
+}
+
+func validateBundleSchema(bundleConfig []byte) error {
+	var sch *jsonschema.Schema
+	sch, err := jsonschema.CompileString("inline", jsonSchema)
+	if err != nil {
+		return err
+	}
+	var t map[string]interface{}
+	if err := yaml.Unmarshal(bundleConfig, &t); err != nil {
+		return err
+	}
+	val, ok := t["trusted_tasks"]
+	if !ok {
+		return fmt.Errorf("the data does not contain a trusted_tasks key")
+	}
+
+	if err = sch.Validate(val); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // setDefaults initializes the required nested attributes.
