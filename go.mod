@@ -52,7 +52,7 @@ require (
 )
 
 // use forked version until we can get the fixes merged see https://github.com/enterprise-contract/go-containerregistry/blob/main/hack/ec-patches.sh for a list of patches we carry
-replace github.com/google/go-containerregistry => github.com/enterprise-contract/go-containerregistry v0.20.3-0.20241104083654-71d52aab40dc
+replace github.com/google/go-containerregistry => github.com/enterprise-contract/go-containerregistry v0.20.3-0.20241118083807-8c8ea269355e
 
 require (
 	cloud.google.com/go v0.115.1 // indirect
