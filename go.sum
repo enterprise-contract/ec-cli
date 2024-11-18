@@ -545,8 +545,8 @@ github.com/emirpasic/gods v1.18.1 h1:FXtiHYKDGKCW2KzwZKx0iC0PQmdlorYgdFG9jPXJ1Bc
 github.com/emirpasic/gods v1.18.1/go.mod h1:8tpGGwCnJ5H4r6BWwaV6OrWmMoPhUl5jm/FMNAnJvWQ=
 github.com/enterprise-contract/enterprise-contract-controller/api v0.1.66 h1:XLFanAUW4b7UA5J8De25j58s8nRu4uOXKt2qjW0z67g=
 github.com/enterprise-contract/enterprise-contract-controller/api v0.1.66/go.mod h1:8Cb436BWDCMZjEVeHquCJrr+O3mJiKelySnqTve1Krs=
-github.com/enterprise-contract/go-containerregistry v0.20.3-0.20241104083654-71d52aab40dc h1:4D54iYGBnzIaSvi/CD0W0W5h2C2Pa6qPwr8KXatqMOk=
-github.com/enterprise-contract/go-containerregistry v0.20.3-0.20241104083654-71d52aab40dc/go.mod h1:QTzGuUYojyBy1anZvBPMhwXRE0LGZPIcpmn3K8DHYrw=
+github.com/enterprise-contract/go-containerregistry v0.20.3-0.20241118083807-8c8ea269355e h1:Rti5Q7fdkzIMO+lRLAFaBSReLpNx4yTdq+u6PRJv1Tw=
+github.com/enterprise-contract/go-containerregistry v0.20.3-0.20241118083807-8c8ea269355e/go.mod h1:QTzGuUYojyBy1anZvBPMhwXRE0LGZPIcpmn3K8DHYrw=
 github.com/enterprise-contract/go-gather v0.0.4 h1:ecQsWuNyPi59wkySm1JXIXIUp+Pta9ECl3PmhcV6Llc=
 github.com/enterprise-contract/go-gather v0.0.4/go.mod h1:bWsDHJZRpdPoIwPQevpDiD4VF6fydTWZ0ocL2MmI6TE=
 github.com/envoyproxy/go-control-plane v0.9.0/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
