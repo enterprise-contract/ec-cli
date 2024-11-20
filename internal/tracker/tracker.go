@@ -269,10 +269,12 @@ func (t *Tracker) filterBundles(prune bool) {
 func filterRecords(records []taskRecord, prune bool) []taskRecord {
 	now := time.Now().UTC()
 
-	// lastRef tracks the latest ref seen. This is used to remove consecutive entries with the
-	// same digest.
-	var lastRef string
+	// seenRefs tracks the refs that have been encountered. This is used to
+	// remove duplicate entries with the same reference (digest).
+	seenRefs := map[string]bool{}
 	unique := make([]taskRecord, 0, len(records))
+	// iteration order makes sure that oldest entries are kept and newest
+	// entries are skipped
 	for i := len(records) - 1; i >= 0; i-- {
 		// NOTE: Newly added records will have a repository, but existing ones
 		// will not. This is expected because the output does not persist the
@@ -280,10 +282,10 @@ func filterRecords(records []taskRecord, prune bool) []taskRecord {
 		// which references the list of records.
 		r := records[i]
 
-		if lastRef == r.Ref {
+		if _, ok := seenRefs[r.Ref]; ok {
 			continue
 		}
-		lastRef = r.Ref
+		seenRefs[r.Ref] = true
 
 		unique = append([]taskRecord{r}, unique...)
 	}

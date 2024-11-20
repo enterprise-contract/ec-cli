@@ -286,7 +286,7 @@ func TestTrack(t *testing.T) {
 			`),
 		},
 		{
-			name: "don't prune entries with same digest if not adjacent",
+			name: "prune entries with same digest even if not adjacent",
 			urls: []string{
 				"registry.com/mixed:1.0@" + sampleHashOne.String(),
 			},
@@ -310,14 +310,8 @@ func TestTrack(t *testing.T) {
 				  oci://registry.com/mixed:1.0:
 				    - effective_on: "` + expectedEffectiveOn + `"
 				      ref: ` + sampleHashOne.String() + `
-				    - effective_on: "` + inFourDays + `"
-				      expires_on: "` + expectedExpiresOn + `"
-				      ref: ` + sampleHashThree.String() + `
-				    - effective_on: "` + inThreeDays + `"
-				      expires_on: "` + inFourDays + `"
-				      ref: ` + sampleHashTwo.String() + `
 				    - effective_on: "` + inTwoDays + `"
-				      expires_on: "` + inThreeDays + `"
+				      expires_on: "` + expectedExpiresOn + `"
 				      ref: ` + sampleHashThree.String() + `
 				    - effective_on: "` + inOneDay + `"
 				      expires_on: "` + inTwoDays + `"
@@ -700,4 +694,22 @@ func TestInEffectDays(t *testing.T) {
 	output, err := Track(ctx, urls, nil, true, false, inEffectDays)
 	require.NoError(t, err)
 	require.Equal(t, expected, string(output))
+}
+
+func TestFilterRecordsUniqueRefs(t *testing.T) {
+	records := []taskRecord{
+		{Ref: "abc"}, // removed as duplicate
+		{Ref: "def"}, // kept unique
+		{Ref: "abc"}, // kept as oldest
+	}
+
+	result := filterRecords(records, false)
+
+	// filterRecords prefers the oldest entries, so the first entry is removed
+	expected := []taskRecord{
+		{Ref: "def"},
+		{Ref: "abc"},
+	}
+
+	assert.Equal(t, expected, result)
 }
