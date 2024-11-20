@@ -95,9 +95,9 @@ fi
 echo Running RPM lock tooling...
 podman run \
     --rm \
-    --mount type=bind,source="${root_dir}/Dockerfile.dist",destination=/opt/app-root/src/Dockerfile \
-    --mount type=bind,source="${root_dir}/rpms.in.yaml",destination=/opt/app-root/src/rpms.in.yaml \
-    --mount type=bind,source="${root_dir}/rpms.lock.yaml",destination=/opt/app-root/src/rpms.lock.yaml \
+    --volume "${root_dir}/Dockerfile.dist:/opt/app-root/src/Dockerfile:Z" \
+    --volume "${root_dir}/rpms.in.yaml:/opt/app-root/src/rpms.in.yaml:Z" \
+    --volume "${root_dir}/rpms.lock.yaml:/opt/app-root/src/rpms.lock.yaml:Z" \
     "${image}" \
     bash -c "${script}"
 
