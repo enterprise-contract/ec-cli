@@ -64,16 +64,7 @@ var rootArgs = []string{
 }
 
 func happyValidator() imageValidationFunc {
-	return func(ctx context.Context, component app.SnapshotComponent, _ *app.SnapshotSpec, p policy.Policy, _ []evaluator.Evaluator, _ bool) (*output.Output, error) {
-		// simulate fetching of sources
-		for _, src := range p.Spec().Sources {
-			for _, url := range source.PolicySourcesFrom(src) {
-				if _, err := url.GetPolicy(ctx, "dest", false); err != nil {
-					return nil, err
-				}
-			}
-		}
-
+	return func(_ context.Context, component app.SnapshotComponent, _ *app.SnapshotSpec, _ policy.Policy, _ []evaluator.Evaluator, _ bool) (*output.Output, error) {
 		return &output.Output{
 			ImageSignatureCheck: output.VerificationStatus{
 				Passed: true,

@@ -28,7 +28,6 @@ import (
 	"github.com/spf13/cobra"
 	"golang.org/x/exp/slices"
 
-	"github.com/enterprise-contract/ec-cli/internal/mutate"
 	"github.com/enterprise-contract/ec-cli/internal/opa"
 	opaRule "github.com/enterprise-contract/ec-cli/internal/opa/rule"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
@@ -119,7 +118,7 @@ func inspectPolicyCmd() *cobra.Command {
 
 			allResults := make(map[string][]*ast.AnnotationsRef)
 			for _, url := range sourceUrls {
-				s := &source.PolicyUrl{Url: mutate.Const(url), Kind: source.PolicyKind}
+				s := &source.PolicyUrl{Url: url, Kind: source.PolicyKind}
 
 				// Download
 				policyDir, err := s.GetPolicy(ctx, destDir, false)

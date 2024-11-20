@@ -23,7 +23,6 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
-	"github.com/enterprise-contract/ec-cli/internal/mutate"
 	"github.com/enterprise-contract/ec-cli/internal/policy/source"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
@@ -109,11 +108,11 @@ func fetchPolicyCmd() *cobra.Command {
 			sources := make([]*source.PolicyUrl, 0, len(sourceUrls)+len(dataSourceUrls))
 
 			for _, url := range sourceUrls {
-				sources = append(sources, &source.PolicyUrl{Url: mutate.Const(url), Kind: source.PolicyKind})
+				sources = append(sources, &source.PolicyUrl{Url: url, Kind: source.PolicyKind})
 			}
 
 			for _, url := range dataSourceUrls {
-				sources = append(sources, &source.PolicyUrl{Url: mutate.Const(url), Kind: source.DataKind})
+				sources = append(sources, &source.PolicyUrl{Url: url, Kind: source.DataKind})
 			}
 
 			for _, s := range sources {
