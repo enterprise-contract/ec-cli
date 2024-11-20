@@ -28,8 +28,6 @@ import (
 
 	getter "github.com/hashicorp/go-getter"
 	log "github.com/sirupsen/logrus"
-
-	"github.com/enterprise-contract/ec-cli/internal/mutate"
 )
 
 // SourceIsFile returns true if go-getter thinks the src looks like a file path.
@@ -59,21 +57,21 @@ func SourceIsHttp(src string) bool {
 func GoGetterDownload(ctx context.Context, tmpDir, src string) (string, error) {
 	// Download the config from a url
 	c := PolicyUrl{
-		Url:  mutate.Value(&src),
+		Url:  src,
 		Kind: ConfigKind,
 	}
 	configDir, err := c.GetPolicy(ctx, tmpDir, false)
 	if err != nil {
-		log.Debugf("Failed to download policy config from %s", c.Url.Value())
+		log.Debugf("Failed to download policy config from %s", c.Url)
 		return "", err
 	}
-	log.Debugf("Downloaded policy config from %s to %s", c.Url.Value(), configDir)
+	log.Debugf("Downloaded policy config from %s to %s", c.Url, configDir)
 
 	// Look for a suitable file to use for the config
 	configFile, err := choosePolicyFile(ctx, configDir)
 	if err != nil {
 		// A more useful error message:
-		return "", fmt.Errorf("no suitable config file found at %s", c.Url.Value())
+		return "", fmt.Errorf("no suitable config file found at %s", c.Url)
 	}
 	log.Debugf("Chose file %s to use for the policy config", configFile)
 	return configFile, nil

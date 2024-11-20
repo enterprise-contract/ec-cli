@@ -47,14 +47,14 @@ func ValidateInput(ctx context.Context, fpath string, policy policy.Policy, deta
 		return nil, err
 	}
 
-	in, err := inputFile(ctx, inputFiles, policy)
+	p, err := inputFile(ctx, inputFiles, policy)
 	if err != nil {
 		log.Debug("Failed to create input!")
 		return nil, err
 	}
 
 	var allResults []evaluator.Outcome
-	for _, e := range in.Evaluators {
+	for _, e := range p.Evaluators {
 		results, _, err := e.Evaluate(ctx, evaluator.EvaluationTarget{Inputs: inputFiles})
 		if err != nil {
 			return nil, fmt.Errorf("evaluating policy: %w", err)

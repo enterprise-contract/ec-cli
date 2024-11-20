@@ -45,7 +45,6 @@ import (
 	"k8s.io/kube-openapi/pkg/util/sets"
 
 	"github.com/enterprise-contract/ec-cli/internal/downloader"
-	"github.com/enterprise-contract/ec-cli/internal/mutate"
 	"github.com/enterprise-contract/ec-cli/internal/opa/rule"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/policy/source"
@@ -1820,7 +1819,7 @@ func TestConftestEvaluatorEvaluate(t *testing.T) {
 
 	evaluator, err := NewConftestEvaluator(ctx, []source.PolicySource{
 		&source.PolicyUrl{
-			Url:  mutate.Const(rules),
+			Url:  rules,
 			Kind: source.PolicyKind,
 		},
 	}, config, ecc.Source{})
@@ -1883,7 +1882,7 @@ func TestUnconformingRule(t *testing.T) {
 
 	evaluator, err := NewConftestEvaluator(ctx, []source.PolicySource{
 		&source.PolicyUrl{
-			Url:  mutate.Const(rules),
+			Url:  rules,
 			Kind: source.PolicyKind,
 		},
 	}, p, ecc.Source{})
@@ -2099,7 +2098,7 @@ func TestNewConftestEvaluatorComputeIncludeExclude(t *testing.T) {
 
 			evaluator, err := NewConftestEvaluator(ctx, []source.PolicySource{
 				&source.PolicyUrl{
-					Url:  mutate.Const(path.Join(dir, "policy", "rules.tar")),
+					Url:  path.Join(dir, "policy", "rules.tar"),
 					Kind: source.PolicyKind,
 				},
 			}, p, tt.source)

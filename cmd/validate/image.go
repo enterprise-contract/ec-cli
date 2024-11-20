@@ -230,63 +230,63 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 				RekorURL:    data.rekorURL,
 			}
 
-			p, err := policy.NewPolicy(ctx, policyOptions)
-			if err != nil {
+			// We're not currently using the policyCache returned from PreProcessPolicy, but we could
+			// use it to cache the policy for future use.
+			if p, _, err := policy.PreProcessPolicy(ctx, policyOptions); err != nil {
 				allErrors = errors.Join(allErrors, err)
-				return
-			}
+			} else {
+				// inject extra variables into rule data per source
+				if len(data.extraRuleData) > 0 {
+					policySpec := p.Spec()
+					sources := policySpec.Sources
+					for i := range sources {
+						src := sources[i]
+						var rule_data_raw []byte
+						unmarshaled := make(map[string]interface{})
 
-			// inject extra variables into rule data per source
-			if len(data.extraRuleData) > 0 {
-				policySpec := p.Spec()
-				sources := policySpec.Sources
-				for i := range sources {
-					src := sources[i]
-					var rule_data_raw []byte
-					unmarshaled := make(map[string]interface{})
+						if src.RuleData != nil {
+							rule_data_raw, err = src.RuleData.MarshalJSON()
+							if err != nil {
+								log.Errorf("Unable to parse ruledata to raw data")
+							}
+							err = json.Unmarshal(rule_data_raw, &unmarshaled)
+							if err != nil {
+								log.Errorf("Unable to parse ruledata into standard JSON object")
+							}
+						} else {
+							sources[i].RuleData = new(extv1.JSON)
+						}
 
-					if src.RuleData != nil {
-						rule_data_raw, err = src.RuleData.MarshalJSON()
+						for j := range data.extraRuleData {
+							parts := strings.SplitN(data.extraRuleData[j], "=", 2)
+							if len(parts) < 2 {
+								log.Errorf("Incorrect syntax for --extra-rule-data")
+							}
+							extraRuleDataPolicyConfig, err := validate_utils.GetPolicyConfig(ctx, parts[1])
+							if err != nil {
+								log.Errorf("Unable to load data from extraRuleData: %s", err.Error())
+							}
+							unmarshaled[parts[0]] = extraRuleDataPolicyConfig
+						}
+						rule_data_raw, err = json.Marshal(unmarshaled)
 						if err != nil {
-							log.Errorf("Unable to parse ruledata to raw data")
+							log.Errorf("Unable to parse updated ruledata: %s", err.Error())
 						}
-						err = json.Unmarshal(rule_data_raw, &unmarshaled)
+
+						if rule_data_raw == nil {
+							log.Errorf("Invalid rule data JSON")
+						}
+
+						err = sources[i].RuleData.UnmarshalJSON(rule_data_raw)
 						if err != nil {
-							log.Errorf("Unable to parse ruledata into standard JSON object")
+							log.Errorf("Unable to marshal updated JSON: %s", err.Error())
 						}
-					} else {
-						sources[i].RuleData = new(extv1.JSON)
 					}
-
-					for j := range data.extraRuleData {
-						parts := strings.SplitN(data.extraRuleData[j], "=", 2)
-						if len(parts) < 2 {
-							log.Errorf("Incorrect syntax for --extra-rule-data")
-						}
-						extraRuleDataPolicyConfig, err := validate_utils.GetPolicyConfig(ctx, parts[1])
-						if err != nil {
-							log.Errorf("Unable to load data from extraRuleData: %s", err.Error())
-						}
-						unmarshaled[parts[0]] = extraRuleDataPolicyConfig
-					}
-					rule_data_raw, err = json.Marshal(unmarshaled)
-					if err != nil {
-						log.Errorf("Unable to parse updated ruledata: %s", err.Error())
-					}
-
-					if rule_data_raw == nil {
-						log.Errorf("Invalid rule data JSON")
-					}
-
-					err = sources[i].RuleData.UnmarshalJSON(rule_data_raw)
-					if err != nil {
-						log.Errorf("Unable to marshal updated JSON: %s", err.Error())
-					}
+					policySpec.Sources = sources
+					p = p.WithSpec(policySpec)
 				}
-				policySpec.Sources = sources
-				p = p.WithSpec(policySpec)
+				data.policy = p
 			}
-			data.policy = p
 
 			return
 		},
