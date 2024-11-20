@@ -301,7 +301,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 			type result struct {
 				err         error
 				component   applicationsnapshot.Component
-				data        []evaluator.Data
+				data        map[string]evaluator.Data
 				policyInput []byte
 			}
 
@@ -343,6 +343,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 					}
 
 					log.Debugf("Worker %d got a component %q", id, comp.ContainerImage)
+
 					out, err := validate(ctx, comp, data.spec, data.policy, evaluators, data.info)
 					res := result{
 						err: err,
@@ -366,8 +367,8 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 						res.component.Signatures = out.Signatures
 						res.component.Attestations = out.Attestations
 						res.component.ContainerImage = out.ImageURL
-						res.data = out.Data
 						res.component.Attestations = out.Attestations
+						res.data = out.Data
 						res.policyInput = out.PolicyInput
 					}
 					res.component.Success = err == nil && len(res.component.Violations) == 0
@@ -400,7 +401,9 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 			close(jobs)
 
 			var components []applicationsnapshot.Component
-			var manyData [][]evaluator.Data
+			var manyData []evaluator.Data
+			// we don't want to accumulate the data from each source group for each component
+			sgData := make(map[string]evaluator.Data)
 			var manyPolicyInput [][]byte
 			var allErrors error = nil
 			for i := 0; i < numComponents; i++ {
@@ -409,12 +412,18 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 					e := fmt.Errorf("error validating image %s of component %s: %w", r.component.ContainerImage, r.component.Name, r.err)
 					allErrors = errors.Join(allErrors, e)
 				} else {
+					// one copy will do. each evaluator runs for every component
+					if len(sgData) == 0 {
+						sgData = r.data
+					}
 					components = append(components, r.component)
-					manyData = append(manyData, r.data)
 					manyPolicyInput = append(manyPolicyInput, r.policyInput)
 				}
 			}
 			close(results)
+			for _, val := range sgData {
+				manyData = append(manyData, val)
+			}
 			if allErrors != nil {
 				return allErrors
 			}
@@ -432,6 +441,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 			if err != nil {
 				return err
 			}
+
 			p := format.NewTargetParser(applicationsnapshot.JSON, format.Options{ShowSuccesses: showSuccesses}, cmd.OutOrStdout(), utils.FS(cmd.Context()))
 			utils.SetColorEnabled(data.noColor, data.forceColor)
 			if err := report.WriteAll(data.output, p); err != nil {

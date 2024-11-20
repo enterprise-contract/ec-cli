@@ -19,6 +19,7 @@ package image
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"runtime/trace"
 	"sort"
 	"time"
@@ -45,7 +46,7 @@ func ValidateImage(ctx context.Context, comp app.SnapshotComponent, snap *app.Sn
 
 	log.Debugf("Validating image %s", comp.ContainerImage)
 
-	out := &output.Output{ImageURL: comp.ContainerImage, Detailed: detailed, Policy: p}
+	out := &output.Output{ImageURL: comp.ContainerImage, Detailed: detailed, Policy: p, Data: make(map[string]evaluator.Data)}
 	a, err := application_snapshot_image.NewApplicationSnapshotImage(ctx, comp, p, *snap)
 	if err != nil {
 		log.Debug("Failed to create application snapshot image!")
@@ -114,7 +115,7 @@ func ValidateImage(ctx context.Context, comp app.SnapshotComponent, snap *app.Sn
 
 	var allResults []evaluator.Outcome
 
-	for _, e := range evaluators {
+	for idx, e := range evaluators {
 		// Todo maybe: Handle each one concurrently
 		target := evaluator.EvaluationTarget{Inputs: []string{inputPath}}
 		if digest, err := a.ResolveDigest(ctx); err != nil {
@@ -130,7 +131,9 @@ func ValidateImage(ctx context.Context, comp app.SnapshotComponent, snap *app.Sn
 			return nil, err
 		}
 		allResults = append(allResults, results...)
-		out.Data = append(out.Data, data)
+
+		key := fmt.Sprintf("%d", idx)
+		out.Data[key] = data
 	}
 
 	out.PolicyInput = inputJSON

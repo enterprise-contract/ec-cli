@@ -112,7 +112,7 @@ func validateInputCmd(validate InputValidationFunc) *cobra.Command {
 			type result struct {
 				err         error
 				input       input.Input
-				data        []evaluator.Data
+				data        map[string]evaluator.Data
 				policyInput []byte
 			}
 
@@ -166,9 +166,11 @@ func validateInputCmd(validate InputValidationFunc) *cobra.Command {
 			close(ch)
 
 			var inputs []input.Input
-			var manyData [][]evaluator.Data
+			var manyData []evaluator.Data
 			var manyPolicyInput [][]byte
 			var allErrors error = nil
+			// we don't want to accumulate the data from each source group for each component
+			sgData := make(map[string]evaluator.Data)
 
 			for r := range ch {
 				if r.err != nil {
@@ -176,9 +178,14 @@ func validateInputCmd(validate InputValidationFunc) *cobra.Command {
 					allErrors = errors.Join(allErrors, e)
 				} else {
 					inputs = append(inputs, r.input)
-					manyData = append(manyData, r.data)
+					for key, val := range r.data {
+						sgData[key] = val
+					}
 					manyPolicyInput = append(manyPolicyInput, r.policyInput)
 				}
+			}
+			for _, val := range sgData {
+				manyData = append(manyData, val)
 			}
 			if allErrors != nil {
 				return allErrors
