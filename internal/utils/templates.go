@@ -56,11 +56,6 @@ func SetupTemplateWithGlob(glob []string, efs embed.FS) (*template.Template, err
 	return t, nil
 }
 
-// Here we do the ExecuteTemplate for the caller and return just the output
-func RenderFromTemplates(input any, efs embed.FS) ([]byte, error) {
-	return RenderFromTemplatesWithMain(input, defaultMainTemplate, efs)
-}
-
 func RenderFromTemplatesWithMain(input any, main string, efs embed.FS) ([]byte, error) {
 	return RenderFromTemplatesWithGlob(input, main, []string{defaultGlob}, efs)
 }

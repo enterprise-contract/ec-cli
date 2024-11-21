@@ -29,7 +29,6 @@ import (
 
 	hd "github.com/MakeNowJust/heredoc"
 	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
-	"github.com/gkampitakis/go-snaps/snaps"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
 	cosignSig "github.com/sigstore/cosign/v2/pkg/signature"
 	sigstoreSig "github.com/sigstore/sigstore/pkg/signature"
@@ -716,17 +715,6 @@ func TestIsConformant(t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestJsonSchemaFromPolicySpec(t *testing.T) {
-	ecp := &ecc.EnterpriseContractPolicySpec{
-		PublicKey: "testPublicKey",
-		RekorUrl:  "testRekorUrl",
-	}
-	schemaJson, err := jsonSchemaFromPolicySpec(ecp)
-	assert.NoError(t, err)
-
-	snaps.MatchJSON(t, schemaJson)
 }
 
 func TestSigstoreOpts(t *testing.T) {

@@ -20,7 +20,6 @@ import (
 	"context"
 	"crypto"
 	_ "embed"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -29,7 +28,6 @@ import (
 
 	"github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
-	schemaExporter "github.com/invopop/jsonschema"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 	"github.com/sigstore/cosign/v2/cmd/cosign/cli/fulcio"
 	"github.com/sigstore/cosign/v2/cmd/cosign/cli/rekor"
@@ -55,25 +53,10 @@ const (
 // allows controlling time in tests
 var now = time.Now
 
-var (
-	PolicySourcesFrom      = source.PolicySourcesFrom
-	CreateWorkDir          = utils.CreateWorkDir
-	PolicyCacheFromContext = cache.PolicyCacheFromContext
-)
+var PolicySourcesFrom = source.PolicySourcesFrom
 
 func ValidatePolicy(ctx context.Context, policyConfig string) error {
 	return validatePolicyConfig(policyConfig)
-}
-
-// Create a JSON schema from a Go type, and return the JSON as a byte slice
-func jsonSchemaFromPolicySpec(ecp *ecc.EnterpriseContractPolicySpec) ([]byte, error) {
-	r := new(schemaExporter.Reflector)
-	schema := r.Reflect(ecp)
-	schemaJson, err := json.MarshalIndent(schema, "", "  ")
-	if err != nil {
-		return nil, err
-	}
-	return schemaJson, nil
 }
 
 type SigstoreOpts struct {
