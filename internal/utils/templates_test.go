@@ -30,23 +30,6 @@ import (
 //go:embed test_templates/*.tmpl
 var testTemplatesFS embed.FS
 
-func TestTemplateRender(t *testing.T) {
-	tests := []struct {
-		expected string
-		input    map[string]string
-	}{
-		{
-			input:    map[string]string{"name": "world"},
-			expected: "✓ Hello and greetings, world.\n\n",
-		},
-	}
-	for _, tt := range tests {
-		output, err := RenderFromTemplates(tt.input, testTemplatesFS)
-		assert.NoError(t, err)
-		assert.Equal(t, tt.expected, string(output))
-	}
-}
-
 func TestSetupTemplate(t *testing.T) {
 	tmpl, err := SetupTemplate(testTemplatesFS)
 	assert.NoError(t, err)

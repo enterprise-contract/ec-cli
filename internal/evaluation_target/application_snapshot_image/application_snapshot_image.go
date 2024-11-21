@@ -63,10 +63,6 @@ type ApplicationSnapshotImage struct {
 	snapshot         app.SnapshotSpec
 }
 
-func (a ApplicationSnapshotImage) GetReference() name.Reference {
-	return a.reference
-}
-
 // NewApplicationSnapshotImage returns an ApplicationSnapshotImage struct with reference, checkOpts, and evaluator ready to use.
 func NewApplicationSnapshotImage(ctx context.Context, component app.SnapshotComponent, p policy.Policy, snap app.SnapshotSpec) (*ApplicationSnapshotImage, error) {
 	opts, err := p.CheckOpts()

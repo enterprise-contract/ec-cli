@@ -17,44 +17,18 @@
 package utils
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
-	"unicode"
 
 	isatty "github.com/mattn/go-isatty"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 	"sigs.k8s.io/yaml"
 )
-
-// ToJSON converts a single YAML document into a JSON document
-// or returns an error. If the document appears to be JSON the
-// YAML decoding path is not used.
-func ToJSON(data []byte) ([]byte, error) {
-	if hasJSONPrefix(data) {
-		return data, nil
-	}
-	return yaml.YAMLToJSON(data)
-}
-
-var jsonPrefix = []byte("{")
-
-// hasJSONPrefix returns true if the provided buffer appears to start with
-// a JSON open brace.
-func hasJSONPrefix(buf []byte) bool {
-	return hasPrefix(buf, jsonPrefix)
-}
-
-// hasPrefix returns true if the first non-whitespace bytes in buf is prefix.
-func hasPrefix(buf []byte, prefix []byte) bool {
-	trim := bytes.TrimLeftFunc(buf, unicode.IsSpace)
-	return bytes.HasPrefix(trim, prefix)
-}
 
 // CreateWorkDir creates the working directory in tmp and some subdirectories
 func CreateWorkDir(fs afero.Fs) (string, error) {
