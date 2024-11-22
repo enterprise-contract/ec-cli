@@ -166,7 +166,7 @@ func validateInputCmd(validate InputValidationFunc) *cobra.Command {
 			close(ch)
 
 			var inputs []input.Input
-			var manyData [][]evaluator.Data
+			var evaluatorData [][]evaluator.Data
 			var manyPolicyInput [][]byte
 			var allErrors error = nil
 
@@ -176,7 +176,10 @@ func validateInputCmd(validate InputValidationFunc) *cobra.Command {
 					allErrors = errors.Join(allErrors, e)
 				} else {
 					inputs = append(inputs, r.input)
-					manyData = append(manyData, r.data)
+					// evaluator data is duplicated per component, so only collect it once.
+					if len(evaluatorData) == 0 {
+						evaluatorData = append(evaluatorData, r.data)
+					}
 					manyPolicyInput = append(manyPolicyInput, r.policyInput)
 				}
 			}
@@ -189,7 +192,7 @@ func validateInputCmd(validate InputValidationFunc) *cobra.Command {
 				return inputs[i].FilePath > inputs[j].FilePath
 			})
 
-			report, err := input.NewReport(inputs, data.policy, manyData, manyPolicyInput)
+			report, err := input.NewReport(inputs, data.policy, evaluatorData, manyPolicyInput)
 			if err != nil {
 				return err
 			}
