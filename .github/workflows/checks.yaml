@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+        uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f # v2.10.2
         with:
           egress-policy: audit
           disable-telemetry: true
@@ -79,7 +79,7 @@ jobs:
         run: make test
 
       - name: Upload unit test coverage report
-        uses: codecov/codecov-action@5c47607acb93fed5485fdbf7232e8a31425f672a # v5.0.2
+        uses: codecov/codecov-action@015f24e6818733317a2da2edd6290ab26238649a # v5.0.7
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
@@ -87,7 +87,7 @@ jobs:
           flags: unit
 
       - name: Upload generative test coverage report
-        uses: codecov/codecov-action@5c47607acb93fed5485fdbf7232e8a31425f672a # v5.0.2
+        uses: codecov/codecov-action@015f24e6818733317a2da2edd6290ab26238649a # v5.0.7
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
@@ -95,7 +95,7 @@ jobs:
           flags: generative
 
       - name: Upload integration test coverage report
-        uses: codecov/codecov-action@5c47607acb93fed5485fdbf7232e8a31425f672a # v5.0.2
+        uses: codecov/codecov-action@015f24e6818733317a2da2edd6290ab26238649a # v5.0.7
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
@@ -108,7 +108,7 @@ jobs:
       # Disabled until we figure out the "Could not resolve host: github.com" in
       # acceptance tests
       # - name: Harden Runner
-      #   uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+      #   uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f # v2.10.2
       #   with:
       #     egress-policy: audit
       #     disable-telemetry: true
@@ -136,7 +136,7 @@ jobs:
         run: make acceptance
 
       - name: Upload coverage report
-        uses: codecov/codecov-action@5c47607acb93fed5485fdbf7232e8a31425f672a # v5.0.2
+        uses: codecov/codecov-action@015f24e6818733317a2da2edd6290ab26238649a # v5.0.7
         with:
           files: ./coverage-acceptance.out
           flags: acceptance
