@@ -177,7 +177,7 @@ func validateInputCmd(validate InputValidationFunc) *cobra.Command {
 				} else {
 					inputs = append(inputs, r.input)
 					// evaluator data is duplicated per component, so only collect it once.
-					if len(evaluatorData) == 0 {
+					if len(evaluatorData) == 0 && containsData(data.output) {
 						evaluatorData = append(evaluatorData, r.data)
 					}
 					manyPolicyInput = append(manyPolicyInput, r.policyInput)

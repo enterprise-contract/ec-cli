@@ -411,7 +411,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 				} else {
 					components = append(components, r.component)
 					// evaluator data is duplicated per component, so only collect it once.
-					if len(evaluatorData) == 0 {
+					if len(evaluatorData) == 0 && containsData(data.output) {
 						evaluatorData = append(evaluatorData, r.data)
 					}
 					manyPolicyInput = append(manyPolicyInput, r.policyInput)
@@ -540,4 +540,15 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 	}
 
 	return cmd
+}
+
+// find if the slice contains "data" output
+func containsData(data []string) bool {
+	for _, item := range data {
+		newItem := strings.Split(item, "=")
+		if newItem[0] == "data" {
+			return true
+		}
+	}
+	return false
 }
