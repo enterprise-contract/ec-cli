@@ -400,7 +400,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 			close(jobs)
 
 			var components []applicationsnapshot.Component
-			var manyData [][]evaluator.Data
+			var evaluatorData [][]evaluator.Data
 			var manyPolicyInput [][]byte
 			var allErrors error = nil
 			for i := 0; i < numComponents; i++ {
@@ -410,7 +410,10 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 					allErrors = errors.Join(allErrors, e)
 				} else {
 					components = append(components, r.component)
-					manyData = append(manyData, r.data)
+					// evaluator data is duplicated per component, so only collect it once.
+					if len(evaluatorData) == 0 && containsData(data.output) {
+						evaluatorData = append(evaluatorData, r.data)
+					}
 					manyPolicyInput = append(manyPolicyInput, r.policyInput)
 				}
 			}
@@ -428,7 +431,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 				data.output = append(data.output, fmt.Sprintf("%s=%s", applicationsnapshot.JSON, data.outputFile))
 			}
 
-			report, err := applicationsnapshot.NewReport(data.snapshot, components, data.policy, manyData, manyPolicyInput, showSuccesses)
+			report, err := applicationsnapshot.NewReport(data.snapshot, components, data.policy, evaluatorData, manyPolicyInput, showSuccesses)
 			if err != nil {
 				return err
 			}
@@ -537,4 +540,15 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 	}
 
 	return cmd
+}
+
+// find if the slice contains "data" output
+func containsData(data []string) bool {
+	for _, item := range data {
+		newItem := strings.Split(item, "=")
+		if newItem[0] == "data" {
+			return true
+		}
+	}
+	return false
 }

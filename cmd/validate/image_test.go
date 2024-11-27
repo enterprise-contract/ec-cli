@@ -1302,3 +1302,27 @@ func TestValidateImageDefaultOutput(t *testing.T) {
 		assert.Equal(t, c.expected, out.String())
 	}
 }
+
+// TestContainsData validates containsData behavior
+func TestContainsData(t *testing.T) {
+	tests := []struct {
+		input    []string
+		expected bool
+		name     string
+	}{
+		{[]string{"data"}, true, "Match single data"},
+		{[]string{"data=something"}, true, "Match data=something"},
+		{[]string{"text=data-file.txt"}, false, "Do not match text=data-file.txt"},
+		{[]string{"json", "data=custom-data.yaml"}, true, "Match data in slice with multiple values"},
+		{[]string{"data text"}, false, "Do not match data text"},
+		{[]string{"dat"}, false, "Do not match dat"},
+		{[]string{"data123"}, false, "Do not match data123"},
+		{[]string{"data="}, true, "Match data="},
+		{[]string{""}, false, "Do not match empty string"},
+	}
+
+	for _, test := range tests {
+		result := containsData(test.input)
+		assert.Equal(t, test.expected, result, test.name)
+	}
+}
