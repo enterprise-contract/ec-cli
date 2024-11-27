@@ -98,7 +98,7 @@ func TestGetPolicy(t *testing.T) {
 				return matched
 			}), tt.sourceUrl, false).Return(tt.metadata, tt.err)
 
-			_, err := p.GetPolicy(usingDownloader(context.TODO(), &dl), "/tmp/ec-work-1234", false)
+			_, _, err := p.GetPolicy(usingDownloader(context.TODO(), &dl), "/tmp/ec-work-1234", false)
 			if tt.err == nil {
 				assert.NoError(t, err, "GetPolicies returned an error")
 			} else {
@@ -121,7 +121,7 @@ func TestInlineDataSource(t *testing.T) {
 
 	ctx := utils.WithFS(context.Background(), fs)
 
-	dest, err := s.GetPolicy(ctx, temp, false)
+	_, dest, err := s.GetPolicy(ctx, temp, false)
 	require.NoError(t, err)
 
 	file := path.Join(dest, "rule_data.json")
@@ -186,9 +186,9 @@ type mockPolicySource struct {
 	*mock.Mock
 }
 
-func (m mockPolicySource) GetPolicy(ctx context.Context, dest string, msgs bool) (string, error) {
+func (m mockPolicySource) GetPolicy(ctx context.Context, dest string, msgs bool) (context.Context, string, error) {
 	args := m.Called(ctx, dest, msgs)
-	return args.String(0), args.Error(1)
+	return ctx, args.String(0), args.Error(1)
 }
 
 func (m mockPolicySource) PolicyUrl() string {
@@ -208,10 +208,6 @@ func (m mockPolicySource) Type() PolicyType {
 
 func TestGetPolicyThroughCache(t *testing.T) {
 	test := func(t *testing.T, fs afero.Fs, expectedDownloads int) {
-		t.Cleanup(func() {
-			downloadCache = sync.Map{}
-		})
-
 		ctx := utils.WithFS(context.Background(), fs)
 
 		invocations := 0
@@ -229,10 +225,10 @@ func TestGetPolicyThroughCache(t *testing.T) {
 		source.On("PolicyUrl").Return("policy-url")
 		source.On("Subdir").Return("subdir")
 
-		s1, _, err := getPolicyThroughCache(ctx, source, "/workdir1", dl)
+		ctx, s1, _, err := getPolicyThroughCache(ctx, source, "/workdir1", dl)
 		require.NoError(t, err)
 
-		s2, _, err := getPolicyThroughCache(ctx, source, "/workdir2", dl)
+		_, s2, _, err := getPolicyThroughCache(ctx, source, "/workdir2", dl)
 		require.NoError(t, err)
 
 		assert.NotEqual(t, s1, s2)
@@ -273,9 +269,6 @@ func TestGetPolicyThroughCache(t *testing.T) {
 // symbolic links pointing to the same policy download within the same workdir
 // causing Rego compile issue
 func TestDownloadCacheWorkdirMismatch(t *testing.T) {
-	t.Cleanup(func() {
-		downloadCache = sync.Map{}
-	})
 	tmp := t.TempDir()
 
 	source := &mockPolicySource{&mock.Mock{}}
@@ -285,6 +278,8 @@ func TestDownloadCacheWorkdirMismatch(t *testing.T) {
 	// same URL downloaded to workdir1
 	precachedDest := uniqueDestination(tmp, "subdir", source.PolicyUrl())
 	require.NoError(t, os.MkdirAll(precachedDest, 0755))
+
+	downloadCache := sync.Map{}
 	downloadCache.Store("policy-url", func() (string, cacheContent) {
 		return precachedDest, cacheContent{}
 	})
@@ -292,13 +287,15 @@ func TestDownloadCacheWorkdirMismatch(t *testing.T) {
 	// when working in workdir2
 	workdir2 := filepath.Join(tmp, "workdir2")
 
+	ctx := context.WithValue(context.Background(), downloadCacheKey, &downloadCache)
+
 	// first invocation symlinks back to workdir1
-	destination1, _, err := getPolicyThroughCache(context.Background(), source, workdir2, func(s1, s2 string) (metadata.Metadata, error) { return nil, nil })
+	ctx, destination1, _, err := getPolicyThroughCache(ctx, source, workdir2, func(s1, s2 string) (metadata.Metadata, error) { return nil, nil })
 	require.NoError(t, err)
 
 	// second invocation should not create a second symlink and duplicate the
 	// source files within workdir2
-	destination2, _, err := getPolicyThroughCache(context.Background(), source, workdir2, func(s1, s2 string) (metadata.Metadata, error) { return nil, nil })
+	_, destination2, _, err := getPolicyThroughCache(ctx, source, workdir2, func(s1, s2 string) (metadata.Metadata, error) { return nil, nil })
 	require.NoError(t, err)
 
 	assert.Equal(t, destination1, destination2)

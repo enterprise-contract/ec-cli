@@ -122,7 +122,8 @@ func ValidateImage(ctx context.Context, comp app.SnapshotComponent, snap *app.Sn
 		} else {
 			target.Target = digest
 		}
-		results, data, err := e.Evaluate(ctx, target)
+		c, results, data, err := e.Evaluate(ctx, target)
+		ctx = c
 		log.Debug("\n\nRunning conftest policy check\n\n")
 
 		if err != nil {
