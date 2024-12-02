@@ -123,7 +123,7 @@ spec:
           - name: name
             value: git-clone-oci-ta
           - name: bundle
-            value: quay.io/konflux-ci/tekton-catalog/task-git-clone-oci-ta:0.1@sha256:4bf48d038ff12d25bdeb5ab3e98dc2271818056f454c83d7393ebbd413028147
+            value: quay.io/zregvart_redhat/task-git-clone-oci-ta:0.1
           - name: kind
             value: task
         resolver: bundles
@@ -154,7 +154,7 @@ spec:
           - name: name
             value: prefetch-dependencies-oci-ta
           - name: bundle
-            value: quay.io/konflux-ci/tekton-catalog/task-prefetch-dependencies-oci-ta:0.1@sha256:4072f732119864d12ec8e2ff075f01487aaee9df4440166dbe85fdd447865161
+            value: quay.io/zregvart_redhat/task-prefetch-dependencies-oci-ta:0.1
           - name: kind
             value: task
         resolver: bundles
@@ -195,7 +195,7 @@ spec:
           - name: name
             value: buildah-oci-ta
           - name: bundle
-            value: quay.io/konflux-ci/tekton-catalog/task-buildah-oci-ta:0.2@sha256:ee8a91b85cd51394489ec09c9d5e8742328ef9f64a692716449a166519f4b948
+            value: quay.io/zregvart_redhat/task-buildah-oci-ta:0.2
           - name: kind
             value: task
         resolver: bundles
@@ -248,7 +248,7 @@ spec:
           - name: name
             value: source-build-oci-ta
           - name: bundle
-            value: quay.io/konflux-ci/tekton-catalog/task-source-build-oci-ta:0.1@sha256:24dba7b4eb207592e4a24710a24a01b57e9477bc37bdb2f2d04bff5d4fb7ccec
+            value: quay.io/zregvart_redhat/task-source-build-oci-ta:0.1
           - name: kind
             value: task
         resolver: bundles
@@ -342,7 +342,7 @@ spec:
           - name: name
             value: sast-snyk-check-oci-ta
           - name: bundle
-            value: quay.io/konflux-ci/tekton-catalog/task-sast-snyk-check-oci-ta:0.3@sha256:65a213322ea7c64159e37071d369d74b6378b23403150e29537865cada90f022
+            value: quay.io/zregvart_redhat/task-sast-snyk-check-oci-ta:0.3
           - name: kind
             value: task
         resolver: bundles
@@ -407,7 +407,7 @@ spec:
           - name: name
             value: push-dockerfile-oci-ta
           - name: bundle
-            value: quay.io/konflux-ci/tekton-catalog/task-push-dockerfile-oci-ta:0.1@sha256:80d48a1b9d2707490309941ec9f79338533938f959ca9a207b481b0e8a5e7a93
+            value: quay.io/zregvart_redhat/task-push-dockerfile-oci-ta:0.1
           - name: kind
             value: task
         resolver: bundles
