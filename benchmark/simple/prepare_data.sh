@@ -22,14 +22,25 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-imgs=(
-    quay.io/konflux-ci/ec-golden-image@sha256:38a2a2e89671eece1a123f57b543612a67ad529bc66c4ad77216b7ae91ba5769
-    quay.io/konflux-ci/tekton-catalog/data-acceptable-bundles@sha256:8e6da7823756583cc48499f1c051853cbe30b2d1f127f03b6d2effbd6cd207d0
-    quay.io/enterprise-contract/ec-release-policy@sha256:c7799644ff34322107919302ae0d2099a811b917a600774545d22fdcd3b49b98
+offliner="$(git rev-parse --show-toplevel)/benchmark/offliner"
+
+dir="$(mktemp -d)"
+trap 'rm -rf "${dir}"' EXIT
+
+(
+    cd "${dir}"
+
+    imgs=(
+        quay.io/konflux-ci/ec-golden-image@sha256:38a2a2e89671eece1a123f57b543612a67ad529bc66c4ad77216b7ae91ba5769
+        quay.io/konflux-ci/tekton-catalog/data-acceptable-bundles@sha256:8e6da7823756583cc48499f1c051853cbe30b2d1f127f03b6d2effbd6cd207d0
+        quay.io/enterprise-contract/ec-release-policy@sha256:c7799644ff34322107919302ae0d2099a811b917a600774545d22fdcd3b49b98
+    )
+
+    for img in "${imgs[@]}"; do
+        go run -C "${offliner}" . "${img}" "${dir}/data/registry/data"
+    done
+
+    git clone --no-checkout https://github.com/release-engineering/rhtap-ec-policy.git data/git/rhtap-ec-policy.git
 )
 
-for img in "${imgs[@]}"; do
-    go run ./../offliner "${img}" data/registry/data
-done
-
-git clone --no-checkout https://github.com/release-engineering/rhtap-ec-policy.git data/git/rhtap-ec-policy.git
+tar czf data.tar.gz -C "${dir}" .
