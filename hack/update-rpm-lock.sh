@@ -92,6 +92,9 @@ if [ ! -f "${root_dir}/rpms.lock.yaml" ]; then
     touch "${root_dir}/rpms.lock.yaml"
 fi
 
+# If you see something like this:
+#   PermissionError: [Errno 13] Permission denied: 'Dockerfile'
+# then try adding the --privileged flag to the podman run command
 echo Running RPM lock tooling...
 podman run \
     --rm \
