@@ -364,7 +364,7 @@ func (r *policyRules) collect(a *ast.AnnotationsRef) error {
 	return nil
 }
 
-func (c conftestEvaluator) Evaluate(ctx context.Context, target EvaluationTarget) ([]Outcome, Data, error) {
+func (c conftestEvaluator) Evaluate(ctx context.Context, target EvaluationTarget) (context.Context, []Outcome, Data, error) {
 	var results []Outcome
 
 	if trace.IsEnabled() {
@@ -379,11 +379,11 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, target EvaluationTarget
 	rules := policyRules{}
 	// Download all sources
 	for _, s := range c.policySources {
-		dir, err := s.GetPolicy(ctx, c.workDir, false)
+		ctx, dir, err := s.GetPolicy(ctx, c.workDir, false)
 		if err != nil {
 			log.Debugf("Unable to download source from %s!", s.PolicyUrl())
 			// TODO do we want to download other policies instead of erroring out?
-			return nil, nil, err
+			return ctx, nil, nil, err
 		}
 		annotations := []*ast.AnnotationsRef{}
 		fs := utils.FS(ctx)
@@ -396,7 +396,7 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, target EvaluationTarget
 					// Let's try to give some more robust messaging to the user.
 					policyURL, err := url.Parse(s.PolicyUrl())
 					if err != nil {
-						return nil, nil, errMsg
+						return ctx, nil, nil, errMsg
 					}
 					// Do we have a prefix at the end of the URL path?
 					// If not, this means we aren't trying to access a specific file.
@@ -410,7 +410,7 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, target EvaluationTarget
 						}
 					}
 				}
-				return nil, nil, errMsg
+				return ctx, nil, nil, errMsg
 			}
 		}
 
@@ -419,7 +419,7 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, target EvaluationTarget
 				continue
 			}
 			if err := rules.collect(a); err != nil {
-				return nil, nil, err
+				return ctx, nil, nil, err
 			}
 		}
 	}
@@ -453,7 +453,7 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, target EvaluationTarget
 	runResults, data, err := r.Run(ctx, target.Inputs)
 	if err != nil {
 		// TODO do we want to evaluate further policies instead of erroring out?
-		return nil, nil, err
+		return ctx, nil, nil, err
 	}
 
 	effectiveTime := c.policy.EffectiveTime()
@@ -535,10 +535,10 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, target EvaluationTarget
 	// ran due to input error, etc.
 	if totalRules == 0 {
 		log.Error("no successes, warnings, or failures, check input")
-		return nil, nil, fmt.Errorf("no successes, warnings, or failures, check input")
+		return ctx, nil, nil, fmt.Errorf("no successes, warnings, or failures, check input")
 	}
 
-	return results, data, nil
+	return ctx, results, data, nil
 }
 
 func toRules(results []output.Result) []Result {

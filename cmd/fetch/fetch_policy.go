@@ -115,8 +115,10 @@ func fetchPolicyCmd() *cobra.Command {
 				sources = append(sources, &source.PolicyUrl{Url: url, Kind: source.DataKind})
 			}
 
+			ctx := cmd.Context()
 			for _, s := range sources {
-				_, err := s.GetPolicy(cmd.Context(), destDir, true)
+				c, _, err := s.GetPolicy(ctx, destDir, true)
+				ctx = c
 				if err != nil {
 					return err
 				}

@@ -67,8 +67,8 @@ func withTestRunner(ctx context.Context, clnt testRunner) context.Context {
 
 type testPolicySource struct{}
 
-func (t testPolicySource) GetPolicy(ctx context.Context, dest string, showMsg bool) (string, error) {
-	return "/policy", nil
+func (t testPolicySource) GetPolicy(ctx context.Context, dest string, showMsg bool) (context.Context, string, error) {
+	return ctx, "/policy", nil
 }
 
 func (t testPolicySource) PolicyUrl() string {
@@ -302,7 +302,7 @@ func TestConftestEvaluatorEvaluateSeverity(t *testing.T) {
 	}, pol, ecc.Source{})
 
 	assert.NoError(t, err)
-	actualResults, data, err := evaluator.Evaluate(ctx, inputs)
+	_, actualResults, data, err := evaluator.Evaluate(ctx, inputs)
 	assert.NoError(t, err)
 	assert.Equal(t, expectedResults, actualResults)
 	assert.Equal(t, expectedData, data)
@@ -413,7 +413,7 @@ func TestConftestEvaluatorEvaluateNoSuccessWarningsOrFailures(t *testing.T) {
 			}, p, ecc.Source{Config: tt.sourceConfig})
 
 			assert.NoError(t, err)
-			actualResults, data, err := evaluator.Evaluate(ctx, inputs)
+			_, actualResults, data, err := evaluator.Evaluate(ctx, inputs)
 			assert.ErrorContains(t, err, "no successes, warnings, or failures, check input")
 			assert.Nil(t, actualResults)
 			assert.Nil(t, data)
@@ -1305,7 +1305,7 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 			}, p, ecc.Source{})
 
 			assert.NoError(t, err)
-			got, data, err := evaluator.Evaluate(ctx, inputs)
+			_, got, data, err := evaluator.Evaluate(ctx, inputs)
 			assert.NoError(t, err)
 			assert.Equal(t, tt.want, got)
 			assert.Equal(t, Data(nil), data)
@@ -1825,7 +1825,7 @@ func TestConftestEvaluatorEvaluate(t *testing.T) {
 	}, config, ecc.Source{})
 	require.NoError(t, err)
 
-	results, data, err := evaluator.Evaluate(ctx, EvaluationTarget{Inputs: []string{path.Join(dir, "inputs")}})
+	_, results, data, err := evaluator.Evaluate(ctx, EvaluationTarget{Inputs: []string{path.Join(dir, "inputs")}})
 	require.NoError(t, err)
 
 	// sort the slice by code for test stability
@@ -1888,7 +1888,7 @@ func TestUnconformingRule(t *testing.T) {
 	}, p, ecc.Source{})
 	require.NoError(t, err)
 
-	_, _, err = evaluator.Evaluate(ctx, EvaluationTarget{Inputs: []string{path.Join(dir, "inputs")}})
+	_, _, _, err = evaluator.Evaluate(ctx, EvaluationTarget{Inputs: []string{path.Join(dir, "inputs")}})
 	assert.EqualError(t, err, `the rule "deny = true { true }" returns an unsupported value, at no_msg.rego:3`)
 }
 

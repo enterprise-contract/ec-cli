@@ -91,7 +91,8 @@ func inspectPolicyDataCmd() *cobra.Command {
 				s := &source.PolicyUrl{Url: url, Kind: source.PolicyKind}
 
 				// Download
-				policyDir, err := s.GetPolicy(ctx, destDir, false)
+				c, policyDir, err := s.GetPolicy(ctx, destDir, false)
+				ctx = c
 				if err != nil {
 					return err
 				}

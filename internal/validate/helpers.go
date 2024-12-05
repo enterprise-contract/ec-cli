@@ -28,7 +28,7 @@ import (
 )
 
 // Determine policyConfig
-func GetPolicyConfig(ctx context.Context, policyConfiguration string) (string, error) {
+func GetPolicyConfig(ctx context.Context, policyConfiguration string) (context.Context, string, error) {
 	// If policyConfiguration is not detected as a file and is detected as a git URL,
 	// or if policyConfiguration is an https URL try to download a config file from
 	// the provided source. If successful we read its contents and return it.
@@ -41,27 +41,29 @@ func GetPolicyConfig(ctx context.Context, policyConfiguration string) (string, e
 		fs := utils.FS(ctx)
 		tmpDir, err := utils.CreateWorkDir(fs)
 		if err != nil {
-			return "", err
+			return ctx, "", err
 		}
 		defer utils.CleanupWorkDir(fs, tmpDir)
 
 		// Git download and find a suitable config file
-		configFile, err := source.GoGetterDownload(ctx, tmpDir, policyConfiguration)
+		ctx, configFile, err := source.GoGetterDownload(ctx, tmpDir, policyConfiguration)
 		if err != nil {
-			return "", err
+			return ctx, "", err
 		}
 		log.Debugf("Loading %s as policy configuration", configFile)
-		return ReadFile(ctx, configFile)
+		content, err := ReadFile(ctx, configFile)
+		return ctx, content, err
 	} else if source.SourceIsFile(policyConfiguration) && utils.HasJsonOrYamlExt(policyConfiguration) {
 		// If policyConfiguration is detected as a file and it has a json or yaml extension,
 		// we read its contents and return it.
 		log.Debugf("Loading %s as policy configuration", policyConfiguration)
-		return ReadFile(ctx, policyConfiguration)
+		content, err := ReadFile(ctx, policyConfiguration)
+		return ctx, content, err
 	}
 
 	// If policyConfiguration is not a file path, git url, or https url,
 	// we assume it's a string and return it as is.
-	return policyConfiguration, nil
+	return ctx, policyConfiguration, nil
 }
 
 // Read file from the workspace and return its contents.
