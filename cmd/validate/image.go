@@ -44,7 +44,9 @@ import (
 
 type imageValidationFunc func(context.Context, app.SnapshotComponent, *app.SnapshotSpec, policy.Policy, []evaluator.Evaluator, bool) (*output.Output, error)
 
-var newConftestEvaluator = evaluator.NewConftestEvaluator
+// TODO: Make this configurable via some sort of env var.
+// var newConftestEvaluator = evaluator.NewConftestEvaluator
+var newConftestEvaluator = evaluator.NewOPAEvaluator
 
 func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 	data := struct {
