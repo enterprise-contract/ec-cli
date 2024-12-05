@@ -177,3 +177,7 @@ node_modules
 
 # kustomize expanded Helm charts
 hack/**/charts
+
+# Some other stuff we don't want to check in
+hack/builtin-experiments/data
+hack/builtin-experiments/policy
