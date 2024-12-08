@@ -29,7 +29,6 @@ import (
 	app "github.com/konflux-ci/application-api/api/v1alpha1"
 	"sigs.k8s.io/yaml"
 
-	"github.com/enterprise-contract/ec-cli/internal/attestation"
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 	"github.com/enterprise-contract/ec-cli/internal/format"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
@@ -46,7 +45,7 @@ type Component struct {
 	Success      bool                        `json:"success"`
 	SuccessCount int                         `json:"-"`
 	Signatures   []signature.EntitySignature `json:"signatures,omitempty"`
-	Attestations []attestation.Attestation   `json:"attestations,omitempty"`
+	Attestations []AttestationResult         `json:"attestations,omitempty"`
 }
 
 type Report struct {

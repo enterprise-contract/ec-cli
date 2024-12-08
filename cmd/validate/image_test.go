@@ -1322,7 +1322,7 @@ func TestContainsData(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		result := containsData(test.input)
+		result := containsOutput(test.input, "data")
 		assert.Equal(t, test.expected, result, test.name)
 	}
 }

@@ -27,9 +27,7 @@ import (
 	app "github.com/konflux-ci/application-api/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/enterprise-contract/ec-cli/internal/attestation"
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
-	"github.com/enterprise-contract/ec-cli/internal/signature"
 )
 
 func TestAttestationReport(t *testing.T) {
@@ -55,7 +53,7 @@ func TestAttestationReport(t *testing.T) {
 					SnapshotComponent: app.SnapshotComponent{
 						ContainerImage: "registry.io/repository/image:tag",
 					},
-					Attestations: []attestation.Attestation{
+					Attestations: []AttestationResult{
 						att("attestation1"),
 					},
 				},
@@ -68,7 +66,7 @@ func TestAttestationReport(t *testing.T) {
 					SnapshotComponent: app.SnapshotComponent{
 						ContainerImage: "registry.io/repository/image1:tag",
 					},
-					Attestations: []attestation.Attestation{
+					Attestations: []AttestationResult{
 						att("attestation1"),
 						att("attestation2"),
 					},
@@ -77,7 +75,7 @@ func TestAttestationReport(t *testing.T) {
 					SnapshotComponent: app.SnapshotComponent{
 						ContainerImage: "registry.io/repository/image2:tag",
 					},
-					Attestations: []attestation.Attestation{
+					Attestations: []AttestationResult{
 						att("attestation3"),
 						att("attestation4"),
 					},
@@ -91,7 +89,7 @@ func TestAttestationReport(t *testing.T) {
 					SnapshotComponent: app.SnapshotComponent{
 						ContainerImage: "registry.io/repository/image1:tag",
 					},
-					Attestations: []attestation.Attestation{
+					Attestations: []AttestationResult{
 						att("attestation1"),
 					},
 				},
@@ -104,7 +102,7 @@ func TestAttestationReport(t *testing.T) {
 					SnapshotComponent: app.SnapshotComponent{
 						ContainerImage: "registry.io/repository/image3:tag",
 					},
-					Attestations: []attestation.Attestation{
+					Attestations: []AttestationResult{
 						att("attestation2"),
 						att("attestation3"),
 					},
@@ -145,9 +143,9 @@ func TestAttestations(t *testing.T) {
 					Message: "violation1",
 				},
 			},
-			Attestations: []attestation.Attestation{
-				provenance{
-					data: data,
+			Attestations: []AttestationResult{
+				{
+					Statement: data,
 				},
 			},
 		},
@@ -159,32 +157,8 @@ func TestAttestations(t *testing.T) {
 	assert.Equal(t, []in_toto.Statement{statement}, att)
 }
 
-type mockAttestation struct {
-	data string
-}
-
-func (a mockAttestation) Type() string {
-	return "type"
-}
-
-func (a mockAttestation) PredicateType() string {
-	return "predicateType"
-}
-
-func (a mockAttestation) Statement() []byte {
-	return []byte(a.data)
-}
-
-func (a mockAttestation) Signatures() []signature.EntitySignature {
-	return nil
-}
-
-func (a mockAttestation) Subject() []in_toto.Subject {
-	return []in_toto.Subject{}
-}
-
-func att(data string) attestation.Attestation {
-	return &mockAttestation{
-		data: data,
+func att(data string) AttestationResult {
+	return AttestationResult{
+		Statement: []byte(data),
 	}
 }
