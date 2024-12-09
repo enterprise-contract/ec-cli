@@ -27,7 +27,6 @@ import (
 	app "github.com/konflux-ci/application-api/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/enterprise-contract/ec-cli/internal/attestation"
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 	"github.com/enterprise-contract/ec-cli/internal/signature"
 )
@@ -55,7 +54,7 @@ func TestAttestationReport(t *testing.T) {
 					SnapshotComponent: app.SnapshotComponent{
 						ContainerImage: "registry.io/repository/image:tag",
 					},
-					Attestations: []attestation.Attestation{
+					Attestations: []AttestationResult{
 						att("attestation1"),
 					},
 				},
@@ -68,7 +67,7 @@ func TestAttestationReport(t *testing.T) {
 					SnapshotComponent: app.SnapshotComponent{
 						ContainerImage: "registry.io/repository/image1:tag",
 					},
-					Attestations: []attestation.Attestation{
+					Attestations: []AttestationResult{
 						att("attestation1"),
 						att("attestation2"),
 					},
@@ -77,7 +76,7 @@ func TestAttestationReport(t *testing.T) {
 					SnapshotComponent: app.SnapshotComponent{
 						ContainerImage: "registry.io/repository/image2:tag",
 					},
-					Attestations: []attestation.Attestation{
+					Attestations: []AttestationResult{
 						att("attestation3"),
 						att("attestation4"),
 					},
@@ -91,7 +90,7 @@ func TestAttestationReport(t *testing.T) {
 					SnapshotComponent: app.SnapshotComponent{
 						ContainerImage: "registry.io/repository/image1:tag",
 					},
-					Attestations: []attestation.Attestation{
+					Attestations: []AttestationResult{
 						att("attestation1"),
 					},
 				},
@@ -104,7 +103,7 @@ func TestAttestationReport(t *testing.T) {
 					SnapshotComponent: app.SnapshotComponent{
 						ContainerImage: "registry.io/repository/image3:tag",
 					},
-					Attestations: []attestation.Attestation{
+					Attestations: []AttestationResult{
 						att("attestation2"),
 						att("attestation3"),
 					},
@@ -145,9 +144,9 @@ func TestAttestations(t *testing.T) {
 					Message: "violation1",
 				},
 			},
-			Attestations: []attestation.Attestation{
-				provenance{
-					data: data,
+			Attestations: []AttestationResult{
+				{
+					Statement: data,
 				},
 			},
 		},
@@ -159,32 +158,95 @@ func TestAttestations(t *testing.T) {
 	assert.Equal(t, []in_toto.Statement{statement}, att)
 }
 
-type mockAttestation struct {
-	data string
-}
-
-func (a mockAttestation) Type() string {
-	return "type"
-}
-
-func (a mockAttestation) PredicateType() string {
-	return "predicateType"
-}
-
-func (a mockAttestation) Statement() []byte {
-	return []byte(a.data)
-}
-
-func (a mockAttestation) Signatures() []signature.EntitySignature {
-	return nil
-}
-
-func (a mockAttestation) Subject() []in_toto.Subject {
-	return []in_toto.Subject{}
-}
-
-func att(data string) attestation.Attestation {
-	return &mockAttestation{
-		data: data,
+func att(data string) AttestationResult {
+	return AttestationResult{
+		Statement: []byte(data),
 	}
+}
+
+type provenance struct {
+	statement  in_toto.Statement
+	data       []byte
+	signatures []signature.EntitySignature
+}
+
+func (p provenance) Type() string {
+	return "generic-provenance-type"
+}
+
+func (p provenance) PredicateType() string {
+	return "generic-predicate-type"
+}
+
+func (p provenance) Signatures() []signature.EntitySignature {
+	return p.signatures
+}
+
+func (p provenance) Statement() []byte {
+	return p.data
+}
+
+func (p provenance) Subject() []in_toto.Subject {
+	return p.statement.Subject
+}
+
+type slsaProvenance struct {
+	statement  in_toto.ProvenanceStatementSLSA02
+	data       []byte
+	signatures []signature.EntitySignature
+}
+
+func (s slsaProvenance) Type() string {
+	return "slsa-type"
+}
+
+func (s slsaProvenance) Statement() []byte {
+	return s.data
+}
+
+func (s slsaProvenance) Subject() []in_toto.Subject {
+	return s.statement.Subject
+}
+
+func (s slsaProvenance) PredicateType() string {
+	return "slsa-predicate-type"
+}
+
+func (s slsaProvenance) Signatures() []signature.EntitySignature {
+	return s.signatures
+}
+
+// PredicateBuildType implements SLSAProvenance
+func (s slsaProvenance) PredicateBuildType() string {
+	return "slsa-build-type"
+}
+
+func TestNewAttestationResultWithProvenanceOnly(t *testing.T) {
+	p := provenance{
+		statement:  in_toto.Statement{},
+		data:       []byte("some data"),
+		signatures: []signature.EntitySignature{{KeyID: "key1"}},
+	}
+
+	result := NewAttestationResult(p) // p implements attestation.Attestation
+
+	assert.Equal(t, "generic-provenance-type", result.Type)
+	assert.Equal(t, "generic-predicate-type", result.PredicateType)
+	assert.Len(t, result.Signatures, 1)
+	assert.Empty(t, result.PredicateBuildType, "expected PredicateBuildType to be empty for non-SLSAProvenance attestation")
+}
+
+func TestNewAttestationResultWithSLSAProvenance(t *testing.T) {
+	s := slsaProvenance{
+		statement:  in_toto.ProvenanceStatementSLSA02{},
+		data:       []byte("some slsa data"),
+		signatures: []signature.EntitySignature{{KeyID: "key-slsa"}},
+	}
+
+	result := NewAttestationResult(s) // s implements SLSAProvenance
+
+	assert.Equal(t, "slsa-type", result.Type)
+	assert.Equal(t, "slsa-predicate-type", result.PredicateType)
+	assert.Len(t, result.Signatures, 1)
+	assert.Equal(t, "slsa-build-type", result.PredicateBuildType, "expected PredicateBuildType to be set for SLSAProvenance attestation")
 }

@@ -86,6 +86,10 @@ func (a slsaProvenance) Statement() []byte {
 	return a.data
 }
 
+func (a slsaProvenance) PredicateBuildType() string {
+	return a.statement.Predicate.BuildType
+}
+
 func (a slsaProvenance) Signatures() []signature.EntitySignature {
 	return a.signatures
 }

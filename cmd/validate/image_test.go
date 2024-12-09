@@ -1322,7 +1322,30 @@ func TestContainsData(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		result := containsData(test.input)
+		result := containsOutput(test.input, "data")
+		assert.Equal(t, test.expected, result, test.name)
+	}
+}
+
+func TestContainsAttestation(t *testing.T) {
+	tests := []struct {
+		input    []string
+		expected bool
+		name     string
+	}{
+		{[]string{"attestation"}, true, "Match single attestation"},
+		{[]string{"attestation=some-file.att"}, true, "Match attestation=some-file.att"},
+		{[]string{"meta=attestation.json"}, false, "Do not match meta=attestation.json"},
+		{[]string{"config", "attestation=custom-attestation.yaml"}, true, "Match attestation in slice with multiple values"},
+		{[]string{"attestation text"}, false, "Do not match attestation text"},
+		{[]string{"attest"}, false, "Do not match attest"},
+		{[]string{"attestation123"}, false, "Do not match attestation123"},
+		{[]string{"attestation="}, true, "Match attestation="},
+		{[]string{""}, false, "Do not match empty string"},
+	}
+
+	for _, test := range tests {
+		result := containsOutput(test.input, "attestation")
 		assert.Equal(t, test.expected, result, test.name)
 	}
 }

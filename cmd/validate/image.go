@@ -364,10 +364,17 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 						}
 
 						res.component.Signatures = out.Signatures
-						res.component.Attestations = out.Attestations
+						// Create a new result object for attestations. The point is to only keep the data that's needed.
+						// For example, the Statement is only needed when the full attestation is printed.
+						for _, att := range out.Attestations {
+							attResult := applicationsnapshot.NewAttestationResult(att)
+							if containsOutput(data.output, "attestation") {
+								attResult.Statement = att.Statement()
+							}
+							res.component.Attestations = append(res.component.Attestations, attResult)
+						}
 						res.component.ContainerImage = out.ImageURL
 						res.data = out.Data
-						res.component.Attestations = out.Attestations
 						res.policyInput = out.PolicyInput
 					}
 					res.component.Success = err == nil && len(res.component.Violations) == 0
@@ -411,7 +418,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 				} else {
 					components = append(components, r.component)
 					// evaluator data is duplicated per component, so only collect it once.
-					if len(evaluatorData) == 0 && containsData(data.output) {
+					if len(evaluatorData) == 0 && containsOutput(data.output, "data") {
 						evaluatorData = append(evaluatorData, r.data)
 					}
 					manyPolicyInput = append(manyPolicyInput, r.policyInput)
@@ -542,11 +549,11 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 	return cmd
 }
 
-// find if the slice contains "data" output
-func containsData(data []string) bool {
+// find if the slice contains "value" output
+func containsOutput(data []string, value string) bool {
 	for _, item := range data {
 		newItem := strings.Split(item, "=")
-		if newItem[0] == "data" {
+		if newItem[0] == value {
 			return true
 		}
 	}

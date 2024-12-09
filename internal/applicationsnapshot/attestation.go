@@ -21,14 +21,43 @@ import (
 	"encoding/json"
 
 	"github.com/in-toto/in-toto-golang/in_toto"
+
+	"github.com/enterprise-contract/ec-cli/internal/attestation"
+	"github.com/enterprise-contract/ec-cli/internal/signature"
 )
+
+type SLSAProvenance interface {
+	attestation.Attestation
+	PredicateBuildType() string
+}
+
+type AttestationResult struct {
+	Type               string                      `json:"type,omitempty"`
+	PredicateType      string                      `json:"predicateType,omitempty"`
+	PredicateBuildType string                      `json:"predicateBuildType,omitempty"`
+	Signatures         []signature.EntitySignature `json:"signatures,omitempty"`
+	Statement          []byte                      `json:"-"`
+}
+
+func NewAttestationResult(att attestation.Attestation) AttestationResult {
+	attResult := AttestationResult{
+		Type:          att.Type(),
+		PredicateType: att.PredicateType(),
+		Signatures:    att.Signatures(),
+	}
+	if value, ok := att.(SLSAProvenance); ok {
+		attResult.PredicateBuildType = value.PredicateBuildType()
+
+	}
+	return attResult
+}
 
 func (r *Report) renderAttestations() ([]byte, error) {
 	byts := make([][]byte, 0, len(r.Components)*2)
 
 	for _, c := range r.Components {
 		for _, a := range c.Attestations {
-			byts = append(byts, a.Statement())
+			byts = append(byts, a.Statement)
 		}
 	}
 
@@ -40,7 +69,7 @@ func (r *Report) attestations() ([]in_toto.Statement, error) {
 	for _, c := range r.Components {
 		for _, a := range c.Attestations {
 			var statement in_toto.Statement
-			err := json.Unmarshal(a.Statement(), &statement)
+			err := json.Unmarshal(a.Statement, &statement)
 			if err != nil {
 				return []in_toto.Statement{}, nil
 			}
