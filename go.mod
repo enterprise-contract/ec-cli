@@ -6,8 +6,8 @@ require (
 	cuelang.org/go v0.11.0
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/Maldris/go-billy-afero v0.0.0-20200815120323-e9d3de59c99a
-	github.com/enterprise-contract/enterprise-contract-controller/api v0.1.68
-	github.com/enterprise-contract/go-gather v0.0.4
+	github.com/enterprise-contract/enterprise-contract-controller/api v0.1.69
+	github.com/enterprise-contract/go-gather v0.0.5
 	github.com/evanphx/json-patch v5.9.0+incompatible
 	github.com/gkampitakis/go-snaps v0.5.7
 	github.com/go-git/go-git/v5 v5.12.0
@@ -39,8 +39,8 @@ require (
 	github.com/stuart-warren/yamlfmt v0.2.0
 	github.com/tektoncd/pipeline v0.63.0
 	golang.org/x/exp v0.0.0-20240909161429-701f63a606c0
-	golang.org/x/net v0.31.0
-	golang.org/x/sync v0.9.0
+	golang.org/x/net v0.32.0
+	golang.org/x/sync v0.10.0
 	k8s.io/apiextensions-apiserver v0.31.0
 	k8s.io/apimachinery v0.31.0
 	k8s.io/client-go v0.31.0
@@ -317,12 +317,12 @@ require (
 	go.uber.org/automaxprocs v1.6.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
-	golang.org/x/crypto v0.29.0 // indirect
+	golang.org/x/crypto v0.30.0 // indirect
 	golang.org/x/mod v0.21.0 // indirect
 	golang.org/x/oauth2 v0.23.0 // indirect
-	golang.org/x/sys v0.27.0 // indirect
-	golang.org/x/term v0.26.0 // indirect
-	golang.org/x/text v0.20.0 // indirect
+	golang.org/x/sys v0.28.0 // indirect
+	golang.org/x/term v0.27.0 // indirect
+	golang.org/x/text v0.21.0 // indirect
 	golang.org/x/time v0.7.0 // indirect
 	golang.org/x/tools v0.26.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
