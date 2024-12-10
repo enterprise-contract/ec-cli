@@ -40,7 +40,11 @@ spec:
       value: 'true'
   pipelineRef:
     name: cli-build
-  taskRunTemplate: {}
+  taskRunTemplate:
+    podTemplate:
+      env:
+        - name: DEBUG
+          value: "1"
   workspaces:
     - name: git-auth
       secret:
