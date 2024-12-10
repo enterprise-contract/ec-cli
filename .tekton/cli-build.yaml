@@ -28,6 +28,15 @@ spec:
     - description: Fully Qualified Output Image
       name: output-image
       type: string
+    - description: >-
+        OCI repository of the CLI image to use as a reference in the Tekton bundle. When setting
+        this value, take into account where the CLI image will be available for usage. For certain
+        workflows, e.g. pull request, this should be the repo in which the CLI image is built into
+        because those CLI images are not promoted to another location. For merge workflows that go
+        through a release, for example, this should be the repository for which the CLI image will
+        be released to.
+      name: bundle-cli-ref-repo
+      type: string
     - default: .
       description: Path to the source code of an application's component from where to build image.
       name: path-context
@@ -259,6 +268,32 @@ spec:
           values:
             - "true"
         - input: $(params.build-source-image)
+          operator: in
+          values:
+            - "true"
+    - name: build-tekton-bundle
+      params:
+        - name: IMAGE
+          value: $(params.output-image).bundle
+        - name: CONTEXT
+          value: tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml
+        - name: STEPS_IMAGE
+          value: $(params.bundle-cli-ref-repo)@$(tasks.build-image-index.results.IMAGE_DIGEST)
+        - name: SOURCE_ARTIFACT
+          value: $(tasks.clone-repository.results.SOURCE_ARTIFACT)
+      runAfter:
+        - build-image-index
+      taskRef:
+        params:
+          - name: name
+            value: tkn-bundle-oci-ta
+          - name: bundle
+            value: quay.io/konflux-ci/tekton-catalog/task-tkn-bundle-oci-ta:0.1@sha256:7d2ca9fbe8f3ba5636f18a36d086acf6cd37eef83032afa845032fe9dc7152e7
+          - name: kind
+            value: task
+        resolver: bundles
+      when:
+        - input: $(tasks.init.results.build)
           operator: in
           values:
             - "true"
