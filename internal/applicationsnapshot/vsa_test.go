@@ -29,37 +29,10 @@ import (
 	app "github.com/konflux-ci/application-api/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/enterprise-contract/ec-cli/internal/attestation"
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
-	"github.com/enterprise-contract/ec-cli/internal/signature"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
-
-type provenance struct {
-	statement in_toto.Statement
-	data      []byte
-}
-
-func (p provenance) Type() string {
-	return in_toto.StatementInTotoV01
-}
-
-func (p provenance) PredicateType() string {
-	return p.statement.StatementHeader.PredicateType
-}
-
-func (p provenance) Statement() []byte {
-	return p.data
-}
-
-func (p provenance) Signatures() []signature.EntitySignature {
-	return []signature.EntitySignature{}
-}
-
-func (p provenance) Subject() []in_toto.Subject {
-	return p.statement.Subject
-}
 
 func TestNewVSA(t *testing.T) {
 	components := []Component{
@@ -70,9 +43,9 @@ func TestNewVSA(t *testing.T) {
 					Message: "violation1",
 				},
 			},
-			Attestations: []attestation.Attestation{
-				provenance{
-					statement: in_toto.Statement{},
+			Attestations: []AttestationResult{
+				{
+					Statement: []byte{},
 				},
 			},
 		},
@@ -110,6 +83,7 @@ func TestSubjects(t *testing.T) {
 			Digest: nil,
 		},
 	}
+
 	statement := in_toto.Statement{
 		StatementHeader: in_toto.StatementHeader{
 			Subject: expected,
@@ -126,10 +100,9 @@ func TestSubjects(t *testing.T) {
 					Message: "violation1",
 				},
 			},
-			Attestations: []attestation.Attestation{
-				provenance{
-					statement: statement,
-					data:      data,
+			Attestations: []AttestationResult{
+				{
+					Statement: data,
 				},
 			},
 		},
