@@ -1,19 +1,17 @@
-# Release Pipelines
+# Release Pipeline
 
-This directory contains the Tekton Pipelines used to release EC from the main branch. These
-Pipelines execute in [Konflux](https://konflux-ci.dev/).
-
-The Pipelines are generated via [kustomize](https://kustomize.io/) from the `src` directory. To
-make changes to the Pipelines, update the corresponding files in that directory and run the
-`make generate-pipelines` command (requires `kustomize`).
+This directory contains the Tekton Pipeline used to release EC from the main branch. The Pipeline
+executes in [Konflux](https://konflux-ci.dev/).
 
 ## Setup
 
-The [setup.yaml](setup.yaml) file should be applied to the namespace where the release Pipeliens
+The [setup.yaml](setup.yaml) file should be applied to the namespace where the release Pipeline
 will run. This creates a ServiceAccount with access to perform the release.
 
-## Why are there two Pipelines?
+## Why are there two verify-enterprise-contract Tasks?
 
-Currently, it is not possible to specify the EC policy in the ReleasePlan, nor any general Pipeline
-parameter. Because the CLI and the Tekton Task require different EC policies, the only way to
-achieve this is by using different Pipelines with different default values for the EC policy.
+The CLI and the bundle images require different EC policies. The bundle image, for example, does not
+include binary content, as such, it makes little sense to run scan it with an anti-virus for example.
+Currently, it is not possible to use a single EC policy for different components, but there are plans
+for doing so. When that becomes a reality, a single snapshot and a single execution of the
+verify-enterprise-contract would be sufficient.
