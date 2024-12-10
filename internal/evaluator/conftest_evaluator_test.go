@@ -62,7 +62,7 @@ func (m *mockTestRunner) Run(ctx context.Context, inputs []string) ([]Outcome, D
 }
 
 func withTestRunner(ctx context.Context, clnt testRunner) context.Context {
-	return context.WithValue(ctx, runnerKey, clnt)
+	return context.WithValue(ctx, conftestRunnerKey, clnt)
 }
 
 type testPolicySource struct{}
