@@ -40,8 +40,8 @@ type (
 	badMockEvaluator struct{}
 )
 
-func (e mockEvaluator) Evaluate(ctx context.Context, target evaluator.EvaluationTarget) ([]evaluator.Outcome, evaluator.Data, error) {
-	return []evaluator.Outcome{}, nil, nil
+func (e mockEvaluator) Evaluate(ctx context.Context, target evaluator.EvaluationTarget) (context.Context, []evaluator.Outcome, evaluator.Data, error) {
+	return ctx, []evaluator.Outcome{}, nil, nil
 }
 
 func (e mockEvaluator) Destroy() {
@@ -51,8 +51,8 @@ func (e mockEvaluator) CapabilitiesPath() string {
 	return ""
 }
 
-func (b badMockEvaluator) Evaluate(ctx context.Context, target evaluator.EvaluationTarget) ([]evaluator.Outcome, evaluator.Data, error) {
-	return nil, nil, errors.New("Evaluator error")
+func (b badMockEvaluator) Evaluate(ctx context.Context, target evaluator.EvaluationTarget) (context.Context, []evaluator.Outcome, evaluator.Data, error) {
+	return ctx, nil, nil, errors.New("Evaluator error")
 }
 
 func (e badMockEvaluator) Destroy() {

@@ -54,6 +54,7 @@ const (
 	DataKind          PolicyType = "data"
 	ConfigKind        PolicyType = "config"
 	InlineDataKind    PolicyType = "inline-data"
+	downloadCacheKey  key        = 1
 )
 
 type downloaderFunc interface {
@@ -63,7 +64,7 @@ type downloaderFunc interface {
 // PolicySource in an interface representing the location a policy source.
 // Must implement the GetPolicy() method.
 type PolicySource interface {
-	GetPolicy(ctx context.Context, dest string, showMsg bool) (string, error)
+	GetPolicy(ctx context.Context, dest string, showMsg bool) (context.Context, string, error)
 	PolicyUrl() string
 	Subdir() string
 	Type() PolicyType
@@ -75,18 +76,22 @@ type PolicyUrl struct {
 	Kind PolicyType
 }
 
-// downloadCache is a concurrent map used to cache downloaded files.
-var downloadCache sync.Map
-
 type cacheContent struct {
 	sourceUrl string
 	metadata  metadata.Metadata
 	err       error
 }
 
-func getPolicyThroughCache(ctx context.Context, s PolicySource, workDir string, dl func(string, string) (metadata.Metadata, error)) (string, metadata.Metadata, error) {
+func getPolicyThroughCache(ctx context.Context, s PolicySource, workDir string, dl func(string, string) (metadata.Metadata, error)) (context.Context, string, metadata.Metadata, error) {
 	sourceUrl := s.PolicyUrl()
 	dest := uniqueDestination(workDir, s.Subdir(), sourceUrl)
+
+	// downloadCache is a concurrent map used to cache downloaded files.
+	downloadCache, ok := ctx.Value(downloadCacheKey).(*sync.Map)
+	if !ok {
+		downloadCache = &sync.Map{}
+		ctx = context.WithValue(ctx, downloadCacheKey, downloadCache)
+	}
 
 	// Load or store the downloaded policy file from the given source URL.
 	// If the file is already in the download cache, it is loaded from there.
@@ -102,12 +107,12 @@ func getPolicyThroughCache(ctx context.Context, s PolicySource, workDir string, 
 
 	d, c := dfn.(func() (string, cacheContent))()
 	if c.err != nil {
-		return "", c.metadata, c.err
+		return ctx, "", c.metadata, c.err
 	}
 
 	fs := utils.FS(ctx)
 	if _, err := fs.Stat(dest); err == nil {
-		return dest, c.metadata, nil
+		return ctx, dest, c.metadata, nil
 	}
 
 	// If the destination directory is different from the source directory, we
@@ -115,32 +120,32 @@ func getPolicyThroughCache(ctx context.Context, s PolicySource, workDir string, 
 	if filepath.Dir(dest) != filepath.Dir(d) {
 		base := filepath.Dir(dest)
 		if err := fs.MkdirAll(base, 0755); err != nil {
-			return "", nil, err
+			return ctx, "", nil, err
 		}
 
 		if symlinkableFS, ok := fs.(afero.Symlinker); ok {
 			log.Debugf("Symlinking %s to %s", d, dest)
 			if err := symlinkableFS.SymlinkIfPossible(d, dest); err != nil {
-				return "", nil, err
+				return ctx, "", nil, err
 			}
 			logMetadata(c.metadata)
-			return dest, c.metadata, nil
+			return ctx, dest, c.metadata, nil
 		} else {
 			log.Debugf("Filesystem does not support symlinking: %q, re-downloading instead", fs.Name())
 			m, err := dl(sourceUrl, dest)
 			logMetadata(m)
-			return dest, m, err
+			return ctx, dest, m, err
 		}
 	}
 
 	if c.metadata != nil {
 		logMetadata(c.metadata)
 	}
-	return d, c.metadata, c.err
+	return ctx, d, c.metadata, c.err
 }
 
 // GetPolicies clones the repository for a given PolicyUrl
-func (p *PolicyUrl) GetPolicy(ctx context.Context, workDir string, showMsg bool) (string, error) {
+func (p *PolicyUrl) GetPolicy(ctx context.Context, workDir string, showMsg bool) (context.Context, string, error) {
 	if trace.IsEnabled() {
 		region := trace.StartRegion(ctx, "ec:get-policy")
 		defer region.End()
@@ -155,18 +160,18 @@ func (p *PolicyUrl) GetPolicy(ctx context.Context, workDir string, showMsg bool)
 		return downloader.Download(ctx, dest, source, showMsg)
 	}
 
-	dest, metadata, err := getPolicyThroughCache(ctx, p, workDir, dl)
+	ctx, dest, metadata, err := getPolicyThroughCache(ctx, p, workDir, dl)
 	if err != nil {
-		return "", err
+		return ctx, "", err
 	}
 
 	p.Url, err = metadata.GetPinnedURL(p.Url)
 	log.Debug("Pinned URL: ", p.Url)
 	if err != nil {
-		return "", err
+		return ctx, "", err
 	}
 
-	return dest, err
+	return ctx, dest, err
 }
 
 func (p *PolicyUrl) PolicyUrl() string {
@@ -215,7 +220,7 @@ func InlineData(source []byte) PolicySource {
 	return inlineData{source}
 }
 
-func (s inlineData) GetPolicy(ctx context.Context, workDir string, showMsg bool) (string, error) {
+func (s inlineData) GetPolicy(ctx context.Context, workDir string, showMsg bool) (context.Context, string, error) {
 	dl := func(source string, dest string) (metadata.Metadata, error) {
 		fs := utils.FS(ctx)
 
@@ -233,8 +238,8 @@ func (s inlineData) GetPolicy(ctx context.Context, workDir string, showMsg bool)
 		return m, afero.WriteFile(fs, f, s.source, 0400)
 	}
 
-	dest, _, err := getPolicyThroughCache(ctx, s, workDir, dl)
-	return dest, err
+	ctx, dest, _, err := getPolicyThroughCache(ctx, s, workDir, dl)
+	return ctx, dest, err
 }
 
 func (s inlineData) PolicyUrl() string {

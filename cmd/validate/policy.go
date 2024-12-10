@@ -53,7 +53,8 @@ func ValidatePolicyCmd(validate policyValidationFunc) *cobra.Command {
 		PreRunE: func(cmd *cobra.Command, args []string) (allErrors error) {
 			ctx := cmd.Context()
 
-			policyConfiguration, err := validate_utils.GetPolicyConfig(ctx, data.policyConfiguration)
+			c, policyConfiguration, err := validate_utils.GetPolicyConfig(ctx, data.policyConfiguration)
+			cmd.SetContext(c)
 			if err != nil {
 				allErrors = errors.Join(allErrors, err)
 				return

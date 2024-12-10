@@ -54,16 +54,16 @@ func SourceIsHttp(src string) bool {
 	return err == nil && strings.HasPrefix(normalizedUrl, "http")
 }
 
-func GoGetterDownload(ctx context.Context, tmpDir, src string) (string, error) {
+func GoGetterDownload(ctx context.Context, tmpDir, src string) (context.Context, string, error) {
 	// Download the config from a url
 	c := PolicyUrl{
 		Url:  src,
 		Kind: ConfigKind,
 	}
-	configDir, err := c.GetPolicy(ctx, tmpDir, false)
+	ctx, configDir, err := c.GetPolicy(ctx, tmpDir, false)
 	if err != nil {
 		log.Debugf("Failed to download policy config from %s", c.Url)
-		return "", err
+		return ctx, "", err
 	}
 	log.Debugf("Downloaded policy config from %s to %s", c.Url, configDir)
 
@@ -71,8 +71,8 @@ func GoGetterDownload(ctx context.Context, tmpDir, src string) (string, error) {
 	configFile, err := choosePolicyFile(ctx, configDir)
 	if err != nil {
 		// A more useful error message:
-		return "", fmt.Errorf("no suitable config file found at %s", c.Url)
+		return ctx, "", fmt.Errorf("no suitable config file found at %s", c.Url)
 	}
 	log.Debugf("Chose file %s to use for the policy config", configFile)
-	return configFile, nil
+	return ctx, configFile, nil
 }

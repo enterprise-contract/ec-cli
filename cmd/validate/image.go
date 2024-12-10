@@ -209,7 +209,8 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 				data.spec = s
 			}
 
-			policyConfiguration, err := validate_utils.GetPolicyConfig(ctx, data.policyConfiguration)
+			c, policyConfiguration, err := validate_utils.GetPolicyConfig(ctx, data.policyConfiguration)
+			ctx = c
 			if err != nil {
 				allErrors = errors.Join(allErrors, err)
 				return
@@ -232,9 +233,10 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 
 			// We're not currently using the policyCache returned from PreProcessPolicy, but we could
 			// use it to cache the policy for future use.
-			if p, _, err := policy.PreProcessPolicy(ctx, policyOptions); err != nil {
+			if c, p, _, err := policy.PreProcessPolicy(ctx, policyOptions); err != nil {
 				allErrors = errors.Join(allErrors, err)
 			} else {
+				ctx = c
 				// inject extra variables into rule data per source
 				if len(data.extraRuleData) > 0 {
 					policySpec := p.Spec()
@@ -262,7 +264,8 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 							if len(parts) < 2 {
 								log.Errorf("Incorrect syntax for --extra-rule-data")
 							}
-							extraRuleDataPolicyConfig, err := validate_utils.GetPolicyConfig(ctx, parts[1])
+							c, extraRuleDataPolicyConfig, err := validate_utils.GetPolicyConfig(ctx, parts[1])
+							ctx = c
 							if err != nil {
 								log.Errorf("Unable to load data from extraRuleData: %s", err.Error())
 							}
