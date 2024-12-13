@@ -1,0 +1,36 @@
+= ec.oci.descriptor
+
+Fetch a raw Image from an OCI registry.
+
+== Usage
+
+  object = ec.oci.descriptor(ref: string)
+
+== Parameters
+
+* `ref` (`string`): OCI descriptor reference
+
+== Return
+
+`object` (`object`): the OCI descriptor object
+
+The object contains the following attributes:
+
+* `annotations` (`object`)
+** (`string`): (`string`)
+* `artifactType` (`string`)
+* `data` (`string`)
+* `digest` (`string`)
+* `mediaType` (`string`)
+* `platform` (`object`)
+** `architecture` (`string`)
+** `features`(`array`)
+*** (`string`)
+** `os` (`string`)
+** `os.features`(`array`)
+*** (`string`)
+** `os.version` (`string`)
+** `variant` (`string`)
+* `size` (`number`)
+* `urls`(`array`)
+** (`string`)
