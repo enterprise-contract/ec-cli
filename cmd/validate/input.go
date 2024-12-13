@@ -23,9 +23,9 @@ import (
 	"runtime/trace"
 	"sort"
 	"strings"
-	"sync"
 
 	hd "github.com/MakeNowJust/heredoc"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/enterprise-contract/ec-cli/internal/applicationsnapshot"
@@ -50,8 +50,10 @@ func validateInputCmd(validate InputValidationFunc) *cobra.Command {
 		policy              policy.Policy
 		policyConfiguration string
 		strict              bool
+		workers             int
 	}{
-		strict: true,
+		strict:  true,
+		workers: 5,
 	}
 	cmd := &cobra.Command{
 		Use:   "input",
@@ -116,22 +118,24 @@ func validateInputCmd(validate InputValidationFunc) *cobra.Command {
 				policyInput []byte
 			}
 
-			ch := make(chan result, len(data.filePaths))
-
-			var lock sync.WaitGroup
-
 			showSuccesses, _ := cmd.Flags().GetBool("show-successes")
 
-			for _, f := range data.filePaths {
-				lock.Add(1)
-				go func(fpath string) {
+			// Set numWorkers to the value from our flag. The default is 5.
+			numWorkers := data.workers
+
+			jobs := make(chan string, len(data.filePaths))
+			results := make(chan result, len(data.filePaths))
+
+			// worker function processes one file path at a time.
+			worker := func(id int, jobs <-chan string, results chan<- result) {
+				log.Debugf("Starting worker %d", id)
+				for fpath := range jobs {
 					ctx := cmd.Context()
 					var task *trace.Task
 					if trace.IsEnabled() {
 						ctx, task = trace.NewTask(ctx, "ec:validate-input")
+						trace.Logf(ctx, "", "workerID=%d, file=%s", id, fpath)
 					}
-
-					defer lock.Done()
 
 					out, err := validate(ctx, fpath, data.policy, data.info)
 					res := result{
@@ -141,7 +145,7 @@ func validateInputCmd(validate InputValidationFunc) *cobra.Command {
 							Success:  err == nil,
 						},
 					}
-					// Skip on err to not panic. Error is return on routine completion.
+
 					if err == nil {
 						res.input.Violations = out.Violations()
 						res.input.Warnings = out.Warnings()
@@ -151,43 +155,59 @@ func validateInputCmd(validate InputValidationFunc) *cobra.Command {
 						if showSuccesses {
 							res.input.Successes = successes
 						}
-						res.data = out.Data
+						if containsOutput(data.output, "data") {
+							res.data = out.Data
+						}
+						res.input.Success = (len(res.input.Violations) == 0)
+						res.policyInput = out.PolicyInput
 					}
-					res.input.Success = err == nil && len(res.input.Violations) == 0
 
 					if task != nil {
 						task.End()
 					}
-					ch <- res
-				}(f)
+					results <- res
+				}
+				log.Debugf("Done with worker %d", id)
 			}
 
-			lock.Wait()
-			close(ch)
+			// Start the worker pool
+			for i := 0; i < numWorkers; i++ {
+				go worker(i, jobs, results)
+			}
+
+			// Push all jobs (file paths) to the jobs channel
+			for _, f := range data.filePaths {
+				jobs <- f
+			}
+			close(jobs)
 
 			var inputs []input.Input
 			var evaluatorData [][]evaluator.Data
 			var manyPolicyInput [][]byte
 			var allErrors error = nil
 
-			for r := range ch {
+			// Collect all results
+			for i := 0; i < len(data.filePaths); i++ {
+				r := <-results
 				if r.err != nil {
 					e := fmt.Errorf("error validating file %s: %w", r.input.FilePath, r.err)
 					allErrors = errors.Join(allErrors, e)
 				} else {
 					inputs = append(inputs, r.input)
-					// evaluator data is duplicated per component, so only collect it once.
+					// evaluator data is duplicated per input, so only collect it once.
 					if len(evaluatorData) == 0 && containsOutput(data.output, "data") {
 						evaluatorData = append(evaluatorData, r.data)
 					}
 					manyPolicyInput = append(manyPolicyInput, r.policyInput)
 				}
 			}
+			close(results)
+
 			if allErrors != nil {
 				return allErrors
 			}
 
-			// Ensure some consistency in output.
+			// Sort inputs for consistent output
 			sort.Slice(inputs, func(i, j int) bool {
 				return inputs[i].FilePath > inputs[j].FilePath
 			})
@@ -239,6 +259,9 @@ func validateInputCmd(validate InputValidationFunc) *cobra.Command {
 		Include additional information on the failures. For instance for policy
 		violations, include the title and the description of the failed policy
 		rule.`))
+
+	cmd.Flags().IntVar(&data.workers, "workers", data.workers, hd.Doc(`
+		Number of workers to use for validation. Defaults to 5.`))
 
 	if err := cmd.MarkFlagRequired("file"); err != nil {
 		panic(err)
