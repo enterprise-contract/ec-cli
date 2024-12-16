@@ -121,7 +121,7 @@ func TestOCIDescriptorManifest(t *testing.T) {
 			name: "complete image manifest",
 			ref:  ast.StringTerm("registry.local/spam:latest@sha256:01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"),
 			descriptor: &v1.Descriptor{
-				MediaType: types.OCIConfigJSON,
+				MediaType: types.OCIManifestSchema1,
 				Size:      123,
 				Digest: v1.Hash{
 					Algorithm: "sha256",
@@ -148,7 +148,7 @@ func TestOCIDescriptorManifest(t *testing.T) {
 			name: "minimal image manifest",
 			ref:  ast.StringTerm("registry.local/spam:latest@sha256:01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"),
 			descriptor: &v1.Descriptor{
-				MediaType: types.OCIConfigJSON,
+				MediaType: types.OCIManifestSchema1,
 				Size:      123,
 				Digest: v1.Hash{
 					Algorithm: "sha256",
@@ -160,7 +160,7 @@ func TestOCIDescriptorManifest(t *testing.T) {
 			name: "minimal image index",
 			ref:  ast.StringTerm("registry.local/spam:latest@sha256:01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"),
 			descriptor: &v1.Descriptor{
-				MediaType: types.OCIConfigJSON,
+				MediaType: types.OCIImageIndex,
 				Size:      123,
 				Digest: v1.Hash{
 					Algorithm: "sha256",
