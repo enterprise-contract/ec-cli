@@ -79,7 +79,7 @@ func NewRootCmd() *cobra.Command {
 			var cancel context.CancelFunc
 			if globalTimeout > 0 {
 				ctx, cancel = context.WithTimeout(ctx, globalTimeout)
-				log.Debugf("globalTimeout is %d", globalTimeout)
+				log.Debugf("globalTimeout is %s", time.Duration(globalTimeout))
 			} else {
 				log.Debugf("globalTimeout is %d, no timeout used", globalTimeout)
 			}
