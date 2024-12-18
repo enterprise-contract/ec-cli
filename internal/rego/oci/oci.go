@@ -75,11 +75,34 @@ func registerOCIBlob() {
 }
 
 func registerOCIDescriptor() {
+	platform := types.NewObject(
+		[]*types.StaticProperty{
+			{Key: "architecture", Value: types.S},
+			{Key: "os", Value: types.S},
+			{Key: "os.version", Value: types.S},
+			{Key: "os.features", Value: types.NewArray([]types.Type{types.S}, nil)},
+			{Key: "variant", Value: types.S},
+			{Key: "features", Value: types.NewArray([]types.Type{types.S}, nil)},
+		},
+		nil,
+	)
+
+	// annotations represents the map[string]string rego type
+	annotations := types.NewObject(nil, types.NewDynamicProperty(types.S, types.S))
 	manifest := types.NewObject(
 		[]*types.StaticProperty{
 			// Specifying the properties like this ensure the compiler catches typos when
 			// evaluating rego functions.
 			{Key: "mediaType", Value: types.S},
+			{Key: "size", Value: types.N},
+			{Key: "digest", Value: types.S},
+			{Key: "data", Value: types.S},
+			{Key: "urls", Value: types.NewArray(
+				[]types.Type{types.S}, nil,
+			)},
+			{Key: "annotations", Value: annotations},
+			{Key: "platform", Value: platform},
+			{Key: "artifactType", Value: types.S},
 		},
 		nil,
 	)
