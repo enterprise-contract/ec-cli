@@ -127,8 +127,10 @@ spec:
 
     - name: TIMEOUT
       type: string
-      description: Timeout setting for `ec validate`.
-      default: "5m0s"
+      description: >
+        This param is deprecated and will be removed in future. Its value is ignored. EC will
+        be run without a timeout. (If you do want to apply a timeout use the Tekton task timeout.)
+      default: ""
 
     - name: WORKERS
       type: string
@@ -224,7 +226,8 @@ spec:
         - "$(params.WORKERS)"
         # NOTE: The syntax below is required to negate boolean parameters
         - "--info=$(params.INFO)"
-        - "--timeout=$(params.TIMEOUT)"
+        # No timeout for EC, though Tekton may apply a timeout
+        - "--timeout=0"
         - "--strict=false"
         - "--show-successes"
         - "--effective-time=$(params.EFFECTIVE_TIME)"
