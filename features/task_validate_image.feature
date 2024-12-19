@@ -298,7 +298,9 @@ Feature: Verify Enterprise Contract Tekton Tasks
     Then the task should succeed
       And the task logs for step "debug-log" should contain "Using provided effective time 2020-01-01T00:00:00Z"
 
-  Scenario: Timeout is honored
+  # Previously we did allow a custom timeout to be set via the TIMEOUT param, but now it's ignored.
+  # (This test could be removed in the future, but let's keep it for now I guess.)
+  Scenario: Deprecated timeout param is ignored
     Given a working namespace
       And a key pair named "known"
       And an image named "acceptance/timeout"
@@ -314,7 +316,7 @@ Feature: Verify Enterprise Contract Tekton Tasks
       | IGNORE_REKOR         | true                                                                   |
       | TIMEOUT              | 666s                                                                   |
     Then the task should succeed
-      And the task logs for step "debug-log" should contain "globalTimeout is 11m6s"
+      And the task logs for step "debug-log" should contain "globalTimeout is 0, no timeout used"
 
   Scenario: SSL_CERT_DIR environment variable is customized
     Given a working namespace
