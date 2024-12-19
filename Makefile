@@ -144,6 +144,13 @@ feature_%: ## Run acceptance tests for a single feature file, e.g. make feature_
 scenario_%: build ## Run acceptance tests for a single scenario, e.g. make scenario_inline_policy
 	@cd acceptance && go test -test.run 'TestFeatures/$*'
 
+benchmark_%:
+	@cd benchmark/$*
+	@go run .
+
+.PHONY: benchmark
+benchmark: benchmark_simple ## Run benchmarks
+
 .PHONY: ci
 ci: test lint-fix acceptance ## Run the usual required CI tasks
 
