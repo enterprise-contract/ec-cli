@@ -73,11 +73,18 @@ func NewRootCmd() *cobra.Command {
 			// set a custom message for context.DeadlineExceeded error
 			context.DeadlineExceeded = customDeadlineExceededError{}
 
-			// Create a new context now that flags have been parsed so a custom timeout can be used.
-			ctx, cancel := context.WithTimeout(cmd.Context(), globalTimeout)
+			// Create a new context now that flags have been parsed so a
+			// custom timeout can be used and traces can be added
+			ctx := cmd.Context()
+			var cancel context.CancelFunc
+			if globalTimeout > 0 {
+				ctx, cancel = context.WithTimeout(ctx, globalTimeout)
+				log.Debugf("globalTimeout is %s", time.Duration(globalTimeout))
+			} else {
+				log.Debugf("globalTimeout is %d, no timeout used", globalTimeout)
+			}
 			ctx = tracing.WithTrace(ctx, enabledTraces)
 			cmd.SetContext(ctx)
-			log.Debugf("globalTimeout is %d", globalTimeout)
 
 			var cpuprofile *os.File
 			var tracefile *os.File
