@@ -1,0 +1,6 @@
+[allowlist]
+  description = "Project allowlist"
+
+  paths = [
+    '''benchmark\/internal\/registry\/fake_quay.key$''',
+  ]
