@@ -96,20 +96,26 @@
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/main.go",
+            "env": {
+                "EC_DEBUG": "true"
+            },
             "args": [
                 "validate",
                 "image",
                 "--public-key",
                 "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEZP/0htjhVt2y0ohjgtIIgICOtQtA\nnaYJRuLprwIv6FDhZ5yFjYUEtsmoNcW7rx2KM6FOXGsCX3BNc7qhHELT+g==\n-----END PUBLIC KEY-----",
                 "--policy",
-                "github.com/enterprise-contract/config//slsa3",
+                "github.com/enterprise-contract/config//redhat",
                 "--image",
                 "quay.io/konflux-ci/ec-golden-image:latest",
                 "--ignore-rekor",
                 "--output",
                 "data=data.yaml",
                 "--output",
-                "text"
+                "text",
+                "--debug",
+                "--workers",
+                "1"
             ]
         },
         {

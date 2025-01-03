@@ -39,19 +39,14 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	"github.com/enterprise-contract/ec-cli/internal/opa"
-	"github.com/enterprise-contract/ec-cli/internal/opa/rule"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/policy/source"
 	"github.com/enterprise-contract/ec-cli/internal/tracing"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 )
 
-type contextKey string
-
 const (
-	runnerKey        contextKey = "ec.evaluator.runner"
-	capabilitiesKey  contextKey = "ec.evaluator.capabilities"
-	effectiveTimeKey contextKey = "ec.evaluator.effective_time"
+	conftestRunnerKey contextKey = "ec.conftest.evaluator.runner"
 )
 
 // trim removes all failure, warning, success or skipped results that depend on
@@ -160,10 +155,6 @@ func excludeDirectives(code string, rawTerm any) string {
 
 	// Put it all together and return a string
 	return fmt.Sprintf("%s%s", prefix, strings.Join(output, ", "))
-}
-
-type testRunner interface {
-	Run(context.Context, []string) ([]Outcome, Data, error)
 }
 
 const (
@@ -314,7 +305,7 @@ func NewConftestEvaluatorWithNamespace(ctx context.Context, policySources []sour
 	c.policyDir = filepath.Join(c.workDir, "policy")
 	c.dataDir = filepath.Join(c.workDir, "data")
 
-	if err := c.createDataDirectory(ctx); err != nil {
+	if err := createDataDirectory(ctx, c.dataDir, c.policy); err != nil {
 		return nil, err
 	}
 
@@ -339,38 +330,8 @@ func (c conftestEvaluator) CapabilitiesPath() string {
 	return path.Join(c.workDir, "capabilities.json")
 }
 
-type policyRules map[string]rule.Info
-
-func (r *policyRules) collect(a *ast.AnnotationsRef) error {
-	if a.Annotations == nil {
-		return nil
-	}
-
-	info := rule.RuleInfo(a)
-
-	if info.ShortName == "" {
-		// no short name matching with the code from Metadata will not be
-		// deterministic
-		return nil
-	}
-
-	code := info.Code
-
-	if _, ok := (*r)[code]; ok {
-		return fmt.Errorf("found a second rule with the same code: `%s`", code)
-	}
-
-	(*r)[code] = info
-	return nil
-}
-
 func (c conftestEvaluator) Evaluate(ctx context.Context, target EvaluationTarget) ([]Outcome, Data, error) {
 	var results []Outcome
-
-	if trace.IsEnabled() {
-		region := trace.StartRegion(ctx, "ec:conftest-evaluate")
-		defer region.End()
-	}
 
 	// hold all rule annotations from all policy sources
 	// NOTE: emphasis on _all rules from all sources_; meaning that if two rules
@@ -426,7 +387,7 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, target EvaluationTarget
 
 	var r testRunner
 	var ok bool
-	if r, ok = ctx.Value(runnerKey).(testRunner); r == nil || !ok {
+	if r, ok = ctx.Value(conftestRunnerKey).(testRunner); r == nil || !ok {
 
 		// should there be a namespace defined or not
 		allNamespaces := true
@@ -625,159 +586,6 @@ func (c conftestEvaluator) computeSuccesses(result Outcome, rules policyRules, t
 	}
 
 	return successes
-}
-
-func addRuleMetadata(ctx context.Context, result *Result, rules policyRules) {
-	code, ok := (*result).Metadata[metadataCode].(string)
-	if ok {
-		addMetadataToResults(ctx, result, rules[code])
-	}
-}
-
-func addMetadataToResults(ctx context.Context, r *Result, rule rule.Info) {
-	// Note that r.Metadata already includes some fields that we get from
-	// the real conftest violation and warning results, (as provided by
-	// lib.result_helper in the ec-policies rego). Here we augment it with
-	// other fields from rule.Metadata, which we get by opa-inspecting the
-	// rego source.
-
-	if r.Metadata == nil {
-		return
-	}
-	// normalize collection to []string
-	if v, ok := r.Metadata[metadataCollections]; ok {
-		switch vals := v.(type) {
-		case []any:
-			col := make([]string, 0, len(vals))
-			for _, c := range vals {
-				col = append(col, fmt.Sprint(c))
-			}
-			r.Metadata[metadataCollections] = col
-		case []string:
-			// all good, mainly left for documentation of the normalization
-		default:
-			// remove unsupported collections attribute
-			delete(r.Metadata, metadataCollections)
-		}
-	}
-
-	if rule.Title != "" {
-		r.Metadata[metadataTitle] = rule.Title
-	}
-	if rule.EffectiveOn != "" {
-		r.Metadata[metadataEffectiveOn] = rule.EffectiveOn
-	}
-	if rule.Severity != "" {
-		r.Metadata[metadataSeverity] = rule.Severity
-	}
-	if rule.Description != "" {
-		r.Metadata[metadataDescription] = rule.Description
-	}
-	if rule.Solution != "" {
-		r.Metadata[metadataSolution] = rule.Solution
-	}
-	if len(rule.Collections) > 0 {
-		r.Metadata[metadataCollections] = rule.Collections
-	}
-	if len(rule.DependsOn) > 0 {
-		r.Metadata[metadataDependsOn] = rule.DependsOn
-	}
-
-	// If the rule has been effective for a long time, we'll consider
-	// the effective_on date not relevant and not bother including it
-	if effectiveTime, ok := ctx.Value(effectiveTimeKey).(time.Time); ok {
-		if effectiveOnString, ok := r.Metadata[metadataEffectiveOn].(string); ok {
-			effectiveOnTime, err := time.Parse(effectiveOnFormat, effectiveOnString)
-			if err == nil {
-				if effectiveOnTime.Before(effectiveTime.Add(effectiveOnTimeout)) {
-					delete(r.Metadata, metadataEffectiveOn)
-				}
-			} else {
-				log.Warnf("Invalid %q value %q", metadataEffectiveOn, rule.EffectiveOn)
-			}
-		}
-	} else {
-		log.Warnf("Could not get effectiveTime from context")
-	}
-}
-
-// createConfigJSON creates the config.json file with the provided configuration
-// in the data directory
-func createConfigJSON(ctx context.Context, dataDir string, p ConfigProvider) error {
-	if p == nil {
-		return nil
-	}
-	configFilePath := filepath.Join(dataDir, "config.json")
-
-	config := map[string]interface{}{
-		"config": map[string]interface{}{},
-	}
-
-	pc := &struct {
-		WhenNs int64 `json:"when_ns"`
-	}{}
-
-	// Now that the future deny logic is handled in the ec-cli and not in rego,
-	// this field is used only for the checking the effective times in the
-	// acceptable bundles list. Always set it, even when we are using the current
-	// time, so that a consistent current time is used everywhere.
-	pc.WhenNs = p.EffectiveTime().UnixNano()
-
-	opts, err := p.SigstoreOpts()
-	if err != nil {
-		return err
-	}
-
-	// Add the policy config we just prepared
-	config["config"] = map[string]interface{}{
-		"policy":                pc,
-		"default_sigstore_opts": opts,
-	}
-
-	configJSON, err := json.MarshalIndent(config, "", "    ")
-	if err != nil {
-		return err
-	}
-
-	fs := utils.FS(ctx)
-	// Check to see if the data.json file exists
-	exists, err := afero.Exists(fs, configFilePath)
-	if err != nil {
-		return err
-	}
-	// if so, remove it
-	if exists {
-		if err := fs.Remove(configFilePath); err != nil {
-			return err
-		}
-	}
-	// write our jsonData content to the data.json file in the data directory under the workDir
-	log.Debugf("Writing config data to %s: %#v", configFilePath, string(configJSON))
-	if err := afero.WriteFile(fs, configFilePath, configJSON, 0444); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// createDataDirectory creates the base content in the data directory
-func (c *conftestEvaluator) createDataDirectory(ctx context.Context) error {
-	fs := utils.FS(ctx)
-	dataDir := c.dataDir
-	exists, err := afero.DirExists(fs, dataDir)
-	if err != nil {
-		return err
-	}
-	if !exists {
-		log.Debugf("Data dir '%s' does not exist, will create.", dataDir)
-		_ = fs.MkdirAll(dataDir, 0755)
-	}
-
-	if err := createConfigJSON(ctx, dataDir, c.policy); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 // createCapabilitiesFile writes the default OPA capabilities a file.
