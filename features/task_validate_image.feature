@@ -316,7 +316,7 @@ Feature: Verify Enterprise Contract Tekton Tasks
       | IGNORE_REKOR         | true                                                                   |
       | TIMEOUT              | 666s                                                                   |
     Then the task should succeed
-      And the task logs for step "debug-log" should contain "globalTimeout is 0, no timeout used"
+      And the task logs for step "debug-log" should contain "globalTimeout is 100h0m0s"
 
   Scenario: SSL_CERT_DIR environment variable is customized
     Given a working namespace
