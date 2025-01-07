@@ -33,7 +33,14 @@ REPO=${IMAGE/@*/}
 REPO=${REPO/:*/}
 
 CLAIR_REPORT_SHAS=$(
-  cosign download attestation $IMAGE | jq -r '.payload|@base64d|fromjson|.predicate.buildConfig.tasks[]|select(.name=="clair-scan").results[]|select(.name=="REPORTS").value|fromjson|.[]'
+  cosign download attestation $IMAGE | jq -r '
+    .payload | @base64d | fromjson |
+    .predicate.buildConfig.tasks[] |
+    select(.name=="clair-scan").results[] |
+    select(.name=="REPORTS").value |
+    fromjson |
+    .[]
+  '
 )
 
 # For multi-arch the same report maybe associated with each of the per-arch
