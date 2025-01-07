@@ -26,7 +26,11 @@ IMAGE=${1:-"$DEFAULT_IMAGE"}
 
 OPT=${2:-""}
 
-REPO=$(echo "$IMAGE" | cut -d '@' -f 1)
+# Remove digest maybe
+REPO=${IMAGE/@*/}
+
+# Remove tag maybe
+REPO=${REPO/:*/}
 
 CLAIR_REPORT_SHAS=$(
   cosign download attestation $IMAGE | jq -r '.payload|@base64d|fromjson|.predicate.buildConfig.tasks[]|select(.name=="clair-scan").results[]|select(.name=="REPORTS").value|fromjson|.[]'
