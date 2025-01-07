@@ -59,14 +59,11 @@ for b in $ALL_BLOBS; do
     YQ_QUERY='.'
   fi
 
-  if [ "$OPT" == "--high" ]; then
-    echo "# Severity High"
-    YQ_QUERY="$YQ_QUERY | .[] |select(.normalized_severity == \"High\") | [.]"
-  fi
-
-  if [ "$OPT" == "--critical" ]; then
-    echo "# Severity Critical"
-    YQ_QUERY="$YQ_QUERY | .[] |select(.normalized_severity == \"Critical\") | [.]"
+  if [[ "$OPT" =~ ^--Low|--Medium|--High|--Critical|--Unknown$ ]]; then
+    # Filter by severity
+    SEV=${OPT//--}
+    echo "# Severity $SEV"
+    YQ_QUERY="$YQ_QUERY | .[] | select(.normalized_severity == \"$SEV\") | [.]"
   fi
 
   echo "#"
