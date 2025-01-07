@@ -98,6 +98,10 @@ func Experimental() bool {
 	return os.Getenv("EC_EXPERIMENTAL") == "1"
 }
 
+func IsOpaEnabled() bool {
+	return os.Getenv("EC_USE_OPA") == "1"
+}
+
 // detect if the string is json
 func IsJson(data string) bool {
 	var jsMsg json.RawMessage
