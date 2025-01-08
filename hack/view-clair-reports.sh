@@ -26,10 +26,21 @@ IMAGE=${1:-"$DEFAULT_IMAGE"}
 
 OPT=${2:-""}
 
-REPO=$(echo "$IMAGE" | cut -d '@' -f 1)
+# Remove digest maybe
+REPO=${IMAGE/@*/}
+
+# Remove tag maybe
+REPO=${REPO/:*/}
 
 CLAIR_REPORT_SHAS=$(
-  cosign download attestation $IMAGE | jq -r '.payload|@base64d|fromjson|.predicate.buildConfig.tasks[]|select(.name=="clair-scan").results[]|select(.name=="REPORTS").value|fromjson|.[]'
+  cosign download attestation $IMAGE | jq -r '
+    .payload | @base64d | fromjson |
+    .predicate.buildConfig.tasks[] |
+    select(.name=="clair-scan").results[] |
+    select(.name=="REPORTS").value |
+    fromjson |
+    .[]
+  '
 )
 
 # For multi-arch the same report maybe associated with each of the per-arch
@@ -55,14 +66,11 @@ for b in $ALL_BLOBS; do
     YQ_QUERY='.'
   fi
 
-  if [ "$OPT" == "--high" ]; then
-    echo "# Severity High"
-    YQ_QUERY="$YQ_QUERY | .[] |select(.normalized_severity == \"High\") | [.]"
-  fi
-
-  if [ "$OPT" == "--critical" ]; then
-    echo "# Severity Critical"
-    YQ_QUERY="$YQ_QUERY | .[] |select(.normalized_severity == \"Critical\") | [.]"
+  if [[ "$OPT" =~ ^--Low|--Medium|--High|--Critical|--Unknown$ ]]; then
+    # Filter by severity
+    SEV=${OPT//--}
+    echo "# Severity $SEV"
+    YQ_QUERY="$YQ_QUERY | .[] | select(.normalized_severity == \"$SEV\") | [.]"
   fi
 
   echo "#"
