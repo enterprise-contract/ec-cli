@@ -26,6 +26,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
@@ -36,6 +37,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/enterprise-contract/ec-cli/internal/fetchers/oci/files"
+	"github.com/enterprise-contract/ec-cli/internal/image"
 	"github.com/enterprise-contract/ec-cli/internal/utils/oci"
 )
 
@@ -288,18 +290,28 @@ func ociBlob(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) {
 
 func ociDescriptor(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) {
 	log := log.WithField("rego", ociDescriptor)
-	uri, ok := a.Value.(ast.String)
+
+	uriValue, ok := a.Value.(ast.String)
 	if !ok {
 		return nil, nil
 	}
 
-	ref, err := name.NewDigest(string(uri))
+	client := oci.NewClient(bctx.Context)
+
+	uri, err := resolveIfNeeded(client, string(uriValue))
+	if err != nil {
+		log.Error(err)
+		return nil, nil
+	}
+	log = log.WithField("ref", uri)
+
+	ref, err := name.NewDigest(uri)
 	if err != nil {
 		log.Errorf("new digest: %s", err)
 		return nil, nil
 	}
 
-	descriptor, err := oci.NewClient(bctx.Context).Head(ref)
+	descriptor, err := client.Head(ref)
 	if err != nil {
 		log.Errorf("fetch image: %s", err)
 		return nil, nil
@@ -310,18 +322,27 @@ func ociDescriptor(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) {
 
 func ociImageManifest(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) {
 	log := log.WithField("rego", ociImageManifestName)
-	uri, ok := a.Value.(ast.String)
+	uriValue, ok := a.Value.(ast.String)
 	if !ok {
 		return nil, nil
 	}
 
-	ref, err := name.NewDigest(string(uri))
+	client := oci.NewClient(bctx.Context)
+
+	uri, err := resolveIfNeeded(client, string(uriValue))
+	if err != nil {
+		log.Error(err)
+		return nil, nil
+	}
+	log = log.WithField("ref", uri)
+
+	ref, err := name.NewDigest(uri)
 	if err != nil {
 		log.Errorf("new digest: %s", err)
 		return nil, nil
 	}
 
-	image, err := oci.NewClient(bctx.Context).Image(ref)
+	image, err := client.Image(ref)
 	if err != nil {
 		log.Errorf("fetch image: %s", err)
 		return nil, nil
@@ -457,6 +478,25 @@ func newAnnotationsTerm(annotations map[string]string) *ast.Term {
 		annotationTerms = append(annotationTerms, ast.Item(ast.StringTerm(key), ast.StringTerm(value)))
 	}
 	return ast.ObjectTerm(annotationTerms...)
+}
+
+func resolveIfNeeded(client oci.Client, uri string) (string, error) {
+	if !strings.Contains(uri, "@") {
+		original := uri
+		ref, err := image.NewImageReference(uri)
+		if err != nil {
+			return "", fmt.Errorf("unable to parse reference: %w", err)
+		}
+
+		digest, err := client.ResolveDigest(ref.Ref())
+		if err != nil {
+			return "", fmt.Errorf("unable to resolve digest: %w", err)
+		}
+		uri = fmt.Sprintf("%s@%s", uri, digest)
+
+		log.Debugf("resolved image reference %q to %q", original, uri)
+	}
+	return uri, nil
 }
 
 func init() {

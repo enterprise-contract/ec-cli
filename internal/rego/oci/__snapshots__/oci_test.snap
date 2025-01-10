@@ -1220,3 +1220,286 @@
  ]
 }
 ---
+
+[TestOCIImageManifest/missing_digest - 1]
+{
+ "type": "object",
+ "value": [
+  [
+   {
+    "type": "string",
+    "value": "annotations"
+   },
+   {
+    "type": "object",
+    "value": []
+   }
+  ],
+  [
+   {
+    "type": "string",
+    "value": "config"
+   },
+   {
+    "type": "object",
+    "value": [
+     [
+      {
+       "type": "string",
+       "value": "annotations"
+      },
+      {
+       "type": "object",
+       "value": []
+      }
+     ],
+     [
+      {
+       "type": "string",
+       "value": "artifactType"
+      },
+      {
+       "type": "string",
+       "value": ""
+      }
+     ],
+     [
+      {
+       "type": "string",
+       "value": "data"
+      },
+      {
+       "type": "string",
+       "value": ""
+      }
+     ],
+     [
+      {
+       "type": "string",
+       "value": "digest"
+      },
+      {
+       "type": "string",
+       "value": "sha256:4e388ab32b10dc8dbc7e28144f552830adc74787c1e2c0824032078a79f227fb"
+      }
+     ],
+     [
+      {
+       "type": "string",
+       "value": "mediaType"
+      },
+      {
+       "type": "string",
+       "value": "application/vnd.oci.image.config.v1+json"
+      }
+     ],
+     [
+      {
+       "type": "string",
+       "value": "size"
+      },
+      {
+       "type": "number",
+       "value": 123
+      }
+     ],
+     [
+      {
+       "type": "string",
+       "value": "urls"
+      },
+      {
+       "type": "array",
+       "value": []
+      }
+     ]
+    ]
+   }
+  ],
+  [
+   {
+    "type": "string",
+    "value": "layers"
+   },
+   {
+    "type": "array",
+    "value": [
+     {
+      "type": "object",
+      "value": [
+       [
+        {
+         "type": "string",
+         "value": "annotations"
+        },
+        {
+         "type": "object",
+         "value": []
+        }
+       ],
+       [
+        {
+         "type": "string",
+         "value": "artifactType"
+        },
+        {
+         "type": "string",
+         "value": ""
+        }
+       ],
+       [
+        {
+         "type": "string",
+         "value": "data"
+        },
+        {
+         "type": "string",
+         "value": ""
+        }
+       ],
+       [
+        {
+         "type": "string",
+         "value": "digest"
+        },
+        {
+         "type": "string",
+         "value": "sha256:325392e8dd2826a53a9a35b7a7f8d71683cd27ebc2c73fee85dab673bc909b67"
+        }
+       ],
+       [
+        {
+         "type": "string",
+         "value": "mediaType"
+        },
+        {
+         "type": "string",
+         "value": "application/vnd.oci.image.layer.v1.tar+gzip"
+        }
+       ],
+       [
+        {
+         "type": "string",
+         "value": "size"
+        },
+        {
+         "type": "number",
+         "value": 9999
+        }
+       ],
+       [
+        {
+         "type": "string",
+         "value": "urls"
+        },
+        {
+         "type": "array",
+         "value": []
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  ],
+  [
+   {
+    "type": "string",
+    "value": "mediaType"
+   },
+   {
+    "type": "string",
+    "value": "application/vnd.oci.image.manifest.v1+json"
+   }
+  ],
+  [
+   {
+    "type": "string",
+    "value": "schemaVersion"
+   },
+   {
+    "type": "number",
+    "value": 2
+   }
+  ]
+ ]
+}
+---
+
+[TestOCIDescriptorManifest/missing_digest - 1]
+{
+ "type": "object",
+ "value": [
+  [
+   {
+    "type": "string",
+    "value": "annotations"
+   },
+   {
+    "type": "object",
+    "value": []
+   }
+  ],
+  [
+   {
+    "type": "string",
+    "value": "artifactType"
+   },
+   {
+    "type": "string",
+    "value": ""
+   }
+  ],
+  [
+   {
+    "type": "string",
+    "value": "data"
+   },
+   {
+    "type": "string",
+    "value": ""
+   }
+  ],
+  [
+   {
+    "type": "string",
+    "value": "digest"
+   },
+   {
+    "type": "string",
+    "value": "sha256:4e388ab32b10dc8dbc7e28144f552830adc74787c1e2c0824032078a79f227fb"
+   }
+  ],
+  [
+   {
+    "type": "string",
+    "value": "mediaType"
+   },
+   {
+    "type": "string",
+    "value": "application/vnd.oci.image.manifest.v1+json"
+   }
+  ],
+  [
+   {
+    "type": "string",
+    "value": "size"
+   },
+   {
+    "type": "number",
+    "value": 123
+   }
+  ],
+  [
+   {
+    "type": "string",
+    "value": "urls"
+   },
+   {
+    "type": "array",
+    "value": []
+   }
+  ]
+ ]
+}
+---
