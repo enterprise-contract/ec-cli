@@ -112,10 +112,13 @@ func TestOCIBlob(t *testing.T) {
 
 func TestOCIDescriptorManifest(t *testing.T) {
 	cases := []struct {
-		name       string
-		ref        *ast.Term
-		descriptor *v1.Descriptor
-		err        error
+		name           string
+		ref            *ast.Term
+		descriptor     *v1.Descriptor
+		resolvedDigest string
+		resolveErr     error
+		headErr        error
+		wantErr        bool
 	}{
 		{
 			name: "complete image manifest",
@@ -168,22 +171,46 @@ func TestOCIDescriptorManifest(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:           "missing digest",
+			ref:            ast.StringTerm("registry.local/spam:latest"),
+			resolvedDigest: "sha256:01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+			descriptor: &v1.Descriptor{
+				MediaType: types.OCIManifestSchema1,
+				Size:      123,
+				Digest: v1.Hash{
+					Algorithm: "sha256",
+					Hex:       "4e388ab32b10dc8dbc7e28144f552830adc74787c1e2c0824032078a79f227fb",
+				},
+			},
+		},
+		{
+			name:       "resolve error",
+			ref:        ast.StringTerm("registry.local/spam:latest"),
+			resolveErr: errors.New("kaboom!"),
+			wantErr:    true,
+		},
 	}
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			client := fake.FakeClient{}
-			if c.err != nil {
-				client.On("Head", mock.Anything).Return(nil, c.err)
+			if c.headErr != nil {
+				client.On("Head", mock.Anything).Return(nil, c.headErr)
 			} else {
 				client.On("Head", mock.Anything).Return(c.descriptor, nil)
+			}
+			if c.resolveErr != nil {
+				client.On("ResolveDigest", mock.Anything).Return("", c.resolveErr)
+			} else if c.resolvedDigest != "" {
+				client.On("ResolveDigest", mock.Anything).Return(c.resolvedDigest, nil)
 			}
 			ctx := oci.WithClient(context.Background(), &client)
 			bctx := rego.BuiltinContext{Context: ctx}
 
 			got, err := ociDescriptor(bctx, c.ref)
 			require.NoError(t, err)
-			if c.err != nil {
+			if c.wantErr {
 				require.Nil(t, got)
 			} else {
 				require.NotNil(t, got)
@@ -199,12 +226,12 @@ func TestOCIDescriptorErrors(t *testing.T) {
 		ref  *ast.Term
 	}{
 		{
-			name: "missing digest",
-			ref:  ast.StringTerm("registry.local/spam:latest"),
-		},
-		{
 			name: "bad image ref",
 			ref:  ast.StringTerm("......registry.local/spam:latest@sha256:01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"),
+		},
+		{
+			name: "bad image ref without digest",
+			ref:  ast.StringTerm("."),
 		},
 		{
 			name: "invalid ref type",
@@ -228,12 +255,14 @@ func TestOCIDescriptorErrors(t *testing.T) {
 
 func TestOCIImageManifest(t *testing.T) {
 	cases := []struct {
-		name        string
-		ref         *ast.Term
-		manifest    *v1.Manifest
-		imageErr    error
-		manifestErr error
-		wantErr     bool
+		name           string
+		ref            *ast.Term
+		manifest       *v1.Manifest
+		resolvedDigest string
+		resolveErr     error
+		imageErr       error
+		manifestErr    error
+		wantErr        bool
 	}{
 		{
 			name: "complete image manifest",
@@ -345,13 +374,40 @@ func TestOCIImageManifest(t *testing.T) {
 			},
 		},
 		{
-			name:    "missing digest",
-			ref:     ast.StringTerm("registry.local/spam:latest"),
-			wantErr: true,
+			name:           "missing digest",
+			ref:            ast.StringTerm("registry.local/spam:latest"),
+			resolvedDigest: "sha256:01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+			manifest: &v1.Manifest{
+				SchemaVersion: 2,
+				MediaType:     types.OCIManifestSchema1,
+				Config: v1.Descriptor{
+					MediaType: types.OCIConfigJSON,
+					Size:      123,
+					Digest: v1.Hash{
+						Algorithm: "sha256",
+						Hex:       "4e388ab32b10dc8dbc7e28144f552830adc74787c1e2c0824032078a79f227fb",
+					},
+				},
+				Layers: []v1.Descriptor{
+					{
+						MediaType: types.OCILayer,
+						Size:      9999,
+						Digest: v1.Hash{
+							Algorithm: "sha256",
+							Hex:       "325392e8dd2826a53a9a35b7a7f8d71683cd27ebc2c73fee85dab673bc909b67",
+						},
+					},
+				},
+			},
 		},
 		{
 			name:    "bad image ref",
 			ref:     ast.StringTerm("......registry.local/spam:latest@sha256:01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"),
+			wantErr: true,
+		},
+		{
+			name:    "bad image ref without digest",
+			ref:     ast.StringTerm("."),
 			wantErr: true,
 		},
 		{
@@ -364,6 +420,12 @@ func TestOCIImageManifest(t *testing.T) {
 			ref:         ast.StringTerm("registry.local/spam:latest@sha256:01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"),
 			manifestErr: errors.New("kaboom!"),
 			wantErr:     true,
+		},
+		{
+			name:       "resolve error",
+			ref:        ast.StringTerm("registry.local/spam:latest"),
+			resolveErr: errors.New("kaboom!"),
+			wantErr:    true,
 		},
 		{
 			name:     "nil manifest",
@@ -382,6 +444,11 @@ func TestOCIImageManifest(t *testing.T) {
 				imageManifest := v1fake.FakeImage{}
 				imageManifest.ManifestReturns(c.manifest, c.manifestErr)
 				client.On("Image", mock.Anything, mock.Anything).Return(&imageManifest, nil)
+			}
+			if c.resolveErr != nil {
+				client.On("ResolveDigest", mock.Anything).Return("", c.resolveErr)
+			} else if c.resolvedDigest != "" {
+				client.On("ResolveDigest", mock.Anything).Return(c.resolvedDigest, nil)
 			}
 			ctx := oci.WithClient(context.Background(), &client)
 			bctx := rego.BuiltinContext{Context: ctx}
