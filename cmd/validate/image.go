@@ -45,6 +45,7 @@ import (
 type imageValidationFunc func(context.Context, app.SnapshotComponent, *app.SnapshotSpec, policy.Policy, []evaluator.Evaluator, bool) (*output.Output, error)
 
 var newConftestEvaluator = evaluator.NewConftestEvaluator
+var newOPAEvaluator = evaluator.NewOPAEvaluator
 
 func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 	data := struct {
@@ -318,7 +319,14 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 					log.Debugf("policySource: %#v", policySource)
 				}
 
-				c, err := newConftestEvaluator(cmd.Context(), policySources, data.policy, sourceGroup)
+				var c evaluator.Evaluator
+				var err error
+				if utils.IsOpaEnabled() {
+					c, err = newOPAEvaluator()
+				} else {
+					c, err = newConftestEvaluator(cmd.Context(), policySources, data.policy, sourceGroup)
+				}
+
 				if err != nil {
 					log.Debug("Failed to initialize the conftest evaluator!")
 					return err
