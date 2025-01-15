@@ -32,7 +32,7 @@ COPY . .
 
 RUN /build/build.sh "${TARGETOS}_${TARGETARCH}"
 
-FROM registry.access.redhat.com/ubi9/ubi-minimal:9.4@sha256:ef6fb6b3b38ef6c85daebeabebc7ff3151b9dd1500056e6abc9c3295e4b78a51
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.4@sha256:c0e70387664f30cd9cf2795b547e4a9a51002c44a4a86aa9335ab030134bf392
 
 ARG TARGETOS
 ARG TARGETARCH
