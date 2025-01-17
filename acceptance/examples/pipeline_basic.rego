@@ -7,7 +7,7 @@ expected_kind := "Pipeline"
 # description: Check that the pipeline is a kind of "Pipeline"
 # custom:
 #   short_name: expected_kind
-deny[result] {
+deny contains result if {
 	expected_kind != input.kind
 	result := "invalid kind"
 }

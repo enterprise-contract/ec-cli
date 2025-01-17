@@ -6,6 +6,6 @@ package policy.release.kitty
 # custom:
 #   short_name: purr
 #
-deny[result] {
+deny contains result if {
     result := "Meow"
 }

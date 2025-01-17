@@ -321,7 +321,7 @@ func setupTestContext(r *mockTestRunner, dl *mockDownloader) context.Context {
 	# METADATA
 	# title: Reject rule
 	# description: This rule will always fail
-	deny[result] {
+	deny contains result if {
 		result := "Fails always"
 	}`)), 0644); err != nil {
 		panic(err)
@@ -1375,7 +1375,7 @@ func TestCollectAnnotationData(t *testing.T) {
 		#   collections: [A, B, C]
 		#   effective_on: 2022-01-01T00:00:00Z
 		#   depends_on: a.b.c
-		deny[msg] {
+		deny contains msg if {
 			msg := "hi"
 		}`), ast.ParserOptions{
 		ProcessAnnotation: true,
@@ -1889,7 +1889,7 @@ func TestUnconformingRule(t *testing.T) {
 	require.NoError(t, err)
 
 	_, _, err = evaluator.Evaluate(ctx, EvaluationTarget{Inputs: []string{path.Join(dir, "inputs")}})
-	assert.EqualError(t, err, `the rule "deny = true { true }" returns an unsupported value, at no_msg.rego:3`)
+	assert.EqualError(t, err, `the rule "deny = true if { true }" returns an unsupported value, at no_msg.rego:3`)
 }
 
 func TestNewConftestEvaluatorComputeIncludeExclude(t *testing.T) {

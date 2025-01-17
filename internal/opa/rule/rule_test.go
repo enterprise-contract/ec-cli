@@ -55,7 +55,7 @@ func TestTitle(t *testing.T) {
 			name: "no annotations",
 			annotation: annotationRef(heredoc.Doc(`
 				package a
-				deny() { true }`)),
+				deny if { true }`)),
 			expected: "",
 		},
 		{
@@ -65,7 +65,7 @@ func TestTitle(t *testing.T) {
 				# METADATA
 				# custom:
 				#   hmm: 14
-				deny() { true }`)),
+				deny if { true }`)),
 			expected: "",
 		},
 		{
@@ -74,7 +74,7 @@ func TestTitle(t *testing.T) {
 				package a
 				# METADATA
 				# title: title
-				deny() { true }`)),
+				deny if { true }`)),
 			expected: "title",
 		},
 	}
@@ -101,7 +101,7 @@ func TestDescription(t *testing.T) {
 			name: "no annotations",
 			annotation: annotationRef(heredoc.Doc(`
 				package a
-				deny() { true }`)),
+				deny if { true }`)),
 			expected: "",
 		},
 		{
@@ -111,7 +111,7 @@ func TestDescription(t *testing.T) {
 				# METADATA
 				# custom:
 				#   hmm: 14
-				deny() { true }`)),
+				deny if { true }`)),
 			expected: "",
 		},
 		{
@@ -120,7 +120,7 @@ func TestDescription(t *testing.T) {
 				package a
 				# METADATA
 				# description: description
-				deny() { true }`)),
+				deny if { true }`)),
 			expected: "description",
 		},
 		{
@@ -131,7 +131,7 @@ func TestDescription(t *testing.T) {
 				# description: >-
 				#   See xref:release_policy.adoc#attestation_task_bundle_package[here] and
 				#   xref:attachment$trusted_tekton_tasks.yml[over there] for details.
-				deny() { true }`)),
+				deny if { true }`)),
 			expected: "See here and over there for details.",
 		},
 	}
@@ -160,7 +160,7 @@ func TestKind(t *testing.T) {
 				package a
 				# METADATA
 				# title: test
-				helper() { true }`)),
+				helper if { true }`)),
 			expected: Other,
 		},
 		{
@@ -169,7 +169,7 @@ func TestKind(t *testing.T) {
 				package a
 				# METADATA
 				# title: test
-				deny() { true }`)),
+				deny if { true }`)),
 			expected: Deny,
 		},
 		{
@@ -178,7 +178,7 @@ func TestKind(t *testing.T) {
 				package a
 				# METADATA
 				# title: test
-				warn() { true }`)),
+				warn if { true }`)),
 			expected: Warn,
 		},
 	}
@@ -205,7 +205,7 @@ func TestShortName(t *testing.T) {
 			name: "no annotations",
 			annotation: annotationRef(heredoc.Doc(`
 				package a
-				deny() { true }`)),
+				deny if { true }`)),
 			expected: "",
 		},
 		{
@@ -214,7 +214,7 @@ func TestShortName(t *testing.T) {
 				package a
 				# METADATA
 				# title: title
-				deny() { true }`)),
+				deny if { true }`)),
 			expected: "",
 		},
 		{
@@ -224,7 +224,7 @@ func TestShortName(t *testing.T) {
 				# METADATA
 				# custom:
 				#   hmm: 14
-				deny() { true }`)),
+				deny if { true }`)),
 			expected: "",
 		},
 		{
@@ -234,7 +234,7 @@ func TestShortName(t *testing.T) {
 				# METADATA
 				# custom:
 				#   short_name: here
-				deny() { true }`)),
+				deny if { true }`)),
 			expected: "here",
 		},
 	}
@@ -261,7 +261,7 @@ func TestEffectiveOn(t *testing.T) {
 			name: "no annotations",
 			annotation: annotationRef(heredoc.Doc(`
 				package a
-				deny() { false }`)),
+				deny if { false }`)),
 			expected: "",
 		},
 		{
@@ -270,7 +270,7 @@ func TestEffectiveOn(t *testing.T) {
 				package a
 				# METADATA
 				# title: title
-				deny() { false }`)),
+				deny if { false }`)),
 			expected: "",
 		},
 		{
@@ -280,7 +280,7 @@ func TestEffectiveOn(t *testing.T) {
 				# METADATA
 				# custom:
 				#   hmm: 14
-				deny() { false }`)),
+				deny if { false }`)),
 			expected: "",
 		},
 		{
@@ -290,7 +290,7 @@ func TestEffectiveOn(t *testing.T) {
 				# METADATA
 				# custom:
 				#   effective_on: 2022-01-01T00:00:00Z
-				deny() { true }`)),
+				deny if { true }`)),
 			expected: "2022-01-01T00:00:00Z",
 		},
 		{
@@ -300,7 +300,7 @@ func TestEffectiveOn(t *testing.T) {
 				# METADATA
 				# custom:
 				#   effective_on: '2022-01-01T00:00:00Z'
-				deny() { true }`)),
+				deny if { true }`)),
 			expected: "2022-01-01T00:00:00Z",
 		},
 	}
@@ -327,7 +327,7 @@ func TestSolution(t *testing.T) {
 				# METADATA
 				# custom:
 				#   solution: Chunky bacon
-				deny() { true }`)),
+				deny if { true }`)),
 			expected: "Chunky bacon",
 		},
 		{
@@ -339,7 +339,7 @@ func TestSolution(t *testing.T) {
 				#  solution: >-
 				#    See xref:release_policy.adoc#attestation_task_bundle_package[here] and
 				#    xref:attachment$trusted_tekton_tasks.yml[over there] for details.
-				deny() { true }`)),
+				deny if { true }`)),
 			expected: "See here and over there for details.",
 		},
 	}
@@ -366,7 +366,7 @@ func TestCollections(t *testing.T) {
 			name: "no annotations",
 			annotation: annotationRef(heredoc.Doc(`
 				package a
-				deny() { true }`)),
+				deny if { true }`)),
 			expected: []string{},
 		},
 		{
@@ -375,7 +375,7 @@ func TestCollections(t *testing.T) {
 				package a
 				# METADATA
 				# title: title
-				deny() { true }`)),
+				deny if { true }`)),
 			expected: []string{},
 		},
 		{
@@ -385,7 +385,7 @@ func TestCollections(t *testing.T) {
 				# METADATA
 				# custom:
 				#   hmm: 14
-				deny() { true }`)),
+				deny if { true }`)),
 			expected: []string{},
 		},
 		{
@@ -396,7 +396,7 @@ func TestCollections(t *testing.T) {
 				# custom:
 				#   collections:
 				#     - A
-				deny() { true }`)),
+				deny if { true }`)),
 			expected: []string{"A"},
 		},
 		{
@@ -409,7 +409,7 @@ func TestCollections(t *testing.T) {
 				#     - A
 				#     - B
 				#     - C
-				deny() { true }`)),
+				deny if { true }`)),
 			expected: []string{"A", "B", "C"},
 		},
 	}
@@ -436,7 +436,7 @@ func TestCode(t *testing.T) {
 			name: "no annotations",
 			annotation: annotationRef(heredoc.Doc(`
 				package a
-				deny() { true }`)),
+				deny if { true }`)),
 			expected: "",
 		},
 		{
@@ -446,14 +446,14 @@ func TestCode(t *testing.T) {
 				# METADATA
 				# custom:
 				#   short_name: x
-				deny() { true }`)),
+				deny if { true }`)),
 			expected: "a.x",
 		},
 		{
 			name: "nested packages no annotations",
 			annotation: annotationRef(heredoc.Doc(`
 				package a.b.c
-				deny() { true }`)),
+				deny if { true }`)),
 			expected: "",
 		},
 		{
@@ -463,7 +463,7 @@ func TestCode(t *testing.T) {
 				# METADATA
 				# custom:
 				#   short_name: x
-				deny() { true }`)),
+				deny if { true }`)),
 			expected: "a.b.c.x",
 		},
 		{
@@ -473,7 +473,7 @@ func TestCode(t *testing.T) {
 				# METADATA
 				# custom:
 				#   short_name: x
-				deny() { true }`)),
+				deny if { true }`)),
 			expected: "a.b.c.x",
 		},
 		{
@@ -483,7 +483,7 @@ func TestCode(t *testing.T) {
 				# METADATA
 				# custom:
 				#   short_name: x
-				deny() { true }`)),
+				deny if { true }`)),
 			expected: "data.a.b.c.x",
 		},
 		{
@@ -493,7 +493,7 @@ func TestCode(t *testing.T) {
 				# METADATA
 				# custom:
 				#   short_name: x
-				deny() { true }`)),
+				deny if { true }`)),
 			expected: "a.data.b.c.x",
 		},
 		{
@@ -503,7 +503,7 @@ func TestCode(t *testing.T) {
 				# METADATA
 				# custom:
 				#   short_name: x
-				deny() { true }`)),
+				deny if { true }`)),
 			expected: "a.policy.b.c.x",
 		},
 		{
@@ -513,7 +513,7 @@ func TestCode(t *testing.T) {
 				# METADATA
 				# custom:
 				#   short_name: x
-				deny() { true }`)),
+				deny if { true }`)),
 			expected: "a.b.c.x",
 		},
 		{
@@ -523,7 +523,7 @@ func TestCode(t *testing.T) {
 				# METADATA
 				# custom:
 				#   short_name: x
-				deny() { true }`)),
+				deny if { true }`)),
 			expected: "a.b.c.x",
 		},
 		{
@@ -533,7 +533,7 @@ func TestCode(t *testing.T) {
 				# METADATA
 				# custom:
 				#   short_name: x
-				deny() { true }`)),
+				deny if { true }`)),
 			expected: "a.b.c.x",
 		},
 		{
@@ -543,7 +543,7 @@ func TestCode(t *testing.T) {
 				# METADATA
 				# custom:
 				#   short_name: x
-				deny() { true }`)),
+				deny if { true }`)),
 			expected: "a.b.c.x",
 		},
 		{
@@ -553,7 +553,7 @@ func TestCode(t *testing.T) {
 				# METADATA
 				# custom:
 				#   short_name: x
-				deny() { true }`)),
+				deny if { true }`)),
 			expected: "something.a.b.c.x",
 		},
 		{
@@ -563,7 +563,7 @@ func TestCode(t *testing.T) {
 				# METADATA
 				# custom:
 				#   short_name: x
-				deny() { true }`)),
+				deny if { true }`)),
 			expected: "x",
 		},
 	}
@@ -590,7 +590,7 @@ func TestDependsOn(t *testing.T) {
 			name: "no depends_on annotation",
 			annotation: annotationRef(heredoc.Doc(`
 				package a
-				deny() { true }`)),
+				deny if { true }`)),
 			expected: []string{},
 		},
 		{
@@ -600,7 +600,7 @@ func TestDependsOn(t *testing.T) {
 				# METADATA
 				# custom:
 				#   depends_on: a.b.c
-				deny() { true }`)),
+				deny if { true }`)),
 			expected: []string{"a.b.c"},
 		},
 		{
@@ -613,7 +613,7 @@ func TestDependsOn(t *testing.T) {
 				#     - a.b.c
 				#     - d.e.f
 				#     - g.h.i
-				deny() { true }`)),
+				deny if { true }`)),
 			expected: []string{"a.b.c", "d.e.f", "g.h.i"},
 		},
 	}

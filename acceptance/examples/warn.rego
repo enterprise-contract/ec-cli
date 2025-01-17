@@ -1,6 +1,6 @@
 # Simplest always-warning policy
 package main
 
-warn[result] {
+warn contains result if {
     result := "Has a warning"
 }

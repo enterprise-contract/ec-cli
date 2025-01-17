@@ -23,6 +23,6 @@ package policy.release.builtin.image
 #   collections:
 #   - builtin
 #
-deny {
+deny if {
 	false # Here just to provide documentation
 }

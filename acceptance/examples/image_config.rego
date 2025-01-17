@@ -11,7 +11,7 @@ import future.keywords.in
 # custom:
 #   short_name: image_title_set
 #   failure_msg: Missing image title label
-deny contains err(rego.metadata.rule()) {
+deny contains err(rego.metadata.rule()) if {
     not input.image.config.Labels["org.opencontainers.image.title"]
 }
 
@@ -21,7 +21,7 @@ deny contains err(rego.metadata.rule()) {
 # custom:
 #   short_name: parent_image_title_set
 #   failure_msg: Missing parent image title label
-deny contains err(rego.metadata.rule()) {
+deny contains err(rego.metadata.rule()) if {
     not input.image.parent.config.Labels["org.opencontainers.image.title"]
 }
 
@@ -33,7 +33,7 @@ deny contains err(rego.metadata.rule()) {
 # custom:
 #   short_name: image_distinct_title_set
 #   failure_msg: Image does not have a distinct title
-deny contains err(rego.metadata.rule()) {
+deny contains err(rego.metadata.rule()) if {
     l1 := input.image.config.Labels["org.opencontainers.image.title"]
     l2 := input.image.parent.config.Labels["org.opencontainers.image.title"]
     l1 == l2

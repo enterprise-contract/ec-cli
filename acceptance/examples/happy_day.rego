@@ -10,7 +10,7 @@ package main
 #   solution: Easy
 #   collections:
 #   - A
-deny[result] {
+deny contains result if {
     false
     result := "Never denies"
 }

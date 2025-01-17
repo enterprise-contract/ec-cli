@@ -1,5 +1,5 @@
 package unsupported
 
-deny {
+deny if {
     true
 }
