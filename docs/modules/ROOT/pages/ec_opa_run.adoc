@@ -135,7 +135,7 @@ ec opa run [flags]
 ----
 == Options
 
--a, --addr:: set listening address of the server (e.g., [ip]:<port> for TCP, unix://<path> for UNIX domain socket) (Default: [:8181])
+-a, --addr:: set listening address of the server (e.g., [ip]:<port> for TCP, unix://<path> for UNIX domain socket) (Default: [localhost:8181])
 --authentication:: set authentication scheme (Default: off)
 --authorization:: set authorization scheme (Default: off)
 -b, --bundle:: load paths as bundle files or root directories (Default: false)
@@ -172,7 +172,7 @@ ec opa run [flags]
 --tls-cipher-suites:: set list of enabled TLS 1.0–1.2 cipher suites (IANA) (Default: [])
 --tls-private-key-file:: set path of TLS private key file
 --unix-socket-perm:: specify the permissions for the Unix domain socket if used to listen for incoming connections (Default: 755)
---v0-compatible:: opt-in to OPA features and behaviors prior to the OPA v1.0 release. Takes precedence over --v1-compatible (Default: false)
+--v0-compatible:: opt-in to OPA features and behaviors prior to the OPA v1.0 release (Default: false)
 --v1-compatible:: opt-in to OPA features and behaviors that are enabled by default in OPA v1.0 (Default: false)
 --verification-key:: set the secret (HMAC) or path of the PEM file containing the public key (RSA and ECDSA)
 --verification-key-id:: name assigned to the verification key used for bundle verification (Default: default)

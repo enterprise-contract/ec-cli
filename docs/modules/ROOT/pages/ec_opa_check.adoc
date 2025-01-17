@@ -21,10 +21,11 @@ ec opa check <path> [path [...]] [flags]
 -h, --help:: help for check (Default: false)
 --ignore:: set file and directory names to ignore during loading (e.g., '.*' excludes hidden files) (Default: [])
 -m, --max-errors:: set the number of errors to allow before compilation fails early (Default: 10)
---rego-v1:: check for Rego v1 compatibility (policies must also be compatible with current OPA version) (Default: false)
+--rego-v1:: check for Rego v0 and v1 compatibility (policies must be compatible with both Rego versions) (Default: false)
 -s, --schema:: set schema file path or directory path
 -S, --strict:: enable compiler strict mode (Default: false)
---v0-compatible:: opt-in to OPA features and behaviors prior to the OPA v1.0 release. Takes precedence over --v1-compatible (Default: false)
+--v0-compatible:: opt-in to OPA features and behaviors prior to the OPA v1.0 release (Default: false)
+--v0-v1:: check for Rego v0 and v1 compatibility (policies must be compatible with both Rego versions) (Default: false)
 --v1-compatible:: opt-in to OPA features and behaviors that are enabled by default in OPA v1.0 (Default: false)
 
 == Options inherited from parent commands

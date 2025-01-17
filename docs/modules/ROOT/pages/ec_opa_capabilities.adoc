@@ -54,8 +54,9 @@ ec opa capabilities [flags]
 == Options
 
 --current:: print current capabilities (Default: false)
---file:: print current capabilities
+--file:: print capabilities defined by a file
 -h, --help:: help for capabilities (Default: false)
+--v0-compatible:: opt-in to OPA features and behaviors prior to the OPA v1.0 release (Default: false)
 --version:: print capabilities of a specific version
 
 == Options inherited from parent commands
