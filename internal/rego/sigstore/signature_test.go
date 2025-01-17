@@ -21,7 +21,7 @@ package sigstore
 import (
 	"testing"
 
-	"github.com/open-policy-agent/opa/ast"
+	"github.com/open-policy-agent/opa/v1/ast"
 	"github.com/stretchr/testify/require"
 
 	"github.com/enterprise-contract/ec-cli/internal/signature"

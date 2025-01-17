@@ -23,7 +23,7 @@ import (
 	"testing"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/open-policy-agent/opa/ast"
+	"github.com/open-policy-agent/opa/v1/ast"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -17,8 +17,8 @@
 package sigstore
 
 import (
-	"github.com/open-policy-agent/opa/ast"
-	"github.com/open-policy-agent/opa/types"
+	"github.com/open-policy-agent/opa/v1/ast"
+	"github.com/open-policy-agent/opa/v1/types"
 
 	"github.com/enterprise-contract/ec-cli/internal/signature"
 )

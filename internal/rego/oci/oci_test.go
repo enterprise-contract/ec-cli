@@ -29,8 +29,8 @@ import (
 	v1fake "github.com/google/go-containerregistry/pkg/v1/fake"
 	"github.com/google/go-containerregistry/pkg/v1/static"
 	"github.com/google/go-containerregistry/pkg/v1/types"
-	"github.com/open-policy-agent/opa/ast"
-	"github.com/open-policy-agent/opa/rego"
+	"github.com/open-policy-agent/opa/v1/ast"
+	"github.com/open-policy-agent/opa/v1/rego"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
