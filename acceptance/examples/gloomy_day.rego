@@ -1,6 +1,8 @@
 # Provide one always passing rule and one always failing rule
 package gloomy
 
+import rego.v1
+
 # METADATA
 # title: Allow gloomy rule
 # description: This rule will never fail

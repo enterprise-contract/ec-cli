@@ -1,9 +1,7 @@
 # Verify image config data from input.
 package image_config
 
-import future.keywords.contains
-import future.keywords.if
-import future.keywords.in
+import rego.v1
 
 # METADATA
 # title: Image Title Label

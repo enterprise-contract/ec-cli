@@ -1,6 +1,8 @@
 # Simplest never-failing policy
 package main
 
+import rego.v1
+
 # METADATA
 # title: Allow rule
 # description: This rule will never fail

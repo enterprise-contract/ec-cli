@@ -1,5 +1,7 @@
 package pipeline.main
 
+import rego.v1
+
 expected_kind := "Pipeline"
 
 # METADATA

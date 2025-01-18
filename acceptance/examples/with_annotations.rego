@@ -1,5 +1,7 @@
 package policy.release.kitty
 
+import rego.v1
+
 # METADATA
 # title: Kittens
 # description: Fluffy
