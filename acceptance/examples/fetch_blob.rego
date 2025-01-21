@@ -1,8 +1,6 @@
 package blobby
 
-import future.keywords.contains
-import future.keywords.if
-import future.keywords.in
+import rego.v1
 
 # METADATA
 # custom:
@@ -27,7 +25,7 @@ deny contains result if {
     }
 }
 
-uri := value {
+uri := value if {
     # Assume the blob is on the same repo as the image
     repo := split(input.image.ref, "@")[0]
     # The digest of the word "spam"

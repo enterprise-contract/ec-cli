@@ -1,5 +1,7 @@
 package no_msg
 
-deny {
+import rego.v1
+
+deny if {
     true
 }

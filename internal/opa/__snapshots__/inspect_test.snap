@@ -8,7 +8,7 @@
     },
     "location": {
       "file": "more/bacon.REGO",
-      "row": 8,
+      "row": 6,
       "col": 1
     },
     "path": [
@@ -37,7 +37,7 @@
     },
     "location": {
       "file": "spam.rego",
-      "row": 8,
+      "row": 6,
       "col": 1
     },
     "path": [
@@ -67,7 +67,7 @@
     },
     "location": {
       "file": "more/bacon.REGO",
-      "row": 8,
+      "row": 6,
       "col": 1
     },
     "path": [
@@ -96,7 +96,7 @@
     },
     "location": {
       "file": "spam.rego",
-      "row": 8,
+      "row": 6,
       "col": 1
     },
     "path": [
