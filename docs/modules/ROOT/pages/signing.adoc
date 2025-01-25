@@ -1,12 +1,12 @@
 = Signing
 
-The Enterprise Contract relies on https://www.sigstore.dev/[Sigstore] signatures to verify the
+Conforma relies on https://www.sigstore.dev/[Sigstore] signatures to verify the
 authenticity of content being verified. Currently, this is integrated with the `ec validate image`
 command.
 
 == Image Verification
 
-When the Enterprise Contract validates an image, there are certain
+When Conforma validates an image, there are certain
 https://enterprisecontract.dev/docs/ec-policies/release_policy.html#builtin_attestation_package[builtin]
 policy rules that are always applied and cannot be skipped. Most of these rely on
 https://github.com/sigstore/cosign[cosign] to fetch and verify image signatures and attestations.
@@ -18,8 +18,8 @@ fulfill the validation of another image.
 == Sigstore Levels
 
 There are different levels of Sigstore adoption. These can be done
-https://www.linuxfoundation.org/blog/blog/adopting-sigstore-incrementally[incrementally]. The
-Enterprise Contract can be used to validate artifacts regardless of the level.
+https://www.linuxfoundation.org/blog/blog/adopting-sigstore-incrementally[incrementally].
+Conforma can be used to validate artifacts regardless of the level.
 
 === Long-Lived Keys
 

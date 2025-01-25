@@ -1,7 +1,7 @@
 = Policy Input
 
 The policy input refers the variable `input` in rego. This page describes the structure of the input
-available for policy evaluation when using the Enterprise Contract CLI. The input is different for
+available for policy evaluation when using the Conforma CLI. The input is different for
 each subcommand as each subcommand has a different specialty.
 
 == Validate Image
@@ -112,7 +112,7 @@ only version control system supported is `git`. This information originates from
 ApplicationSnapshot provided to the `ec validate image` command. It is empty if the source
 information is not given to the command.
 
-The SourceDescriptor contains the single `git` attribute which hold an object with information
+The SourceDescriptor contains the single `git` attribute which holds an object with information
 about a git repository. `.revision` is a string holding a git reference. This could be a commit ID,
 branch, etc. `url` is the URL of the git repository.
 

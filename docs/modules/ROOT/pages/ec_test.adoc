@@ -105,4 +105,4 @@ the output will include a detailed trace of how the policy was evaluated, e.g.
 
 == See also
 
- * xref:ec.adoc[ec - Enterprise Contract CLI]
+ * xref:ec.adoc[ec - Conforma CLI]

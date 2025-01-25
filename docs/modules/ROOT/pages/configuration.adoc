@@ -397,8 +397,8 @@ JSON::
 
 === Specifying that certain tests should be non-blocking
 
-This example shows how to specify that the Enterprise Contract is allowed to
-pass even if certain tests failed or didn't complete.
+This example shows how to specify that a passing result should be produced
+even if certain tests failed or didn't complete.
 
 [tabs]
 ====
@@ -485,7 +485,7 @@ JSON::
 
 == Data Sources
 
-Some of the Enterprise Contract policy rules, defined in the ec-policies git
+Some of the Conforma policy rules, defined in the ec-policies git
 repository, rely on certain data values when evaluated. For example, a policy
 rule exists to ensure all the parent container images used during the build
 process have been retrieved from an acceptable registry. The list of acceptable

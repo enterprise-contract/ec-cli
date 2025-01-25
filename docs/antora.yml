@@ -16,7 +16,7 @@
 
 ---
 name: ec-cli
-title: Enterprise Contract CLI
+title: Conforma CLI (formerly Enterprise Contract CLI)
 version: ~
 nav:
   - modules/ROOT/nav.adoc

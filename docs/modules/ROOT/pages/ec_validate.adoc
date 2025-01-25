@@ -1,6 +1,6 @@
 = ec validate
 
-Validate conformance with the Enterprise Contract
+Validate conformance with the provided policies
 
 == Options
 
@@ -19,4 +19,4 @@ Validate conformance with the Enterprise Contract
 
 == See also
 
- * xref:ec.adoc[ec - Enterprise Contract CLI]
+ * xref:ec.adoc[ec - Conforma CLI]

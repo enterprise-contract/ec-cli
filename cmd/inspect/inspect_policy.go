@@ -63,16 +63,16 @@ func inspectPolicyCmd() *cobra.Command {
 			including the rule annotations which include the rule's title and description
 			and custom fields used by ec to filter the results produced by conftest.
 
-			Note that this command is not typically required to verify the Enterprise
-			Contract. It has been made available for troubleshooting and debugging purposes.
+			Note that this command is not typically required to evaluate policies.
+			It has been made available for troubleshooting and debugging purposes.
 		`),
 
 		Example: hd.Doc(`
-			Print a list of rules and their descriptions from the latest Enterprise Contract release policy:
+			Print a list of rules and their descriptions from the latest release policy:
 
 			  ec inspect policy --source quay.io/enterprise-contract/ec-release-policy
 
-			Display details about the latest Enterprise Contract release policy in json format:
+			Display details about the latest release policy in json format:
 
 			  ec inspect policy --source quay.io/enterprise-contract/ec-release-policy -o json | jq
 		`),

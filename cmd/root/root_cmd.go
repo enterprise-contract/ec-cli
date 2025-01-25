@@ -34,6 +34,7 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/kubernetes"
 	"github.com/enterprise-contract/ec-cli/internal/logging"
 	"github.com/enterprise-contract/ec-cli/internal/tracing"
+	"github.com/enterprise-contract/ec-cli/internal/version"
 )
 
 var (
@@ -57,12 +58,12 @@ func (customDeadlineExceededError) Temporary() bool { return true }
 func NewRootCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:   "ec",
-		Short: "Enterprise Contract CLI",
+		Short: version.CliName() + " CLI",
 
 		Long: hd.Doc(`
-			Enterprise Contract CLI
+			` + version.CliName() + ` CLI
 
-			Set of commands to help validate resources with the Enterprise Contract.
+			Set of commands to help validate resources with the provided policies.
 		`),
 
 		SilenceUsage: true,

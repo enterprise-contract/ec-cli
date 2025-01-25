@@ -40,7 +40,7 @@ func init() {
 func NewValidateCmd() *cobra.Command {
 	validateCmd := &cobra.Command{
 		Use:   "validate",
-		Short: "Validate conformance with the Enterprise Contract",
+		Short: "Validate conformance with the provided policies",
 	}
 	validateCmd.PersistentFlags().Bool("show-successes", false, "")
 	return validateCmd

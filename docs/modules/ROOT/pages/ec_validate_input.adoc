@@ -1,10 +1,10 @@
 = ec validate input
 
-Validate arbitrary JSON or yaml file input conformance with the Enterprise Contract
+Validate arbitrary JSON or yaml file input conformance with the provided policies
 
 == Synopsis
 
-Validate conformance of arbitrary JSON or yaml file input with the Enterprise Contract
+Validate conformance of arbitrary JSON or yaml file input with the provided policies
 
 For each file, validation is performed to determine if the file conforms to rego policies
 defined in the EnterpriseContractPolicy.
@@ -73,4 +73,4 @@ mark (?) sign, for example: --output text=output.txt?show-successes=false
 
 == See also
 
- * xref:ec_validate.adoc[ec validate - Validate conformance with the Enterprise Contract]
+ * xref:ec_validate.adoc[ec validate - Validate conformance with the provided policies]

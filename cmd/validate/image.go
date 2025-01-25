@@ -82,13 +82,13 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "image",
-		Short: "Validate conformance of container images with the Enterprise Contract",
+		Short: "Validate conformance of container images with the provided policies",
 
 		Long: hd.Doc(`
-			Validate conformance of container images with the Enterprise Contract
+			Validate conformance of container images with the provided policies
 
 			For each image, validation is performed in stages to determine if the image
-			conforms to the Enterprise Contract.
+			conforms to the provided policies.
 
 			The first validation stage determines if an image has been signed, and the
 			signature matches the provided public key. This is akin to the "cosign verify"
