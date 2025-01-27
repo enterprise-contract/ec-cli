@@ -267,6 +267,9 @@ ifdef ADD_IMAGE_TAG
 	done
 endif
 
+verify-image:
+	@podman run --rm $(IMAGE_REPO):$(IMAGE_TAG) version
+
 .PHONY: dev
 dev: REGISTRY_PORT=5000
 dev: IMAGE_REPO=localhost:$(REGISTRY_PORT)/ec
