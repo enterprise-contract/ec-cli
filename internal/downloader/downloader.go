@@ -25,10 +25,10 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/enterprise-contract/go-gather/gather"
 	ghttp "github.com/enterprise-contract/go-gather/gather/http"
 	goci "github.com/enterprise-contract/go-gather/gather/oci"
 	"github.com/enterprise-contract/go-gather/metadata"
+	"github.com/enterprise-contract/go-gather/registry"
 	"github.com/sirupsen/logrus"
 	"oras.land/oras-go/v2/registry/remote/retry"
 
@@ -47,7 +47,11 @@ var log = logrus.StandardLogger()
 
 var gatherFunc = func(ctx context.Context, source, destination string) (metadata.Metadata, error) {
 	initialize()
-	return gather.Gather(ctx, source, destination)
+	g, err := registry.GetGatherer(source)
+	if err != nil {
+		return nil, err
+	}
+	return g.Gather(ctx, source, destination)
 }
 
 var _initialize = func() {

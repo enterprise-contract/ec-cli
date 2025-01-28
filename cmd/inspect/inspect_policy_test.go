@@ -23,8 +23,8 @@ import (
 	"fmt"
 	"testing"
 
+	fileMetadata "github.com/enterprise-contract/go-gather/gather/file"
 	"github.com/enterprise-contract/go-gather/metadata"
-	fileMetadata "github.com/enterprise-contract/go-gather/metadata/file"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
@@ -64,9 +64,9 @@ func TestFetchSourcesFromPolicy(t *testing.T) {
 		}
 	}
 
-	downloader.On("Download", mock.Anything, "one", false).Return(&fileMetadata.FileMetadata{}, nil).Run(createDir)
-	downloader.On("Download", mock.Anything, "two", false).Return(&fileMetadata.FileMetadata{}, nil).Run(createDir)
-	downloader.On("Download", mock.Anything, "three", false).Return(&fileMetadata.FileMetadata{}, nil).Run(createDir)
+	downloader.On("Download", mock.Anything, "one", false).Return(&fileMetadata.FSMetadata{}, nil).Run(createDir)
+	downloader.On("Download", mock.Anything, "two", false).Return(&fileMetadata.FSMetadata{}, nil).Run(createDir)
+	downloader.On("Download", mock.Anything, "three", false).Return(&fileMetadata.FSMetadata{}, nil).Run(createDir)
 
 	inspectPolicyCmd := inspectPolicyCmd()
 	cmd := setUpCobra(inspectPolicyCmd)
@@ -106,9 +106,9 @@ func TestFetchSources(t *testing.T) {
 		}
 	}
 
-	downloader.On("Download", mock.Anything, "one", false).Return(&fileMetadata.FileMetadata{}, nil).Run(createDir)
-	downloader.On("Download", mock.Anything, "two", false).Return(&fileMetadata.FileMetadata{}, nil).Run(createDir)
-	downloader.On("Download", mock.Anything, "three", false).Return(&fileMetadata.FileMetadata{}, nil).Run(createDir)
+	downloader.On("Download", mock.Anything, "one", false).Return(&fileMetadata.FSMetadata{}, nil).Run(createDir)
+	downloader.On("Download", mock.Anything, "two", false).Return(&fileMetadata.FSMetadata{}, nil).Run(createDir)
+	downloader.On("Download", mock.Anything, "three", false).Return(&fileMetadata.FSMetadata{}, nil).Run(createDir)
 
 	inspectPolicyCmd := inspectPolicyCmd()
 	cmd := setUpCobra(inspectPolicyCmd)
