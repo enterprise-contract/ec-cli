@@ -29,7 +29,7 @@ import (
 	"time"
 
 	hd "github.com/MakeNowJust/heredoc"
-	ociMetadata "github.com/enterprise-contract/go-gather/metadata/oci"
+	ociMetadata "github.com/enterprise-contract/go-gather/gather/oci"
 	"github.com/gkampitakis/go-snaps/snaps"
 	app "github.com/konflux-ci/application-api/api/v1alpha1"
 	"github.com/sigstore/cosign/v2/pkg/cosign"

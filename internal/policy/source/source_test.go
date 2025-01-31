@@ -29,8 +29,8 @@ import (
 	"testing"
 
 	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
+	fileMetadata "github.com/enterprise-contract/go-gather/gather/file"
 	"github.com/enterprise-contract/go-gather/metadata"
-	fileMetadata "github.com/enterprise-contract/go-gather/metadata/file"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -66,21 +66,21 @@ func TestGetPolicy(t *testing.T) {
 			name:      "Gets policies",
 			sourceUrl: "https://example.com/user/foo.git",
 			dest:      "/tmp/ec-work-1234/policy/[0-9a-f]+",
-			metadata:  &fileMetadata.FileMetadata{},
+			metadata:  &fileMetadata.FSMetadata{},
 			err:       nil,
 		},
 		{
 			name:      "Gets policies with getter style source url",
 			sourceUrl: "git::https://example.com/user/foo.git//subdir?ref=devel",
 			dest:      "/tmp/ec-work-1234/policy/[0-9a-f]+",
-			metadata:  &fileMetadata.FileMetadata{},
+			metadata:  &fileMetadata.FSMetadata{},
 			err:       nil,
 		},
 		{
 			name:      "Fails fetching the policy",
 			sourceUrl: "failure",
 			dest:      "/tmp/ec-work-1234/policy/[0-9a-f]+",
-			metadata:  &fileMetadata.FileMetadata{},
+			metadata:  &fileMetadata.FSMetadata{},
 			err:       errors.New("expected"),
 		},
 	}

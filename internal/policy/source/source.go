@@ -32,10 +32,10 @@ import (
 	"sync"
 
 	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
+	fileMetadata "github.com/enterprise-contract/go-gather/gather/file"
+	gitMetadata "github.com/enterprise-contract/go-gather/gather/git"
+	ociMetadata "github.com/enterprise-contract/go-gather/gather/oci"
 	"github.com/enterprise-contract/go-gather/metadata"
-	fileMetadata "github.com/enterprise-contract/go-gather/metadata/file"
-	gitMetadata "github.com/enterprise-contract/go-gather/metadata/git"
-	ociMetadata "github.com/enterprise-contract/go-gather/metadata/oci"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 
@@ -189,10 +189,8 @@ func logMetadata(m metadata.Metadata) {
 			log.Debugf("SHA: %s\n", v.LatestCommit)
 		case *ociMetadata.OCIMetadata:
 			log.Debugf("Image digest: %s\n", v.Digest)
-		case *fileMetadata.FileMetadata:
-			log.Debugf("File path: %s\n", v.Path)
-		case *fileMetadata.DirectoryMetadata:
-			log.Debugf("Directory path: %s\n", v.Path)
+		case *fileMetadata.FSMetadata:
+			log.Debugf("Path: %s\n", v.Path)
 		}
 	}
 }
@@ -224,10 +222,10 @@ func (s inlineData) GetPolicy(ctx context.Context, workDir string, showMsg bool)
 		}
 
 		f := path.Join(dest, "rule_data.json")
-		m := &fileMetadata.FileMetadata{
+		m := &fileMetadata.FSMetadata{
+			URI:  source,
 			Path: dest,
 			Size: int64(len(dest)),
-			SHA:  "",
 		}
 
 		return m, afero.WriteFile(fs, f, s.source, 0400)

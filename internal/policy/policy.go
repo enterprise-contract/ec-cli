@@ -26,7 +26,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 	"github.com/sigstore/cosign/v2/cmd/cosign/cli/fulcio"
@@ -616,7 +615,7 @@ func PreProcessPolicy(ctx context.Context, policyOptions Options) (Policy, *cach
 			}
 		}
 
-		sources[i] = v1alpha1.Source{
+		sources[i] = ecc.Source{
 			Name:           sourceGroup.Name,
 			Policy:         urls(policySources, source.PolicyKind),
 			Data:           urls(policySources, source.DataKind),
