@@ -1,5 +1,10 @@
 # Verify Enterprise Contract Task
 
+NOTE: Conforma was previously known as "Enterprise Contract". You can consider
+"Conforma" and "Enterprise Contract" to be synonynous. Note that the Tekton task defined here is still
+referencing the older name. See [this article](https://conforma.dev/posts/whats-in-a-name/) for more details
+about the name change.
+
 This task verifies a signature and attestation for an image and then runs a policy against the image's attestation using the ```ec validate image``` command.
 
 ## Install the task
