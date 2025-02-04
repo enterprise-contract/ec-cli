@@ -103,7 +103,7 @@ This file: config/stone-prd-rh01.pg1f.p1/product/ReleasePlanAdmission/rhtap-cont
 
 Add the new release under /spec/applications and /spec/data/mapping/components and create a PR.
 
-(This could perhaps be done together with the the tenants-config change.)
+(This could perhaps be done together with the tenants-config change.)
 
 $(nice_title Confirming it\'s working)
 

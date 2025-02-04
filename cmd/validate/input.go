@@ -62,7 +62,7 @@ func validateInputCmd(validate InputValidationFunc) *cobra.Command {
 			Validate conformance of arbitrary JSON or yaml file input with the Enterprise Contract
 
 			For each file, validation is performed to determine if the file conforms to rego policies
-			defined in the the EnterpriseContractPolicy.
+			defined in the EnterpriseContractPolicy.
 			`),
 		Example: hd.Doc(`
 			Use an EnterpriseContractPolicy spec from a local YAML file to validate a single file

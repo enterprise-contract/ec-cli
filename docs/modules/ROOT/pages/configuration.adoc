@@ -41,7 +41,7 @@ By default, all rules are included.
 You can modify the defaults by setting `config.policy.include` and
 `config.policy.exclude`. Each of those values should be a list of strings.
 
-The strings in the list should be one of the the following:
+The strings in the list should be one of the following:
 
 A "package name"::
 

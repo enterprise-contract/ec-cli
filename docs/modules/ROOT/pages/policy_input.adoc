@@ -112,9 +112,9 @@ only version control system supported is `git`. This information originates from
 ApplicationSnapshot provided to the `ec validate image` command. It is empty if the source
 information is not given to the command.
 
-The SourceDescriptor contains the the single `git` attribute which hold an object with information
+The SourceDescriptor contains the single `git` attribute which hold an object with information
 about a git repository. `.revision` is a string holding a git reference. This could be a commit ID,
-branch, etc. `url` is the the URL of the git repository.
+branch, etc. `url` is the URL of the git repository.
 
 The SnapshotDescriptor contains the information about the application snapshot provided to the `ec validate image` command. `.application` is a string holding the name of the application. `.displayName` is a string holding the display name of the application. `.displayDescription` is a string holding the display description of the application. `.components` is an array of SnapshotComponentDescriptor objects.
 
