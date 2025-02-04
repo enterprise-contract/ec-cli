@@ -36,7 +36,7 @@ build_ec() {
         -trimpath \
         --mod=readonly \
         -ldflags="-s -w -X github.com/enterprise-contract/ec-cli/internal/version.Version=$4" \
-        -o "dist/${BINFILE}"
+        -o "dist/$3"
     sha256sum -b "dist/$3" > "dist/$3.sha256"
 }
 
