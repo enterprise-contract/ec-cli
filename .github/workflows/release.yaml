@@ -88,7 +88,7 @@ jobs:
           "${GITHUB_WORKSPACE}/hack/ubuntu-podman-update.sh"
 
       - name: Cache
-        uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a # v4.1.2
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
           path: |
             ~/.cache/go-build
@@ -96,7 +96,7 @@ jobs:
           key: main
 
       - name: Setup Go environment
-        uses: actions/setup-go@41dfa10bad2bb2ae585af6ee5bb4d7d973ad74ed # v5.1.0
+        uses: actions/setup-go@3041bf56c941b39c61721a86cd11f3bb1338122a # v5.2.0
         with:
           go-version-file: go.mod
           cache: false
@@ -118,6 +118,12 @@ jobs:
 
       - name: Create and push image (quay.io/enterprise-contract/ec-cli)
         run: make dist-image-push IMAGE_TAG=$TAG IMAGE_REPO=$IMAGE_REPO ADD_IMAGE_TAG="snapshot $TAG_TIMESTAMP"
+
+      # verify ec works in the image and show the version
+      - name: verify the ec-cli image
+        env:
+          IMAGE_TAG: snapshot
+        run: make verify-image
 
       - name: Create and push the tekton bundle (quay.io/enterprise-contract/ec-task-bundle)
         env:
@@ -163,7 +169,7 @@ jobs:
           git push -f --tags
 
       - name: Rolling release
-        uses: softprops/action-gh-release@01570a1f39cb168c169c802c3bceb9e93fb10974 # v2.1.0
+        uses: softprops/action-gh-release@e7a8f85e1c67a31e6ed99a94b41bd0b71bbee6b8 # v2
         with:
           make_latest: true
           name: Rolling release
@@ -173,7 +179,7 @@ jobs:
           files: dist/*
 
       - name: Versioned release
-        uses: softprops/action-gh-release@01570a1f39cb168c169c802c3bceb9e93fb10974 # v2.1.0
+        uses: softprops/action-gh-release@e7a8f85e1c67a31e6ed99a94b41bd0b71bbee6b8 # v2
         with:
           make_latest: false
           name: ${{ steps.add_tags.outputs.tag_name }}

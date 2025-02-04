@@ -229,7 +229,7 @@ func TestHTTPTracing(t *testing.T) {
 	}))
 	t.Cleanup(server.Close)
 
-	_, err := gatherFunc(context.Background(), server.URL, path.Join(t.TempDir(), "dl"))
+	_, err := gatherFunc(context.Background(), fmt.Sprintf("%s/foo", server.URL), path.Join(t.TempDir(), "dl"))
 	require.NoError(t, err)
 
 	trace.Stop()
@@ -247,9 +247,9 @@ func TestHTTPTracing(t *testing.T) {
 	}
 	assert.NotZero(t, len(logs))
 
-	assert.Equal(t, []string{"GET /"}, requests)
+	assert.Equal(t, []string{"GET /foo"}, requests)
 
-	expected := regexp.MustCompile(`^(method="GET")|(?:url="` + server.URL + `")|(received=\d+)$`)
+	expected := regexp.MustCompile(`^(method="GET")|(?:url="` + fmt.Sprintf("%s/foo", server.URL) + `")|(received=\d+)$`)
 
 	found := 0
 	for _, l := range logs {

@@ -83,11 +83,6 @@ build-for-test: dist/ec_$(BUILD_IMG_ARCH)
 clean: ## Delete build output
 	@rm -f dist/*
 
-.PHONY: generate-pipelines
-generate-pipelines: ## Generate release pipelines
-	kustomize build ./release/src/cli --output ./release/cli.yaml
-	kustomize build ./release/src/tekton-task --output ./release/tekton-task.yaml
-
 ##@ Testing
 
 # Declutter the output by grepping out the files where there are no
@@ -278,6 +273,9 @@ ifdef ADD_IMAGE_TAG
 	  @podman manifest push $(IMAGE_REPO):$(IMAGE_TAG) $(IMAGE_REPO):$${tag}
 	done
 endif
+
+verify-image:
+	@podman run --rm $(IMAGE_REPO):$(IMAGE_TAG) version
 
 .PHONY: dev
 dev: REGISTRY_PORT=5000

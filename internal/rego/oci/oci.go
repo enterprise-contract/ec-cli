@@ -26,6 +26,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
@@ -36,11 +37,13 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/enterprise-contract/ec-cli/internal/fetchers/oci/files"
+	"github.com/enterprise-contract/ec-cli/internal/image"
 	"github.com/enterprise-contract/ec-cli/internal/utils/oci"
 )
 
 const (
 	ociBlobName          = "ec.oci.blob"
+	ociDescriptorName    = "ec.oci.descriptor"
 	ociImageManifestName = "ec.oci.image_manifest"
 	ociImageFilesName    = "ec.oci.image_files"
 )
@@ -68,6 +71,66 @@ func registerOCIBlob() {
 	ast.RegisterBuiltin(&ast.Builtin{
 		Name:             decl.Name,
 		Description:      "Fetch a blob from an OCI registry.",
+		Decl:             decl.Decl,
+		Nondeterministic: decl.Nondeterministic,
+	})
+}
+
+func registerOCIDescriptor() {
+	platform := types.NewObject(
+		[]*types.StaticProperty{
+			{Key: "architecture", Value: types.S},
+			{Key: "os", Value: types.S},
+			{Key: "os.version", Value: types.S},
+			{Key: "os.features", Value: types.NewArray([]types.Type{types.S}, nil)},
+			{Key: "variant", Value: types.S},
+			{Key: "features", Value: types.NewArray([]types.Type{types.S}, nil)},
+		},
+		nil,
+	)
+
+	// annotations represents the map[string]string rego type
+	annotations := types.NewObject(nil, types.NewDynamicProperty(types.S, types.S))
+	manifest := types.NewObject(
+		[]*types.StaticProperty{
+			// Specifying the properties like this ensure the compiler catches typos when
+			// evaluating rego functions.
+			{Key: "mediaType", Value: types.S},
+			{Key: "size", Value: types.N},
+			{Key: "digest", Value: types.S},
+			{Key: "data", Value: types.S},
+			{Key: "urls", Value: types.NewArray(
+				[]types.Type{types.S}, nil,
+			)},
+			{Key: "annotations", Value: annotations},
+			{Key: "platform", Value: platform},
+			{Key: "artifactType", Value: types.S},
+		},
+		nil,
+	)
+
+	decl := rego.Function{
+		Name: ociDescriptorName,
+		Decl: types.NewFunction(
+			types.Args(
+				types.Named("ref", types.S).Description("OCI descriptor reference"),
+			),
+			types.Named("object", manifest).Description("the OCI descriptor object"),
+		),
+		// As per the documentation, enable memoization to ensure function evaluation is
+		// deterministic. But also mark it as non-deterministic because it does rely on external
+		// entities, i.e. OCI registry. https://www.openpolicyagent.org/docs/latest/extensions/
+		Memoize:          true,
+		Nondeterministic: true,
+	}
+
+	rego.RegisterBuiltin1(&decl, ociDescriptor)
+	// Due to https://github.com/open-policy-agent/opa/issues/6449, we cannot set a description for
+	// the custom function through the call above. As a workaround we re-register the function with
+	// a declaration that does include the description.
+	ast.RegisterBuiltin(&ast.Builtin{
+		Name:             decl.Name,
+		Description:      "Fetch a raw Image from an OCI registry.",
 		Decl:             decl.Decl,
 		Nondeterministic: decl.Nondeterministic,
 	})
@@ -225,20 +288,61 @@ func ociBlob(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) {
 	return ast.StringTerm(blob.String()), nil
 }
 
-func ociImageManifest(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) {
-	log := log.WithField("rego", ociImageManifestName)
-	uri, ok := a.Value.(ast.String)
+func ociDescriptor(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) {
+	log := log.WithField("rego", ociDescriptor)
+
+	uriValue, ok := a.Value.(ast.String)
 	if !ok {
 		return nil, nil
 	}
 
-	ref, err := name.NewDigest(string(uri))
+	client := oci.NewClient(bctx.Context)
+
+	uri, err := resolveIfNeeded(client, string(uriValue))
+	if err != nil {
+		log.Error(err)
+		return nil, nil
+	}
+	log = log.WithField("ref", uri)
+
+	ref, err := name.NewDigest(uri)
 	if err != nil {
 		log.Errorf("new digest: %s", err)
 		return nil, nil
 	}
 
-	image, err := oci.NewClient(bctx.Context).Image(ref)
+	descriptor, err := client.Head(ref)
+	if err != nil {
+		log.Errorf("fetch image: %s", err)
+		return nil, nil
+	}
+
+	return newDescriptorTerm(*descriptor), nil
+}
+
+func ociImageManifest(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) {
+	log := log.WithField("rego", ociImageManifestName)
+	uriValue, ok := a.Value.(ast.String)
+	if !ok {
+		return nil, nil
+	}
+
+	client := oci.NewClient(bctx.Context)
+
+	uri, err := resolveIfNeeded(client, string(uriValue))
+	if err != nil {
+		log.Error(err)
+		return nil, nil
+	}
+	log = log.WithField("ref", uri)
+
+	ref, err := name.NewDigest(uri)
+	if err != nil {
+		log.Errorf("new digest: %s", err)
+		return nil, nil
+	}
+
+	image, err := client.Image(ref)
 	if err != nil {
 		log.Errorf("fetch image: %s", err)
 		return nil, nil
@@ -376,8 +480,28 @@ func newAnnotationsTerm(annotations map[string]string) *ast.Term {
 	return ast.ObjectTerm(annotationTerms...)
 }
 
+func resolveIfNeeded(client oci.Client, uri string) (string, error) {
+	if !strings.Contains(uri, "@") {
+		original := uri
+		ref, err := image.NewImageReference(uri)
+		if err != nil {
+			return "", fmt.Errorf("unable to parse reference: %w", err)
+		}
+
+		digest, err := client.ResolveDigest(ref.Ref())
+		if err != nil {
+			return "", fmt.Errorf("unable to resolve digest: %w", err)
+		}
+		uri = fmt.Sprintf("%s@%s", uri, digest)
+
+		log.Debugf("resolved image reference %q to %q", original, uri)
+	}
+	return uri, nil
+}
+
 func init() {
 	registerOCIBlob()
+	registerOCIDescriptor()
 	registerOCIImageFiles()
 	registerOCIImageManifest()
 }

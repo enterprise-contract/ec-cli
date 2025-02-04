@@ -36,8 +36,8 @@ sources:
       include:
         - '@redhat'
       exclude:
-        # Not currently doing hermetic builds, see https://issues.redhat.com/browse/EC-360
-        - hermetic_build_task.*
+        # For an upstream release, we don't worry about restricted release dates.
+        - schedule
     ruleData:
       #
       # Make high sev CVEs non-blocking temporarily
