@@ -103,3 +103,23 @@ func TestDependencyVersion(t *testing.T) {
 		},
 	}))
 }
+
+func TestCliName(t *testing.T) {
+	tests := []struct {
+		version           string
+		expectedName      string
+		expectedShortName string
+	}{
+		{version: "", expectedName: "Conforma", expectedShortName: "Conforma"},
+		{version: "foo", expectedName: "Conforma", expectedShortName: "Conforma"},
+		{version: "foo+redhat", expectedName: "Enterprise Contract", expectedShortName: "EC"},
+	}
+
+	for _, tt := range tests {
+		Version = tt.version
+		cliShortName = ""
+		cliName = ""
+		assert.Equal(t, tt.expectedName, CliName())
+		assert.Equal(t, tt.expectedShortName, CliShortName())
+	}
+}
