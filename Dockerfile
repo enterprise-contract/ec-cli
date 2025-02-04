@@ -72,7 +72,7 @@ COPY --from=build "/build/dist/ec_${TARGETOS}_${TARGETARCH}" /usr/local/bin/ec
 # Copy the one kubectl binary that can run in this container
 COPY --from=build "/build/dist/kubectl_${TARGETOS}_${TARGETARCH}" /usr/local/bin/kubectl
 
-# Copt reduce-snapshot script needed for single component mode
+# Copy reduce-snapshot script needed for single component mode
 COPY hack/reduce-snapshot.sh /usr/local/bin
 
 # OpenShift preflight check requires a license
