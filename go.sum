@@ -549,8 +549,6 @@ github.com/enterprise-contract/enterprise-contract-controller/api v0.1.71 h1:vQg
 github.com/enterprise-contract/enterprise-contract-controller/api v0.1.71/go.mod h1:zkK1IrRezUgKGK4tkN9hJtpu8NVqjKTMh4EshxXOi3g=
 github.com/enterprise-contract/go-containerregistry v0.20.3-0.20241118083807-8c8ea269355e h1:Rti5Q7fdkzIMO+lRLAFaBSReLpNx4yTdq+u6PRJv1Tw=
 github.com/enterprise-contract/go-containerregistry v0.20.3-0.20241118083807-8c8ea269355e/go.mod h1:QTzGuUYojyBy1anZvBPMhwXRE0LGZPIcpmn3K8DHYrw=
-github.com/enterprise-contract/go-gather v0.0.7 h1:xX6sqx65x4YGxXHoCWu3Ssy3Eg1EYbM8Va38ghnsriY=
-github.com/enterprise-contract/go-gather v0.0.7/go.mod h1:fk2KNEL5gYVqEgU4zYXI+ckwwL5yDjEF8on8b5L/Iqk=
 github.com/enterprise-contract/go-gather v0.1.2 h1:uM13ds2Toq0w3bH1pj55vIiahQ2dQhATx1Pvld/giDo=
 github.com/enterprise-contract/go-gather v0.1.2/go.mod h1:DrMwce0sBK/gzEwMDRD/Dx+T0/O6LN6F5C/OaOgZnw0=
 github.com/envoyproxy/go-control-plane v0.9.0/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
@@ -833,8 +831,8 @@ github.com/hashicorp/errwrap v1.1.0/go.mod h1:YH+1FKiLXxHSkmPseP+kNlulaMuP3n2brv
 github.com/hashicorp/go-cleanhttp v0.5.1/go.mod h1:JpRdi6/HCYpAwUzNwuwqhbovhLtngrth3wmdIIUrZ80=
 github.com/hashicorp/go-cleanhttp v0.5.2 h1:035FKYIWjmULyFRBKPs8TBQoi0x6d9G4xc9neXJWAZQ=
 github.com/hashicorp/go-cleanhttp v0.5.2/go.mod h1:kO/YDlP8L1346E6Sodw+PrpBSV4/SoxCXGY6BqNFT48=
-github.com/hashicorp/go-getter v1.7.6 h1:5jHuM+aH373XNtXl9TNTUH5Qd69Trve11tHIrB+6yj4=
-github.com/hashicorp/go-getter v1.7.6/go.mod h1:W7TalhMmbPmsSMdNjD0ZskARur/9GJ17cfHTRtXV744=
+github.com/hashicorp/go-getter v1.7.5 h1:dT58k9hQ/vbxNMwoI5+xFYAJuv6152UNvdHokfI5wE4=
+github.com/hashicorp/go-getter v1.7.5/go.mod h1:W7TalhMmbPmsSMdNjD0ZskARur/9GJ17cfHTRtXV744=
 github.com/hashicorp/go-hclog v1.6.3 h1:Qr2kF+eVWjTiYmU7Y31tYlP1h0q/X3Nl3tPGdaB11/k=
 github.com/hashicorp/go-hclog v1.6.3/go.mod h1:W4Qnvbt70Wk/zYJryRzDRU/4r0kIg0PVHBcfoyhpF5M=
 github.com/hashicorp/go-immutable-radix v1.0.0/go.mod h1:0y9vanUI8NX6FsYoO3zeMjhV/C5i9g4Q3DwcSNZ4P60=
