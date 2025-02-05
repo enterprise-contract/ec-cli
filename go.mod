@@ -7,7 +7,7 @@ require (
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/Maldris/go-billy-afero v0.0.0-20200815120323-e9d3de59c99a
 	github.com/enterprise-contract/enterprise-contract-controller/api v0.1.71
-	github.com/enterprise-contract/go-gather v0.0.7
+	github.com/enterprise-contract/go-gather v0.1.2
 	github.com/evanphx/json-patch v5.9.0+incompatible
 	github.com/gkampitakis/go-snaps v0.5.7
 	github.com/go-git/go-git/v5 v5.13.2
@@ -15,7 +15,6 @@ require (
 	github.com/google/go-cmp v0.6.0
 	github.com/google/go-containerregistry v0.20.2
 	github.com/hako/durafmt v0.0.0-20210608085754-5c1018a4e16b
-	github.com/hashicorp/go-getter v1.7.6
 	github.com/in-toto/in-toto-golang v0.9.0
 	github.com/jstemmer/go-junit-report/v2 v2.1.0
 	github.com/konflux-ci/application-api v0.0.0-20240812090716-e7eb2ecfb409
@@ -207,6 +206,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.22.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
+	github.com/hashicorp/go-getter v1.7.6 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.7 // indirect
 	github.com/hashicorp/go-safetemp v1.0.0 // indirect

@@ -24,9 +24,8 @@ package source
 import (
 	"context"
 	"fmt"
-	"strings"
 
-	getter "github.com/hashicorp/go-getter"
+	"github.com/enterprise-contract/go-gather/detector"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -34,24 +33,17 @@ import (
 // Ensuring that the src is not a git url is important because go-getter can think
 // that a git url is a file path url.
 func SourceIsFile(src string) bool {
-	normalizedUrl, err := getter.Detect(src, ".", []getter.Detector{new(getter.FileDetector)})
-	return err == nil && strings.HasPrefix(normalizedUrl, "file") && !SourceIsGit(src)
+	return detector.FileDetector(src)
 }
 
 // SourceIsGit returns true if go-getter thinks the src looks like a git url
 func SourceIsGit(src string) bool {
-	normalizedUrl, err := getter.Detect(src, ".", []getter.Detector{
-		new(getter.GitHubDetector),
-		new(getter.GitLabDetector),
-		new(getter.GitDetector),
-	})
-	return err == nil && strings.HasPrefix(normalizedUrl, "git::")
+	return detector.GitDetector(src)
 }
 
 // SourceIsHttp returns true if go-getter thinks the src looks like an http url
 func SourceIsHttp(src string) bool {
-	normalizedUrl, err := getter.Detect(src, ".", getter.Detectors)
-	return err == nil && strings.HasPrefix(normalizedUrl, "http")
+	return detector.HttpDetector(src)
 }
 
 func GoGetterDownload(ctx context.Context, tmpDir, src string) (string, error) {
