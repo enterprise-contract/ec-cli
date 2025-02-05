@@ -56,8 +56,8 @@ func inspectPolicyDataCmd() *cobra.Command {
 			the policy is fetched it reads json and yaml files inside the policy source and
 			displays the data.
 
-			Note that this command is not typically required to verify the Enterprise
-			Contract. It has been made available for troubleshooting and debugging purposes.
+			Note that this command is not typically required to evaluate policies.
+			It has been made available for troubleshooting and debugging purposes.
 		`),
 
 		Example: hd.Doc(`

@@ -1,4 +1,8 @@
-= Enterprise Contract Tekton Tasks
+= Conforma Tekton Tasks
 
 Use the navigation bar to view the help documentation for each Tekton task.
 
+NOTE: Conforma was previously known as "Enterprise Contract". You can consider
+"Conforma" and "Enterprise Contract" to be synonynous. See
+link:https://conforma.dev/posts/whats-in-a-name/[this article] for more details about the name
+change.

@@ -25,4 +25,4 @@ ec opa [flags]
 
 == See also
 
- * xref:ec.adoc[ec - Enterprise Contract CLI]
+ * xref:ec.adoc[ec - Conforma CLI]

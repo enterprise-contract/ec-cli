@@ -121,7 +121,7 @@ type logrusSink struct {
 	fields []any
 }
 
-// entry creates a log.Entry with the the state (name, fields) passed in as
+// entry creates a log.Entry with the state (name, fields) passed in as
 // fields
 func (l logrusSink) entry() *log.Entry {
 	e := log.NewEntry(log.StandardLogger())

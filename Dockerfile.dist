@@ -50,13 +50,15 @@ FROM registry.access.redhat.com/ubi9/ubi-minimal:9.5@sha256:b87097994ed62fbf1de7
 ARG TARGETOS
 ARG TARGETARCH
 
+ARG CLI_NAME="Enterprise Contract"
+
 LABEL \
   name="ec-cli" \
-  description="Enterprise Contract verifies and checks supply chain artifacts to ensure they meet security and business policies." \
-  io.k8s.description="Enterprise Contract verifies and checks supply chain artifacts to ensure they meet security and business policies." \
-  summary="Provides the binaries for downloading the EC CLI. Also used as a Tekton task runner image for EC tasks. Red Hat build." \
-  io.k8s.display-name="Enterprise Contract for Red Hat Trusted Artifact Signer" \
-  io.openshift.tags="rhtas rhtap trusted-artifact-signer trusted-application-pipeline enterprise-contract ec opa cosign sigstore" \
+  description="${CLI_NAME} verifies and checks supply chain artifacts to ensure they meet security and business policies." \
+  io.k8s.description="${CLI_NAME} verifies and checks supply chain artifacts to ensure they meet security and business policies." \
+  summary="Provides the binaries for downloading the ${CLI_NAME} CLI. Also used as a runner image for Tekton tasks." \
+  io.k8s.display-name="${CLI_NAME}" \
+  io.openshift.tags="rhtas rhtap trusted-artifact-signer trusted-application-pipeline enterprise-contract conforma ec opa cosign sigstore" \
   com.redhat.component="ec-cli"
 
 # Install tools we want to use in the Tekton task

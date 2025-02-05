@@ -1,13 +1,13 @@
 = ec validate image
 
-Validate conformance of container images with the Enterprise Contract
+Validate conformance of container images with the provided policies
 
 == Synopsis
 
-Validate conformance of container images with the Enterprise Contract
+Validate conformance of container images with the provided policies
 
 For each image, validation is performed in stages to determine if the image
-conforms to the Enterprise Contract.
+conforms to the provided policies.
 
 The first validation stage determines if an image has been signed, and the
 signature matches the provided public key. This is akin to the "cosign verify"
@@ -167,4 +167,4 @@ JSON of the "spec" or a reference to a Kubernetes object [<namespace>/]<name>
 
 == See also
 
- * xref:ec_validate.adoc[ec validate - Validate conformance with the Enterprise Contract]
+ * xref:ec_validate.adoc[ec validate - Validate conformance with the provided policies]

@@ -52,9 +52,8 @@ func fetchPolicyCmd() *cobra.Command {
 			documentation for more usage examples and for details on the different types of
 			supported source URLs.
 
-			Note that this command is not typically required to verify the Enterprise
-			Contract. It has been made available for troubleshooting and debugging
-			purposes.
+			Note that this command is not typically required to evaluate policies.
+			It has been made available for troubleshooting and debugging purposes.
 		`),
 
 		Example: hd.Doc(`

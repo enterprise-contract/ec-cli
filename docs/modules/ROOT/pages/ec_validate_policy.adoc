@@ -39,4 +39,4 @@ ec validate policy --policy-configuration github.com/org/repo/policy.yaml
 
 == See also
 
- * xref:ec_validate.adoc[ec validate - Validate conformance with the Enterprise Contract]
+ * xref:ec_validate.adoc[ec validate - Validate conformance with the provided policies]

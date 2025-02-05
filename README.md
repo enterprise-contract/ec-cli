@@ -1,11 +1,11 @@
-# `ec` a command line client for evaluating the Enterprise Contract
+# `ec` a command line client for verifying artifacts and evaluating policies
 
-The `ec` tool is used to evaluate Enterprise Contract policies for Software
+The `ec` tool is used to evaluate Conforma policies for Software
 Supply Chain. Various sub-commands can be used to assert facts about an artifact
 such as:
   * Validating container image signature
   * Validating container image provenance
-  * Evaluating Enterprise Contract [policies][pol] over the container image provenance
+  * Evaluating [policies][pol] over the container image provenance
   * Fetching artifact authorization
 
 Consult the [documentation][docs] for available sub-commands, descriptions and

@@ -1,12 +1,12 @@
 = ec
 
-Enterprise Contract CLI
+Conforma CLI
 
 == Synopsis
 
-Enterprise Contract CLI
+Conforma CLI
 
-Set of commands to help validate resources with the Enterprise Contract.
+Set of commands to help validate resources with the provided policies.
 
 [source,shell]
 ----
