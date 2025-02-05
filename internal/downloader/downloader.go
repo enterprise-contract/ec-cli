@@ -14,8 +14,6 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// Package downloader is a wrapper for the equivalent Conftest package,
-// which is itself mostly a wrapper for hashicorp/go-getter.
 package downloader
 
 import (
