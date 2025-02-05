@@ -1,7 +1,7 @@
 # Verify Enterprise Contract Task
 
 NOTE: Conforma was previously known as "Enterprise Contract". You can consider
-"Conforma" and "Enterprise Contract" to be synonynous. Note that the Tekton task defined here is still
+"Conforma" and "Enterprise Contract" to be synonymous. Note that the Tekton task defined here is still
 referencing the older name. See [this article](https://conforma.dev/posts/whats-in-a-name/) for more details
 about the name change.
 
