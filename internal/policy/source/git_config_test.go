@@ -30,6 +30,7 @@ func TestSourceIsFile(t *testing.T) {
 		want bool
 	}{
 		{src: "", want: false},
+		{src: "foo", want: false},
 		{src: "https://foo.bar/asdf", want: false},
 		{src: "git::https://foo.bar/asdf", want: false},
 		{src: "git::github.com/foo/bar", want: false},
