@@ -3,6 +3,6 @@
 Use the navigation bar to view the help documentation for each Tekton task.
 
 NOTE: Conforma was previously known as "Enterprise Contract". You can consider
-"Conforma" and "Enterprise Contract" to be synonynous. See
+"Conforma" and "Enterprise Contract" to be synonymous. See
 link:https://conforma.dev/posts/whats-in-a-name/[this article] for more details about the name
 change.
