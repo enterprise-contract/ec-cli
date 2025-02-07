@@ -85,7 +85,7 @@ func ec(dir string) func() {
 	"oci::quay.io/konflux-ci/tekton-catalog/data-acceptable-bundles@sha256:1e70b8f672388838f20a7d45e145e31e99dab06cefa1c5514d6ce41c8bbea1b0"
   ],
   "policy": [
-	"oci::quay.io/enterprise-contract/ec-release-policy@sha256:faed14fcf1a00cc19d6e71040219d232a6549e28167650e03ff4ca3204a73a24"
+	"oci::quay.io/enterprise-contract/ec-release-policy@sha256:64617f0c45689ef7152c5cfbd4cd5709a3126e4ab7482eb6acd994387fe2d4ba"
   ],
   "config": {
 	"include": [

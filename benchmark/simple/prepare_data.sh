@@ -33,7 +33,7 @@ trap 'rm -rf "${dir}"' EXIT
     imgs=(
         quay.io/redhat-user-workloads/rhtap-contract-tenant/golden-container/golden-container@sha256:166e38c156fa81d577a7ba7a948b68c79005a06e302779d1bebc7d31e8bea315
         quay.io/konflux-ci/tekton-catalog/data-acceptable-bundles@sha256:1e70b8f672388838f20a7d45e145e31e99dab06cefa1c5514d6ce41c8bbea1b0
-        quay.io/enterprise-contract/ec-release-policy@sha256:faed14fcf1a00cc19d6e71040219d232a6549e28167650e03ff4ca3204a73a24
+        quay.io/enterprise-contract/ec-release-policy@sha256:64617f0c45689ef7152c5cfbd4cd5709a3126e4ab7482eb6acd994387fe2d4ba
     )
 
     for img in "${imgs[@]}"; do
