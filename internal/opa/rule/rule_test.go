@@ -624,3 +624,48 @@ func TestDependsOn(t *testing.T) {
 		})
 	}
 }
+
+func TestReplaceXrefReferencesWithURL(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{
+			name:     "Single valid reference",
+			input:    "xref:ec-cli:ROOT:configuration.adoc#_data_sources[data sources]",
+			expected: "https://conforma.dev/docs/ec-cli/configuration.html#_data_sources",
+		},
+		{
+			name: "Multiple valid references",
+			input: "Check xref:group1:ROOT:guide.adoc#intro[Introduction] and " +
+				"xref:group2:ROOT:manual.adoc#usage[Usage] for details.",
+			expected: "Check https://conforma.dev/docs/group1/guide.html#intro and " +
+				"https://conforma.dev/docs/group2/manual.html#usage for details.",
+		},
+		{
+			name:     "No valid reference",
+			input:    "This is a test string with no reference.",
+			expected: "This is a test string with no reference.",
+		},
+		{
+			name:     "Malformed reference",
+			input:    "xref:malformed",
+			expected: "xref:malformed",
+		},
+		{
+			name:     "Reference missing bracketed text",
+			input:    "xref:ec-cli:ROOT:configuration.adoc#_data_sources", // Missing trailing "[...]"
+			expected: "xref:ec-cli:ROOT:configuration.adoc#_data_sources", // No match → remains unchanged.
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			result := replaceXrefReferencesWithURL(tc.input)
+			if result != tc.expected {
+				t.Errorf("Test %q failed:\nexpected: %q\ngot: %q", tc.name, tc.expected, result)
+			}
+		})
+	}
+}

@@ -34,7 +34,7 @@ func title(a *ast.AnnotationsRef) string {
 }
 
 // xrefRegExp is used to detect asciidoc links in a string.
-var xrefRegExp = regexp.MustCompile(`xref:[\w\.\$\#]+\[([\w\s/\.]+)\]`)
+var xrefRegExp = regexp.MustCompile(`xref:(?:([^:]+):ROOT:(.+?)\.adoc#([^[]+)|[\w\.\$\#]+)\[([\w\s/\.]+)\]`)
 
 func description(a *ast.AnnotationsRef) string {
 	if a == nil || a.Annotations == nil {
@@ -42,7 +42,7 @@ func description(a *ast.AnnotationsRef) string {
 	}
 
 	// Unlink asciidoc text to avoid unexpected output
-	return xrefRegExp.ReplaceAllString(a.Annotations.Description, "$1")
+	return xrefRegExp.ReplaceAllString(a.Annotations.Description, "$4")
 }
 
 func customAnnotationString(a *ast.AnnotationsRef, fieldName string) string {
@@ -53,7 +53,7 @@ func customAnnotationString(a *ast.AnnotationsRef, fieldName string) string {
 	if value, ok := a.Annotations.Custom[fieldName]; ok {
 		switch value := value.(type) {
 		case string:
-			return value
+			return replaceXrefReferencesWithURL(value)
 		case time.Time:
 			return value.Format(time.RFC3339)
 		}
@@ -62,12 +62,36 @@ func customAnnotationString(a *ast.AnnotationsRef, fieldName string) string {
 	return ""
 }
 
+// replace all ascii doc
+func replaceXrefReferencesWithURL(input string) string {
+	return xrefRegExp.ReplaceAllStringFunc(input, func(match string) string {
+		matches := xrefRegExp.FindStringSubmatch(match)
+		// Expected capture groups:
+		// matches[0]: full match
+		// matches[1]: group (only in full variant)
+		// matches[2]: filename (only in full variant)
+		// matches[3]: anchor (only in full variant)
+		// matches[4]: label (always captured)
+		if len(matches) < 5 {
+			return match
+		}
+		// Only perform URL replacement if all full-variant groups are present.
+		if matches[1] == "" || matches[2] == "" || matches[3] == "" {
+			return match
+		}
+		group := matches[1]
+		filename := matches[2]
+		anchor := matches[3]
+		return "https://conforma.dev/docs/" + group + "/" + filename + ".html#" + anchor
+	})
+}
+
 func effectiveOn(a *ast.AnnotationsRef) string {
 	return customAnnotationString(a, "effective_on")
 }
 
 func solution(a *ast.AnnotationsRef) string {
-	return xrefRegExp.ReplaceAllString(customAnnotationString(a, "solution"), "$1")
+	return xrefRegExp.ReplaceAllString(customAnnotationString(a, "solution"), "$4")
 }
 
 func lastTerm(a *ast.AnnotationsRef) string {
