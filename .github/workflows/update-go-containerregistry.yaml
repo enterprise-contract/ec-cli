@@ -51,7 +51,7 @@ jobs:
           #   https://github.com/golang/go/issues/45413
           GOPRIVATE: github.com/enterprise-contract/go-containerregistry
 
-      - uses: actions/create-github-app-token@136412a57a7081aa63c935a2cc2918f76c34f514 # v1.11.2
+      - uses: actions/create-github-app-token@67e27a7eb7db372a1c61a7f9bdab8699e9ee57f7 # v1.11.3
         id: generate-token
         with:
           app-id: ${{ vars.EC_AUTOMATION_APP_ID }}
