@@ -21,13 +21,13 @@ lockfileVendor: redhat
 arches:
 - arch: aarch64
   packages:
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/g/git-core-2.43.5-1.el9_4.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/g/git-core-2.43.5-2.el9_5.aarch64.rpm
     repoid: ubi-9-appstream-rpms
-    size: 4738888
-    checksum: sha256:1d9f1dbd09aeb6032082edb07d8429d7f1476ade1fa484ac6c135b516b3a6ed8
+    size: 4738228
+    checksum: sha256:490fdeafbf2f6ed88fd567c473cb28d00d69b55e42ee483f4b24258c0794fd5b
     name: git-core
-    evr: 2.43.5-1.el9_4
-    sourcerpm: git-2.43.5-1.el9_4.src.rpm
+    evr: 2.43.5-2.el9_5
+    sourcerpm: git-2.43.5-2.el9_5.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/j/jq-1.6-15.el9.aarch64.rpm
     repoid: ubi-9-appstream-rpms
     size: 187128
@@ -154,13 +154,13 @@ arches:
     name: openssl
     evr: 1:3.2.2-6.el9_5
     sourcerpm: openssl-3.2.2-6.el9_5.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/p/pam-1.5.1-20.el9.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/p/pam-1.5.1-22.el9_5.aarch64.rpm
     repoid: ubi-9-baseos-rpms
-    size: 646829
-    checksum: sha256:7a3c945abe46218be6f04e63296edc9935b0305ddc801f00ee3e0524ac0da0bc
+    size: 645036
+    checksum: sha256:e3a5a1eeed55a2ed968ba5435c0c172a102b7a37302f96770bb3f4dbb444effd
     name: pam
-    evr: 1.5.1-20.el9
-    sourcerpm: pam-1.5.1-20.el9.src.rpm
+    evr: 1.5.1-22.el9_5
+    sourcerpm: pam-1.5.1-22.el9_5.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/u/util-linux-2.37.4-20.el9.aarch64.rpm
     repoid: ubi-9-baseos-rpms
     size: 2391631
@@ -176,12 +176,12 @@ arches:
     evr: 2.37.4-20.el9
     sourcerpm: util-linux-2.37.4-20.el9.src.rpm
   source:
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/source/SRPMS/Packages/g/git-2.43.5-1.el9_4.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/source/SRPMS/Packages/g/git-2.43.5-2.el9_5.src.rpm
     repoid: ubi-9-appstream-source-rpms
-    size: 7444986
-    checksum: sha256:ca1d24f27e78e423b507052cdffff2fc1a182a74bb5a6876a9f3bed1b2078852
+    size: 7447825
+    checksum: sha256:8a13e0b20c35dc7b091d7659f5dd49cbc3dbb442da1f5096bc100e8fc1cd269f
     name: git
-    evr: 2.43.5-1.el9_4
+    evr: 2.43.5-2.el9_5
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/source/SRPMS/Packages/j/jq-1.6-15.el9.src.rpm
     repoid: ubi-9-appstream-source-rpms
     size: 1472643
@@ -272,12 +272,12 @@ arches:
     checksum: sha256:b58aa63f681560c0c4716ef22de299dcfd3219fd4de4b9f0d363648c59b92f37
     name: openssl
     evr: 1:3.2.2-6.el9_5
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/source/SRPMS/Packages/p/pam-1.5.1-20.el9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/source/SRPMS/Packages/p/pam-1.5.1-22.el9_5.src.rpm
     repoid: ubi-9-baseos-source-rpms
-    size: 1107946
-    checksum: sha256:a5edf4974b4ed014068713bc15e657408b622013e2e36ecca2ad1bfb791f67d7
+    size: 1112974
+    checksum: sha256:8224a77bca54712e2cef82141303493602f0403dbcfa8a713b3d48f533d17ff2
     name: pam
-    evr: 1.5.1-20.el9
+    evr: 1.5.1-22.el9_5
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/source/SRPMS/Packages/u/util-linux-2.37.4-20.el9.src.rpm
     repoid: ubi-9-baseos-source-rpms
     size: 6278844
@@ -287,13 +287,13 @@ arches:
   module_metadata: []
 - arch: ppc64le
   packages:
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/ppc64le/appstream/os/Packages/g/git-core-2.43.5-1.el9_4.ppc64le.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/ppc64le/appstream/os/Packages/g/git-core-2.43.5-2.el9_5.ppc64le.rpm
     repoid: ubi-9-appstream-rpms
-    size: 5085315
-    checksum: sha256:ca54d61fed798231dac7e5fd619022b0f9010315a9ab3ba3a0fc3e134702d577
+    size: 5085479
+    checksum: sha256:2c59c4c6b36e6571ee3ea56b364d4debd81d87436a7d65e7308d8a689ee6dd08
     name: git-core
-    evr: 2.43.5-1.el9_4
-    sourcerpm: git-2.43.5-1.el9_4.src.rpm
+    evr: 2.43.5-2.el9_5
+    sourcerpm: git-2.43.5-2.el9_5.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/ppc64le/appstream/os/Packages/j/jq-1.6-15.el9.ppc64le.rpm
     repoid: ubi-9-appstream-rpms
     size: 207041
@@ -427,13 +427,13 @@ arches:
     name: openssl
     evr: 1:3.2.2-6.el9_5
     sourcerpm: openssl-3.2.2-6.el9_5.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/ppc64le/baseos/os/Packages/p/pam-1.5.1-20.el9.ppc64le.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/ppc64le/baseos/os/Packages/p/pam-1.5.1-22.el9_5.ppc64le.rpm
     repoid: ubi-9-baseos-rpms
-    size: 687514
-    checksum: sha256:e679bea5c0f58825e961bf263510de35527f4681e59a98d0051b6098d6dcbc62
+    size: 687467
+    checksum: sha256:1ec4fbd11c964b8f8e389d015b380f7c61e54b9b317bba92efb1287c06163445
     name: pam
-    evr: 1.5.1-20.el9
-    sourcerpm: pam-1.5.1-20.el9.src.rpm
+    evr: 1.5.1-22.el9_5
+    sourcerpm: pam-1.5.1-22.el9_5.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/ppc64le/baseos/os/Packages/u/util-linux-2.37.4-20.el9.ppc64le.rpm
     repoid: ubi-9-baseos-rpms
     size: 2428616
@@ -449,12 +449,12 @@ arches:
     evr: 2.37.4-20.el9
     sourcerpm: util-linux-2.37.4-20.el9.src.rpm
   source:
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/ppc64le/appstream/source/SRPMS/Packages/g/git-2.43.5-1.el9_4.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/ppc64le/appstream/source/SRPMS/Packages/g/git-2.43.5-2.el9_5.src.rpm
     repoid: ubi-9-appstream-source-rpms
-    size: 7444986
-    checksum: sha256:ca1d24f27e78e423b507052cdffff2fc1a182a74bb5a6876a9f3bed1b2078852
+    size: 7447825
+    checksum: sha256:8a13e0b20c35dc7b091d7659f5dd49cbc3dbb442da1f5096bc100e8fc1cd269f
     name: git
-    evr: 2.43.5-1.el9_4
+    evr: 2.43.5-2.el9_5
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/ppc64le/appstream/source/SRPMS/Packages/j/jq-1.6-15.el9.src.rpm
     repoid: ubi-9-appstream-source-rpms
     size: 1472643
@@ -551,12 +551,12 @@ arches:
     checksum: sha256:b58aa63f681560c0c4716ef22de299dcfd3219fd4de4b9f0d363648c59b92f37
     name: openssl
     evr: 1:3.2.2-6.el9_5
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/ppc64le/baseos/source/SRPMS/Packages/p/pam-1.5.1-20.el9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/ppc64le/baseos/source/SRPMS/Packages/p/pam-1.5.1-22.el9_5.src.rpm
     repoid: ubi-9-baseos-source-rpms
-    size: 1107946
-    checksum: sha256:a5edf4974b4ed014068713bc15e657408b622013e2e36ecca2ad1bfb791f67d7
+    size: 1112974
+    checksum: sha256:8224a77bca54712e2cef82141303493602f0403dbcfa8a713b3d48f533d17ff2
     name: pam
-    evr: 1.5.1-20.el9
+    evr: 1.5.1-22.el9_5
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/ppc64le/baseos/source/SRPMS/Packages/u/util-linux-2.37.4-20.el9.src.rpm
     repoid: ubi-9-baseos-source-rpms
     size: 6278844
@@ -566,13 +566,13 @@ arches:
   module_metadata: []
 - arch: x86_64
   packages:
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/g/git-core-2.43.5-1.el9_4.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/g/git-core-2.43.5-2.el9_5.x86_64.rpm
     repoid: ubi-9-appstream-rpms
-    size: 4651148
-    checksum: sha256:5f59cef4ff08d8fe3a53064d417fab92ea9389fb9af19919755e8b4d12ee1373
+    size: 4651307
+    checksum: sha256:8416822a6000aedc9b3818dd7b297c68f741bd2569f46c888df72f3c5196238d
     name: git-core
-    evr: 2.43.5-1.el9_4
-    sourcerpm: git-2.43.5-1.el9_4.src.rpm
+    evr: 2.43.5-2.el9_5
+    sourcerpm: git-2.43.5-2.el9_5.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/j/jq-1.6-15.el9.x86_64.rpm
     repoid: ubi-9-appstream-rpms
     size: 194271
@@ -699,13 +699,13 @@ arches:
     name: openssl
     evr: 1:3.2.2-6.el9_5
     sourcerpm: openssl-3.2.2-6.el9_5.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/p/pam-1.5.1-20.el9.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/p/pam-1.5.1-22.el9_5.x86_64.rpm
     repoid: ubi-9-baseos-rpms
-    size: 647897
-    checksum: sha256:81a26a3089a1b8ef91f603bd882dfaf6732d94cf13c6e1b1c4c3793e6c671bcc
+    size: 647471
+    checksum: sha256:d0c495a13f0c6d0fdefc309086a81e64eb852255ce64a45b766187bd09de41d0
     name: pam
-    evr: 1.5.1-20.el9
-    sourcerpm: pam-1.5.1-20.el9.src.rpm
+    evr: 1.5.1-22.el9_5
+    sourcerpm: pam-1.5.1-22.el9_5.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/u/util-linux-2.37.4-20.el9.x86_64.rpm
     repoid: ubi-9-baseos-rpms
     size: 2396057
@@ -721,12 +721,12 @@ arches:
     evr: 2.37.4-20.el9
     sourcerpm: util-linux-2.37.4-20.el9.src.rpm
   source:
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/g/git-2.43.5-1.el9_4.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/g/git-2.43.5-2.el9_5.src.rpm
     repoid: ubi-9-appstream-source-rpms
-    size: 7444986
-    checksum: sha256:ca1d24f27e78e423b507052cdffff2fc1a182a74bb5a6876a9f3bed1b2078852
+    size: 7447825
+    checksum: sha256:8a13e0b20c35dc7b091d7659f5dd49cbc3dbb442da1f5096bc100e8fc1cd269f
     name: git
-    evr: 2.43.5-1.el9_4
+    evr: 2.43.5-2.el9_5
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/j/jq-1.6-15.el9.src.rpm
     repoid: ubi-9-appstream-source-rpms
     size: 1472643
@@ -817,12 +817,12 @@ arches:
     checksum: sha256:b58aa63f681560c0c4716ef22de299dcfd3219fd4de4b9f0d363648c59b92f37
     name: openssl
     evr: 1:3.2.2-6.el9_5
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/p/pam-1.5.1-20.el9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/p/pam-1.5.1-22.el9_5.src.rpm
     repoid: ubi-9-baseos-source-rpms
-    size: 1107946
-    checksum: sha256:a5edf4974b4ed014068713bc15e657408b622013e2e36ecca2ad1bfb791f67d7
+    size: 1112974
+    checksum: sha256:8224a77bca54712e2cef82141303493602f0403dbcfa8a713b3d48f533d17ff2
     name: pam
-    evr: 1.5.1-20.el9
+    evr: 1.5.1-22.el9_5
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/u/util-linux-2.37.4-20.el9.src.rpm
     repoid: ubi-9-baseos-source-rpms
     size: 6278844
