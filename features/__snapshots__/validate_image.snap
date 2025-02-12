@@ -2040,9 +2040,9 @@ Error: success criteria not met
 
 [Dropping rego capabilities:stderr - 1]
 Error: error validating image ${REGISTRY}/acceptance/ec-happy-day of component Unnamed: load: loading policies: get compiler: 3 errors occurred:
-${TEMP}/ec-work-${RANDOM}/policy/${RANDOM}/main.rego:15: rego_type_error: undefined function opa.runtime
-${TEMP}/ec-work-${RANDOM}/policy/${RANDOM}/main.rego:23: rego_type_error: undefined function http.send
-${TEMP}/ec-work-${RANDOM}/policy/${RANDOM}/main.rego:34: rego_type_error: undefined function net.lookup_ip_addr
+${TEMP}/ec-work-${RANDOM}/policy/${RANDOM}/main.rego:14: rego_type_error: undefined function opa.runtime
+${TEMP}/ec-work-${RANDOM}/policy/${RANDOM}/main.rego:22: rego_type_error: undefined function http.send
+${TEMP}/ec-work-${RANDOM}/policy/${RANDOM}/main.rego:33: rego_type_error: undefined function net.lookup_ip_addr
 
 ---
 
@@ -3106,7 +3106,7 @@ Error: success criteria not met
 ---
 
 [Unsupported policies:stderr - 1]
-Error: error validating image ${REGISTRY}/acceptance/image of component Unnamed: the rule "deny = true { true }" returns an unsupported value, at main.rego:3
+Error: error validating image ${REGISTRY}/acceptance/image of component Unnamed: the rule "deny = true { true }" returns an unsupported value, at main.rego:5
 
 ---
 

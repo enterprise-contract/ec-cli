@@ -1,5 +1,7 @@
 package policy.pipeline.basic
 
+import rego.v1
+
 import data.lib
 
 expected_kind := "Pipeline"
@@ -16,7 +18,7 @@ expected_kind := "Pipeline"
 #   short_name: unexpected_kind
 #   failure_msg: Unexpected kind '%s'
 #
-deny[result] {
+deny contains result if {
 	expected_kind != input.kind
 	result := lib.result_helper(rego.metadata.chain(), [input.kind])
 }

@@ -45,10 +45,11 @@ func Test_InspectMultiple(t *testing.T) {
 			paths: []string{"foo/bar/bacon.rego"},
 			modules: []string{hd.Doc(`
 				package bacon
+				import rego.v1
 
 				# METADATA
 				# title: Enough spam
-				deny {
+				deny if {
 					input.spam_count > 42
 				}
 			`)},
@@ -57,7 +58,7 @@ func Test_InspectMultiple(t *testing.T) {
 					{
 						"location":{
 							"file":"foo/bar/bacon.rego",
-							"row":5,
+							"row":6,
 							"col":1
 						},
 						"path":[
@@ -91,9 +92,7 @@ func TestInspectDir(t *testing.T) {
 	files := map[string]string{
 		"spam.rego": hd.Doc(`
 			package spam
-
-			import future.keywords.contains
-			import future.keywords.if
+			import rego.v1
 
 			# METADATA
 			# title: Enough spam
@@ -107,9 +106,7 @@ func TestInspectDir(t *testing.T) {
 		"spam.text":        "ignored",
 		"more/bacon.REGO": hd.Doc(`
 			package more.bacon
-
-			import future.keywords.contains
-			import future.keywords.if
+			import rego.v1
 
 			# METADATA
 			# title: Enough bacon
@@ -169,48 +166,54 @@ func TestCheckRules(t *testing.T) {
 		{
 			name: "assignement",
 			rego: `package test
+			import rego.v1
 			x := "value"`,
 		},
 		{
 			name: "no message",
 			rego: `package test
-			deny { true }`,
+			import rego.v1
+			deny if { true }`,
 			err: `the rule "deny = true { true }" returns an unsupported value, at rules.rego:2`,
 		},
 		{
 			// we can't check for this, we don't know the type of `x`
 			name: "var assignement",
 			rego: `package test
-			deny[x] { x := true }`,
+			import rego.v1
+			deny contains x if { x := true }`,
 		},
 		{
 			// we can't check for this, we don't know if `o` is an empty object
 			name: "object assignement",
 			rego: `package test
-			import future.keywords.contains
-			import future.keywords.if
+			import rego.v1
 			deny contains o if { o := {} }`,
 		},
 		{
 			name: "not string",
 			rego: `package test
-			deny { 2 }`,
+			import rego.v1
+			deny if { 2 }`,
 			err: `the rule "deny = true { 2 }" returns an unsupported value, at rules.rego:2`,
 		},
 		{
 			name: "string",
 			rego: `package test
-			deny[msg] { msg := "str" }`,
+			import rego.v1
+			deny contains msg if { msg := "str" }`,
 		},
 		{
 			name: "object",
 			rego: `package test
+			import rego.v1
 			deny := {"key": "val"}`,
 		},
 		{
 			name: "function",
 			rego: `package test
-			deny[fn()]{
+			import rego.v1
+			deny contains fn() if {
 				true
 			}
 			fn := {"key": "val"}`,
@@ -218,7 +221,8 @@ func TestCheckRules(t *testing.T) {
 		{
 			name: "assign",
 			rego: `package test
-			deny := "value" {
+			import rego.v1
+			deny := "value" if {
 				true
 			}`,
 		},

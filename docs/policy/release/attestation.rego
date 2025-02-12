@@ -8,6 +8,8 @@
 #
 package policy.release.builtin.attestation
 
+import rego.v1
+
 # METADATA
 # title: Attestation signature
 # description: >-
@@ -23,7 +25,7 @@ package policy.release.builtin.attestation
 #   collections:
 #   - builtin
 #
-deny {
+deny if {
 	false # Here just to provide documentation
 }
 
@@ -40,6 +42,6 @@ deny {
 #   collections:
 #   - builtin
 #
-deny {
+deny if {
 	false # Here just to provide documentation
 }

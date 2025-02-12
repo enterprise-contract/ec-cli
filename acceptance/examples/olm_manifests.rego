@@ -1,8 +1,6 @@
 package olm_manifests
 
-import future.keywords.contains
-import future.keywords.if
-import future.keywords.in
+import rego.v1
 
 # METADATA
 # title: Manifests are there

@@ -1,12 +1,14 @@
 # A set of policies
 package a
 
+import rego.v1
+
 # METADATA
 # title: Failure
 # description: Failure description.
 # custom:
 #   short_name: failure
-deny[result] {
+deny contains result if {
 	result := {
 		"code": "a.failure",
 		"msg": "Failure!",
@@ -17,7 +19,7 @@ deny[result] {
 # description: Warning description.
 # custom:
 #   short_name: warning
-warn[result] {
+warn contains result if {
 	result := {
 		"code": "a.warning",
 		"msg": "Warning!",
@@ -28,7 +30,7 @@ warn[result] {
 # description: Success description.
 # custom:
 #   short_name: success
-deny[result] {
+deny contains result if {
 	false
 	result := "Success!"
 }
