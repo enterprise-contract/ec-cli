@@ -464,6 +464,8 @@ github.com/codahale/rfc6979 v0.0.0-20141003034818-6a90f24967eb h1:EDmT6Q9Zs+SbUo
 github.com/codahale/rfc6979 v0.0.0-20141003034818-6a90f24967eb/go.mod h1:ZjrT6AXHbDs86ZSdt/osfBi5qfexBrKUdONk989Wnk4=
 github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be h1:J5BL2kskAlV9ckgEsNQXscjIaLiOYiZ75d4e94E6dcQ=
 github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be/go.mod h1:mk5IQ+Y0ZeO87b858TlA645sVcEcbiX6YqP98kt+7+w=
+github.com/conforma/go-gather v1.0.0 h1:9dCL3UW+SdkadEgPrpBbztbzxzkXMN5MbcpXiZAt+WA=
+github.com/conforma/go-gather v1.0.0/go.mod h1:AbNsdkXUBG9nEyNOGs7Tx3B0N0zgOirZS4Cus/xDhrg=
 github.com/containerd/cgroups v1.1.0 h1:v8rEWFl6EoqHB+swVNjVoCJE8o3jX7e8nqBGPLaDFBM=
 github.com/containerd/cgroups v1.1.0/go.mod h1:6ppBcbh/NOOUU+dMKrykgaBnK9lCIBxHqJDGwsa1mIw=
 github.com/containerd/containerd v1.7.23 h1:H2CClyUkmpKAGlhQp95g2WXHfLYc7whAuvZGBNYOOwQ=
@@ -549,8 +551,6 @@ github.com/enterprise-contract/enterprise-contract-controller/api v0.1.71 h1:vQg
 github.com/enterprise-contract/enterprise-contract-controller/api v0.1.71/go.mod h1:zkK1IrRezUgKGK4tkN9hJtpu8NVqjKTMh4EshxXOi3g=
 github.com/enterprise-contract/go-containerregistry v0.20.3-0.20241118083807-8c8ea269355e h1:Rti5Q7fdkzIMO+lRLAFaBSReLpNx4yTdq+u6PRJv1Tw=
 github.com/enterprise-contract/go-containerregistry v0.20.3-0.20241118083807-8c8ea269355e/go.mod h1:QTzGuUYojyBy1anZvBPMhwXRE0LGZPIcpmn3K8DHYrw=
-github.com/enterprise-contract/go-gather v0.1.2 h1:uM13ds2Toq0w3bH1pj55vIiahQ2dQhATx1Pvld/giDo=
-github.com/enterprise-contract/go-gather v0.1.2/go.mod h1:DrMwce0sBK/gzEwMDRD/Dx+T0/O6LN6F5C/OaOgZnw0=
 github.com/envoyproxy/go-control-plane v0.9.0/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/go-control-plane v0.9.1-0.20191026205805-5f8ba28d4473/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/go-control-plane v0.9.4/go.mod h1:6rpuAdCZL397s3pYoYcLgu1mIlRU8Am5FuJP05cCM98=

@@ -27,8 +27,8 @@ import (
 	"testing"
 	"time"
 
+	ociMetadata "github.com/conforma/go-gather/gather/oci"
 	"github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
-	ociMetadata "github.com/enterprise-contract/go-gather/gather/oci"
 	app "github.com/konflux-ci/application-api/api/v1alpha1"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"

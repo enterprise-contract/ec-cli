@@ -33,9 +33,9 @@ import (
 	"sync"
 	"testing"
 
-	ghttp "github.com/enterprise-contract/go-gather/gather/http"
-	goci "github.com/enterprise-contract/go-gather/gather/oci"
-	"github.com/enterprise-contract/go-gather/metadata"
+	ghttp "github.com/conforma/go-gather/gather/http"
+	goci "github.com/conforma/go-gather/gather/oci"
+	"github.com/conforma/go-gather/metadata"
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/google/go-containerregistry/pkg/registry"
 	"github.com/google/go-containerregistry/pkg/v1/random"

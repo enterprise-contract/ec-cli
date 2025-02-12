@@ -23,8 +23,8 @@ import (
 	"fmt"
 	"testing"
 
-	fileMetadata "github.com/enterprise-contract/go-gather/gather/file"
-	"github.com/enterprise-contract/go-gather/metadata"
+	fileMetadata "github.com/conforma/go-gather/gather/file"
+	"github.com/conforma/go-gather/metadata"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"

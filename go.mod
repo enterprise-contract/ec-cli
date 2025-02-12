@@ -6,8 +6,8 @@ require (
 	cuelang.org/go v0.11.1
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/Maldris/go-billy-afero v0.0.0-20200815120323-e9d3de59c99a
+	github.com/conforma/go-gather v1.0.0
 	github.com/enterprise-contract/enterprise-contract-controller/api v0.1.71
-	github.com/enterprise-contract/go-gather v0.1.2
 	github.com/evanphx/json-patch v5.9.0+incompatible
 	github.com/gkampitakis/go-snaps v0.5.7
 	github.com/go-git/go-git/v5 v5.13.2

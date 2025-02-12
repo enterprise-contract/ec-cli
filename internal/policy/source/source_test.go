@@ -28,9 +28,9 @@ import (
 	"sync"
 	"testing"
 
+	fileMetadata "github.com/conforma/go-gather/gather/file"
+	"github.com/conforma/go-gather/metadata"
 	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
-	fileMetadata "github.com/enterprise-contract/go-gather/gather/file"
-	"github.com/enterprise-contract/go-gather/metadata"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

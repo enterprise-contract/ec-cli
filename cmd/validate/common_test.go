@@ -21,7 +21,7 @@ package validate
 import (
 	"context"
 
-	"github.com/enterprise-contract/go-gather/metadata"
+	"github.com/conforma/go-gather/metadata"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/spf13/cobra"

@@ -25,7 +25,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/enterprise-contract/go-gather/detector"
+	"github.com/conforma/go-gather/detector"
 	log "github.com/sirupsen/logrus"
 )
 
