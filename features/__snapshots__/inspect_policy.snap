@@ -22,7 +22,7 @@ Error: Merge error. The 'rule_data' key was found more than once!
       },
       "location": {
         "file": "main.rego",
-        "row": 9,
+        "row": 11,
         "col": 1
       },
       "path": [

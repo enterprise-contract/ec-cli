@@ -6,8 +6,7 @@
 #   test that certain rego functions are not allowed.
 package policy.capabilities
 
-import future.keywords.contains
-import future.keywords.if
+import rego.v1
 
 # METADATA
 # title: use env var

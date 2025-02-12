@@ -25,8 +25,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/open-policy-agent/opa/ast"
-	"github.com/open-policy-agent/opa/ast/json"
+	"github.com/open-policy-agent/opa/v1/ast"
+	"github.com/open-policy-agent/opa/v1/ast/json"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 )

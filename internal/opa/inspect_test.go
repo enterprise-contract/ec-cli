@@ -48,7 +48,7 @@ func Test_InspectMultiple(t *testing.T) {
 
 				# METADATA
 				# title: Enough spam
-				deny {
+				deny if {
 					input.spam_count > 42
 				}
 			`)},
@@ -174,14 +174,14 @@ func TestCheckRules(t *testing.T) {
 		{
 			name: "no message",
 			rego: `package test
-			deny { true }`,
+			deny if { true }`,
 			err: `the rule "deny = true { true }" returns an unsupported value, at rules.rego:2`,
 		},
 		{
 			// we can't check for this, we don't know the type of `x`
 			name: "var assignement",
 			rego: `package test
-			deny[x] { x := true }`,
+			deny contains x if { x := true }`,
 		},
 		{
 			// we can't check for this, we don't know if `o` is an empty object
@@ -194,13 +194,13 @@ func TestCheckRules(t *testing.T) {
 		{
 			name: "not string",
 			rego: `package test
-			deny { 2 }`,
+			deny if { 2 }`,
 			err: `the rule "deny = true { 2 }" returns an unsupported value, at rules.rego:2`,
 		},
 		{
 			name: "string",
 			rego: `package test
-			deny[msg] { msg := "str" }`,
+			deny contains msg if { msg := "str" }`,
 		},
 		{
 			name: "object",
@@ -210,7 +210,7 @@ func TestCheckRules(t *testing.T) {
 		{
 			name: "function",
 			rego: `package test
-			deny[fn()]{
+			deny contains fn() if {
 				true
 			}
 			fn := {"key": "val"}`,
@@ -218,7 +218,7 @@ func TestCheckRules(t *testing.T) {
 		{
 			name: "assign",
 			rego: `package test
-			deny := "value" {
+			deny := "value" if {
 				true
 			}`,
 		},

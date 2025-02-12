@@ -23,7 +23,7 @@ import (
 	"strings"
 
 	hd "github.com/MakeNowJust/heredoc"
-	"github.com/open-policy-agent/opa/ast"
+	"github.com/open-policy-agent/opa/v1/ast"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"golang.org/x/exp/slices"

@@ -11,7 +11,7 @@ is provided - this tool will use stdin.
 The format of the output is not defined specifically; whatever this tool outputs
 is considered correct format (with the exception of bugs).
 
-If the '-w' option is supplied, the 'fmt' command with overwrite the source file
+If the '-w' option is supplied, the 'fmt' command will overwrite the source file
 instead of printing to stdout.
 
 If the '-d' option is supplied, the 'fmt' command will output a diff between the
@@ -23,6 +23,25 @@ to stdout from the 'fmt' command.
 
 If the '--fail' option is supplied, the 'fmt' command will return a non zero exit
 code if a file would be reformatted.
+
+The 'fmt' command can be run in several compatibility modes for consuming and outputting
+different Rego versions:
+
+* 'opa fmt':
+  * v1 Rego is formatted to v1
+  * 'rego.v1'/'future.keywords' imports are NOT removed
+  * 'rego.v1'/'future.keywords' imports are NOT added if missing
+  * v0 rego is rejected
+* 'opa fmt --v0-compatible':
+  * v0 Rego is formatted to v0
+  * v1 Rego is rejected
+* 'opa fmt --v0-v1':
+  * v0 Rego is formatted to be compatible with v0 AND v1
+  * v1 Rego is rejected
+* 'opa fmt --v0-v1 --v1-compatible':
+  * v1 Rego is formatted to be compatible with v0 AND v1
+  * v0 Rego is rejected
+
 [source,shell]
 ----
 ec opa fmt [path [...]] [flags]
@@ -31,11 +50,13 @@ ec opa fmt [path [...]] [flags]
 
 --check-result:: assert that the formatted code is valid and can be successfully parsed (default true) (Default: true)
 -d, --diff:: only display a diff of the changes (Default: false)
+--drop-v0-imports:: drop v0 imports from the formatted code, such as 'rego.v1' and 'future.keywords' (Default: false)
 --fail:: non zero exit code on reformat (Default: false)
 -h, --help:: help for fmt (Default: false)
 -l, --list:: list all files who would change when formatted (Default: false)
---rego-v1:: format module(s) to be compatible with both Rego v1 and current OPA version) (Default: false)
---v0-compatible:: opt-in to OPA features and behaviors prior to the OPA v1.0 release. Takes precedence over --v1-compatible (Default: false)
+--rego-v1:: format module(s) to be compatible with both Rego v0 and v1 (Default: false)
+--v0-compatible:: opt-in to OPA features and behaviors prior to the OPA v1.0 release (Default: false)
+--v0-v1:: format module(s) to be compatible with both Rego v0 and v1 (Default: false)
 --v1-compatible:: opt-in to OPA features and behaviors that are enabled by default in OPA v1.0 (Default: false)
 -w, --write:: overwrite the original source file (Default: false)
 

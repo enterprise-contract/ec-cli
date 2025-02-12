@@ -1,5 +1,5 @@
 package no_msg
 
-deny {
+deny if {
     true
 }

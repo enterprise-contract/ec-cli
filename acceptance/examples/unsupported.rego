@@ -1,5 +1,7 @@
 package unsupported
 
-deny {
+import rego.v1
+
+deny if {
     true
 }

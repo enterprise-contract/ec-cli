@@ -26,10 +26,10 @@ import (
 	"fmt"
 
 	"github.com/google/go-containerregistry/pkg/name"
-	"github.com/open-policy-agent/opa/ast"
-	"github.com/open-policy-agent/opa/rego"
-	"github.com/open-policy-agent/opa/topdown/builtins"
-	"github.com/open-policy-agent/opa/types"
+	"github.com/open-policy-agent/opa/v1/ast"
+	"github.com/open-policy-agent/opa/v1/rego"
+	"github.com/open-policy-agent/opa/v1/topdown/builtins"
+	"github.com/open-policy-agent/opa/v1/types"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
 	"github.com/sigstore/cosign/v2/pkg/oci"
 

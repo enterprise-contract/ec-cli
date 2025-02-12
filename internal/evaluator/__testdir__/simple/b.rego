@@ -1,10 +1,14 @@
 # B set of policies
 package b
 
+# This is still parsed with conftest which is still on opa 0.x
+# hence we need it still
+import rego.v1
+
 # METADATA
 # custom:
 #   short_name: failure
-deny[result] {
+deny contains result if {
 	result := {
 		"code": "b.failure",
 		"msg": "Failure!",
@@ -13,7 +17,7 @@ deny[result] {
 # METADATA
 # custom:
 #   short_name: warning
-warn[result] {
+warn contains result if {
 	result := {
 		"code": "b.warning",
 		"msg": "Warning!",
@@ -22,7 +26,7 @@ warn[result] {
 # METADATA
 # custom:
 #   short_name: success
-deny[result] {
+deny contains result if {
 	false
 	result := "Success!"
 }

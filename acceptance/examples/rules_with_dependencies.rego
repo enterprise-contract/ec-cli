@@ -1,7 +1,6 @@
 package pkg
 
-import future.keywords.contains
-import future.keywords.if
+import rego.v1
 
 # METADATA
 # custom:

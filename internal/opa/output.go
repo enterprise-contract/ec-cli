@@ -22,7 +22,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/open-policy-agent/opa/ast"
+	"github.com/open-policy-agent/opa/v1/ast"
 	"golang.org/x/exp/slices"
 
 	"github.com/enterprise-contract/ec-cli/internal/opa/rule"

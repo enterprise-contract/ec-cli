@@ -120,8 +120,15 @@ acceptance: ## Run all acceptance tests
 	cd acceptance && go test -coverprofile "$$ACCEPTANCE_WORKDIR/coverage-acceptance.out" -timeout $(ACCEPTANCE_TIMEOUT) ./... && \
 	go run -modfile "$$ACCEPTANCE_WORKDIR/tools/go.mod" github.com/wadey/gocovmerge "$$ACCEPTANCE_WORKDIR/coverage-acceptance.out" > "$(ROOT_DIR)/coverage-acceptance.out"
 
+# Beware this doesn't produce the code coverage data, so it's not a good replacement for `make acceptance`
+acceptance-steps: build ## Run acceptance tests feature by feature
+	@for f in $$(git ls-files features/*.feature | xargs -n1 -exec basename -s .feature); do
+	  $(MAKE) feature_$$f; \
+	done;
+
 # Add @focus above the feature you're hacking on to use this
 # (Mainly for use with the feature-% target below)
+# Fixme: It does a needless build every time
 .PHONY: focus-acceptance
 focus-acceptance: build ## Run acceptance tests with @focus tag
 	@cd acceptance && go test -tags=acceptance . -args -tags=@focus
