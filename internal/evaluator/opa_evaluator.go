@@ -34,8 +34,8 @@ func NewOPAEvaluator() (Evaluator, error) {
 	return opaEvaluator{}, nil
 }
 
-func (o opaEvaluator) Evaluate(ctx context.Context, target EvaluationTarget) ([]Outcome, Data, error) {
-	return []Outcome{}, Data{}, nil
+func (o opaEvaluator) Evaluate(ctx context.Context, target EvaluationTarget) ([]Outcome, error) {
+	return []Outcome{}, nil
 }
 
 func (o opaEvaluator) Destroy() {

@@ -35,10 +35,9 @@ func TestNewOPAEvaluator(t *testing.T) {
 func TestEvaluate(t *testing.T) {
 	opaEval := opaEvaluator{}
 
-	outcomes, data, err := opaEval.Evaluate(context.Background(), EvaluationTarget{})
+	outcomes, err := opaEval.Evaluate(context.Background(), EvaluationTarget{})
 	assert.NoError(t, err, "Expected no error from Evaluate")
 	assert.Equal(t, []Outcome{}, outcomes)
-	assert.Equal(t, data, Data{})
 }
 
 // Test Destroy method of opaEvaluator.

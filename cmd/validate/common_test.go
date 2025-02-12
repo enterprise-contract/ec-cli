@@ -41,10 +41,10 @@ type mockEvaluator struct {
 	mock.Mock
 }
 
-func (e *mockEvaluator) Evaluate(ctx context.Context, target evaluator.EvaluationTarget) ([]evaluator.Outcome, evaluator.Data, error) {
+func (e *mockEvaluator) Evaluate(ctx context.Context, target evaluator.EvaluationTarget) ([]evaluator.Outcome, error) {
 	args := e.Called(ctx, target.Inputs)
 
-	return args.Get(0).([]evaluator.Outcome), args.Get(1).(evaluator.Data), args.Error(2)
+	return args.Get(0).([]evaluator.Outcome), args.Error(1)
 }
 
 func (e *mockEvaluator) Destroy() {

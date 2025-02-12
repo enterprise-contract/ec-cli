@@ -61,7 +61,7 @@ func TestEvaluatorLifecycle(t *testing.T) {
 
 	for i := 0; i < noEvaluators; i++ {
 		e := mockEvaluator{}
-		call := e.On("Evaluate", ctx, mock.Anything).Return([]evaluator.Outcome{}, evaluator.Data{}, nil)
+		call := e.On("Evaluate", ctx, mock.Anything).Return([]evaluator.Outcome{}, nil)
 
 		evaluators = append(evaluators, &e)
 		expectations = append(expectations, call)
@@ -84,7 +84,7 @@ func TestEvaluatorLifecycle(t *testing.T) {
 
 	validate := func(_ context.Context, component app.SnapshotComponent, _ *app.SnapshotSpec, _ policy.Policy, evaluators []evaluator.Evaluator, _ bool) (*output.Output, error) {
 		for _, e := range evaluators {
-			_, _, err := e.Evaluate(ctx, evaluator.EvaluationTarget{Inputs: []string{}})
+			_, err := e.Evaluate(ctx, evaluator.EvaluationTarget{Inputs: []string{}})
 			require.NoError(t, err)
 		}
 

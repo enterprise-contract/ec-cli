@@ -170,9 +170,6 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 
 			  ec validate image --image registry/name:tag --output yaml --output appstudio=<path>
 
-			Write the data used in the policy evaluation to a file in YAML format
-
-			  ec validate image --image registry/name:tag --output data=<path>
 
 			Validate a single image with keyless workflow.
 
@@ -302,7 +299,6 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 			type result struct {
 				err         error
 				component   applicationsnapshot.Component
-				data        []evaluator.Data
 				policyInput []byte
 			}
 
@@ -382,7 +378,6 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 							res.component.Attestations = append(res.component.Attestations, attResult)
 						}
 						res.component.ContainerImage = out.ImageURL
-						res.data = out.Data
 						res.policyInput = out.PolicyInput
 					}
 					res.component.Success = err == nil && len(res.component.Violations) == 0
@@ -415,7 +410,6 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 			close(jobs)
 
 			var components []applicationsnapshot.Component
-			var evaluatorData [][]evaluator.Data
 			var manyPolicyInput [][]byte
 			var allErrors error = nil
 			for i := 0; i < numComponents; i++ {
@@ -425,10 +419,6 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 					allErrors = errors.Join(allErrors, e)
 				} else {
 					components = append(components, r.component)
-					// evaluator data is duplicated per component, so only collect it once.
-					if len(evaluatorData) == 0 && containsOutput(data.output, "data") {
-						evaluatorData = append(evaluatorData, r.data)
-					}
 					manyPolicyInput = append(manyPolicyInput, r.policyInput)
 				}
 			}
@@ -446,7 +436,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 				data.output = append(data.output, fmt.Sprintf("%s=%s", applicationsnapshot.JSON, data.outputFile))
 			}
 
-			report, err := applicationsnapshot.NewReport(data.snapshot, components, data.policy, evaluatorData, manyPolicyInput, showSuccesses)
+			report, err := applicationsnapshot.NewReport(data.snapshot, components, data.policy, manyPolicyInput, showSuccesses)
 			if err != nil {
 				return err
 			}

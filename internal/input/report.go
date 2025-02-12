@@ -92,7 +92,7 @@ const (
 
 // WriteReport returns a new instance of Report representing the state of
 // the filepaths provided.
-func NewReport(inputs []Input, policy policy.Policy, data any, policyInput [][]byte) (Report, error) {
+func NewReport(inputs []Input, policy policy.Policy, policyInput [][]byte) (Report, error) {
 	success := true
 
 	// Set the report success, remains true if all the files were successfully validated
@@ -111,7 +111,6 @@ func NewReport(inputs []Input, policy policy.Policy, data any, policyInput [][]b
 		FilePaths:     inputs,
 		Policy:        policy.Spec(),
 		EcVersion:     info.Version,
-		Data:          data,
 		EffectiveTime: policy.EffectiveTime().UTC(),
 		PolicyInput:   policyInput,
 	}, nil

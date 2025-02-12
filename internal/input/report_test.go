@@ -36,7 +36,7 @@ func Test_ReportJson(t *testing.T) {
 	inputs := testInputsFor(filePaths)
 	ctx := context.Background()
 	testPolicy := createTestPolicy(t, ctx)
-	report, err := NewReport(inputs, testPolicy, "data here", nil)
+	report, err := NewReport(inputs, testPolicy, nil)
 	assert.NoError(t, err)
 
 	testEffectiveTime := testPolicy.EffectiveTime().UTC().Format(time.RFC3339Nano)
@@ -126,7 +126,7 @@ func Test_ReportYaml(t *testing.T) {
 	inputs := testInputsFor(filePaths)
 	ctx := context.Background()
 	testPolicy := createTestPolicy(t, ctx)
-	report, err := NewReport(inputs, testPolicy, "data here", nil)
+	report, err := NewReport(inputs, testPolicy, nil)
 	assert.NoError(t, err)
 
 	testEffectiveTime := testPolicy.EffectiveTime().UTC().Format(time.RFC3339Nano)
@@ -232,8 +232,8 @@ func Test_ReportSummary(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("NewReport=%s", tc.name), func(t *testing.T) {
 			ctx := context.Background()
-			report, err := NewReport(tc.input, createTestPolicy(t, ctx), "data here", nil)
-			// report, err := NewReport(tc.snapshot, []Component{tc.input}, createTestPolicy(t, ctx), "data here", nil)
+			report, err := NewReport(tc.input, createTestPolicy(t, ctx), nil)
+			// report, err := NewReport(tc.snapshot, []Component{tc.input}, createTestPolicy(t, ctx), nil)
 			assert.NoError(t, err)
 			fmt.Println("\n\nExpected:\n", tc.want, "\n\nActual:\n", report.toSummary())
 			assert.Equal(t, tc.want, report.toSummary())

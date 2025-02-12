@@ -55,7 +55,7 @@ func ValidateInput(ctx context.Context, fpath string, policy policy.Policy, deta
 
 	var allResults []evaluator.Outcome
 	for _, e := range p.Evaluators {
-		results, _, err := e.Evaluate(ctx, evaluator.EvaluationTarget{Inputs: inputFiles})
+		results, err := e.Evaluate(ctx, evaluator.EvaluationTarget{Inputs: inputFiles})
 		if err != nil {
 			return nil, fmt.Errorf("evaluating policy: %w", err)
 		}

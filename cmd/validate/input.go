@@ -29,7 +29,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/enterprise-contract/ec-cli/internal/applicationsnapshot"
-	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 	"github.com/enterprise-contract/ec-cli/internal/format"
 	"github.com/enterprise-contract/ec-cli/internal/input"
 	"github.com/enterprise-contract/ec-cli/internal/output"
@@ -114,7 +113,6 @@ func validateInputCmd(validate InputValidationFunc) *cobra.Command {
 			type result struct {
 				err         error
 				input       input.Input
-				data        []evaluator.Data
 				policyInput []byte
 			}
 
@@ -155,9 +153,6 @@ func validateInputCmd(validate InputValidationFunc) *cobra.Command {
 						if showSuccesses {
 							res.input.Successes = successes
 						}
-						if containsOutput(data.output, "data") {
-							res.data = out.Data
-						}
 						res.input.Success = (len(res.input.Violations) == 0)
 						res.policyInput = out.PolicyInput
 					}
@@ -182,7 +177,6 @@ func validateInputCmd(validate InputValidationFunc) *cobra.Command {
 			close(jobs)
 
 			var inputs []input.Input
-			var evaluatorData [][]evaluator.Data
 			var manyPolicyInput [][]byte
 			var allErrors error = nil
 
@@ -194,10 +188,6 @@ func validateInputCmd(validate InputValidationFunc) *cobra.Command {
 					allErrors = errors.Join(allErrors, e)
 				} else {
 					inputs = append(inputs, r.input)
-					// evaluator data is duplicated per input, so only collect it once.
-					if len(evaluatorData) == 0 && containsOutput(data.output, "data") {
-						evaluatorData = append(evaluatorData, r.data)
-					}
 					manyPolicyInput = append(manyPolicyInput, r.policyInput)
 				}
 			}
@@ -212,7 +202,7 @@ func validateInputCmd(validate InputValidationFunc) *cobra.Command {
 				return inputs[i].FilePath > inputs[j].FilePath
 			})
 
-			report, err := input.NewReport(inputs, data.policy, evaluatorData, manyPolicyInput)
+			report, err := input.NewReport(inputs, data.policy, manyPolicyInput)
 			if err != nil {
 				return err
 			}

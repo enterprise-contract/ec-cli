@@ -60,7 +60,7 @@ func TestNewVSA(t *testing.T) {
 	})
 	assert.NoError(t, err)
 
-	report, err := NewReport("snappy", components, testPolicy, "data here", nil, true)
+	report, err := NewReport("snappy", components, testPolicy, nil, true)
 	assert.NoError(t, err)
 
 	expected := ProvenanceStatementVSA{
