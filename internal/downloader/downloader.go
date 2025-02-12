@@ -23,10 +23,10 @@ import (
 	"strings"
 	"sync"
 
-	ghttp "github.com/enterprise-contract/go-gather/gather/http"
-	goci "github.com/enterprise-contract/go-gather/gather/oci"
-	"github.com/enterprise-contract/go-gather/metadata"
-	"github.com/enterprise-contract/go-gather/registry"
+	ghttp "github.com/conforma/go-gather/gather/http"
+	goci "github.com/conforma/go-gather/gather/oci"
+	"github.com/conforma/go-gather/metadata"
+	"github.com/conforma/go-gather/registry"
 	"github.com/sirupsen/logrus"
 	"oras.land/oras-go/v2/registry/remote/retry"
 
