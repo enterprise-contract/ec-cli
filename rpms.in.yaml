@@ -17,7 +17,7 @@
 # any packages that are needed in the CLI image need to be listed here
 packages:
   - jq
-  - git-core
+  - gzip
 # supported architectures, influences the RPM lock file
 arches:
   - x86_64
