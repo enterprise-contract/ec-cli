@@ -18,6 +18,7 @@
 packages:
   - jq
   - gzip
+  - ca-certificates
 # supported architectures, influences the RPM lock file
 arches:
   - x86_64

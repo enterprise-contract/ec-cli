@@ -14,8 +14,9 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-## Build
-
+# -----------------------------------
+# Stage 1: Build ec binaries
+# -----------------------------------
 # Ideally, use the official image from Red Hat, e.g. registry.access.redhat.com/ubi9/go-toolset,
 # but a 1.22 release does not yet exist.
 FROM brew.registry.redhat.io/rh-osbs/openshift-golang-builder:v1.22.7@sha256:376dd8d1291580a32824c7a072b72e1dce524bb9d300393b656931ba6156b86d AS build
@@ -43,13 +44,31 @@ COPY . .
 
 RUN /build/build.sh "${BUILD_LIST}" "${BUILD_SUFFIX}"
 
-## Final image
+# -----------------------------------
+# Stage 2: Install extra packages
+# -----------------------------------
+FROM registry.access.redhat.com/ubi9/ubi:9.5@sha256:4495380286c97b9c2635b0b5d6f227bbd9003628be8383a37ff99984eefa42ed AS packages
+# Create a directory for the rootfs then install packages into it. These will be copied
+# into the final image. We do this so that there's a record of the installed packages for
+# SBOM inspection.
+RUN mkdir -p /mnt/rootfs
+RUN \
+    rpm --root=/mnt/rootfs --import /mnt/rootfs/etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+RUN \
+    dnf install --installroot /mnt/rootfs \
+      jq gzip ca-certificates \
+      --releasever 9 --setopt=install_weak_deps=false --nodocs \
+      --setopt=reposdir=/etc/yum.repos.d/ -y && \
+    dnf --installroot /mnt/rootfs clean all
+RUN rm -rf /mnt/rootfs/var/cache/* /mnt/rootfs/var/log/dnf* /mnt/rootfs/var/log/yum.* /mnt/rootfs/usr/share/zoneinfo
 
-FROM registry.access.redhat.com/ubi9/ubi-minimal:9.5@sha256:b87097994ed62fbf1de70bc75debe8dacf3ea6e00dd577d74503ef66452c59d6
-
+# -----------------------------------
+# Stage 3: Final image based on UBI-micro
+# (It does NOT include microdnf, so we must copy in the tools.)
+# -----------------------------------
+FROM registry.access.redhat.com/ubi9/ubi-micro:9.5@sha256:4a2052ef4db4fd1a53b45263b5067eb01d5745fdd300b27986952af27887bc27
 ARG TARGETOS
 ARG TARGETARCH
-
 ARG CLI_NAME="Enterprise Contract"
 
 LABEL \
@@ -61,8 +80,8 @@ LABEL \
   io.openshift.tags="rhtas rhtap trusted-artifact-signer trusted-application-pipeline enterprise-contract conforma ec opa cosign sigstore" \
   com.redhat.component="ec-cli"
 
-# Install tools we want to use in the Tekton task
-RUN microdnf upgrade --assumeyes --nodocs --setopt=keepcache=0 --refresh && microdnf -y --nodocs --setopt=keepcache=0 install gzip jq
+# Copy in the packages from the 'packages' stage.
+COPY --from=packages /mnt/rootfs/ /
 
 # Copy all the binaries so they're available to extract and download
 # (Beware if you're testing this locally it will copy everything from
