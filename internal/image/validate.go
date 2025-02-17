@@ -122,7 +122,7 @@ func ValidateImage(ctx context.Context, comp app.SnapshotComponent, snap *app.Sn
 		} else {
 			target.Target = digest
 		}
-		results, data, err := e.Evaluate(ctx, target)
+		results, err := e.Evaluate(ctx, target)
 		log.Debug("\n\nRunning conftest policy check\n\n")
 
 		if err != nil {
@@ -130,7 +130,6 @@ func ValidateImage(ctx context.Context, comp app.SnapshotComponent, snap *app.Sn
 			return nil, err
 		}
 		allResults = append(allResults, results...)
-		out.Data = append(out.Data, data)
 	}
 
 	out.PolicyInput = inputJSON

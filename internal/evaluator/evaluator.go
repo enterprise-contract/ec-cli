@@ -26,7 +26,7 @@ type EvaluationTarget struct {
 }
 
 type Evaluator interface {
-	Evaluate(ctx context.Context, target EvaluationTarget) ([]Outcome, Data, error)
+	Evaluate(ctx context.Context, target EvaluationTarget) ([]Outcome, error)
 
 	// Destroy performs any cleanup needed
 	Destroy()

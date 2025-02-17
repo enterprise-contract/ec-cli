@@ -55,10 +55,10 @@ type mockTestRunner struct {
 	mock.Mock
 }
 
-func (m *mockTestRunner) Run(ctx context.Context, inputs []string) ([]Outcome, Data, error) {
+func (m *mockTestRunner) Run(ctx context.Context, inputs []string) ([]Outcome, error) {
 	args := m.Called(ctx, inputs)
 
-	return args.Get(0).([]Outcome), args.Get(1).(Data), args.Error(2)
+	return args.Get(0).([]Outcome), args.Error(2)
 }
 
 func withTestRunner(ctx context.Context, clnt testRunner) context.Context {
@@ -302,10 +302,9 @@ func TestConftestEvaluatorEvaluateSeverity(t *testing.T) {
 	}, pol, ecc.Source{})
 
 	assert.NoError(t, err)
-	actualResults, data, err := evaluator.Evaluate(ctx, inputs)
+	actualResults, err := evaluator.Evaluate(ctx, inputs)
 	assert.NoError(t, err)
 	assert.Equal(t, expectedResults, actualResults)
-	assert.Equal(t, expectedData, data)
 }
 
 func setupTestContext(r *mockTestRunner, dl *mockDownloader) context.Context {
@@ -413,10 +412,9 @@ func TestConftestEvaluatorEvaluateNoSuccessWarningsOrFailures(t *testing.T) {
 			}, p, ecc.Source{Config: tt.sourceConfig})
 
 			assert.NoError(t, err)
-			actualResults, data, err := evaluator.Evaluate(ctx, inputs)
+			actualResults, err := evaluator.Evaluate(ctx, inputs)
 			assert.ErrorContains(t, err, "no successes, warnings, or failures, check input")
 			assert.Nil(t, actualResults)
-			assert.Nil(t, data)
 		})
 	}
 }
@@ -1305,10 +1303,9 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 			}, p, ecc.Source{})
 
 			assert.NoError(t, err)
-			got, data, err := evaluator.Evaluate(ctx, inputs)
+			got, err := evaluator.Evaluate(ctx, inputs)
 			assert.NoError(t, err)
 			assert.Equal(t, tt.want, got)
-			assert.Equal(t, Data(nil), data)
 		})
 	}
 }
@@ -1825,7 +1822,7 @@ func TestConftestEvaluatorEvaluate(t *testing.T) {
 	}, config, ecc.Source{})
 	require.NoError(t, err)
 
-	results, data, err := evaluator.Evaluate(ctx, EvaluationTarget{Inputs: []string{path.Join(dir, "inputs")}})
+	results, err := evaluator.Evaluate(ctx, EvaluationTarget{Inputs: []string{path.Join(dir, "inputs")}})
 	require.NoError(t, err)
 
 	// sort the slice by code for test stability
@@ -1842,7 +1839,7 @@ func TestConftestEvaluatorEvaluate(t *testing.T) {
 		})
 	}
 
-	snaps.MatchSnapshot(t, results, data)
+	snaps.MatchSnapshot(t, results)
 }
 
 type mockConfigProvider struct {
@@ -1888,7 +1885,7 @@ func TestUnconformingRule(t *testing.T) {
 	}, p, ecc.Source{})
 	require.NoError(t, err)
 
-	_, _, err = evaluator.Evaluate(ctx, EvaluationTarget{Inputs: []string{path.Join(dir, "inputs")}})
+	_, err = evaluator.Evaluate(ctx, EvaluationTarget{Inputs: []string{path.Join(dir, "inputs")}})
 	assert.EqualError(t, err, `the rule "deny = true { true }" returns an unsupported value, at no_msg.rego:3`)
 }
 

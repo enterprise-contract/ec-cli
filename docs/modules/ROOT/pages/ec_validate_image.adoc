@@ -93,9 +93,6 @@ Write output in YAML format to stdout and in appstudio format to a file
 
   ec validate image --image registry/name:tag --output yaml --output appstudio=<path>
 
-Write the data used in the policy evaluation to a file in YAML format
-
-  ec validate image --image registry/name:tag --output data=<path>
 
 Validate a single image with keyless workflow.
 
@@ -137,7 +134,7 @@ rule. (Default: false)
 --no-color:: Disable color when using text output even when the current terminal supports it (Default: false)
 --output:: write output to a file in a specific format. Use empty string path for stdout.
 May be used multiple times. Possible formats are:
-json, yaml, text, appstudio, summary, summary-markdown, junit, data, attestation, policy-input, vsa. In following format and file path
+json, yaml, text, appstudio, summary, summary-markdown, junit, attestation, policy-input, vsa. In following format and file path
 additional options can be provided in key=value form following the question
 mark (?) sign, for example: --output text=output.txt?show-successes=false
  (Default: [])

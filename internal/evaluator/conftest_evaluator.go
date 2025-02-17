@@ -163,7 +163,7 @@ func excludeDirectives(code string, rawTerm any) string {
 }
 
 type testRunner interface {
-	Run(context.Context, []string) ([]Outcome, Data, error)
+	Run(context.Context, []string) ([]Outcome, error)
 }
 
 const (
@@ -211,7 +211,7 @@ type conftestRunner struct {
 	runner.TestRunner
 }
 
-func (r conftestRunner) Run(ctx context.Context, fileList []string) (result []Outcome, data Data, err error) {
+func (r conftestRunner) Run(ctx context.Context, fileList []string) (result []Outcome, err error) {
 	r.Trace = tracing.FromContext(ctx).Enabled(tracing.Opa)
 
 	var conftestResult []output.CheckResult
@@ -275,7 +275,7 @@ func (r conftestRunner) Run(ctx context.Context, fileList []string) (result []Ou
 	}
 
 	var ok bool
-	if data, ok = d.(map[string]any); !ok {
+	if _, ok = d.(map[string]any); !ok {
 		err = fmt.Errorf("could not retrieve data from the policy engine: Data is: %v", d)
 	}
 
@@ -364,7 +364,7 @@ func (r *policyRules) collect(a *ast.AnnotationsRef) error {
 	return nil
 }
 
-func (c conftestEvaluator) Evaluate(ctx context.Context, target EvaluationTarget) ([]Outcome, Data, error) {
+func (c conftestEvaluator) Evaluate(ctx context.Context, target EvaluationTarget) ([]Outcome, error) {
 	var results []Outcome
 
 	if trace.IsEnabled() {
@@ -383,7 +383,7 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, target EvaluationTarget
 		if err != nil {
 			log.Debugf("Unable to download source from %s!", s.PolicyUrl())
 			// TODO do we want to download other policies instead of erroring out?
-			return nil, nil, err
+			return nil, err
 		}
 		annotations := []*ast.AnnotationsRef{}
 		fs := utils.FS(ctx)
@@ -396,7 +396,7 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, target EvaluationTarget
 					// Let's try to give some more robust messaging to the user.
 					policyURL, err := url.Parse(s.PolicyUrl())
 					if err != nil {
-						return nil, nil, errMsg
+						return nil, errMsg
 					}
 					// Do we have a prefix at the end of the URL path?
 					// If not, this means we aren't trying to access a specific file.
@@ -410,7 +410,7 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, target EvaluationTarget
 						}
 					}
 				}
-				return nil, nil, errMsg
+				return nil, errMsg
 			}
 		}
 
@@ -419,7 +419,7 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, target EvaluationTarget
 				continue
 			}
 			if err := rules.collect(a); err != nil {
-				return nil, nil, err
+				return nil, err
 			}
 		}
 	}
@@ -450,10 +450,10 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, target EvaluationTarget
 	log.Debugf("runner: %#v", r)
 	log.Debugf("inputs: %#v", target.Inputs)
 
-	runResults, data, err := r.Run(ctx, target.Inputs)
+	runResults, err := r.Run(ctx, target.Inputs)
 	if err != nil {
 		// TODO do we want to evaluate further policies instead of erroring out?
-		return nil, nil, err
+		return nil, err
 	}
 
 	effectiveTime := c.policy.EffectiveTime()
@@ -535,10 +535,10 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, target EvaluationTarget
 	// ran due to input error, etc.
 	if totalRules == 0 {
 		log.Error("no successes, warnings, or failures, check input")
-		return nil, nil, fmt.Errorf("no successes, warnings, or failures, check input")
+		return nil, fmt.Errorf("no successes, warnings, or failures, check input")
 	}
 
-	return results, data, nil
+	return results, nil
 }
 
 func toRules(results []output.Result) []Result {

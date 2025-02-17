@@ -85,7 +85,6 @@ type Output struct {
 	Attestations              []attestation.Attestation   `json:"attestations,omitempty"`
 	ImageURL                  string                      `json:"-"`
 	Detailed                  bool                        `json:"-"`
-	Data                      []evaluator.Data            `json:"-"`
 	Policy                    policy.Policy               `json:"-"`
 	PolicyInput               []byte                      `json:"-"`
 }

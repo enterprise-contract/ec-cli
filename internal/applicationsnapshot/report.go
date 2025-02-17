@@ -103,7 +103,6 @@ const (
 	Summary         = "summary"
 	SummaryMarkdown = "summary-markdown"
 	JUnit           = "junit"
-	Data            = "data"
 	Attestation     = "attestation"
 	PolicyInput     = "policy-input"
 	VSA             = "vsa"
@@ -119,7 +118,6 @@ var OutputFormats = []string{
 	Summary,
 	SummaryMarkdown,
 	JUnit,
-	Data,
 	Attestation,
 	PolicyInput,
 	VSA,
@@ -127,7 +125,7 @@ var OutputFormats = []string{
 
 // WriteReport returns a new instance of Report representing the state of
 // components from the snapshot.
-func NewReport(snapshot string, components []Component, policy policy.Policy, data any, policyInput [][]byte, showSuccesses bool) (Report, error) {
+func NewReport(snapshot string, components []Component, policy policy.Policy, policyInput [][]byte, showSuccesses bool) (Report, error) {
 	success := true
 
 	// Set the report success, remains true if all components are successful
@@ -155,7 +153,6 @@ func NewReport(snapshot string, components []Component, policy policy.Policy, da
 		Key:           string(key),
 		Policy:        policy.Spec(),
 		EcVersion:     info.Version,
-		Data:          data,
 		PolicyInput:   policyInput,
 		EffectiveTime: policy.EffectiveTime().UTC(),
 		ShowSuccesses: showSuccesses,
@@ -209,8 +206,6 @@ func (r *Report) toFormat(format string) (data []byte, err error) {
 		data, err = generateMarkdownSummary(r)
 	case JUnit:
 		data, err = xml.Marshal(r.toJUnit())
-	case Data:
-		data, err = yaml.Marshal(r.Data)
 	case Attestation:
 		data, err = r.renderAttestations()
 	case PolicyInput:
