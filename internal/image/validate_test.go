@@ -292,7 +292,7 @@ type mockEvaluator struct {
 func (e *mockEvaluator) Evaluate(ctx context.Context, target evaluator.EvaluationTarget) ([]evaluator.Outcome, error) {
 	args := e.Called(ctx, target.Inputs)
 
-	return args.Get(0).([]evaluator.Outcome), args.Error(2)
+	return args.Get(0).([]evaluator.Outcome), args.Error(1)
 }
 
 func (e *mockEvaluator) Destroy() {
@@ -325,7 +325,7 @@ func TestEvaluatorLifecycle(t *testing.T) {
 	require.NoError(t, err)
 
 	e := &mockEvaluator{}
-	e.On("Evaluate", ctx, mock.Anything).Return([]evaluator.Outcome{}, evaluator.Data{}, nil)
+	e.On("Evaluate", ctx, mock.Anything).Return([]evaluator.Outcome{}, nil)
 
 	// e.Destroy() should not be invoked
 
