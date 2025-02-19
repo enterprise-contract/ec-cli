@@ -1,0 +1,339 @@
+---
+# Copyright The Enterprise Contract Contributors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: verify-conforma-konflux-ta
+  annotations:
+    tekton.dev/displayName: Verify Conforma in Konflux
+    tekton.dev/pipelines.minVersion: "0.19"
+    tekton.dev/tags: ec, chains, signature, conftest
+  labels:
+    app.kubernetes.io/version: "0.1"
+
+spec:
+  description: Verify the enterprise contract is met
+  params:
+    - name: SNAPSHOT_FILENAME
+      type: string
+      description: |
+        The filename of the `Snapshot` that is located within the trusted artifact
+
+    - name: SOURCE_DATA_ARTIFACT
+      type: string
+      description: >
+        Trusted Artifact to use to obtain the Snapshot to validate.
+
+    - name: POLICY_CONFIGURATION
+      type: string
+      description: |
+        Name of the policy configuration (EnterpriseContractPolicy
+        resource) to use. `namespace/name` or `name` syntax supported. If
+        namespace is omitted the namespace where the task runs is used.
+        You can also specify a policy configuration using a git url, e.g.
+        `github.com/enterprise-contract/config//slsa3`.
+      default: "enterprise-contract-service/default"
+
+    - name: PUBLIC_KEY
+      type: string
+      description: >-
+        Public key used to verify signatures. Must be a valid k8s cosign
+        reference, e.g. k8s://my-space/my-secret where my-secret contains
+        the expected cosign.pub attribute.
+      default: ""
+
+    - name: REKOR_HOST
+      type: string
+      description: Rekor host for transparency log lookups
+      default: ""
+
+    - name: IGNORE_REKOR
+      type: string
+      description: >-
+        Skip Rekor transparency log checks during validation.
+      default: "false"
+
+    - name: TUF_MIRROR
+      type: string
+      description: TUF mirror URL. Provide a value when NOT using public sigstore deployment.
+      default: ""
+
+    - name: SSL_CERT_DIR
+      type: string
+      description: |
+        Path to a directory containing SSL certs to be used when communicating
+        with external services. This is useful when using the integrated registry
+        and a local instance of Rekor on a development cluster which may use
+        certificates issued by a not-commonly trusted root CA. In such cases,
+        `/var/run/secrets/kubernetes.io/serviceaccount` is a good value. Multiple
+        paths can be provided by using the `:` separator.
+      default: ""
+
+    - name: CA_TRUST_CONFIGMAP_NAME
+      type: string
+      description: The name of the ConfigMap to read CA bundle data from.
+      default: trusted-ca
+
+    - name: CA_TRUST_CONFIG_MAP_KEY
+      type: string
+      description: The name of the key in the ConfigMap that contains the CA bundle data.
+      default: ca-bundle.crt
+
+    - name: INFO
+      type: string
+      description: Include rule titles and descriptions in the output. Set to `"false"` to disable it.
+      default: "true"
+
+    - name: STRICT
+      type: string
+      description: Fail the task if policy fails. Set to `"false"` to disable it.
+      default: "true"
+
+    - name: HOMEDIR
+      type: string
+      description: Value for the HOME environment variable.
+      default: /tekton/home
+
+    - name: EFFECTIVE_TIME
+      type: string
+      description: Run policy checks with the provided time.
+      default: "now"
+    - name: EXTRA_RULE_DATA
+      type: string
+      description: Merge additional Rego variables into the policy data. Use syntax "key=value,key2=value2..."
+      default: ""
+
+    - name: TIMEOUT
+      type: string
+      description: >
+        This param is deprecated and will be removed in future. Its value is ignored. EC will
+        be run without a timeout. (If you do want to apply a timeout use the Tekton task timeout.)
+      default: ""
+
+    - name: WORKERS
+      type: string
+      description: Number of parallel workers to use for policy evaluation.
+      default: "1"
+
+    - name: SINGLE_COMPONENT
+      description: Reduce the Snapshot to only the component whose build caused the Snapshot to be created
+      type: string
+      default: "false"
+
+    - name: SINGLE_COMPONENT_CUSTOM_RESOURCE
+      description: >
+        Name, including kind, of the Kubernetes resource to query for labels when single
+        component mode is enabled, e.g. pr/somepipeline.
+      type: string
+      default: "unknown"
+
+    - name: SINGLE_COMPONENT_CUSTOM_RESOURCE_NS
+      description: >
+        Kubernetes namespace where the SINGLE_COMPONENT_NAME is found. Only used
+        when single component mode is enabled.
+      type: string
+      default: ""
+
+    - name: ORAS_OPTIONS
+      description: oras options to pass to Trusted Artifacts calls
+      type: string
+      default: ""
+
+    - name: TRUSTED_ARTIFACTS_DEBUG
+      description: Flag to enable debug logging in trusted artifacts. Set to a non-empty string to enable.
+      type: string
+      default: ""
+
+  results:
+    - name: TEST_OUTPUT
+      description: Short summary of the policy evaluation for each image
+
+  stepTemplate:
+    volumeMounts:
+      - mountPath: /var/workdir
+        name: workdir
+    env:
+      - name: "ORAS_OPTIONS"
+        value: "$(params.ORAS_OPTIONS)"
+      - name: "DEBUG"
+        value: "$(params.TRUSTED_ARTIFACTS_DEBUG)"
+      - name: HOME
+        value: "$(params.HOMEDIR)"
+
+  steps:
+    - name: use-trusted-artifact
+      args:
+        - use
+        # need to specify a subfolder during the extract to avoid the error:
+        # tar: .: Cannot change mode to rwxr-sr-x: Operation not permitted
+        - $(params.SOURCE_DATA_ARTIFACT)=/var/workdir/$(context.taskRun.uid)
+      computeResources: {}
+      image: quay.io/redhat-appstudio/build-trusted-artifacts:e02102ede09aa07187cba066ad547a54724e5cf4
+
+    - name: initialize-tuf
+      image: quay.io/enterprise-contract/ec-cli:snapshot
+      script: |-
+        set -euo pipefail
+
+        if [[ -z "${TUF_MIRROR:-}" ]]; then
+            echo 'TUF_MIRROR parameter not provided. Skipping TUF root initialization.'
+            exit
+        fi
+
+        echo 'Initializing TUF root...'
+        ec sigstore initialize --mirror "${TUF_MIRROR}" --root "${TUF_MIRROR}/root.json"
+        echo 'Done!'
+      env:
+        - name: TUF_MIRROR
+          value: "$(params.TUF_MIRROR)"
+
+    - name: reduce
+      env:
+        - name: SNAPSHOT
+          value: /var/workdir/$(context.taskRun.uid)/$(params.SNAPSHOT_FILENAME)
+        - name: SINGLE_COMPONENT
+          value: $(params.SINGLE_COMPONENT)
+        - name: CUSTOM_RESOURCE
+          value: $(params.SINGLE_COMPONENT_CUSTOM_RESOURCE)
+        - name: CUSTOM_RESOURCE_NAMESPACE
+          value: $(params.SINGLE_COMPONENT_CUSTOM_RESOURCE_NS)
+        - name: SNAPSHOT_PATH
+          value: $(params.HOMEDIR)/snapshot.json
+      image: quay.io/enterprise-contract/ec-cli:snapshot
+      onError: continue # progress even if the step fails so we can see the debug logs
+      command: [reduce-snapshot.sh]
+
+    - name: validate
+      image: quay.io/enterprise-contract/ec-cli:snapshot
+      onError: continue # progress even if the step fails so we can see the debug logs
+      command: [ec]
+      args:
+        - validate
+        - image
+        - "--verbose"
+        - "--images"
+        - "/tekton/home/snapshot.json"
+        - "--policy"
+        - "$(params.POLICY_CONFIGURATION)"
+        - "--public-key"
+        - "$(params.PUBLIC_KEY)"
+        - "--rekor-url"
+        - "$(params.REKOR_HOST)"
+        - "--ignore-rekor=$(params.IGNORE_REKOR)"
+        - "--workers"
+        - "$(params.WORKERS)"
+        # NOTE: The syntax below is required to negate boolean parameters
+        - "--info=$(params.INFO)"
+        # Fresh versions of ec support "--timeout=0" to indicate no timeout, but this would break
+        # the task if it's used with an older version of ec. In an abundance of caution, let's set
+        # an arbitrary high value instead of using 0 here. In future we can change it to 0.
+        # (The reason to not use an explicit timeout for ec is so Tekton can handle the timeouts).
+        - "--timeout=100h"
+        - "--strict=false"
+        - "--show-successes"
+        - "--effective-time=$(params.EFFECTIVE_TIME)"
+        - "--extra-rule-data=$(params.EXTRA_RULE_DATA)"
+        - "--output"
+        - "text?show-successes=false"
+        - "--output"
+        - "appstudio=$(results.TEST_OUTPUT.path)"
+        - "--output"
+        - "json=$(params.HOMEDIR)/report-json.json"
+        - "--logfile=$(params.HOMEDIR)/debug.log"
+      env:
+        - name: SSL_CERT_DIR
+          # The Tekton Operator automatically sets the SSL_CERT_DIR env to the value below but,
+          # of course, without the $(param.SSL_CERT_DIR) bit. When a Task Step sets it to a
+          # value, the Tekton Operator does not do any processing of the value. However, Tekton
+          # Pipelines will fail to execute because some of these values are required for its
+          # execution. As a workaround, append the SSL_CERT_DIR value from params to the default
+          # value expected by Tekton Pipelines. NOTE: If params.SSL_CERT_DIR is empty, the value
+          # will contain a trailing ":" - this is ok.
+          value: "/tekton-custom-certs:/etc/ssl/certs:/etc/pki/tls/certs:/system/etc/security/cacerts:$(params.SSL_CERT_DIR)"
+        # The EC cache is used to avoid fetching the same image layers from the registry more than
+        # once. However, this is not thread safe. This results in inconsistencies when extracting
+        # files from an image, see https://github.com/enterprise-contract/ec-cli/issues/1109
+        - name: EC_CACHE
+          value: "false"
+      computeResources:
+        requests:
+          cpu: 250m
+          memory: 2Gi
+        limits:
+          memory: 2Gi
+      volumeMounts:
+        - name: trusted-ca
+          mountPath: /etc/pki/tls/certs/ca-custom-bundle.crt
+          subPath: ca-bundle.crt
+          readOnly: true
+
+    - name: report-json
+      image: quay.io/enterprise-contract/ec-cli:snapshot
+      onError: continue  # progress even if the step fails so we can see the debug logs
+      command: [cat]
+      args:
+        - "$(params.HOMEDIR)/report-json.json"
+
+    - name: summary
+      image: quay.io/enterprise-contract/ec-cli:snapshot
+      onError: continue  # progress even if the step fails so we can see the debug logs
+      command: [jq]
+      args:
+        - "."
+        - "$(results.TEST_OUTPUT.path)"
+
+    - name: info
+      image: quay.io/enterprise-contract/ec-cli:snapshot
+      command: [printf]
+      args:
+        - "----- DEBUG OUTPUT -----\n"
+
+    - name: version
+      image: quay.io/enterprise-contract/ec-cli:snapshot
+      command: [ec]
+      args:
+        - version
+
+    - name: debug-log
+      image: quay.io/enterprise-contract/ec-cli:snapshot
+      command: [cat]
+      args:
+        - "$(params.HOMEDIR)/debug.log"
+
+    - name: assert
+      image: quay.io/enterprise-contract/ec-cli:snapshot
+      command: [jq]
+      args:
+        - "--argjson"
+        - "strict"
+        - "$(params.STRICT)"
+        - "-e"
+        - >
+          .result == "SUCCESS" or .result == "WARNING" or ($strict | not)
+        - "$(results.TEST_OUTPUT.path)"
+
+  volumes:
+    - name: trusted-ca
+      configMap:
+        name: $(params.CA_TRUST_CONFIGMAP_NAME)
+        items:
+          - key: $(params.CA_TRUST_CONFIG_MAP_KEY)
+            path: ca-bundle.crt
+        optional: true
+    - name: workdir
+      emptyDir: {}

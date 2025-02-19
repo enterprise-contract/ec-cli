@@ -1,0 +1,76 @@
+= verify-conforma-konflux-ta
+
+Version: 0.1
+
+== Synopsis
+
+Verify the enterprise contract is met
+
+== Params
+[horizontal]
+
+*SNAPSHOT_FILENAME* (`string`):: The filename of the `Snapshot` that is located within the trusted artifact
+
+*SOURCE_DATA_ARTIFACT* (`string`):: Trusted Artifact to use to obtain the Snapshot to validate.
+
+*POLICY_CONFIGURATION* (`string`):: Name of the policy configuration (EnterpriseContractPolicy
+resource) to use. `namespace/name` or `name` syntax supported. If
+namespace is omitted the namespace where the task runs is used.
+You can also specify a policy configuration using a git url, e.g.
+`github.com/enterprise-contract/config//slsa3`.
+
++
+*Default*: `enterprise-contract-service/default`
+*PUBLIC_KEY* (`string`):: Public key used to verify signatures. Must be a valid k8s cosign reference, e.g. k8s://my-space/my-secret where my-secret contains the expected cosign.pub attribute.
+*REKOR_HOST* (`string`):: Rekor host for transparency log lookups
+*IGNORE_REKOR* (`string`):: Skip Rekor transparency log checks during validation.
++
+*Default*: `false`
+*TUF_MIRROR* (`string`):: TUF mirror URL. Provide a value when NOT using public sigstore deployment.
+*SSL_CERT_DIR* (`string`):: Path to a directory containing SSL certs to be used when communicating
+with external services. This is useful when using the integrated registry
+and a local instance of Rekor on a development cluster which may use
+certificates issued by a not-commonly trusted root CA. In such cases,
+`/var/run/secrets/kubernetes.io/serviceaccount` is a good value. Multiple
+paths can be provided by using the `:` separator.
+
+*CA_TRUST_CONFIGMAP_NAME* (`string`):: The name of the ConfigMap to read CA bundle data from.
++
+*Default*: `trusted-ca`
+*CA_TRUST_CONFIG_MAP_KEY* (`string`):: The name of the key in the ConfigMap that contains the CA bundle data.
++
+*Default*: `ca-bundle.crt`
+*INFO* (`string`):: Include rule titles and descriptions in the output. Set to `"false"` to disable it.
++
+*Default*: `true`
+*STRICT* (`string`):: Fail the task if policy fails. Set to `"false"` to disable it.
++
+*Default*: `true`
+*HOMEDIR* (`string`):: Value for the HOME environment variable.
++
+*Default*: `/tekton/home`
+*EFFECTIVE_TIME* (`string`):: Run policy checks with the provided time.
++
+*Default*: `now`
+*EXTRA_RULE_DATA* (`string`):: Merge additional Rego variables into the policy data. Use syntax "key=value,key2=value2..."
+*TIMEOUT* (`string`):: This param is deprecated and will be removed in future. Its value is ignored. EC will be run without a timeout. (If you do want to apply a timeout use the Tekton task timeout.)
+
+*WORKERS* (`string`):: Number of parallel workers to use for policy evaluation.
++
+*Default*: `1`
+*SINGLE_COMPONENT* (`string`):: Reduce the Snapshot to only the component whose build caused the Snapshot to be created
++
+*Default*: `false`
+*SINGLE_COMPONENT_CUSTOM_RESOURCE* (`string`):: Name, including kind, of the Kubernetes resource to query for labels when single component mode is enabled, e.g. pr/somepipeline.
+
++
+*Default*: `unknown`
+*SINGLE_COMPONENT_CUSTOM_RESOURCE_NS* (`string`):: Kubernetes namespace where the SINGLE_COMPONENT_NAME is found. Only used when single component mode is enabled.
+
+*ORAS_OPTIONS* (`string`):: oras options to pass to Trusted Artifacts calls
+*TRUSTED_ARTIFACTS_DEBUG* (`string`):: Flag to enable debug logging in trusted artifacts. Set to a non-empty string to enable.
+
+== Results
+
+[horizontal]
+*TEST_OUTPUT*:: Short summary of the policy evaluation for each image
