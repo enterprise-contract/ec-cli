@@ -1,2 +1,3 @@
 * xref:tasks.adoc[Tekton Tasks]
+** xref:verify-conforma-konflux-ta.adoc[verify-conforma-konflux-ta]
 ** xref:verify-enterprise-contract.adoc[verify-enterprise-contract]
