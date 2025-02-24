@@ -80,6 +80,9 @@ for r in $(dnf repolist --setopt=reposdir="${base_image_repos}" --disabled --qui
     dnf config-manager --quiet --setopt=reposdir="${base_image_repos}" "${r}" --set-enabled
 done
 
+# convert ubi repo ids to archful format for better sbom data
+sed -i 's/^\[ubi-9-/\[ubi-9-for-$basearch-/' "${base_image_repos}"/*.repo
+
 cp "${base_image_repos}"/*.repo /opt/app-root/src/
 
 # generate/update the RPM lock file
@@ -97,6 +100,7 @@ fi
 # then try adding the --privileged flag to the podman run command
 echo Running RPM lock tooling...
 podman run \
+    --privileged \
     --rm \
     --mount type=bind,source="${root_dir}/Dockerfile.dist",destination=/opt/app-root/src/Dockerfile \
     --mount type=bind,source="${root_dir}/rpms.in.yaml",destination=/opt/app-root/src/rpms.in.yaml \

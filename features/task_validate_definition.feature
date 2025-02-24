@@ -10,6 +10,7 @@ Feature: Verify Enterprise Contract Tekton Tasks
     When version 0.1 of the task named "verify-definition" with workspace "output" is run with parameters:
       | DEFINITION    | {"kind": "Task"}                                                              |
       | POLICY_SOURCE | git::github.com/enterprise-contract/ec-policies//policy/task?ref=release-v0.5 |
+      | POLICY_LIB    | git::github.com/enterprise-contract/ec-policies//policy/lib?ref=release-v0.5  |
       | NAMESPACE     | policy.task.kind                                                              |
     Then the task should succeed
      And the task logs for step "validate" should match the snapshot
