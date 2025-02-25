@@ -59,7 +59,7 @@ LABEL \
   io.openshift.tags="conforma ec opa cosign sigstore"
 
 # Install tools we want to use in the Tekton task
-RUN microdnf upgrade --assumeyes --nodocs --setopt=keepcache=0 --refresh && microdnf -y --nodocs --setopt=keepcache=0 install git-core jq
+RUN microdnf upgrade --assumeyes --nodocs --setopt=keepcache=0 --refresh && microdnf -y --nodocs --setopt=keepcache=0 install gzip jq ca-certificates
 
 # Copy all the binaries so they're available to extract and download
 # (Beware if you're testing this locally it will copy everything from
@@ -86,6 +86,6 @@ COPY --from=build /build/LICENSE /licenses/LICENSE
 USER 1001
 
 # Show some version numbers for troubleshooting purposes
-RUN git version && jq --version && ec version && ls -l /usr/local/bin
+RUN jq --version && ec version && ls -l /usr/local/bin
 
 ENTRYPOINT ["/usr/local/bin/ec"]
