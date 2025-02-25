@@ -154,13 +154,6 @@ arches:
     name: openssl
     evr: 1:3.2.2-6.el9_5.1
     sourcerpm: openssl-3.2.2-6.el9_5.1.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/o/openssl-libs-3.2.2-6.el9_5.1.aarch64.rpm
-    repoid: ubi-9-for-aarch64-baseos-rpms
-    size: 2085943
-    checksum: sha256:fb9062e4635959a929f278002c5ff1bf35323987538c71fa86442c980eab4a44
-    name: openssl-libs
-    evr: 1:3.2.2-6.el9_5.1
-    sourcerpm: openssl-3.2.2-6.el9_5.1.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/p/pam-1.5.1-22.el9_5.aarch64.rpm
     repoid: ubi-9-for-aarch64-baseos-rpms
     size: 645036
@@ -434,13 +427,6 @@ arches:
     name: openssl
     evr: 1:3.2.2-6.el9_5.1
     sourcerpm: openssl-3.2.2-6.el9_5.1.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/ppc64le/baseos/os/Packages/o/openssl-libs-3.2.2-6.el9_5.1.ppc64le.rpm
-    repoid: ubi-9-for-ppc64le-baseos-rpms
-    size: 2320865
-    checksum: sha256:8e9f1ff32873b3531cd38d9583fe20526c790066785312301ea87ebbf980d8ce
-    name: openssl-libs
-    evr: 1:3.2.2-6.el9_5.1
-    sourcerpm: openssl-3.2.2-6.el9_5.1.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/ppc64le/baseos/os/Packages/p/pam-1.5.1-22.el9_5.ppc64le.rpm
     repoid: ubi-9-for-ppc64le-baseos-rpms
     size: 687467
@@ -711,13 +697,6 @@ arches:
     size: 1420999
     checksum: sha256:f379686df99db814e30568a896b417278775fc96864ac6d2660bf48ef94309e3
     name: openssl
-    evr: 1:3.2.2-6.el9_5.1
-    sourcerpm: openssl-3.2.2-6.el9_5.1.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/o/openssl-libs-3.2.2-6.el9_5.1.x86_64.rpm
-    repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 2218318
-    checksum: sha256:287d11706d44a53455ed8ac62faab4c4a0b8c0fa5e367adf122c7a76c6ddbbb8
-    name: openssl-libs
     evr: 1:3.2.2-6.el9_5.1
     sourcerpm: openssl-3.2.2-6.el9_5.1.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/p/pam-1.5.1-22.el9_5.x86_64.rpm
