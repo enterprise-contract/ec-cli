@@ -452,7 +452,7 @@ Feature: evaluate enterprise contract
             ]
           },
           "config": {
-            "include": ["@stamps", "filtering.always_pass"]
+            "include": ["@stamps", "filtering.always_pass", "filtering.always_fail"]
           },
           "policy": [
             "git::https://${GITHOST}/git/happy-day-policy.git"
@@ -492,7 +492,7 @@ Feature: evaluate enterprise contract
             ]
           },
           "config": {
-            "include": ["@stamps", "filtering.always_pass"]
+            "include": ["@stamps", "filtering.always_pass", "filtering.always_fail"]
           },
           "policy": [
             "git::https://${GITHOST}/git/happy-day-policy.git"

@@ -880,7 +880,8 @@ Error: success criteria not met
         "config": {
           "include": [
             "@stamps",
-            "filtering.always_pass"
+            "filtering.always_pass",
+            "filtering.always_fail"
           ]
         },
         "volatileConfig": {
@@ -981,7 +982,8 @@ Error: success criteria not met
         "config": {
           "include": [
             "@stamps",
-            "filtering.always_pass"
+            "filtering.always_pass",
+            "filtering.always_fail"
           ]
         },
         "volatileConfig": {
