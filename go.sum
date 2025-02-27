@@ -464,8 +464,8 @@ github.com/codahale/rfc6979 v0.0.0-20141003034818-6a90f24967eb h1:EDmT6Q9Zs+SbUo
 github.com/codahale/rfc6979 v0.0.0-20141003034818-6a90f24967eb/go.mod h1:ZjrT6AXHbDs86ZSdt/osfBi5qfexBrKUdONk989Wnk4=
 github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be h1:J5BL2kskAlV9ckgEsNQXscjIaLiOYiZ75d4e94E6dcQ=
 github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be/go.mod h1:mk5IQ+Y0ZeO87b858TlA645sVcEcbiX6YqP98kt+7+w=
-github.com/conforma/go-gather v1.0.0 h1:9dCL3UW+SdkadEgPrpBbztbzxzkXMN5MbcpXiZAt+WA=
-github.com/conforma/go-gather v1.0.0/go.mod h1:AbNsdkXUBG9nEyNOGs7Tx3B0N0zgOirZS4Cus/xDhrg=
+github.com/conforma/go-gather v1.0.1 h1:i91Qyqwrgm5vE42OdqRZ1XJ+DCi0eXrTCmsEGZTOF1g=
+github.com/conforma/go-gather v1.0.1/go.mod h1:AbNsdkXUBG9nEyNOGs7Tx3B0N0zgOirZS4Cus/xDhrg=
 github.com/containerd/cgroups v1.1.0 h1:v8rEWFl6EoqHB+swVNjVoCJE8o3jX7e8nqBGPLaDFBM=
 github.com/containerd/cgroups v1.1.0/go.mod h1:6ppBcbh/NOOUU+dMKrykgaBnK9lCIBxHqJDGwsa1mIw=
 github.com/containerd/containerd v1.7.23 h1:H2CClyUkmpKAGlhQp95g2WXHfLYc7whAuvZGBNYOOwQ=

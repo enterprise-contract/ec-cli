@@ -43,7 +43,7 @@ RUN /build/build.sh "${BUILD_LIST}" "${BUILD_SUFFIX}"
 
 ## Final image
 
-FROM registry.access.redhat.com/ubi9/ubi-minimal:9.5@sha256:b87097994ed62fbf1de70bc75debe8dacf3ea6e00dd577d74503ef66452c59d6
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.5@sha256:14f14e03d68f7fd5f2b18a13478b6b127c341b346c86b6e0b886ed2b7573b8e0
 
 ARG TARGETOS
 ARG TARGETARCH
@@ -59,7 +59,7 @@ LABEL \
   io.openshift.tags="conforma ec opa cosign sigstore"
 
 # Install tools we want to use in the Tekton task
-RUN microdnf upgrade --assumeyes --nodocs --setopt=keepcache=0 --refresh && microdnf -y --nodocs --setopt=keepcache=0 install git-core jq
+RUN microdnf upgrade --assumeyes --nodocs --setopt=keepcache=0 --refresh && microdnf -y --nodocs --setopt=keepcache=0 install gzip jq ca-certificates
 
 # Copy all the binaries so they're available to extract and download
 # (Beware if you're testing this locally it will copy everything from
@@ -86,6 +86,6 @@ COPY --from=build /build/LICENSE /licenses/LICENSE
 USER 1001
 
 # Show some version numbers for troubleshooting purposes
-RUN git version && jq --version && ec version && ls -l /usr/local/bin
+RUN jq --version && ec version && ls -l /usr/local/bin
 
 ENTRYPOINT ["/usr/local/bin/ec"]
