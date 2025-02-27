@@ -21,6 +21,7 @@ import (
 	"time"
 
 	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
+	"github.com/google/go-containerregistry/pkg/name"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -63,12 +64,38 @@ func (c *Criteria) addArray(key string, values []string) {
 	}
 }
 
+// This accepts an image ref with digest
+// and looks up the image url and digest separately.
 func (c *Criteria) get(key string) []string {
+	ref, err := name.ParseReference(key)
+	if err != nil {
+		log.Debugf("error parsing target image url: %q", key)
+		return c.defaultItems
+	}
+
+	// Collect keys to look up: always the repository name,
+	// and if available, the digest string.
+	keys := []string{ref.Context().Name()}
+	if digestRef, ok := ref.(name.Digest); ok {
+		keys = append(keys, digestRef.DigestStr())
+	} else {
+		log.Debugf("no digest found for reference: %q", ref)
+	}
+
+	var items []string
+	for _, k := range keys {
+		items = append(items, c.getWithKey(k)...)
+	}
+
+	// Add any exceptions that pertain to all images.
+	return append(items, c.defaultItems...)
+}
+
+func (c *Criteria) getWithKey(key string) []string {
 	if items, ok := c.digestItems[key]; ok {
-		items = append(items, c.defaultItems...)
 		return items
 	}
-	return c.defaultItems
+	return []string{}
 }
 
 func computeIncludeExclude(src ecc.Source, p ConfigProvider) (*Criteria, *Criteria) {
@@ -86,33 +113,8 @@ func computeIncludeExclude(src ecc.Source, p ConfigProvider) (*Criteria, *Criter
 
 	vc := src.VolatileConfig
 	if vc != nil {
-		at := p.EffectiveTime()
-		filter := func(items *Criteria, volatileCriteria []ecc.VolatileCriteria) *Criteria {
-			for _, c := range volatileCriteria {
-				from, err := time.Parse(time.RFC3339, c.EffectiveOn)
-				if err != nil {
-					if c.EffectiveOn != "" {
-						log.Warnf("unable to parse time for criteria %q, was given %q: %v", c.Value, c.EffectiveOn, err)
-					}
-					from = at
-				}
-				until, err := time.Parse(time.RFC3339, c.EffectiveUntil)
-				if err != nil {
-					if c.EffectiveUntil != "" {
-						log.Warnf("unable to parse time for criteria %q, was given %q: %v", c.Value, c.EffectiveUntil, err)
-					}
-					until = at
-				}
-				if until.Compare(at) >= 0 && from.Compare(at) <= 0 {
-					items.addItem(c.ImageRef, c.Value)
-				}
-			}
-
-			return items
-		}
-
-		include = filter(include, vc.Include)
-		exclude = filter(exclude, vc.Exclude)
+		include = collectVolatileConfigItems(include, vc.Include, p)
+		exclude = collectVolatileConfigItems(exclude, vc.Exclude, p)
 	}
 
 	if policyConfig := p.Spec().Configuration; include.len() == 0 && exclude.len() == 0 && policyConfig != nil {
@@ -129,4 +131,38 @@ func computeIncludeExclude(src ecc.Source, p ConfigProvider) (*Criteria, *Criter
 	}
 
 	return include, exclude
+}
+
+func collectVolatileConfigItems(items *Criteria, volatileCriteria []ecc.VolatileCriteria, p ConfigProvider) *Criteria {
+	at := p.EffectiveTime()
+	for _, c := range volatileCriteria {
+		from, err := time.Parse(time.RFC3339, c.EffectiveOn)
+		if err != nil {
+			if c.EffectiveOn != "" {
+				log.Warnf("unable to parse time for criteria %q, was given %q: %v", c.Value, c.EffectiveOn, err)
+			}
+			from = at
+		}
+		until, err := time.Parse(time.RFC3339, c.EffectiveUntil)
+		if err != nil {
+			if c.EffectiveUntil != "" {
+				log.Warnf("unable to parse time for criteria %q, was given %q: %v", c.Value, c.EffectiveUntil, err)
+			}
+			until = at
+		}
+		if until.Compare(at) >= 0 && from.Compare(at) <= 0 {
+			// DEPRECATED: use c.ImageDigest instead
+			if c.ImageRef != "" {
+				items.addItem(c.ImageRef, c.Value)
+			} else if c.ImageUrl != "" {
+				items.addItem(c.ImageUrl, c.Value)
+			} else if c.ImageDigest != "" {
+				items.addItem(c.ImageDigest, c.Value)
+			} else {
+				items.addItem("", c.Value)
+			}
+		}
+	}
+
+	return items
 }

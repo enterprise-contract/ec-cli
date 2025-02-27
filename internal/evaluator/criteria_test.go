@@ -209,17 +209,50 @@ func TestAddArray(t *testing.T) {
 func TestGet(t *testing.T) {
 	c := &Criteria{
 		digestItems: map[string][]string{
-			"key1": {"item1", "item2"},
+			"quay.io/test/ec-test": {"item"},
+			"sha256:2c5e3b2f1e2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c": {"item-digest"},
 		},
 		defaultItems: []string{"default1", "default2"},
 	}
+	tests := []struct {
+		name     string
+		key      string
+		expected []string
+	}{
+		{
+			name:     "test with image ref",
+			key:      "quay.io/test/ec-test",
+			expected: []string{"item", "default1", "default2"},
+		},
+		{
+			name:     "test with image ref and tag",
+			key:      "quay.io/test/ec-test:latest",
+			expected: []string{"item", "default1", "default2"},
+		},
+		{
+			name:     "test with image digest",
+			key:      "quay.io/test/ec@sha256:2c5e3b2f1e2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c",
+			expected: []string{"item-digest", "default1", "default2"},
+		},
+		{
+			name:     "test key doesn't exist",
+			key:      "unknown",
+			expected: []string{"default1", "default2"},
+		},
+		{
+			name:     "test with image and bad digest",
+			key:      "quay.io/test/ec-test@sha256:2c5e3b2f1e2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d",
+			expected: []string{"default1", "default2"},
+		},
+		{
+			name:     "test with image not set",
+			expected: []string{"default1", "default2"},
+		},
+	}
 
-	// Test getting items for a key that exists
-	expectedItems := []string{"item1", "item2", "default1", "default2"}
-	assert.ElementsMatch(t, expectedItems, c.get("key1"))
-
-	// Test getting items for a key that does not exist
-	expectedDefaultItems := []string{"default1", "default2"}
-	assert.ElementsMatch(t, expectedDefaultItems, c.get("key2"))
-
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, c.get(tt.key))
+		})
+	}
 }
