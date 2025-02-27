@@ -277,6 +277,10 @@ func (a *ApplicationSnapshotImage) ResolveDigest(ctx context.Context) (string, e
 	return digest, nil
 }
 
+func (a *ApplicationSnapshotImage) ImageReference(ctx context.Context) string {
+	return a.reference.String()
+}
+
 type attestationData struct {
 	Statement  json.RawMessage             `json:"statement"`
 	Signatures []signature.EntitySignature `json:"signatures,omitempty"`

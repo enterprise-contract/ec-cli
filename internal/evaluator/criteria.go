@@ -21,6 +21,7 @@ import (
 	"time"
 
 	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
+	"github.com/google/go-containerregistry/pkg/name"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -63,12 +64,38 @@ func (c *Criteria) addArray(key string, values []string) {
 	}
 }
 
+// This accepts an image ref with digest
+// and looks up the image url and digest separately.
 func (c *Criteria) get(key string) []string {
+	ref, err := name.ParseReference(key)
+	if err != nil {
+		log.Debugf("error parsing target image url: %q", key)
+		return c.defaultItems
+	}
+
+	// Collect keys to look up: always the repository name,
+	// and if available, the digest string.
+	keys := []string{ref.Context().Name()}
+	if digestRef, ok := ref.(name.Digest); ok {
+		keys = append(keys, digestRef.DigestStr())
+	} else {
+		log.Debugf("no digest found for reference: %q", ref)
+	}
+
+	var items []string
+	for _, k := range keys {
+		items = append(items, c.getWithKey(k)...)
+	}
+
+	// Add any exceptions that pertain to all images.
+	return append(items, c.defaultItems...)
+}
+
+func (c *Criteria) getWithKey(key string) []string {
 	if items, ok := c.digestItems[key]; ok {
-		items = append(items, c.defaultItems...)
 		return items
 	}
-	return c.defaultItems
+	return []string{}
 }
 
 func computeIncludeExclude(src ecc.Source, p ConfigProvider) (*Criteria, *Criteria) {
