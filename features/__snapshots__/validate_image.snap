@@ -59,7 +59,7 @@
     "sources": [
       {
         "policy": [
-          "git::${GITHOST}/git/happy-day-policy.git?ref=95175b6ea9bb28c645186c6624ff904812ebbca7"
+          "git::${GITHOST}/git/happy-day-policy.git?ref=adeaf76384dd4391e18e8ce5fadef1a5c7414f06"
         ]
       }
     ],
@@ -161,7 +161,7 @@ Error: success criteria not met
     "sources": [
       {
         "policy": [
-          "git::${GITHOST}/git/banana_check.git?ref=c6cafb797f5afa8b9c7b1c54ea7bf0ca35368e21"
+          "git::${GITHOST}/git/banana_check.git?ref=bdb9057ca7da961fe4a753993017ab9e97798fd4"
         ],
         "data": [
           "git::${GITHOST}/git/banana_data_1.git?ref=62e50acbb1a230a3f11ca1858fc053b21fe5cc82"
@@ -169,7 +169,7 @@ Error: success criteria not met
       },
       {
         "policy": [
-          "git::${GITHOST}/git/banana_check.git?ref=c6cafb797f5afa8b9c7b1c54ea7bf0ca35368e21"
+          "git::${GITHOST}/git/banana_check.git?ref=bdb9057ca7da961fe4a753993017ab9e97798fd4"
         ],
         "data": [
           "git::${GITHOST}/git/banana_data_2.git?ref=${LATEST_COMMIT}"
@@ -327,7 +327,7 @@ Error: success criteria not met
     "sources": [
       {
         "policy": [
-          "git::${GITHOST}/git/happy-day-policy.git?ref=95175b6ea9bb28c645186c6624ff904812ebbca7"
+          "git::${GITHOST}/git/happy-day-policy.git?ref=adeaf76384dd4391e18e8ce5fadef1a5c7414f06"
         ]
       }
     ],
@@ -614,12 +614,12 @@ Error: success criteria not met
     "sources": [
       {
         "policy": [
-          "git::${GITHOST}/git/repository1.git?ref=95175b6ea9bb28c645186c6624ff904812ebbca7"
+          "git::${GITHOST}/git/repository1.git?ref=adeaf76384dd4391e18e8ce5fadef1a5c7414f06"
         ]
       },
       {
         "policy": [
-          "git::${GITHOST}/git/repository2.git?ref=9998384962ba66481defc409b0f821d222ba3366"
+          "git::${GITHOST}/git/repository2.git?ref=7e2406bbafba94a4ecf1b5e59f9211c6597f58f7"
         ]
       },
       {
@@ -1176,8 +1176,8 @@ Error: success criteria not met
     "sources": [
       {
         "policy": [
-          "git::${GITHOST}/git/repository1.git?ref=95175b6ea9bb28c645186c6624ff904812ebbca7",
-          "git::${GITHOST}/git/repository2.git?ref=9998384962ba66481defc409b0f821d222ba3366",
+          "git::${GITHOST}/git/repository1.git?ref=adeaf76384dd4391e18e8ce5fadef1a5c7414f06",
+          "git::${GITHOST}/git/repository2.git?ref=7e2406bbafba94a4ecf1b5e59f9211c6597f58f7",
           "git::${GITHOST}/git/repository3.git?ref=${LATEST_COMMIT}"
         ]
       }
@@ -2143,9 +2143,9 @@ Error: success criteria not met
 
 [Dropping rego capabilities:stderr - 1]
 Error: error validating image ${REGISTRY}/acceptance/ec-happy-day of component Unnamed: load: loading policies: get compiler: 3 errors occurred:
-${TEMP}/ec-work-${RANDOM}/policy/${RANDOM}/main.rego:15: rego_type_error: undefined function opa.runtime
-${TEMP}/ec-work-${RANDOM}/policy/${RANDOM}/main.rego:23: rego_type_error: undefined function http.send
-${TEMP}/ec-work-${RANDOM}/policy/${RANDOM}/main.rego:34: rego_type_error: undefined function net.lookup_ip_addr
+${TEMP}/ec-work-${RANDOM}/policy/${RANDOM}/main.rego:14: rego_type_error: undefined function opa.runtime
+${TEMP}/ec-work-${RANDOM}/policy/${RANDOM}/main.rego:22: rego_type_error: undefined function http.send
+${TEMP}/ec-work-${RANDOM}/policy/${RANDOM}/main.rego:33: rego_type_error: undefined function net.lookup_ip_addr
 
 ---
 
@@ -3209,7 +3209,7 @@ Error: success criteria not met
 ---
 
 [Unsupported policies:stderr - 1]
-Error: error validating image ${REGISTRY}/acceptance/image of component Unnamed: the rule "deny = true { true }" returns an unsupported value, at main.rego:3
+Error: error validating image ${REGISTRY}/acceptance/image of component Unnamed: the rule "deny = true { true }" returns an unsupported value, at main.rego:5
 
 ---
 

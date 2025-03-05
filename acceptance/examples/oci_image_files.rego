@@ -2,7 +2,6 @@ package files
 
 import rego.v1
 
-
 # METADATA
 # custom:
 #   short_name: match

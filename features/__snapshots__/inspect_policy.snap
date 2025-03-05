@@ -22,7 +22,7 @@ Error: Merge error. The 'rule_data' key was found more than once!
       },
       "location": {
         "file": "main.rego",
-        "row": 9,
+        "row": 11,
         "col": 1
       },
       "path": [
@@ -94,7 +94,7 @@ kitty.purr
 ---
 
 [sources from ECP:stdout - 1]
-# Source: git::${GITHOST}/git/policy1.git?ref=8288b21ca5e7d8863efffb47c2bc3eac1274d1ff
+# Source: git::${GITHOST}/git/policy1.git?ref=5c216ecae44c9bd76cca3e6cce95892289a07db0
 
 policy.release.kitty.purr (deny)
 https://enterprisecontract.dev/docs/ec-policies/release_policy.html#kitty__purr

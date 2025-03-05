@@ -1106,7 +1106,7 @@ Feature: evaluate enterprise contract
       """
      And the standard error should contain
       """
-      level=debug msg="\[data.main.deny\] .*/main.rego:13: here we are
+      level=debug msg="\[data.main.deny\] .*/main.rego:12: here we are
       """
 
   Scenario: PURL functions

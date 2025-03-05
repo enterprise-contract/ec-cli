@@ -6,9 +6,7 @@
 #   showcase the filtering logic with include/exclude/collection.
 package policy.filtering
 
-import future.keywords.contains
-import future.keywords.if
-import future.keywords.in
+import rego.v1
 
 # METADATA
 # title: always pass
