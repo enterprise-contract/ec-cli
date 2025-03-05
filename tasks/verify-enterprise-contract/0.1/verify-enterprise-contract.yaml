@@ -174,20 +174,18 @@ spec:
 
     - name: initialize-tuf
       image: quay.io/enterprise-contract/ec-cli:snapshot
-      script: |-
-        set -euo pipefail
-
-        if [[ -z "${TUF_MIRROR:-}" ]]; then
-            echo 'TUF_MIRROR parameter not provided. Skipping TUF root initialization.'
-            exit
-        fi
-
-        echo 'Initializing TUF root...'
-        ec sigstore initialize --mirror "${TUF_MIRROR}" --root "${TUF_MIRROR}/root.json"
-        echo 'Done!'
-      env:
-        - name: TUF_MIRROR
-          value: "$(params.TUF_MIRROR)"
+      command: [ec]
+      args:
+        - sigstore
+        - initialize
+        - --mirror
+        - $(params.TUF_MIRROR)
+        - --root
+        - $(params.TUF_MIRROR)/root.json
+      when:
+        - input: $(params.TUF_MIRROR)
+          operator: "notin"
+          values: [""]
 
     - name: reduce
       env:

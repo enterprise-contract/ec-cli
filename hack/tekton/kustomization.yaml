@@ -28,6 +28,7 @@ patches:
         namespace: tekton-pipelines
       data:
         enable-tekton-oci-bundles: true
+        enable-step-actions: true
 
 generators:
   - tekton.yaml
