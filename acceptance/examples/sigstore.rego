@@ -3,6 +3,8 @@ package sigstore
 import rego.v1
 
 # METADATA
+# title: Image validation
+# description: Check image and attestation signatures
 # custom:
 #   short_name: valid
 deny contains result if {
