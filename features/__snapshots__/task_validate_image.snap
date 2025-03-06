@@ -374,7 +374,6 @@ ${TIMESTAMP} Skipping step because a previous step failed
 ---
 
 [Initialize TUF fails:initialize-tuf - 1]
-Initializing TUF root...
 Error: Get "http://tuf.invalid/root.json": dial tcp: lookup tuf.invalid on 10.96.0.10:53: no such host
 
 ---
@@ -471,7 +470,7 @@ success: true
 ---
 
 [Initialize TUF succeeds:initialize-tuf - 1]
-TUF_MIRROR parameter not provided. Skipping TUF root initialization.
+{"level":"info","ts":${TIMESTAMP},"caller":"entrypoint/entrypointer.go:265","msg":"Step was skipped due to when expressions were evaluated to false."}
 
 ---
 
@@ -522,7 +521,7 @@ TUF_MIRROR parameter not provided. Skipping TUF root initialization.
 ---
 
 [Outputs are there:initialize-tuf - 1]
-TUF_MIRROR parameter not provided. Skipping TUF root initialization.
+{"level":"info","ts":${TIMESTAMP},"caller":"entrypoint/entrypointer.go:265","msg":"Step was skipped due to when expressions were evaluated to false."}
 
 ---
 

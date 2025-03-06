@@ -42,6 +42,7 @@ var (
 	tempPathRegex      = regexp.MustCompile(`\$\{TEMP\}([^: \\"]+)[: ]?`)                                                    // starts with "${TEMP}" and ends with something not in path, perhaps breaks on Windows due to the colon
 	randomBitsRegex    = regexp.MustCompile(`([a-f0-9]+)$`)                                                                  // in general, we add random bits to paths as suffixes
 	unixTimestamp      = regexp.MustCompile(`("| )(?:\d{10})(\\"|"|$)`)                                                      // Recent Unix timestamp in second resolution
+	tektonTimestamp    = regexp.MustCompile(`\b\d{10}\.\d+\b`)                                                               // timestamp used in Tekton logs
 )
 
 type errCapture struct {
@@ -117,6 +118,9 @@ func MatchSnapshot(ctx context.Context, qualifier, text string, vars map[string]
 
 	// more timestamps, Unix here
 	text = unixTimestamp.ReplaceAllString(text, "$1$${TIMESTAMP}$2")
+
+	// Tekton timestamps
+	text = tektonTimestamp.ReplaceAllString(text, "$${TIMESTAMP}")
 
 	// handle temp directories, replace local temp path with "${TEMP}"
 	text = strings.ReplaceAll(text, os.TempDir(), "${TEMP}")
