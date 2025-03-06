@@ -25,10 +25,20 @@ spec:
     value: '{{revision}}'
   - name: output-image
     value: quay.io/redhat-user-workloads/rhtap-contract-tenant/ec-v06/cli-v06:on-pr-{{revision}}
-  - name: image-expires-after
-    value: 5d
   - name: dockerfile
     value: Dockerfile.dist
+  - name: image-expires-after
+    value: 5d
+  - name: path-context
+    value: .
+  - name: prefetch-input
+    value: '[{"type": "gomod"}, {"type": "gomod", "path": "tools/kubectl"}, {"type": "rpm"}]'
+  - name: build-source-image
+    value: 'true'
+  - name: build-args-file
+    value: quick-build-args.conf
+  - name: hermetic
+    value: 'true'
   pipelineSpec:
     description: |
       This pipeline is ideal for building container images from a Containerfile while maintaining trust after pipeline customization.
@@ -90,6 +100,7 @@ spec:
       description: Image tag expiration time, time values could be something like
         1h, 2d, 3w for hours, days, and weeks, respectively.
       name: image-expires-after
+      type: string
     - default: "false"
       description: Build a source image.
       name: build-source-image
@@ -147,6 +158,10 @@ spec:
         value: $(params.output-image).git
       - name: ociArtifactExpiresAfter
         value: $(params.image-expires-after)
+      - name: depth
+        value: "0"
+      - name: fetchTags
+        value: "true"
       runAfter:
       - init
       taskRef:
@@ -176,6 +191,8 @@ spec:
         value: $(params.output-image).prefetch
       - name: ociArtifactExpiresAfter
         value: $(params.image-expires-after)
+      - name: dev-package-managers
+        value: "true"
       runAfter:
       - clone-repository
       taskRef:
@@ -212,7 +229,7 @@ spec:
         value:
         - $(params.build-args[*])
       - name: BUILD_ARGS_FILE
-        value: $(params.build-args-file)
+        value: "$(params.build-args-file)"
       - name: SOURCE_ARTIFACT
         value: $(tasks.prefetch-dependencies.results.SOURCE_ARTIFACT)
       - name: CACHI2_ARTIFACT
