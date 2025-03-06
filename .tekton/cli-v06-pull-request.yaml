@@ -7,14 +7,14 @@ metadata:
     build.appstudio.redhat.com/pull_request_number: '{{pull_request_number}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch == "main"
+    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch == "release-v0.6"
     pipelinesascode.tekton.dev/pipeline: ".tekton/cli-build.yaml"
   creationTimestamp: null
   labels:
-    appstudio.openshift.io/application: ec-main-ci
-    appstudio.openshift.io/component: cli-main-ci
+    appstudio.openshift.io/application: ec-v06
+    appstudio.openshift.io/component: cli-v06
     pipelines.appstudio.openshift.io/type: build
-  name: cli-main-ci-on-pull-request
+  name: cli-v06-on-pull-request
   namespace: rhtap-contract-tenant
 spec:
   params:
@@ -23,9 +23,7 @@ spec:
     - name: revision
       value: '{{revision}}'
     - name: output-image
-      value: quay.io/redhat-user-workloads/rhtap-contract-tenant/ec-main-ci/cli-main-ci:on-pr-{{revision}}
-    - name: bundle-cli-ref-repo
-      value: quay.io/redhat-user-workloads/rhtap-contract-tenant/ec-main-ci/cli-main-ci
+      value: quay.io/redhat-user-workloads/rhtap-contract-tenant/ec-v06/cli-v06:on-pr-{{revision}}
     - name: image-expires-after
       value: 5d
     - name: dockerfile
