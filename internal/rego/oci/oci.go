@@ -241,26 +241,40 @@ func registerOCIImageFiles() {
 }
 
 func ociBlob(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) {
+	logger := log.WithField("function", ociBlobName)
+
 	uri, ok := a.Value.(ast.String)
 	if !ok {
+		logger.Error("input is not a string")
 		return nil, nil
 	}
+	logger = logger.WithField("ref", string(uri))
+	logger.Debug("Starting blob retrieval")
 
 	ref, err := name.NewDigest(string(uri))
 	if err != nil {
-		log.Errorf("%s new digest: %s", ociBlobName, err)
+		logger.WithFields(log.Fields{
+			"action": "new digest",
+			"error":  err,
+		}).Error("failed to create new digest")
 		return nil, nil
 	}
 
 	rawLayer, err := oci.NewClient(bctx.Context).Layer(ref)
 	if err != nil {
-		log.Errorf("%s fetch layer: %s", ociBlobName, err)
+		logger.WithFields(log.Fields{
+			"action": "fetch layer",
+			"error":  err,
+		}).Error("failed to fetch OCI layer")
 		return nil, nil
 	}
 
 	layer, err := rawLayer.Uncompressed()
 	if err != nil {
-		log.Errorf("%s layer uncompressed: %s", ociBlobName, err)
+		logger.WithFields(log.Fields{
+			"action": "uncompress layer",
+			"error":  err,
+		}).Error("failed to uncompress OCI layer")
 		return nil, nil
 	}
 	defer layer.Close()
@@ -273,7 +287,10 @@ func ociBlob(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) {
 
 	var blob bytes.Buffer
 	if _, err := io.Copy(&blob, reader); err != nil {
-		log.Errorf("%s copy buffer: %s", ociBlobName, err)
+		logger.WithFields(log.Fields{
+			"action": "copy buffer",
+			"error":  err,
+		}).Error("failed to copy data into buffer")
 		return nil, nil
 	}
 
@@ -281,81 +298,112 @@ func ociBlob(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) {
 	// io.LimitReader truncates the layer if it exceeds its limit. The condition below catches this
 	// scenario in order to avoid unexpected behavior caused by partial data being returned.
 	if sum != ref.DigestStr() {
-		log.Errorf("%s computed digest, %q, not as expected, %q", ociBlobName, sum, ref.DigestStr())
+		logger.WithFields(log.Fields{
+			"action":          "verify digest",
+			"computed_digest": sum,
+			"expected_digest": ref.DigestStr(),
+		}).Error("computed digest does not match expected digest")
 		return nil, nil
 	}
 
+	logger.WithFields(log.Fields{
+		"action": "complete",
+		"digest": sum,
+	}).Debug("Successfully retrieved blob")
 	return ast.StringTerm(blob.String()), nil
 }
 
 func ociDescriptor(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) {
-	log := log.WithField("rego", ociDescriptor)
+	logger := log.WithField("function", ociDescriptorName)
 
 	uriValue, ok := a.Value.(ast.String)
 	if !ok {
+		logger.Error("input is not a string")
 		return nil, nil
 	}
+	logger = logger.WithField("input_ref", string(uriValue))
+	logger.Debug("Starting descriptor retrieval")
 
 	client := oci.NewClient(bctx.Context)
 
 	uri, err := resolveIfNeeded(client, string(uriValue))
 	if err != nil {
-		log.Error(err)
+		logger.WithField("action", "resolveIfNeeded").Error(err)
 		return nil, nil
 	}
-	log = log.WithField("ref", uri)
+	logger = logger.WithField("ref", uri)
 
 	ref, err := name.NewDigest(uri)
 	if err != nil {
-		log.Errorf("new digest: %s", err)
+		logger.WithFields(log.Fields{
+			"action": "new digest",
+			"error":  err,
+		}).Error("failed to create new digest")
 		return nil, nil
 	}
 
 	descriptor, err := client.Head(ref)
 	if err != nil {
-		log.Errorf("fetch image: %s", err)
+		logger.WithFields(log.Fields{
+			"action": "fetch head",
+			"error":  err,
+		}).Error("failed to fetch image descriptor")
 		return nil, nil
 	}
 
+	logger.Debug("Successfully retrieved descriptor")
 	return newDescriptorTerm(*descriptor), nil
 }
 
 func ociImageManifest(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) {
-	log := log.WithField("rego", ociImageManifestName)
+	logger := log.WithField("function", ociImageManifestName)
+
 	uriValue, ok := a.Value.(ast.String)
 	if !ok {
+		logger.Error("input is not a string")
 		return nil, nil
 	}
+	logger = logger.WithField("input_ref", string(uriValue))
+	logger.Debug("Starting image manifest retrieval")
 
 	client := oci.NewClient(bctx.Context)
 
 	uri, err := resolveIfNeeded(client, string(uriValue))
 	if err != nil {
-		log.Error(err)
+		logger.WithField("action", "resolveIfNeeded").Error(err)
 		return nil, nil
 	}
-	log = log.WithField("ref", uri)
+	logger = logger.WithField("ref", uri)
 
 	ref, err := name.NewDigest(uri)
 	if err != nil {
-		log.Errorf("new digest: %s", err)
+		logger.WithFields(log.Fields{
+			"action": "new digest",
+			"error":  err,
+		}).Error("failed to create new digest")
 		return nil, nil
 	}
 
 	image, err := client.Image(ref)
 	if err != nil {
-		log.Errorf("fetch image: %s", err)
+		logger.WithFields(log.Fields{
+			"action": "fetch image",
+			"error":  err,
+		}).Error("failed to fetch image")
 		return nil, nil
 	}
 
 	manifest, err := image.Manifest()
 	if err != nil {
-		log.Errorf("fetch manifest: %s", err)
+		logger.WithFields(log.Fields{
+			"action": "fetch manifest",
+			"error":  err,
+		}).Error("failed to fetch manifest")
 		return nil, nil
 	}
 
 	if manifest == nil {
-		log.Error("manifest is nil")
+		logger.Error("manifest is nil")
 		return nil, nil
 	}
 
@@ -376,30 +424,40 @@ func ociImageManifest(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) 
 		manifestTerms = append(manifestTerms, ast.Item(ast.StringTerm("subject"), newDescriptorTerm(*s)))
 	}
 
+	logger.Debug("Successfully retrieved image manifest")
 	return ast.ObjectTerm(manifestTerms...), nil
 }
 
 func ociImageFiles(bctx rego.BuiltinContext, refTerm *ast.Term, pathsTerm *ast.Term) (*ast.Term, error) {
-	log := log.WithField("rego", ociImageFilesName)
+	logger := log.WithField("function", ociImageFilesName)
+
 	uri, ok := refTerm.Value.(ast.String)
 	if !ok {
+		logger.Error("input ref is not a string")
 		return nil, nil
 	}
+	logger = logger.WithField("ref", string(uri))
+	logger.Debug("Starting image files extraction")
 
 	ref, err := name.NewDigest(string(uri))
 	if err != nil {
-		log.Errorf("new digest: %s", err)
+		logger.WithFields(log.Fields{
+			"action": "new digest",
+			"error":  err,
+		}).Error("failed to create new digest")
 		return nil, nil
 	}
 
 	pathsArray, err := builtins.ArrayOperand(pathsTerm.Value, 1)
 	if err != nil {
-		log.Errorf("paths to array operand: %s", err)
+		logger.WithFields(log.Fields{
+			"action": "convert paths",
+			"error":  err,
+		}).Error("failed to convert paths to array operand")
 		return nil, nil
 	}
 
 	var extractors []files.Extractor
-
 	err = pathsArray.Iter(func(pathTerm *ast.Term) error {
 		pathString, ok := pathTerm.Value.(ast.String)
 		if !ok {
@@ -409,22 +467,32 @@ func ociImageFiles(bctx rego.BuiltinContext, refTerm *ast.Term, pathsTerm *ast.T
 		return nil
 	})
 	if err != nil {
-		log.Errorf("paths iteration: %s", err)
+		logger.WithFields(log.Fields{
+			"action": "iterate paths",
+			"error":  err,
+		}).Error("failed iterating paths")
 		return nil, nil
 	}
 
 	files, err := files.ImageFiles(bctx.Context, ref, extractors)
 	if err != nil {
-		log.Errorf("extracting image files: %s", err)
+		logger.WithFields(log.Fields{
+			"action": "extract files",
+			"error":  err,
+		}).Error("failed to extract image files")
 		return nil, nil
 	}
 
 	filesValue, err := ast.InterfaceToValue(files)
 	if err != nil {
-		log.Errorf("converting files object to value: %s", err)
+		logger.WithFields(log.Fields{
+			"action": "convert files",
+			"error":  err,
+		}).Error("failed to convert files object to value")
 		return nil, nil
 	}
 
+	logger.Debug("Successfully extracted image files")
 	return ast.NewTerm(filesValue), nil
 }
 
