@@ -3,6 +3,11 @@ kind: Pipeline
 metadata:
   name: cli-build
 spec:
+  description: |
+    This pipeline is ideal for building container images from a Containerfile while maintaining trust after pipeline customization.
+
+    _Uses `buildah` to create a container image leveraging [trusted artifacts](https://konflux-ci.dev/architecture/ADR/0036-trusted-artifacts.html). It also optionally creates a source image and runs some build-time tests. Information is shared between tasks using OCI artifacts instead of PVCs. EC will pass the [`trusted_task.trusted`](https://enterprisecontract.dev/docs/ec-policies/release_policy.html#trusted_task__trusted) policy as long as all data used to build the artifact is generated from trusted tasks.
+    This pipeline is pushed as a Tekton bundle to [quay.io](https://quay.io/repository/konflux-ci/tekton-catalog/pipeline-docker-build-oci-ta?tab=tags)_
   finally:
     - name: show-sbom
       params:
@@ -156,7 +161,7 @@ spec:
         - name: ociArtifactExpiresAfter
           value: $(params.image-expires-after)
         - name: dev-package-managers
-          value: 'true'
+          value: "true"
       runAfter:
         - clone-repository
       taskRef:
@@ -363,8 +368,10 @@ spec:
             - "false"
     - name: sast-snyk-check
       params:
+        - name: image-digest
+          value: $(tasks.build-image-index.results.IMAGE_DIGEST)
         - name: image-url
-          value: $(tasks.build-image-index.results.IMAGE_URL)@$(tasks.build-image-index.results.IMAGE_DIGEST)
+          value: $(tasks.build-image-index.results.IMAGE_URL)
         - name: SOURCE_ARTIFACT
           value: $(tasks.prefetch-dependencies.results.SOURCE_ARTIFACT)
         - name: CACHI2_ARTIFACT
@@ -446,10 +453,11 @@ spec:
             value: task
         resolver: bundles
     - name: rpms-signature-scan
-      when:
-      - input: $(params.skip-checks)
-        operator: in
-        values: ["false"]
+      params:
+        - name: image-url
+          value: $(tasks.build-image-index.results.IMAGE_URL)
+        - name: image-digest
+          value: $(tasks.build-image-index.results.IMAGE_DIGEST)
       runAfter:
         - build-image-index
       taskRef:
@@ -461,11 +469,11 @@ spec:
           - name: kind
             value: task
         resolver: bundles
-      params:
-      - name: image-url
-        value: $(tasks.build-image-index.results.IMAGE_URL)
-      - name: image-digest
-        value: $(tasks.build-image-index.results.IMAGE_DIGEST)
+      when:
+        - input: $(params.skip-checks)
+          operator: in
+          values:
+            - "false"
   workspaces:
     - name: git-auth
       optional: true
