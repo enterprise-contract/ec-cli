@@ -20,6 +20,7 @@ import (
 	"context"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 
 	"github.com/enterprise-contract/ec-cli/cmd/fetch"
 	"github.com/enterprise-contract/ec-cli/cmd/initialize"
@@ -51,15 +52,19 @@ func Execute() {
 }
 
 func init() {
-	RootCmd.AddCommand(fetch.FetchCmd)
-	RootCmd.AddCommand(initialize.InitCmd)
-	RootCmd.AddCommand(inspect.InspectCmd)
-	RootCmd.AddCommand(track.TrackCmd)
-	RootCmd.AddCommand(validate.ValidateCmd)
-	RootCmd.AddCommand(version.VersionCmd)
-	RootCmd.AddCommand(opa.OPACmd)
-	RootCmd.AddCommand(sigstore.SigstoreCmd)
+	AddCommandsTo(RootCmd)
+}
+
+func AddCommandsTo(cmd *cobra.Command) {
+	cmd.AddCommand(fetch.FetchCmd)
+	cmd.AddCommand(initialize.InitCmd)
+	cmd.AddCommand(inspect.InspectCmd)
+	cmd.AddCommand(track.TrackCmd)
+	cmd.AddCommand(validate.ValidateCmd)
+	cmd.AddCommand(version.VersionCmd)
+	cmd.AddCommand(opa.OPACmd)
+	cmd.AddCommand(sigstore.SigstoreCmd)
 	if utils.Experimental() {
-		RootCmd.AddCommand(test.TestCmd)
+		cmd.AddCommand(test.TestCmd)
 	}
 }

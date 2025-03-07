@@ -139,6 +139,21 @@ feature_%: ## Run acceptance tests for a single feature file, e.g. make feature_
 scenario_%: build ## Run acceptance tests for a single scenario, e.g. make scenario_inline_policy
 	@cd acceptance && go test -test.run 'TestFeatures/$*'
 
+benchmark/%/data.tar.gz:
+	@cd benchmark/$*
+	@./prepare_data.sh
+
+.PHONY: benchmark_%
+benchmark_%: benchmark/%/data.tar.gz
+	@cd benchmark/$*
+	@go run .
+
+.PHONY: benchmark_data
+benchmark_data: benchmark/simple/data.tar.gz ## Prepare data for benchmark
+
+.PHONY: benchmark
+benchmark: benchmark_simple ## Run benchmarks
+
 .PHONY: ci
 ci: test lint-fix acceptance ## Run the usual required CI tasks
 
