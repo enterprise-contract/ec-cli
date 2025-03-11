@@ -177,3 +177,6 @@ node_modules
 
 # kustomize expanded Helm charts
 hack/**/charts
+
+# Pregenerated benchmark data
+benchmark/*/data.tar.gz
