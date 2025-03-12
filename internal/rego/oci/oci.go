@@ -27,6 +27,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"time"
 
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
@@ -241,6 +242,7 @@ func registerOCIImageFiles() {
 }
 
 func ociBlob(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) {
+	start := time.Now()
 	logger := log.WithField("function", ociBlobName)
 
 	uri, ok := a.Value.(ast.String)
@@ -310,10 +312,19 @@ func ociBlob(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) {
 		"action": "complete",
 		"digest": sum,
 	}).Debug("Successfully retrieved blob")
+
+	logger.WithFields(
+		log.Fields{
+			"action": "oci blob",
+			"time":   time.Since(start),
+		},
+	).Debug("time completed")
+
 	return ast.StringTerm(blob.String()), nil
 }
 
 func ociDescriptor(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) {
+	start := time.Now()
 	logger := log.WithField("function", ociDescriptorName)
 
 	uriValue, ok := a.Value.(ast.String)
@@ -352,10 +363,19 @@ func ociDescriptor(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) {
 	}
 
 	logger.Debug("Successfully retrieved descriptor")
+
+	logger.WithFields(
+		log.Fields{
+			"action": "oci descriptor time",
+			"time":   time.Since(start),
+		},
+	).Debug("time completed")
+
 	return newDescriptorTerm(*descriptor), nil
 }
 
 func ociImageManifest(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) {
+	start := time.Now()
 	logger := log.WithField("function", ociImageManifestName)
 
 	uriValue, ok := a.Value.(ast.String)
@@ -425,10 +445,19 @@ func ociImageManifest(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) 
 	}
 
 	logger.Debug("Successfully retrieved image manifest")
+	logger.WithFields(
+		log.Fields{
+			"action": "oci manifest time",
+			"time":   time.Since(start),
+		},
+	).Debug("time completed")
+
 	return ast.ObjectTerm(manifestTerms...), nil
 }
 
 func ociImageFiles(bctx rego.BuiltinContext, refTerm *ast.Term, pathsTerm *ast.Term) (*ast.Term, error) {
+	start := time.Now()
+
 	logger := log.WithField("function", ociImageFilesName)
 
 	uri, ok := refTerm.Value.(ast.String)
@@ -493,6 +522,14 @@ func ociImageFiles(bctx rego.BuiltinContext, refTerm *ast.Term, pathsTerm *ast.T
 	}
 
 	logger.Debug("Successfully extracted image files")
+
+	logger.WithFields(
+		log.Fields{
+			"action": "oci manifest time",
+			"time":   time.Since(start),
+		},
+	).Debug("time completed")
+
 	return ast.NewTerm(filesValue), nil
 }
 
