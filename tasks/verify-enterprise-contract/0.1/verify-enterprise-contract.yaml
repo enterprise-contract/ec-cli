@@ -173,6 +173,12 @@ spec:
   steps:
 
     - name: initialize-tuf
+      computeResources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          memory: 256Mi
       image: quay.io/enterprise-contract/ec-cli:snapshot
       command: [ec]
       args:
@@ -188,6 +194,12 @@ spec:
           values: [""]
 
     - name: reduce
+      computeResources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          memory: 256Mi
       env:
         - name: SNAPSHOT
           value: $(params.IMAGES)
@@ -268,6 +280,12 @@ spec:
           readOnly: true
 
     - name: report-json
+      computeResources:
+        requests:
+          cpu: 100m
+          memory: 2Gi
+        limits:
+          memory: 2Gi
       image: quay.io/enterprise-contract/ec-cli:snapshot
       onError: continue  # progress even if the step fails so we can see the debug logs
       command: [cat]
@@ -275,6 +293,12 @@ spec:
         - "$(params.HOMEDIR)/report-json.json"
 
     - name: summary
+      computeResources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          memory: 256Mi
       image: quay.io/enterprise-contract/ec-cli:snapshot
       onError: continue  # progress even if the step fails so we can see the debug logs
       command: [jq]
@@ -283,24 +307,48 @@ spec:
         - "$(results.TEST_OUTPUT.path)"
 
     - name: info
+      computeResources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          memory: 256Mi
       image: quay.io/enterprise-contract/ec-cli:snapshot
       command: [printf]
       args:
         - "----- DEBUG OUTPUT -----\n"
 
     - name: version
+      computeResources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          memory: 256Mi
       image: quay.io/enterprise-contract/ec-cli:snapshot
       command: [ec]
       args:
         - version
 
     - name: debug-log
+      computeResources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          memory: 256Mi
       image: quay.io/enterprise-contract/ec-cli:snapshot
       command: [cat]
       args:
         - "$(params.HOMEDIR)/debug.log"
 
     - name: assert
+      computeResources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          memory: 256Mi
       image: quay.io/enterprise-contract/ec-cli:snapshot
       command: [jq]
       args:
