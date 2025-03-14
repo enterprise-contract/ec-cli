@@ -3,5 +3,12 @@
   "extends": ["github>konflux-ci/mintmaker//config/renovate/renovate.json"],
   "timezone": "America/New_York",
   "schedule": ["before 10pm"],
-  "enabledManagers": ["asdf", "tekton"]
+  "enabledManagers": ["asdf", "tekton", "github-actions"],
+  "github-actions": {
+    "enabled": true,
+    "schedule": ["before 10pm"],
+    "separateMinorPatch": true,
+    "groupName": "GitHub Actions Updates"
+  }
 }
+
