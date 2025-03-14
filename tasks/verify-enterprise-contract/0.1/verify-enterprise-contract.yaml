@@ -269,7 +269,7 @@ spec:
           value: "false"
       computeResources:
         requests:
-          cpu: 1200m
+          cpu: 1800m
           memory: 2Gi
         limits:
           memory: 2Gi
