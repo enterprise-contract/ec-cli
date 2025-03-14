@@ -5,8 +5,10 @@ metadata:
     build.appstudio.openshift.io/repo: https://github.com/enterprise-contract/ec-cli?rev={{revision}}
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
+    pipelinesascode.tekton.dev/cancel-in-progress: "false"
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "main"
+    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch
+      == "main"
     pipelinesascode.tekton.dev/pipeline: ".tekton/cli-build.yaml"
   creationTimestamp: null
   labels:
@@ -25,10 +27,10 @@ spec:
       value: quay.io/redhat-user-workloads/rhtap-contract-tenant/ec-main-ci/cli-main-ci:{{revision}}
     - name: bundle-cli-ref-repo
       value: quay.io/enterprise-contract/cli
-    - name: image-expires-after
-      value: ''
     - name: dockerfile
       value: Dockerfile.dist
+    - name: image-expires-after
+      value: ''
     - name: path-context
       value: .
     - name: prefetch-input
