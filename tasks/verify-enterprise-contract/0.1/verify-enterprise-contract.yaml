@@ -269,7 +269,7 @@ spec:
           value: "false"
       computeResources:
         requests:
-          cpu: 250m
+          cpu: 1200m
           memory: 2Gi
         limits:
           memory: 2Gi
@@ -283,9 +283,9 @@ spec:
       computeResources:
         requests:
           cpu: 100m
-          memory: 2Gi
+          memory: 256Mi
         limits:
-          memory: 2Gi
+          memory: 256Mi
       image: quay.io/enterprise-contract/ec-cli:snapshot
       onError: continue  # progress even if the step fails so we can see the debug logs
       command: [cat]
