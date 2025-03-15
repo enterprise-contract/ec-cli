@@ -139,7 +139,7 @@ func getPolicyThroughCache(ctx context.Context, s PolicySource, workDir string, 
 	return d, c.metadata, c.err
 }
 
-// GetPolicies clones the repository for a given PolicyUrl
+// GetPolicy clones the repository for a given PolicyUrl
 func (p *PolicyUrl) GetPolicy(ctx context.Context, workDir string, showMsg bool) (string, error) {
 	if trace.IsEnabled() {
 		region := trace.StartRegion(ctx, "ec:get-policy")
