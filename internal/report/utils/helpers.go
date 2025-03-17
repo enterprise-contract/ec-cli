@@ -22,7 +22,7 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 )
 
-// condensedMsg reduces repetitive error messages.
+// CondensedMsg reduces repetitive error messages.
 func CondensedMsg(results []evaluator.Result) map[string][]string {
 	maxErr := 1
 	shortNames := make(map[string][]string)
