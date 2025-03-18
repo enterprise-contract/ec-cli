@@ -24,6 +24,7 @@ import (
 	"runtime/trace"
 	"sort"
 	"strings"
+	"time"
 
 	hd "github.com/MakeNowJust/heredoc"
 	app "github.com/konflux-ci/application-api/api/v1alpha1"
@@ -303,6 +304,9 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 			}
 
 			appComponents := data.spec.Components
+			for _, c := range appComponents {
+				log.Debugf("app components: %q", c.ContainerImage)
+			}
 			evaluators := []evaluator.Evaluator{}
 
 			// Return an evaluator for each of these
@@ -346,8 +350,11 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 						trace.Logf(ctx, "", "workerID=%d", id)
 					}
 
+					start := time.Now()
+					log.Debugf("starting validation for %q", comp.ContainerImage)
 					log.Debugf("Worker %d got a component %q", id, comp.ContainerImage)
 					out, err := validate(ctx, comp, data.spec, data.policy, evaluators, data.info)
+					log.Debugf("total validation time %q: %q", time.Since(start), comp.ContainerImage)
 					res := result{
 						err: err,
 						component: applicationsnapshot.Component{
@@ -396,6 +403,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 			numWorkers := data.workers
 
 			jobs := make(chan app.SnapshotComponent, numComponents)
+			log.Debugf("number of jobs: %d", numComponents)
 			results := make(chan result, numComponents)
 			// Initialize each worker. They will wait patiently until a job is sent to the jobs
 			// channel, or the jobs channel is closed.

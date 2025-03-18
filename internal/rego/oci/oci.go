@@ -250,7 +250,7 @@ func ociBlob(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) {
 		logger.Error("input is not a string")
 		return nil, nil
 	}
-	logger = logger.WithField("ref", string(uri))
+	logger = logger.WithField("input_ref", string(uri))
 	logger.Debug("Starting blob retrieval")
 
 	ref, err := name.NewDigest(string(uri))
@@ -465,7 +465,7 @@ func ociImageFiles(bctx rego.BuiltinContext, refTerm *ast.Term, pathsTerm *ast.T
 		logger.Error("input ref is not a string")
 		return nil, nil
 	}
-	logger = logger.WithField("ref", string(uri))
+	logger = logger.WithField("input_ref", string(uri))
 	logger.Debug("Starting image files extraction")
 
 	ref, err := name.NewDigest(string(uri))
