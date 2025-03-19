@@ -40,7 +40,7 @@ The `--debug` parameter enables debug logging. Setting `EC_DEBUG` environment
 variable can be set to prevent deletion of temporary `ec-work-*` directories so
 that the attestations, policy and data files can be examined.
 
-When running acceptance tests you may experience issues with starting enough Docker containers to successfullyl complete testing. These issues may appear as repeated failures, such as seen below, and a failed acceptance test run:
+1. When running acceptance tests you may experience issues with starting enough Docker containers to successfully complete testing. These issues may appear as repeated failures, such as seen below, and a failed acceptance test run:
 ```
 time="2024-03-08T09:10:50-05:00" level=warning msg="Failed, retrying in 1s ... (3/3). Error: trying to reuse blob sha256:b5976a979c30628edfeee0a1f1797362b0c84cf6cb4760776aa64ec8e3e4c2b3 at destination: pinging container registry localhost:37837: Get \"http://localhost:37837/v2/\": read tcp 127.0.0.1:34090->127.0.0.1:37837: read: connection reset by peer"
 ```
@@ -50,6 +50,18 @@ This issue may be resolved by increasing the total number of `fs.inotify.max_use
 $ echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
 ```
 
+2. Apiserver and Rekor Host Resolution Failure: While running the acceptance tests, if you encounter issues related to apiserver and rekor hosts, like:
+```
++ Error: unable to fetch EnterpriseContractPolicy: Get "http://apiserver.localhost:32971/apis/appstudio.redhat.com/v1alpha1/namespaces/acceptance/enterprisecontractpolicies/mismatched-image-digest": dial tcp: lookup apiserver.localhost on 127.0.0.1:53: no such host
+
+Post \"${REKOR}/api/v1/log/entries/retrieve\": POST ${REKOR}/api/v1/log/entries/retrieve giving up after 4 attempt(s): Post \"${REKOR}/api/v1/log/entries/retrieve\": dial tcp: lookup rekor.localhost on 127.0.0.1:53: no such host
+```
+
+This issue may be resolved by adding the below entries in the `/etc/hosts` file:
+```
+127.0.0.1 apiserver.localhost
+127.0.0.1 rekor.localhost
+```
 
 [pol]: https://github.com/enterprise-contract/ec-policies/
 [docs]: https://enterprisecontract.dev/docs/ec-cli/ec.html
