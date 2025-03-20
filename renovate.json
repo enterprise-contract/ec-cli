@@ -4,6 +4,7 @@
   "timezone": "America/New_York",
   "schedule": ["before 10pm"],
   "enabledManagers": ["asdf", "tekton", "github-actions"],
+  "baseBranches": ["main", "release-v0.5", "release-v0.6"],
   "github-actions": {
     "enabled": true,
     "schedule": ["before 10pm"],
