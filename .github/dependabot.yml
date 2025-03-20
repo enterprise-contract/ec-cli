@@ -27,16 +27,6 @@ updates:
       all:
         patterns:
           - "*"
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: weekly
-      time: '15:00'
-      timezone: Etc/UTC
-    groups:
-      all:
-        patterns:
-          - "*"
   - package-ecosystem: "gomod"
     directory: "/"
     schedule:
