@@ -1,14 +1,14 @@
 = ec init policies
 
-Initialize a directory with minimal EC scaffolding
+Initialize a directory with minimal Conforma scaffolding
 
 == Synopsis
 
-This command creates the necessary files for a minimal EC policy setup in the
+This command creates the necessary files for a minimal Conforma policy setup in the
 specified destination directory.
 
-More information about authoring policies is available in the EC documentation:
-https://enterprisecontract.dev/docs/ec-policies/authoring.html
+More information about authoring policies is available in the Conforma documentation:
+https://conforma.dev/docs/ec-policies/authoring.html
 
 [source,shell]
 ----
@@ -16,13 +16,13 @@ ec init policies --dest-dir <directory-url> [flags]
 ----
 
 == Examples
-Initialize the "my-policy" directory with minimal EC policy scaffolding:
+Initialize the "my-policy" directory with minimal Conforma policy scaffolding:
 
   ec init policies --dest-dir my-policy
 
 == Options
 
--d, --dest-dir:: Directory to use when creating EC policy scaffolding. If not specified stdout will be used.
+-d, --dest-dir:: Directory to use when creating Conforma policy scaffolding. If not specified stdout will be used.
 -h, --help:: help for policies (Default: false)
 
 == Options inherited from parent commands

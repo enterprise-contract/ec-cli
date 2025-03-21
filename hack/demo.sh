@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright The Enterprise Contract Contributors
+# Copyright The Conforma Contributors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -44,11 +44,11 @@ metadata:
   namespace: demo
   name: ec-demo
 spec:
-  description: Demo Enterprise Contract policy configuration
+  description: Demo Conforma policy configuration
   sources:
   - data:
     - git::https://github.com/enterprise-contract/ec-policies//example/data
-    name: Default EC policy
+    name: Default Conforma policy
     policy:
     - quay.io/enterprise-contract/ec-release-policy:latest
 EOF

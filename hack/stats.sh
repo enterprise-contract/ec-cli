@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright The Enterprise Contract Contributors
+# Copyright The Conforma Contributors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ set -o posix
 mkdir -p stats
 # shellcheck disable=SC2016
 {
-    curl --silent --fail https://enterprisecontract.dev/ec-cli/stats.json || echo -n ''
+    curl --silent --fail https://conforma.dev/ec-cli/stats.json || echo -n ''
     gh api graphql --field query='{
     repository(owner: "enterprise-contract", name: "ec-cli") {
         release(tagName: "snapshot") {

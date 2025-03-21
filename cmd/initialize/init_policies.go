@@ -1,4 +1,4 @@
-// Copyright The Enterprise Contract Contributors
+// Copyright The Conforma Contributors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -39,8 +39,8 @@ func initPoliciesCmd() *cobra.Command {
 			This command creates the necessary files for a minimal EC policy setup in the
 			specified destination directory.
 
-			More information about authoring policies is available in the EC documentation:
-			https://enterprisecontract.dev/docs/ec-policies/authoring.html
+			More information about authoring policies is available in the Conforma documentation:
+			https://conforma.dev/docs/ec-policies/authoring.html
 		`),
 
 		Example: hd.Doc(`
