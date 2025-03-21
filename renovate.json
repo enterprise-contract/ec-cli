@@ -1,15 +1,67 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>konflux-ci/mintmaker//config/renovate/renovate.json"],
+  "extends": [
+    "github>konflux-ci/mintmaker//config/renovate/renovate.json",
+    "config:best-practices"
+  ],
   "timezone": "America/New_York",
-  "schedule": ["before 10pm"],
-  "enabledManagers": ["asdf", "tekton", "github-actions"],
+  "schedule": ["0 15 * * 0"],
   "baseBranches": ["main", "release-v0.5", "release-v0.6"],
-  "github-actions": {
-    "enabled": true,
-    "schedule": ["before 10pm"],
-    "separateMinorPatch": true,
-    "groupName": "GitHub Actions Updates"
-  }
+  "packageRules": [
+    {
+      "matchManagers": ["dockerfile"],
+      "matchDepNames": ["docker.io/library/golang"],
+      "enabled": false
+    },
+    {
+      "matchManagers": ["gomod"],
+      "matchDepNames": ["go"],
+      "enabled": false
+    },
+    {
+      "matchManagers": ["asdf"],
+      "matchDepNames": ["golang"],
+      "enabled": false
+    },
+    {
+      "matchManagers": ["asdf"],
+      "groupName": "asdf Updates"
+    },
+    {
+      "matchManagers": ["dockerfile"],
+      "groupName": "Dockerfile Updates"
+    },
+    {
+      "matchManagers": ["gomod"],
+      "matchPaths": ["/"],
+      "groupName": "gomod / Updates"
+    },
+    {
+      "matchManagers": ["gomod"],
+      "matchPaths": ["/tools/kubectl/"],
+      "groupName": "gomod Kubectl Updates"
+    },
+    {
+      "matchManagers": ["gomod"],
+      "matchPaths": ["/tools/"],
+      "groupName": "gomod Tools Updates"
+    },
+    {
+      "matchManagers": ["gomod"],
+      "matchPaths": ["/acceptance/"],
+      "groupName": "gomod Acceptance Test Updates"
+    },
+    {
+      "matchManagers": ["kustomize"],
+      "groupName": "Kustomize Updates"
+    },
+    {
+      "matchManagers": ["pre-commit"],
+      "groupName": "Pre-commit Updates"
+    },
+    {
+      "matchManagers": ["tekton"],
+      "groupName": "Tekton Updates"
+    }
+  ]
 }
-
