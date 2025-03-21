@@ -60,7 +60,7 @@ Error: Merge error. The 'rule_data' key was found more than once!
 # Source: git::${GITHOST}/git/policy.git?ref=${LATEST_COMMIT}
 
 policy.release.kitty.purr (deny)
-https://enterprisecontract.dev/docs/ec-policies/release_policy.html#kitty__purr
+https://conforma.dev/docs/ec-policies/release_policy.html#kitty__purr
 Kittens
 Fluffy
 --
@@ -97,7 +97,7 @@ kitty.purr
 # Source: git::${GITHOST}/git/policy1.git?ref=5c216ecae44c9bd76cca3e6cce95892289a07db0
 
 policy.release.kitty.purr (deny)
-https://enterprisecontract.dev/docs/ec-policies/release_policy.html#kitty__purr
+https://conforma.dev/docs/ec-policies/release_policy.html#kitty__purr
 Kittens
 Fluffy
 --
