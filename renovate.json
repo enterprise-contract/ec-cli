@@ -5,62 +5,106 @@
     "config:best-practices"
   ],
   "timezone": "America/New_York",
-  "schedule": ["* * * * 0"],
-  "baseBranches": ["main", "release-v0.5", "release-v0.6"],
+  "schedule": [
+    "* * * * 0"
+  ],
+  "baseBranches": [
+    "main",
+    "release-v0.5",
+    "release-v0.6"
+  ],
   "packageRules": [
     {
-      "matchManagers": ["dockerfile"],
-      "matchDepNames": ["docker.io/library/golang"],
+      "matchManagers": [
+        "dockerfile"
+      ],
+      "matchDepNames": [
+        "docker.io/library/golang"
+      ],
       "enabled": false
     },
     {
-      "matchManagers": ["gomod"],
-      "matchDepNames": ["go"],
+      "matchManagers": [
+        "gomod"
+      ],
+      "matchDepNames": [
+        "go"
+      ],
       "enabled": false
     },
     {
-      "matchManagers": ["asdf"],
-      "matchDepNames": ["golang"],
+      "matchManagers": [
+        "asdf"
+      ],
+      "matchDepNames": [
+        "golang"
+      ],
       "enabled": false
     },
     {
-      "matchManagers": ["asdf"],
+      "matchManagers": [
+        "asdf"
+      ],
       "groupName": "asdf Updates"
     },
     {
-      "matchManagers": ["dockerfile"],
+      "matchManagers": [
+        "dockerfile"
+      ],
       "groupName": "Dockerfile Updates"
     },
     {
-      "matchManagers": ["gomod"],
-      "matchPaths": ["/"],
+      "matchManagers": [
+        "gomod"
+      ],
+      "matchFileNames": [
+        "/"
+      ],
       "groupName": "gomod / Updates"
     },
     {
-      "matchManagers": ["gomod"],
-      "matchPaths": ["/tools/kubectl/"],
+      "matchManagers": [
+        "gomod"
+      ],
+      "matchFileNames": [
+        "/tools/kubectl/"
+      ],
       "groupName": "gomod Kubectl Updates"
     },
     {
-      "matchManagers": ["gomod"],
-      "matchPaths": ["/tools/"],
+      "matchManagers": [
+        "gomod"
+      ],
+      "matchFileNames": [
+        "/tools/"
+      ],
       "groupName": "gomod Tools Updates"
     },
     {
-      "matchManagers": ["gomod"],
-      "matchPaths": ["/acceptance/"],
+      "matchManagers": [
+        "gomod"
+      ],
+      "matchFileNames": [
+        "/acceptance/"
+      ],
       "groupName": "gomod Acceptance Test Updates"
     },
     {
-      "matchManagers": ["kustomize"],
+      "matchManagers": [
+        "kustomize"
+      ],
       "groupName": "Kustomize Updates"
     },
     {
-      "matchManagers": ["pre-commit"],
+      "matchManagers": [
+        "pre-commit"
+      ],
       "groupName": "Pre-commit Updates"
     },
     {
-      "matchManagers": ["tekton"],
+      "matchManagers": [
+        "tekton"
+      ],
       "groupName": "Tekton Updates"
     }
   ]
