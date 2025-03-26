@@ -35,7 +35,7 @@ kubectl apply -f https://raw.githubusercontent.com/enterprise-contract/ec-cli/ma
 
 ## Usage
 
-This TaskRun runs the Task to verify an image. This assumes a policy is created and stored on the cluster with hte namespaced name of `enterprise-contract-service/default`. For more information on creating a policy, refer to the Conforma [documentation](https://conforma.dev/docs/ecc/index.html).
+This TaskRun runs the Task to verify an image. This assumes a policy is created and stored on the cluster with the namespaced name of `enterprise-contract-service/default`. For more information on creating a policy, refer to the Conforma [documentation](https://conforma.dev/docs/ecc/index.html).
 
 ```yaml
 apiVersion: tekton.dev/v1
