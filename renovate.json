@@ -1,11 +1,8 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "github>konflux-ci/mintmaker//config/renovate/renovate.json",
-    "config:best-practices"
+    "github>conforma/.github//config/renovate/renovate.json"
   ],
-  "timezone": "America/New_York",
-  "schedule": ["* * * * 0"],
   "baseBranches": ["main", "release-v0.5", "release-v0.6"],
   "packageRules": [
     {
@@ -22,46 +19,6 @@
       "matchManagers": ["asdf"],
       "matchDepNames": ["golang"],
       "enabled": false
-    },
-    {
-      "matchManagers": ["asdf"],
-      "groupName": "asdf Updates"
-    },
-    {
-      "matchManagers": ["dockerfile"],
-      "groupName": "Dockerfile Updates"
-    },
-    {
-      "matchManagers": ["gomod"],
-      "matchPaths": ["/"],
-      "groupName": "gomod / Updates"
-    },
-    {
-      "matchManagers": ["gomod"],
-      "matchPaths": ["/tools/kubectl/"],
-      "groupName": "gomod Kubectl Updates"
-    },
-    {
-      "matchManagers": ["gomod"],
-      "matchPaths": ["/tools/"],
-      "groupName": "gomod Tools Updates"
-    },
-    {
-      "matchManagers": ["gomod"],
-      "matchPaths": ["/acceptance/"],
-      "groupName": "gomod Acceptance Test Updates"
-    },
-    {
-      "matchManagers": ["kustomize"],
-      "groupName": "Kustomize Updates"
-    },
-    {
-      "matchManagers": ["pre-commit"],
-      "groupName": "Pre-commit Updates"
-    },
-    {
-      "matchManagers": ["tekton"],
-      "groupName": "Tekton Updates"
     }
   ]
 }
