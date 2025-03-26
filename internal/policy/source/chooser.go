@@ -37,7 +37,7 @@ var policyFileExtensions = []string{
 	"yml",
 }
 
-// choosePolicyFile picks a file from a given directory to use as an EC policy file
+// choosePolicyFile picks a file from a given directory to use as an Conforma policy file
 // Uses policyFileBaseNames and policyFileExtensions to decide what to look for
 func choosePolicyFile(ctx context.Context, configDir string) (string, error) {
 	fs := utils.FS(ctx)

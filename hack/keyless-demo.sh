@@ -15,7 +15,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-# The EC golden container, see https://github.com/enterprise-contract/golden-container/
+# The Conforma golden container, see https://github.com/enterprise-contract/golden-container/
 IMAGE=${IMAGE:-"ghcr.io/enterprise-contract/golden-container:latest"}
 IDENTITY_REGEXP=${IDENTITY_REGEXP:-"https:\/\/github\.com\/(slsa-framework\/slsa-github-generator|enterprise-contract\/golden-container)\/"}
 IDENTITY_ISSUER=${IDENTITY_ISSUER:-"https://token.actions.githubusercontent.com"}

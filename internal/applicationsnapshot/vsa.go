@@ -22,7 +22,7 @@ import (
 
 const (
 	// Make it visible elsewhere
-	PredicateVSAProvenance = "https://enterprisecontract.dev/verification_summary/v1"
+	PredicateVSAProvenance = "https://conforma.dev/verification_summary/v1"
 	StatmentVSA            = "https://in-toto.io/Statement/v1"
 )
 

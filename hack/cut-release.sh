@@ -107,7 +107,7 @@ Add the new release under /spec/applications and /spec/data/mapping/components a
 
 $(nice_title Confirming it\'s working)
 
-Make sure builds are green in the new release branch, and sure they're passing EC:
+Make sure builds are green in the new release branch, and sure they're passing Conforma policy:
 https://console.redhat.com/application-pipeline/workspaces/rhtap-contract/applications/${KONFLUX_APPLICATION_NAME}/activity/pipelineruns
 
 Check that a new release appeared in the releases tab:

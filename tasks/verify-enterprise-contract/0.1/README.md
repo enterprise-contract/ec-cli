@@ -15,7 +15,7 @@ kubectl apply -f https://raw.githubusercontent.com/enterprise-contract/ec-cli/ma
 * **IMAGES**: A JSON formatted list of images.
 ### Optional
 * **POLICY_CONFIGURATION**: Name or inline policy in JSON configuration to use. For name `namespace/name` or `name` syntax supported. If
-        namespace is omitted the namespace where the task runs is used. For inline policy provide the [specification](https://enterprisecontract.dev/docs/ecc/reference.html#k8s-api-github-com-enterprise-contract-enterprise-contract-controller-api-v1alpha1-enterprisecontractpolicyspec) as JSON.
+        namespace is omitted the namespace where the task runs is used. For inline policy provide the [specification](https://conforma.dev/docs/ecc/reference.html#k8s-api-github-com-enterprise-contract-enterprise-contract-controller-api-v1alpha1-enterprisecontractpolicyspec) as JSON.
 * **PUBLIC_KEY**: Public key used to verify signatures. Must be a valid k8s cosign
         reference, e.g. k8s://my-space/my-secret where my-secret contains
         the expected cosign.pub attribute.
@@ -32,7 +32,7 @@ kubectl apply -f https://raw.githubusercontent.com/enterprise-contract/ec-cli/ma
 
 ## Usage
 
-This TaskRun runs the Task to verify an image. This assumes a policy is created and stored on the cluster with hte namespaced name of `enterprise-contract-service/default`. For more information on creating a policy, refer to the Enterprise Contract [documentation](https://enterprisecontract.dev/docs/ecc/index.html).
+This TaskRun runs the Task to verify an image. This assumes a policy is created and stored on the cluster with hte namespaced name of `enterprise-contract-service/default`. For more information on creating a policy, refer to the Conforma [documentation](https://conforma.dev/docs/ecc/index.html).
 
 ```yaml
 apiVersion: tekton.dev/v1

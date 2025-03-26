@@ -66,7 +66,7 @@ func TestNewVSA(t *testing.T) {
 	expected := ProvenanceStatementVSA{
 		StatementHeader: in_toto.StatementHeader{
 			Type:          "https://in-toto.io/Statement/v1",
-			PredicateType: "https://enterprisecontract.dev/verification_summary/v1",
+			PredicateType: "https://conforma.dev/verification_summary/v1",
 			Subject:       nil,
 		},
 		Predicate: report,

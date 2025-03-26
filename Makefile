@@ -11,7 +11,7 @@ ALL_SUPPORTED_IMG_OS_ARCH:=$(filter-out $(UNSUPPORTED_OS_ARCH_IMG),$(subst dist/
 _SHELL := bash
 SHELL=$(if $@,$(info ❱ [1m$@[0m))$(_SHELL)
 ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
-COPY:=The Enterprise Contract Contributors
+COPY:=The Conforma Contributors
 COSIGN_VERSION=$(shell go list -f '{{.Version}}' -m github.com/sigstore/cosign/v2)
 
 ##@ Information

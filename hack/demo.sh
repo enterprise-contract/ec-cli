@@ -44,11 +44,11 @@ metadata:
   namespace: demo
   name: ec-demo
 spec:
-  description: Demo Enterprise Contract policy configuration
+  description: Demo Conforma policy configuration
   sources:
   - data:
     - git::https://github.com/enterprise-contract/ec-policies//example/data
-    name: Default EC policy
+    name: Default Conforma policy
     policy:
     - quay.io/enterprise-contract/ec-release-policy:latest
 EOF

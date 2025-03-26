@@ -242,7 +242,7 @@ func documentationUrl(a *ast.AnnotationsRef) string {
 	}
 
 	// Notes:
-	// - This makes the assumption that we're looking at our own EC rules with
+	// - This makes the assumption that we're looking at our own Conforma rules with
 	//   docs in the enterprise-contract github pages. That's not likely to be true
 	//   always. A future improvement for this might include a way to extract a
 	//   docs url from a package annotation instead using the hard-coded url here.
@@ -250,7 +250,7 @@ func documentationUrl(a *ast.AnnotationsRef) string {
 	//     data.policy.release.some_package_name.deny
 	//   Avoid errors indexing pathStrings and also try to avoid showing a url
 	//   if it's unlikely to be a real link to existing docs.
-	ruleDocUrlFormat := "https://enterprisecontract.dev/docs/ec-policies/%s_policy.html#%s__%s"
+	ruleDocUrlFormat := "https://conforma.dev/docs/ec-policies/%s_policy.html#%s__%s"
 	pathStrings := strings.Split(a.Path.String(), ".")
 	shortName := shortName(a)
 	if len(pathStrings) == 5 && pathStrings[1] == "policy" && shortName != "" {
