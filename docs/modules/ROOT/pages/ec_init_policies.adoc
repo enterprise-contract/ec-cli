@@ -7,8 +7,8 @@ Initialize a directory with minimal EC scaffolding
 This command creates the necessary files for a minimal EC policy setup in the
 specified destination directory.
 
-More information about authoring policies is available in the EC documentation:
-https://enterprisecontract.dev/docs/ec-policies/authoring.html
+More information about authoring policies is available in the Conforma documentation:
+https://conforma.dev/docs/ec-policies/authoring.html
 
 [source,shell]
 ----
