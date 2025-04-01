@@ -1,4 +1,4 @@
-// Copyright The Enterprise Contract Contributors
+// Copyright The Conforma Contributors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import (
 
 const (
 	// Make it visible elsewhere
-	PredicateVSAProvenance = "https://enterprisecontract.dev/verification_summary/v1"
+	PredicateVSAProvenance = "https://conforma.dev/verification_summary/v1"
 	StatmentVSA            = "https://in-toto.io/Statement/v1"
 )
 

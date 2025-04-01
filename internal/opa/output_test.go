@@ -1,4 +1,4 @@
-// Copyright The Enterprise Contract Contributors
+// Copyright The Conforma Contributors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -66,7 +66,7 @@ func Test_RegoTextOutput(t *testing.T) {
 				# Source: spam.io/bacon-bundle
 
 				policy.foo.bar.rule_title (deny)
-				https://enterprisecontract.dev/docs/ec-policies/foo_policy.html#bar__rule_title
+				https://conforma.dev/docs/ec-policies/foo_policy.html#bar__rule_title
 				Rule title
 				Rule description
 				--
