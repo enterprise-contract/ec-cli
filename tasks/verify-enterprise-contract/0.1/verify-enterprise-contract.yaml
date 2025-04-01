@@ -330,6 +330,19 @@ spec:
       args:
         - version
 
+    - name: show-config
+      computeResources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          memory: 256Mi
+      image: quay.io/enterprise-contract/ec-cli:snapshot
+      command: [jq]
+      args:
+        - ".policy"
+        - "$(params.HOMEDIR)/report-json.json"
+
     - name: debug-log
       computeResources:
         requests:
