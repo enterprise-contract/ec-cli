@@ -611,6 +611,119 @@ JSON::
 }
 ----
 ====
+NOTE: It is possible to add multiple data sources.
+
+[tabs]
+====
+YAML::
++
+[source,yaml]
+----
+sources:
+  - policy:
+      - git::https://github.com/enterprise-contract/ec-policies.git//policy
+    data:
+      - oci::quay.io/lucarval/policy-data:latest
+      - oci::quay.io/lucarval/additional-policy-data:latest
+    ruleData:
+      rule_data_custom:
+        allowed_registry_prefixes:
+          - trusted-registry.io/trusted-images/
+          - docker.io/acme-company/
+----
+JSON::
++
+[source,json]
+----
+{
+  "sources": [
+    {
+      "policy": ["git::https://github.com/enterprise-contract/ec-policies.git//policy"],
+      "data": [
+        "oci::quay.io/lucarval/policy-data:latest",
+        "oci::quay.io/lucarval/additional-policy-data:latest"
+      ]
+      "ruleData": {
+        "rule_data_custom": {
+          "allowed_registry_prefixes": [
+            "trusted-registry.io/trusted-images/",
+            "docker.io/acme-company/"
+          ]
+        }
+      }
+    }
+  ]
+}
+----
+====
+
+WARNING: There must not be any duplicate entries under a top level key in the data sources. If there are, it will result in a merge error and failure.
+
+NOTE: This example shows two data files, each from a different source, which would be valid
+
+File 1:
+[tabs]
+====
+YAML::
++
+[source,yaml]
+----
+trusted_tasks:   
+  git+https://github.com/konflux-ci/build-definitions.git//task/acs-deploy-check/0.1/acs-deploy-check.yaml:
+    - effective_on: "2025-04-10T00:00:00Z"
+      ref: 9f4fd8ca58128998e9a4ccce4bc1323f7e60fa23
+
+----
+====
+
+File 2:
+[tabs]
+====
+YAML::
++
+[source,yaml]
+----
+trusted_tasks:   
+  git+https://github.com/konflux-ci/build-definitions.git//task/acs-deploy-check/0.2/acs-deploy-check.yaml:
+    - effective_on: "2025-04-10T00:00:00Z"
+      ref: 6ab75f26ff7b66a01ddb20545adaada69ab4d3ab
+----
+====
+This example is valid as the trusted task entries are unique, as one specifies the 0.1 version, while the other specifies the 0.2 version.
+
+NOTE: This example shows two data files, each from a different source, which would be invalid
+
+File 1:
+[tabs]
+====
+YAML::
++
+[source,yaml]
+----
+trusted_tasks:   
+  git+https://github.com/konflux-ci/build-definitions.git//task/acs-deploy-check/0.1/acs-deploy-check.yaml:
+    - effective_on: "2025-04-10T00:00:00Z"
+      ref: 9f4fd8ca58128998e9a4ccce4bc1323f7e60fa23
+
+----
+====
+
+File 2:
+[tabs]
+====
+YAML::
++
+[source,yaml]
+----
+trusted_tasks:   
+  git+https://github.com/konflux-ci/build-definitions.git//task/acs-deploy-check/0.1/acs-deploy-check.yaml:
+    - effective_on: "2025-03-20T00:00:00Z"
+      expires_on: "2025-04-10T00:00:00Z"
+      ref: 6ab75f26ff7b66a01ddb20545adaada69ab4d3ab
+----
+====
+This example is invalid as the trusted task entries are not unique, as both specify the same URL for the task entry.
+
 == Policy & Data Source URL formats
 
 The `policy` and `data` fields in the configuration represent the URI of the policy and data sources, respectively. The following formats are supported:
