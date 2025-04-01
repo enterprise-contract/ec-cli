@@ -4,22 +4,5 @@
     "github>konflux-ci/mintmaker//config/renovate/renovate.json",
     "github>conforma/.github//config/renovate/renovate.json"
   ],
-  "baseBranches": ["main", "release-v0.5", "release-v0.6"],
-  "packageRules": [
-    {
-      "matchManagers": ["dockerfile"],
-      "matchDepNames": ["docker.io/library/golang"],
-      "enabled": false
-    },
-    {
-      "matchManagers": ["gomod"],
-      "matchDepNames": ["go"],
-      "enabled": false
-    },
-    {
-      "matchManagers": ["asdf"],
-      "matchDepNames": ["golang"],
-      "enabled": false
-    }
-  ]
+  "baseBranches": ["main", "release-v0.5", "release-v0.6"]
 }
