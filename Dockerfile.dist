@@ -18,7 +18,7 @@
 
 # Ideally, use the official image from Red Hat, e.g. registry.access.redhat.com/ubi9/go-toolset,
 # but a 1.22 release does not yet exist.
-FROM brew.registry.redhat.io/rh-osbs/openshift-golang-builder:v1.22@sha256:859b38e6f53f49350402ca0a8dc342402f0afd8434c2f8984a7a3e714173cdca AS build
+FROM brew.registry.redhat.io/rh-osbs/openshift-golang-builder:v1.23.6@sha256:0a070e4a8f2698b6aba3630a49eb995ff1b0a182d0c5fa264888acf9d535f384 AS build
 
 ARG TARGETOS
 ARG TARGETARCH

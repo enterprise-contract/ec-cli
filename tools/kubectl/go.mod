@@ -1,6 +1,6 @@
 module github.com/enterprise-contract/ec-cli/tools/kubectl
 
-go 1.22.5
+go 1.23.6
 
 require k8s.io/kubernetes v1.31.6
 
