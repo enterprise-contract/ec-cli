@@ -16,7 +16,7 @@
 
 ## Build
 
-FROM docker.io/library/golang:1.22.7 AS build
+FROM docker.io/library/golang:1.23.6 AS build
 
 ARG TARGETOS
 ARG TARGETARCH
@@ -41,25 +41,21 @@ COPY . .
 
 RUN /build/build.sh "${BUILD_LIST}" "${BUILD_SUFFIX}"
 
-## Final image
-
 FROM registry.access.redhat.com/ubi9/ubi-minimal:9.5@sha256:bafd57451de2daa71ed301b277d49bd120b474ed438367f087eac0b885a668dc
 
 ARG TARGETOS
 ARG TARGETARCH
 
-ARG CLI_NAME="Conforma"
-
 LABEL \
   name="ec-cli" \
-  description="${CLI_NAME} verifies and checks supply chain artifacts to ensure they meet security and business policies." \
-  io.k8s.description="${CLI_NAME} verifies and checks supply chain artifacts to ensure they meet security and business policies." \
-  summary="Provides the binaries for downloading the ${CLI_NAME} CLI. Also used as a runner image for Tekton tasks." \
-  io.k8s.display-name="${CLI_NAME}" \
-  io.openshift.tags="conforma ec opa cosign sigstore"
+  description="Enterprise Contract verifies and checks supply chain artifacts to ensure they meet security and business policies." \
+  io.k8s.description="Enterprise Contract verifies and checks supply chain artifacts to ensure they meet security and business policies." \
+  summary="Provides the binaries for downloading the EC CLI. Also used as a Tekton task runner image for EC tasks. Upstream build." \
+  io.k8s.display-name="Enterprise Contract" \
+  io.openshift.tags="enterprise-contract ec opa cosign sigstore"
 
 # Install tools we want to use in the Tekton task
-RUN microdnf upgrade --assumeyes --nodocs --setopt=keepcache=0 --refresh && microdnf -y --nodocs --setopt=keepcache=0 install gzip jq ca-certificates
+RUN microdnf upgrade --assumeyes --nodocs --setopt=keepcache=0 --refresh && microdnf -y --nodocs --setopt=keepcache=0 install git-core jq
 
 # Copy all the binaries so they're available to extract and download
 # (Beware if you're testing this locally it will copy everything from
@@ -76,9 +72,6 @@ COPY --from=build "/build/dist/ec_${TARGETOS}_${TARGETARCH}" /usr/local/bin/ec
 # Copy the one kubectl binary that can run in this container
 COPY --from=build "/build/dist/kubectl_${TARGETOS}_${TARGETARCH}" /usr/local/bin/kubectl
 
-# Copy reduce-snapshot script needed for single component mode
-COPY hack/reduce-snapshot.sh /usr/local/bin
-
 # OpenShift preflight check requires a license
 COPY --from=build /build/LICENSE /licenses/LICENSE
 
@@ -86,6 +79,6 @@ COPY --from=build /build/LICENSE /licenses/LICENSE
 USER 1001
 
 # Show some version numbers for troubleshooting purposes
-RUN jq --version && ec version && ls -l /usr/local/bin
+RUN git version && jq --version && ec version && ls -l /usr/local/bin
 
 ENTRYPOINT ["/usr/local/bin/ec"]

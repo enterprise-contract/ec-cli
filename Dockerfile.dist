@@ -18,7 +18,7 @@
 
 # Ideally, use the official image from Red Hat, e.g. registry.access.redhat.com/ubi9/go-toolset,
 # but a 1.22 release does not yet exist.
-FROM brew.registry.redhat.io/rh-osbs/openshift-golang-builder:v1.22.7@sha256:376dd8d1291580a32824c7a072b72e1dce524bb9d300393b656931ba6156b86d AS build
+FROM brew.registry.redhat.io/rh-osbs/openshift-golang-builder:v1.23.6@sha256:0a070e4a8f2698b6aba3630a49eb995ff1b0a182d0c5fa264888acf9d535f384 AS build
 
 ARG TARGETOS
 ARG TARGETARCH
@@ -50,19 +50,17 @@ FROM registry.access.redhat.com/ubi9/ubi-minimal:9.5@sha256:bafd57451de2daa71ed3
 ARG TARGETOS
 ARG TARGETARCH
 
-ARG CLI_NAME="Enterprise Contract"
-
 LABEL \
   name="ec-cli" \
-  description="${CLI_NAME} verifies and checks supply chain artifacts to ensure they meet security and business policies." \
-  io.k8s.description="${CLI_NAME} verifies and checks supply chain artifacts to ensure they meet security and business policies." \
-  summary="Provides the binaries for downloading the ${CLI_NAME} CLI. Also used as a runner image for Tekton tasks." \
-  io.k8s.display-name="${CLI_NAME}" \
-  io.openshift.tags="rhtas rhtap trusted-artifact-signer trusted-application-pipeline enterprise-contract conforma ec opa cosign sigstore" \
+  description="Enterprise Contract verifies and checks supply chain artifacts to ensure they meet security and business policies." \
+  io.k8s.description="Enterprise Contract verifies and checks supply chain artifacts to ensure they meet security and business policies." \
+  summary="Provides the binaries for downloading the EC CLI. Also used as a Tekton task runner image for EC tasks. Red Hat build." \
+  io.k8s.display-name="Enterprise Contract for Red Hat Trusted Artifact Signer" \
+  io.openshift.tags="rhtas rhtap trusted-artifact-signer trusted-application-pipeline enterprise-contract ec opa cosign sigstore" \
   com.redhat.component="ec-cli"
 
 # Install tools we want to use in the Tekton task
-RUN microdnf upgrade --assumeyes --nodocs --setopt=keepcache=0 --refresh && microdnf -y --nodocs --setopt=keepcache=0 install gzip jq ca-certificates
+RUN microdnf upgrade --assumeyes --nodocs --setopt=keepcache=0 --refresh && microdnf -y --nodocs --setopt=keepcache=0 install git-core jq
 
 # Copy all the binaries so they're available to extract and download
 # (Beware if you're testing this locally it will copy everything from
@@ -79,9 +77,6 @@ COPY --from=build "/build/dist/ec_${TARGETOS}_${TARGETARCH}" /usr/local/bin/ec
 # Copy the one kubectl binary that can run in this container
 COPY --from=build "/build/dist/kubectl_${TARGETOS}_${TARGETARCH}" /usr/local/bin/kubectl
 
-# Copy reduce-snapshot script needed for single component mode
-COPY hack/reduce-snapshot.sh /usr/local/bin
-
 # OpenShift preflight check requires a license
 COPY --from=build /build/LICENSE /licenses/LICENSE
 
@@ -89,6 +84,6 @@ COPY --from=build /build/LICENSE /licenses/LICENSE
 USER 1001
 
 # Show some version numbers for troubleshooting purposes
-RUN jq --version && ec version && ls -l /usr/local/bin
+RUN git version && jq --version && ec version && ls -l /usr/local/bin
 
 ENTRYPOINT ["/usr/local/bin/ec"]
