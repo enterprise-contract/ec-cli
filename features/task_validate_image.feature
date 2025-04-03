@@ -257,6 +257,7 @@ Feature: Verify Enterprise Contract Tekton Tasks
     And the task logs for step "initialize-tuf" should match the snapshot
      And the task logs for step "report" should match the snapshot
      And the task logs for step "summary" should match the snapshot
+     And the task logs for step "show-config" should match the snapshot
      And the task logs for step "assert" should match the snapshot
      And the task logs for step "report-json" should match the snapshot
      And the task results should match the snapshot
