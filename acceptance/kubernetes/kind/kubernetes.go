@@ -249,6 +249,11 @@ func stringParam(ctx context.Context, name, value string, t *testState) pipeline
 		"POLICY_NAME": t.policy,
 		"REGISTRY":    t.registry,
 	}
+
+	if t.snapshotDigest != "" {
+		vars["BUILD_SNAPSHOT_DIGEST"] = t.snapshotDigest
+	}
+
 	publicKeys := crypto.PublicKeysFrom(ctx)
 	for name, key := range publicKeys {
 		vars[fmt.Sprintf("%s_PUBLIC_KEY", name)] = key

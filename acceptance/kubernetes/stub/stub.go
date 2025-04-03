@@ -202,3 +202,7 @@ func (s stubCluster) Stop(ctx context.Context) (context.Context, error) {
 func (s stubCluster) Registry(ctx context.Context) (string, error) {
 	return registry.Url(ctx)
 }
+
+func (s stubCluster) BuildSnapshotArtifact(ctx context.Context, content string) (context.Context, error) {
+	return ctx, nil
+}

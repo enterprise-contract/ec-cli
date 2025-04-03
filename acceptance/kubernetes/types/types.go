@@ -32,6 +32,7 @@ type Cluster interface {
 	TaskInfo(context.Context) (*TaskInfo, error)
 	CreateNamedSnapshot(context.Context, string, string) error
 	Registry(context.Context) (string, error)
+	BuildSnapshotArtifact(context.Context, string) (context.Context, error)
 }
 
 type TaskInfo struct {

@@ -114,6 +114,17 @@ func createNamespace(ctx context.Context) (context.Context, error) {
 	return c.cluster.CreateNamespace(ctx)
 }
 
+func buildSnapshotArtifact(ctx context.Context, specification *godog.DocString) (context.Context, error) {
+	c := testenv.FetchState[ClusterState](ctx)
+
+	if err := mustBeUp(ctx, *c); err != nil {
+		return ctx, err
+	}
+
+	return c.cluster.BuildSnapshotArtifact(ctx, specification.Content)
+
+}
+
 func createNamedPolicy(ctx context.Context, name string, specification *godog.DocString) error {
 	c := testenv.FetchState[ClusterState](ctx)
 
@@ -289,7 +300,7 @@ func logTaskOutput(ctx context.Context, c ClusterState) error {
 	w := tabwriter.NewWriter(&buffy, 10, 1, 2, ' ', 0)
 
 	fmt.Fprintf(w, "%s\t%s\n", clr.Bold("Namespace"), info.Namespace)
-	fmt.Fprintf(w, "%s\t%s\n", clr.Bold("Name"), info.Name)
+	fmt.Fprintf(w, "%s\t%s\n", clr.Bold("TaskRunName2"), info.Name)
 	fmt.Fprintf(w, "%s\t%s", clr.Bold("Status"), info.Status)
 	w.Flush()
 	outputSegment("TaskRun", buffy.String())
@@ -453,6 +464,7 @@ func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^a stub cluster running$`, startAndSetupState(stub.Start))
 	sc.Step(`^a cluster running$`, startAndSetupState(kind.Start))
 	sc.Step(`^a working namespace$`, createNamespace)
+	sc.Step(`^a snapshot artifact with content:$`, buildSnapshotArtifact)
 	sc.Step(`^policy configuration named "([^"]*)" with specification$`, createNamedPolicy)
 	sc.Step(`^a cluster policy with content:$`, createPolicy)
 	sc.Step(`^version ([\d.]+) of the task named "([^"]*)" is run with parameters:$`, runTask)
