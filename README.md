@@ -40,7 +40,24 @@ The `--debug` parameter enables debug logging. Setting `EC_DEBUG` environment
 variable can be set to prevent deletion of temporary `ec-work-*` directories so
 that the attestations, policy and data files can be examined.
 
-1. When running acceptance tests you may experience issues with starting enough Docker containers to successfully complete testing. These issues may appear as repeated failures, such as seen below, and a failed acceptance test run:
+#### **1. Go Module Checksum Mismatch Error**
+
+When downloading dependencies, you might encounter a checksum mismatch error like this:
+```
+go: downloading github.com/googleapis/enterprise-certificate-proxy v0.3.3
+verifying github.com/googleapis/enterprise-certificate-proxy@v0.3.3: checksum mismatch
+        downloaded: h1:G6q7VHBoU74wQHXFsZSLMPl0rFw0ZDrlZ3rt6/aTBII=
+        go.sum:     h1:QRje2j5GZimBzlbhGA2V2QlGNgL8G6e+wGo/+/2bWI0=
+```
+
+This issue may be resolved by running the following command to set the Go proxy, which helps resolve checksum mismatches:
+``` bash
+$ go env -w GOPROXY='https://proxy.golang.org,direct'
+```
+
+#### **2. Docker Container Start Failures in Acceptance Tests**
+
+When running acceptance tests you may experience issues with starting enough Docker containers to successfully complete testing. These issues may appear as repeated failures, such as seen below, and a failed acceptance test run:
 ```
 time="2024-03-08T09:10:50-05:00" level=warning msg="Failed, retrying in 1s ... (3/3). Error: trying to reuse blob sha256:b5976a979c30628edfeee0a1f1797362b0c84cf6cb4760776aa64ec8e3e4c2b3 at destination: pinging container registry localhost:37837: Get \"http://localhost:37837/v2/\": read tcp 127.0.0.1:34090->127.0.0.1:37837: read: connection reset by peer"
 ```
@@ -50,7 +67,9 @@ This issue may be resolved by increasing the total number of `fs.inotify.max_use
 $ echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
 ```
 
-2. Apiserver and Rekor Host Resolution Failure: While running the acceptance tests, if you encounter issues related to apiserver and rekor hosts, like:
+#### **3. Apiserver and Rekor Host Resolution Failure**
+
+Apiserver and Rekor Host Resolution Failure: While running the acceptance tests, if you encounter issues related to apiserver and rekor hosts, like:
 ```
 + Error: unable to fetch EnterpriseContractPolicy: Get "http://apiserver.localhost:32971/apis/appstudio.redhat.com/v1alpha1/namespaces/acceptance/enterprisecontractpolicies/mismatched-image-digest": dial tcp: lookup apiserver.localhost on 127.0.0.1:53: no such host
 
