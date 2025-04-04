@@ -25,7 +25,11 @@ import (
 	"path/filepath"
 	"strings"
 
+	imagespecv1 "github.com/opencontainers/image-spec/specs-go/v1"
 	v1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
+	"oras.land/oras-go/v2"
+	orasFile "oras.land/oras-go/v2/content/file"
+	"oras.land/oras-go/v2/registry/remote"
 	"sigs.k8s.io/yaml"
 )
 
@@ -138,6 +142,68 @@ func (k *kindCluster) buildTaskBundleImage(ctx context.Context) error {
 			fmt.Print(string(out))
 			return err
 		}
+	}
+
+	return nil
+}
+func (k *kindCluster) buildSnapshotArtifact(ctx context.Context) error {
+	artifactName := "snapshotartifact"
+	jsonContent := []byte(`{
+		"components": [
+			{
+			"containerImage": "quay.io/example/repo:latest"
+			}
+		]
+		}`)
+
+	filePath := fmt.Sprintf("/tmp/%s", artifactName)
+	if err := os.WriteFile(filePath, jsonContent, 0644); err != nil {
+		return fmt.Errorf("failed to write JSON to file: %w", err)
+	}
+
+	fs, err := orasFile.New("/tmp/")
+	if err != nil {
+		return fmt.Errorf("falied to create /tmp dir: %w", err)
+	}
+	defer fs.Close()
+
+	mediaType := "application/vnd.test.file"
+	fileNames := []string{filePath}
+	fileDescriptors := make([]imagespecv1.Descriptor, 0, len(fileNames))
+	for _, name := range fileNames {
+		fileDescriptor, err := fs.Add(ctx, name, mediaType, "")
+		if err != nil {
+			return fmt.Errorf("failed to add file %s: %w", name, err)
+		}
+		fileDescriptors = append(fileDescriptors, fileDescriptor)
+		fmt.Printf("file descriptor for %s: %v\n", name, fileDescriptor)
+	}
+
+	artifactType := "application/vnd.test.artifact"
+	opts := oras.PackManifestOptions{
+		Layers: fileDescriptors,
+	}
+	manifestDescriptor, err := oras.PackManifest(ctx, fs, oras.PackManifestVersion1_1, artifactType, opts)
+	if err != nil {
+		return fmt.Errorf("failed creating manifestDescriptor: %w", err)
+	}
+	fmt.Println("manifest descriptor:", manifestDescriptor)
+
+	tag := "latest"
+	if err = fs.Tag(ctx, manifestDescriptor, tag); err != nil {
+		return fmt.Errorf("failed to tag image: %w", err)
+	}
+
+	repo, err := remote.NewRepository(fmt.Sprintf("127.0.0.1:%d/%s", k.registryPort, artifactName))
+	if err != nil {
+		return fmt.Errorf("failed to create repo: %w", err)
+	}
+	// the registry is insecure
+	repo.PlainHTTP = true
+
+	_, err = oras.Copy(ctx, fs, tag, repo, tag, oras.DefaultCopyOptions)
+	if err != nil {
+		return fmt.Errorf("failed to copy %s: %w", artifactName, err)
 	}
 
 	return nil

@@ -255,6 +255,12 @@ func Start(givenCtx context.Context) (ctx context.Context, kCluster types.Cluste
 			return
 		}
 
+		err = kCluster.buildSnapshotArtifact(ctx)
+		if err != nil {
+			logger.Errorf("Unable to build snapshotArtifact: %v", err)
+			return
+		}
+
 		globalCluster = &kCluster
 
 		logger.Log("Cluster started")
