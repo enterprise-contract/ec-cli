@@ -29,9 +29,17 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-# verify if in json form
-SNAPSHOT="$(cat "${SNAPSHOT}" 2> /dev/null || echo "${SNAPSHOT}")"
-[[ ! "${SNAPSHOT}" =~ ^\s*\{ ]] && echo 'Error: Cannot load snapshot from JSON string or file' && exit 1
+
+# Make sure to move snapshot contents to the WORKING_SNAPSHOT location. Then allow jq to
+# work with it there. This avoids having to read SNAPSHOT to memory.
+
+if [[ -f "$SNAPSHOT" ]]; then
+  WORKING_SNAPSHOT="$SNAPSHOT"
+else
+  WORKING_SNAPSHOT="$(mktemp "${HOME:-/tmp}/snapshot.XXXXXX")"
+  printf "%s" "$SNAPSHOT" > "$WORKING_SNAPSHOT"
+fi
+jq empty "$WORKING_SNAPSHOT" || { echo "JSON is invalid"; exit 1; }
 
 echo "Single Component mode? ${SINGLE_COMPONENT}"
 if [ "${SINGLE_COMPONENT}" == "true" ]; then
@@ -40,6 +48,7 @@ if [ "${SINGLE_COMPONENT}" == "true" ]; then
   if [ "${CUSTOM_RESOURCE_NAMESPACE}" != "" ]; then
     CR_NAMESPACE_ARG="-n ${CUSTOM_RESOURCE_NAMESPACE}"
   fi
+
   SNAPSHOT_CREATION_TYPE=$(kubectl get "$CUSTOM_RESOURCE" ${CR_NAMESPACE_ARG:+$CR_NAMESPACE_ARG} -ojson \
       | jq -r '.metadata.labels."test.appstudio.openshift.io/type" // ""')
   SNAPSHOT_CREATION_COMPONENT=$(kubectl get "$CUSTOM_RESOURCE" ${CR_NAMESPACE_ARG:+$CR_NAMESPACE_ARG} -ojson \
@@ -50,11 +59,13 @@ if [ "${SINGLE_COMPONENT}" == "true" ]; then
   if [ "${SNAPSHOT_CREATION_TYPE}" == "component" ] && [ "${SNAPSHOT_CREATION_COMPONENT}" != "" ]; then
     echo "Single Component mode is ${SINGLE_COMPONENT} and Snapshot type is component"
 
-    SNAPSHOT=$(echo "${SNAPSHOT}" | jq --arg component "${SNAPSHOT_CREATION_COMPONENT}" \
-    'del(.components[] | select(.name != $component))')
+    REDUCED_SNAPSHOT="$(mktemp /tmp/snapshot_reduced.XXXXXX)"
+    jq --arg component "${SNAPSHOT_CREATION_COMPONENT}" \
+    'del(.components[] | select(.name != $component))' "$WORKING_SNAPSHOT" > "$REDUCED_SNAPSHOT"
 
+    mv "$REDUCED_SNAPSHOT" "$WORKING_SNAPSHOT"
     ## make sure we still have 1 component
-    COMPONENT_COUNT=$(echo "$SNAPSHOT" | jq -r '[ .components[] ] | length')
+    COMPONENT_COUNT=$(jq -r '[ .components[] ] | length' "$WORKING_SNAPSHOT")
     echo "COMPONENT_COUNT: ${COMPONENT_COUNT}"
     if [ "${COMPONENT_COUNT}" != "1" ] ; then
       echo "Error: Reduced Snapshot has ${COMPONENT_COUNT} components. It should contain 1"
@@ -65,4 +76,4 @@ if [ "${SINGLE_COMPONENT}" == "true" ]; then
 fi
 
 # we need to create snapshot file to be passed to later stages.
-echo "${SNAPSHOT}" | jq '.' | tee "${SNAPSHOT_PATH}"
+jq '.' "${WORKING_SNAPSHOT}" | tee "${SNAPSHOT_PATH}"
