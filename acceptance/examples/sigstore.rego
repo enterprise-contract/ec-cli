@@ -40,6 +40,16 @@ _errors contains error if {
 }
 
 _errors contains error if {
+	opts := {k: v |
+		some k, v in data.config.default_sigstore_opts
+		v != ""
+	}
+	info := ec.sigstore.verify_image(_image_ref, opts)
+	some raw_error in info.errors
+	error := sprintf("image incomplete sigstore opts (%s): %s", [opts, raw_error])
+}
+
+_errors contains error if {
 	info := ec.sigstore.verify_attestation(_image_ref, _sigstore_opts)
 	some raw_error in info.errors
 	error := sprintf("image attestation verification failed: %s", [raw_error])
@@ -80,6 +90,16 @@ _errors contains error if {
 	builder_id := _builder_id(att)
 	builder_id != "https://tekton.dev/chains/v2"
 	error := sprintf("unexpected builder ID: %s", [builder_id])
+}
+
+_errors contains error if {
+	opts := {k: v |
+		some k, v in data.config.default_sigstore_opts
+		v != ""
+	}
+	info := ec.sigstore.verify_attestation(_image_ref, opts)
+	some raw_error in info.errors
+	error := sprintf("attestation incomplete sigstore opts (%s): %s", [opts, raw_error])
 }
 
 _image_ref := input.image.ref

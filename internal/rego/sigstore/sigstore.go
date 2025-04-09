@@ -24,6 +24,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/open-policy-agent/opa/ast"
@@ -32,6 +33,7 @@ import (
 	"github.com/open-policy-agent/opa/types"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
 	"github.com/sigstore/cosign/v2/pkg/oci"
+	"github.com/sigstore/sigstore/pkg/tuf"
 
 	"github.com/enterprise-contract/ec-cli/internal/attestation"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
@@ -52,23 +54,36 @@ const (
 	ignoreRekorAttribute                 = "ignore_rekor"
 	publicKeyAttribute                   = "public_key"
 	rekorURLAttribute                    = "rekor_url"
+	rekorPublicKeyAttribute              = "rekor_public_key"
 )
 
 var ociImageReferenceParameter = types.Named("ref", types.S).Description("OCI image reference")
 
 var sigstoreOptsParameter = types.Named("opts",
+	// The definition below helps the compiler determine if the rego code is valid without having to
+	// execute it. This is very helpful for policy authors as it integrates nicely with IDEs, but
+	// getting this right is tricky. StaticProperties are always required, while DynamicProperties
+	// are restricted to a single type. The approach below is a compromise. Not all parameters are
+	// required, unless it's not a string which is currently just the `ignore_rekor` parameter. This
+	// makes adding new parameters not a breaking change, unless, of course, it's not of type
+	// string.
 	types.NewObject(
 		[]*types.StaticProperty{
-			{Key: certificateIdentityAttribute, Value: types.S},
-			{Key: certificateIdentityRegExpAttribute, Value: types.S},
-			{Key: certificateOIDCIssuerAttribute, Value: types.S},
-			{Key: certificateOIDCIssuerRegExpAttribute, Value: types.S},
 			{Key: ignoreRekorAttribute, Value: types.B},
-			{Key: publicKeyAttribute, Value: types.S},
-			{Key: rekorURLAttribute, Value: types.S},
 		},
-		nil,
-	)).Description("Sigstore verification options")
+		types.NewDynamicProperty(types.S, types.S),
+	)).Description(
+	fmt.Sprintf("Sigstore verification options. Dynamic string properties: `%s`.",
+		strings.Join([]string{
+			certificateIdentityAttribute,
+			certificateIdentityRegExpAttribute,
+			certificateOIDCIssuerAttribute,
+			certificateOIDCIssuerRegExpAttribute,
+			publicKeyAttribute,
+			rekorURLAttribute,
+			rekorPublicKeyAttribute,
+		}, "`, `"),
+	))
 
 func registerSigstoreVerifyImage() {
 	result := types.Named(
@@ -207,7 +222,20 @@ func parseCheckOpts(ctx context.Context, optsTerm *ast.Term) (*cosign.CheckOpts,
 		return nil, fmt.Errorf("new policy: %s", err)
 	}
 
-	return policy.CheckOpts()
+	checkOpts, err := policy.CheckOpts()
+	if err != nil {
+		return nil, fmt.Errorf("getting checkops: %w", err)
+	}
+
+	if opts.rekorPublicKey != "" {
+		rekorPublicKeys := cosign.NewTrustedTransparencyLogPubKeys()
+		if err := rekorPublicKeys.AddTransparencyLogPubKey([]byte(opts.rekorPublicKey), tuf.Active); err != nil {
+			return nil, fmt.Errorf("adding rekor public key: %w", err)
+		}
+		checkOpts.RekorPubKeys = &rekorPublicKeys
+	}
+
+	return checkOpts, nil
 }
 
 type options struct {
@@ -218,6 +246,7 @@ type options struct {
 	ignoreRekor                 bool
 	publicKey                   string
 	rekorURL                    string
+	rekorPublicKey              string
 }
 
 func (o options) toTerm() *ast.Term {
@@ -229,41 +258,37 @@ func (o options) toTerm() *ast.Term {
 		ast.Item(ast.StringTerm(ignoreRekorAttribute), ast.BooleanTerm(o.ignoreRekor)),
 		ast.Item(ast.StringTerm(publicKeyAttribute), ast.StringTerm(o.publicKey)),
 		ast.Item(ast.StringTerm(rekorURLAttribute), ast.StringTerm(o.rekorURL)),
+		ast.Item(ast.StringTerm(rekorPublicKeyAttribute), ast.StringTerm(o.rekorPublicKey)),
 	)
 }
 
 func optionsFromTerm(term *ast.Term) options {
 	opts := options{}
 
-	if v, ok := term.Get(ast.StringTerm(certificateIdentityAttribute)).Value.(ast.String); ok {
-		opts.certificateIdentity = string(v)
-	}
+	opts.certificateIdentity = stringPropertyFromTerm(term, certificateIdentityAttribute)
+	opts.certificateIdentityRegExp = stringPropertyFromTerm(term, certificateIdentityRegExpAttribute)
+	opts.certificateOIDCIssuer = stringPropertyFromTerm(term, certificateOIDCIssuerAttribute)
+	opts.certificateOIDCIssuerRegExp = stringPropertyFromTerm(term, certificateOIDCIssuerRegExpAttribute)
+	opts.publicKey = stringPropertyFromTerm(term, publicKeyAttribute)
+	opts.rekorPublicKey = stringPropertyFromTerm(term, rekorPublicKeyAttribute)
+	opts.rekorURL = stringPropertyFromTerm(term, rekorURLAttribute)
 
-	if v, ok := term.Get(ast.StringTerm(certificateIdentityRegExpAttribute)).Value.(ast.String); ok {
-		opts.certificateIdentityRegExp = string(v)
-	}
-
-	if v, ok := term.Get(ast.StringTerm(certificateOIDCIssuerAttribute)).Value.(ast.String); ok {
-		opts.certificateOIDCIssuer = string(v)
-	}
-
-	if v, ok := term.Get(ast.StringTerm(certificateOIDCIssuerRegExpAttribute)).Value.(ast.String); ok {
-		opts.certificateOIDCIssuerRegExp = string(v)
-	}
-
+	// nil check not required because this attribute is a static property. It will always have a value.
 	if v, ok := term.Get(ast.StringTerm(ignoreRekorAttribute)).Value.(ast.Boolean); ok {
 		opts.ignoreRekor = bool(v)
 	}
 
-	if v, ok := term.Get(ast.StringTerm(publicKeyAttribute)).Value.(ast.String); ok {
-		opts.publicKey = string(v)
-	}
-
-	if v, ok := term.Get(ast.StringTerm(rekorURLAttribute)).Value.(ast.String); ok {
-		opts.rekorURL = string(v)
-	}
-
 	return opts
+}
+
+func stringPropertyFromTerm(term *ast.Term, propertyName string) string {
+	propertyTerm := term.Get(ast.StringTerm(propertyName))
+	if propertyTerm != nil {
+		if v, ok := propertyTerm.Value.(ast.String); ok {
+			return string(v)
+		}
+	}
+	return ""
 }
 
 func signatureFailedResult(err error) (*ast.Term, error) {

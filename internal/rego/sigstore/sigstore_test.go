@@ -103,6 +103,21 @@ func TestSigstoreVerifyImage(t *testing.T) {
 			},
 		},
 		{
+			name:    "long lived key with rekor public key",
+			success: ast.BooleanTerm(true),
+			errors:  ast.ArrayTerm(),
+			uri:     ast.StringTerm(goodImage.String()),
+			opts:    options{publicKey: utils.TestPublicKey, rekorPublicKey: utils.TestRekorPublicKey},
+			optsVerifier: func(args mock.Arguments) {
+				checkOpts := args.Get(1).(*cosign.CheckOpts)
+				require.NotNil(t, checkOpts)
+				require.False(t, checkOpts.IgnoreTlog)
+				require.Empty(t, checkOpts.Identities)
+				require.Nil(t, checkOpts.RekorClient)
+				require.NotEmpty(t, checkOpts.RekorPubKeys.Keys[utils.TestRekorURLLogID])
+			},
+		},
+		{
 			name:    "fulcio key regex",
 			success: ast.BooleanTerm(true),
 			errors:  ast.ArrayTerm(),
@@ -251,6 +266,21 @@ func TestSigstoreVerifyAttestation(t *testing.T) {
 				require.NotNil(t, checkOpts.RekorClient)
 			},
 			sigs: []oci.Signature{goodSig},
+		},
+		{
+			name:    "long lived key with rekor public key",
+			success: ast.BooleanTerm(true),
+			errors:  ast.ArrayTerm(),
+			uri:     ast.StringTerm(goodImage.String()),
+			opts:    options{publicKey: utils.TestPublicKey, rekorPublicKey: utils.TestRekorPublicKey},
+			optsVerifier: func(args mock.Arguments) {
+				checkOpts := args.Get(1).(*cosign.CheckOpts)
+				require.NotNil(t, checkOpts)
+				require.False(t, checkOpts.IgnoreTlog)
+				require.Empty(t, checkOpts.Identities)
+				require.Nil(t, checkOpts.RekorClient)
+				require.NotEmpty(t, checkOpts.RekorPubKeys.Keys[utils.TestRekorURLLogID])
+			},
 		},
 		{
 			name:    "fulcio key",
