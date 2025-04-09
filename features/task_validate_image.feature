@@ -15,8 +15,8 @@ Feature: Verify Enterprise Contract Tekton Tasks
         "sources": [
           {
             "policy": [
-              "github.com/enterprise-contract/ec-policies//policy/release",
-              "github.com/enterprise-contract/ec-policies//policy/lib"
+              "github.com/enterprise-contract/ec-policies//policy/release?ref=0de5461c14413484575e63e96ddb514d8ab954b5",
+              "github.com/enterprise-contract/ec-policies//policy/lib?ref=0de5461c14413484575e63e96ddb514d8ab954b5"
             ],
             "config": {
               "include": [
@@ -35,6 +35,7 @@ Feature: Verify Enterprise Contract Tekton Tasks
     Then the task should succeed
      And the task logs for step "report" should match the snapshot
      And the task results should match the snapshot
+     And the task logs for step "show-config" should match the snapshot
 
   Scenario: Extra rule data provided to task
     Given a working namespace

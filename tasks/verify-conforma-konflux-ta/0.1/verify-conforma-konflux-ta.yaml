@@ -309,6 +309,13 @@ spec:
       args:
         - version
 
+    - name: show-config
+      image: quay.io/enterprise-contract/ec-cli:snapshot
+      command: [jq]
+      args:
+        - ".policy"
+        - "$(params.HOMEDIR)/report-json.json"
+
     - name: debug-log
       image: quay.io/enterprise-contract/ec-cli:snapshot
       command: [cat]
