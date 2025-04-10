@@ -28,12 +28,12 @@ Feature: Verify Conforma Trusted Artifact Tekton Task
       }
       ```
     When version 0.1 of the task named "verify-conforma-konflux-ta" is run with parameters:
-      | SNAPSHOT_FILENAME       | "/tmp/snapshotartifact"                |
-      | SOURCE_DATA_ARTIFACT    | "oci:localhost:5000/snapshotartifact" |
-      | POLICY_CONFIGURATION    | ${NAMESPACE}/${POLICY_NAME}            |
-      | STRICT                  | true                                   |
-      | IGNORE_REKOR            | true                                   |
-      | TRUSTED_ARTIFACTS_DEBUG | "true"                                 |
+      | SNAPSHOT_FILENAME       | /tmp/snapshotartifact               |
+      | SOURCE_DATA_ARTIFACT    | oci:localhost:5000/snapshotartifact |
+      | POLICY_CONFIGURATION    | ${NAMESPACE}/${POLICY_NAME}         |
+      | STRICT                  | true                                |
+      | IGNORE_REKOR            | true                                |
+      | TRUSTED_ARTIFACTS_DEBUG | "true"                              |
     Then the task should succeed
      And the task logs for step "report" should match the snapshot
      And the task results should match the snapshot
