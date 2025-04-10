@@ -307,13 +307,12 @@ dev: push-image task-bundle ## Push the ec-cli and v-e-c Task Bundle to the kind
 
 TASK_TAG ?= latest
 TASK_REPO ?= quay.io/enterprise-contract/ec-task-bundle
-TASK_VERSION ?= 0.1
-TASKS ?= tasks/verify-enterprise-contract/$(TASK_VERSION)/verify-enterprise-contract.yaml
+TASKS ?= tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml,tasks/verify-conforma-konflux-ta/0.1/verify-conforma-konflux-ta.yaml
 ifneq (,$(findstring localhost:,$(TASK_REPO)))
 SKOPEO_ARGS=--src-tls-verify=false --dest-tls-verify=false
 endif
 .PHONY: task-bundle
-task-bundle: ## Push the Tekton Task bundle an image repository
+task-bundle: ## Push the Tekton Task bundle to an image repository
 	@go run -modfile tools/go.mod github.com/tektoncd/cli/cmd/tkn bundle push $(TASK_REPO):$(TASK_TAG) $(addprefix -f ,$(TASKS)) --annotate org.opencontainers.image.revision="$(TASK_TAG)"
 
 .PHONY: task-bundle-snapshot
