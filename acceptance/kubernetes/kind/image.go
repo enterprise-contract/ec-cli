@@ -194,10 +194,13 @@ func (k *kindCluster) buildSnapshotArtifact(ctx context.Context) error {
 		return fmt.Errorf("failed to tag image: %w", err)
 	}
 
-	repo, err := remote.NewRepository(fmt.Sprintf("127.0.0.1:%d/%s", k.registryPort, artifactName))
+	artifactRepo := fmt.Sprintf("127.0.0.1:%d/acceptance/%s", k.registryPort, artifactName)
+	repo, err := remote.NewRepository(artifactRepo)
 	if err != nil {
 		return fmt.Errorf("failed to create repo: %w", err)
 	}
+	fmt.Println("artifactRepo:", artifactRepo)
+
 	// the registry is insecure
 	repo.PlainHTTP = true
 
