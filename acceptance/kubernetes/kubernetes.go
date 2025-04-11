@@ -289,7 +289,7 @@ func logTaskOutput(ctx context.Context, c ClusterState) error {
 	w := tabwriter.NewWriter(&buffy, 10, 1, 2, ' ', 0)
 
 	fmt.Fprintf(w, "%s\t%s\n", clr.Bold("Namespace"), info.Namespace)
-	fmt.Fprintf(w, "%s\t%s\n", clr.Bold("Name"), info.Name)
+	fmt.Fprintf(w, "%s\t%s\n", clr.Bold("TaskRunName2"), info.Name)
 	fmt.Fprintf(w, "%s\t%s", clr.Bold("Status"), info.Status)
 	w.Flush()
 	outputSegment("TaskRun", buffy.String())

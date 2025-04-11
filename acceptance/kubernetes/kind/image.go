@@ -17,15 +17,22 @@
 package kind
 
 import (
+	"archive/tar"
+	"compress/gzip"
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 
+	imagespecv1 "github.com/opencontainers/image-spec/specs-go/v1"
 	v1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
+	"oras.land/oras-go/v2"
+	orasFile "oras.land/oras-go/v2/content/file"
+	"oras.land/oras-go/v2/registry/remote"
 	"sigs.k8s.io/yaml"
 )
 
@@ -142,6 +149,76 @@ func (k *kindCluster) buildTaskBundleImage(ctx context.Context) error {
 
 	return nil
 }
+func (k *kindCluster) buildSnapshotArtifact(ctx context.Context) error {
+	artifactName := "snapshotartifact"
+	jsonContent := []byte(`{
+		"components": [
+			{
+			"containerImage": "quay.io/example/repo:latest"
+			}
+		]
+		}`)
+
+	filePath := fmt.Sprintf("/tmp/%s", artifactName)
+	if err := os.WriteFile(filePath, jsonContent, 0644); err != nil {
+		return fmt.Errorf("failed to write JSON to file: %w", err)
+	}
+
+	tarGzPath := filePath + ".tar.gz"
+	if err := tarGzipFile(filePath, tarGzPath); err != nil {
+		return fmt.Errorf("failed to tar and gzip file: %w", err)
+	}
+
+	fs, err := orasFile.New("/tmp/")
+	if err != nil {
+		return fmt.Errorf("falied to create /tmp dir: %w", err)
+	}
+	defer fs.Close()
+
+	mediaType := "application/vnd.test.file"
+	fileNames := []string{tarGzPath}
+	fileDescriptors := make([]imagespecv1.Descriptor, 0, len(fileNames))
+	for _, name := range fileNames {
+		fileDescriptor, err := fs.Add(ctx, name, mediaType, "")
+		if err != nil {
+			return fmt.Errorf("failed to add file %s: %w", name, err)
+		}
+		fileDescriptors = append(fileDescriptors, fileDescriptor)
+		fmt.Printf("file descriptor for %s: %v\n", name, fileDescriptor)
+	}
+
+	artifactType := "application/vnd.test.artifact"
+	opts := oras.PackManifestOptions{
+		Layers: fileDescriptors,
+	}
+	manifestDescriptor, err := oras.PackManifest(ctx, fs, oras.PackManifestVersion1_1, artifactType, opts)
+	if err != nil {
+		return fmt.Errorf("failed creating manifestDescriptor: %w", err)
+	}
+	fmt.Println("manifest descriptor:", manifestDescriptor)
+
+	tag := "latest"
+	if err = fs.Tag(ctx, manifestDescriptor, tag); err != nil {
+		return fmt.Errorf("failed to tag image: %w", err)
+	}
+
+	artifactRepo := fmt.Sprintf("127.0.0.1:%d/acceptance/%s", k.registryPort, artifactName)
+	repo, err := remote.NewRepository(artifactRepo)
+	if err != nil {
+		return fmt.Errorf("failed to create repo: %w", err)
+	}
+	fmt.Println("artifactRepo:", artifactRepo)
+
+	// the registry is insecure
+	repo.PlainHTTP = true
+
+	_, err = oras.Copy(ctx, fs, tag, repo, tag, oras.DefaultCopyOptions)
+	if err != nil {
+		return fmt.Errorf("failed to copy %s: %w", artifactName, err)
+	}
+
+	return nil
+}
 
 func getTag(ctx context.Context) (string, error) {
 	archCmd := exec.CommandContext(ctx, "podman", "version", "-f", "{{.Server.OsArch}}")
@@ -151,4 +228,54 @@ func getTag(ctx context.Context) (string, error) {
 	}
 
 	return fmt.Sprintf("latest-%s", strings.Replace(strings.TrimSuffix(string(archOut), "\n"), "/", "-", -1)), nil
+}
+
+func tarGzipFile(source, target string) error {
+	// Open the source file for reading.
+	srcFile, err := os.Open(source)
+	if err != nil {
+		return fmt.Errorf("opening source file: %w", err)
+	}
+	defer srcFile.Close()
+
+	// Create the target file where the tar.gz archive will be written.
+	outFile, err := os.Create(target)
+	if err != nil {
+		return fmt.Errorf("creating target file: %w", err)
+	}
+	defer outFile.Close()
+
+	// Create a gzip writer wrapping the target file.
+	gzw := gzip.NewWriter(outFile)
+	defer gzw.Close()
+
+	// Create a tar writer wrapping the gzip writer.
+	tw := tar.NewWriter(gzw)
+	defer tw.Close()
+
+	// Get file information to create tar header.
+	info, err := srcFile.Stat()
+	if err != nil {
+		return fmt.Errorf("getting source file info: %w", err)
+	}
+
+	// Prepare the tar header using the source file info.
+	header := &tar.Header{
+		Name:    filepath.Base(source),
+		Mode:    int64(info.Mode()),
+		Size:    info.Size(),
+		ModTime: info.ModTime(),
+	}
+
+	// Write the header into the tar archive.
+	if err := tw.WriteHeader(header); err != nil {
+		return fmt.Errorf("writing tar header: %w", err)
+	}
+
+	// Copy the source file data into the tar writer.
+	if _, err := io.Copy(tw, srcFile); err != nil {
+		return fmt.Errorf("copying file content into tar: %w", err)
+	}
+
+	return nil
 }

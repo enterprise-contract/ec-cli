@@ -39,6 +39,7 @@ import (
 	"github.com/enterprise-contract/ec-cli/acceptance/crypto"
 	"github.com/enterprise-contract/ec-cli/acceptance/kubernetes/types"
 	"github.com/enterprise-contract/ec-cli/acceptance/kustomize"
+	"github.com/enterprise-contract/ec-cli/acceptance/registry"
 	"github.com/enterprise-contract/ec-cli/acceptance/testenv"
 )
 
@@ -252,6 +253,12 @@ func stringParam(ctx context.Context, name, value string, t *testState) pipeline
 	publicKeys := crypto.PublicKeysFrom(ctx)
 	for name, key := range publicKeys {
 		vars[fmt.Sprintf("%s_PUBLIC_KEY", name)] = key
+	}
+
+	digests, _ := registry.AllDigests(ctx)
+
+	for repositoryAndTag, digest := range digests {
+		vars[fmt.Sprintf("REGISTRY_%s_DIGEST", repositoryAndTag)] = digest
 	}
 
 	v := os.Expand(value, func(variable string) string {
