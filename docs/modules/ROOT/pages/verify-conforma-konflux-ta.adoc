@@ -69,6 +69,9 @@ paths can be provided by using the `:` separator.
 
 *ORAS_OPTIONS* (`string`):: oras options to pass to Trusted Artifacts calls
 *TRUSTED_ARTIFACTS_DEBUG* (`string`):: Flag to enable debug logging in trusted artifacts. Set to a non-empty string to enable.
+*TRUSTED_ARTIFACTS_EXTRACT_DIR* (`string`):: Directory to use to extract trusted artifact archive.
++
+*Default*: `/var/workdir/conforma`
 
 == Results
 

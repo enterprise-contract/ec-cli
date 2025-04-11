@@ -159,6 +159,13 @@ spec:
       type: string
       default: ""
 
+    - name: TRUSTED_ARTIFACTS_EXTRACT_DIR
+      description: Directory to use to extract trusted artifact archive.
+      type: string
+      # need to specify a subfolder during the extract to avoid the error:
+      # tar: .: Cannot change mode to rwxr-sr-x: Operation not permitted
+      default: "/var/workdir/conforma"
+
   results:
     - name: TEST_OUTPUT
       description: Short summary of the policy evaluation for each image
@@ -179,9 +186,7 @@ spec:
     - name: use-trusted-artifact
       args:
         - use
-        # need to specify a subfolder during the extract to avoid the error:
-        # tar: .: Cannot change mode to rwxr-sr-x: Operation not permitted
-        - $(params.SOURCE_DATA_ARTIFACT)=/var/workdir/$(context.taskRun.uid)
+        - $(params.SOURCE_DATA_ARTIFACT)=$(params.TRUSTED_ARTIFACTS_EXTRACT_DIR)
       computeResources: {}
       image: quay.io/redhat-appstudio/build-trusted-artifacts:e02102ede09aa07187cba066ad547a54724e5cf4
 
@@ -205,7 +210,7 @@ spec:
     - name: reduce
       env:
         - name: SNAPSHOT
-          value: /var/workdir/$(context.taskRun.uid)/$(params.SNAPSHOT_FILENAME)
+          value: $(params.TRUSTED_ARTIFACTS_EXTRACT_DIR)/$(params.SNAPSHOT_FILENAME)
         - name: SINGLE_COMPONENT
           value: $(params.SINGLE_COMPONENT)
         - name: CUSTOM_RESOURCE
