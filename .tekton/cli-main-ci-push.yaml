@@ -38,7 +38,7 @@ spec:
     - name: build-source-image
       value: 'true'
     - name: build-args-file
-      value: ''
+      value: main-build-args.conf
     - name: hermetic
       value: 'true'
   pipelineRef:
