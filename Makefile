@@ -301,7 +301,10 @@ dev: IMAGE_REPO=localhost:$(REGISTRY_PORT)/ec
 dev: PODMAN_OPTS=--tls-verify=false
 dev: TASK_REPO=localhost:$(REGISTRY_PORT)/ec-task-bundle
 dev: SKOPEO_ARGS=--src-tls-verify=false --dest-tls-verify=false
-dev: TASKS:=$(shell T=$$(mktemp) && yq e ".spec.steps[].image? = \"localhost:$(REGISTRY_PORT)/ec\"" tasks/verify-enterprise-contract/*/verify-enterprise-contract.yaml | yq 'select(. != null)' > "$${T}" && echo "$${T}")
+dev: TASKS:=$(shell T=$$(mktemp) && yq e ".spec.steps[].image? = \"localhost:$(REGISTRY_PORT)/ec\"" \
+    tasks/verify-enterprise-contract/*/verify-enterprise-contract.yaml \
+    tasks/verify-conforma-konflux-ta/*/verify-conforma-konflux-ta.yaml \
+    | yq 'select(. != null)' > "$${T}" && echo "$${T}")
 dev: push-image task-bundle ## Push the ec-cli and v-e-c Task Bundle to the kind cluster setup via hack/setup-dev-environment.sh
 	@rm "$(TASKS)"
 

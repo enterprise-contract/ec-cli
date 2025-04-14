@@ -75,11 +75,12 @@ var destroy = sync.Once{}
 var globalCluster *kindCluster
 
 type testState struct {
-	namespace string
-	policy    string
-	taskRun   string
-	snapshot  string
-	registry  string
+	namespace      string
+	policy         string
+	taskRun        string
+	snapshot       string
+	registry       string
+	snapshotDigest string
 }
 
 func (n testState) Key() any {
