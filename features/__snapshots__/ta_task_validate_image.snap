@@ -4,210 +4,134 @@
 }
 ---
 
-[Golden container image with trusted artifacts:report - 1]
-components:
-- attestations:
-  - predicateBuildType: tekton.dev/v1beta1/TaskRun
-    predicateType: https://slsa.dev/provenance/v0.2
-    signatures:
-    - keyid: SHA256:RHajkr+wMEtGfT2CRFrQEhg/8MY2bDLXVg3F8IuI5nE
-      sig: MEUCIHFVZeVR59n9UvN1dwF9Lh3Gv8XWLPDPIIJcnQ8e3TtvAiEA0z/5v6ggvmQyQ1EnYTJo9rwxOYuve4th4P/0639orLg=
-    type: https://in-toto.io/Statement/v0.1
-  - predicateBuildType: tekton.dev/v1beta1/PipelineRun
-    predicateType: https://slsa.dev/provenance/v0.2
-    signatures:
-    - keyid: SHA256:RHajkr+wMEtGfT2CRFrQEhg/8MY2bDLXVg3F8IuI5nE
-      sig: MEUCIQClx1zvZGvyRu5gCHiC+oWVZTmWJGQlocSZMnzx/5omZAIgUiLQuMm+USYE+H0PDn/xPSVVQjkhWjDc3fulkxVzlC0=
-    type: https://in-toto.io/Statement/v0.1
-  - predicateBuildType: tekton.dev/v1beta1/PipelineRun
-    predicateType: https://slsa.dev/provenance/v0.2
-    signatures:
-    - keyid: SHA256:RHajkr+wMEtGfT2CRFrQEhg/8MY2bDLXVg3F8IuI5nE
-      sig: MEUCIGS176zN5aoorLQMukjoCkHm7ocu7UhnKXLhzEdsgp4BAiEAviub3Lf4thLmSTU6ZqnEjw02kkrb9LKBBa1t8hVgAM4=
-    type: https://in-toto.io/Statement/v0.1
-  containerImage: quay.io/hacbs-contract-demo/golden-container@sha256:e76a4ae9dd8a52a0d191fd34ca133af5b4f2609536d32200a4a40a09fdc93a0d
-  name: ""
-  signatures:
-  - keyid: ""
-    sig: MEUCIFPod1d9HhGt+TEQPG4j+LINjkifCFFOFrE4jbkvexGGAiEAqSp3ROZUsIOwWro6Tv+lRiR7sdMR0U6Crs1ISuQhHtA=
-  source: {}
-  success: true
-  successes:
-  - metadata:
-      code: builtin.attestation.signature_check
-      description: The attestation signature matches available signing materials.
-      title: Attestation signature check passed
-    msg: Pass
-  - metadata:
-      code: builtin.attestation.syntax_check
-      description: The attestation has correct syntax.
-      title: Attestation syntax check passed
-    msg: Pass
-  - metadata:
-      code: builtin.image.signature_check
-      description: The image signature matches available signing materials.
-      title: Image signature check passed
-    msg: Pass
-  - metadata:
-      code: slsa_provenance_available.allowed_predicate_types_provided
-      collections:
-      - minimal
-      - slsa3
-      - redhat
-      - policy_data
-      description: Confirm the `allowed_predicate_types` rule data was provided, since
-        it is required by the policy rules in this package.
-      title: Allowed predicate types provided
-    msg: Pass
-  - metadata:
-      code: slsa_provenance_available.attestation_predicate_type_accepted
-      collections:
-      - minimal
-      - slsa3
-      - redhat
-      depends_on:
-      - attestation_type.known_attestation_type
-      description: Verify that the predicateType field of the attestation indicates
-        the in-toto SLSA Provenance format was used to attest the PipelineRun.
-      title: Expected attestation predicate type found
-    msg: Pass
-ec-version: ${EC_VERSION}
-effective-time: "${TIMESTAMP}"
-key: |
-  -----BEGIN PUBLIC KEY-----
-  MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAERhr8Zj4dZW67zucg8fDr11M4lmRp
-  zN6SIcIjkvH39siYg1DkCoa2h2xMUZ10ecbM3/ECqvBV55YwQ2rcIEa7XQ==
-  -----END PUBLIC KEY-----
-policy:
-  publicKey: |-
-    -----BEGIN PUBLIC KEY-----
-    MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAERhr8Zj4dZW67zucg8fDr11M4lmRp
-    zN6SIcIjkvH39siYg1DkCoa2h2xMUZ10ecbM3/ECqvBV55YwQ2rcIEa7XQ==
-    -----END PUBLIC KEY-----
-  sources:
-  - config:
-      include:
-      - slsa_provenance_available
-    policy:
-    - github.com/enterprise-contract/ec-policies//policy/release
-    - github.com/enterprise-contract/ec-policies//policy/lib
-success: true
-
----
-
 [Golden container image with trusted artifacts:report-json - 1]
 {
-  "success": true,
   "components": [
     {
-      "name": "",
-      "containerImage": "quay.io/hacbs-contract-demo/golden-container@sha256:e76a4ae9dd8a52a0d191fd34ca133af5b4f2609536d32200a4a40a09fdc93a0d",
-      "source": {},
-      "successes": [
+      "attestations": [
         {
-          "msg": "Pass",
-          "metadata": {
-            "code": "builtin.attestation.signature_check",
-            "description": "The attestation signature matches available signing materials.",
-            "title": "Attestation signature check passed"
-          }
+          "predicateBuildType": "tekton.dev/v1beta1/TaskRun",
+          "predicateType": "https://slsa.dev/provenance/v0.2",
+          "signatures": [
+            {
+              "keyid": "SHA256:RHajkr+wMEtGfT2CRFrQEhg/8MY2bDLXVg3F8IuI5nE",
+              "sig": "MEUCIHFVZeVR59n9UvN1dwF9Lh3Gv8XWLPDPIIJcnQ8e3TtvAiEA0z/5v6ggvmQyQ1EnYTJo9rwxOYuve4th4P/0639orLg="
+            }
+          ],
+          "type": "https://in-toto.io/Statement/v0.1"
         },
         {
-          "msg": "Pass",
-          "metadata": {
-            "code": "builtin.attestation.syntax_check",
-            "description": "The attestation has correct syntax.",
-            "title": "Attestation syntax check passed"
-          }
+          "predicateBuildType": "tekton.dev/v1beta1/PipelineRun",
+          "predicateType": "https://slsa.dev/provenance/v0.2",
+          "signatures": [
+            {
+              "keyid": "SHA256:RHajkr+wMEtGfT2CRFrQEhg/8MY2bDLXVg3F8IuI5nE",
+              "sig": "MEUCIQClx1zvZGvyRu5gCHiC+oWVZTmWJGQlocSZMnzx/5omZAIgUiLQuMm+USYE+H0PDn/xPSVVQjkhWjDc3fulkxVzlC0="
+            }
+          ],
+          "type": "https://in-toto.io/Statement/v0.1"
         },
         {
-          "msg": "Pass",
-          "metadata": {
-            "code": "builtin.image.signature_check",
-            "description": "The image signature matches available signing materials.",
-            "title": "Image signature check passed"
-          }
-        },
-        {
-          "msg": "Pass",
-          "metadata": {
-            "code": "slsa_provenance_available.attestation_predicate_type_accepted",
-            "collections": [
-              "minimal",
-              "slsa1",
-              "slsa2",
-              "slsa3",
-              "redhat"
-            ],
-            "depends_on": [
-              "attestation_type.known_attestation_type"
-            ],
-            "description": "Verify that the predicateType field of the attestation indicates the in-toto SLSA Provenance format was used to attest the PipelineRun.",
-            "title": "Expected attestation predicate type found"
-          }
+          "predicateBuildType": "tekton.dev/v1beta1/PipelineRun",
+          "predicateType": "https://slsa.dev/provenance/v0.2",
+          "signatures": [
+            {
+              "keyid": "SHA256:RHajkr+wMEtGfT2CRFrQEhg/8MY2bDLXVg3F8IuI5nE",
+              "sig": "MEUCIGS176zN5aoorLQMukjoCkHm7ocu7UhnKXLhzEdsgp4BAiEAviub3Lf4thLmSTU6ZqnEjw02kkrb9LKBBa1t8hVgAM4="
+            }
+          ],
+          "type": "https://in-toto.io/Statement/v0.1"
         }
       ],
-      "success": true,
+      "containerImage": "quay.io/hacbs-contract-demo/golden-container@sha256:e76a4ae9dd8a52a0d191fd34ca133af5b4f2609536d32200a4a40a09fdc93a0d",
+      "name": "",
       "signatures": [
         {
           "keyid": "",
           "sig": "MEUCIFPod1d9HhGt+TEQPG4j+LINjkifCFFOFrE4jbkvexGGAiEAqSp3ROZUsIOwWro6Tv+lRiR7sdMR0U6Crs1ISuQhHtA="
         }
       ],
-      "attestations": [
+      "source": {},
+      "success": true,
+      "successes": [
         {
-          "type": "https://in-toto.io/Statement/v0.1",
-          "predicateType": "https://slsa.dev/provenance/v0.2",
-          "predicateBuildType": "tekton.dev/v1beta1/TaskRun",
-          "signatures": [
-            {
-              "keyid": "SHA256:RHajkr+wMEtGfT2CRFrQEhg/8MY2bDLXVg3F8IuI5nE",
-              "sig": "MEUCIHFVZeVR59n9UvN1dwF9Lh3Gv8XWLPDPIIJcnQ8e3TtvAiEA0z/5v6ggvmQyQ1EnYTJo9rwxOYuve4th4P/0639orLg="
-            }
-          ]
+          "metadata": {
+            "code": "builtin.attestation.signature_check",
+            "description": "The attestation signature matches available signing materials.",
+            "title": "Attestation signature check passed"
+          },
+          "msg": "Pass"
         },
         {
-          "type": "https://in-toto.io/Statement/v0.1",
-          "predicateType": "https://slsa.dev/provenance/v0.2",
-          "predicateBuildType": "tekton.dev/v1beta1/PipelineRun",
-          "signatures": [
-            {
-              "keyid": "SHA256:RHajkr+wMEtGfT2CRFrQEhg/8MY2bDLXVg3F8IuI5nE",
-              "sig": "MEUCIQClx1zvZGvyRu5gCHiC+oWVZTmWJGQlocSZMnzx/5omZAIgUiLQuMm+USYE+H0PDn/xPSVVQjkhWjDc3fulkxVzlC0="
-            }
-          ]
+          "metadata": {
+            "code": "builtin.attestation.syntax_check",
+            "description": "The attestation has correct syntax.",
+            "title": "Attestation syntax check passed"
+          },
+          "msg": "Pass"
         },
         {
-          "type": "https://in-toto.io/Statement/v0.1",
-          "predicateType": "https://slsa.dev/provenance/v0.2",
-          "predicateBuildType": "tekton.dev/v1beta1/PipelineRun",
-          "signatures": [
-            {
-              "keyid": "SHA256:RHajkr+wMEtGfT2CRFrQEhg/8MY2bDLXVg3F8IuI5nE",
-              "sig": "MEUCIGS176zN5aoorLQMukjoCkHm7ocu7UhnKXLhzEdsgp4BAiEAviub3Lf4thLmSTU6ZqnEjw02kkrb9LKBBa1t8hVgAM4="
-            }
-          ]
+          "metadata": {
+            "code": "builtin.image.signature_check",
+            "description": "The image signature matches available signing materials.",
+            "title": "Image signature check passed"
+          },
+          "msg": "Pass"
+        },
+        {
+          "metadata": {
+            "code": "slsa_provenance_available.allowed_predicate_types_provided",
+            "collections": [
+              "minimal",
+              "slsa3",
+              "redhat",
+              "redhat_rpms",
+              "policy_data"
+            ],
+            "description": "Confirm the `allowed_predicate_types` rule data was provided, since it is required by the policy rules in this package.",
+            "title": "Allowed predicate types provided"
+          },
+          "msg": "Pass"
+        },
+        {
+          "metadata": {
+            "code": "slsa_provenance_available.attestation_predicate_type_accepted",
+            "collections": [
+              "minimal",
+              "slsa3",
+              "redhat",
+              "redhat_rpms"
+            ],
+            "depends_on": [
+              "attestation_type.known_attestation_type"
+            ],
+            "description": "Verify that the predicateType field of the attestation indicates the in-toto SLSA Provenance format was used to attest the PipelineRun.",
+            "title": "Expected attestation predicate type found"
+          },
+          "msg": "Pass"
         }
       ]
     }
   ],
-  "key": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAERhr8Zj4dZW67zucg8fDr11M4lmRp\nzN6SIcIjkvH39siYg1DkCoa2h2xMUZ10ecbM3/ECqvBV55YwQ2rcIEa7XQ==\n-----END PUBLIC KEY-----\n",
+  "ec-version": "${EC_VERSION}",
+  "effective-time": "${TIMESTAMP}",
+  "key": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAERhr8Zj4dZW67zucg8fDr11M4lmRp\nzN6SIcIjkvH39siYg1DkCoa2h2xMUZ10ecbM3/ECqvBV55YwQ2rcIEa7XQ==\n-----END PUBLIC KEY-----",
   "policy": {
+    "publicKey": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAERhr8Zj4dZW67zucg8fDr11M4lmRp\nzN6SIcIjkvH39siYg1DkCoa2h2xMUZ10ecbM3/ECqvBV55YwQ2rcIEa7XQ==\n-----END PUBLIC KEY-----",
     "sources": [
       {
-        "policy": [
-          "github.com/enterprise-contract/ec-policies//policy/release",
-          "github.com/enterprise-contract/ec-policies//policy/lib"
-        ],
         "config": {
           "include": [
             "slsa_provenance_available"
           ]
-        }
+        },
+        "policy": [
+          "git::github.com/enterprise-contract/ec-policies//policy/release?ref=d34eab36b23d43748e451004177ca144296bf323",
+          "git::github.com/enterprise-contract/ec-policies//policy/lib?ref=d34eab36b23d43748e451004177ca144296bf323"
+        ]
       }
-    ],
-    "publicKey": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAERhr8Zj4dZW67zucg8fDr11M4lmRp\nzN6SIcIjkvH39siYg1DkCoa2h2xMUZ10ecbM3/ECqvBV55YwQ2rcIEa7XQ==\n-----END PUBLIC KEY-----"
+    ]
   },
-  "ec-version": "${EC_VERSION}",
-  "effective-time": "${TIMESTAMP}"
+  "success": true
 }
+---

@@ -25,8 +25,8 @@ Feature: Verify Conforma Trusted Artifact Tekton Task
         "sources": [
           {
             "policy": [
-              "github.com/enterprise-contract/ec-policies//policy/release",
-              "github.com/enterprise-contract/ec-policies//policy/lib"
+              "git::github.com/enterprise-contract/ec-policies//policy/release?ref=d34eab36b23d43748e451004177ca144296bf323",
+              "git::github.com/enterprise-contract/ec-policies//policy/lib?ref=d34eab36b23d43748e451004177ca144296bf323"
             ],
             "config": {
               "include": [
@@ -46,5 +46,5 @@ Feature: Verify Conforma Trusted Artifact Tekton Task
       | TRUSTED_ARTIFACTS_DEBUG | "true"                                                                                                   |
       | ORAS_OPTIONS            | --plain-http                                                                                             |
     Then the task should succeed
-     And the task logs for step "report" should match the snapshot
+     And the task logs for step "report-json" should match the snapshot
      And the task results should match the snapshot
