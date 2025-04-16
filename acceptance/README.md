@@ -18,9 +18,13 @@ To run the acceptance tests either run:
 
 from the root of the repository.
 
-Or run the acceptance_test.go test using `go test`:
+Or move into the acceptance module:
 
-    $ go test -tags=acceptance ./...
+    $ cd acceptance
+
+and run the acceptance_test.go test using `go test`:
+
+    $ go test ./...
 
 The latter is useful for specifying additional arguments. Currently, the
 following are supported:
@@ -37,11 +41,9 @@ following are supported:
 
 These arguments need to be prefixed with `-args` parameter, for example:
 
-    $ go test -tags=acceptance ./acceptance -args -persist -tags=@focus
+    $ go test ./acceptance -args -persist -tags=@focus
 
-Notice that there are two arguments called `-tags`. One is for specifying the
-build tag, which is always `acceptance` for acceptance tests. The other is for
-selecting acceptance test scenarios.
+The `-tags` argument is for selecting acceptance test scenarios.
 
 Also notice that there are different ways of specifying the path to the
 acceptance tests. `./...` can only be be used if `-args` is NOT used. Use,
