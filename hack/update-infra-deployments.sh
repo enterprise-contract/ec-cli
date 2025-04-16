@@ -28,8 +28,16 @@ TARGET_DIR="${1}"
 cd "${TARGET_DIR}" || exit 1
 
 echo 'Resolving task bundle...'
-TASK_BUNDLE_REPO=quay.io/enterprise-contract/ec-task-bundle
-TASK_BUNDLE_TAG="${2:-snapshot}"
+
+# Task definition built and pushed from main branch in the ec-cli
+# repo by the Conforma Konflux build pipeline
+TASK_BUNDLE_REPO=quay.io/enterprise-contract/tekton-task
+TASK_BUNDLE_TAG="${2:-latest}"
+
+# The same but built and pushed by a GitHub Workflow. Now deprecated.
+#TASK_BUNDLE_REPO=quay.io/enterprise-contract/ec-task-bundle
+#TASK_BUNDLE_TAG="${2:-snapshot}"
+
 MANIFEST=$(mktemp --tmpdir)
 function cleanup() {
     rm "${MANIFEST}"
