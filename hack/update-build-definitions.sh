@@ -30,13 +30,14 @@ TARGET_DIR="${1}"
 cd "${TARGET_DIR}" || exit 1
 
 echo 'Resolving task bundle...'
+TASK_BUNDLE_REPO=quay.io/enterprise-contract/ec-task-bundle
 TASK_BUNDLE_TAG="${2:-snapshot}"
 MANIFEST=$(mktemp --tmpdir)
 function cleanup() {
     rm "${MANIFEST}"
 }
 trap cleanup EXIT
-skopeo inspect "docker://quay.io/enterprise-contract/ec-task-bundle:${TASK_BUNDLE_TAG}" --raw > "${MANIFEST}"
+skopeo inspect "docker://${TASK_BUNDLE_REPO}:${TASK_BUNDLE_TAG}" --raw > "${MANIFEST}"
 TASK_BUNDLE_DIGEST="$(skopeo manifest-digest "${MANIFEST}")"
 REVISION="$(jq -r '.annotations["org.opencontainers.image.revision"]' "${MANIFEST}")"
 if [[ -z "${KEEP_TAG:-}" && -n "${REVISION}" && "${REVISION}" != null ]]; then
@@ -44,9 +45,10 @@ if [[ -z "${KEEP_TAG:-}" && -n "${REVISION}" && "${REVISION}" != null ]]; then
 fi
 # Sanity check
 diff \
-    <(skopeo inspect --raw "docker://quay.io/enterprise-contract/ec-task-bundle:${TASK_BUNDLE_TAG}") \
-    <(skopeo inspect --raw "docker://quay.io/enterprise-contract/ec-task-bundle@${TASK_BUNDLE_DIGEST}")
-TASK_BUNDLE_REF="quay.io/enterprise-contract/ec-task-bundle:${TASK_BUNDLE_TAG}@${TASK_BUNDLE_DIGEST}"
+    <(skopeo inspect --raw "docker://${TASK_BUNDLE_REPO}:${TASK_BUNDLE_TAG}") \
+    <(skopeo inspect --raw "docker://${TASK_BUNDLE_REPO}@${TASK_BUNDLE_DIGEST}")
+
+TASK_BUNDLE_REF="${TASK_BUNDLE_REPO}:${TASK_BUNDLE_TAG}@${TASK_BUNDLE_DIGEST}"
 echo "Resolved bundle is ${TASK_BUNDLE_REF}"
 
 function update() {
