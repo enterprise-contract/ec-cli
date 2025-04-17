@@ -134,7 +134,7 @@ acceptance: ## Run all acceptance tests
 # (Mainly for use with the feature-% target below)
 .PHONY: focus-acceptance
 focus-acceptance: build ## Run acceptance tests with @focus tag
-	@cd acceptance && go test -tags=acceptance . -args -tags=@focus
+	@cd acceptance && go test . -args -tags=@focus
 
 # Uses sed hackery to insert a @focus tag and then remove it afterwards.
 # (There might be a nicer way to run all scenarios in a single feature.)
