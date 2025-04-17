@@ -1,0 +1,184 @@
+# Copyright The Enterprise Contract Contributors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# SPDX-License-Identifier: Apache-2.0
+
+---
+name: Sealights
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - main
+      - release-*
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ (github.event_name == 'pull_request' && github.event.pull_request.number) || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  Initialize:
+    runs-on: ubuntu-latest
+    env:
+      SEALIGHTS_LOG_LEVEL: none
+    outputs:
+      bsid: ${{ steps.sealights-scan.outputs.bsid }}
+    steps:
+      - name: Determine workflow run event context
+        run: echo "on-event=${{ github.event_name }}" >> $GITHUB_ENV
+
+      - name: Handle invalid context for pull requests
+        if: ${{ env.on-event == 'pull_request' && (!github.event.pull_request.head.sha || !github.event.pull_request.number) }}
+        run: |
+          echo "Invalid context for this workflow run. Exiting."
+          exit 1
+
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          # Needed in hack/derive-version.sh
+          fetch-depth: 0
+
+      - name: Restore Cache
+        uses: actions/cache/restore@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
+        with:
+          key: main
+          path: '**'
+
+      - name: Setup Go environment
+        uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5.3.0
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      - name: Check go versions
+        uses: enterprise-contract/github-workflows/golang-version-check@main
+
+      - name: Download SeaLights Go agent and CLI tool
+        run: |
+          echo "[Sealights] Downloading Sealights Golang & CLI Agents..."
+          case $(lscpu | awk '/Architecture:/{print $2}') in
+            x86_64) SL_ARCH="linux-amd64";;
+            arm) SL_ARCH="linux-arm64";;
+          esac
+          wget -nv -O sealights-go-agent.tar.gz https://agents.sealights.co/slgoagent/latest/slgoagent-$SL_ARCH.tar.gz
+          wget -nv -O sealights-slcli.tar.gz https://agents.sealights.co/slcli/latest/slcli-$SL_ARCH.tar.gz
+          tar -xzf ./sealights-go-agent.tar.gz && tar -xzf ./sealights-slcli.tar.gz
+          rm -f ./sealights-go-agent.tar.gz ./sealights-slcli.tar.gz
+          ./slgoagent -v 2> /dev/null | grep version && ./slcli -v 2> /dev/null | grep version
+      
+      - name: Write SeaLights token into file
+        run: echo "${SEALIGHTS_AGENT_TOKEN}" > sltoken.txt
+        env:
+          SEALIGHTS_AGENT_TOKEN: '${{secrets.SEALIGHTS_AGENT_TOKEN}}'
+
+      - name: Initiating the SeaLights agent
+        run: |
+          echo "[Sealights] Initiating the SeaLights agent to Golang and handing it the token"
+          ./slcli config init --lang go --token ./sltoken.txt
+
+      - name: Configuring SeaLights - on pull_request event
+        if: env.on-event == 'pull_request'
+        run: |
+          echo "[Sealights] Configuring SeaLights to scan the pull request branch"
+          echo "Latest commit sha: ${LATEST_COMMIT_SHA}"
+          echo "PR Number: ${PULL_REQUEST_NUMBER}"
+          ./slcli config create-pr-bsid --app ec-cli --target-branch "main" --pull-request-number ${PULL_REQUEST_NUMBER} --latest-commit ${LATEST_COMMIT_SHA} --repository-url https://github.com/enterprise-contract/ec-cli.git
+        env:
+          PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+          LATEST_COMMIT_SHA: ${{github.event.pull_request.head.sha}}
+
+      - name: Configuring SeaLights - on push event
+        if: env.on-event == 'push'
+        run: |
+          echo "[Sealights] Configuring SeaLights to scan the main branch after pull request was closed"
+          ./slcli config create-bsid --app ec-cli --branch main --build ${LATEST_COMMIT_SHA}
+        env:
+          LATEST_COMMIT_SHA: ${{ github.sha }}
+
+      - name: Run the SeaLights scan
+        id: sealights-scan
+        run: |
+          echo "[Sealights] Running the SeaLights scan"
+          ./slcli scan --bsid buildSessionId.txt  --path-to-scanner ./slgoagent --workspacepath ./ --scm git --scmBaseUrl https://github.com/enterprise-contract/ec-cli.git --scmVersion “0” --scmProvider github
+          echo bsid=$(< buildSessionId.txt) | tee -a "$GITHUB_OUTPUT"
+      - name: clean all SeaLights secret stuff
+        run: |
+          echo "[Sealights] Cleaning up after SeaLights run"
+          rm sltoken.txt
+
+      - name: Save workspace
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}
+          key: workspace-${{ github.run_id }}
+
+  Test:
+    runs-on: ubuntu-latest
+    needs: Initialize
+    steps:          
+      - name: Restore workspace
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}
+          key: workspace-${{ github.run_id }}
+
+      - name: Harden Runner
+        uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
+        with:
+          egress-policy: audit
+          disable-telemetry: true
+
+      - name: Generate
+        run: make generate
+
+      - name: Test
+        run: make test
+
+  Acceptance:
+    runs-on: ubuntu-latest
+    needs: [Initialize, Test]
+    env:
+      BSID: ${{ needs.Initialize.outputs.bsid }}
+      SEALIGHTS_LOG_LEVEL: none
+      SEALIGHTS_CONNECTION_TIMEOUT: 120s
+    steps:
+      - name: Restore workspace
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}
+          key: workspace-${{ github.run_id }}
+
+      - name: Update podman
+        run: |
+          "${GITHUB_WORKSPACE}/hack/ubuntu-podman-update.sh"
+      - name: Create a test session
+        run: ./slcli test start-stage --bsid=$BSID --testStage "Acceptance Tests"
+
+      - name: Acceptance test
+        run: make acceptance-sealights
+
+      - name: Upload test results, end test session
+        if: success() || failure()
+        run: |
+          cat ./junit-acceptance.xml
+          ./slcli test upload-reports --bsid=$BSID --report-location ./junit-acceptance.xml
+          ./slcli test end-stage --bsid=$BSID --executionId "Acceptance Tests"
