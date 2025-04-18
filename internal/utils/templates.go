@@ -151,6 +151,35 @@ func toMap(values ...interface{}) (map[string]interface{}, error) {
 	return m, nil
 }
 
+func isString(value interface{}) bool {
+	switch value.(type) {
+	case string:
+		return true
+	default:
+		return false
+	}
+}
+
+func joinStrSlice(slice []interface{}, sep string) (string, error) {
+	var b strings.Builder
+
+	for index, s := range slice {
+
+		elem, ok := s.(string)
+		if !ok {
+			return "", fmt.Errorf("joinStrSlice argument must be a slice of strings")
+		}
+
+		if index > 0 {
+			b.WriteString(sep)
+		}
+
+		b.WriteString(elem)
+	}
+
+	return b.String(), nil
+}
+
 // Can make it easier to get the right number of line breaks
 func nl() string {
 	return "\n"
@@ -166,5 +195,7 @@ var templateHelpers = template.FuncMap{
 	"indent":         indent,
 	"indentWrap":     indentWrap,
 	"toMap":          toMap,
+	"isString":       isString,
+	"joinStrSlice":   joinStrSlice,
 	"nl":             nl,
 }
