@@ -29,7 +29,6 @@ import (
 
 	"github.com/google/go-containerregistry/pkg/name"
 	gcr "github.com/google/go-containerregistry/pkg/v1"
-	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/empty"
 	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/in-toto/in-toto-golang/in_toto"
@@ -308,7 +307,7 @@ func (e *mockEvaluator) CapabilitiesPath() string {
 func TestEvaluatorLifecycle(t *testing.T) {
 	ctx := context.Background()
 	client := fake.FakeClient{}
-	client.On("Head", mock.Anything).Return(&v1.Descriptor{MediaType: types.OCIManifestSchema1}, nil)
+	client.On("Head", mock.Anything).Return(&gcr.Descriptor{MediaType: types.OCIManifestSchema1}, nil)
 	ctx = ecoci.WithClient(ctx, &client)
 	client.On("Image", name.MustParseReference(imageRegistry+"@sha256:"+imageDigest), mock.Anything).Return(empty.Image, nil)
 	client.On("Head", ref).Return(&gcr.Descriptor{MediaType: types.OCIManifestSchema1}, nil)
