@@ -222,7 +222,6 @@ spec:
       args:
         - validate
         - image
-        - "--verbose"
         - "--images"
         - "/tekton/home/snapshot.json"
         - "--policy"
@@ -251,7 +250,6 @@ spec:
         - "appstudio=$(results.TEST_OUTPUT.path)"
         - "--output"
         - "json=$(params.HOMEDIR)/report-json.json"
-        - "--logfile=$(params.HOMEDIR)/debug.log"
       env:
         - name: SSL_CERT_DIR
           # The Tekton Operator automatically sets the SSL_CERT_DIR env to the value below but,
@@ -342,18 +340,6 @@ spec:
       args:
         - ".policy"
         - "$(params.HOMEDIR)/report-json.json"
-
-    - name: debug-log
-      computeResources:
-        requests:
-          cpu: 100m
-          memory: 256Mi
-        limits:
-          memory: 256Mi
-      image: quay.io/enterprise-contract/ec-cli:snapshot
-      command: [cat]
-      args:
-        - "$(params.HOMEDIR)/debug.log"
 
     - name: assert
       computeResources:

@@ -297,27 +297,7 @@ Feature: Verify Enterprise Contract Tekton Tasks
       | IGNORE_REKOR         | true                                                                          |
       | EFFECTIVE_TIME       | 2020-01-01T00:00:00Z                                                          |
     Then the task should succeed
-      And the task logs for step "debug-log" should contain "Using provided effective time 2020-01-01T00:00:00Z"
-
-  # Previously we did allow a custom timeout to be set via the TIMEOUT param, but now it's ignored.
-  # (This test could be removed in the future, but let's keep it for now I guess.)
-  Scenario: Deprecated timeout param is ignored
-    Given a working namespace
-      And a key pair named "known"
-      And an image named "acceptance/timeout"
-      And a valid image signature of "acceptance/timeout" image signed by the "known" key
-      And a valid attestation of "acceptance/timeout" signed by the "known" key
-      And a cluster policy with content:
-      ```
-      {"publicKey": ${known_PUBLIC_KEY}}
-      ```
-    When version 0.1 of the task named "verify-enterprise-contract" is run with parameters:
-      | IMAGES               | {"components": [{"containerImage": "${REGISTRY}/acceptance/timeout"}]} |
-      | POLICY_CONFIGURATION | ${NAMESPACE}/${POLICY_NAME}                                            |
-      | IGNORE_REKOR         | true                                                                   |
-      | TIMEOUT              | 666s                                                                   |
-    Then the task should succeed
-      And the task logs for step "debug-log" should contain "globalTimeout is 100h0m0s"
+      And the task logs for step "show-config" should contain "effective-time":"2020-01-01T00:00:00Z"
 
   Scenario: SSL_CERT_DIR environment variable is customized
     Given a working namespace
