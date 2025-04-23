@@ -1,0 +1,56 @@
+{{- if .colorText -}}
+    {{- colorText .colorText.color .colorText.str -}}
+    {{- nl -}}
+{{- end -}}
+
+
+{{- if .indicator -}}
+    {{- indicator .indicator.color -}} indicator
+    {{- nl -}}
+{{- end -}}
+
+
+{{- if .colorIndicator -}}
+    {{- colorIndicator .colorIndicator.color -}} colorIndicator
+    {{- nl -}}
+{{- end -}}
+
+
+{{- if .wrap -}}
+    {{- wrap .wrap.width .wrap.s -}}
+    {{- nl -}}
+{{- end -}}
+
+
+{{- if .indent -}}
+    {{- indent .indent.n .indent.s -}}
+    {{- nl -}}
+{{- end -}}
+
+
+{{- if .indentWrap -}}
+    {{- indentWrap .indentWrap.n .indentWrap.width .indentWrap.s -}}
+    {{- nl -}}
+{{- end -}}
+
+
+{{- if .toMap -}}
+    {{- with $map := toMap .toMap.k1 .toMap.v1 .toMap.k2 .toMap.v2 -}}
+        {{- range $key, $value := $map -}}
+            {{- printf "%s: %s" $key $value -}}
+            {{- nl -}}
+        {{- end -}}
+    {{- end -}}
+    {{- nl -}}
+{{- end -}}
+
+
+{{- if .isString -}}
+    {{- if isString .isString.value -}} true {{- else -}} false {{- end -}}
+    {{- nl -}}
+{{- end -}}
+
+
+{{- if .joinStrSlice -}}
+    {{- joinStrSlice .joinStrSlice.slice .joinStrSlice.sep -}}
+{{- end -}}

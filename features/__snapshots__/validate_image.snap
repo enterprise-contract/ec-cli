@@ -76,7 +76,7 @@
 ---
 
 [JUnit and AppStudio output format:stdout - 1]
-<testsuites tests="7" failures="3"><testsuite name="Unnamed (${REGISTRY}/acceptance/image@sha256:${REGISTRY_acceptance/image:latest_DIGEST})" tests="7" failures="3" errors="0" id="0" time="" timestamp="${TIMESTAMP}"><properties><property name="image" value="${REGISTRY}/acceptance/image@sha256:${REGISTRY_acceptance/image:latest_DIGEST}"></property><property name="key" value="${known_PUBLIC_KEY_XML}"></property><property name="success" value="false"></property><property name="keyId" value=""></property><property name="signature" value="${IMAGE_SIGNATURE_acceptance/image}"></property></properties><testcase name="builtin.attestation.signature_check: Pass" classname="builtin.attestation.signature_check: Pass"></testcase><testcase name="builtin.attestation.syntax_check: Pass" classname="builtin.attestation.syntax_check: Pass"></testcase><testcase name="builtin.image.signature_check: Pass" classname="builtin.image.signature_check: Pass"></testcase><testcase name="main.acceptor: Pass" classname="main.acceptor: Pass"></testcase><testcase name="main.reject_with_term: Fails always (term1)" classname="main.reject_with_term: Fails always (term1)"><failure message="Fails always (term1)"><![CDATA[Fails always (term1)]]></failure></testcase><testcase name="main.reject_with_term: Fails always (term2)" classname="main.reject_with_term: Fails always (term2)"><failure message="Fails always (term2)"><![CDATA[Fails always (term2)]]></failure></testcase><testcase name="main.rejector: Fails always" classname="main.rejector: Fails always"><failure message="Fails always"><![CDATA[Fails always]]></failure></testcase></testsuite></testsuites>
+<testsuites tests="7" failures="3"><testsuite name="Unnamed (${REGISTRY}/acceptance/image@sha256:${REGISTRY_acceptance/image:latest_DIGEST})" tests="7" failures="3" errors="0" id="0" time="" timestamp="${TIMESTAMP}"><properties><property name="image" value="${REGISTRY}/acceptance/image@sha256:${REGISTRY_acceptance/image:latest_DIGEST}"></property><property name="key" value="${known_PUBLIC_KEY_XML}"></property><property name="success" value="false"></property><property name="keyId" value=""></property><property name="signature" value="${IMAGE_SIGNATURE_acceptance/image}"></property></properties><testcase name="builtin.attestation.signature_check: Pass" classname="builtin.attestation.signature_check: Pass"></testcase><testcase name="builtin.attestation.syntax_check: Pass" classname="builtin.attestation.syntax_check: Pass"></testcase><testcase name="builtin.image.signature_check: Pass" classname="builtin.image.signature_check: Pass"></testcase><testcase name="main.acceptor: Pass" classname="main.acceptor: Pass"></testcase><testcase name="main.reject_with_term: Fails always (term1) [term=term1]" classname="main.reject_with_term: Fails always (term1) [term=term1]"><failure message="Fails always (term1)"><![CDATA[Fails always (term1)]]></failure></testcase><testcase name="main.reject_with_term: Fails always (term2) [term=[term2 term3]]" classname="main.reject_with_term: Fails always (term2) [term=[term2 term3]]"><failure message="Fails always (term2)"><![CDATA[Fails always (term2)]]></failure></testcase><testcase name="main.rejector: Fails always" classname="main.rejector: Fails always"><failure message="Fails always"><![CDATA[Fails always]]></failure></testcase></testsuite></testsuites>
 
 ---
 
@@ -540,13 +540,18 @@ Error: success criteria not met
         {
           "msg": "Fails always (term1)",
           "metadata": {
-            "code": "main.reject_with_term"
+            "code": "main.reject_with_term",
+            "term": "term1"
           }
         },
         {
           "msg": "Fails always (term2)",
           "metadata": {
-            "code": "main.reject_with_term"
+            "code": "main.reject_with_term",
+            "term": [
+              "term2",
+              "term3"
+            ]
           }
         },
         {
@@ -1102,13 +1107,18 @@ Error: success criteria not met
         {
           "msg": "Fails always (term1)",
           "metadata": {
-            "code": "main.reject_with_term"
+            "code": "main.reject_with_term",
+            "term": "term1"
           }
         },
         {
           "msg": "Fails always (term2)",
           "metadata": {
-            "code": "main.reject_with_term"
+            "code": "main.reject_with_term",
+            "term": [
+              "term2",
+              "term3"
+            ]
           }
         },
         {
@@ -1936,6 +1946,7 @@ Results:
 [31m✕[0m [31m[Violation] main.reject_with_term[0m
   ImageRef: ${REGISTRY}/acceptance/image@sha256:${REGISTRY_acceptance/image:latest_DIGEST}
   Reason: Fails always (term1)
+  Term: term1
   Title: Reject with term rule
   Description: This rule will always fail. To exclude this rule add "main.reject_with_term:term1" to the `exclude` section of the
   policy configuration.
@@ -1944,6 +1955,7 @@ Results:
 [31m✕[0m [31m[Violation] main.reject_with_term[0m
   ImageRef: ${REGISTRY}/acceptance/image@sha256:${REGISTRY_acceptance/image:latest_DIGEST}
   Reason: Fails always (term2)
+  Terms: term2, term3
   Title: Reject with term rule
   Description: This rule will always fail. To exclude this rule add one or more of "main.reject_with_term:term2",
   "main.reject_with_term:term3" to the `exclude` section of the policy configuration.
@@ -4799,10 +4811,12 @@ Results:
 ✕ [Violation] main.reject_with_term
   ImageRef: ${REGISTRY}/acceptance/image@sha256:${REGISTRY_acceptance/image:latest_DIGEST}
   Reason: Fails always (term1)
+  Term: term1
 
 ✕ [Violation] main.reject_with_term
   ImageRef: ${REGISTRY}/acceptance/image@sha256:${REGISTRY_acceptance/image:latest_DIGEST}
   Reason: Fails always (term2)
+  Terms: term2, term3
 
 ✕ [Violation] main.rejector
   ImageRef: ${REGISTRY}/acceptance/image@sha256:${REGISTRY_acceptance/image:latest_DIGEST}
@@ -4828,13 +4842,18 @@ Error: success criteria not met
         {
           "msg": "Fails always (term1)",
           "metadata": {
-            "code": "main.reject_with_term"
+            "code": "main.reject_with_term",
+            "term": "term1"
           }
         },
         {
           "msg": "Fails always (term2)",
           "metadata": {
-            "code": "main.reject_with_term"
+            "code": "main.reject_with_term",
+            "term": [
+              "term2",
+              "term3"
+            ]
           }
         },
         {
