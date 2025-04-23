@@ -57,7 +57,29 @@ $ go env -w GOPROXY='https://proxy.golang.org,direct'
 
 #### **2. Docker Container Start Failures in Acceptance Tests**
 
-When running acceptance tests you may experience issues with starting enough Docker containers to successfully complete testing. These issues may appear as repeated failures, such as seen below, and a failed acceptance test run:
+#### **2.1 Variety of issues - podman running as a system service**
+
+Various issues may arise from the Podman service and socket running as system services rather than user services (i.e. rootful instead of rootless).
+Before attempting any other solutions, ensure that the Podman system service and socket are stopped and disabled.
+On Red Hat or Fedora systems, you can do this by executing the following commands (note: other systems may require modifications):
+
+```bash
+$ systemctl status podman.socket podman.service
+$ systemctl disable --now podman.socket podman.service
+```
+
+It is advised to do a reboot afterwards.
+
+To start Podman for the user:
+
+``` bash
+$ systemctl enable --user --now podman.socket podman.service
+```
+
+#### **2.2. Get localhost:37837: connection reset by peer**
+
+When running acceptance tests you may experience issues with starting enough Docker containers to successfully complete testing. These issues may appear as repeated failures, such as seen below, and a failed acceptance test run.
+
 ```
 time="2024-03-08T09:10:50-05:00" level=warning msg="Failed, retrying in 1s ... (3/3). Error: trying to reuse blob sha256:b5976a979c30628edfeee0a1f1797362b0c84cf6cb4760776aa64ec8e3e4c2b3 at destination: pinging container registry localhost:37837: Get \"http://localhost:37837/v2/\": read tcp 127.0.0.1:34090->127.0.0.1:37837: read: connection reset by peer"
 ```
@@ -65,6 +87,18 @@ time="2024-03-08T09:10:50-05:00" level=warning msg="Failed, retrying in 1s ... (
 This issue may be resolved by increasing the total number of `fs.inotify.max_user_watches` by executing the following on: Red Hat / Fedora systems (other systems may need modifications to this)
 ``` bash
 $ echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
+```
+
+##### **2.3. Create keyring: Disk quota exceeded**
+```
+FAIL: TestFeatures/valid_policy_URL (1.23s)
+suite.go:634: start container: container start: Error response from daemon: crun: create keyring `ab949bcc7a6f13272c70c2252e2843f8fb4376e1446fc330333d571e924feee4`: Disk quota exceeded: OCI runtime error
+```
+
+The maximum number of keys that a nonroot user may own is defined in `kernel.keys.maxkeys`. The default value is 200.
+This issue may be resolved by increasing the total number of keys by executing the following on: Red Hat / Fedora systems (other systems may need modifications to this)
+``` bash
+$ echo kernel.keys.maxkeys=1000 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
 ```
 
 #### **3. Apiserver and Rekor Host Resolution Failure**
