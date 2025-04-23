@@ -28,7 +28,6 @@ import (
 	"time"
 
 	"github.com/google/go-containerregistry/pkg/name"
-	gcr "github.com/google/go-containerregistry/pkg/v1"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/empty"
 	"github.com/google/go-containerregistry/pkg/v1/types"
@@ -76,7 +75,7 @@ func TestBuiltinChecks(t *testing.T) {
 		{
 			name: "simple success",
 			setup: func(c *fake.FakeClient) {
-				c.On("Head", ref).Return(&gcr.Descriptor{MediaType: types.OCIManifestSchema1}, nil)
+				c.On("Head", ref).Return(&v1.Descriptor{MediaType: types.OCIManifestSchema1}, nil)
 				c.On("VerifyImageSignatures", refNoTag, mock.Anything).Return([]oci.Signature{validSignature}, true, nil)
 				c.On("VerifyImageAttestations", refNoTag, mock.Anything).Return([]oci.Signature{validAttestation}, true, nil)
 			},
@@ -102,7 +101,7 @@ func TestBuiltinChecks(t *testing.T) {
 		{
 			name: "no image signatures",
 			setup: func(c *fake.FakeClient) {
-				c.On("Head", ref).Return(&gcr.Descriptor{MediaType: types.OCIManifestSchema1}, nil)
+				c.On("Head", ref).Return(&v1.Descriptor{MediaType: types.OCIManifestSchema1}, nil)
 				c.On("VerifyImageSignatures", refNoTag, mock.Anything).Return(nil, false, errors.New("no image signatures client error"))
 				c.On("VerifyImageAttestations", refNoTag, mock.Anything).Return([]oci.Signature{validAttestation}, true, nil)
 			},
@@ -118,7 +117,7 @@ func TestBuiltinChecks(t *testing.T) {
 		{
 			name: "no image attestations",
 			setup: func(c *fake.FakeClient) {
-				c.On("Head", ref).Return(&gcr.Descriptor{MediaType: types.OCIManifestSchema1}, nil)
+				c.On("Head", ref).Return(&v1.Descriptor{MediaType: types.OCIManifestSchema1}, nil)
 				c.On("VerifyImageSignatures", refNoTag, mock.Anything).Return(validSignature, true, nil)
 				c.On("VerifyImageAttestations", refNoTag, mock.Anything).Return(nil, false, errors.New("no image attestations client error"))
 			},
@@ -311,7 +310,7 @@ func TestEvaluatorLifecycle(t *testing.T) {
 	client.On("Head", mock.Anything).Return(&v1.Descriptor{MediaType: types.OCIManifestSchema1}, nil)
 	ctx = ecoci.WithClient(ctx, &client)
 	client.On("Image", name.MustParseReference(imageRegistry+"@sha256:"+imageDigest), mock.Anything).Return(empty.Image, nil)
-	client.On("Head", ref).Return(&gcr.Descriptor{MediaType: types.OCIManifestSchema1}, nil)
+	client.On("Head", ref).Return(&v1.Descriptor{MediaType: types.OCIManifestSchema1}, nil)
 	client.On("VerifyImageSignatures", refNoTag, mock.Anything).Return([]oci.Signature{validSignature}, true, nil)
 	client.On("VerifyImageAttestations", refNoTag, mock.Anything).Return([]oci.Signature{validAttestation}, true, nil)
 	client.On("ResolveDigest", refNoTag).Return("@sha256:"+imageDigest, nil)
