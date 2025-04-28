@@ -167,6 +167,10 @@ nil
   [I#/predicate/invocation/configSource/entryPoint] [S#/properties/predicate/properties/invocation/properties/configSource/properties/entryPoint/type] expected string, but got number
 ---
 
+[TestPredicateInvocationConfigSourceEntryPoint/case_3 - 1]
+nil
+---
+
 [TestPredicateInvocationParameters/case_0 - 1]
 nil
 ---
@@ -217,10 +221,6 @@ nil
 ---
 
 [TestPredicateMetadataBuildInvocationId/case_3 - 1]
-nil
----
-
-[TestPredicateInvocationConfigSourceEntryPoint/case_3 - 1]
 nil
 ---
 
@@ -407,11 +407,13 @@ nil
 ---
 
 [TestPredicateMaterialsUri/case_1 - 1]
-nil
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/predicate/materials/0/uri] [S#/properties/predicate/properties/materials/items/properties/uri/format] '' is not valid 'uri'
 ---
 
 [TestPredicateMaterialsUri/case_2 - 1]
-nil
+[I#] [S#] doesn't validate with https://slsa.dev/provenance/v0.2#
+  [I#/predicate/materials/0/uri] [S#/properties/predicate/properties/materials/items/properties/uri/format] 'not_uri' is not valid 'uri'
 ---
 
 [TestPredicateMaterialsUri/case_3 - 1]
