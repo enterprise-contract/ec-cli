@@ -316,7 +316,7 @@ spec:
       image: quay.io/enterprise-contract/ec-cli:snapshot
       command: [jq]
       args:
-        - ".policy"
+        - '{policy: .policy, key: .key, "effective-time": .["effective-time"]}'
         - "$(params.HOMEDIR)/report-json.json"
 
     - name: assert

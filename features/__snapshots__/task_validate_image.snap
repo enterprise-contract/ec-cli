@@ -276,20 +276,24 @@ success: true
 
 [Golden container image:show-config - 1]
 {
-  "sources": [
-    {
-      "policy": [
-        "git::github.com/enterprise-contract/ec-policies//policy/release?ref=0de5461c14413484575e63e96ddb514d8ab954b5",
-        "git::github.com/enterprise-contract/ec-policies//policy/lib?ref=0de5461c14413484575e63e96ddb514d8ab954b5"
-      ],
-      "config": {
-        "include": [
-          "slsa_provenance_available"
-        ]
+  "policy": {
+    "sources": [
+      {
+        "policy": [
+          "git::github.com/enterprise-contract/ec-policies//policy/release?ref=0de5461c14413484575e63e96ddb514d8ab954b5",
+          "git::github.com/enterprise-contract/ec-policies//policy/lib?ref=0de5461c14413484575e63e96ddb514d8ab954b5"
+        ],
+        "config": {
+          "include": [
+            "slsa_provenance_available"
+          ]
+        }
       }
-    }
-  ],
-  "publicKey": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAERhr8Zj4dZW67zucg8fDr11M4lmRp\nzN6SIcIjkvH39siYg1DkCoa2h2xMUZ10ecbM3/ECqvBV55YwQ2rcIEa7XQ==\n-----END PUBLIC KEY-----"
+    ],
+    "publicKey": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAERhr8Zj4dZW67zucg8fDr11M4lmRp\nzN6SIcIjkvH39siYg1DkCoa2h2xMUZ10ecbM3/ECqvBV55YwQ2rcIEa7XQ==\n-----END PUBLIC KEY-----"
+  },
+  "key": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAERhr8Zj4dZW67zucg8fDr11M4lmRp\nzN6SIcIjkvH39siYg1DkCoa2h2xMUZ10ecbM3/ECqvBV55YwQ2rcIEa7XQ==\n-----END PUBLIC KEY-----\n",
+  "effective-time": "${TIMESTAMP}"
 }
 ---
 
