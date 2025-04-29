@@ -281,7 +281,7 @@ spec:
         - name: IMAGE
           value: $(params.output-image).bundle
         - name: CONTEXT
-          value: tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml
+          value: tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml tasks/verify-conforma-konflux-ta/0.1/verify-conforma-konflux-ta.yaml
         - name: STEPS_IMAGE
           value: $(params.bundle-cli-ref-repo)@$(tasks.build-image-index.results.IMAGE_DIGEST)
         - name: URL
