@@ -151,8 +151,7 @@
             "type": "object",
             "properties": {
               "uri": {
-                "type": "string",
-                "format": "uri"
+                "type": "string"
               },
               "digest": {
                 "$ref": "#/$defs/DigestSet"
