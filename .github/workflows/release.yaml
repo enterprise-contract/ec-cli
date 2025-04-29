@@ -128,7 +128,7 @@ jobs:
       - name: Create and push the tekton bundle (quay.io/enterprise-contract/ec-task-bundle)
         env:
           TASK_REPO: quay.io/enterprise-contract/ec-task-bundle
-          TASKS: "tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml"
+          TASKS: "tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml tasks/verify-conforma-konflux-ta/0.1/verify-conforma-konflux-ta.yaml"
         run: make task-bundle-snapshot TASK_REPO=$TASK_REPO TASK_TAG=$TAG ADD_TASK_TAG="$TAG_TIMESTAMP" TASKS=<( yq e ".spec.steps[].image? = \"$IMAGE_REPO:$TAG\"" $TASKS | yq 'select(. != null)')
 
       - name: Download statistics
