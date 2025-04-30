@@ -35,6 +35,7 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/applicationsnapshot"
 	"github.com/enterprise-contract/ec-cli/internal/evaluator"
 	"github.com/enterprise-contract/ec-cli/internal/format"
+	"github.com/enterprise-contract/ec-cli/internal/image"
 	"github.com/enterprise-contract/ec-cli/internal/output"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/policy/source"
@@ -73,6 +74,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		noColor                     bool
 		forceColor                  bool
 		workers                     int
+		attestorKey                 string
 	}{
 		strict:  true,
 		workers: 5,
@@ -354,7 +356,12 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 					}
 
 					log.Debugf("Worker %d got a component %q", id, comp.ContainerImage)
-					out, err := validate(ctx, comp, data.spec, data.policy, evaluators, data.info)
+
+					vsaVerify, err := image.VerifyVSA(comp.ContainerImage, data.publicKey)
+					if err != nil {
+						fmt.Printf("error retrieving VSA: %v\n", err)
+					}
+
 					res := result{
 						err: err,
 						component: applicationsnapshot.Component{
@@ -363,34 +370,60 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 						},
 					}
 
-					// Skip on err to not panic. Error is return on routine completion.
-					if err == nil {
-						res.component.Violations = out.Violations()
-						res.component.Warnings = out.Warnings()
-
-						successes := out.Successes()
-						res.component.SuccessCount = len(successes)
-						if showSuccesses {
-							res.component.Successes = successes
-						}
-
-						res.component.Signatures = out.Signatures
-						// Create a new result object for attestations. The point is to only keep the data that's needed.
-						// For example, the Statement is only needed when the full attestation is printed.
-						for _, att := range out.Attestations {
-							attResult := applicationsnapshot.NewAttestationResult(att)
-							if containsOutput(data.output, "attestation") {
-								attResult.Statement = att.Statement()
+					if vsaVerify != nil {
+						for _, uuid := range vsaVerify.Payload {
+							for _, entry := range image.GetByUUID(uuid) {
+								var stmt applicationsnapshot.Statement
+								err := json.Unmarshal([]byte(entry), &stmt)
+								if err != nil {
+									fmt.Println("Error:", err)
+								} else {
+									res.component = stmt.Predicate.Predicate.Component
+								}
 							}
-							res.component.Attestations = append(res.component.Attestations, attResult)
 						}
-						res.component.ContainerImage = out.ImageURL
-						res.policyInput = out.PolicyInput
-					}
-					res.component.Success = err == nil && len(res.component.Violations) == 0
+					} else {
+						out, err := validate(ctx, comp, data.spec, data.policy, evaluators, data.info)
 
-					if task != nil {
-						task.End()
+						// Skip on err to not panic. Error is return on routine completion.
+						if err == nil {
+							res.component.Violations = out.Violations()
+							res.component.Warnings = out.Warnings()
+
+							successes := out.Successes()
+							res.component.SuccessCount = len(successes)
+							if showSuccesses {
+								res.component.Successes = successes
+							}
+
+							res.component.Signatures = out.Signatures
+							// Create a new result object for attestations. The point is to only keep the data that's needed.
+							// For example, the Statement is only needed when the full attestation is printed.
+							for _, att := range out.Attestations {
+								attResult := applicationsnapshot.NewAttestationResult(att)
+								if containsOutput(data.output, "attestation") {
+									attResult.Statement = att.Statement()
+								}
+								res.component.Attestations = append(res.component.Attestations, attResult)
+							}
+							res.component.ContainerImage = out.ImageURL
+							res.policyInput = out.PolicyInput
+						}
+						res.component.Success = err == nil && len(res.component.Violations) == 0
+
+						if task != nil {
+							task.End()
+						}
+
+						vsa, err := applicationsnapshot.ComponentVSA(res.component)
+						if err != nil {
+							fmt.Printf("unable to generate VSA for component: %s. %v", res.component.ContainerImage, err)
+						}
+
+						// we need a private key for the signing
+						if err := image.ToRekor(vsa, comp.ContainerImage, data.attestorKey); err != nil {
+							fmt.Println(err)
+						}
 					}
 					results <- res
 				}
@@ -472,6 +505,9 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 
 	cmd.Flags().StringVarP(&data.publicKey, "public-key", "k", data.publicKey,
 		"path to the public key. Overrides publicKey from EnterpriseContractPolicy")
+
+	cmd.Flags().StringVarP(&data.attestorKey, "attestor-key", "a", data.attestorKey,
+		"path to the private key to sign a VSA.")
 
 	cmd.Flags().StringVarP(&data.rekorURL, "rekor-url", "r", data.rekorURL,
 		"Rekor URL. Overrides rekorURL from EnterpriseContractPolicy")

@@ -110,6 +110,7 @@ Use a regular expression to match certificate attributes.
 
 == Options
 
+-a, --attestor-key:: path to the private key to sign a VSA.
 --certificate-identity:: URL of the certificate identity for keyless verification
 --certificate-identity-regexp:: Regular expression for the URL of the certificate identity for keyless verification
 --certificate-oidc-issuer:: URL of the certificate OIDC issuer for keyless verification
