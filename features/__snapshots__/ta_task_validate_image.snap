@@ -4,6 +4,29 @@
 }
 ---
 
+[Golden container image with trusted artifacts:show-config - 1]
+{
+  "policy": {
+    "sources": [
+      {
+        "policy": [
+          "git::github.com/enterprise-contract/ec-policies//policy/release?ref=d34eab36b23d43748e451004177ca144296bf323",
+          "git::github.com/enterprise-contract/ec-policies//policy/lib?ref=d34eab36b23d43748e451004177ca144296bf323"
+        ],
+        "config": {
+          "include": [
+            "slsa_provenance_available"
+          ]
+        }
+      }
+    ],
+    "publicKey": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAERhr8Zj4dZW67zucg8fDr11M4lmRp\nzN6SIcIjkvH39siYg1DkCoa2h2xMUZ10ecbM3/ECqvBV55YwQ2rcIEa7XQ==\n-----END PUBLIC KEY-----"
+  },
+  "key": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAERhr8Zj4dZW67zucg8fDr11M4lmRp\nzN6SIcIjkvH39siYg1DkCoa2h2xMUZ10ecbM3/ECqvBV55YwQ2rcIEa7XQ==\n-----END PUBLIC KEY-----\n",
+  "effective-time": "${TIMESTAMP}"
+}
+---
+
 [Golden container image with trusted artifacts:report-json - 1]
 {
   "success": true,

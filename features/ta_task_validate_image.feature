@@ -48,3 +48,5 @@ Feature: Verify Conforma Trusted Artifact Tekton Task
     Then the task should succeed
      And the task logs for step "report-json" should match the snapshot
      And the task results should match the snapshot
+     And the task logs for step "show-config" should match the snapshot
+
