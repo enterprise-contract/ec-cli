@@ -56,13 +56,13 @@ arches:
     name: cracklib-dicts
     evr: 2.9.6-27.el9
     sourcerpm: cracklib-2.9.6-27.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/e/expat-2.5.0-3.el9_5.1.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/e/expat-2.5.0-3.el9_5.3.aarch64.rpm
     repoid: ubi-9-for-aarch64-baseos-rpms
-    size: 116093
-    checksum: sha256:74734affbd72263c90faef8ab20297ef5cd5bde7805956029e1f36c60a99e973
+    size: 116872
+    checksum: sha256:a2e2bc5b5e823259ab88ee943b2ef90ca9494ea6effe68cd41cf1d3626989129
     name: expat
-    evr: 2.5.0-3.el9_5.1
-    sourcerpm: expat-2.5.0-3.el9_5.1.src.rpm
+    evr: 2.5.0-3.el9_5.3
+    sourcerpm: expat-2.5.0-3.el9_5.3.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/g/gzip-1.12-1.el9.aarch64.rpm
     repoid: ubi-9-for-aarch64-baseos-rpms
     size: 169809
@@ -200,12 +200,12 @@ arches:
     checksum: sha256:56a815a100d75c1d42c07090b632f05e51ea6d17df097d2936ab25d9aca49310
     name: cracklib
     evr: 2.9.6-27.el9
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/source/SRPMS/Packages/e/expat-2.5.0-3.el9_5.1.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/source/SRPMS/Packages/e/expat-2.5.0-3.el9_5.3.src.rpm
     repoid: ubi-9-for-aarch64-baseos-source-rpms
-    size: 8358505
-    checksum: sha256:8b3c398f73e7cfb93de1c34252c19ebd0efe4232e9b921bd01f11442b5dec8d5
+    size: 8369857
+    checksum: sha256:7fe4d7bb620cf784d2b603266e81a86e318bd7304fd502ba8c032a13d90e8919
     name: expat
-    evr: 2.5.0-3.el9_5.1
+    evr: 2.5.0-3.el9_5.3
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/source/SRPMS/Packages/g/gzip-1.12-1.el9.src.rpm
     repoid: ubi-9-for-aarch64-baseos-source-rpms
     size: 856147
@@ -322,13 +322,13 @@ arches:
     name: cracklib-dicts
     evr: 2.9.6-27.el9
     sourcerpm: cracklib-2.9.6-27.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/ppc64le/baseos/os/Packages/e/expat-2.5.0-3.el9_5.1.ppc64le.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/ppc64le/baseos/os/Packages/e/expat-2.5.0-3.el9_5.3.ppc64le.rpm
     repoid: ubi-9-for-ppc64le-baseos-rpms
-    size: 127090
-    checksum: sha256:cc94cc79f5a9c418f13e1d7298cbc2ae8f3083c7da652fd9ec77ea28ba82557f
+    size: 127840
+    checksum: sha256:916f86c33a48f5e6111fdca46bb0fcfaac1125cdd551a8f4b68ba2ba0c033035
     name: expat
-    evr: 2.5.0-3.el9_5.1
-    sourcerpm: expat-2.5.0-3.el9_5.1.src.rpm
+    evr: 2.5.0-3.el9_5.3
+    sourcerpm: expat-2.5.0-3.el9_5.3.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/ppc64le/baseos/os/Packages/g/gzip-1.12-1.el9.ppc64le.rpm
     repoid: ubi-9-for-ppc64le-baseos-rpms
     size: 175705
@@ -473,12 +473,12 @@ arches:
     checksum: sha256:56a815a100d75c1d42c07090b632f05e51ea6d17df097d2936ab25d9aca49310
     name: cracklib
     evr: 2.9.6-27.el9
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/ppc64le/baseos/source/SRPMS/Packages/e/expat-2.5.0-3.el9_5.1.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/ppc64le/baseos/source/SRPMS/Packages/e/expat-2.5.0-3.el9_5.3.src.rpm
     repoid: ubi-9-for-ppc64le-baseos-source-rpms
-    size: 8358505
-    checksum: sha256:8b3c398f73e7cfb93de1c34252c19ebd0efe4232e9b921bd01f11442b5dec8d5
+    size: 8369857
+    checksum: sha256:7fe4d7bb620cf784d2b603266e81a86e318bd7304fd502ba8c032a13d90e8919
     name: expat
-    evr: 2.5.0-3.el9_5.1
+    evr: 2.5.0-3.el9_5.3
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/ppc64le/baseos/source/SRPMS/Packages/g/gzip-1.12-1.el9.src.rpm
     repoid: ubi-9-for-ppc64le-baseos-source-rpms
     size: 856147
@@ -601,13 +601,13 @@ arches:
     name: cracklib-dicts
     evr: 2.9.6-27.el9
     sourcerpm: cracklib-2.9.6-27.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/e/expat-2.5.0-3.el9_5.1.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/e/expat-2.5.0-3.el9_5.3.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 121783
-    checksum: sha256:e9b4eb1c8a2ca7787a8ffea53b2a86533a1eb6aea72f05919c2748cd63dad32a
+    size: 122357
+    checksum: sha256:1f9ac75106263446eff27fb14e002ab228b57459b8830c58f4d1366a9987fbe5
     name: expat
-    evr: 2.5.0-3.el9_5.1
-    sourcerpm: expat-2.5.0-3.el9_5.1.src.rpm
+    evr: 2.5.0-3.el9_5.3
+    sourcerpm: expat-2.5.0-3.el9_5.3.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/g/gzip-1.12-1.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
     size: 171206
@@ -745,12 +745,12 @@ arches:
     checksum: sha256:56a815a100d75c1d42c07090b632f05e51ea6d17df097d2936ab25d9aca49310
     name: cracklib
     evr: 2.9.6-27.el9
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/e/expat-2.5.0-3.el9_5.1.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/e/expat-2.5.0-3.el9_5.3.src.rpm
     repoid: ubi-9-for-x86_64-baseos-source-rpms
-    size: 8358505
-    checksum: sha256:8b3c398f73e7cfb93de1c34252c19ebd0efe4232e9b921bd01f11442b5dec8d5
+    size: 8369857
+    checksum: sha256:7fe4d7bb620cf784d2b603266e81a86e318bd7304fd502ba8c032a13d90e8919
     name: expat
-    evr: 2.5.0-3.el9_5.1
+    evr: 2.5.0-3.el9_5.3
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/g/gzip-1.12-1.el9.src.rpm
     repoid: ubi-9-for-x86_64-baseos-source-rpms
     size: 856147
