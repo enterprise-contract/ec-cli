@@ -92,7 +92,7 @@ git clone https://github.com/sigstore/scaffolding.git "${scaffolding}"
 pushd "${scaffolding}" > /dev/null
 git checkout v0.7.22
 ./hack/setup-kind.sh
-export KO_DOCKER_REPO='registry.local:5000/sigstore'
+export KO_DOCKER_REPO='registry.local:5001/sigstore'
 ./hack/setup-scaffolding.sh
 # Setup the dummy OIDC issuer
 LDFLAGS='' ko apply -BRf ./testdata/config/gettoken
@@ -102,7 +102,7 @@ export TUF_ROOT="${WORKDIR}/tuf_root"
 mkdir -p "${TUF_ROOT}"
 
 function make_image() {
-    repo='registry.local:5000/sigstore/testimage'
+    repo='registry.local:5001/sigstore/testimage'
     container="$(buildah from scratch)"
     image="$(buildah commit "${container}")"
     digestfile="$(mktemp)"
