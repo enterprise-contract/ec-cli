@@ -197,7 +197,7 @@ rm -rf "${recordings}"
 docker run -d --rm --network=host -e uid="$(id -u)" \
     --name wiremock.local \
     -v "${recordings}:/home/wiremock:Z" \
-    wiremock/wiremock:2.33.2 \
+    wiremock/wiremock:3.13.0-1 \
     --proxy-all="${TUF_MIRROR}" \
     --record-mappings \
     --verbose
