@@ -4,7 +4,7 @@
 # description: >-
 #   This package is responsible defining policy rules that can be used to
 #   showcase the filtering logic with include/exclude/collection.
-package policy.filtering
+package filtering
 
 import rego.v1
 

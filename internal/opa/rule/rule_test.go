@@ -496,6 +496,7 @@ func TestCode(t *testing.T) {
 				deny if { true }`)),
 			expected: "a.b.c.x",
 		},
+		// Test cases from here down will be removed soon (EC-945)
 		{
 			name: "nested packages with policy package",
 			annotation: annotationRef(heredoc.Doc(`
@@ -505,7 +506,7 @@ func TestCode(t *testing.T) {
 				# custom:
 				#   short_name: x
 				deny if { true }`)),
-			expected: "a.b.c.x",
+			expected: "policy.a.b.c.x",
 		},
 		{
 			name: "nested packages with policy.data package",
@@ -516,7 +517,7 @@ func TestCode(t *testing.T) {
 				# custom:
 				#   short_name: x
 				deny if { true }`)),
-			expected: "data.a.b.c.x",
+			expected: "policy.data.a.b.c.x",
 		},
 		{
 			name: "nested packages with data package in regular part",
@@ -549,7 +550,7 @@ func TestCode(t *testing.T) {
 				# custom:
 				#   short_name: x
 				deny if { true }`)),
-			expected: "a.b.c.x",
+			expected: "policy.release.a.b.c.x",
 		},
 		{
 			name: "pipeline category",
@@ -560,7 +561,7 @@ func TestCode(t *testing.T) {
 				# custom:
 				#   short_name: x
 				deny if { true }`)),
-			expected: "a.b.c.x",
+			expected: "policy.pipeline.a.b.c.x",
 		},
 		{
 			name: "build_task category",
@@ -571,7 +572,7 @@ func TestCode(t *testing.T) {
 				# custom:
 				#   short_name: x
 				deny if { true }`)),
-			expected: "a.b.c.x",
+			expected: "policy.build_task.a.b.c.x",
 		},
 		{
 			name: "task category",
@@ -582,7 +583,7 @@ func TestCode(t *testing.T) {
 				# custom:
 				#   short_name: x
 				deny if { true }`)),
-			expected: "a.b.c.x",
+			expected: "policy.task.a.b.c.x",
 		},
 		{
 			name: "unknown category",
@@ -593,7 +594,7 @@ func TestCode(t *testing.T) {
 				# custom:
 				#   short_name: x
 				deny if { true }`)),
-			expected: "something.a.b.c.x",
+			expected: "policy.something.a.b.c.x",
 		},
 		{
 			name: "without just known category package",
@@ -604,7 +605,7 @@ func TestCode(t *testing.T) {
 				# custom:
 				#   short_name: x
 				deny if { true }`)),
-			expected: "x",
+			expected: "release.x",
 		},
 	}
 

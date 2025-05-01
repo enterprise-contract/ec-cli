@@ -1,4 +1,4 @@
-package policy.release.kitty
+package kitty
 
 import rego.v1
 

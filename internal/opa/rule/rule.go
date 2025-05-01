@@ -190,34 +190,12 @@ func packageName(a *ast.AnnotationsRef) string {
 	return strings.Join(packages(a), ".")
 }
 
-var knownRuleCategories = map[string]bool{
-	// These are the "namespaces" used in https://github.com/enterprise-contract/ec-policies/tree/main/policy
-	// Hard-coding a list of known strings is not ideal. https://issues.redhat.com/browse/EC-864 is
-	// a potential way forward.
-	"build_task": true,
-	"pipeline":   true,
-	"release":    true,
-	"task":       true,
-}
-
 func codePackage(a *ast.AnnotationsRef) string {
 	if a == nil {
 		return ""
 	}
 
 	packages := packages(a)
-
-	l := len(packages)
-
-	if len(packages) > 0 && packages[0] == "policy" {
-		// remove the policy package
-		packages = packages[1:]
-	}
-
-	if l > 0 && knownRuleCategories[packages[0]] {
-		// remove any known rule categories
-		packages = packages[1:]
-	}
 
 	return strings.Join(packages, ".")
 }

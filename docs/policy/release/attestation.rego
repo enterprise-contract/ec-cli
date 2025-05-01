@@ -6,7 +6,7 @@
 #   Note that builtin policies are always included and cannot be skipped
 #   regardless of your policy.
 #
-package policy.release.builtin.attestation
+package builtin.attestation
 
 import rego.v1
 

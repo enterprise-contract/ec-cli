@@ -6,7 +6,7 @@
 #   builtin policies are always included and cannot be skipped regardless of
 #   your policy configuration.
 #
-package policy.release.builtin.image
+package builtin.image
 
 import rego.v1
 

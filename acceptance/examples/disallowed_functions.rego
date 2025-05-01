@@ -4,7 +4,7 @@
 # description: >-
 #   This package is responsible defining policy rules that can be used to
 #   test that certain rego functions are not allowed.
-package policy.capabilities
+package capabilities
 
 import rego.v1
 

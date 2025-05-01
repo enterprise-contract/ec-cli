@@ -86,7 +86,7 @@ func Test_RegoTextOutput(t *testing.T) {
 			source:   "spam.io/bacon-bundle",
 			annJson:  fooBarDeny,
 			template: "short-names",
-			expected: "foo.bar.rule_title\n",
+			expected: "policy.foo.bar.rule_title\n",
 			err:      nil,
 		},
 		{
