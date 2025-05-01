@@ -90,7 +90,7 @@ scaffolding="${WORKDIR}/scaffolding"
 mkdir -p "${scaffolding}"
 git clone https://github.com/sigstore/scaffolding.git "${scaffolding}"
 pushd "${scaffolding}" > /dev/null
-git checkout v0.4.13
+git checkout v0.7.22
 ./hack/setup-kind.sh
 export KO_DOCKER_REPO='registry.local:5000/sigstore'
 ./hack/setup-scaffolding.sh
