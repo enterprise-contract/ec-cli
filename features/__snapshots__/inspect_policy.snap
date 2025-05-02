@@ -96,11 +96,13 @@ Fluffy
 # Source: git::${GITHOST}/git/policy2.git?ref=${LATEST_COMMIT}
 
 main.rejector (deny)
+https://conforma.dev/docs/ec-policies/release_policy.html#main__rejector
 Reject rule
 This rule will always fail
 [A]
 --
 main.reject_with_term (deny)
+https://conforma.dev/docs/ec-policies/release_policy.html#main__reject_with_term
 Reject with term rule
 This rule will always fail
 [A]
