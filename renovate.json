@@ -1,7 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "github>konflux-ci/mintmaker//config/renovate/renovate.json",
     "github>conforma/.github//config/renovate/renovate.json"
   ],
   "baseBranches": ["main", "release-v0.5", "release-v0.6"]
