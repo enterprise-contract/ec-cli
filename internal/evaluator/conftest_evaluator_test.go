@@ -1387,7 +1387,6 @@ func TestCollectAnnotationData(t *testing.T) {
 	assert.Equal(t, policyRules{
 		"a.b.c.short": {
 			Code:             "a.b.c.short",
-			CodePackage:      "a.b.c",
 			Collections:      []string{"A", "B", "C"},
 			DependsOn:        []string{"a.b.c"},
 			Description:      "Description",

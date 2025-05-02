@@ -190,28 +190,12 @@ func packageName(a *ast.AnnotationsRef) string {
 	return strings.Join(packages(a), ".")
 }
 
-func codePackage(a *ast.AnnotationsRef) string {
-	if a == nil {
-		return ""
-	}
-
-	packages := packages(a)
-
-	return strings.Join(packages, ".")
-}
-
 func code(a *ast.AnnotationsRef) string {
 	if a == nil {
 		return ""
 	}
 
-	codePackage := codePackage(a)
-
-	if codePackage == "" {
-		return shortName(a)
-	}
-
-	return fmt.Sprintf("%s.%s", codePackage, shortName(a))
+	return fmt.Sprintf("%s.%s", packageName(a), shortName(a))
 }
 
 func documentationUrl(a *ast.AnnotationsRef) string {
@@ -279,7 +263,6 @@ const (
 
 type Info struct {
 	Code             string
-	CodePackage      string
 	Collections      []string
 	DependsOn        []string
 	Description      string
@@ -296,7 +279,6 @@ type Info struct {
 func RuleInfo(a *ast.AnnotationsRef) Info {
 	return Info{
 		Code:             code(a),
-		CodePackage:      codePackage(a),
 		Collections:      collections(a),
 		Description:      description(a),
 		DependsOn:        dependsOn(a),
