@@ -868,7 +868,9 @@ func scoreMatches(needles, haystack []string) int {
 //  1. If the name starts with "@" the returned score is exactly 10, e.g. "@collection". No
 //     further processing is done.
 //  2. Add 1 if the name covers everything, i.e. "*"
-//  3. Add 10 if the name specifies a package name, e.g. "pkg", "pkg.", "pkg.*", or "pkg.rule"
+//  3. Add 10 if the name specifies a package name, e.g. "pkg", "pkg.", "pkg.*", or "pkg.rule",
+//     and an additional 10 based on the namespace depth of the pkg, e.g. "a.pkg.rule" adds 10
+//     more, "a.b.pkg.rule" adds 20, etc
 //  4. Add 100 if a term is used, e.g. "*:term", "pkg:term" or "pkg.rule:term"
 //  5. Add 100 if a rule is used, e.g. "pkg.rule", "pkg.rule:term"
 //
@@ -883,14 +885,36 @@ func score(name string) int {
 	if term != "" {
 		value += 100
 	}
-	pkg, rule, _ := strings.Cut(shortName, ".")
-	if pkg == "*" {
-		value += 1
-	} else {
-		value += 10
-	}
-	if rule != "*" && rule != "" {
-		value += 100
+	nameSplit := strings.Split(shortName, ".")
+	nameSplitLen := len(nameSplit)
+
+	if nameSplitLen == 1 {
+		// When there are no dots we assume the name refers to a
+		// package and any rule inside the package is matched
+		if shortName == "*" {
+			value += 1
+		} else {
+			value += 10
+		}
+	} else if nameSplitLen > 1 {
+		// When there is at least one dot we assume the last element
+		// is the rule and everything else is the package path
+		rule := nameSplit[nameSplitLen-1]
+		pkg := strings.Join(nameSplit[:nameSplitLen-1], ".")
+
+		if pkg == "*" {
+			// E.g. "*.rule", a weird edge case
+			value += 1
+		} else {
+			// E.g. "pkg.rule" or "path.pkg.rule"
+			value += 10 * (nameSplitLen - 1)
+		}
+
+		if rule != "*" && rule != "" {
+			// E.g. "pkg.rule" so a specific rule was specified
+			value += 100
+		}
+
 	}
 	return value
 }

@@ -1573,8 +1573,24 @@ func TestNameScoring(t *testing.T) {
 			score: 110,
 		},
 		{
+			name:  "path.pkg:term",
+			score: 210,
+		},
+		{
+			name:  "path.path.pkg:term",
+			score: 220,
+		},
+		{
 			name:  "pkg.rule:term",
 			score: 210,
+		},
+		{
+			name:  "path.pkg.rule:term",
+			score: 220,
+		},
+		{
+			name:  "path.path.pkg.rule:term",
+			score: 230,
 		},
 	}
 
