@@ -288,9 +288,15 @@ spec:
     - name: report-json
       image: quay.io/enterprise-contract/ec-cli:snapshot
       onError: continue  # progress even if the step fails so we can see the debug logs
-      command: [cat]
+      command: [sh, -c]
       args:
-        - "$(params.HOMEDIR)/report-json.json"
+        # Format the JSON output to wrap lines at 8000 characters per line.
+        # The report can get very large, so add some line breaks
+        # rather than print it as a single line. This makes it easier to render
+        # in the UI, easier to copy/paste, and less likely to cause problems
+        # with logging systems or other consumers of the data (assuming they
+        # correctly parse the full output).
+        - "jq . $(params.HOMEDIR)/report-json.json | awk '{gsub(/^ +/, \"\"); acc += length; if (acc >= 8000) { printf \"\\n\"; acc=length } printf $0 }'"
 
     - name: summary
       image: quay.io/enterprise-contract/ec-cli:snapshot
