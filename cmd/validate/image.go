@@ -245,11 +245,13 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 						if src.RuleData != nil {
 							rule_data_raw, err = src.RuleData.MarshalJSON()
 							if err != nil {
-								log.Errorf("Unable to parse ruledata to raw data")
+								allErrors = errors.Join(allErrors, fmt.Errorf("Unable to parse ruledata to raw data"))
+								continue
 							}
 							err = json.Unmarshal(rule_data_raw, &unmarshaled)
 							if err != nil {
-								log.Errorf("Unable to parse ruledata into standard JSON object")
+								allErrors = errors.Join(allErrors, fmt.Errorf("Unable to parse ruledata into standard JSON object"))
+								continue
 							}
 						} else {
 							sources[i].RuleData = new(extv1.JSON)
@@ -258,26 +260,31 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 						for j := range data.extraRuleData {
 							parts := strings.SplitN(data.extraRuleData[j], "=", 2)
 							if len(parts) < 2 {
-								log.Errorf("Incorrect syntax for --extra-rule-data")
+								allErrors = errors.Join(allErrors, fmt.Errorf("Incorrect syntax for --extra-rule-data %d", j))
+								continue
 							}
 							extraRuleDataPolicyConfig, err := validate_utils.GetPolicyConfig(ctx, parts[1])
 							if err != nil {
-								log.Errorf("Unable to load data from extraRuleData: %s", err.Error())
+								allErrors = errors.Join(allErrors, fmt.Errorf("Unable to load data from extraRuleData: %s", err.Error()))
+								continue
 							}
 							unmarshaled[parts[0]] = extraRuleDataPolicyConfig
 						}
 						rule_data_raw, err = json.Marshal(unmarshaled)
 						if err != nil {
-							log.Errorf("Unable to parse updated ruledata: %s", err.Error())
+							allErrors = errors.Join(allErrors, fmt.Errorf("Unable to parse updated ruledata: %s", err.Error()))
+							continue
 						}
 
 						if rule_data_raw == nil {
-							log.Errorf("Invalid rule data JSON")
+							allErrors = errors.Join(allErrors, fmt.Errorf("Invalid rule data JSON"))
+							continue
 						}
 
 						err = sources[i].RuleData.UnmarshalJSON(rule_data_raw)
 						if err != nil {
-							log.Errorf("Unable to marshal updated JSON: %s", err.Error())
+							allErrors = errors.Join(allErrors, fmt.Errorf("Unable to marshal updated JSON: %s", err.Error()))
+							continue
 						}
 					}
 					policySpec.Sources = sources
