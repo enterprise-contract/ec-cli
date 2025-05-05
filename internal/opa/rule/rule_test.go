@@ -447,11 +447,12 @@ func TestCollections(t *testing.T) {
 	}
 }
 
-func TestCode(t *testing.T) {
+func TestCodeAndDocumentationUrl(t *testing.T) {
 	cases := []struct {
-		name       string
-		annotation *ast.AnnotationsRef
-		expected   string
+		name        string
+		annotation  *ast.AnnotationsRef
+		expected    string
+		expectedUrl string
 	}{
 		{
 			name:       "no code",
@@ -464,7 +465,8 @@ func TestCode(t *testing.T) {
 				package a
 				import rego.v1
 				deny if { true }`)),
-			expected: "",
+			expected:    "",
+			expectedUrl: "",
 		},
 		{
 			name: "with short_name",
@@ -475,7 +477,8 @@ func TestCode(t *testing.T) {
 				# custom:
 				#   short_name: x
 				deny if { true }`)),
-			expected: "a.x",
+			expected:    "a.x",
+			expectedUrl: "https://conforma.dev/docs/ec-policies/release_policy.html#a__x",
 		},
 		{
 			name: "nested packages no annotations",
@@ -483,7 +486,8 @@ func TestCode(t *testing.T) {
 				package a.b.c
 				import rego.v1
 				deny if { true }`)),
-			expected: "",
+			expected:    "",
+			expectedUrl: "",
 		},
 		{
 			name: "nested packages with short_name",
@@ -494,13 +498,15 @@ func TestCode(t *testing.T) {
 				# custom:
 				#   short_name: x
 				deny if { true }`)),
-			expected: "a.b.c.x",
+			expected:    "a.b.c.x",
+			expectedUrl: "https://conforma.dev/docs/ec-policies/release_policy.html#c__x",
 		},
 	}
 
 	for i, c := range cases {
 		t.Run(fmt.Sprintf("[%d] - %s", i, c.name), func(t *testing.T) {
 			assert.Equal(t, c.expected, code(c.annotation))
+			assert.Equal(t, c.expectedUrl, documentationUrl(c.annotation))
 		})
 	}
 }
