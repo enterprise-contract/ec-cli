@@ -164,7 +164,6 @@ func GetByUUID(uuid string) []string {
 			fmt.Println(err)
 		}
 
-		var e models.LogEntryAnon
 		for k, entry := range resp.Payload {
 			// retrieve rekor pubkey for verification
 			treeID, err := sharding.TreeID(k)
@@ -176,18 +175,24 @@ func GetByUUID(uuid string) []string {
 				fmt.Printf("retrieving rekor public key: %w", err)
 			}
 
+			fmt.Printf("params.EntryUUID: %s\n", params.EntryUUID)
+			fmt.Printf("k: %s\n", k)
 			if err := compareEntryUUIDs(params.EntryUUID, k); err != nil {
-				fmt.Println(err)
+				fmt.Printf("error comparing entry UUIDs: %w\n", err)
 			}
 
 			// verify log entry
-			e = entry
-			if err := verify.VerifyLogEntry(context.Background(), &e, verifier); err != nil {
+			if entry.Body != nil {
+				fmt.Printf("entry: %#v\n", entry)
+			} else {
+				fmt.Printf("entry is empty\n")
+			}
+			if err := verify.VerifyLogEntry(context.Background(), &entry, verifier); err != nil {
 				fmt.Printf("unable to verify entry was added to log: %w", err)
 			}
 
-			entry, _ := parseEntry(k, entry)
-			logEntries = append(logEntries, entry.Attestation)
+			e, _ := parseEntry(k, entry)
+			logEntries = append(logEntries, e.Attestation)
 
 		}
 	}
@@ -298,7 +303,7 @@ func fileSHA256(path string) (string, error) {
 	// 2) Create a new SHA‑256 hash
 	hasher := sha256.New()
 
-	// 3) Copy the file’s contents into the hash
+	// 3) Copy the file's contents into the hash
 	if _, err := io.Copy(hasher, f); err != nil {
 		return "", fmt.Errorf("hashing file: %w", err)
 	}

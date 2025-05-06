@@ -69,7 +69,7 @@ func ComponentVSA(comp Component) ([]byte, error) {
 				"sha256": "3e1f8b9a4e6e1f795b084fc7e0e18b427826f0d9f78e2dbe7e5a9fd6541bd0e9",
 			},
 		},
-		Component: comp,
+		Component: Component{},
 	}
 
 	// 2) Marshal it to JSON bytes

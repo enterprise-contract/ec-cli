@@ -369,7 +369,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 							Success:           err == nil,
 						},
 					}
-					vsaVerify = nil
+					// vsaVerify = nil
 					if vsaVerify != nil {
 						for _, uuid := range vsaVerify.Payload {
 							for _, entry := range image.GetByUUID(uuid) {
@@ -425,7 +425,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 							fmt.Println(err)
 						}
 					}
-					fmt.Printf("res: %#v\n", res)
+					// fmt.Printf("res: %#v\n", res)
 					results <- res
 				}
 				log.Debugf("Done with worker %d", id)
