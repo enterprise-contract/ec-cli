@@ -124,6 +124,31 @@ Feature: evaluate enterprise contract
     Then the exit status should be 0
     Then the output should match the snapshot
 
+  Scenario: happy day with invalid extra rule data
+    Given a key pair named "known"
+    Given an image named "acceptance/ec-happy-day"
+    Given a valid image signature of "acceptance/ec-happy-day" image signed by the "known" key
+    Given a valid Rekor entry for image signature of "acceptance/ec-happy-day"
+    Given a valid attestation of "acceptance/ec-happy-day" signed by the "known" key
+    Given a valid Rekor entry for attestation of "acceptance/ec-happy-day"
+    Given a git repository named "happy-day-policy" with
+      | main.rego | examples/happy_day.rego |
+    Given policy configuration named "ec-policy" with specification
+    """
+    {
+      "sources": [
+        {
+          "policy": [
+            "git::https://${GITHOST}/git/happy-day-policy.git"
+          ]
+        }
+      ]
+    }
+    """
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --extra-rule-data key-without-value-1,key-without-value-2 --show-successes --output json"
+    Then the exit status should be 1
+    Then the output should match the snapshot
+
   Scenario: invalid image signature
     Given a key pair named "known"
     Given a key pair named "unknown"

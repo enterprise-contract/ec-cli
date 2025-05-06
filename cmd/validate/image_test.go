@@ -24,7 +24,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"strings"
 	"testing"
 	"time"
 
@@ -33,8 +32,6 @@ import (
 	"github.com/gkampitakis/go-snaps/snaps"
 	app "github.com/konflux-ci/application-api/api/v1alpha1"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
-	log "github.com/sirupsen/logrus"
-	"github.com/sirupsen/logrus/hooks/test"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -756,31 +753,65 @@ func Test_ValidateImageCommandEmptyPolicyFile(t *testing.T) {
 	assert.EqualError(t, err, "file /policy.yaml is empty")
 }
 
-func Test_ValidateImageErrorLog(t *testing.T) {
-	// TODO: Enhance this test to cover other Error Log messages
-	logger, hook := test.NewNullLogger()
-	logger.SetLevel(log.DebugLevel)
-	log.StandardLogger().ReplaceHooks(make(log.LevelHooks))
-	log.AddHook(hook)
+func Test_ValidateImageError(t *testing.T) {
+	cases := []struct {
+		name     string
+		args     []string
+		expected string
+	}{
+		{
+			name: "image validation failure: incorrect syntax for extraRuleData",
+			args: []string{
+				"--image",
+				"registry/image:tag",
+				"--public-key",
+				utils.TestPublicKey,
+				"--policy",
+				"/policy.yaml",
+				"--extra-rule-data",
+				"key-without-value-1,key-without-value-2",
+			},
+			expected: "Incorrect syntax for --extra-rule-data 0\nIncorrect syntax for --extra-rule-data 1",
+		},
+		{
+			name: "image validation failure: unable to load extraRuleData",
+			args: []string{
+				"--image",
+				"registry/image:tag",
+				"--public-key",
+				utils.TestPublicKey,
+				"--policy",
+				"/policy.yaml",
+				"--extra-rule-data",
+				"key=/value.json",
+			},
+			expected: "Unable to load data from extraRuleData: file /value.json is empty",
+		},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			validateImageCmd := validateImageCmd(happyValidator())
+			cmd := setUpCobra(validateImageCmd)
 
-	validateImageCmd := validateImageCmd(happyValidator())
-	cmd := setUpCobra(validateImageCmd)
+			fs := afero.NewMemMapFs()
 
-	fs := afero.NewMemMapFs()
+			ctx := utils.WithFS(context.Background(), fs)
+			client := fake.FakeClient{}
+			commonMockClient(&client)
+			ctx = oci.WithClient(ctx, &client)
 
-	ctx := utils.WithFS(context.Background(), fs)
-	client := fake.FakeClient{}
-	commonMockClient(&client)
-	ctx = oci.WithClient(ctx, &client)
+			mdl := MockDownloader{}
+			mdl.
+				On("Download", mock.Anything, "oci://registry/policy:latest", false).
+				Return(&ociMetadata.OCIMetadata{Digest: "sha256:da54bca5477bf4e3449bc37de1822888fa0fbb8d89c640218cb31b987374d357"}, nil)
+			mdl.
+				On("Download", mock.Anything, "oci://registry/policy-data:latest", false).
+				Return(&ociMetadata.OCIMetadata{Digest: "sha256:da54bca5477bf4e3449bc37de1822888fa0fbb8d89c640218cb31b987374d357"}, nil)
+			ctx = context.WithValue(ctx, source.DownloaderFuncKey, &mdl)
 
-	mdl := MockDownloader{}
-	mdl.On("Download", mock.Anything, "oci://registry/policy:latest", false).Return(&ociMetadata.OCIMetadata{Digest: "sha256:da54bca5477bf4e3449bc37de1822888fa0fbb8d89c640218cb31b987374d357"}, nil)
-	mdl.On("Download", mock.Anything, "oci://registry/policy-data:latest", false).Return(&ociMetadata.OCIMetadata{Digest: "sha256:da54bca5477bf4e3449bc37de1822888fa0fbb8d89c640218cb31b987374d357"}, nil)
-	ctx = context.WithValue(ctx, source.DownloaderFuncKey, &mdl)
+			cmd.SetContext(ctx)
 
-	cmd.SetContext(ctx)
-
-	testPolicyJSON := `sources:
+			testPolicyJSON := `sources:
   - policy:
       - "oci://registry/policy:latest"
     data:
@@ -790,45 +821,27 @@ func Test_ValidateImageErrorLog(t *testing.T) {
         - '@minimal'
       exclude: []
 `
-	err := afero.WriteFile(fs, "/policy.yaml", []byte(testPolicyJSON), 0644)
-	if err != nil {
-		panic(err)
+			err := afero.WriteFile(fs, "/policy.yaml", []byte(testPolicyJSON), 0644)
+			if err != nil {
+				panic(err)
+			}
+
+			err = afero.WriteFile(fs, "/value.json", []byte(nil), 0644)
+			if err != nil {
+				panic(err)
+			}
+			args := append(rootArgs, c.args...)
+			cmd.SetArgs(args)
+
+			var out bytes.Buffer
+			cmd.SetOut(&out)
+
+			utils.SetTestRekorPublicKey(t)
+
+			err = cmd.Execute()
+			assert.EqualError(t, err, c.expected)
+		})
 	}
-
-	err = afero.WriteFile(fs, "/value.json", []byte(nil), 0644)
-	if err != nil {
-		panic(err)
-	}
-	args := append(rootArgs, []string{
-		"--image",
-		"registry/image:tag",
-		"--public-key",
-		utils.TestPublicKey,
-		"--policy",
-		"/policy.yaml",
-		"--extra-rule-data",
-		"key=/value.json",
-	}...)
-	cmd.SetArgs(args)
-
-	var out bytes.Buffer
-	cmd.SetOut(&out)
-
-	utils.SetTestRekorPublicKey(t)
-
-	err = cmd.Execute()
-	assert.NoError(t, err)
-
-	errorMsg := "Unable to load data from extraRuleData: file /value.json is empty"
-	found := false
-	for _, entry := range hook.AllEntries() {
-		if strings.Contains(entry.Message, errorMsg) {
-			found = true
-			break
-		}
-	}
-	assert.True(t, found, "Error message should have the pre-defined string", errorMsg)
-	log.StandardLogger().ReplaceHooks(make(log.LevelHooks))
 }
 
 func Test_ValidateErrorCommand(t *testing.T) {
