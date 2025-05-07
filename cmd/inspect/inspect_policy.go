@@ -200,7 +200,7 @@ func ruleNameMatches(rule string, info opaRule.Info) bool {
 }
 
 func packageNameMatches(pkg string, info opaRule.Info) bool {
-	for _, name := range []string{info.CodePackage, info.Package} {
+	for _, name := range []string{info.Package} {
 		if name == pkg {
 			return true
 		}

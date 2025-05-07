@@ -32,14 +32,6 @@ Error: Merge error. The 'rule_data' key was found more than once!
         },
         {
           "type": "string",
-          "value": "policy"
-        },
-        {
-          "type": "string",
-          "value": "release"
-        },
-        {
-          "type": "string",
           "value": "kitty"
         },
         {
@@ -59,7 +51,7 @@ Error: Merge error. The 'rule_data' key was found more than once!
 [default output:stdout - 1]
 # Source: git::${GITHOST}/git/policy.git?ref=${LATEST_COMMIT}
 
-policy.release.kitty.purr (deny)
+kitty.purr (deny)
 https://conforma.dev/docs/ec-policies/release_policy.html#kitty__purr
 Kittens
 Fluffy
@@ -94,9 +86,9 @@ kitty.purr
 ---
 
 [sources from ECP:stdout - 1]
-# Source: git::${GITHOST}/git/policy1.git?ref=5c216ecae44c9bd76cca3e6cce95892289a07db0
+# Source: git::${GITHOST}/git/policy1.git?ref=f81eaf65be8da58460ff920408ba1313051184a1
 
-policy.release.kitty.purr (deny)
+kitty.purr (deny)
 https://conforma.dev/docs/ec-policies/release_policy.html#kitty__purr
 Kittens
 Fluffy
@@ -104,11 +96,13 @@ Fluffy
 # Source: git::${GITHOST}/git/policy2.git?ref=${LATEST_COMMIT}
 
 main.rejector (deny)
+https://conforma.dev/docs/ec-policies/release_policy.html#main__rejector
 Reject rule
 This rule will always fail
 [A]
 --
 main.reject_with_term (deny)
+https://conforma.dev/docs/ec-policies/release_policy.html#main__reject_with_term
 Reject with term rule
 This rule will always fail
 [A]

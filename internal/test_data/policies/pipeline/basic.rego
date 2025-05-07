@@ -1,4 +1,4 @@
-package policy.pipeline.basic
+package basic
 
 import rego.v1
 

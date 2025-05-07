@@ -447,11 +447,12 @@ func TestCollections(t *testing.T) {
 	}
 }
 
-func TestCode(t *testing.T) {
+func TestCodeAndDocumentationUrl(t *testing.T) {
 	cases := []struct {
-		name       string
-		annotation *ast.AnnotationsRef
-		expected   string
+		name        string
+		annotation  *ast.AnnotationsRef
+		expected    string
+		expectedUrl string
 	}{
 		{
 			name:       "no code",
@@ -464,7 +465,8 @@ func TestCode(t *testing.T) {
 				package a
 				import rego.v1
 				deny if { true }`)),
-			expected: "",
+			expected:    "",
+			expectedUrl: "",
 		},
 		{
 			name: "with short_name",
@@ -475,7 +477,8 @@ func TestCode(t *testing.T) {
 				# custom:
 				#   short_name: x
 				deny if { true }`)),
-			expected: "a.x",
+			expected:    "a.x",
+			expectedUrl: "https://conforma.dev/docs/ec-policies/release_policy.html#a__x",
 		},
 		{
 			name: "nested packages no annotations",
@@ -483,7 +486,8 @@ func TestCode(t *testing.T) {
 				package a.b.c
 				import rego.v1
 				deny if { true }`)),
-			expected: "",
+			expected:    "",
+			expectedUrl: "",
 		},
 		{
 			name: "nested packages with short_name",
@@ -494,123 +498,15 @@ func TestCode(t *testing.T) {
 				# custom:
 				#   short_name: x
 				deny if { true }`)),
-			expected: "a.b.c.x",
-		},
-		{
-			name: "nested packages with policy package",
-			annotation: annotationRef(heredoc.Doc(`
-				package policy.a.b.c
-				import rego.v1
-				# METADATA
-				# custom:
-				#   short_name: x
-				deny if { true }`)),
-			expected: "a.b.c.x",
-		},
-		{
-			name: "nested packages with policy.data package",
-			annotation: annotationRef(heredoc.Doc(`
-				package policy.data.a.b.c
-				import rego.v1
-				# METADATA
-				# custom:
-				#   short_name: x
-				deny if { true }`)),
-			expected: "data.a.b.c.x",
-		},
-		{
-			name: "nested packages with data package in regular part",
-			annotation: annotationRef(heredoc.Doc(`
-				package a.data.b.c
-				import rego.v1
-				# METADATA
-				# custom:
-				#   short_name: x
-				deny if { true }`)),
-			expected: "a.data.b.c.x",
-		},
-		{
-			name: "nested packages with policy package in regular part",
-			annotation: annotationRef(heredoc.Doc(`
-				package a.policy.b.c
-				import rego.v1
-				# METADATA
-				# custom:
-				#   short_name: x
-				deny if { true }`)),
-			expected: "a.policy.b.c.x",
-		},
-		{
-			name: "release category",
-			annotation: annotationRef(heredoc.Doc(`
-				package policy.release.a.b.c
-				import rego.v1
-				# METADATA
-				# custom:
-				#   short_name: x
-				deny if { true }`)),
-			expected: "a.b.c.x",
-		},
-		{
-			name: "pipeline category",
-			annotation: annotationRef(heredoc.Doc(`
-				package policy.pipeline.a.b.c
-				import rego.v1
-				# METADATA
-				# custom:
-				#   short_name: x
-				deny if { true }`)),
-			expected: "a.b.c.x",
-		},
-		{
-			name: "build_task category",
-			annotation: annotationRef(heredoc.Doc(`
-				package policy.build_task.a.b.c
-				import rego.v1
-				# METADATA
-				# custom:
-				#   short_name: x
-				deny if { true }`)),
-			expected: "a.b.c.x",
-		},
-		{
-			name: "task category",
-			annotation: annotationRef(heredoc.Doc(`
-				package policy.task.a.b.c
-				import rego.v1
-				# METADATA
-				# custom:
-				#   short_name: x
-				deny if { true }`)),
-			expected: "a.b.c.x",
-		},
-		{
-			name: "unknown category",
-			annotation: annotationRef(heredoc.Doc(`
-				package policy.something.a.b.c
-				import rego.v1
-				# METADATA
-				# custom:
-				#   short_name: x
-				deny if { true }`)),
-			expected: "something.a.b.c.x",
-		},
-		{
-			name: "without just known category package",
-			annotation: annotationRef(heredoc.Doc(`
-				package release
-				import rego.v1
-				# METADATA
-				# custom:
-				#   short_name: x
-				deny if { true }`)),
-			expected: "x",
+			expected:    "a.b.c.x",
+			expectedUrl: "https://conforma.dev/docs/ec-policies/release_policy.html#c__x",
 		},
 	}
 
 	for i, c := range cases {
 		t.Run(fmt.Sprintf("[%d] - %s", i, c.name), func(t *testing.T) {
 			assert.Equal(t, c.expected, code(c.annotation))
+			assert.Equal(t, c.expectedUrl, documentationUrl(c.annotation))
 		})
 	}
 }

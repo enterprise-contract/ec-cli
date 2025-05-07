@@ -66,7 +66,7 @@ func Test_RegoTextOutput(t *testing.T) {
 				# Source: spam.io/bacon-bundle
 
 				policy.foo.bar.rule_title (deny)
-				https://conforma.dev/docs/ec-policies/foo_policy.html#bar__rule_title
+				https://conforma.dev/docs/ec-policies/release_policy.html#bar__rule_title
 				Rule title
 				Rule description
 				--
@@ -86,7 +86,7 @@ func Test_RegoTextOutput(t *testing.T) {
 			source:   "spam.io/bacon-bundle",
 			annJson:  fooBarDeny,
 			template: "short-names",
-			expected: "foo.bar.rule_title\n",
+			expected: "policy.foo.bar.rule_title\n",
 			err:      nil,
 		},
 		{

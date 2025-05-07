@@ -190,50 +190,12 @@ func packageName(a *ast.AnnotationsRef) string {
 	return strings.Join(packages(a), ".")
 }
 
-var knownRuleCategories = map[string]bool{
-	// These are the "namespaces" used in https://github.com/enterprise-contract/ec-policies/tree/main/policy
-	// Hard-coding a list of known strings is not ideal. https://issues.redhat.com/browse/EC-864 is
-	// a potential way forward.
-	"build_task": true,
-	"pipeline":   true,
-	"release":    true,
-	"task":       true,
-}
-
-func codePackage(a *ast.AnnotationsRef) string {
-	if a == nil {
-		return ""
-	}
-
-	packages := packages(a)
-
-	l := len(packages)
-
-	if len(packages) > 0 && packages[0] == "policy" {
-		// remove the policy package
-		packages = packages[1:]
-	}
-
-	if l > 0 && knownRuleCategories[packages[0]] {
-		// remove any known rule categories
-		packages = packages[1:]
-	}
-
-	return strings.Join(packages, ".")
-}
-
 func code(a *ast.AnnotationsRef) string {
 	if a == nil {
 		return ""
 	}
 
-	codePackage := codePackage(a)
-
-	if codePackage == "" {
-		return shortName(a)
-	}
-
-	return fmt.Sprintf("%s.%s", codePackage, shortName(a))
+	return fmt.Sprintf("%s.%s", packageName(a), shortName(a))
 }
 
 func documentationUrl(a *ast.AnnotationsRef) string {
@@ -241,20 +203,28 @@ func documentationUrl(a *ast.AnnotationsRef) string {
 		return ""
 	}
 
-	// Notes:
-	// - This makes the assumption that we're looking at our own Conforma rules with
-	//   docs in the enterprise-contract github pages. That's not likely to be true
-	//   always. A future improvement for this might include a way to extract a
-	//   docs url from a package annotation instead using the hard-coded url here.
-	// - The length test is because we're expecting pathStrings to be like this:
-	//     data.policy.release.some_package_name.deny
-	//   Avoid errors indexing pathStrings and also try to avoid showing a url
-	//   if it's unlikely to be a real link to existing docs.
-	ruleDocUrlFormat := "https://conforma.dev/docs/ec-policies/%s_policy.html#%s__%s"
+	// This makes assumptions about the way we publish policy docs for
+	// policies defined in https://github.com/enterprise-contract/ec-policies/
+	// to https://conforma.dev/docs/ec-policies/index.html . We should figure
+	// out a way for the documentationUrl to be configurable, perhaps by using
+	// some additional package annotations. To make matters even worse, we're now
+	// hard coding "release_policy" in the URL, which is guaranteed wrong for
+	// policies that are not defined under
+	// https://github.com/enterprise-contract/ec-policies/tree/main/policy/release
+	// Given all this, the documentationUrl is not really reliable. We could remove it
+	// entirely, but since it's used only the `ec inspect policy` output, let's live
+	// with its flaws for now and fix it later.
+	ruleDocUrlFormat := "https://conforma.dev/docs/ec-policies/release_policy.html#%s__%s"
+
+	// a.Path might be something like this: "data.foo.deny" or
+	// "data.some.path.foo.warn". We want to pick out just "foo".
 	pathStrings := strings.Split(a.Path.String(), ".")
+	lenPathStrings := len(pathStrings)
+
 	shortName := shortName(a)
-	if len(pathStrings) == 5 && pathStrings[1] == "policy" && shortName != "" {
-		return fmt.Sprintf(ruleDocUrlFormat, pathStrings[2], pathStrings[3], shortName)
+
+	if lenPathStrings > 2 && pathStrings[lenPathStrings-2] != "" && shortName != "" {
+		return fmt.Sprintf(ruleDocUrlFormat, pathStrings[lenPathStrings-2], shortName)
 	}
 
 	return ""
@@ -293,7 +263,6 @@ const (
 
 type Info struct {
 	Code             string
-	CodePackage      string
 	Collections      []string
 	DependsOn        []string
 	Description      string
@@ -310,7 +279,6 @@ type Info struct {
 func RuleInfo(a *ast.AnnotationsRef) Info {
 	return Info{
 		Code:             code(a),
-		CodePackage:      codePackage(a),
 		Collections:      collections(a),
 		Description:      description(a),
 		DependsOn:        dependsOn(a),

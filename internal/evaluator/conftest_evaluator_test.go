@@ -1386,16 +1386,16 @@ func TestCollectAnnotationData(t *testing.T) {
 
 	assert.Equal(t, policyRules{
 		"a.b.c.short": {
-			Code:        "a.b.c.short",
-			CodePackage: "a.b.c",
-			Collections: []string{"A", "B", "C"},
-			DependsOn:   []string{"a.b.c"},
-			Description: "Description",
-			EffectiveOn: "2022-01-01T00:00:00Z",
-			Kind:        rule.Deny,
-			Package:     "a.b.c",
-			ShortName:   "short",
-			Title:       "Title",
+			Code:             "a.b.c.short",
+			Collections:      []string{"A", "B", "C"},
+			DependsOn:        []string{"a.b.c"},
+			Description:      "Description",
+			EffectiveOn:      "2022-01-01T00:00:00Z",
+			Kind:             rule.Deny,
+			Package:          "a.b.c",
+			ShortName:        "short",
+			Title:            "Title",
+			DocumentationUrl: "https://conforma.dev/docs/ec-policies/release_policy.html#c__short",
 		},
 	}, rules)
 }
@@ -1573,8 +1573,24 @@ func TestNameScoring(t *testing.T) {
 			score: 110,
 		},
 		{
+			name:  "path.pkg:term",
+			score: 210,
+		},
+		{
+			name:  "path.path.pkg:term",
+			score: 220,
+		},
+		{
 			name:  "pkg.rule:term",
 			score: 210,
+		},
+		{
+			name:  "path.pkg.rule:term",
+			score: 220,
+		},
+		{
+			name:  "path.path.pkg.rule:term",
+			score: 230,
 		},
 	}
 
