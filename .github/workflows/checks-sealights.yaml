@@ -96,7 +96,7 @@ jobs:
           ./slcli config init --lang go --token ./sltoken.txt
 
       - name: Configuring SeaLights - on pull_request event
-        if: env.on-event == 'pull_request'
+        if: env.on-event == 'pull_request_target'
         run: |
           echo "[Sealights] Configuring SeaLights to scan the pull request branch"
           echo "Latest commit sha: ${LATEST_COMMIT_SHA}"
