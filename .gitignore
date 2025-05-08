@@ -180,3 +180,6 @@ hack/**/charts
 
 # Pregenerated benchmark data
 benchmark/*/data.tar.gz
+
+# JUnit file output from acceptance tests
+junit-acceptance.xml
