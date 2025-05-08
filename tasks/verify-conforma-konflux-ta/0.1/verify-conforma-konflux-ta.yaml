@@ -182,6 +182,14 @@ spec:
       - name: HOME
         value: "$(params.HOMEDIR)"
 
+    # This is a workaround for a problem observed on a particular cluster where the
+    # use-trusted-artifacts step runs with root user causing a docker credential file
+    # to not be readable in later steps. There might be solution coming related to the
+    # security context constraints on the cluster, but setting this explicitly here
+    # should probably be harmless either way.
+    securityContext:
+      runAsUser: 1001
+
   steps:
     - name: use-trusted-artifact
       args:
