@@ -359,7 +359,9 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 
 					vsaVerify, err := image.VerifyVSA(comp.ContainerImage, data.publicKey)
 					if err != nil {
-						fmt.Printf("error retrieving VSA: %v\n", err)
+						log.Errorf("error retrieving VSA: %v", err)
+					} else if vsaVerify == nil {
+						log.Warnf("No VSA verification found for image: %s", comp.ContainerImage)
 					}
 
 					res := result{
@@ -369,18 +371,39 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 							Success:           err == nil,
 						},
 					}
-					// vsaVerify = nil
+
+					var maxTime int64
+					var attestation string
 					if vsaVerify != nil {
+						log.Warnf("VSA verification found for image: %s", comp.ContainerImage)
+						log.Warnf("VSA Payload: %+v", vsaVerify.Payload)
+						// capture the latest vsa
 						for _, uuid := range vsaVerify.Payload {
-							for _, entry := range image.GetByUUID(uuid) {
-								var stmt applicationsnapshot.Statement
-								err := json.Unmarshal([]byte(entry), &stmt)
-								if err != nil {
-									fmt.Println("Error:", err)
-								} else {
-									res.component = stmt.Predicate.Predicate.Component
+							entries := image.GetByUUID(uuid)
+							log.Warnf("Found %d entries for UUID: %s", len(entries), uuid)
+							for _, entry := range entries {
+								if entry.IntegratedTime >= maxTime {
+									maxTime = entry.IntegratedTime
+									attestation = entry.Attestation
+									log.Warnf("Selected attestation with time %d: %s", maxTime, attestation)
 								}
 							}
+						}
+						log.Warnf("Unmarshalling attestation with time %d: %s", maxTime, attestation)
+						// print integratedTime
+						var stmt applicationsnapshot.Statement
+						err := json.Unmarshal([]byte(attestation), &stmt)
+						log.Warnf("Unmarshalled attestation to statement with time %d: %v", maxTime, stmt)
+						if err != nil {
+							log.Errorf("Failed to unmarshal attestation: %v", err)
+							log.Debugf("Attestation content: %s", attestation)
+						} else {
+							if stmt.Predicate.Component.ContainerImage == "" {
+								log.Warnf("Component information is empty in attestation")
+								log.Debugf("Statement structure: %+v", stmt)
+								log.Debugf("Predicate structure: %+v", stmt.Predicate)
+							}
+							res.component = stmt.Predicate.Component
 						}
 					} else {
 						out, err := validate(ctx, comp, data.spec, data.policy, evaluators, data.info)
@@ -425,7 +448,6 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 							fmt.Println(err)
 						}
 					}
-					// fmt.Printf("res: %#v\n", res)
 					results <- res
 				}
 				log.Debugf("Done with worker %d", id)

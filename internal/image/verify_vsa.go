@@ -148,8 +148,8 @@ func ToRekor(vsa []byte, containerImage string, keyRef string) error {
 	return nil
 }
 
-func GetByUUID(uuid string) []string {
-	var logEntries []string
+func GetByUUID(uuid string) []*getCmdOutput {
+	var logEntries []*getCmdOutput
 	if uuid != "" {
 		params := entries.NewGetLogEntryByUUIDParams()
 		params.SetTimeout(viper.GetDuration("timeout"))
@@ -175,25 +175,16 @@ func GetByUUID(uuid string) []string {
 				fmt.Printf("retrieving rekor public key: %w", err)
 			}
 
-			fmt.Printf("params.EntryUUID: %s\n", params.EntryUUID)
-			fmt.Printf("k: %s\n", k)
 			if err := compareEntryUUIDs(params.EntryUUID, k); err != nil {
 				fmt.Printf("error comparing entry UUIDs: %w\n", err)
 			}
 
-			// verify log entry
-			if entry.Body != nil {
-				fmt.Printf("entry: %#v\n", entry)
-			} else {
-				fmt.Printf("entry is empty\n")
-			}
 			if err := verify.VerifyLogEntry(context.Background(), &entry, verifier); err != nil {
 				fmt.Printf("unable to verify entry was added to log: %w", err)
 			}
 
 			e, _ := parseEntry(k, entry)
-			logEntries = append(logEntries, e.Attestation)
-
+			logEntries = append(logEntries, e)
 		}
 	}
 	return logEntries

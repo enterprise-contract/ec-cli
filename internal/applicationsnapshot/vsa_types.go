@@ -20,19 +20,10 @@ package applicationsnapshot
 // Top-level in-toto Statement
 // ----------------------------------------------------------------
 type Statement struct {
-	Type          string             `json:"_type"`
-	PredicateType string             `json:"predicateType"`
-	Subject       []Subject          `json:"subject"`
-	Predicate     StatementPredicate `json:"predicate"`
-}
-
-// ----------------------------------------------------------------
-// The inner “predicate” wrapper
-// ----------------------------------------------------------------
-type StatementPredicate struct {
 	Type          string    `json:"_type"`
-	Predicate     Predicate `json:"predicate"`
 	PredicateType string    `json:"predicateType"`
+	Subject       []Subject `json:"subject"`
+	Predicate     Predicate `json:"predicate"`
 }
 
 // ----------------------------------------------------------------

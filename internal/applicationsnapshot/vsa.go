@@ -63,13 +63,13 @@ func ComponentVSA(comp Component) ([]byte, error) {
 	stmt := Predicate{
 		Verifier: Verifier{ID: "conforma.dev"},
 		Policy: Policy{
-			URI: "github.com/enterprise-contract/policy",
+			URI: "github.com/enterprise-contract/ec-policies//policy/release",
 			Digest: map[string]string{
 				// this needs to be passed in also
 				"sha256": "3e1f8b9a4e6e1f795b084fc7e0e18b427826f0d9f78e2dbe7e5a9fd6541bd0e9",
 			},
 		},
-		Component: Component{},
+		Component: comp,
 	}
 
 	// 2) Marshal it to JSON bytes
