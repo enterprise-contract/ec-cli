@@ -2,6 +2,5 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "github>conforma/.github//config/renovate/renovate.json"
-  ],
-  "baseBranches": ["main", "release-v0.5", "release-v0.6"]
+  ]
 }
