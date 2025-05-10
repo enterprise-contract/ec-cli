@@ -19,7 +19,7 @@
 # This works fine but will produce an EC violation
 # FROM docker.io/library/golang:1.21 AS build
 
-FROM registry.access.redhat.com/ubi9/go-toolset:1.21@sha256:d1911ff6e8b3d17175dafe00aa466e83c3ceec45903b01a7cc18e9e417781263 AS build
+FROM registry.access.redhat.com/ubi9/go-toolset:1.21@sha256:97e30a01caeece72ee967013e7c7af777ea4ee93840681ddcfe38a87eb4c084a AS build
 
 ARG BUILD_SUFFIX="redhat"
 ARG BUILD_LIST="darwin_amd64 darwin_arm64 linux_amd64 linux_arm64 linux_ppc64le linux_s390x windows_amd64"
