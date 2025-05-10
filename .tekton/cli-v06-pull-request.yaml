@@ -32,13 +32,14 @@ spec:
   - name: path-context
     value: .
   - name: prefetch-input
-    value: '[{"type": "gomod"}, {"type": "gomod", "path": "tools/kubectl"}, {"type": "rpm"}]'
+    value: '[{"type": "gomod"}, {"type": "gomod", "path": "tools/kubectl"}, {"type":
+      "rpm"}]'
   - name: build-source-image
-    value: 'true'
+    value: "true"
   - name: build-args-file
     value: quick-build-args.conf
   - name: hermetic
-    value: 'true'
+    value: "true"
   pipelineSpec:
     description: |
       This pipeline is ideal for building container images from a Containerfile while maintaining trust after pipeline customization.
@@ -229,7 +230,7 @@ spec:
         value:
         - $(params.build-args[*])
       - name: BUILD_ARGS_FILE
-        value: "$(params.build-args-file)"
+        value: $(params.build-args-file)
       - name: SOURCE_ARTIFACT
         value: $(tasks.prefetch-dependencies.results.SOURCE_ARTIFACT)
       - name: CACHI2_ARTIFACT
@@ -534,7 +535,8 @@ spec:
       optional: true
     - name: netrc
       optional: true
-  taskRunTemplate: {}
+  taskRunTemplate:
+    serviceAccountName: build-pipeline-cli-v06
   workspaces:
   - name: git-auth
     secret:
