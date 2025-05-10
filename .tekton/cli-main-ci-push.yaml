@@ -9,7 +9,7 @@ metadata:
     pipelinesascode.tekton.dev/max-keep-runs: "3"
     pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch
       == "main"
-    pipelinesascode.tekton.dev/pipeline: ".tekton/cli-build.yaml"
+    pipelinesascode.tekton.dev/pipeline: .tekton/cli-build.yaml
   creationTimestamp: null
   labels:
     appstudio.openshift.io/application: ec-main-ci
@@ -19,33 +19,35 @@ metadata:
   namespace: rhtap-contract-tenant
 spec:
   params:
-    - name: git-url
-      value: '{{source_url}}'
-    - name: revision
-      value: '{{revision}}'
-    - name: output-image
-      value: quay.io/redhat-user-workloads/rhtap-contract-tenant/ec-main-ci/cli-main-ci:{{revision}}
-    - name: bundle-cli-ref-repo
-      value: quay.io/enterprise-contract/cli
-    - name: dockerfile
-      value: Dockerfile.dist
-    - name: image-expires-after
-      value: ''
-    - name: path-context
-      value: .
-    - name: prefetch-input
-      value: '[{"type": "gomod"}, {"type": "gomod", "path": "tools/kubectl"}, {"type": "rpm"}]'
-    - name: build-source-image
-      value: 'true'
-    - name: build-args-file
-      value: main-build-args.conf
-    - name: hermetic
-      value: 'true'
+  - name: git-url
+    value: '{{source_url}}'
+  - name: revision
+    value: '{{revision}}'
+  - name: output-image
+    value: quay.io/redhat-user-workloads/rhtap-contract-tenant/ec-main-ci/cli-main-ci:{{revision}}
+  - name: bundle-cli-ref-repo
+    value: quay.io/enterprise-contract/cli
+  - name: dockerfile
+    value: Dockerfile.dist
+  - name: image-expires-after
+    value: ""
+  - name: path-context
+    value: .
+  - name: prefetch-input
+    value: '[{"type": "gomod"}, {"type": "gomod", "path": "tools/kubectl"}, {"type":
+      "rpm"}]'
+  - name: build-source-image
+    value: "true"
+  - name: build-args-file
+    value: main-build-args.conf
+  - name: hermetic
+    value: "true"
   pipelineRef:
     name: cli-build
-  taskRunTemplate: {}
+  taskRunTemplate:
+    serviceAccountName: build-pipeline-cli-main-ci
   workspaces:
-    - name: git-auth
-      secret:
-        secretName: '{{ git_auth_secret }}'
+  - name: git-auth
+    secret:
+      secretName: '{{ git_auth_secret }}'
 status: {}
