@@ -118,3 +118,5 @@ This issue may be resolved by adding the below entries in the `/etc/hosts` file:
 
 [pol]: https://github.com/enterprise-contract/ec-policies/
 [docs]: https://conforma.dev/docs/ec-cli/ec.html
+
+#fake
