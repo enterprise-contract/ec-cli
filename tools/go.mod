@@ -10,6 +10,7 @@ require (
 	github.com/tektoncd/chains v0.22.2
 	github.com/tektoncd/cli v0.38.0
 	github.com/wadey/gocovmerge v0.0.0-20160331181800-b5bfa59ec0ad
+	gotest.tools/gotestsum v1.12.1
 	helm.sh/helm/v3 v3.17.3
 	k8s.io/kubernetes v1.31.6
 	sigs.k8s.io/kustomize/kustomize/v5 v5.5.0
@@ -535,7 +536,6 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	gotest.tools/gotestsum v1.12.1 // indirect
 	honnef.co/go/tools v0.5.1 // indirect
 	k8s.io/api v0.32.2 // indirect
 	k8s.io/apiextensions-apiserver v0.32.2 // indirect

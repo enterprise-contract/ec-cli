@@ -2,6 +2,7 @@
 ** xref:ec_oci_blob.adoc[ec.oci.blob]
 ** xref:ec_oci_descriptor.adoc[ec.oci.descriptor]
 ** xref:ec_oci_image_files.adoc[ec.oci.image_files]
+** xref:ec_oci_image_index.adoc[ec.oci.image_index]
 ** xref:ec_oci_image_manifest.adoc[ec.oci.image_manifest]
 ** xref:ec_purl_is_valid.adoc[ec.purl.is_valid]
 ** xref:ec_purl_parse.adoc[ec.purl.parse]

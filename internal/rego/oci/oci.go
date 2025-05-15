@@ -46,6 +46,7 @@ const (
 	ociDescriptorName    = "ec.oci.descriptor"
 	ociImageManifestName = "ec.oci.image_manifest"
 	ociImageFilesName    = "ec.oci.image_files"
+	ociImageIndexName    = "ec.oci.image_index"
 )
 
 func registerOCIBlob() {
@@ -238,6 +239,66 @@ func registerOCIImageFiles() {
 	}
 
 	rego.RegisterBuiltin2(&decl, ociImageFiles)
+}
+
+func registerOCIImageIndex() {
+	platform := types.NewObject(
+		[]*types.StaticProperty{
+			{Key: "architecture", Value: types.S},
+			{Key: "os", Value: types.S},
+			{Key: "os.version", Value: types.S},
+			{Key: "os.features", Value: types.NewArray([]types.Type{types.S}, nil)},
+			{Key: "variant", Value: types.S},
+			{Key: "features", Value: types.NewArray([]types.Type{types.S}, nil)},
+		},
+		nil,
+	)
+
+	annotations := types.NewObject(nil, types.NewDynamicProperty(types.S, types.S))
+
+	descriptor := types.NewObject(
+		[]*types.StaticProperty{
+			{Key: "mediaType", Value: types.S},
+			{Key: "size", Value: types.N},
+			{Key: "digest", Value: types.S},
+			{Key: "data", Value: types.S},
+			{Key: "urls", Value: types.NewArray([]types.Type{types.S}, nil)},
+			{Key: "annotations", Value: annotations},
+			{Key: "platform", Value: platform},
+		},
+		nil,
+	)
+
+	imageIndex := types.NewObject(
+		[]*types.StaticProperty{
+			{Key: "schemaVersion", Value: types.N},
+			{Key: "mediaType", Value: types.S},
+			{Key: "manifests", Value: types.NewArray([]types.Type{descriptor}, nil)},
+			{Key: "annotations", Value: annotations},
+		},
+		nil,
+	)
+
+	decl := rego.Function{
+		Name: ociImageIndexName,
+		Decl: types.NewFunction(
+			types.Args(
+				types.Named("ref", types.S).Description("OCI image index reference"),
+			),
+			types.Named("object", imageIndex).Description("the Image Index object"),
+		),
+		Memoize:          true,
+		Nondeterministic: true,
+	}
+
+	rego.RegisterBuiltin1(&decl, ociImageIndex)
+
+	ast.RegisterBuiltin(&ast.Builtin{
+		Name:             decl.Name,
+		Description:      "Fetch an Image Index from an OCI registry.",
+		Decl:             decl.Decl,
+		Nondeterministic: decl.Nondeterministic,
+	})
 }
 
 func ociBlob(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) {
@@ -496,6 +557,78 @@ func ociImageFiles(bctx rego.BuiltinContext, refTerm *ast.Term, pathsTerm *ast.T
 	return ast.NewTerm(filesValue), nil
 }
 
+func ociImageIndex(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) {
+	logger := log.WithField("function", ociImageIndexName)
+
+	uriValue, ok := a.Value.(ast.String)
+	if !ok {
+		logger.Error("input is not a string")
+		return nil, nil
+	}
+	logger = logger.WithField("input_ref", string(uriValue))
+	logger.Debug("Starting image index retrieval")
+
+	client := oci.NewClient(bctx.Context)
+
+	uri, err := resolveIfNeeded(client, string(uriValue))
+	if err != nil {
+		logger.WithField("action", "resolveIfNeeded").Error(err)
+		return nil, nil
+	}
+	logger = logger.WithField("ref", uri)
+
+	ref, err := name.NewDigest(uri)
+	if err != nil {
+		logger.WithFields(log.Fields{
+			"action": "new digest",
+			"error":  err,
+		}).Error("failed to create new digest")
+		return nil, nil
+	}
+
+	imageIndex, err := client.Index(ref)
+	if err != nil {
+		logger.WithFields(log.Fields{
+			"action": "fetch image index",
+			"error":  err,
+		}).Error("failed to fetch image index")
+		return nil, nil
+	}
+
+	indexManifest, err := imageIndex.IndexManifest()
+	if err != nil {
+		logger.WithFields(log.Fields{
+			"action": "fetch index manifest",
+			"error":  err,
+		}).Error("failed to fetch index manifest")
+		return nil, nil
+	}
+
+	if indexManifest == nil {
+		logger.Error("index manifest is nil")
+		return nil, nil
+	}
+
+	manifestTerms := []*ast.Term{}
+	for _, manifest := range indexManifest.Manifests {
+		manifestTerms = append(manifestTerms, newDescriptorTerm(manifest))
+	}
+
+	imageIndexTerms := [][2]*ast.Term{
+		ast.Item(ast.StringTerm("schemaVersion"), ast.NumberTerm(json.Number(fmt.Sprintf("%d", indexManifest.SchemaVersion)))),
+		ast.Item(ast.StringTerm("mediaType"), ast.StringTerm(string(indexManifest.MediaType))),
+		ast.Item(ast.StringTerm("manifests"), ast.ArrayTerm(manifestTerms...)),
+		ast.Item(ast.StringTerm("annotations"), newAnnotationsTerm(indexManifest.Annotations)),
+	}
+
+	if s := indexManifest.Subject; s != nil {
+		imageIndexTerms = append(imageIndexTerms, ast.Item(ast.StringTerm("subject"), newDescriptorTerm(*s)))
+	}
+
+	logger.Debug("Successfully retrieved image index")
+	return ast.ObjectTerm(imageIndexTerms...), nil
+}
+
 func newPlatformTerm(p v1.Platform) *ast.Term {
 	osFeatures := []*ast.Term{}
 	for _, f := range p.OSFeatures {
@@ -572,4 +705,5 @@ func init() {
 	registerOCIDescriptor()
 	registerOCIImageFiles()
 	registerOCIImageManifest()
+	registerOCIImageIndex()
 }

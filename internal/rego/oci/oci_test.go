@@ -540,12 +540,201 @@ func TestOCIImageFiles(t *testing.T) {
 	}
 }
 
+func TestOCIImageIndex(t *testing.T) {
+	cases := []struct {
+		name             string
+		ref              *ast.Term
+		indexManifest    *v1.IndexManifest
+		resolvedDigest   string
+		resolveErr       error
+		indexErr         error
+		indexManifestErr error
+		wantErr          bool
+	}{
+		{
+			name: "complete image manifest",
+			ref:  ast.StringTerm("registry.local/spam:latest@sha256:01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"),
+			indexManifest: &v1.IndexManifest{
+				SchemaVersion: 2,
+				MediaType:     types.OCIManifestSchema1,
+				Manifests: []v1.Descriptor{
+					{
+						MediaType: types.OCIConfigJSON,
+						Size:      123,
+						Digest: v1.Hash{
+							Algorithm: "sha256",
+							Hex:       "4e388ab32b10dc8dbc7e28144f552830adc74787c1e2c0824032078a79f227fb",
+						},
+						Data: []byte(`{"data": "config"}`),
+						URLs: []string{"https://config-1.local/spam", "https://config-2.local/spam"},
+						Annotations: map[string]string{
+							"config.annotation.1": "config.annotation.value.1",
+							"config.annotation.2": "config.annotation.value.2",
+						},
+						Platform: &v1.Platform{
+							Architecture: "arch",
+							OS:           "os",
+							OSVersion:    "os-version",
+							OSFeatures:   []string{"os-feature-1", "os-feature-2"},
+							Variant:      "variant",
+							Features:     []string{"feature-1", "feature-2"},
+						},
+						ArtifactType: "artifact-type",
+					},
+				},
+				Annotations: map[string]string{
+					"manifest.annotation.1": "config.annotation.value.1",
+					"manifest.annotation.2": "config.annotation.value.2",
+				},
+				Subject: &v1.Descriptor{
+					MediaType: types.OCIManifestSchema1,
+					Size:      8888,
+					Digest: v1.Hash{
+						Algorithm: "sha256",
+						Hex:       "d9298a10d1b0735837dc4bd85dac641b0f3cef27a47e5d53a54f2f3f5b2fcffa",
+					},
+					Data: []byte(`{"data": "subject"}`),
+					URLs: []string{"https://subject-1.local/spam", "https://subject-2.local/spam"},
+					Annotations: map[string]string{
+						"subject.annotation.1": "subject.annotation.value.1",
+						"subject.annotation.2": "subject.annotation.value.2",
+					},
+					Platform: &v1.Platform{
+						Architecture: "arch",
+						OS:           "os",
+						OSVersion:    "os-version",
+						OSFeatures:   []string{"os-feature-1", "os-feature-2"},
+						Variant:      "variant",
+						Features:     []string{"feature-1", "feature-2"},
+					},
+					ArtifactType: "artifact-type",
+				},
+			},
+		},
+		{
+			name: "minimal image manifest",
+			ref:  ast.StringTerm("registry.local/spam:latest@sha256:01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"),
+			indexManifest: &v1.IndexManifest{
+				SchemaVersion: 2,
+				MediaType:     types.OCIManifestSchema1,
+				Manifests: []v1.Descriptor{
+					{
+						MediaType: types.OCIConfigJSON,
+						Size:      123,
+						Digest: v1.Hash{
+							Algorithm: "sha256",
+							Hex:       "4e388ab32b10dc8dbc7e28144f552830adc74787c1e2c0824032078a79f227fb",
+						},
+					},
+				},
+			},
+		},
+		{
+			name:           "missing digest",
+			ref:            ast.StringTerm("registry.local/spam:latest"),
+			resolvedDigest: "sha256:01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+			indexManifest: &v1.IndexManifest{
+				SchemaVersion: 2,
+				MediaType:     types.OCIManifestSchema1,
+				Manifests: []v1.Descriptor{
+					{
+						MediaType: types.OCIConfigJSON,
+						Size:      123,
+						Digest: v1.Hash{
+							Algorithm: "sha256",
+							Hex:       "4e388ab32b10dc8dbc7e28144f552830adc74787c1e2c0824032078a79f227fb",
+						},
+					},
+				},
+			},
+		},
+		{
+			name:    "bad image ref",
+			ref:     ast.StringTerm("......registry.local/spam:latest@sha256:01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"),
+			wantErr: true,
+		},
+		{
+			name:    "bad image ref without digest",
+			ref:     ast.StringTerm("."),
+			wantErr: true,
+		},
+		{
+			name:    "invalid ref type",
+			ref:     ast.IntNumberTerm(42),
+			wantErr: true,
+		},
+		{
+			name:             "image error",
+			ref:              ast.StringTerm("registry.local/spam:latest@sha256:01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"),
+			indexManifestErr: errors.New("kaboom!"),
+			wantErr:          true,
+		},
+		{
+			name:       "resolve error",
+			ref:        ast.StringTerm("registry.local/spam:latest"),
+			resolveErr: errors.New("kaboom!"),
+			wantErr:    true,
+		},
+		{
+			name:          "nil manifest",
+			ref:           ast.StringTerm("registry.local/spam:latest@sha256:01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"),
+			indexManifest: nil,
+			wantErr:       true,
+		},
+		{
+			name:          "nil manifest",
+			ref:           ast.StringTerm("registry.local/spam:latest@sha256:01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"),
+			indexManifest: nil,
+			indexErr:      errors.New("they say nothing is impossible, but i do nothing everyday"),
+			wantErr:       true,
+		},
+		{
+			name:    "invalid ref type",
+			ref:     ast.StringTerm("registry.local/spam:latest@sha256@:01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"),
+			wantErr: true,
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			client := fake.FakeClient{}
+
+			if c.indexErr != nil {
+				client.On("Index", mock.Anything, mock.Anything).Return(nil, c.indexErr)
+			} else {
+				imageIndex := v1fake.FakeImageIndex{}
+				imageIndex.IndexManifestReturns(c.indexManifest, c.indexManifestErr)
+				client.On("Index", mock.Anything, mock.Anything).Return(&imageIndex, nil)
+			}
+
+			if c.resolveErr != nil {
+				client.On("ResolveDigest", mock.Anything).Return("", c.resolveErr)
+			} else if c.resolvedDigest != "" {
+				client.On("ResolveDigest", mock.Anything).Return(c.resolvedDigest, nil)
+			}
+
+			ctx := oci.WithClient(context.Background(), &client)
+			bctx := rego.BuiltinContext{Context: ctx}
+
+			got, _ := ociImageIndex(bctx, c.ref)
+
+			if c.wantErr {
+				require.Nil(t, got)
+			} else {
+				require.NotNil(t, got)
+				snaps.MatchJSON(t, got)
+			}
+		})
+	}
+}
+
 func TestFunctionsRegistered(t *testing.T) {
 	names := []string{
 		ociBlobName,
 		ociDescriptorName,
 		ociImageFilesName,
 		ociImageManifestName,
+		ociImageIndexName,
 	}
 	for _, name := range names {
 		t.Run(name, func(t *testing.T) {

@@ -14,6 +14,8 @@ information.
 |Fetch a raw Image from an OCI registry.
 |xref:ec_oci_image_files.adoc[ec.oci.image_files]
 |Fetch structured files (YAML or JSON) from within an image.
+|xref:ec_oci_image_index.adoc[ec.oci.image_index]
+|Fetch an Image Index from an OCI registry.
 |xref:ec_oci_image_manifest.adoc[ec.oci.image_manifest]
 |Fetch an Image Manifest from an OCI registry.
 |xref:ec_purl_is_valid.adoc[ec.purl.is_valid]
