@@ -1503,3 +1503,715 @@
  ]
 }
 ---
+
+[TestOCIImageIndex/complete_image_manifest - 1]
+{
+ "type": "object",
+ "value": [
+  [
+   {
+    "type": "string",
+    "value": "annotations"
+   },
+   {
+    "type": "object",
+    "value": [
+     [
+      {
+       "type": "string",
+       "value": "manifest.annotation.1"
+      },
+      {
+       "type": "string",
+       "value": "config.annotation.value.1"
+      }
+     ],
+     [
+      {
+       "type": "string",
+       "value": "manifest.annotation.2"
+      },
+      {
+       "type": "string",
+       "value": "config.annotation.value.2"
+      }
+     ]
+    ]
+   }
+  ],
+  [
+   {
+    "type": "string",
+    "value": "manifests"
+   },
+   {
+    "type": "array",
+    "value": [
+     {
+      "type": "object",
+      "value": [
+       [
+        {
+         "type": "string",
+         "value": "annotations"
+        },
+        {
+         "type": "object",
+         "value": [
+          [
+           {
+            "type": "string",
+            "value": "config.annotation.1"
+           },
+           {
+            "type": "string",
+            "value": "config.annotation.value.1"
+           }
+          ],
+          [
+           {
+            "type": "string",
+            "value": "config.annotation.2"
+           },
+           {
+            "type": "string",
+            "value": "config.annotation.value.2"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        {
+         "type": "string",
+         "value": "artifactType"
+        },
+        {
+         "type": "string",
+         "value": "artifact-type"
+        }
+       ],
+       [
+        {
+         "type": "string",
+         "value": "data"
+        },
+        {
+         "type": "string",
+         "value": "{\"data\": \"config\"}"
+        }
+       ],
+       [
+        {
+         "type": "string",
+         "value": "digest"
+        },
+        {
+         "type": "string",
+         "value": "sha256:4e388ab32b10dc8dbc7e28144f552830adc74787c1e2c0824032078a79f227fb"
+        }
+       ],
+       [
+        {
+         "type": "string",
+         "value": "mediaType"
+        },
+        {
+         "type": "string",
+         "value": "application/vnd.oci.image.config.v1+json"
+        }
+       ],
+       [
+        {
+         "type": "string",
+         "value": "platform"
+        },
+        {
+         "type": "object",
+         "value": [
+          [
+           {
+            "type": "string",
+            "value": "architecture"
+           },
+           {
+            "type": "string",
+            "value": "arch"
+           }
+          ],
+          [
+           {
+            "type": "string",
+            "value": "features"
+           },
+           {
+            "type": "array",
+            "value": [
+             {
+              "type": "string",
+              "value": "feature-1"
+             },
+             {
+              "type": "string",
+              "value": "feature-2"
+             }
+            ]
+           }
+          ],
+          [
+           {
+            "type": "string",
+            "value": "os"
+           },
+           {
+            "type": "string",
+            "value": "os"
+           }
+          ],
+          [
+           {
+            "type": "string",
+            "value": "os.features"
+           },
+           {
+            "type": "array",
+            "value": [
+             {
+              "type": "string",
+              "value": "os-feature-1"
+             },
+             {
+              "type": "string",
+              "value": "os-feature-2"
+             }
+            ]
+           }
+          ],
+          [
+           {
+            "type": "string",
+            "value": "os.version"
+           },
+           {
+            "type": "string",
+            "value": "os-version"
+           }
+          ],
+          [
+           {
+            "type": "string",
+            "value": "variant"
+           },
+           {
+            "type": "string",
+            "value": "variant"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        {
+         "type": "string",
+         "value": "size"
+        },
+        {
+         "type": "number",
+         "value": 123
+        }
+       ],
+       [
+        {
+         "type": "string",
+         "value": "urls"
+        },
+        {
+         "type": "array",
+         "value": [
+          {
+           "type": "string",
+           "value": "https://config-1.local/spam"
+          },
+          {
+           "type": "string",
+           "value": "https://config-2.local/spam"
+          }
+         ]
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  ],
+  [
+   {
+    "type": "string",
+    "value": "mediaType"
+   },
+   {
+    "type": "string",
+    "value": "application/vnd.oci.image.manifest.v1+json"
+   }
+  ],
+  [
+   {
+    "type": "string",
+    "value": "schemaVersion"
+   },
+   {
+    "type": "number",
+    "value": 2
+   }
+  ],
+  [
+   {
+    "type": "string",
+    "value": "subject"
+   },
+   {
+    "type": "object",
+    "value": [
+     [
+      {
+       "type": "string",
+       "value": "annotations"
+      },
+      {
+       "type": "object",
+       "value": [
+        [
+         {
+          "type": "string",
+          "value": "subject.annotation.1"
+         },
+         {
+          "type": "string",
+          "value": "subject.annotation.value.1"
+         }
+        ],
+        [
+         {
+          "type": "string",
+          "value": "subject.annotation.2"
+         },
+         {
+          "type": "string",
+          "value": "subject.annotation.value.2"
+         }
+        ]
+       ]
+      }
+     ],
+     [
+      {
+       "type": "string",
+       "value": "artifactType"
+      },
+      {
+       "type": "string",
+       "value": "artifact-type"
+      }
+     ],
+     [
+      {
+       "type": "string",
+       "value": "data"
+      },
+      {
+       "type": "string",
+       "value": "{\"data\": \"subject\"}"
+      }
+     ],
+     [
+      {
+       "type": "string",
+       "value": "digest"
+      },
+      {
+       "type": "string",
+       "value": "sha256:d9298a10d1b0735837dc4bd85dac641b0f3cef27a47e5d53a54f2f3f5b2fcffa"
+      }
+     ],
+     [
+      {
+       "type": "string",
+       "value": "mediaType"
+      },
+      {
+       "type": "string",
+       "value": "application/vnd.oci.image.manifest.v1+json"
+      }
+     ],
+     [
+      {
+       "type": "string",
+       "value": "platform"
+      },
+      {
+       "type": "object",
+       "value": [
+        [
+         {
+          "type": "string",
+          "value": "architecture"
+         },
+         {
+          "type": "string",
+          "value": "arch"
+         }
+        ],
+        [
+         {
+          "type": "string",
+          "value": "features"
+         },
+         {
+          "type": "array",
+          "value": [
+           {
+            "type": "string",
+            "value": "feature-1"
+           },
+           {
+            "type": "string",
+            "value": "feature-2"
+           }
+          ]
+         }
+        ],
+        [
+         {
+          "type": "string",
+          "value": "os"
+         },
+         {
+          "type": "string",
+          "value": "os"
+         }
+        ],
+        [
+         {
+          "type": "string",
+          "value": "os.features"
+         },
+         {
+          "type": "array",
+          "value": [
+           {
+            "type": "string",
+            "value": "os-feature-1"
+           },
+           {
+            "type": "string",
+            "value": "os-feature-2"
+           }
+          ]
+         }
+        ],
+        [
+         {
+          "type": "string",
+          "value": "os.version"
+         },
+         {
+          "type": "string",
+          "value": "os-version"
+         }
+        ],
+        [
+         {
+          "type": "string",
+          "value": "variant"
+         },
+         {
+          "type": "string",
+          "value": "variant"
+         }
+        ]
+       ]
+      }
+     ],
+     [
+      {
+       "type": "string",
+       "value": "size"
+      },
+      {
+       "type": "number",
+       "value": 8888
+      }
+     ],
+     [
+      {
+       "type": "string",
+       "value": "urls"
+      },
+      {
+       "type": "array",
+       "value": [
+        {
+         "type": "string",
+         "value": "https://subject-1.local/spam"
+        },
+        {
+         "type": "string",
+         "value": "https://subject-2.local/spam"
+        }
+       ]
+      }
+     ]
+    ]
+   }
+  ]
+ ]
+}
+---
+
+[TestOCIImageIndex/minimal_image_manifest - 1]
+{
+ "type": "object",
+ "value": [
+  [
+   {
+    "type": "string",
+    "value": "annotations"
+   },
+   {
+    "type": "object",
+    "value": []
+   }
+  ],
+  [
+   {
+    "type": "string",
+    "value": "manifests"
+   },
+   {
+    "type": "array",
+    "value": [
+     {
+      "type": "object",
+      "value": [
+       [
+        {
+         "type": "string",
+         "value": "annotations"
+        },
+        {
+         "type": "object",
+         "value": []
+        }
+       ],
+       [
+        {
+         "type": "string",
+         "value": "artifactType"
+        },
+        {
+         "type": "string",
+         "value": ""
+        }
+       ],
+       [
+        {
+         "type": "string",
+         "value": "data"
+        },
+        {
+         "type": "string",
+         "value": ""
+        }
+       ],
+       [
+        {
+         "type": "string",
+         "value": "digest"
+        },
+        {
+         "type": "string",
+         "value": "sha256:4e388ab32b10dc8dbc7e28144f552830adc74787c1e2c0824032078a79f227fb"
+        }
+       ],
+       [
+        {
+         "type": "string",
+         "value": "mediaType"
+        },
+        {
+         "type": "string",
+         "value": "application/vnd.oci.image.config.v1+json"
+        }
+       ],
+       [
+        {
+         "type": "string",
+         "value": "size"
+        },
+        {
+         "type": "number",
+         "value": 123
+        }
+       ],
+       [
+        {
+         "type": "string",
+         "value": "urls"
+        },
+        {
+         "type": "array",
+         "value": []
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  ],
+  [
+   {
+    "type": "string",
+    "value": "mediaType"
+   },
+   {
+    "type": "string",
+    "value": "application/vnd.oci.image.manifest.v1+json"
+   }
+  ],
+  [
+   {
+    "type": "string",
+    "value": "schemaVersion"
+   },
+   {
+    "type": "number",
+    "value": 2
+   }
+  ]
+ ]
+}
+---
+
+[TestOCIImageIndex/missing_digest - 1]
+{
+ "type": "object",
+ "value": [
+  [
+   {
+    "type": "string",
+    "value": "annotations"
+   },
+   {
+    "type": "object",
+    "value": []
+   }
+  ],
+  [
+   {
+    "type": "string",
+    "value": "manifests"
+   },
+   {
+    "type": "array",
+    "value": [
+     {
+      "type": "object",
+      "value": [
+       [
+        {
+         "type": "string",
+         "value": "annotations"
+        },
+        {
+         "type": "object",
+         "value": []
+        }
+       ],
+       [
+        {
+         "type": "string",
+         "value": "artifactType"
+        },
+        {
+         "type": "string",
+         "value": ""
+        }
+       ],
+       [
+        {
+         "type": "string",
+         "value": "data"
+        },
+        {
+         "type": "string",
+         "value": ""
+        }
+       ],
+       [
+        {
+         "type": "string",
+         "value": "digest"
+        },
+        {
+         "type": "string",
+         "value": "sha256:4e388ab32b10dc8dbc7e28144f552830adc74787c1e2c0824032078a79f227fb"
+        }
+       ],
+       [
+        {
+         "type": "string",
+         "value": "mediaType"
+        },
+        {
+         "type": "string",
+         "value": "application/vnd.oci.image.config.v1+json"
+        }
+       ],
+       [
+        {
+         "type": "string",
+         "value": "size"
+        },
+        {
+         "type": "number",
+         "value": 123
+        }
+       ],
+       [
+        {
+         "type": "string",
+         "value": "urls"
+        },
+        {
+         "type": "array",
+         "value": []
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  ],
+  [
+   {
+    "type": "string",
+    "value": "mediaType"
+   },
+   {
+    "type": "string",
+    "value": "application/vnd.oci.image.manifest.v1+json"
+   }
+  ],
+  [
+   {
+    "type": "string",
+    "value": "schemaVersion"
+   },
+   {
+    "type": "number",
+    "value": 2
+   }
+  ]
+ ]
+}
+---

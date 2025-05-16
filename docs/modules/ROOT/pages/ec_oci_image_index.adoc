@@ -1,0 +1,41 @@
+= ec.oci.image_index
+
+Fetch an Image Index from an OCI registry.
+
+== Usage
+
+  object = ec.oci.image_index(ref: string)
+
+== Parameters
+
+* `ref` (`string`): OCI image index reference
+
+== Return
+
+`object` (`object`): the Image Index object
+
+The object contains the following attributes:
+
+* `annotations` (`object`)
+** (`string`): (`string`)
+* `manifests`(`array`)
+** (`object`)
+*** `annotations` (`object`)
+**** (`string`): (`string`)
+*** `data` (`string`)
+*** `digest` (`string`)
+*** `mediaType` (`string`)
+*** `platform` (`object`)
+**** `architecture` (`string`)
+**** `features`(`array`)
+***** (`string`)
+**** `os` (`string`)
+**** `os.features`(`array`)
+***** (`string`)
+**** `os.version` (`string`)
+**** `variant` (`string`)
+*** `size` (`number`)
+*** `urls`(`array`)
+**** (`string`)
+* `mediaType` (`string`)
+* `schemaVersion` (`number`)
