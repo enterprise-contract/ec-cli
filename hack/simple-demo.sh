@@ -16,11 +16,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # This is an image regularly built in Konflux for testing purposes.
-# See https://github.com/enterprise-contract/golden-container
+# See https://github.com/conforma/golden-container
 IMAGE=${IMAGE:-"quay.io/konflux-ci/ec-golden-image:latest"}
 
 # Assume the latest image was pushed already
-GIT_REPO=${GIT_REPO:-enterprise-contract/golden-container}
+GIT_REPO=${GIT_REPO:-conforma/golden-container}
 GIT_SHA=${GIT_SHA:-$(curl -s "https://api.github.com/repos/${GIT_REPO}/commits?per_page=1" | jq -r '.[0].sha')}
 
 # We can use `ec validate image --image $IMAGE` but to be more
