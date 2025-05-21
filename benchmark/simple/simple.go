@@ -68,8 +68,8 @@ func ec(dir string) func() {
   "containerImage": "quay.io/redhat-user-workloads/rhtap-contract-tenant/golden-container/golden-container@sha256:166e38c156fa81d577a7ba7a948b68c79005a06e302779d1bebc7d31e8bea315",
   "source": {
 	"git": {
-	  "url": "https://github.com/enterprise-contract/golden-container",
-	  "revision": "8327c1ce7472b017b9396fe26d5d5e1ed0eb61cc"
+	  "url": "https://github.com/conforma/golden-container",
+	  "revision": "2dec8f515a64ef2f21ee3e7b1ed41da77a5c5a9a"
 	}
   }
 }
