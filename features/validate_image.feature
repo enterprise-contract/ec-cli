@@ -588,6 +588,35 @@ Feature: evaluate enterprise contract
     Then the exit status should be 0
     Then the output should match the snapshot
 
+  Scenario: policy rule filtering fails due to inexistent inclusion patterns
+    Given a key pair named "known"
+    Given an image named "acceptance/ec-happy-day"
+    Given a valid image signature of "acceptance/ec-happy-day" image signed by the "known" key
+    Given a valid Rekor entry for image signature of "acceptance/ec-happy-day"
+    Given a valid attestation of "acceptance/ec-happy-day" signed by the "known" key
+    Given a valid Rekor entry for attestation of "acceptance/ec-happy-day"
+    Given a git repository named "happy-day-policy" with
+      | filtering.rego | examples/filtering.rego |
+    Given policy configuration named "ec-policy" with specification
+    """
+    {
+      "sources": [
+        {
+          "policy": [
+            "git::https://${GITHOST}/git/happy-day-policy.git"
+          ],
+          "config": {
+            "include": ["@stamps", "filtering.always_pass", "not-a-rule"],
+            "exclude": ["filtering.always_fail", "filtering.always_fail_with_collection"]
+          }
+        }
+      ]
+    }
+    """
+    When ec command is run with "validate image --image ${REGISTRY}/acceptance/ec-happy-day --policy acceptance/ec-policy --public-key ${known_PUBLIC_KEY} --rekor-url ${REKOR} --show-successes --output json"
+    Then the exit status should be 0
+    Then the output should match the snapshot
+
   Scenario: inline application snapshot
     Given a key pair named "known"
     Given an image named "acceptance/ec-happy-day"

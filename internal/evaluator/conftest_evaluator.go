@@ -463,6 +463,20 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, target EvaluationTarget
 	// at all was processed.
 	totalRules := 0
 
+	// Populate a list with all the include directives specified in the
+	// policy config.
+	// Each include matching a result will be pruned from the list, so
+	// that in the end the list will contain all the unmatched includes.
+	missingIncludes := map[string]bool{}
+	for _, defaultItem := range c.include.defaultItems {
+		missingIncludes[defaultItem] = true
+	}
+	for _, digestItems := range c.include.digestItems {
+		for _, digestItem := range digestItems {
+			missingIncludes[digestItem] = true
+		}
+	}
+
 	// loop over each policy (namespace) evaluation
 	// effectively replacing the results returned from conftest
 	for i, result := range runResults {
@@ -476,7 +490,7 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, target EvaluationTarget
 			warning := result.Warnings[i]
 			addRuleMetadata(ctx, &warning, rules)
 
-			if !c.isResultIncluded(warning, target.Target) {
+			if !c.isResultIncluded(warning, target.Target, missingIncludes) {
 				log.Debugf("Skipping result warning: %#v", warning)
 				continue
 			}
@@ -492,7 +506,7 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, target EvaluationTarget
 			failure := result.Failures[i]
 			addRuleMetadata(ctx, &failure, rules)
 
-			if !c.isResultIncluded(failure, target.Target) {
+			if !c.isResultIncluded(failure, target.Target, missingIncludes) {
 				log.Debugf("Skipping result failure: %#v", failure)
 				continue
 			}
@@ -522,11 +536,21 @@ func (c conftestEvaluator) Evaluate(ctx context.Context, target EvaluationTarget
 		result.Skipped = skipped
 
 		// Replace the placeholder successes slice with the actual successes.
-		result.Successes = c.computeSuccesses(result, rules, target.Target)
+		result.Successes = c.computeSuccesses(result, rules, target.Target, missingIncludes)
 
 		totalRules += len(result.Warnings) + len(result.Failures) + len(result.Successes)
 
 		results = append(results, result)
+	}
+
+	for missingInclude, isMissing := range missingIncludes {
+		if isMissing {
+			results = append(results, Outcome{
+				Warnings: []Result{{
+					Message: fmt.Sprintf("Include criterion '%s' doesn't match any policy rule", missingInclude),
+				}},
+			})
+		}
 	}
 
 	trim(&results)
@@ -557,7 +581,12 @@ func toRules(results []output.Result) []Result {
 // computeSuccesses generates success results, these are not provided in the
 // Conftest results, so we reconstruct these from the parsed rules, any rule
 // that hasn't been touched by adding metadata must have succeeded
-func (c conftestEvaluator) computeSuccesses(result Outcome, rules policyRules, target string) []Result {
+func (c conftestEvaluator) computeSuccesses(
+	result Outcome,
+	rules policyRules,
+	target string,
+	missingIncludes map[string]bool,
+) []Result {
 	// what rules, by code, have we seen in the Conftest results, use map to
 	// take advantage of hashing for quicker lookup
 	seenRules := map[string]bool{}
@@ -609,7 +638,7 @@ func (c conftestEvaluator) computeSuccesses(result Outcome, rules policyRules, t
 			success.Metadata[metadataDependsOn] = rule.DependsOn
 		}
 
-		if !c.isResultIncluded(success, target) {
+		if !c.isResultIncluded(success, target, missingIncludes) {
 			log.Debugf("Skipping result success: %#v", success)
 			continue
 		}
@@ -844,20 +873,23 @@ func isResultEffective(failure Result, now time.Time) bool {
 
 // isResultIncluded returns whether or not the result should be included or
 // discarded based on the policy configuration.
-func (c conftestEvaluator) isResultIncluded(result Result, target string) bool {
+// 'missingIncludes' is a list of include directives that gets pruned if the result is matched
+func (c conftestEvaluator) isResultIncluded(result Result, target string, missingIncludes map[string]bool) bool {
 	ruleMatchers := makeMatchers(result)
-	includeScore := scoreMatches(ruleMatchers, c.include.get(target))
-	excludeScore := scoreMatches(ruleMatchers, c.exclude.get(target))
+	includeScore := scoreMatches(ruleMatchers, c.include.get(target), missingIncludes)
+	excludeScore := scoreMatches(ruleMatchers, c.exclude.get(target), map[string]bool{})
 	return includeScore > excludeScore
 }
 
 // scoreMatches returns the combined score for every match between needles and haystack.
-func scoreMatches(needles, haystack []string) int {
+// 'toBePruned' contains items that will be removed (pruned) from this map if a match is found.
+func scoreMatches(needles, haystack []string, toBePruned map[string]bool) int {
 	var s int
 	for _, needle := range needles {
 		for _, hay := range haystack {
 			if hay == needle {
 				s += score(hay)
+				delete(toBePruned, hay)
 			}
 		}
 	}
