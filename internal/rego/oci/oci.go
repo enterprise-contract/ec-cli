@@ -35,6 +35,7 @@ import (
 	"github.com/open-policy-agent/opa/topdown/builtins"
 	"github.com/open-policy-agent/opa/types"
 	log "github.com/sirupsen/logrus"
+	"k8s.io/client-go/util/retry"
 
 	"github.com/enterprise-contract/ec-cli/internal/fetchers/oci/files"
 	"github.com/enterprise-contract/ec-cli/internal/image"
@@ -445,7 +446,11 @@ func ociImageManifest(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) 
 		return nil, nil
 	}
 
-	image, err := client.Image(ref)
+	var image v1.Image
+	err = retry.OnError(retry.DefaultRetry, func(_ error) bool { return true }, func() error {
+		image, err = client.Image(ref)
+		return err
+	})
 	if err != nil {
 		logger.WithFields(log.Fields{
 			"action": "fetch image",
