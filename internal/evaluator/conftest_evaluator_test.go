@@ -1282,6 +1282,33 @@ func TestConftestEvaluatorIncludeExclude(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "warning for missing includes",
+			results: []Outcome{
+				{
+					Failures: []Result{
+						{Metadata: map[string]any{"code": "lunch.spam"}},
+						{Metadata: map[string]any{"code": "breakfast.spam", "term": []any{"bacon", "nocab"}}},
+					},
+				},
+			},
+			config: &ecc.EnterpriseContractPolicyConfiguration{Include: []string{"breakfast.pancakes", "lunch"}},
+			want: []Outcome{
+				{
+					Skipped:    []Result{},
+					Warnings:   []Result{},
+					Exceptions: []Result{},
+					Failures: []Result{
+						{Metadata: map[string]any{"code": "lunch.spam"}},
+					},
+				},
+				{
+					Warnings: []Result{
+						{Message: "Include criterion 'breakfast.pancakes' doesn't match any policy rule"},
+					},
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {
