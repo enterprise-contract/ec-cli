@@ -1299,6 +1299,8 @@ github.com/moricho/tparallel v0.3.2 h1:odr8aZVFA3NZrNybggMkYO3rgPRcqjeQUlBBFVxKH
 github.com/moricho/tparallel v0.3.2/go.mod h1:OQ+K3b4Ln3l2TZveGCywybl68glfLEwFGqvnjok8b+U=
 github.com/mozillazg/docker-credential-acr-helper v0.4.0 h1:Uoh3Z9CcpEDnLiozDx+D7oDgRq7X+R296vAqAumnOcw=
 github.com/mozillazg/docker-credential-acr-helper v0.4.0/go.mod h1:2kiicb3OlPytmlNC9XGkLvVC+f0qTiJw3f/mhmeeQBg=
+github.com/muhammadmuzzammil1998/jsonc v1.0.0 h1:8o5gBQn4ZA3NBA9DlTujCj2a4w0tqWrPVjDwhzkgTIs=
+github.com/muhammadmuzzammil1998/jsonc v1.0.0/go.mod h1:saF2fIVw4banK0H4+/EuqfFLpRnoy5S+ECwTOCcRcSU=
 github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 h1:C3w9PqII01/Oq1c1nUAm88MOHcQC9l5mIlSMApZMrHA=
 github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822/go.mod h1:+n7T8mK8HuQTcFwEeznm/DIxMOiR9yIdICNftLE1DvQ=
 github.com/mwitkow/go-conntrack v0.0.0-20161129095857-cc309e4a2223/go.mod h1:qRWi+5nqEBWmkhHvq77mSJWrCKwh8bxhgT7d/eI7P4U=
@@ -2530,8 +2532,6 @@ knative.dev/pkg v0.0.0-20240815051656-89743d9bbf7c h1:2crXVk4FG0dSG6WHaIT+WKbUzn
 knative.dev/pkg v0.0.0-20240815051656-89743d9bbf7c/go.mod h1:cI2RPEEHZk+/dBpfHobs0aBdPA1mMZVUVWnGAc8NSzM=
 knative.dev/serving v0.39.0 h1:NVt8WthHmFFMWZ3qpBblXt47del8qqrbCegqwGBVSwk=
 knative.dev/serving v0.39.0/go.mod h1:0QIp5mvgWa1oUC2MxMf+Q/JWgG8JhAsSdJKc6iTRlvE=
-muzzammil.xyz/jsonc v1.0.0 h1:B6kaT3wHueZ87mPz3q1nFuM1BlL32IG0wcq0/uOsQ18=
-muzzammil.xyz/jsonc v1.0.0/go.mod h1:rFv8tUUKe+QLh7v02BhfxXEf4ZHhYD7unR93HL/1Uvo=
 mvdan.cc/gofumpt v0.7.0 h1:bg91ttqXmi9y2xawvkuMXyvAA/1ZGJqYAEGjXuP0JXU=
 mvdan.cc/gofumpt v0.7.0/go.mod h1:txVFJy/Sc/mvaycET54pV8SW8gWxTlUuGHVEcncmNUo=
 mvdan.cc/unparam v0.0.0-20240528143540-8a5130ca722f h1:lMpcwN6GxNbWtbpI1+xzFLSW8XzX0u72NttUGVFjO3U=
