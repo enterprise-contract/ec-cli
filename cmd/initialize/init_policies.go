@@ -40,7 +40,7 @@ func initPoliciesCmd() *cobra.Command {
 			specified destination directory.
 
 			More information about authoring policies is available in the Conforma documentation:
-			https://conforma.dev/docs/ec-policies/authoring.html
+			https://conforma.dev/docs/policy/authoring.html
 		`),
 
 		Example: hd.Doc(`

@@ -120,12 +120,12 @@ Use show-latest-build-versions.sh script in the hacks repo.
 Use skopeo, e.g. 'skopeo inspect docker://registry.redhat.io/rhtas/ec-rhel9:${KONFLUX_APPLICATION_SUFFIX}'
 Use podman, e.g. 'podman run --rm registry.redhat.io/rhtas/ec-rhel9:${KONFLUX_APPLICATION_SUFFIX} version'
 
-$(nice_title Create stable versioned branch in ec-policies repo and corresponding config in the config repo)
+$(nice_title Create stable versioned branch in policy repo and corresponding config in the config repo)
 
-For better or for worse, we create a branch in the ec-policies repo and a corresponding config file that RHTAP templates can use.
+For better or for worse, we create a branch in the policy repo and a corresponding config file that RHTAP templates can use.
 (This may change in future if something like https://github.com/redhat-appstudio/tssc-sample-pipelines/pull/42 is adopted.)
 
-For example (in ec-policies repo):
+For example (in policy repo):
   git push upstream upstream/main:refs/heads/release-${RELEASE_NAME}
 You have some flexibility around what sha to use, but the current upstream/main is probably good choice.
 
