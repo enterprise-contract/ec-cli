@@ -478,7 +478,7 @@ func TestCodeAndDocumentationUrl(t *testing.T) {
 				#   short_name: x
 				deny if { true }`)),
 			expected:    "a.x",
-			expectedUrl: "https://conforma.dev/docs/ec-policies/release_policy.html#a__x",
+			expectedUrl: "https://conforma.dev/docs/policy/release_policy.html#a__x",
 		},
 		{
 			name: "nested packages no annotations",
@@ -499,7 +499,7 @@ func TestCodeAndDocumentationUrl(t *testing.T) {
 				#   short_name: x
 				deny if { true }`)),
 			expected:    "a.b.c.x",
-			expectedUrl: "https://conforma.dev/docs/ec-policies/release_policy.html#c__x",
+			expectedUrl: "https://conforma.dev/docs/policy/release_policy.html#c__x",
 		},
 	}
 

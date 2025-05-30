@@ -25,8 +25,8 @@ Feature: Verify Conforma Trusted Artifact Tekton Task
         "sources": [
           {
             "policy": [
-              "git::github.com/enterprise-contract/ec-policies//policy/release?ref=d34eab36b23d43748e451004177ca144296bf323",
-              "git::github.com/enterprise-contract/ec-policies//policy/lib?ref=d34eab36b23d43748e451004177ca144296bf323"
+              "git::github.com/conforma/policy//policy/release?ref=d34eab36b23d43748e451004177ca144296bf323",
+              "git::github.com/conforma/policy//policy/lib?ref=d34eab36b23d43748e451004177ca144296bf323"
             ],
             "config": {
               "include": [

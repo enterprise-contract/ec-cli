@@ -16,7 +16,7 @@
 
 // This module is more of a general purpose wrapper for fetching files and
 // saving them locally. It was originally used only for policy, i.e. rego and
-// yaml files, from the ec-policies repo, hence the name choice PolicySource,
+// yaml files, from the policy repo, hence the name choice PolicySource,
 // but now it's also used for fetching configuration from a git url.
 
 package source

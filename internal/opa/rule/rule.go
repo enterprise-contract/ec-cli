@@ -204,17 +204,17 @@ func documentationUrl(a *ast.AnnotationsRef) string {
 	}
 
 	// This makes assumptions about the way we publish policy docs for
-	// policies defined in https://github.com/enterprise-contract/ec-policies/
-	// to https://conforma.dev/docs/ec-policies/index.html . We should figure
+	// policies defined in https://github.com/conforma/policy/
+	// to https://conforma.dev/docs/policy/index.html . We should figure
 	// out a way for the documentationUrl to be configurable, perhaps by using
 	// some additional package annotations. To make matters even worse, we're now
 	// hard coding "release_policy" in the URL, which is guaranteed wrong for
 	// policies that are not defined under
-	// https://github.com/enterprise-contract/ec-policies/tree/main/policy/release
+	// https://github.com/conforma/policy/tree/main/policy/release
 	// Given all this, the documentationUrl is not really reliable. We could remove it
 	// entirely, but since it's used only the `ec inspect policy` output, let's live
 	// with its flaws for now and fix it later.
-	ruleDocUrlFormat := "https://conforma.dev/docs/ec-policies/release_policy.html#%s__%s"
+	ruleDocUrlFormat := "https://conforma.dev/docs/policy/release_policy.html#%s__%s"
 
 	// a.Path might be something like this: "data.foo.deny" or
 	// "data.some.path.foo.warn". We want to pick out just "foo".

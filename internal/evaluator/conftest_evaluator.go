@@ -666,7 +666,7 @@ func addRuleMetadata(ctx context.Context, result *Result, rules policyRules) {
 func addMetadataToResults(ctx context.Context, r *Result, rule rule.Info) {
 	// Note that r.Metadata already includes some fields that we get from
 	// the real conftest violation and warning results, (as provided by
-	// lib.result_helper in the ec-policies rego). Here we augment it with
+	// lib.result_helper in the policy rego). Here we augment it with
 	// other fields from rule.Metadata, which we get by opa-inspecting the
 	// rego source.
 

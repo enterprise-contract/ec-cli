@@ -47,7 +47,7 @@ spec:
   description: Demo Conforma policy configuration
   sources:
   - data:
-    - git::https://github.com/enterprise-contract/ec-policies//example/data
+    - git::https://github.com/conforma/policy//example/data
     name: Default Conforma policy
     policy:
     - quay.io/enterprise-contract/ec-release-policy:latest
