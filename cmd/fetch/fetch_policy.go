@@ -60,27 +60,27 @@ func fetchPolicyCmd() *cobra.Command {
 			Fetching policies from multiple sources to a specific directory:
 
 			  ec fetch policy --dest fetched-policies \
-				--source github.com/enterprise-contract/ec-policies//policy/lib \
-				--source github.com/enterprise-contract/ec-policies//policy/release
+				--source github.com/conforma/policy//policy/lib \
+				--source github.com/conforma/policy//policy/release
 
 			Fetching policies and data from multiple sources to the current directory:
 
 			  ec fetch policy \
-				--source github.com/enterprise-contract/ec-policies//policy/lib \
-				--source github.com/enterprise-contract/ec-policies//policy/release \
-				--data-source git::https://github.com/enterprise-contract/ec-policies//example/data
+				--source github.com/conforma/policy//policy/lib \
+				--source github.com/conforma/policy//policy/release \
+				--data-source git::https://github.com/conforma/policy//example/data
 
 			Fetching policies from multiple sources to an automatically generated temporary
 			work directory:
 
 			  ec fetch policy --work-dir \
-				--source github.com/enterprise-contract/ec-policies//policy/lib \
-				--source github.com/enterprise-contract/ec-policies//policy/release
+				--source github.com/conforma/policy//policy/lib \
+				--source github.com/conforma/policy//policy/release
 
 			Different style url formats are supported. In this example "policy" is treated as
 			a subdirectory even without the go-getter style // delimiter:
 
-			  ec fetch policy --source https://github.com/enterprise-contract/ec-policies/policy
+			  ec fetch policy --source https://github.com/conforma/policy/policy
 
 			Fetching policies from an OPA bundle (OCI image):
 

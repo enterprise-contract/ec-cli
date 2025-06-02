@@ -15,8 +15,8 @@ Feature: Verify Enterprise Contract Tekton Tasks
         "sources": [
           {
             "policy": [
-              "github.com/enterprise-contract/ec-policies//policy/release?ref=0de5461c14413484575e63e96ddb514d8ab954b5",
-              "github.com/enterprise-contract/ec-policies//policy/lib?ref=0de5461c14413484575e63e96ddb514d8ab954b5"
+              "github.com/conforma/policy//policy/release?ref=0de5461c14413484575e63e96ddb514d8ab954b5",
+              "github.com/conforma/policy//policy/lib?ref=0de5461c14413484575e63e96ddb514d8ab954b5"
             ],
             "config": {
               "include": [
@@ -46,8 +46,8 @@ Feature: Verify Enterprise Contract Tekton Tasks
         "sources": [
           {
             "policy": [
-              "github.com/enterprise-contract/ec-policies//policy/release",
-              "github.com/enterprise-contract/ec-policies//policy/lib"
+              "github.com/conforma/policy//policy/release",
+              "github.com/conforma/policy//policy/lib"
             ],
             "config": {
               "include": [
@@ -77,8 +77,8 @@ Feature: Verify Enterprise Contract Tekton Tasks
         "sources": [
           {
             "policy": [
-              "github.com/enterprise-contract/ec-policies//policy/release",
-              "github.com/enterprise-contract/ec-policies//policy/lib"
+              "github.com/conforma/policy//policy/release",
+              "github.com/conforma/policy//policy/lib"
             ],
             "config": {
               "include": [
@@ -109,8 +109,8 @@ Feature: Verify Enterprise Contract Tekton Tasks
         "sources": [
           {
             "policy": [
-              "github.com/enterprise-contract/ec-policies//policy/release",
-              "github.com/enterprise-contract/ec-policies//policy/lib"
+              "github.com/conforma/policy//policy/release",
+              "github.com/conforma/policy//policy/lib"
             ],
             "config": {
               "include": [
@@ -146,8 +146,8 @@ Feature: Verify Enterprise Contract Tekton Tasks
         "sources": [
           {
             "policy": [
-              "github.com/enterprise-contract/ec-policies//policy/release",
-              "github.com/enterprise-contract/ec-policies//policy/lib"
+              "github.com/conforma/policy//policy/release",
+              "github.com/conforma/policy//policy/lib"
             ],
             "config": {
               "include": [
@@ -181,8 +181,8 @@ Feature: Verify Enterprise Contract Tekton Tasks
         "sources": [
           {
             "policy": [
-              "github.com/enterprise-contract/ec-policies//policy/release",
-              "github.com/enterprise-contract/ec-policies//policy/lib"
+              "github.com/conforma/policy//policy/release",
+              "github.com/conforma/policy//policy/lib"
             ],
             "config": {
               "include": [
