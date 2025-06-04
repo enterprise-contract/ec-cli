@@ -27,7 +27,7 @@ GIT_SHA=${GIT_SHA:-$(curl -s "https://api.github.com/repos/${GIT_REPO}/commits?p
 # realistic let's use the application snapshot format for the input.
 # Also, this allows us to add the "source" key which is needed for
 # the `slsa_source_correlated` checks to pass
-APPLICATION_SNAPSHOT='{
+APPLICATION_SNAPSHOT=${APPLICATION_SNAPSHOT:-'{
   "components": [
     {
       "name": "golden-container",
@@ -40,7 +40,7 @@ APPLICATION_SNAPSHOT='{
       }
     }
   ]
-}'
+}'}
 
 # The key defined here should work, but if it doesn't then you can get a fresh one from the cluster:
 # - Visit https://oauth-openshift.apps.stone-prd-rh01.pg1f.p1.openshiftapps.com/oauth/token/request
