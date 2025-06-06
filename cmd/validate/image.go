@@ -32,14 +32,15 @@ import (
 	"github.com/spf13/cobra"
 	extv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 
-	"github.com/conforma/cli/internal/applicationsnapshot"
-	"github.com/conforma/cli/internal/evaluator"
-	"github.com/conforma/cli/internal/format"
-	"github.com/conforma/cli/internal/output"
-	"github.com/conforma/cli/internal/policy"
-	"github.com/conforma/cli/internal/policy/source"
-	"github.com/conforma/cli/internal/utils"
-	validate_utils "github.com/conforma/cli/internal/validate"
+	"github.com/enterprise-contract/ec-cli/internal/applicationsnapshot"
+	"github.com/enterprise-contract/ec-cli/internal/evaluator"
+	"github.com/enterprise-contract/ec-cli/internal/format"
+	"github.com/enterprise-contract/ec-cli/internal/output"
+	"github.com/enterprise-contract/ec-cli/internal/policy"
+	"github.com/enterprise-contract/ec-cli/internal/policy/source"
+	"github.com/enterprise-contract/ec-cli/internal/utils"
+	validate_utils "github.com/enterprise-contract/ec-cli/internal/validate"
+	"github.com/enterprise-contract/ec-cli/internal/validate/vsa"
 )
 
 type imageValidationFunc func(context.Context, app.SnapshotComponent, *app.SnapshotSpec, policy.Policy, []evaluator.Evaluator, bool) (*output.Output, error)
@@ -73,6 +74,9 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		noColor                     bool
 		forceColor                  bool
 		workers                     int
+		vsaEnabled                  bool
+		vsaSigningKey               string
+		vsaUpload                   string
 	}{
 		strict:  true,
 		workers: 5,
@@ -453,6 +457,61 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 				return err
 			}
 
+			if data.vsaEnabled {
+				// For each validated component, generate and write a VSA
+				vsaPkgOpts := vsa.Options{
+					OutputDir:      "./", // TODO: Make configurable or use temp dir
+					SigningKeyPath: data.vsaSigningKey,
+				}
+				for _, comp := range components {
+					// VSA generation
+					log.Debugf("[VSA] Generating predicate for image: %s", comp.ContainerImage)
+					pred, err := vsa.GeneratePredicate(cmd.Context(), report, comp, vsaPkgOpts)
+					if err != nil {
+						log.Errorf("[VSA] Failed to generate predicate for image %s: %v", comp.ContainerImage, err)
+						continue
+					}
+					log.Debugf("[VSA] Predicate generated for image: %s", comp.ContainerImage)
+
+					vsaPath := fmt.Sprintf("%s.vsa.json", comp.ContainerImage) // TODO: sanitize filename
+					log.Debugf("[VSA] Writing VSA to %s", vsaPath)
+					err = vsa.WriteVSA(pred, vsaPath)
+					if err != nil {
+						log.Errorf("[VSA] Failed to write VSA for image %s: %v", comp.ContainerImage, err)
+						continue
+					}
+					log.Debugf("[VSA] VSA written to %s", vsaPath)
+
+					if data.vsaSigningKey != "" {
+						log.Debugf("[VSA] Signing VSA for image: %s", comp.ContainerImage)
+						att, err := vsa.SignVSA(cmd.Context(), vsaPath, data.vsaSigningKey, comp.ContainerImage)
+						if err != nil {
+							log.Errorf("[VSA] Failed to sign VSA for image %s: %v", comp.ContainerImage, err)
+							continue
+						}
+						log.Infof("[VSA] Signed attestation for %s", comp.ContainerImage)
+						var uploader vsa.AttestationUploader
+						switch data.vsaUpload {
+						case "oci":
+							uploader = vsa.OCIUploader
+						case "rekor":
+							uploader = vsa.RekorUploader
+						case "none":
+							uploader = vsa.NoopUploader
+						default:
+							log.Errorf("[VSA] Unknown vsa-upload type: %s", data.vsaUpload)
+							continue
+						}
+						uploadResult, err := uploader(cmd.Context(), att, comp.ContainerImage)
+						if err != nil {
+							log.Errorf("[VSA] Failed to upload VSA attestation for image %s: %v", comp.ContainerImage, err)
+							continue
+						}
+						log.Infof("[VSA] VSA attestation uploaded for %s: %s", comp.ContainerImage, uploadResult)
+					}
+					// Rekor upload is skipped for now
+				}
+			}
 			if data.strict && !report.Success {
 				return errors.New("success criteria not met")
 			}
@@ -544,6 +603,10 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 
 	cmd.Flags().IntVar(&data.workers, "workers", data.workers, hd.Doc(`
 		Number of workers to use for validation. Defaults to 5.`))
+
+	cmd.Flags().BoolVar(&data.vsaEnabled, "vsa", false, "Generate a Verification Summary Attestation (VSA) for each validated image.")
+	cmd.Flags().StringVar(&data.vsaSigningKey, "vsa-signing-key", "", "Path to the private key for signing the VSA.")
+	cmd.Flags().StringVar(&data.vsaUpload, "vsa-upload", "oci", "Where to upload the VSA attestation: oci, rekor, none")
 
 	if len(data.input) > 0 || len(data.filePath) > 0 || len(data.images) > 0 {
 		if err := cmd.MarkFlagRequired("image"); err != nil {
