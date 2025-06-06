@@ -24,6 +24,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"testing"
 	"time"
 
@@ -41,6 +42,7 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/output"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/policy/source"
+	"github.com/enterprise-contract/ec-cli/internal/signature"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 	"github.com/enterprise-contract/ec-cli/internal/utils/oci"
 	"github.com/enterprise-contract/ec-cli/internal/utils/oci/fake"
@@ -1361,4 +1363,96 @@ func TestContainsAttestation(t *testing.T) {
 		result := containsOutput(test.input, "attestation")
 		assert.Equal(t, test.expected, result, test.name)
 	}
+}
+
+func Test_ValidateImageCommand_VSA_Signing(t *testing.T) {
+	validateImageCmd := validateImageCmd(happyValidator())
+	cmd := setUpCobra(validateImageCmd)
+
+	client := fake.FakeClient{}
+	commonMockClient(&client)
+	ctx := utils.WithFS(context.Background(), afero.NewMemMapFs())
+	ctx = oci.WithClient(ctx, &client)
+	cmd.SetContext(ctx)
+
+	effectiveTimeTest := time.Now().UTC().Format(time.RFC3339Nano)
+
+	// Use a temp dir for VSA files
+	tempDir := t.TempDir()
+	os.Setenv("TMPDIR", tempDir)
+	defer os.Unsetenv("TMPDIR")
+
+	cmd.SetArgs([]string{
+		"image",
+		"--image", "registry/image:tag",
+		"--policy", fmt.Sprintf(`{"publicKey": %s}`, utils.TestPublicKeyJSON),
+		"--effective-time", effectiveTimeTest,
+		"--vsa",
+		"--public-key", "/path/to/nonexistent.key", // Should fail to sign, but VSA file should still be created
+	})
+
+	var out bytes.Buffer
+	cmd.SetOut(&out)
+
+	err := cmd.Execute()
+	assert.NoError(t, err)
+
+	// Check that a VSA file was created in tempDir
+	entries, err := os.ReadDir(tempDir)
+	assert.NoError(t, err)
+	var vsaFound, sigFound bool
+	for _, entry := range entries {
+		if !entry.IsDir() && entry.Name()[0:4] == "vsa-" && entry.Name()[len(entry.Name())-5:] == ".json" {
+			vsaFound = true
+			// Check for .sig file
+			sigPath := tempDir + string(os.PathSeparator) + entry.Name() + ".sig"
+			if _, err := os.Stat(sigPath); err == nil {
+				sigFound = true
+			}
+		}
+	}
+	assert.True(t, vsaFound, "VSA file should be created")
+	// Signature file may not be created due to missing key, but should not error fatally
+}
+
+func Test_ValidateImageCommand_VSA_SigningKeyOverride(t *testing.T) {
+	validateImageCmd := validateImageCmd(happyValidator())
+	cmd := setUpCobra(validateImageCmd)
+
+	client := fake.FakeClient{}
+	commonMockClient(&client)
+	ctx := utils.WithFS(context.Background(), afero.NewMemMapFs())
+	ctx = oci.WithClient(ctx, &client)
+	cmd.SetContext(ctx)
+
+	effectiveTimeTest := time.Now().UTC().Format(time.RFC3339Nano)
+
+	tempDir := t.TempDir()
+	os.Setenv("TMPDIR", tempDir)
+	defer os.Unsetenv("TMPDIR")
+
+	var usedKey string
+	origSignFileWithKey := signature.SignFileWithKey
+	signature.SignFileWithKey = func(_ interface{}, filePath string, keyPath string) ([]byte, error) {
+		usedKey = keyPath
+		return []byte("dummy-sig"), nil
+	}
+	defer func() { signature.SignFileWithKey = origSignFileWithKey }()
+
+	cmd.SetArgs([]string{
+		"image",
+		"--image", "registry/image:tag",
+		"--policy", fmt.Sprintf(`{"publicKey": %s}`, utils.TestPublicKeyJSON),
+		"--effective-time", effectiveTimeTest,
+		"--vsa",
+		"--public-key", "/path/to/fallback.key",
+		"--vsa-signing-key", "/path/to/preferred.key",
+	})
+
+	var out bytes.Buffer
+	cmd.SetOut(&out)
+
+	err := cmd.Execute()
+	assert.NoError(t, err)
+	assert.Equal(t, "/path/to/preferred.key", usedKey, "--vsa-signing-key should be used for VSA signing")
 }

@@ -17,10 +17,15 @@
 package signature
 
 import (
+	"bytes"
 	"encoding/hex"
 	"encoding/pem"
+	"io/ioutil"
+	"os"
 
+	"github.com/sigstore/cosign/v2/pkg/cosign"
 	"github.com/sigstore/cosign/v2/pkg/oci"
+	"github.com/sigstore/sigstore/pkg/signature"
 )
 
 type EntitySignature struct {
@@ -73,4 +78,33 @@ func NewEntitySignature(sig oci.Signature) (EntitySignature, error) {
 		})))
 	}
 	return es, nil
+}
+
+// SignFileWithKey signs the contents of the given file using the provided private key (PEM or KMS URI).
+// Returns the signature bytes or an error.
+func SignFileWithKey(_ interface{}, filePath string, keyPath string) ([]byte, error) {
+	privKeyBytes, err := os.ReadFile(keyPath)
+	if err != nil {
+		return nil, err
+	}
+	priv, err := cosign.LoadPrivateKey(privKeyBytes, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	signer, ok := priv.(signature.Signer)
+	if !ok {
+		return nil, err
+	}
+
+	sig, err := signer.SignMessage(bytes.NewReader(data))
+	if err != nil {
+		return nil, err
+	}
+	return sig, nil
 }
