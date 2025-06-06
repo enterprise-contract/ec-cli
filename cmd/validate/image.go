@@ -21,9 +21,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"runtime/trace"
 	"sort"
 	"strings"
+	"time"
 
 	hd "github.com/MakeNowJust/heredoc"
 	app "github.com/konflux-ci/application-api/api/v1alpha1"
@@ -38,6 +40,7 @@ import (
 	"github.com/enterprise-contract/ec-cli/internal/output"
 	"github.com/enterprise-contract/ec-cli/internal/policy"
 	"github.com/enterprise-contract/ec-cli/internal/policy/source"
+	"github.com/enterprise-contract/ec-cli/internal/signature"
 	"github.com/enterprise-contract/ec-cli/internal/utils"
 	validate_utils "github.com/enterprise-contract/ec-cli/internal/validate"
 )
@@ -46,6 +49,15 @@ type imageValidationFunc func(context.Context, app.SnapshotComponent, *app.Snaps
 
 var newConftestEvaluator = evaluator.NewConftestEvaluator
 var newOPAEvaluator = evaluator.NewOPAEvaluator
+
+// VSA represents a Verification Summary Attestation for an image validation
+// See EC-1307
+// Fields: ImageRef, Result ("passed"/"failed"), Timestamp (RFC3339)
+type VSA struct {
+	ImageRef  string `json:"imageRef"`
+	Result    string `json:"result"`
+	Timestamp string `json:"timestamp"`
+}
 
 func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 	data := struct {
@@ -73,6 +85,9 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 		noColor                     bool
 		forceColor                  bool
 		workers                     int
+		vsa                         bool   // New: enable VSA generation
+		rekorUpload                 bool   // New: enable Rekor upload (no-op for now)
+		vsaSigningKey               string // New: path to VSA signing key
 	}{
 		strict:  true,
 		workers: 5,
@@ -419,6 +434,7 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 			var components []applicationsnapshot.Component
 			var manyPolicyInput [][]byte
 			var allErrors error = nil
+			var vsaFilePaths []string // Track VSA file paths for logging
 			for i := 0; i < numComponents; i++ {
 				r := <-results
 				if r.err != nil {
@@ -427,6 +443,50 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 				} else {
 					components = append(components, r.component)
 					manyPolicyInput = append(manyPolicyInput, r.policyInput)
+					// VSA generation (EC-1307)
+					if data.vsa {
+						vsa := VSA{
+							ImageRef:  r.component.ContainerImage,
+							Result:    map[bool]string{true: "passed", false: "failed"}[r.component.Success],
+							Timestamp: time.Now().UTC().Format(time.RFC3339),
+						}
+						vsaBytes, err := json.MarshalIndent(vsa, "", "  ")
+						if err != nil {
+							log.Errorf("Failed to marshal VSA for image %s: %v", vsa.ImageRef, err)
+						} else {
+							vsaFile, err := os.CreateTemp("", "vsa-*.json")
+							if err != nil {
+								log.Errorf("Failed to create VSA file for image %s: %v", vsa.ImageRef, err)
+							} else {
+								defer vsaFile.Close()
+								if _, err := vsaFile.Write(vsaBytes); err != nil {
+									log.Errorf("Failed to write VSA for image %s: %v", vsa.ImageRef, err)
+								} else {
+									log.Infof("VSA written for image %s: %s", vsa.ImageRef, vsaFile.Name())
+									vsaFilePaths = append(vsaFilePaths, vsaFile.Name())
+									// VSA signing (EC-1308)
+									vsaKey := data.vsaSigningKey
+									if vsaKey == "" {
+										vsaKey = data.publicKey
+									}
+									if len(vsaKey) > 0 {
+										sig, err := signature.SignFileWithKey(cmd.Context(), vsaFile.Name(), vsaKey)
+										if err != nil {
+											log.Errorf("Failed to sign VSA for image %s: %v", vsa.ImageRef, err)
+										} else {
+											sigPath := vsaFile.Name() + ".sig"
+											err = os.WriteFile(sigPath, sig, 0644)
+											if err != nil {
+												log.Errorf("Failed to write VSA signature for image %s: %v", vsa.ImageRef, err)
+											} else {
+												log.Infof("VSA signature written for image %s: %s", vsa.ImageRef, sigPath)
+											}
+										}
+									}
+								}
+							}
+						}
+					}
 				}
 			}
 			close(results)
@@ -544,6 +604,14 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 
 	cmd.Flags().IntVar(&data.workers, "workers", data.workers, hd.Doc(`
 		Number of workers to use for validation. Defaults to 5.`))
+
+	// New flags for VSA and Rekor upload
+	cmd.Flags().BoolVar(&data.vsa, "vsa", data.vsa, hd.Doc(`
+		Generate a Verification Summary Attestation (VSA) for each image after validation.`))
+	cmd.Flags().BoolVar(&data.rekorUpload, "rekor-upload", data.rekorUpload, hd.Doc(`
+		Upload the VSA to Rekor after signing. (Currently a no-op)`))
+	cmd.Flags().StringVar(&data.vsaSigningKey, "vsa-signing-key", data.vsaSigningKey, hd.Doc(`
+		Path to the private key to use for signing the VSA. If not set, --public-key is used for signing.`))
 
 	if len(data.input) > 0 || len(data.filePath) > 0 || len(data.images) > 0 {
 		if err := cmd.MarkFlagRequired("image"); err != nil {

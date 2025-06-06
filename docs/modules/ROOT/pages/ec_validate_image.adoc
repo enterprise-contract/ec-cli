@@ -145,10 +145,13 @@ mark (?) sign, for example: --output text=output.txt?show-successes=false
   * git reference (github.com/user/repo//default?ref=main), or
   * inline JSON ('{sources: {...}, identity: {...}}')")
 -k, --public-key:: path to the public key. Overrides publicKey from EnterpriseContractPolicy
+--rekor-upload:: Upload the VSA to Rekor after signing. (Currently a no-op) (Default: false)
 -r, --rekor-url:: Rekor URL. Overrides rekorURL from EnterpriseContractPolicy
 --snapshot:: Provide the AppStudio Snapshot as a source of the images to validate, as inline
 JSON of the "spec" or a reference to a Kubernetes object [<namespace>/]<name>
 -s, --strict:: Return non-zero status on non-successful validation. Defaults to true. Use --strict=false to return a zero status code. (Default: true)
+--vsa:: Generate a Verification Summary Attestation (VSA) for each image after validation. (Default: false)
+--vsa-signing-key:: Path to the private key to use for signing the VSA. If not set, --public-key is used for signing.
 --workers:: Number of workers to use for validation. Defaults to 5. (Default: 5)
 
 == Options inherited from parent commands
