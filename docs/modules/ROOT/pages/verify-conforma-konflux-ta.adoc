@@ -57,7 +57,7 @@ paths can be provided by using the `:` separator.
 
 *WORKERS* (`string`):: Number of parallel workers to use for policy evaluation.
 +
-*Default*: `1`
+*Default*: `35`
 *SINGLE_COMPONENT* (`string`):: Reduce the Snapshot to only the component whose build caused the Snapshot to be created
 +
 *Default*: `false`
