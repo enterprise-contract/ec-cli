@@ -128,7 +128,7 @@ spec:
     - name: WORKERS
       type: string
       description: Number of parallel workers to use for policy evaluation.
-      default: "1"
+      default: "35"
 
     - name: SINGLE_COMPONENT
       description: Reduce the Snapshot to only the component whose build caused the Snapshot to be created
@@ -284,9 +284,9 @@ spec:
       computeResources:
         requests:
           cpu: 250m
-          memory: 2Gi
+          memory: 8Gi
         limits:
-          memory: 2Gi
+          memory: 8Gi
       volumeMounts:
         - name: trusted-ca
           mountPath: /etc/pki/tls/certs/ca-custom-bundle.crt
