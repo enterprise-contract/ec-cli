@@ -2215,3 +2215,81 @@
  ]
 }
 ---
+
+[TestOCIDescriptorManifest/tag-based_URI - 1]
+{
+ "type": "object",
+ "value": [
+  [
+   {
+    "type": "string",
+    "value": "annotations"
+   },
+   {
+    "type": "object",
+    "value": []
+   }
+  ],
+  [
+   {
+    "type": "string",
+    "value": "artifactType"
+   },
+   {
+    "type": "string",
+    "value": ""
+   }
+  ],
+  [
+   {
+    "type": "string",
+    "value": "data"
+   },
+   {
+    "type": "string",
+    "value": ""
+   }
+  ],
+  [
+   {
+    "type": "string",
+    "value": "digest"
+   },
+   {
+    "type": "string",
+    "value": "sha256:4e388ab32b10dc8dbc7e28144f552830adc74787c1e2c0824032078a79f227fb"
+   }
+  ],
+  [
+   {
+    "type": "string",
+    "value": "mediaType"
+   },
+   {
+    "type": "string",
+    "value": "application/vnd.oci.image.manifest.v1+json"
+   }
+  ],
+  [
+   {
+    "type": "string",
+    "value": "size"
+   },
+   {
+    "type": "number",
+    "value": 123
+   }
+  ],
+  [
+   {
+    "type": "string",
+    "value": "urls"
+   },
+   {
+    "type": "array",
+    "value": []
+   }
+  ]
+ ]
+}
+---
