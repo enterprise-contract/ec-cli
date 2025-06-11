@@ -25,8 +25,21 @@ spec:
     value: '{{revision}}'
   - name: output-image
     value: quay.io/redhat-user-workloads/rhtap-contract-tenant/ec-v05/cli-v05:{{revision}}
+  - name: image-expires-after
+    value: ""
   - name: dockerfile
     value: Dockerfile.dist
+  - name: path-context
+    value: .
+  - name: prefetch-input
+    value: '[{"type": "gomod"}, {"type": "gomod", "path": "tools/kubectl"}, {"type":
+      "rpm"}]'
+  - name: build-source-image
+    value: "true"
+  - name: build-args-file
+    value: ""
+  - name: hermetic
+    value: "true"
   pipelineRef:
     name: cli-build
   taskRunTemplate:
