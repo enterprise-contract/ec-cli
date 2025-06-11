@@ -71,6 +71,10 @@ spec:
       description: Path to a file with build arguments for buildah, see https://www.mankier.com/1/buildah-build#--build-arg-file
       name: build-args-file
       type: string
+    - default: "false"
+      description: Whether to enable privileged mode, should be used only with remote VMs
+      name: privileged-nested
+      type: string
   results:
     - description: ""
       name: IMAGE_URL
@@ -123,7 +127,7 @@ spec:
           - name: name
             value: git-clone-oci-ta
           - name: bundle
-            value: quay.io/konflux-ci/tekton-catalog/task-git-clone-oci-ta:0.1@sha256:8ecf57d5a6697ce709bee65b62781efe79a10b0c2b95e05576442b67fbd61744
+            value: quay.io/konflux-ci/tekton-catalog/task-git-clone-oci-ta:0.1@sha256:0fea1e4bd2fdde46c5b7786629f423a51e357f681c32ceddd744a6e3d48b8327
           - name: kind
             value: task
         resolver: bundles
@@ -154,7 +158,7 @@ spec:
           - name: name
             value: prefetch-dependencies-oci-ta
           - name: bundle
-            value: quay.io/konflux-ci/tekton-catalog/task-prefetch-dependencies-oci-ta:0.2@sha256:1f6e2c9beba52d21c562ba1dea55f579f67e33b80099615bfd2043864896284d
+            value: quay.io/konflux-ci/tekton-catalog/task-prefetch-dependencies-oci-ta:0.2@sha256:adbd819c6b727ac0c5519475d174dcad64cfa8df6ee50acd58f7fb562c59d4f7
           - name: kind
             value: task
         resolver: bundles
@@ -184,6 +188,8 @@ spec:
             - $(params.build-args[*])
         - name: BUILD_ARGS_FILE
           value: "$(params.build-args-file)"
+        - name: PRIVILEGED_NESTED
+          value: $(params.privileged-nested)
         - name: SOURCE_ARTIFACT
           value: $(tasks.prefetch-dependencies.results.SOURCE_ARTIFACT)
         - name: CACHI2_ARTIFACT
@@ -351,6 +357,28 @@ spec:
           operator: in
           values:
             - "false"
+    - name: clamav-scan
+      params:
+        - name: image-digest
+          value: $(tasks.build-image-index.results.IMAGE_DIGEST)
+        - name: image-url
+          value: $(tasks.build-image-index.results.IMAGE_URL)
+      runAfter:
+        - build-image-index
+      taskRef:
+        params:
+          - name: name
+            value: clamav-scan
+          - name: bundle
+            value: quay.io/konflux-ci/tekton-catalog/task-clamav-scan:0.2@sha256:386c8c3395b44f6eb927dbad72382808b0ae42008f183064ca77cb4cad998442
+          - name: kind
+            value: task
+        resolver: bundles
+      when:
+        - input: $(params.skip-checks)
+          operator: in
+          values:
+            - "false"
     - name: sast-shell-check
       params:
         - name: image-digest
@@ -368,7 +396,7 @@ spec:
           - name: name
             value: sast-shell-check-oci-ta
           - name: bundle
-            value: quay.io/konflux-ci/tekton-catalog/task-sast-shell-check-oci-ta:0.1@sha256:a7766190229785bc5db9c62af92d46a83ea580a111b4b64a4e27f6caecae9489
+            value: quay.io/konflux-ci/tekton-catalog/task-sast-shell-check-oci-ta:0.1@sha256:60a7ee6ec5d00920389f03befd328cdaa159b7122a94ff3c87da287e0f32420f
           - name: kind
             value: task
         resolver: bundles
@@ -380,6 +408,8 @@ spec:
       workspaces: []
     - name: sast-unicode-check
       params:
+        - name: image-digest
+          value: $(tasks.build-image-index.results.IMAGE_DIGEST)
         - name: image-url
           value: $(tasks.build-image-index.results.IMAGE_URL)
         - name: SOURCE_ARTIFACT
@@ -403,28 +433,6 @@ spec:
           values:
             - "false"
       workspaces: []
-    - name: clamav-scan
-      params:
-        - name: image-digest
-          value: $(tasks.build-image-index.results.IMAGE_DIGEST)
-        - name: image-url
-          value: $(tasks.build-image-index.results.IMAGE_URL)
-      runAfter:
-        - build-image-index
-      taskRef:
-        params:
-          - name: name
-            value: clamav-scan
-          - name: bundle
-            value: quay.io/konflux-ci/tekton-catalog/task-clamav-scan:0.2@sha256:386c8c3395b44f6eb927dbad72382808b0ae42008f183064ca77cb4cad998442
-          - name: kind
-            value: task
-        resolver: bundles
-      when:
-        - input: $(params.skip-checks)
-          operator: in
-          values:
-            - "false"
     - name: apply-tags
       params:
         - name: IMAGE
@@ -464,10 +472,11 @@ spec:
             value: task
         resolver: bundles
     - name: rpms-signature-scan
-      when:
-      - input: $(params.skip-checks)
-        operator: in
-        values: ["false"]
+      params:
+        - name: image-url
+          value: $(tasks.build-image-index.results.IMAGE_URL)
+        - name: image-digest
+          value: $(tasks.build-image-index.results.IMAGE_DIGEST)
       runAfter:
         - build-image-index
       taskRef:
@@ -475,15 +484,15 @@ spec:
           - name: name
             value: rpms-signature-scan
           - name: bundle
-            value: quay.io/konflux-ci/tekton-catalog/task-rpms-signature-scan:0.2@sha256:80a4562d5f86eb6812f00d4e30e94c1ad27ec937735dc29f5a63e9335676b3dc
+            value: quay.io/konflux-ci/tekton-catalog/task-rpms-signature-scan:0.2@sha256:ec7f6de651458e4a5842b145e761b0d86b03b52bec1515d6d8a1b8cf107af95c
           - name: kind
             value: task
         resolver: bundles
-      params:
-      - name: image-url
-        value: $(tasks.build-image-index.results.IMAGE_URL)
-      - name: image-digest
-        value: $(tasks.build-image-index.results.IMAGE_DIGEST)
+      when:
+        - input: $(params.skip-checks)
+          operator: in
+          values:
+            - "false"
   workspaces:
     - name: git-auth
       optional: true
