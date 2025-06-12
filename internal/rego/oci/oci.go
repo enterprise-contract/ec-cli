@@ -24,6 +24,7 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -395,13 +396,26 @@ func ociDescriptor(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) {
 	}
 	logger = logger.WithField("ref", uri)
 
-	ref, err := name.NewDigest(uri)
+	var ref name.Reference
+	// Try to parse as digest first, if that fails with ErrBadName, try as tag
+	ref, err = name.NewDigest(uri)
 	if err != nil {
-		logger.WithFields(log.Fields{
-			"action": "new digest",
-			"error":  err,
-		}).Error("failed to create new digest")
-		return nil, nil
+		if errors.Is(err, &name.ErrBadName{}) {
+			ref, err = name.NewTag(uri)
+			if err != nil {
+				logger.WithFields(log.Fields{
+					"action": "new tag",
+					"error":  err,
+				}).Error("failed to create new tag reference")
+				return nil, nil
+			}
+		} else {
+			logger.WithFields(log.Fields{
+				"action": "new digest",
+				"error":  err,
+			}).Error("failed to create new digest reference")
+			return nil, nil
+		}
 	}
 
 	descriptor, err := client.Head(ref)

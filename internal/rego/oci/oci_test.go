@@ -185,10 +185,40 @@ func TestOCIDescriptorManifest(t *testing.T) {
 			},
 		},
 		{
+			name:           "tag-based URI with error",
+			ref:            ast.StringTerm("registry.local/spam:latest"),
+			resolvedDigest: "sha256:01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+			headErr:        errors.New("tag error"),
+			wantErr:        true,
+		},
+		{
 			name:       "resolve error",
 			ref:        ast.StringTerm("registry.local/spam:latest"),
 			resolveErr: errors.New("kaboom!"),
 			wantErr:    true,
+		},
+		{
+			name:           "unsupported digest algorithm",
+			ref:            ast.StringTerm("registry.local/spam@sha512:01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"),
+			resolvedDigest: "sha256:01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+			wantErr:        true,
+		},
+		{
+			name:           "malformed digest with extra @",
+			ref:            ast.StringTerm("registry.local/spam@@sha256:01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"),
+			resolvedDigest: "sha256:01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+			wantErr:        true,
+		},
+		{
+			name:           "invalid tag after digest fallback",
+			ref:            ast.StringTerm("registry.local/spam:!nv@lid"),
+			resolvedDigest: "sha256:01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+			wantErr:        true,
+		},
+		{
+			name:    "invalid digest format",
+			ref:     ast.StringTerm("registry.local/spam@sha256:invalid-digest-format"),
+			wantErr: true,
 		},
 	}
 
@@ -464,6 +494,7 @@ func TestOCIImageManifest(t *testing.T) {
 		})
 	}
 }
+
 func TestOCIImageFiles(t *testing.T) {
 
 	image, err := crane.Image(map[string][]byte{
