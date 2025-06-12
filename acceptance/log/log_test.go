@@ -26,7 +26,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/enterprise-contract/ec-cli/acceptance/testenv"
+	"github.com/conforma/cli/acceptance/testenv"
 )
 
 type mockDelegateLogger struct {

@@ -32,14 +32,14 @@ import (
 	"github.com/spf13/cobra"
 	extv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 
-	"github.com/enterprise-contract/ec-cli/internal/applicationsnapshot"
-	"github.com/enterprise-contract/ec-cli/internal/evaluator"
-	"github.com/enterprise-contract/ec-cli/internal/format"
-	"github.com/enterprise-contract/ec-cli/internal/output"
-	"github.com/enterprise-contract/ec-cli/internal/policy"
-	"github.com/enterprise-contract/ec-cli/internal/policy/source"
-	"github.com/enterprise-contract/ec-cli/internal/utils"
-	validate_utils "github.com/enterprise-contract/ec-cli/internal/validate"
+	"github.com/conforma/cli/internal/applicationsnapshot"
+	"github.com/conforma/cli/internal/evaluator"
+	"github.com/conforma/cli/internal/format"
+	"github.com/conforma/cli/internal/output"
+	"github.com/conforma/cli/internal/policy"
+	"github.com/conforma/cli/internal/policy/source"
+	"github.com/conforma/cli/internal/utils"
+	validate_utils "github.com/conforma/cli/internal/validate"
 )
 
 type imageValidationFunc func(context.Context, app.SnapshotComponent, *app.SnapshotSpec, policy.Policy, []evaluator.Evaluator, bool) (*output.Output, error)

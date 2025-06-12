@@ -18,7 +18,7 @@
 # The bundle for the Tekton Task requires a different policy as it is not a traditional container
 # image.
 #
-description: 'Custom pre-merge policy for ec-cli'
+description: 'Custom pre-merge policy for ec'
 publicKey: 'k8s://openshift-pipelines/public-key'
 sources:
   - name: Release Policies

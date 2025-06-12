@@ -23,7 +23,7 @@ set -o nounset
 
 root_dir=$(git rev-parse --show-toplevel)
 
-bundles="$(go run github.com/enterprise-contract/ec-cli inspect policy-data --source oci::quay.io/konflux-ci/tekton-catalog/data-acceptable-bundles:latest)"
+bundles="$(go run github.com/conforma/cli inspect policy-data --source oci::quay.io/konflux-ci/tekton-catalog/data-acceptable-bundles:latest)"
 
 for f in "${root_dir}"/.tekton/*-build.yaml; do
   # shellcheck disable=SC2016,SC2094

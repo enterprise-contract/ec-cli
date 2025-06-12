@@ -54,7 +54,7 @@ BUILD_BIN_SUFFIX=$(if $(DEBUG_BUILD),_debug,)
 $(ALL_SUPPORTED_OS_ARCH): generate ## Build binaries for specific platform/architecture, e.g. make dist/ec_linux_amd64
 	@GOOS=$(word 2,$(subst _, ,$(notdir $@))); \
 	GOARCH=$(word 3,$(subst _, ,$(notdir $@))); \
-	GOOS=$${GOOS} GOARCH=$${GOARCH} CGO_ENABLED=0 go build $(BUILD_TRIMPATH) $(BUILD_GC_FLAGS) -ldflags="$(BUILD_LD_FLAGS) -X github.com/enterprise-contract/ec-cli/internal/version.Version=$(VERSION)" -o dist/ec_$${GOOS}_$${GOARCH}$(BUILD_BIN_SUFFIX); \
+	GOOS=$${GOOS} GOARCH=$${GOARCH} CGO_ENABLED=0 go build $(BUILD_TRIMPATH) $(BUILD_GC_FLAGS) -ldflags="$(BUILD_LD_FLAGS) -X github.com/conforma/cli/internal/version.Version=$(VERSION)" -o dist/ec_$${GOOS}_$${GOARCH}$(BUILD_BIN_SUFFIX); \
 	sha256sum -b dist/ec_$${GOOS}_$${GOARCH}$(BUILD_BIN_SUFFIX) > dist/ec_$${GOOS}_$${GOARCH}$(BUILD_BIN_SUFFIX).sha256
 
 .PHONY: dist
@@ -210,7 +210,7 @@ lint-fix: ## Fix linting issues automagically
 # We don't apply the fixes from the internal (error handling) linter.
 # TODO: fix the outstanding error handling lint issues and enable the fixer
 #	@go run -modfile tools/go.mod ./internal/lint -fix $$(go list ./... | grep -v '/acceptance/')
-	@go run -modfile tools/go.mod github.com/daixiang0/gci write -s standard -s default -s "prefix(github.com/enterprise-contract/ec-cli)" .
+	@go run -modfile tools/go.mod github.com/daixiang0/gci write -s standard -s default -s "prefix(github.com/conforma/cli)" .
 
 node_modules: package-lock.json
 	@npm ci
@@ -238,19 +238,19 @@ go-mod-lint:
 ##@ Pushing images
 
 IMAGE_TAG ?= latest
-IMAGE_REPO ?= quay.io/enterprise-contract/ec-cli
+IMAGE_REPO ?= quay.io/conforma/cli
 .PHONY: build-image
-build-image: image_$(BUILD_IMG_ARCH) ## Build container image with ec-cli
+build-image: image_$(BUILD_IMG_ARCH) ## Build container image with ec
 
 .PHONY: push-image
-push-image: push_image_$(BUILD_IMG_ARCH) ## Push ec-cli container image to default location
+push-image: push_image_$(BUILD_IMG_ARCH) ## Push ec container image to default location
 
 .PHONY: build-snapshot-image
-build-snapshot-image: push-image ## Build the ec-cli image and tag it with "snapshot"
+build-snapshot-image: push-image ## Build the ec image and tag it with "snapshot"
 	@podman tag $(IMAGE_REPO):$(IMAGE_TAG) $(IMAGE_REPO):snapshot
 
 .PHONY: push-snapshot-image
-push-snapshot-image: build-snapshot-image ## Push the ec-cli image with the "snapshot" tag
+push-snapshot-image: build-snapshot-image ## Push the ec image with the "snapshot" tag
 	@podman push $(PODMAN_OPTS) $(IMAGE_REPO):snapshot
 
 .PHONY: $(ALL_SUPPORTED_IMG_OS_ARCH)
@@ -318,7 +318,7 @@ dev: TASKS:=$(shell T=$$(mktemp) && yq e ".spec.steps[].image? = \"localhost:$(R
     tasks/verify-enterprise-contract/*/verify-enterprise-contract.yaml \
     tasks/verify-conforma-konflux-ta/*/verify-conforma-konflux-ta.yaml \
     | yq 'select(. != null)' > "$${T}" && echo "$${T}")
-dev: push-image task-bundle ## Push the ec-cli and v-e-c Task Bundle to the kind cluster setup via hack/setup-dev-environment.sh
+dev: push-image task-bundle ## Push the ec and v-e-c Task Bundle to the kind cluster setup via hack/setup-dev-environment.sh
 	@rm "$(TASKS)"
 
 TASK_TAG ?= latest

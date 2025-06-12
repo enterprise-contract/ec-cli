@@ -54,10 +54,10 @@ import (
 	"github.com/sigstore/sigstore/pkg/signature"
 	"gopkg.in/go-jose/go-jose.v2/json"
 
-	"github.com/enterprise-contract/ec-cli/acceptance/attestation"
-	"github.com/enterprise-contract/ec-cli/acceptance/crypto"
-	"github.com/enterprise-contract/ec-cli/acceptance/registry"
-	"github.com/enterprise-contract/ec-cli/acceptance/testenv"
+	"github.com/conforma/cli/acceptance/attestation"
+	"github.com/conforma/cli/acceptance/crypto"
+	"github.com/conforma/cli/acceptance/registry"
+	"github.com/conforma/cli/acceptance/testenv"
 )
 
 type key int

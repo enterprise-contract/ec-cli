@@ -16,7 +16,7 @@
 
 package main
 
-import "github.com/enterprise-contract/ec-cli/cmd"
+import "github.com/conforma/cli/cmd"
 
 func main() {
 	cmd.Execute()

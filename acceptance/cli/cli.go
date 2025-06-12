@@ -39,16 +39,16 @@ import (
 	"github.com/yudai/gojsondiff"
 	"github.com/yudai/gojsondiff/formatter"
 
-	"github.com/enterprise-contract/ec-cli/acceptance/crypto"
-	"github.com/enterprise-contract/ec-cli/acceptance/git"
-	"github.com/enterprise-contract/ec-cli/acceptance/image"
-	"github.com/enterprise-contract/ec-cli/acceptance/kubernetes"
-	"github.com/enterprise-contract/ec-cli/acceptance/log"
-	"github.com/enterprise-contract/ec-cli/acceptance/registry"
-	"github.com/enterprise-contract/ec-cli/acceptance/rekor"
-	"github.com/enterprise-contract/ec-cli/acceptance/snaps"
-	"github.com/enterprise-contract/ec-cli/acceptance/testenv"
-	"github.com/enterprise-contract/ec-cli/acceptance/tuf"
+	"github.com/conforma/cli/acceptance/crypto"
+	"github.com/conforma/cli/acceptance/git"
+	"github.com/conforma/cli/acceptance/image"
+	"github.com/conforma/cli/acceptance/kubernetes"
+	"github.com/conforma/cli/acceptance/log"
+	"github.com/conforma/cli/acceptance/registry"
+	"github.com/conforma/cli/acceptance/rekor"
+	"github.com/conforma/cli/acceptance/snaps"
+	"github.com/conforma/cli/acceptance/testenv"
+	"github.com/conforma/cli/acceptance/tuf"
 )
 
 type status struct {

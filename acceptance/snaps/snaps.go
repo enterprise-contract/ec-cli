@@ -32,7 +32,7 @@ import (
 	"github.com/cucumber/godog"
 	"github.com/gkampitakis/go-snaps/snaps"
 
-	"github.com/enterprise-contract/ec-cli/acceptance/testenv"
+	"github.com/conforma/cli/acceptance/testenv"
 )
 
 var (
