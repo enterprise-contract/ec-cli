@@ -1,3 +1,6 @@
+#
+# NOW OBSOLETE. DELETE SOON.
+#
 apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:

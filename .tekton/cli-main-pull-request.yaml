@@ -25,15 +25,28 @@ spec:
     value: '{{revision}}'
   - name: output-image
     value: quay.io/redhat-user-workloads/rhtap-contract-tenant/ec-main/cli-main:on-pr-{{revision}}
+  - name: bundle-cli-ref-repo
+    value: quay.io/redhat-user-workloads/rhtap-contract-tenant/ec-main/cli-main
   - name: image-expires-after
     value: 5d
   - name: dockerfile
     value: Dockerfile.dist
+  - name: path-context
+    value: .
+  - name: prefetch-input
+    value: '[{"type": "gomod"}, {"type": "gomod", "path": "tools/kubectl"}, {"type":
+      "rpm"}]'
+  - name: build-source-image
+    value: "true"
+  - name: build-args-file
+    value: main-pre-merge-build-args.conf
+  - name: hermetic
+    value: "true"
   pipelineSpec:
     description: |
       This pipeline is ideal for building container images from a Containerfile while maintaining trust after pipeline customization.
 
-      _Uses `buildah` to create a container image leveraging [trusted artifacts](https://konflux-ci.dev/architecture/ADR/0036-trusted-artifacts.html). It also optionally creates a source image and runs some build-time tests. Information is shared between tasks using OCI artifacts instead of PVCs. EC will pass the [`trusted_task.trusted`](https://enterprisecontract.dev/docs/ec-policies/release_policy.html#trusted_task__trusted) policy as long as all data used to build the artifact is generated from trusted tasks.
+      _Uses `buildah` to create a container image leveraging [trusted artifacts](https://konflux-ci.dev/architecture/ADR/0036-trusted-artifacts.html). It also optionally creates a source image and runs some build-time tests. Information is shared between tasks using OCI artifacts instead of PVCs. EC will pass the [`trusted_task.trusted`](https://enterprisecontract.dev/docs/policy/release_policy.html#trusted_task__trusted) policy as long as all data used to build the artifact is generated from trusted tasks.
       This pipeline is pushed as a Tekton bundle to [quay.io](https://quay.io/repository/konflux-ci/tekton-catalog/pipeline-docker-build-oci-ta?tab=tags)_
     finally:
     - name: show-sbom
@@ -59,6 +72,15 @@ spec:
       type: string
     - description: Fully Qualified Output Image
       name: output-image
+      type: string
+    - description: >-
+        OCI repository of the CLI image to use as a reference in the Tekton bundle. When setting
+        this value, take into account where the CLI image will be available for usage. For certain
+        workflows, e.g. pull request, this should be the repo in which the CLI image is built into
+        because those CLI images are not promoted to another location. For merge workflows that go
+        through a release, for example, this should be the repository for which the CLI image will
+        be released to.
+      name: bundle-cli-ref-repo
       type: string
     - default: .
       description: Path to the source code of an application's component from where
@@ -90,6 +112,7 @@ spec:
       description: Image tag expiration time, time values could be something like
         1h, 2d, 3w for hours, days, and weeks, respectively.
       name: image-expires-after
+      type: string
     - default: "false"
       description: Build a source image.
       name: build-source-image
@@ -152,6 +175,10 @@ spec:
         value: $(params.output-image).git
       - name: ociArtifactExpiresAfter
         value: $(params.image-expires-after)
+      - name: depth
+        value: "0"
+      - name: fetchTags
+        value: "true"
       runAfter:
       - init
       taskRef:
@@ -181,6 +208,8 @@ spec:
         value: $(params.output-image).prefetch
       - name: ociArtifactExpiresAfter
         value: $(params.image-expires-after)
+      - name: dev-package-managers
+        value: "true"
       runAfter:
       - clone-repository
       taskRef:
@@ -297,6 +326,36 @@ spec:
         operator: in
         values:
         - "true"
+    - name: build-tekton-bundle
+      params:
+      - name: IMAGE
+        value: $(params.output-image).bundle
+      - name: CONTEXT
+        value: tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml tasks/verify-conforma-konflux-ta/0.1/verify-conforma-konflux-ta.yaml
+      - name: STEPS_IMAGE
+        value: $(params.bundle-cli-ref-repo)@$(tasks.build-image-index.results.IMAGE_DIGEST)
+      - name: URL
+        value: $(params.git-url)
+      - name: REVISION
+        value: $(params.revision)
+      - name: SOURCE_ARTIFACT
+        value: $(tasks.clone-repository.results.SOURCE_ARTIFACT)
+      runAfter:
+      - build-image-index
+      taskRef:
+        params:
+        - name: name
+          value: tkn-bundle-oci-ta
+        - name: bundle
+          value: quay.io/konflux-ci/tekton-catalog/task-tkn-bundle-oci-ta:0.2@sha256:3e80e905d904d00264c062d907a7e2d27bee08751e8d028daf458e07338c5de8
+        - name: kind
+          value: task
+        resolver: bundles
+      when:
+      - input: $(tasks.init.results.build)
+        operator: in
+        values:
+        - "true"
     - name: deprecated-base-image-check
       params:
       - name: IMAGE_URL
@@ -401,72 +460,6 @@ spec:
           value: clamav-scan
         - name: bundle
           value: quay.io/konflux-ci/tekton-catalog/task-clamav-scan:0.2@sha256:386c8c3395b44f6eb927dbad72382808b0ae42008f183064ca77cb4cad998442
-        - name: kind
-          value: task
-        resolver: bundles
-      when:
-      - input: $(params.skip-checks)
-        operator: in
-        values:
-        - "false"
-    - name: sast-coverity-check
-      params:
-      - name: image-digest
-        value: $(tasks.build-image-index.results.IMAGE_DIGEST)
-      - name: image-url
-        value: $(tasks.build-image-index.results.IMAGE_URL)
-      - name: IMAGE
-        value: $(params.output-image)
-      - name: DOCKERFILE
-        value: $(params.dockerfile)
-      - name: CONTEXT
-        value: $(params.path-context)
-      - name: HERMETIC
-        value: $(params.hermetic)
-      - name: PREFETCH_INPUT
-        value: $(params.prefetch-input)
-      - name: IMAGE_EXPIRES_AFTER
-        value: $(params.image-expires-after)
-      - name: COMMIT_SHA
-        value: $(tasks.clone-repository.results.commit)
-      - name: BUILD_ARGS
-        value:
-        - $(params.build-args[*])
-      - name: BUILD_ARGS_FILE
-        value: $(params.build-args-file)
-      - name: SOURCE_ARTIFACT
-        value: $(tasks.prefetch-dependencies.results.SOURCE_ARTIFACT)
-      - name: CACHI2_ARTIFACT
-        value: $(tasks.prefetch-dependencies.results.CACHI2_ARTIFACT)
-      runAfter:
-      - coverity-availability-check
-      taskRef:
-        params:
-        - name: name
-          value: sast-coverity-check-oci-ta
-        - name: bundle
-          value: quay.io/konflux-ci/tekton-catalog/task-sast-coverity-check-oci-ta:0.3@sha256:7c845b10d257b874f645ea30deeff3c1ce2b38e7b6e331564f32c8684f41b520
-        - name: kind
-          value: task
-        resolver: bundles
-      when:
-      - input: $(params.skip-checks)
-        operator: in
-        values:
-        - "false"
-      - input: $(tasks.coverity-availability-check.results.STATUS)
-        operator: in
-        values:
-        - success
-    - name: coverity-availability-check
-      runAfter:
-      - build-image-index
-      taskRef:
-        params:
-        - name: name
-          value: coverity-availability-check
-        - name: bundle
-          value: quay.io/konflux-ci/tekton-catalog/task-coverity-availability-check:0.2@sha256:8b58c4fae00c0dfe3937abfb8a9a61aa3c408cca4278b817db53d518428d944e
         - name: kind
           value: task
         resolver: bundles
