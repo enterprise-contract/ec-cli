@@ -110,8 +110,8 @@ ${____known_PUBLIC_KEY}
       include:
       - test.no_test_warnings
     policy:
-    - github.com/enterprise-contract/ec-policies//policy/release
-    - github.com/enterprise-contract/ec-policies//policy/lib
+    - github.com/enterprise-contract/ec-policies//policy/release?ref=release-v0.6
+    - github.com/enterprise-contract/ec-policies//policy/lib?ref=release-v0.6
 success: true
 
 ---
@@ -177,8 +177,8 @@ ${____known_PUBLIC_KEY}
       include:
       - test.no_test_warnings
     policy:
-    - github.com/enterprise-contract/ec-policies//policy/release
-    - github.com/enterprise-contract/ec-policies//policy/lib
+    - github.com/enterprise-contract/ec-policies//policy/release?ref=release-v0.6
+    - github.com/enterprise-contract/ec-policies//policy/lib?ref=release-v0.6
 success: true
 
 ---
@@ -268,8 +268,8 @@ policy:
       include:
       - slsa_provenance_available
     policy:
-    - github.com/enterprise-contract/ec-policies//policy/release
-    - github.com/enterprise-contract/ec-policies//policy/lib
+    - github.com/enterprise-contract/ec-policies//policy/release?ref=release-v0.6
+    - github.com/enterprise-contract/ec-policies//policy/lib?ref=release-v0.6
 success: true
 
 ---
@@ -359,8 +359,8 @@ policy:
       include:
       - slsa_provenance_available
     policy:
-    - github.com/enterprise-contract/ec-policies//policy/release
-    - github.com/enterprise-contract/ec-policies//policy/lib
+    - github.com/enterprise-contract/ec-policies//policy/release?ref=release-v0.6
+    - github.com/enterprise-contract/ec-policies//policy/lib?ref=release-v0.6
     ruleData:
       key1: value1
       key2: value2
@@ -464,8 +464,8 @@ policy:
       include:
       - slsa_provenance_available
     policy:
-    - github.com/enterprise-contract/ec-policies//policy/release
-    - github.com/enterprise-contract/ec-policies//policy/lib
+    - github.com/enterprise-contract/ec-policies//policy/release?ref=release-v0.6
+    - github.com/enterprise-contract/ec-policies//policy/lib?ref=release-v0.6
 success: true
 
 ---
@@ -729,8 +729,8 @@ true
     "sources": [
       {
         "policy": [
-          "github.com/enterprise-contract/ec-policies//policy/release",
-          "github.com/enterprise-contract/ec-policies//policy/lib"
+          "github.com/enterprise-contract/ec-policies//policy/release?ref=release-v0.6",
+          "github.com/enterprise-contract/ec-policies//policy/lib?ref=release-v0.6"
         ],
         "config": {
           "include": [
@@ -825,8 +825,8 @@ true
     "sources": [
       {
         "policy": [
-          "github.com/enterprise-contract/ec-policies//policy/release",
-          "github.com/enterprise-contract/ec-policies//policy/lib"
+          "github.com/enterprise-contract/ec-policies//policy/release?ref=release-v0.6",
+          "github.com/enterprise-contract/ec-policies//policy/lib?ref=release-v0.6"
         ],
         "config": {
           "include": [
@@ -943,8 +943,8 @@ true
     "sources": [
       {
         "policy": [
-          "github.com/enterprise-contract/ec-policies//policy/release",
-          "github.com/enterprise-contract/ec-policies//policy/lib"
+          "github.com/enterprise-contract/ec-policies//policy/release?ref=release-v0.6",
+          "github.com/enterprise-contract/ec-policies//policy/lib?ref=release-v0.6"
         ],
         "config": {
           "include": [
@@ -1061,8 +1061,8 @@ true
     "sources": [
       {
         "policy": [
-          "github.com/enterprise-contract/ec-policies//policy/release",
-          "github.com/enterprise-contract/ec-policies//policy/lib"
+          "github.com/enterprise-contract/ec-policies//policy/release?ref=release-v0.6",
+          "github.com/enterprise-contract/ec-policies//policy/lib?ref=release-v0.6"
         ],
         "config": {
           "include": [
@@ -1179,8 +1179,8 @@ true
     "sources": [
       {
         "policy": [
-          "github.com/enterprise-contract/ec-policies//policy/release",
-          "github.com/enterprise-contract/ec-policies//policy/lib"
+          "github.com/enterprise-contract/ec-policies//policy/release?ref=release-v0.6",
+          "github.com/enterprise-contract/ec-policies//policy/lib?ref=release-v0.6"
         ],
         "config": {
           "include": [
