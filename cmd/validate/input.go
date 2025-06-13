@@ -28,13 +28,13 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"github.com/enterprise-contract/ec-cli/internal/applicationsnapshot"
-	"github.com/enterprise-contract/ec-cli/internal/format"
-	"github.com/enterprise-contract/ec-cli/internal/input"
-	"github.com/enterprise-contract/ec-cli/internal/output"
-	"github.com/enterprise-contract/ec-cli/internal/policy"
-	"github.com/enterprise-contract/ec-cli/internal/utils"
-	validate_utils "github.com/enterprise-contract/ec-cli/internal/validate"
+	"github.com/conforma/cli/internal/applicationsnapshot"
+	"github.com/conforma/cli/internal/format"
+	"github.com/conforma/cli/internal/input"
+	"github.com/conforma/cli/internal/output"
+	"github.com/conforma/cli/internal/policy"
+	"github.com/conforma/cli/internal/utils"
+	validate_utils "github.com/conforma/cli/internal/validate"
 )
 
 type InputValidationFunc func(context.Context, string, policy.Policy, bool) (*output.Output, error)

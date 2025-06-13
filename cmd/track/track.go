@@ -19,7 +19,7 @@ package track
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/enterprise-contract/ec-cli/internal/tracker"
+	"github.com/conforma/cli/internal/tracker"
 )
 
 var TrackCmd *cobra.Command

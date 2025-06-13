@@ -24,7 +24,7 @@ import (
 	"github.com/open-policy-agent/opa/ast"
 	"github.com/stretchr/testify/require"
 
-	"github.com/enterprise-contract/ec-cli/internal/signature"
+	"github.com/conforma/cli/internal/signature"
 )
 
 func TestToSignatureTerm(t *testing.T) {

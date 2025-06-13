@@ -51,7 +51,7 @@ ARG TARGETARCH
 ARG CLI_NAME="Conforma"
 
 LABEL \
-  name="ec-cli" \
+  name="ec" \
   description="${CLI_NAME} verifies and checks supply chain artifacts to ensure they meet security and business policies." \
   io.k8s.description="${CLI_NAME} verifies and checks supply chain artifacts to ensure they meet security and business policies." \
   summary="Provides the binaries for downloading the ${CLI_NAME} CLI. Also used as a runner image for Tekton tasks." \

@@ -45,8 +45,8 @@ import (
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 
-	"github.com/enterprise-contract/ec-cli/acceptance/log"
-	"github.com/enterprise-contract/ec-cli/acceptance/testenv"
+	"github.com/conforma/cli/acceptance/log"
+	"github.com/conforma/cli/acceptance/testenv"
 )
 
 type key int

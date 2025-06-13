@@ -27,8 +27,8 @@ import (
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/enterprise-contract/ec-cli/cmd/root"
-	"github.com/enterprise-contract/ec-cli/internal/utils"
+	"github.com/conforma/cli/cmd/root"
+	"github.com/conforma/cli/internal/utils"
 )
 
 func Test_TrackBundleCommand(t *testing.T) {
@@ -238,7 +238,7 @@ func Test_TrackBundleCommand(t *testing.T) {
 			pushImage := func(_ context.Context, imageRef string, data []byte, invocation string) error {
 				assert.Equal(t, c.expectOutput, imageRef)
 				assert.Equal(t, testOutput, string(data))
-				assert.NotEmpty(t, invocation) // in tests this will be the cmd.test in temp directory, counting on os.Args to be correct when ec-cli is invoked
+				assert.NotEmpty(t, invocation) // in tests this will be the cmd.test in temp directory, counting on os.Args to be correct when ec is invoked
 				return nil
 			}
 			completeArgs := append([]string{"track", "bundle"}, c.args...)

@@ -19,10 +19,10 @@ package validate
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/enterprise-contract/ec-cli/internal/image"
-	"github.com/enterprise-contract/ec-cli/internal/input"
-	"github.com/enterprise-contract/ec-cli/internal/policy"
-	_ "github.com/enterprise-contract/ec-cli/internal/rego"
+	"github.com/conforma/cli/internal/image"
+	"github.com/conforma/cli/internal/input"
+	"github.com/conforma/cli/internal/policy"
+	_ "github.com/conforma/cli/internal/rego"
 )
 
 var ValidateCmd *cobra.Command

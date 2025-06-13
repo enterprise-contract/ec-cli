@@ -25,8 +25,8 @@ import (
 	app "github.com/konflux-ci/application-api/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/enterprise-contract/ec-cli/internal/evaluator"
-	"github.com/enterprise-contract/ec-cli/internal/signature"
+	"github.com/conforma/cli/internal/evaluator"
+	"github.com/conforma/cli/internal/signature"
 )
 
 func TestMapResults(t *testing.T) {
