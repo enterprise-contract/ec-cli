@@ -20,7 +20,7 @@ import (
 	"github.com/sigstore/cosign/v2/cmd/cosign/cli/initialize"
 	"github.com/spf13/cobra"
 
-	_ "github.com/enterprise-contract/ec-cli/internal/rego"
+	_ "github.com/conforma/cli/internal/rego"
 )
 
 var SigstoreCmd *cobra.Command

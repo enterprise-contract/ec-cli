@@ -36,10 +36,10 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/enterprise-contract/ec-cli/acceptance/crypto"
-	"github.com/enterprise-contract/ec-cli/acceptance/kubernetes/types"
-	"github.com/enterprise-contract/ec-cli/acceptance/kustomize"
-	"github.com/enterprise-contract/ec-cli/acceptance/testenv"
+	"github.com/conforma/cli/acceptance/crypto"
+	"github.com/conforma/cli/acceptance/kubernetes/types"
+	"github.com/conforma/cli/acceptance/kustomize"
+	"github.com/conforma/cli/acceptance/testenv"
 )
 
 // createPolicyObject creates the EnterpriseContractPolicy object with the given

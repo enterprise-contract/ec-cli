@@ -25,7 +25,7 @@ import (
 
 	"github.com/google/go-containerregistry/pkg/name"
 
-	"github.com/enterprise-contract/ec-cli/internal/utils/oci"
+	"github.com/conforma/cli/internal/utils/oci"
 )
 
 // FetchImageConfig retrieves the config for an image from its OCI registry.

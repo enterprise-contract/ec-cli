@@ -20,7 +20,7 @@ import (
 	"github.com/open-policy-agent/opa/ast"
 	"github.com/open-policy-agent/opa/types"
 
-	"github.com/enterprise-contract/ec-cli/internal/signature"
+	"github.com/conforma/cli/internal/signature"
 )
 
 var signatureType = types.NewObject([]*types.StaticProperty{

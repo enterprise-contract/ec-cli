@@ -27,7 +27,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
-	"github.com/enterprise-contract/ec-cli/cmd"
+	"github.com/conforma/cli/cmd"
 )
 
 //go:embed cli.tmpl

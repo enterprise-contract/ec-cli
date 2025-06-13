@@ -35,10 +35,10 @@ import (
 	"github.com/sigstore/cosign/v2/pkg/oci"
 	"github.com/sigstore/sigstore/pkg/tuf"
 
-	"github.com/enterprise-contract/ec-cli/internal/attestation"
-	"github.com/enterprise-contract/ec-cli/internal/policy"
-	"github.com/enterprise-contract/ec-cli/internal/signature"
-	ecoci "github.com/enterprise-contract/ec-cli/internal/utils/oci"
+	"github.com/conforma/cli/internal/attestation"
+	"github.com/conforma/cli/internal/policy"
+	"github.com/conforma/cli/internal/signature"
+	ecoci "github.com/conforma/cli/internal/utils/oci"
 )
 
 const (

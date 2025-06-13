@@ -33,15 +33,15 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 
-	"github.com/enterprise-contract/ec-cli/internal/attestation"
-	"github.com/enterprise-contract/ec-cli/internal/evaluator"
-	"github.com/enterprise-contract/ec-cli/internal/fetchers/oci/config"
-	"github.com/enterprise-contract/ec-cli/internal/fetchers/oci/files"
-	"github.com/enterprise-contract/ec-cli/internal/policy"
-	"github.com/enterprise-contract/ec-cli/internal/signature"
-	"github.com/enterprise-contract/ec-cli/internal/utils"
-	"github.com/enterprise-contract/ec-cli/internal/utils/oci"
-	"github.com/enterprise-contract/ec-cli/pkg/schema"
+	"github.com/conforma/cli/internal/attestation"
+	"github.com/conforma/cli/internal/evaluator"
+	"github.com/conforma/cli/internal/fetchers/oci/config"
+	"github.com/conforma/cli/internal/fetchers/oci/files"
+	"github.com/conforma/cli/internal/policy"
+	"github.com/conforma/cli/internal/signature"
+	"github.com/conforma/cli/internal/utils"
+	"github.com/conforma/cli/internal/utils/oci"
+	"github.com/conforma/cli/pkg/schema"
 )
 
 var attestationSchemas = map[string]*jsonschema.Schema{

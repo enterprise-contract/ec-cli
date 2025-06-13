@@ -33,9 +33,9 @@ import (
 	"golang.org/x/sync/errgroup"
 	"sigs.k8s.io/yaml"
 
-	"github.com/enterprise-contract/ec-cli/internal/kubernetes"
-	"github.com/enterprise-contract/ec-cli/internal/utils"
-	"github.com/enterprise-contract/ec-cli/internal/utils/oci"
+	"github.com/conforma/cli/internal/kubernetes"
+	"github.com/conforma/cli/internal/utils"
+	"github.com/conforma/cli/internal/utils/oci"
 )
 
 const (

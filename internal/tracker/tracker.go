@@ -28,7 +28,7 @@ import (
 	"github.com/stuart-warren/yamlfmt"
 	"sigs.k8s.io/yaml"
 
-	"github.com/enterprise-contract/ec-cli/internal/image"
+	"github.com/conforma/cli/internal/image"
 )
 
 const ociPrefix = "oci://"

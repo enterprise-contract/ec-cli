@@ -19,9 +19,9 @@ package asciidoc
 import (
 	_ "embed"
 
-	"github.com/enterprise-contract/ec-cli/internal/documentation/asciidoc/cli"
-	"github.com/enterprise-contract/ec-cli/internal/documentation/asciidoc/rego"
-	"github.com/enterprise-contract/ec-cli/internal/documentation/asciidoc/tekton"
+	"github.com/conforma/cli/internal/documentation/asciidoc/cli"
+	"github.com/conforma/cli/internal/documentation/asciidoc/rego"
+	"github.com/conforma/cli/internal/documentation/asciidoc/tekton"
 )
 
 func GenerateAsciidoc(module string) error {

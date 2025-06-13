@@ -26,10 +26,10 @@ import (
 	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 	"sigs.k8s.io/yaml"
 
-	"github.com/enterprise-contract/ec-cli/internal/evaluator"
-	"github.com/enterprise-contract/ec-cli/internal/format"
-	"github.com/enterprise-contract/ec-cli/internal/policy"
-	"github.com/enterprise-contract/ec-cli/internal/version"
+	"github.com/conforma/cli/internal/evaluator"
+	"github.com/conforma/cli/internal/format"
+	"github.com/conforma/cli/internal/policy"
+	"github.com/conforma/cli/internal/version"
 )
 
 type Input struct {
@@ -71,7 +71,7 @@ type inputSummary struct {
 
 // TestReport represents the standardized TEST_OUTPUT format.
 // The `Namespace` attribute is required for the appstudio results API. However,
-// it is always an empty string from the ec-cli as a way to indicate all
+// it is always an empty string from the cli as a way to indicate all
 // namespaces were used.
 type TestReport struct {
 	Timestamp string `json:"timestamp"`

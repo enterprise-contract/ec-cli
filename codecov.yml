@@ -22,5 +22,5 @@ parsers:
 coverage:
   status:
     project:
-      ec-cli:
+      cli:
         threshold: 5%

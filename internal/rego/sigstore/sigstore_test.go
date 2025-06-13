@@ -36,9 +36,9 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/enterprise-contract/ec-cli/internal/utils"
-	o "github.com/enterprise-contract/ec-cli/internal/utils/oci"
-	"github.com/enterprise-contract/ec-cli/internal/utils/oci/fake"
+	"github.com/conforma/cli/internal/utils"
+	o "github.com/conforma/cli/internal/utils/oci"
+	"github.com/conforma/cli/internal/utils/oci/fake"
 )
 
 func TestSigstoreVerifyImage(t *testing.T) {

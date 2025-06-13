@@ -8,7 +8,7 @@ about the name change.
 This task verifies a signature and attestation for an image and then runs a policy against the image's attestation using the ```ec validate image``` command.
 
 ## Install the task
-kubectl apply -f https://raw.githubusercontent.com/enterprise-contract/ec-cli/main/tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml
+kubectl apply -f https://raw.githubusercontent.com/conforma/cli/main/tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml
 
 ## Parameters
 ### Required

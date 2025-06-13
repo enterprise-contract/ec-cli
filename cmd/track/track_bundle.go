@@ -25,7 +25,7 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
-	"github.com/enterprise-contract/ec-cli/internal/utils"
+	"github.com/conforma/cli/internal/utils"
 )
 
 type (

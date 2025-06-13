@@ -43,7 +43,7 @@ spec:
   - name: clone-repository
     params:
     - name: url
-      value: https://github.com/enterprise-contract/ec-cli
+      value: https://github.com/conforma/cli
     - name: revision
       value: main
     - name: subdirectory

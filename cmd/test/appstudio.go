@@ -23,7 +23,7 @@ import (
 
 	"github.com/open-policy-agent/conftest/output"
 
-	"github.com/enterprise-contract/ec-cli/internal/applicationsnapshot"
+	"github.com/conforma/cli/internal/applicationsnapshot"
 )
 
 func appstudioReport(results []output.CheckResult, namespaces []string) applicationsnapshot.TestReport {

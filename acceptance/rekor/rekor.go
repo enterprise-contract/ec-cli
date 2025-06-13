@@ -42,10 +42,10 @@ import (
 	"github.com/sigstore/sigstore/pkg/cryptoutils"
 	"github.com/transparency-dev/merkle/rfc6962"
 
-	"github.com/enterprise-contract/ec-cli/acceptance/crypto"
-	"github.com/enterprise-contract/ec-cli/acceptance/image"
-	"github.com/enterprise-contract/ec-cli/acceptance/testenv"
-	"github.com/enterprise-contract/ec-cli/acceptance/wiremock"
+	"github.com/conforma/cli/acceptance/crypto"
+	"github.com/conforma/cli/acceptance/image"
+	"github.com/conforma/cli/acceptance/testenv"
+	"github.com/conforma/cli/acceptance/wiremock"
 )
 
 type key int

@@ -23,9 +23,9 @@ set -o posix
 mkdir -p stats
 # shellcheck disable=SC2016
 {
-    curl --silent --fail https://conforma.dev/ec-cli/stats.json || echo -n ''
+    curl --silent --fail https://conforma.dev/cli/stats.json || echo -n ''
     gh api graphql --field query='{
-    repository(owner: "enterprise-contract", name: "ec-cli") {
+    repository(owner: "conforma", name: "cli") {
         release(tagName: "snapshot") {
         createdAt
         releaseAssets(first: 50) {

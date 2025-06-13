@@ -31,7 +31,7 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/stream"
 	"github.com/tektoncd/pipeline/pkg/remote/oci"
 
-	"github.com/enterprise-contract/ec-cli/acceptance/registry"
+	"github.com/conforma/cli/acceptance/registry"
 )
 
 const version = "v1"

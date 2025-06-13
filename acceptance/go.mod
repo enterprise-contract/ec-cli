@@ -1,4 +1,4 @@
-module github.com/enterprise-contract/ec-cli/acceptance
+module github.com/conforma/cli/acceptance
 
 go 1.23.6
 

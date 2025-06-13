@@ -26,9 +26,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/enterprise-contract/ec-cli/internal/evaluator"
-	"github.com/enterprise-contract/ec-cli/internal/policy"
-	"github.com/enterprise-contract/ec-cli/internal/utils"
+	"github.com/conforma/cli/internal/evaluator"
+	"github.com/conforma/cli/internal/policy"
+	"github.com/conforma/cli/internal/utils"
 )
 
 func Test_ReportJson(t *testing.T) {

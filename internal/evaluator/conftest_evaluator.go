@@ -38,12 +38,12 @@ import (
 	"github.com/spf13/afero"
 	"k8s.io/apimachinery/pkg/util/sets"
 
-	"github.com/enterprise-contract/ec-cli/internal/opa"
-	"github.com/enterprise-contract/ec-cli/internal/opa/rule"
-	"github.com/enterprise-contract/ec-cli/internal/policy"
-	"github.com/enterprise-contract/ec-cli/internal/policy/source"
-	"github.com/enterprise-contract/ec-cli/internal/tracing"
-	"github.com/enterprise-contract/ec-cli/internal/utils"
+	"github.com/conforma/cli/internal/opa"
+	"github.com/conforma/cli/internal/opa/rule"
+	"github.com/conforma/cli/internal/policy"
+	"github.com/conforma/cli/internal/policy/source"
+	"github.com/conforma/cli/internal/tracing"
+	"github.com/conforma/cli/internal/utils"
 )
 
 type contextKey string
@@ -746,7 +746,7 @@ func createConfigJSON(ctx context.Context, dataDir string, p ConfigProvider) err
 		WhenNs int64 `json:"when_ns"`
 	}{}
 
-	// Now that the future deny logic is handled in the ec-cli and not in rego,
+	// Now that the future deny logic is handled in the cli and not in rego,
 	// this field is used only for the checking the effective times in the
 	// acceptable bundles list. Always set it, even when we are using the current
 	// time, so that a consistent current time is used everywhere.

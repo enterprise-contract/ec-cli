@@ -37,7 +37,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/enterprise-contract/ec-cli/internal/signature"
+	"github.com/conforma/cli/internal/signature"
 )
 
 type mockSignature struct {

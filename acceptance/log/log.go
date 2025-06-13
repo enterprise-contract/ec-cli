@@ -24,7 +24,7 @@ import (
 
 	"sigs.k8s.io/kind/pkg/log"
 
-	"github.com/enterprise-contract/ec-cli/acceptance/testenv"
+	"github.com/conforma/cli/acceptance/testenv"
 )
 
 type loggerKeyType int

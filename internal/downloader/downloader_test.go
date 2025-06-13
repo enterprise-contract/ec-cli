@@ -47,7 +47,7 @@ import (
 	xtrace "golang.org/x/exp/trace"
 	"oras.land/oras-go/v2/registry/remote/retry"
 
-	echttp "github.com/enterprise-contract/ec-cli/internal/http"
+	echttp "github.com/conforma/cli/internal/http"
 )
 
 type mockDownloader struct {

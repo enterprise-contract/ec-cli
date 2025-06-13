@@ -35,7 +35,7 @@ import (
 	ociremote "github.com/sigstore/cosign/v2/pkg/oci/remote"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/enterprise-contract/ec-cli/internal/http"
+	"github.com/conforma/cli/internal/http"
 )
 
 // imageRefTransport is used to inject the type of transport to use with the

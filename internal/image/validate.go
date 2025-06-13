@@ -27,11 +27,11 @@ import (
 	"github.com/qri-io/jsonpointer"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/enterprise-contract/ec-cli/internal/attestation"
-	"github.com/enterprise-contract/ec-cli/internal/evaluation_target/application_snapshot_image"
-	"github.com/enterprise-contract/ec-cli/internal/evaluator"
-	"github.com/enterprise-contract/ec-cli/internal/output"
-	"github.com/enterprise-contract/ec-cli/internal/policy"
+	"github.com/conforma/cli/internal/attestation"
+	"github.com/conforma/cli/internal/evaluation_target/application_snapshot_image"
+	"github.com/conforma/cli/internal/evaluator"
+	"github.com/conforma/cli/internal/output"
+	"github.com/conforma/cli/internal/policy"
 )
 
 // ValidateImage executes the required method calls to evaluate a given policy

@@ -43,12 +43,12 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/enterprise-contract/ec-cli/internal/attestation"
-	"github.com/enterprise-contract/ec-cli/internal/evaluator"
-	"github.com/enterprise-contract/ec-cli/internal/policy"
-	"github.com/enterprise-contract/ec-cli/internal/utils"
-	ecoci "github.com/enterprise-contract/ec-cli/internal/utils/oci"
-	"github.com/enterprise-contract/ec-cli/internal/utils/oci/fake"
+	"github.com/conforma/cli/internal/attestation"
+	"github.com/conforma/cli/internal/evaluator"
+	"github.com/conforma/cli/internal/policy"
+	"github.com/conforma/cli/internal/utils"
+	ecoci "github.com/conforma/cli/internal/utils/oci"
+	"github.com/conforma/cli/internal/utils/oci/fake"
 )
 
 const (

@@ -29,7 +29,7 @@ cd "${TARGET_DIR}" || exit 1
 
 echo 'Resolving task bundle...'
 
-# Task definition built and pushed from main branch in the ec-cli
+# Task definition built and pushed from main branch in the cli
 # repo by the Conforma Konflux build pipeline
 TASK_BUNDLE_REPO=quay.io/enterprise-contract/tekton-task
 TASK_BUNDLE_TAG="${2:-latest}"
@@ -63,7 +63,7 @@ REF="${TASK_BUNDLE_REF}" REV="${REVISION}" yq e -i \
     '.configMapGenerator[] |=
         select(.name == "ec-defaults").literals = [
             "verify_ec_task_bundle=" + env(REF),
-            "verify_ec_task_git_url=https://github.com/enterprise-contract/ec-cli.git",
+            "verify_ec_task_git_url=https://github.com/conforma/cli.git",
             "verify_ec_task_git_revision=" + env(REV),
             "verify_ec_task_git_pathInRepo=tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml",
             "verify_conforma_task_ta_git_pathInRepo=tasks/verify-conforma-konflux-ta/0.1/verify-conforma-konflux-ta.yaml"

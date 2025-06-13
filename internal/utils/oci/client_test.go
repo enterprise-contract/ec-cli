@@ -38,7 +38,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/enterprise-contract/ec-cli/internal/mocks"
+	"github.com/conforma/cli/internal/mocks"
 )
 
 func TestCreateRemoteOptions(t *testing.T) {

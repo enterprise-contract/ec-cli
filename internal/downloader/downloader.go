@@ -30,7 +30,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"oras.land/oras-go/v2/registry/remote/retry"
 
-	"github.com/enterprise-contract/ec-cli/internal/http"
+	"github.com/conforma/cli/internal/http"
 )
 
 type key int

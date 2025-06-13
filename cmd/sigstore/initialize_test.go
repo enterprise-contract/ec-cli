@@ -24,7 +24,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/enterprise-contract/ec-cli/cmd/root"
+	"github.com/conforma/cli/cmd/root"
 )
 
 func TestInitializeCmd(t *testing.T) {

@@ -1,4 +1,4 @@
-module github.com/enterprise-contract/ec-cli/tools
+module github.com/conforma/cli/tools
 
 go 1.23.6
 

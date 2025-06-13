@@ -35,17 +35,17 @@ import (
 	"oras.land/oras-go/v2/registry/remote"
 	"sigs.k8s.io/yaml"
 
-	"github.com/enterprise-contract/ec-cli/acceptance/testenv"
+	"github.com/conforma/cli/acceptance/testenv"
 )
 
 // buildCliImage runs `make push-image` to build and push the image to the Kind
 // cluster. The image is pushed to
-// `localhost:<registry-port>/ec-cli:latest-<architecture>-<os>`, see push-image
+// `localhost:<registry-port>/cli:latest-<architecture>-<os>`, see push-image
 // Makefile target for details. The registry is running without TLS, so we need
 // `--tls-verify=false` here.
 
 func (k *kindCluster) buildCliImage(ctx context.Context) error {
-	cmd := exec.CommandContext(ctx, "make", "push-image", fmt.Sprintf("IMAGE_REPO=localhost:%d/ec-cli", k.registryPort), "PODMAN_OPTS=--tls-verify=false") /* #nosec */
+	cmd := exec.CommandContext(ctx, "make", "push-image", fmt.Sprintf("IMAGE_REPO=localhost:%d/cli", k.registryPort), "PODMAN_OPTS=--tls-verify=false") /* #nosec */
 
 	if out, err := cmd.CombinedOutput(); err != nil {
 		fmt.Printf("[ERROR] Unable to build and push the CLI image, %q returned an error: %v\nCommand output:\n", cmd, err)
@@ -60,7 +60,7 @@ func (k *kindCluster) buildCliImage(ctx context.Context) error {
 // the `$REPOSITORY_ROOT/task` directory to push the Tekton Task bundle to the
 // registry running on the Kind cluster. The image is pushed to image reference:
 // `localhost:<registry-port>/ec-task-bundle:<version>`, so each bundle contains
-// only the task of a particular version. The image reference to the ec-cli
+// only the task of a particular version. The image reference to the ec
 // image is replaced with the image reference from buildCliImage.
 func (k *kindCluster) buildTaskBundleImage(ctx context.Context) error {
 	taskBundles := make(map[string][]string)
@@ -112,10 +112,10 @@ func (k *kindCluster) buildTaskBundleImage(ctx context.Context) error {
 			// using registry.image-registry.svc.cluster.local instead of 127.0.0.1
 			// leads to "dial tcp: lookup registry.image-registry.svc.cluster.local:
 			// Temporary failure in name resolution" in Tekton Pipeline controller
-			img := fmt.Sprintf("127.0.0.1:%d/ec-cli:%s", k.registryPort, imgTag)
+			img := fmt.Sprintf("127.0.0.1:%d/cli:%s", k.registryPort, imgTag)
 			steps := taskDefinition.Spec.Steps
 			for i, step := range steps {
-				if strings.Contains(step.Image, "/ec-cli:") {
+				if strings.Contains(step.Image, "/cli:") {
 					steps[i].Image = img
 				}
 			}

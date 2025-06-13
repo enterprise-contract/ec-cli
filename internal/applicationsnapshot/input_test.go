@@ -37,11 +37,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/enterprise-contract/ec-cli/internal/kubernetes"
-	"github.com/enterprise-contract/ec-cli/internal/policy"
-	"github.com/enterprise-contract/ec-cli/internal/utils"
-	"github.com/enterprise-contract/ec-cli/internal/utils/oci"
-	"github.com/enterprise-contract/ec-cli/internal/utils/oci/fake"
+	"github.com/conforma/cli/internal/kubernetes"
+	"github.com/conforma/cli/internal/policy"
+	"github.com/conforma/cli/internal/utils"
+	"github.com/conforma/cli/internal/utils/oci"
+	"github.com/conforma/cli/internal/utils/oci/fake"
 )
 
 func Test_DetermineInputSpec(t *testing.T) {

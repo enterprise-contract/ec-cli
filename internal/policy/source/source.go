@@ -39,8 +39,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 
-	"github.com/enterprise-contract/ec-cli/internal/downloader"
-	"github.com/enterprise-contract/ec-cli/internal/utils"
+	"github.com/conforma/cli/internal/downloader"
+	"github.com/conforma/cli/internal/utils"
 )
 
 type (

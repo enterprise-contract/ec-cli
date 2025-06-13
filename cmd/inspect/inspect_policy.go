@@ -28,11 +28,11 @@ import (
 	"github.com/spf13/cobra"
 	"golang.org/x/exp/slices"
 
-	"github.com/enterprise-contract/ec-cli/internal/opa"
-	opaRule "github.com/enterprise-contract/ec-cli/internal/opa/rule"
-	"github.com/enterprise-contract/ec-cli/internal/policy"
-	"github.com/enterprise-contract/ec-cli/internal/policy/source"
-	"github.com/enterprise-contract/ec-cli/internal/utils"
+	"github.com/conforma/cli/internal/opa"
+	opaRule "github.com/conforma/cli/internal/opa/rule"
+	"github.com/conforma/cli/internal/policy"
+	"github.com/conforma/cli/internal/policy/source"
+	"github.com/conforma/cli/internal/utils"
 )
 
 func inspectPolicyCmd() *cobra.Command {

@@ -31,8 +31,8 @@ import (
 	cosignoci "github.com/sigstore/cosign/v2/pkg/oci"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/enterprise-contract/ec-cli/internal/utils"
-	"github.com/enterprise-contract/ec-cli/internal/utils/oci"
+	"github.com/conforma/cli/internal/utils"
+	"github.com/conforma/cli/internal/utils/oci"
 )
 
 func WithTestImageConfig(ctx context.Context, url string) context.Context {

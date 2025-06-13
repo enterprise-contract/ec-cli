@@ -46,8 +46,8 @@ import (
 	"github.com/tektoncd/pipeline/pkg/remote/oci"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/enterprise-contract/ec-cli/internal/image"
-	"github.com/enterprise-contract/ec-cli/internal/utils"
+	"github.com/conforma/cli/internal/image"
+	"github.com/conforma/cli/internal/utils"
 )
 
 var sampleHashOne = v1.Hash{

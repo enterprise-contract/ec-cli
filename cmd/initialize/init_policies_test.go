@@ -27,8 +27,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/enterprise-contract/ec-cli/cmd/root"
-	"github.com/enterprise-contract/ec-cli/internal/utils"
+	"github.com/conforma/cli/cmd/root"
+	"github.com/conforma/cli/internal/utils"
 )
 
 func TestInitializeNoError(t *testing.T) {

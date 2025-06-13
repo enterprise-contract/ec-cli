@@ -32,7 +32,7 @@ import (
 	"github.com/go-git/go-git/v5/storage/filesystem"
 	"github.com/spf13/afero"
 
-	"github.com/enterprise-contract/ec-cli/internal/utils"
+	"github.com/conforma/cli/internal/utils"
 )
 
 type gitTracker struct {

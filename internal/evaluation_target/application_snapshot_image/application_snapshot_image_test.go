@@ -49,12 +49,12 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/enterprise-contract/ec-cli/internal/attestation"
-	"github.com/enterprise-contract/ec-cli/internal/policy"
-	"github.com/enterprise-contract/ec-cli/internal/signature"
-	"github.com/enterprise-contract/ec-cli/internal/utils"
-	o "github.com/enterprise-contract/ec-cli/internal/utils/oci"
-	"github.com/enterprise-contract/ec-cli/internal/utils/oci/fake"
+	"github.com/conforma/cli/internal/attestation"
+	"github.com/conforma/cli/internal/policy"
+	"github.com/conforma/cli/internal/signature"
+	"github.com/conforma/cli/internal/utils"
+	o "github.com/conforma/cli/internal/utils/oci"
+	"github.com/conforma/cli/internal/utils/oci/fake"
 )
 
 // pipelineRunBuildType is the type of attestation we're interested in evaluating

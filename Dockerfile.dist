@@ -51,13 +51,13 @@ ARG TARGETARCH
 ARG CLI_NAME="Enterprise Contract"
 
 LABEL \
-  name="ec-cli" \
+  name="ec" \
   description="${CLI_NAME} verifies and checks supply chain artifacts to ensure they meet security and business policies." \
   io.k8s.description="${CLI_NAME} verifies and checks supply chain artifacts to ensure they meet security and business policies." \
   summary="Provides the binaries for downloading the ${CLI_NAME} CLI. Also used as a runner image for Tekton tasks." \
   io.k8s.display-name="${CLI_NAME}" \
   io.openshift.tags="rhtas rhtap trusted-artifact-signer trusted-application-pipeline enterprise-contract conforma ec opa cosign sigstore" \
-  com.redhat.component="ec-cli"
+  com.redhat.component="ec"
 
 # Install tools we want to use in the Tekton task
 RUN microdnf upgrade --assumeyes --nodocs --setopt=keepcache=0 --refresh && microdnf -y --nodocs --setopt=keepcache=0 install gzip jq ca-certificates

@@ -51,10 +51,10 @@ import (
 	k "sigs.k8s.io/kind/pkg/cluster"
 	"sigs.k8s.io/yaml"
 
-	"github.com/enterprise-contract/ec-cli/acceptance/kubernetes/types"
-	"github.com/enterprise-contract/ec-cli/acceptance/kustomize"
-	"github.com/enterprise-contract/ec-cli/acceptance/log"
-	"github.com/enterprise-contract/ec-cli/acceptance/registry"
+	"github.com/conforma/cli/acceptance/kubernetes/types"
+	"github.com/conforma/cli/acceptance/kustomize"
+	"github.com/conforma/cli/acceptance/log"
+	"github.com/conforma/cli/acceptance/registry"
 )
 
 type key int
@@ -120,7 +120,7 @@ func (k *kindCluster) Up(_ context.Context) bool {
 }
 
 // Start creates a new randomly named Kind cluster and provisions it for use;
-// meaning: the hack/test kustomization will applied to the cluster, the ec-cli
+// meaning: the hack/test kustomization will applied to the cluster, the ec
 // and the Tekton Task bundle images will be pushed to the registry running in
 // the cluster.
 func Start(givenCtx context.Context) (ctx context.Context, kCluster types.Cluster, err error) {

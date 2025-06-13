@@ -10,7 +10,7 @@ It makes use of [Trusted Artifacts](https://github.com/konflux-ci/build-trusted-
 and this Task.
 
 ## Install the task
-kubectl apply -f https://raw.githubusercontent.com/enterprise-contract/ec-cli/main/tasks/verify-conforma-konflux-ta/0.1/verify-conforma-konflux-ta.yaml
+kubectl apply -f https://raw.githubusercontent.com/conforma/cli/main/tasks/verify-conforma-konflux-ta/0.1/verify-conforma-konflux-ta.yaml
 
 ## Parameters
 ### Required

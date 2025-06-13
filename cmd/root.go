@@ -22,17 +22,17 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"github.com/enterprise-contract/ec-cli/cmd/fetch"
-	"github.com/enterprise-contract/ec-cli/cmd/initialize"
-	"github.com/enterprise-contract/ec-cli/cmd/inspect"
-	"github.com/enterprise-contract/ec-cli/cmd/opa"
-	"github.com/enterprise-contract/ec-cli/cmd/root"
-	"github.com/enterprise-contract/ec-cli/cmd/sigstore"
-	"github.com/enterprise-contract/ec-cli/cmd/test"
-	"github.com/enterprise-contract/ec-cli/cmd/track"
-	"github.com/enterprise-contract/ec-cli/cmd/validate"
-	"github.com/enterprise-contract/ec-cli/cmd/version"
-	"github.com/enterprise-contract/ec-cli/internal/utils"
+	"github.com/conforma/cli/cmd/fetch"
+	"github.com/conforma/cli/cmd/initialize"
+	"github.com/conforma/cli/cmd/inspect"
+	"github.com/conforma/cli/cmd/opa"
+	"github.com/conforma/cli/cmd/root"
+	"github.com/conforma/cli/cmd/sigstore"
+	"github.com/conforma/cli/cmd/test"
+	"github.com/conforma/cli/cmd/track"
+	"github.com/conforma/cli/cmd/validate"
+	"github.com/conforma/cli/cmd/version"
+	"github.com/conforma/cli/internal/utils"
 )
 
 //go:generate go run ../internal/documentation -adoc ../docs/modules/ROOT/

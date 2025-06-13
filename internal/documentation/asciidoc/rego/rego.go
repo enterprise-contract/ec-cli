@@ -27,7 +27,7 @@ import (
 
 	"github.com/open-policy-agent/opa/ast"
 
-	_ "github.com/enterprise-contract/ec-cli/internal/rego"
+	_ "github.com/conforma/cli/internal/rego"
 )
 
 //go:embed rego.tmpl

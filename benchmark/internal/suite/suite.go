@@ -19,8 +19,8 @@ package suite
 import (
 	"io"
 
-	"github.com/enterprise-contract/ec-cli/cmd"
-	"github.com/enterprise-contract/ec-cli/cmd/root"
+	"github.com/conforma/cli/cmd"
+	"github.com/conforma/cli/cmd/root"
 )
 
 func Execute(args []string) error {

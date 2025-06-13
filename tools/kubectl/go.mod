@@ -1,4 +1,4 @@
-module github.com/enterprise-contract/ec-cli/tools/kubectl
+module github.com/conforma/cli/tools/kubectl
 
 go 1.23.6
 

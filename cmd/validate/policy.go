@@ -24,7 +24,7 @@ import (
 	hd "github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 
-	validate_utils "github.com/enterprise-contract/ec-cli/internal/validate"
+	validate_utils "github.com/conforma/cli/internal/validate"
 )
 
 type policyValidationFunc func(context.Context, string) error

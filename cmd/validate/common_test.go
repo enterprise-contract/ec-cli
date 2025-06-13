@@ -27,9 +27,9 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/enterprise-contract/ec-cli/cmd/root"
-	"github.com/enterprise-contract/ec-cli/internal/evaluator"
-	"github.com/enterprise-contract/ec-cli/internal/utils/oci/fake"
+	"github.com/conforma/cli/cmd/root"
+	"github.com/conforma/cli/internal/evaluator"
+	"github.com/conforma/cli/internal/utils/oci/fake"
 )
 
 func commonMockClient(client *fake.FakeClient) {

@@ -19,7 +19,7 @@ package utils
 import (
 	"fmt"
 
-	"github.com/enterprise-contract/ec-cli/internal/evaluator"
+	"github.com/conforma/cli/internal/evaluator"
 )
 
 // CondensedMsg reduces repetitive error messages.
