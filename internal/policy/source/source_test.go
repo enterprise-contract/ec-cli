@@ -37,7 +37,7 @@ import (
 	"github.com/stretchr/testify/require"
 	extv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 
-	"github.com/enterprise-contract/ec-cli/internal/utils"
+	"github.com/conforma/cli/internal/utils"
 )
 
 func usingDownloader(ctx context.Context, m *mockDownloader) context.Context {

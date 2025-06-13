@@ -37,7 +37,7 @@ import (
 	"github.com/testcontainers/testcontainers-go/modules/registry"
 	"github.com/testcontainers/testcontainers-go/wait"
 
-	"github.com/enterprise-contract/ec-cli/benchmark/internal/suite"
+	"github.com/conforma/cli/benchmark/internal/suite"
 )
 
 //go:embed fake_quay.cer

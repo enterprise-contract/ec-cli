@@ -33,10 +33,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/enterprise-contract/ec-cli/internal/evaluator"
-	"github.com/enterprise-contract/ec-cli/internal/format"
-	"github.com/enterprise-contract/ec-cli/internal/policy"
-	"github.com/enterprise-contract/ec-cli/internal/utils"
+	"github.com/conforma/cli/internal/evaluator"
+	"github.com/conforma/cli/internal/format"
+	"github.com/conforma/cli/internal/policy"
+	"github.com/conforma/cli/internal/utils"
 )
 
 //go:embed test_snapshot.json

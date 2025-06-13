@@ -1,7 +1,7 @@
 {
-  "name": "@enterprise-contract/ec-cli-tools",
+  "name": "@conforma/cli-tools",
   "version": "0.0.0",
-  "description": "Keeps track of JavaScript tools used in ec-cli development",
+  "description": "Keeps track of JavaScript tools used in ec development",
   "license": "Apache-2.0",
   "engines": {
     "node": ">=18.0.0"

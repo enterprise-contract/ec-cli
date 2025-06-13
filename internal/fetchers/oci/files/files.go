@@ -31,7 +31,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"sigs.k8s.io/yaml"
 
-	"github.com/enterprise-contract/ec-cli/internal/utils/oci"
+	"github.com/conforma/cli/internal/utils/oci"
 )
 
 type Extractor interface {

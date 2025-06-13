@@ -31,10 +31,10 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
-	"github.com/enterprise-contract/ec-cli/internal/kubernetes"
-	"github.com/enterprise-contract/ec-cli/internal/logging"
-	"github.com/enterprise-contract/ec-cli/internal/tracing"
-	"github.com/enterprise-contract/ec-cli/internal/version"
+	"github.com/conforma/cli/internal/kubernetes"
+	"github.com/conforma/cli/internal/logging"
+	"github.com/conforma/cli/internal/tracing"
+	"github.com/conforma/cli/internal/version"
 )
 
 var (
