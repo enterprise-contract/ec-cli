@@ -19,7 +19,7 @@ import (
 	"github.com/open-policy-agent/opa/cmd"
 	"github.com/spf13/cobra"
 
-	_ "github.com/enterprise-contract/ec-cli/internal/evaluator" // imports EC OPA builtins
+	_ "github.com/conforma/cli/internal/evaluator" // imports EC OPA builtins
 )
 
 var OPACmd *cobra.Command

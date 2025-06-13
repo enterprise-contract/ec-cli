@@ -117,4 +117,4 @@ echo -e "The \033[1mwork\033[0m namespace is set as current and prepared to run 
 echo -e "The verify-enterprise-contract Tekton Task can be pulled from \033[1mregistry.image-registry.svc.cluster.local:${REGISTRY_PORT:-5000}/ec-task-bundle\033[0m"
 echo -e "Image push can be performed from the host machine to image registry at \033[1mlocalhost:${REGISTRY_PORT:-5000}\033[0m"
 # Build and push the images to the local image registry
-echo -e "Push the ec-cli and the Task bundle images by running \033[1mmake dev$([[ -n "${REGISTRY_PORT:-}" ]] && echo ' 'REGISTRY_PORT="${REGISTRY_PORT}")\033[0m"
+echo -e "Push the cli and the Task bundle images by running \033[1mmake dev$([[ -n "${REGISTRY_PORT:-}" ]] && echo ' 'REGISTRY_PORT="${REGISTRY_PORT}")\033[0m"

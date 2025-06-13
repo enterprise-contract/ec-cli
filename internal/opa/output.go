@@ -25,8 +25,8 @@ import (
 	"github.com/open-policy-agent/opa/ast"
 	"golang.org/x/exp/slices"
 
-	"github.com/enterprise-contract/ec-cli/internal/opa/rule"
-	"github.com/enterprise-contract/ec-cli/internal/utils"
+	"github.com/conforma/cli/internal/opa/rule"
+	"github.com/conforma/cli/internal/utils"
 )
 
 //go:embed templates/*.tmpl

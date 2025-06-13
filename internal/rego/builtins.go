@@ -17,7 +17,7 @@
 package rego
 
 import (
-	_ "github.com/enterprise-contract/ec-cli/internal/rego/oci"
-	_ "github.com/enterprise-contract/ec-cli/internal/rego/purl"
-	_ "github.com/enterprise-contract/ec-cli/internal/rego/sigstore"
+	_ "github.com/conforma/cli/internal/rego/oci"
+	_ "github.com/conforma/cli/internal/rego/purl"
+	_ "github.com/conforma/cli/internal/rego/sigstore"
 )

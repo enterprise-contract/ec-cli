@@ -116,7 +116,7 @@ This issue may be resolved by adding the below entries in the `/etc/hosts` file:
 127.0.0.1 rekor.localhost
 ```
 
-This issue arises because the acceptance tests use ec-cli binaries built with `CGO_ENABLED=0`. This setting, [chosen for OS compatibility](https://github.com/enterprise-contract/ec-cli/pull/703), causes the program to use Go's native DNS resolver instead of the system's libc resolver ([learn more](https://go.dev/doc/go1.5#net)). Consequently, the binary is unable to resolve 2nd level localhost domains like `apiserver.localhost`, as the native Go DNS resolver does not support resolution for such names in the same way the system resolver does.
+This issue arises because the acceptance tests use ec binaries built with `CGO_ENABLED=0`. This setting, [chosen for OS compatibility](https://github.com/conforma/cli/pull/703), causes the program to use Go's native DNS resolver instead of the system's libc resolver ([learn more](https://go.dev/doc/go1.5#net)). Consequently, the binary is unable to resolve 2nd level localhost domains like `apiserver.localhost`, as the native Go DNS resolver does not support resolution for such names in the same way the system resolver does.
 
 [pol]: https://github.com/conforma/policy/
-[docs]: https://conforma.dev/docs/ec-cli/ec.html
+[docs]: https://conforma.dev/docs/cli/ec.html

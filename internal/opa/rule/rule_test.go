@@ -572,8 +572,8 @@ func TestReplaceXrefReferencesWithURL(t *testing.T) {
 	}{
 		{
 			name:     "Single valid reference",
-			input:    "xref:ec-cli:ROOT:configuration.adoc#_data_sources[data sources]",
-			expected: "https://conforma.dev/docs/ec-cli/configuration.html#_data_sources",
+			input:    "xref:cli:ROOT:configuration.adoc#_data_sources[data sources]",
+			expected: "https://conforma.dev/docs/cli/configuration.html#_data_sources",
 		},
 		{
 			name: "Multiple valid references",
@@ -594,8 +594,8 @@ func TestReplaceXrefReferencesWithURL(t *testing.T) {
 		},
 		{
 			name:     "Reference missing bracketed text",
-			input:    "xref:ec-cli:ROOT:configuration.adoc#_data_sources", // Missing trailing "[...]"
-			expected: "xref:ec-cli:ROOT:configuration.adoc#_data_sources", // No match → remains unchanged.
+			input:    "xref:cli:ROOT:configuration.adoc#_data_sources", // Missing trailing "[...]"
+			expected: "xref:cli:ROOT:configuration.adoc#_data_sources", // No match → remains unchanged.
 		},
 	}
 

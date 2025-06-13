@@ -25,11 +25,11 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 
-	"github.com/enterprise-contract/ec-cli/internal/evaluation_target/input"
-	"github.com/enterprise-contract/ec-cli/internal/evaluator"
-	"github.com/enterprise-contract/ec-cli/internal/output"
-	"github.com/enterprise-contract/ec-cli/internal/policy"
-	"github.com/enterprise-contract/ec-cli/internal/utils"
+	"github.com/conforma/cli/internal/evaluation_target/input"
+	"github.com/conforma/cli/internal/evaluator"
+	"github.com/conforma/cli/internal/output"
+	"github.com/conforma/cli/internal/policy"
+	"github.com/conforma/cli/internal/utils"
 )
 
 var inputFile = input.NewInput

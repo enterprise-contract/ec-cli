@@ -31,7 +31,7 @@ cd "${TARGET_DIR}" || exit 1
 
 echo 'Resolving task bundle...'
 
-# Task definition built and pushed from main branch in the ec-cli
+# Task definition built and pushed from main branch in the cli
 # repo by the Conforma Konflux build pipeline
 TASK_BUNDLE_REPO=quay.io/enterprise-contract/tekton-task
 TASK_BUNDLE_TAG="${2:-latest}"

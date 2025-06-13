@@ -37,9 +37,9 @@ import (
 	log "github.com/sirupsen/logrus"
 	"k8s.io/client-go/util/retry"
 
-	"github.com/enterprise-contract/ec-cli/internal/fetchers/oci/files"
-	"github.com/enterprise-contract/ec-cli/internal/image"
-	"github.com/enterprise-contract/ec-cli/internal/utils/oci"
+	"github.com/conforma/cli/internal/fetchers/oci/files"
+	"github.com/conforma/cli/internal/image"
+	"github.com/conforma/cli/internal/utils/oci"
 )
 
 const (

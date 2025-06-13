@@ -22,8 +22,8 @@ import (
 
 	"github.com/in-toto/in-toto-golang/in_toto"
 
-	"github.com/enterprise-contract/ec-cli/internal/attestation"
-	"github.com/enterprise-contract/ec-cli/internal/signature"
+	"github.com/conforma/cli/internal/attestation"
+	"github.com/conforma/cli/internal/signature"
 )
 
 type SLSAProvenance interface {

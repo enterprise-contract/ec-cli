@@ -25,7 +25,7 @@ import (
 	"github.com/jstemmer/go-junit-report/v2/junit"
 	"golang.org/x/exp/maps"
 
-	"github.com/enterprise-contract/ec-cli/internal/evaluator"
+	"github.com/conforma/cli/internal/evaluator"
 )
 
 // mapResults maps an slice of Conftest results to a slice of arbitrary types

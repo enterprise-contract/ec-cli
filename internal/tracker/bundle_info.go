@@ -21,7 +21,7 @@ import (
 
 	"github.com/tektoncd/pipeline/pkg/remote/oci"
 
-	"github.com/enterprise-contract/ec-cli/internal/image"
+	"github.com/conforma/cli/internal/image"
 )
 
 // containsTask returns if the bundle contains a Tekton Task

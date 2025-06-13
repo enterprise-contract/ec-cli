@@ -27,9 +27,9 @@ import (
 
 	"golang.org/x/benchmarks/driver"
 
-	"github.com/enterprise-contract/ec-cli/benchmark/internal/registry"
-	"github.com/enterprise-contract/ec-cli/benchmark/internal/suite"
-	"github.com/enterprise-contract/ec-cli/benchmark/internal/untar"
+	"github.com/conforma/cli/benchmark/internal/registry"
+	"github.com/conforma/cli/benchmark/internal/suite"
+	"github.com/conforma/cli/benchmark/internal/untar"
 )
 
 func main() {

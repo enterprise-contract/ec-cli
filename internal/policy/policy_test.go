@@ -37,9 +37,9 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/yaml"
 
-	"github.com/enterprise-contract/ec-cli/internal/kubernetes"
-	"github.com/enterprise-contract/ec-cli/internal/policy/source"
-	"github.com/enterprise-contract/ec-cli/internal/utils"
+	"github.com/conforma/cli/internal/kubernetes"
+	"github.com/conforma/cli/internal/policy/source"
+	"github.com/conforma/cli/internal/utils"
 )
 
 func TestNewPolicy(t *testing.T) {
