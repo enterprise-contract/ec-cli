@@ -21,9 +21,9 @@ import (
 
 	ecc "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
 
-	"github.com/enterprise-contract/ec-cli/internal/evaluator"
-	"github.com/enterprise-contract/ec-cli/internal/policy"
-	"github.com/enterprise-contract/ec-cli/internal/policy/source"
+	"github.com/conforma/cli/internal/evaluator"
+	"github.com/conforma/cli/internal/policy"
+	"github.com/conforma/cli/internal/policy/source"
 )
 
 var newConftestEvaluator = evaluator.NewConftestEvaluatorWithNamespace

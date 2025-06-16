@@ -37,10 +37,10 @@ import (
 	log "github.com/sirupsen/logrus"
 	"sigs.k8s.io/yaml"
 
-	"github.com/enterprise-contract/ec-cli/internal/kubernetes"
-	"github.com/enterprise-contract/ec-cli/internal/policy/cache"
-	"github.com/enterprise-contract/ec-cli/internal/policy/source"
-	"github.com/enterprise-contract/ec-cli/internal/utils"
+	"github.com/conforma/cli/internal/kubernetes"
+	"github.com/conforma/cli/internal/policy/cache"
+	"github.com/conforma/cli/internal/policy/source"
+	"github.com/conforma/cli/internal/utils"
 )
 
 const (

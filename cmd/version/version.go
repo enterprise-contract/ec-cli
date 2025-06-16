@@ -22,7 +22,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/enterprise-contract/ec-cli/internal/version"
+	"github.com/conforma/cli/internal/version"
 )
 
 var VersionCmd *cobra.Command

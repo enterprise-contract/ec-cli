@@ -44,11 +44,11 @@ import (
 	"github.com/stretchr/testify/require"
 	"k8s.io/kube-openapi/pkg/util/sets"
 
-	"github.com/enterprise-contract/ec-cli/internal/downloader"
-	"github.com/enterprise-contract/ec-cli/internal/opa/rule"
-	"github.com/enterprise-contract/ec-cli/internal/policy"
-	"github.com/enterprise-contract/ec-cli/internal/policy/source"
-	"github.com/enterprise-contract/ec-cli/internal/utils"
+	"github.com/conforma/cli/internal/downloader"
+	"github.com/conforma/cli/internal/opa/rule"
+	"github.com/conforma/cli/internal/policy"
+	"github.com/conforma/cli/internal/policy/source"
+	"github.com/conforma/cli/internal/utils"
 )
 
 type mockTestRunner struct {

@@ -18,7 +18,7 @@
 blank_issues_enabled: false
 contact_links:
   - name: Community Forum
-    url: https://github.com/enterprise-contract/ec-cli/discussions
+    url: https://github.com/conforma/cli/discussions
     about: Please ask and answer questions here.
   - name: Community Chat
     url: https://join.slack.com/t/conforma-dev/shared_invite/zt-26l68e6wj-apw7c55CsDtd6Q9TgtiGuw

@@ -30,15 +30,15 @@ import (
 	jsonpatch "github.com/evanphx/json-patch/v5"
 	"golang.org/x/exp/maps"
 
-	"github.com/enterprise-contract/ec-cli/acceptance/crypto"
-	"github.com/enterprise-contract/ec-cli/acceptance/image"
-	"github.com/enterprise-contract/ec-cli/acceptance/kubernetes/kind"
-	"github.com/enterprise-contract/ec-cli/acceptance/kubernetes/stub"
-	"github.com/enterprise-contract/ec-cli/acceptance/kubernetes/types"
-	"github.com/enterprise-contract/ec-cli/acceptance/registry"
-	"github.com/enterprise-contract/ec-cli/acceptance/rekor"
-	"github.com/enterprise-contract/ec-cli/acceptance/snaps"
-	"github.com/enterprise-contract/ec-cli/acceptance/testenv"
+	"github.com/conforma/cli/acceptance/crypto"
+	"github.com/conforma/cli/acceptance/image"
+	"github.com/conforma/cli/acceptance/kubernetes/kind"
+	"github.com/conforma/cli/acceptance/kubernetes/stub"
+	"github.com/conforma/cli/acceptance/kubernetes/types"
+	"github.com/conforma/cli/acceptance/registry"
+	"github.com/conforma/cli/acceptance/rekor"
+	"github.com/conforma/cli/acceptance/snaps"
+	"github.com/conforma/cli/acceptance/testenv"
 )
 
 type key int

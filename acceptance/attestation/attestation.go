@@ -31,7 +31,7 @@ import (
 	"github.com/sigstore/sigstore/pkg/signature/dsse"
 	"github.com/sigstore/sigstore/pkg/signature/options"
 
-	"github.com/enterprise-contract/ec-cli/acceptance/crypto"
+	"github.com/conforma/cli/acceptance/crypto"
 )
 
 const (

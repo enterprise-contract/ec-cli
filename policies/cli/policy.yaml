@@ -17,12 +17,12 @@
 #
 # If we need to diverge from the "official" policy for pre-merge Conforma checks,
 # the Conforma integration test scenario POLICY_CONFIGURATION param can be set to
-# github.com/enterprise-contract/ec-cli to use this file.
+# github.com/conforma/cli to use this file.
 #
 # Compare is to the official policy for Red Hat releases of Conforma here:
 # https://gitlab.cee.redhat.com/releng/konflux-release-data/-/blob/main/config/stone-prd-rh01.pg1f.p1/product/EnterpriseContractPolicy/registry-rhtap-contract.yaml
 #
-description: 'Custom pre-merge policy for ec-cli'
+description: 'Custom pre-merge policy for ec'
 publicKey: 'k8s://openshift-pipelines/public-key'
 sources:
   - name: Release Policies
