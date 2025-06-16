@@ -55,7 +55,8 @@ paths can be provided by using the `:` separator.
 *EXTRA_RULE_DATA* (`string`):: Merge additional Rego variables into the policy data. Use syntax "key=value,key2=value2..."
 *TIMEOUT* (`string`):: This param is deprecated and will be removed in future. Its value is ignored. EC will be run without a timeout. (If you do want to apply a timeout use the Tekton task timeout.)
 
-*WORKERS* (`string`):: Number of parallel workers to use for policy evaluation.
+*WORKERS* (`string`):: Number of parallel workers to use for policy evaluation. This parameter is currently not used. All policy evaluations are run with 35 workers.
+
 +
 *Default*: `35`
 *SINGLE_COMPONENT* (`string`):: Reduce the Snapshot to only the component whose build caused the Snapshot to be created

@@ -127,7 +127,9 @@ spec:
 
     - name: WORKERS
       type: string
-      description: Number of parallel workers to use for policy evaluation.
+      description: >
+        Number of parallel workers to use for policy evaluation. This parameter is currently not used. All
+        policy evaluations are run with 35 workers.
       default: "35"
 
     - name: SINGLE_COMPONENT
@@ -248,7 +250,8 @@ spec:
         - "$(params.REKOR_HOST)"
         - "--ignore-rekor=$(params.IGNORE_REKOR)"
         - "--workers"
-        - "$(params.WORKERS)"
+        # NOTE: This value is temporarily hardcoded instead of using the WORKERS parameter.
+        - "35"
         # NOTE: The syntax below is required to negate boolean parameters
         - "--info=$(params.INFO)"
         # Fresh versions of ec support "--timeout=0" to indicate no timeout, but this would break
