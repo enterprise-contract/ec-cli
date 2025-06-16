@@ -55,6 +55,7 @@ spec:
     - default: ""
       description: Image tag expiration time, time values could be something like 1h, 2d, 3w for hours, days, and weeks, respectively.
       name: image-expires-after
+      type: string
     - default: "false"
       description: Build a source image.
       name: build-source-image
@@ -150,7 +151,7 @@ spec:
         - name: ociArtifactExpiresAfter
           value: $(params.image-expires-after)
         - name: dev-package-managers
-          value: 'true'
+          value: "true"
       runAfter:
         - clone-repository
       taskRef:
@@ -187,7 +188,7 @@ spec:
           value:
             - $(params.build-args[*])
         - name: BUILD_ARGS_FILE
-          value: "$(params.build-args-file)"
+          value: $(params.build-args-file)
         - name: PRIVILEGED_NESTED
           value: $(params.privileged-nested)
         - name: SOURCE_ARTIFACT
@@ -405,7 +406,6 @@ spec:
           operator: in
           values:
             - "false"
-      workspaces: []
     - name: sast-unicode-check
       params:
         - name: image-digest
@@ -432,7 +432,6 @@ spec:
           operator: in
           values:
             - "false"
-      workspaces: []
     - name: apply-tags
       params:
         - name: IMAGE_URL
