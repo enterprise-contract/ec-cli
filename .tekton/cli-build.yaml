@@ -55,6 +55,7 @@ spec:
     - default: ""
       description: Image tag expiration time, time values could be something like 1h, 2d, 3w for hours, days, and weeks, respectively.
       name: image-expires-after
+      type: string
     - default: "false"
       description: Build a source image.
       name: build-source-image
@@ -150,7 +151,7 @@ spec:
         - name: ociArtifactExpiresAfter
           value: $(params.image-expires-after)
         - name: dev-package-managers
-          value: 'true'
+          value: "true"
       runAfter:
         - clone-repository
       taskRef:
@@ -187,7 +188,7 @@ spec:
           value:
             - $(params.build-args[*])
         - name: BUILD_ARGS_FILE
-          value: "$(params.build-args-file)"
+          value: $(params.build-args-file)
         - name: PRIVILEGED_NESTED
           value: $(params.privileged-nested)
         - name: SOURCE_ARTIFACT
@@ -230,7 +231,7 @@ spec:
           - name: name
             value: build-image-index
           - name: bundle
-            value: quay.io/konflux-ci/tekton-catalog/task-build-image-index:0.1@sha256:9c95b1fe17db091ae364344ba2006af46648e08486eef1f6fe1b9e3f10866875
+            value: quay.io/konflux-ci/tekton-catalog/task-build-image-index:0.1@sha256:fc55208a5967b42e1bec89f0ffed26fc4f18db92df2a4885a7d2b4d5cfd603e0
           - name: kind
             value: task
         resolver: bundles
@@ -322,7 +323,7 @@ spec:
           - name: name
             value: ecosystem-cert-preflight-checks
           - name: bundle
-            value: quay.io/konflux-ci/tekton-catalog/task-ecosystem-cert-preflight-checks:0.2@sha256:302828e9d7abc72b8a44fb2b9be068f86c982d8e5f4550b8bf654571d6361ee8
+            value: quay.io/konflux-ci/tekton-catalog/task-ecosystem-cert-preflight-checks:0.2@sha256:8a2d3ce9205df1f59f410529cb38134336e0a4b06ee1187b3229f26c80ecc5ba
           - name: kind
             value: task
         resolver: bundles
@@ -405,7 +406,6 @@ spec:
           operator: in
           values:
             - "false"
-      workspaces: []
     - name: sast-unicode-check
       params:
         - name: image-digest
@@ -432,11 +432,12 @@ spec:
           operator: in
           values:
             - "false"
-      workspaces: []
     - name: apply-tags
       params:
-        - name: IMAGE
+        - name: IMAGE_URL
           value: $(tasks.build-image-index.results.IMAGE_URL)
+        - name: IMAGE_DIGEST
+          value: $(tasks.build-image-index.results.IMAGE_DIGEST)
       runAfter:
         - build-image-index
       taskRef:
@@ -444,7 +445,7 @@ spec:
           - name: name
             value: apply-tags
           - name: bundle
-            value: quay.io/konflux-ci/tekton-catalog/task-apply-tags:0.1@sha256:1c6f673fe100a49f58aaef62580c8adf0c397790964f4e7bac7fcd3f4d07c92e
+            value: quay.io/konflux-ci/tekton-catalog/task-apply-tags:0.2@sha256:0c411c27483849a936c0c420a57e477113e9fafc63077647200d6614d9ebb872
           - name: kind
             value: task
         resolver: bundles
@@ -484,7 +485,7 @@ spec:
           - name: name
             value: rpms-signature-scan
           - name: bundle
-            value: quay.io/konflux-ci/tekton-catalog/task-rpms-signature-scan:0.2@sha256:ec7f6de651458e4a5842b145e761b0d86b03b52bec1515d6d8a1b8cf107af95c
+            value: quay.io/konflux-ci/tekton-catalog/task-rpms-signature-scan:0.2@sha256:66d0d695db7a12d0f05bff8b5c44b610539d781e5b50e031a099f9bf216d245e
           - name: kind
             value: task
         resolver: bundles
