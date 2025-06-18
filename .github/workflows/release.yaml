@@ -113,20 +113,13 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 # v3.6.0
 
+      ## Conforma
       - name: Registry login (quay.io/conforma)
         run: podman login -u ${{ secrets.BUNDLE_PUSH_USER_CONFORMA }} -p ${{ secrets.BUNDLE_PUSH_PASS_CONFORMA }} quay.io
 
       - name: Create and push image (quay.io/conforma/cli)
         env:
           IMAGE_REPO: quay.io/conforma/cli
-        run: make dist-image-push IMAGE_TAG=$TAG IMAGE_REPO=$IMAGE_REPO ADD_IMAGE_TAG="snapshot $TAG_TIMESTAMP"
-
-      - name: Registry login (quay.io/enterprise-contract)
-        run: podman login -u ${{ secrets.BUNDLE_PUSH_USER_EC  }} -p ${{ secrets.BUNDLE_PUSH_PASS_EC }} quay.io
-
-      - name: Create and push image (quay.io/enterprise-contract/ec-cli)
-        env:
-          IMAGE_REPO: quay.io/enterprise-contract/ec-cli
         run: make dist-image-push IMAGE_TAG=$TAG IMAGE_REPO=$IMAGE_REPO ADD_IMAGE_TAG="snapshot $TAG_TIMESTAMP"
 
       # verify ec works in the image and show the version
@@ -136,11 +129,12 @@ jobs:
           IMAGE_REPO: quay.io/conforma/cli
         run: make verify-image
 
-      - name: verify the ec image (quay.io/enterprise-contract/ec-cli)
+      - name: Create and push the tekton bundle (quay.io/conforma/ec-task-bundle)
         env:
-          IMAGE_TAG: snapshot
-          IMAGE_REPO: quay.io/enterprise-contract/ec-cli
-        run: make verify-image
+          TASK_REPO: quay.io/conforma/ec-task-bundle
+          IMAGE_REPO: quay.io/conforma/cli
+          TASKS: "tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml tasks/verify-conforma-konflux-ta/0.1/verify-conforma-konflux-ta.yaml"
+        run: make task-bundle-snapshot TASK_REPO=$TASK_REPO TASK_TAG=$TAG ADD_TASK_TAG="$TAG_TIMESTAMP" TASKS=<( yq e ".spec.steps[].image? = \"$IMAGE_REPO:$TAG\"" $TASKS | yq 'select(. != null)')
 
       - name: Create and push the tekton bundle (quay.io/conforma/ec-task-bundle)
         env:
@@ -148,6 +142,22 @@ jobs:
           IMAGE_REPO: quay.io/conforma/cli
           TASKS: "tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml tasks/verify-conforma-konflux-ta/0.1/verify-conforma-konflux-ta.yaml"
         run: make task-bundle-snapshot TASK_REPO=$TASK_REPO TASK_TAG=$TAG ADD_TASK_TAG="$TAG_TIMESTAMP" TASKS=<( yq e ".spec.steps[].image? = \"$IMAGE_REPO:$TAG\"" $TASKS | yq 'select(. != null)')
+
+      # Enterprise Contract
+      - name: Registry login (quay.io/enterprise-contract)
+        run: podman login -u ${{ secrets.BUNDLE_PUSH_USER_EC  }} -p ${{ secrets.BUNDLE_PUSH_PASS_EC }} quay.io
+
+      - name: Create and push image (quay.io/enterprise-contract/ec-cli)
+        env:
+          IMAGE_REPO: quay.io/enterprise-contract/ec-cli
+        run: make dist-image-push IMAGE_TAG=$TAG IMAGE_REPO=$IMAGE_REPO ADD_IMAGE_TAG="snapshot $TAG_TIMESTAMP"
+
+      # verify ec works in the image and show the version
+      - name: verify the ec image (quay.io/enterprise-contract/ec-cli)
+        env:
+          IMAGE_TAG: snapshot
+          IMAGE_REPO: quay.io/enterprise-contract/ec-cli
+        run: make verify-image
 
       - name: Create and push the tekton bundle (quay.io/enterprise-contract/ec-task-bundle)
         env:
