@@ -22,11 +22,15 @@ metadata:
 spec:
   description: Tekton pipeline to release Snapshots to a registry.
   params:
-  - default: quay.io/enterprise-contract/cli
+  - default: quay.io/conforma/cli
+    # ...but see below for the additional hardcoded push to
+    # the old repo at quay.io/enterprise-contract/cli
     description: Location to push the CLI image to
     name: cli-repo
     type: string
-  - default: quay.io/enterprise-contract/tekton-task
+  - default: quay.io/conforma/tekton-task
+    # ...but see below for the additional hardcoded push to
+    # the old repo at quay.io/enterprise-contract/tekton-task
     description: Location to push the bundle image to
     name: bundle-repo
     type: string
@@ -185,6 +189,26 @@ spec:
         - $(params.bundle-target-repo)
         image: quay.io/konflux-ci/appstudio-utils:latest
         name: copy-bundle
+      # To ease the transtion from the old quay org to the new quay org,
+      # also push the two images to the old quay org at. Rather than
+      # derive the target repos from the param, or introduce another param,
+      # let's keep it simple and hard code the repos. At some point in the
+      # future we'll stop pushing to these repos, at which point this can
+      # be removed.
+      - command:
+        - hack/copy-snapshot-image.sh
+        - $(params.cli-snapshot-spec)
+        # Hard-coded "old" $(params.cli-target-repo):
+        - quay.io/enterprise-contract/cli
+        image: quay.io/konflux-ci/appstudio-utils:latest
+        name: copy-cli-old-org
+      - command:
+        - hack/copy-snapshot-image.sh
+        - $(params.bundle-snapshot-spec)
+        # Hard-coded "old" $(params.bundle-target-repo)
+        - quay.io/enterprise-contract/tekton-task
+        image: quay.io/konflux-ci/appstudio-utils:latest
+        name: copy-bundle-old-org
       workspaces:
       - name: source
     workspaces:
