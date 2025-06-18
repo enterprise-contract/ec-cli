@@ -2325,8 +2325,8 @@ ${TEMP}/ec-work-${RANDOM}/policy/${RANDOM}/main.rego:33: rego_type_error: undefi
 ---
 
 [happy day with invalid extra rule data:stderr - 1]
-Error: Incorrect syntax for --extra-rule-data 0
-Incorrect syntax for --extra-rule-data 1
+Error: incorrect syntax for --extra-rule-data 0
+incorrect syntax for --extra-rule-data 1
 
 ---
 

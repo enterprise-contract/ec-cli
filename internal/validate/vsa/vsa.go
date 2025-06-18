@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -31,17 +32,14 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 
-	"github.com/enterprise-contract/ec-cli/internal/applicationsnapshot"
-	"github.com/enterprise-contract/ec-cli/internal/evaluator"
+	"github.com/conforma/cli/internal/applicationsnapshot"
+	"github.com/conforma/cli/internal/evaluator"
 )
 
-// FS is the filesystem used for all file operations in this package. It defaults to the OS filesystem but can be replaced for testing.
-var FS afero.Fs = afero.NewOsFs()
-
-// Predicate defines the structure of the per-image VSA predicate.
+// Predicate represents a Verification Summary Attestation (VSA) predicate.
 type Predicate struct {
 	ImageRef         string                 `json:"imageRef"`
-	ValidationResult string                 `json:"validationResult"` // "passed" or "failed"
+	ValidationResult string                 `json:"validationResult"`
 	Timestamp        string                 `json:"timestamp"`
 	Verifier         string                 `json:"verifier"`
 	PolicySource     string                 `json:"policySource"`
@@ -49,80 +47,94 @@ type Predicate struct {
 	RuleResults      []evaluator.Result     `json:"ruleResults"`
 }
 
-// Options for VSA generation
-// Extend as needed for more context
-// (e.g., output dir, signing key, etc.)
-type Options struct {
-	OutputDir      string
-	SigningKeyPath string
+// Generator handles VSA predicate generation
+type Generator struct{}
+
+// NewGenerator creates a new VSA predicate generator
+func NewGenerator() *Generator {
+	return &Generator{}
 }
 
 // GeneratePredicate creates a Predicate for a validated image/component.
-func GeneratePredicate(ctx context.Context, report applicationsnapshot.Report, component applicationsnapshot.Component, opts Options) (*Predicate, error) {
-	log.Infof("Generating VSA predicate for image: %s", component.ContainerImage)
+func (g *Generator) GeneratePredicate(ctx context.Context, report applicationsnapshot.Report, comp applicationsnapshot.Component) (*Predicate, error) {
+	log.Infof("Generating VSA predicate for image: %s", comp.ContainerImage)
 
 	// Compose the component info as a map
 	componentInfo := map[string]interface{}{
-		"name":           component.Name,
-		"containerImage": component.ContainerImage,
-		"source":         component.Source,
+		"name":           comp.Name,
+		"containerImage": comp.ContainerImage,
+		"source":         comp.Source,
 	}
 
 	// Compose rule results: combine violations, warnings, and successes
-	ruleResults := make([]evaluator.Result, 0, len(component.Violations)+len(component.Warnings)+len(component.Successes))
-	ruleResults = append(ruleResults, component.Violations...)
-	ruleResults = append(ruleResults, component.Warnings...)
-	ruleResults = append(ruleResults, component.Successes...)
+	ruleResults := make([]evaluator.Result, 0, len(comp.Violations)+len(comp.Warnings)+len(comp.Successes))
+	ruleResults = append(ruleResults, comp.Violations...)
+	ruleResults = append(ruleResults, comp.Warnings...)
+	ruleResults = append(ruleResults, comp.Successes...)
 
 	validationResult := "failed"
-	if component.Success {
+	if comp.Success {
 		validationResult = "passed"
 	}
 
 	policySource := ""
-	if report.Policy.PublicKey != "" {
+	if report.Policy.Name != "" {
 		policySource = report.Policy.Name
 	}
 
 	return &Predicate{
-		ImageRef:         component.ContainerImage,
+		ImageRef:         comp.ContainerImage,
 		ValidationResult: validationResult,
 		Timestamp:        time.Now().UTC().Format(time.RFC3339),
-		Verifier:         "Conforma",
+		Verifier:         "ec-cli",
 		PolicySource:     policySource,
 		Component:        componentInfo,
 		RuleResults:      ruleResults,
 	}, nil
 }
 
-// WriteVSA writes the Predicate as a JSON file to the given path.
-func WriteVSA(predicate *Predicate, path string) error {
-	log.Infof("Writing VSA to %s", path)
-	data, err := json.MarshalIndent(predicate, "", "  ")
-	if err != nil {
-		return fmt.Errorf("failed to marshal VSA predicate: %w", err)
-	}
-	if err := FS.MkdirAll(filepath.Dir(path), 0755); err != nil {
-		return fmt.Errorf("failed to create VSA output directory: %w", err)
-	}
-	if err := afero.WriteFile(FS, path, data, 0600); err != nil {
-		log.Errorf("Failed to write VSA file: %v", err)
-		return fmt.Errorf("failed to write VSA file: %w", err)
-	}
-	return nil
+// Writer handles VSA file writing
+type Writer struct {
+	FS            afero.Fs    // defaults to the package-level FS or afero.NewOsFs()
+	TempDirPrefix string      // defaults to "vsa-"
+	FilePerm      os.FileMode // defaults to 0600
 }
 
-// For testability, allow dependency injection of key loader and sign function
-// These types match the cosign APIs
+// NewWriter creates a new VSA file writer
+func NewWriter() *Writer {
+	return &Writer{
+		FS:            afero.NewOsFs(),
+		TempDirPrefix: "vsa-",
+		FilePerm:      0o600,
+	}
+}
 
-type PrivateKeyLoader func(key []byte, pass []byte) (signature.SignerVerifier, error)
-type AttestationSigner func(ctx context.Context, signer signature.SignerVerifier, ref name.Reference, att oci.Signature, opts *cosign.CheckOpts) (name.Digest, error)
+// WriteVSA writes the Predicate as a JSON file to a temp directory and returns the path.
+func (w *Writer) WriteVSA(predicate *Predicate) (string, error) {
+	log.Infof("Writing VSA for image: %s", predicate.ImageRef)
 
-// SignVSAOptions allows injection for testing
-// If nil, defaults to production cosign implementations
-type SignVSAOptions struct {
-	KeyLoader PrivateKeyLoader
-	SignFunc  AttestationSigner
+	// Serialize with indent
+	data, err := json.MarshalIndent(predicate, "", "  ")
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal VSA predicate: %w", err)
+	}
+
+	// Create temp directory using the injected FS and prefix
+	tempDir, err := afero.TempDir(w.FS, "", w.TempDirPrefix)
+	if err != nil {
+		return "", fmt.Errorf("failed to create temp directory: %w", err)
+	}
+
+	fullPath := filepath.Join(tempDir, "vsa.json")
+
+	log.Infof("Writing VSA file to %s", fullPath)
+	// Write file with injected FS and file-permissions
+	if err := afero.WriteFile(w.FS, fullPath, data, w.FilePerm); err != nil {
+		log.Errorf("Failed to write VSA file to %s: %v", fullPath, err)
+		return "", fmt.Errorf("failed to write VSA file: %w", err)
+	}
+
+	return fullPath, nil
 }
 
 // AttestationUploader is a function that uploads an attestation and returns a result string or error
@@ -147,15 +159,35 @@ func NoopUploader(ctx context.Context, att oci.Signature, location string) (stri
 	return "", nil
 }
 
-// SignVSA signs the VSA file and returns an oci.Signature (does not upload)
-func SignVSA(ctx context.Context, vsaPath, keyPath, imageRef string, opts ...SignVSAOptions) (oci.Signature, error) {
+type PrivateKeyLoader func(key []byte, pass []byte) (signature.SignerVerifier, error)
+type AttestationSigner func(ctx context.Context, signer signature.SignerVerifier, ref name.Reference, att oci.Signature, opts *cosign.CheckOpts) (name.Digest, error)
+
+type Signer struct {
+	FS        afero.Fs          // for reading the VSA file
+	KeyLoader PrivateKeyLoader  // injected loader
+	SignFunc  AttestationSigner // injected cosign API
+}
+
+func NewSigner(fs afero.Fs, loader PrivateKeyLoader, signer AttestationSigner) *Signer {
+	return &Signer{
+		FS:        fs,
+		KeyLoader: loader,
+		SignFunc:  signer,
+	}
+}
+
+// Sign reads the file, loads the key, and returns the signature.
+func (s *Signer) Sign(ctx context.Context, vsaPath, keyPath, imageRef string) (oci.Signature, error) {
 	log.Infof("Signing VSA for image: %s", imageRef)
-	vsaData, err := afero.ReadFile(FS, vsaPath)
+	vsaData, err := afero.ReadFile(s.FS, vsaPath)
 	if err != nil {
 		log.Errorf("Failed to read VSA file: %v", err)
 		return nil, fmt.Errorf("failed to read VSA file: %w", err)
 	}
 	// TODO: Actually sign the attestation using cosign APIs. For now, just create the attestation object.
+	// Example:
+	// signer, err := s.KeyLoader( /* load key bytes from keyPath */ )
+	// attestationSigned, err := s.SignFunc(ctx, signer, ref, att, nil)
 	att, err := static.NewAttestation(vsaData)
 	if err != nil {
 		log.Errorf("Failed to create attestation: %v", err)

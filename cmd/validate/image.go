@@ -32,15 +32,15 @@ import (
 	"github.com/spf13/cobra"
 	extv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 
-	"github.com/enterprise-contract/ec-cli/internal/applicationsnapshot"
-	"github.com/enterprise-contract/ec-cli/internal/evaluator"
-	"github.com/enterprise-contract/ec-cli/internal/format"
-	"github.com/enterprise-contract/ec-cli/internal/output"
-	"github.com/enterprise-contract/ec-cli/internal/policy"
-	"github.com/enterprise-contract/ec-cli/internal/policy/source"
-	"github.com/enterprise-contract/ec-cli/internal/utils"
-	validate_utils "github.com/enterprise-contract/ec-cli/internal/validate"
-	"github.com/enterprise-contract/ec-cli/internal/validate/vsa"
+	"github.com/conforma/cli/internal/applicationsnapshot"
+	"github.com/conforma/cli/internal/evaluator"
+	"github.com/conforma/cli/internal/format"
+	"github.com/conforma/cli/internal/output"
+	"github.com/conforma/cli/internal/policy"
+	"github.com/conforma/cli/internal/policy/source"
+	"github.com/conforma/cli/internal/utils"
+	validate_utils "github.com/conforma/cli/internal/validate"
+	"github.com/conforma/cli/internal/validate/vsa"
 )
 
 type imageValidationFunc func(context.Context, app.SnapshotComponent, *app.SnapshotSpec, policy.Policy, []evaluator.Evaluator, bool) (*output.Output, error)
@@ -249,12 +249,12 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 						if src.RuleData != nil {
 							rule_data_raw, err = src.RuleData.MarshalJSON()
 							if err != nil {
-								allErrors = errors.Join(allErrors, fmt.Errorf("Unable to parse ruledata to raw data"))
+								allErrors = errors.Join(allErrors, fmt.Errorf("unable to parse ruledata to raw data"))
 								continue
 							}
 							err = json.Unmarshal(rule_data_raw, &unmarshaled)
 							if err != nil {
-								allErrors = errors.Join(allErrors, fmt.Errorf("Unable to parse ruledata into standard JSON object"))
+								allErrors = errors.Join(allErrors, fmt.Errorf("unable to parse ruledata into standard JSON object"))
 								continue
 							}
 						} else {
@@ -264,30 +264,30 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 						for j := range data.extraRuleData {
 							parts := strings.SplitN(data.extraRuleData[j], "=", 2)
 							if len(parts) < 2 {
-								allErrors = errors.Join(allErrors, fmt.Errorf("Incorrect syntax for --extra-rule-data %d", j))
+								allErrors = errors.Join(allErrors, fmt.Errorf("incorrect syntax for --extra-rule-data %d", j))
 								continue
 							}
 							extraRuleDataPolicyConfig, err := validate_utils.GetPolicyConfig(ctx, parts[1])
 							if err != nil {
-								allErrors = errors.Join(allErrors, fmt.Errorf("Unable to load data from extraRuleData: %s", err.Error()))
+								allErrors = errors.Join(allErrors, fmt.Errorf("unable to load data from extraRuleData: %s", err.Error()))
 								continue
 							}
 							unmarshaled[parts[0]] = extraRuleDataPolicyConfig
 						}
 						rule_data_raw, err = json.Marshal(unmarshaled)
 						if err != nil {
-							allErrors = errors.Join(allErrors, fmt.Errorf("Unable to parse updated ruledata: %s", err.Error()))
+							allErrors = errors.Join(allErrors, fmt.Errorf("unable to parse updated ruledata: %s", err.Error()))
 							continue
 						}
 
 						if rule_data_raw == nil {
-							allErrors = errors.Join(allErrors, fmt.Errorf("Invalid rule data JSON"))
+							allErrors = errors.Join(allErrors, fmt.Errorf("invalid rule data JSON"))
 							continue
 						}
 
 						err = sources[i].RuleData.UnmarshalJSON(rule_data_raw)
 						if err != nil {
-							allErrors = errors.Join(allErrors, fmt.Errorf("Unable to marshal updated JSON: %s", err.Error()))
+							allErrors = errors.Join(allErrors, fmt.Errorf("unable to marshal updated JSON: %s", err.Error()))
 							continue
 						}
 					}
@@ -458,58 +458,11 @@ func validateImageCmd(validate imageValidationFunc) *cobra.Command {
 			}
 
 			if data.vsaEnabled {
-				// For each validated component, generate and write a VSA
-				vsaPkgOpts := vsa.Options{
-					OutputDir:      "./", // TODO: Make configurable or use temp dir
-					SigningKeyPath: data.vsaSigningKey,
-				}
 				for _, comp := range components {
-					// VSA generation
-					log.Debugf("[VSA] Generating predicate for image: %s", comp.ContainerImage)
-					pred, err := vsa.GeneratePredicate(cmd.Context(), report, comp, vsaPkgOpts)
-					if err != nil {
-						log.Errorf("[VSA] Failed to generate predicate for image %s: %v", comp.ContainerImage, err)
+					if err := processVSA(cmd.Context(), report, comp); err != nil {
+						log.Errorf("[VSA] Error processing VSA for image %s: %v", comp.ContainerImage, err)
 						continue
 					}
-					log.Debugf("[VSA] Predicate generated for image: %s", comp.ContainerImage)
-
-					vsaPath := fmt.Sprintf("%s.vsa.json", comp.ContainerImage) // TODO: sanitize filename
-					log.Debugf("[VSA] Writing VSA to %s", vsaPath)
-					err = vsa.WriteVSA(pred, vsaPath)
-					if err != nil {
-						log.Errorf("[VSA] Failed to write VSA for image %s: %v", comp.ContainerImage, err)
-						continue
-					}
-					log.Debugf("[VSA] VSA written to %s", vsaPath)
-
-					if data.vsaSigningKey != "" {
-						log.Debugf("[VSA] Signing VSA for image: %s", comp.ContainerImage)
-						att, err := vsa.SignVSA(cmd.Context(), vsaPath, data.vsaSigningKey, comp.ContainerImage)
-						if err != nil {
-							log.Errorf("[VSA] Failed to sign VSA for image %s: %v", comp.ContainerImage, err)
-							continue
-						}
-						log.Infof("[VSA] Signed attestation for %s", comp.ContainerImage)
-						var uploader vsa.AttestationUploader
-						switch data.vsaUpload {
-						case "oci":
-							uploader = vsa.OCIUploader
-						case "rekor":
-							uploader = vsa.RekorUploader
-						case "none":
-							uploader = vsa.NoopUploader
-						default:
-							log.Errorf("[VSA] Unknown vsa-upload type: %s", data.vsaUpload)
-							continue
-						}
-						uploadResult, err := uploader(cmd.Context(), att, comp.ContainerImage)
-						if err != nil {
-							log.Errorf("[VSA] Failed to upload VSA attestation for image %s: %v", comp.ContainerImage, err)
-							continue
-						}
-						log.Infof("[VSA] VSA attestation uploaded for %s: %s", comp.ContainerImage, uploadResult)
-					}
-					// Rekor upload is skipped for now
 				}
 			}
 			if data.strict && !report.Success {
@@ -626,4 +579,52 @@ func containsOutput(data []string, value string) bool {
 		}
 	}
 	return false
+}
+
+// PredicateGenerator defines the interface for generating VSA predicates
+type PredicateGenerator interface {
+	GeneratePredicate(ctx context.Context, report applicationsnapshot.Report, comp applicationsnapshot.Component) (*vsa.Predicate, error)
+}
+
+// VSAWriter defines the interface for writing VSA files
+type VSAWriter interface {
+	WriteVSA(predicate *vsa.Predicate) (string, error)
+}
+
+// generateAndWriteVSA generates a VSA predicate and writes it to a file
+func generateAndWriteVSA(
+	ctx context.Context,
+	report applicationsnapshot.Report,
+	comp applicationsnapshot.Component,
+	generator PredicateGenerator,
+	writer VSAWriter,
+) (string, error) {
+	log.Debugf("[VSA] Generating predicate for image: %s", comp.ContainerImage)
+	pred, err := generator.GeneratePredicate(ctx, report, comp)
+	if err != nil {
+		return "", fmt.Errorf("failed to generate predicate for image %s: %w", comp.ContainerImage, err)
+	}
+	log.Debugf("[VSA] Predicate generated for image: %s", comp.ContainerImage)
+
+	log.Debugf("[VSA] Writing VSA for image: %s", comp.ContainerImage)
+	writtenPath, err := writer.WriteVSA(pred)
+	if err != nil {
+		return "", fmt.Errorf("failed to write VSA for image %s: %w", comp.ContainerImage, err)
+	}
+	log.Debugf("[VSA] VSA written to %s", writtenPath)
+
+	return writtenPath, nil
+}
+
+// processVSA handles the complete VSA generation, signing and upload process for a component
+func processVSA(ctx context.Context, report applicationsnapshot.Report, comp applicationsnapshot.Component) error {
+	generator := vsa.NewGenerator()
+	writer := vsa.NewWriter()
+
+	vsaPath, err := generateAndWriteVSA(ctx, report, comp, generator, writer)
+	log.Infof("[VSA] VSA written to %s", vsaPath)
+	if err != nil {
+		return err
+	}
+	return nil
 }

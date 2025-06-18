@@ -21,61 +21,32 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"io"
-	"path/filepath"
 	"testing"
 	"time"
 
 	ecapi "github.com/enterprise-contract/enterprise-contract-controller/api/v1alpha1"
+	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	v1types "github.com/google/go-containerregistry/pkg/v1/types"
 	appapi "github.com/konflux-ci/application-api/api/v1alpha1"
+	"github.com/sigstore/cosign/v2/pkg/cosign"
 	"github.com/sigstore/cosign/v2/pkg/cosign/bundle"
 	"github.com/sigstore/cosign/v2/pkg/oci"
+	"github.com/sigstore/sigstore/pkg/signature"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
-	"github.com/enterprise-contract/ec-cli/internal/applicationsnapshot"
-	"github.com/enterprise-contract/ec-cli/internal/evaluator"
+	"github.com/conforma/cli/internal/applicationsnapshot"
+	"github.com/conforma/cli/internal/evaluator"
 )
 
-func mockReportAndComponent() (applicationsnapshot.Report, applicationsnapshot.Component) {
-	report := applicationsnapshot.Report{
-		EffectiveTime: time.Date(2024, 6, 1, 12, 0, 0, 0, time.UTC),
-		Policy:        ecapi.EnterpriseContractPolicySpec{Name: "mock-policy", PublicKey: "mock-policy-key"},
-	}
-	component := applicationsnapshot.Component{
-		SnapshotComponent: appapi.SnapshotComponent{
-			Name:           "test-component",
-			ContainerImage: "quay.io/test/image:tag",
-			Source:         appapi.ComponentSource{},
-		},
-		Violations: []evaluator.Result{{Message: "violation1"}},
-		Warnings:   []evaluator.Result{{Message: "warning1"}},
-		Successes:  []evaluator.Result{{Message: "success1"}},
-		Success:    true,
-	}
-	return report, component
-}
+// TestSignVSA tests the signing functionality of the Signer.
+func TestSignVSA(t *testing.T) {
+	// Set up test filesystem
+	fs := afero.NewMemMapFs()
 
-func TestGeneratePredicate(t *testing.T) {
-	report, component := mockReportAndComponent()
-	pred, err := GeneratePredicate(context.Background(), report, component, Options{})
-	assert.NoError(t, err)
-	assert.Equal(t, component.ContainerImage, pred.ImageRef)
-	assert.Equal(t, "passed", pred.ValidationResult)
-	assert.Equal(t, "Conforma", pred.Verifier)
-	assert.Equal(t, "mock-policy", report.Policy.Name)
-	assert.Equal(t, component.Name, pred.Component["name"])
-	assert.Equal(t, component.ContainerImage, pred.Component["containerImage"])
-	assert.Equal(t, component.Source, pred.Component["source"])
-	assert.Len(t, pred.RuleResults, 3)
-	assert.Equal(t, "violation1", pred.RuleResults[0].Message)
-	assert.Equal(t, "warning1", pred.RuleResults[1].Message)
-	assert.Equal(t, "success1", pred.RuleResults[2].Message)
-}
-
-func TestWriteVSA(t *testing.T) {
-	FS = afero.NewMemMapFs()
+	// Create test predicate
 	pred := &Predicate{
 		ImageRef:         "quay.io/test/image:tag",
 		ValidationResult: "passed",
@@ -89,50 +60,31 @@ func TestWriteVSA(t *testing.T) {
 		},
 		RuleResults: []evaluator.Result{{Message: "violation1"}},
 	}
-	dir := "/tmp"
-	path := filepath.Join(dir, "test.vsa.json")
-	err := WriteVSA(pred, path)
-	assert.NoError(t, err)
-	data, err := afero.ReadFile(FS, path)
-	assert.NoError(t, err)
-	var out Predicate
-	err = json.Unmarshal(data, &out)
-	assert.NoError(t, err)
-	assert.Equal(t, pred.ImageRef, out.ImageRef)
-	assert.Equal(t, pred.ValidationResult, out.ValidationResult)
-	assert.Equal(t, pred.Verifier, out.Verifier)
-	assert.Equal(t, pred.PolicySource, out.PolicySource)
-	assert.Equal(t, pred.Component["name"], out.Component["name"])
-	assert.Equal(t, pred.Component["containerImage"], out.Component["containerImage"])
-	assert.Equal(t, pred.Component["source"], out.Component["source"])
-	assert.Len(t, out.RuleResults, 1)
-	assert.Equal(t, "violation1", out.RuleResults[0].Message)
-}
 
-// TestSignVSA_Mock simulates the cosign signing flow for SignVSA.
-func TestSignVSA_Mock(t *testing.T) {
-	FS = afero.NewMemMapFs()
-	pred := &Predicate{
-		ImageRef:         "quay.io/test/image:tag",
-		ValidationResult: "passed",
-		Timestamp:        time.Now().UTC().Format(time.RFC3339),
-		Verifier:         "Conforma",
-		PolicySource:     "mock-policy",
-		Component: map[string]interface{}{
-			"name":           "test-component",
-			"containerImage": "quay.io/test/image:tag",
-			"source":         map[string]interface{}{"git": "repo"},
-		},
-		RuleResults: []evaluator.Result{{Message: "violation1"}},
-	}
-	dir := "/tmp"
-	vsaPath := filepath.Join(dir, "test.vsa.json")
+	// Write test file
+	vsaPath := "/test.vsa.json"
 	data, _ := json.Marshal(pred)
-	err := afero.WriteFile(FS, vsaPath, data, 0600)
+	err := afero.WriteFile(fs, vsaPath, data, 0600)
 	assert.NoError(t, err)
+
+	// Create mock key loader and signer
+	mockKeyLoader := func(key []byte, pass []byte) (signature.SignerVerifier, error) {
+		return nil, nil // Mock implementation
+	}
+
+	mockSigner := func(ctx context.Context, signer signature.SignerVerifier, ref name.Reference, att oci.Signature, opts *cosign.CheckOpts) (name.Digest, error) {
+		return name.Digest{}, nil // Mock implementation
+	}
+
+	// Create signer instance
+	signer := Signer{
+		FS:        fs,
+		KeyLoader: mockKeyLoader,
+		SignFunc:  mockSigner,
+	}
 
 	// Act
-	sig, err := SignVSA(context.Background(), vsaPath, "irrelevant.key", "quay.io/test/image:tag")
+	sig, err := signer.Sign(context.Background(), vsaPath, "irrelevant.key", "quay.io/test/image:tag")
 	// Assert
 	assert.NoError(t, err)
 	assert.NotNil(t, sig)
@@ -141,7 +93,7 @@ func TestSignVSA_Mock(t *testing.T) {
 	assert.Contains(t, string(payload), "quay.io/test/image:tag")
 
 	// Test error propagation from attestation creation
-	_, err = SignVSA(context.Background(), "/nonexistent/path", "irrelevant.key", "quay.io/test/image:tag")
+	_, err = signer.Sign(context.Background(), "/nonexistent/path", "irrelevant.key", "quay.io/test/image:tag")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "failed to read VSA file")
 }
@@ -222,3 +174,99 @@ func (m *mockAttestation) Uncompressed() (io.ReadCloser, error)                {
 func (m *mockAttestation) Size() (int64, error)                                { return 0, nil }
 func (m *mockAttestation) DiffID() (v1.Hash, error)                            { return v1.Hash{}, nil }
 func (m *mockAttestation) MediaType() (v1types.MediaType, error)               { return v1types.MediaType(""), nil }
+
+func TestWriteVSA(t *testing.T) {
+	// Set up test filesystem
+	FS := afero.NewMemMapFs()
+
+	// Create test predicate
+	pred := &Predicate{
+		ImageRef:         "test-image:tag",
+		ValidationResult: "passed",
+		Timestamp:        "2024-03-21T12:00:00Z",
+		Verifier:         "ec-cli",
+		PolicySource:     "test-policy",
+		Component: map[string]interface{}{
+			"name":           "test-component",
+			"containerImage": "test-image:tag",
+			"source":         nil,
+		},
+		RuleResults: []evaluator.Result{
+			{
+				Message:  "Test rule passed",
+				Metadata: map[string]interface{}{"code": "TEST-001"},
+			},
+		},
+	}
+	writer := Writer{
+		FS:            FS,
+		TempDirPrefix: "vsa-",
+		FilePerm:      0o600,
+	}
+
+	// Write VSA
+	vsaPath, err := writer.WriteVSA(pred)
+	require.NoError(t, err)
+
+	// Verify path format
+	assert.Contains(t, vsaPath, "vsa-")
+
+	// Read and verify contents
+	data, err := afero.ReadFile(FS, vsaPath)
+	require.NoError(t, err)
+
+	var output Predicate
+	err = json.Unmarshal(data, &output)
+	require.NoError(t, err)
+
+	// Verify fields
+	assert.Equal(t, pred.ImageRef, output.ImageRef)
+	assert.Equal(t, pred.ValidationResult, output.ValidationResult)
+	assert.Equal(t, pred.Timestamp, output.Timestamp)
+	assert.Equal(t, pred.Verifier, output.Verifier)
+	assert.Equal(t, pred.PolicySource, output.PolicySource)
+	assert.Equal(t, pred.Component, output.Component)
+	assert.Equal(t, pred.RuleResults, output.RuleResults)
+}
+
+func TestGeneratePredicate(t *testing.T) {
+	// Create test data
+	report := applicationsnapshot.Report{
+		Policy: ecapi.EnterpriseContractPolicySpec{
+			Name: "test-policy",
+		},
+	}
+
+	comp := applicationsnapshot.Component{
+		SnapshotComponent: appapi.SnapshotComponent{
+			Name:           "test-component",
+			ContainerImage: "test-image:tag",
+			Source:         appapi.ComponentSource{},
+		},
+		Success:    true,
+		Violations: []evaluator.Result{},
+		Warnings:   []evaluator.Result{},
+		Successes: []evaluator.Result{
+			{
+				Message:  "Test rule passed",
+				Metadata: map[string]interface{}{"code": "TEST-001"},
+			},
+		},
+	}
+
+	// Create generator and generate predicate
+	generator := NewGenerator()
+	pred, err := generator.GeneratePredicate(context.Background(), report, comp)
+	require.NoError(t, err)
+
+	// Verify predicate fields
+	assert.Equal(t, comp.ContainerImage, pred.ImageRef)
+	assert.Equal(t, "passed", pred.ValidationResult)
+	assert.NotEmpty(t, pred.Timestamp)
+	assert.Equal(t, "ec-cli", pred.Verifier)
+	assert.Equal(t, report.Policy.Name, pred.PolicySource)
+	assert.Equal(t, comp.Name, pred.Component["name"])
+	assert.Equal(t, comp.ContainerImage, pred.Component["containerImage"])
+	assert.Equal(t, comp.Source, pred.Component["source"])
+	assert.Equal(t, comp.Successes, pred.RuleResults)
+}

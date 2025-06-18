@@ -771,7 +771,7 @@ func Test_ValidateImageError(t *testing.T) {
 				"--extra-rule-data",
 				"key-without-value-1,key-without-value-2",
 			},
-			expected: "Incorrect syntax for --extra-rule-data 0\nIncorrect syntax for --extra-rule-data 1",
+			expected: "incorrect syntax for --extra-rule-data 0\nincorrect syntax for --extra-rule-data 1",
 		},
 		{
 			name: "image validation failure: unable to load extraRuleData",
@@ -785,7 +785,7 @@ func Test_ValidateImageError(t *testing.T) {
 				"--extra-rule-data",
 				"key=/value.json",
 			},
-			expected: "Unable to load data from extraRuleData: file /value.json is empty",
+			expected: "unable to load data from extraRuleData: file /value.json is empty",
 		},
 	}
 	for _, c := range cases {
