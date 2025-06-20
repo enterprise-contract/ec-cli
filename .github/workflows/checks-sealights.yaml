@@ -84,7 +84,7 @@ jobs:
           tar -xzf ./sealights-go-agent.tar.gz && tar -xzf ./sealights-slcli.tar.gz
           rm -f ./sealights-go-agent.tar.gz ./sealights-slcli.tar.gz
           ./slgoagent -v 2> /dev/null | grep version && ./slcli -v 2> /dev/null | grep version
-      
+
       - name: Write SeaLights token into file
         run: echo "${SEALIGHTS_AGENT_TOKEN}" > sltoken.txt
         env:
@@ -118,7 +118,7 @@ jobs:
         id: sealights-scan
         run: |
           echo "[Sealights] Running the SeaLights scan"
-          ./slcli scan --bsid buildSessionId.txt  --path-to-scanner ./slgoagent --workspacepath ./ --scm git --scmBaseUrl https://github.com/conforma/cli.git --scmVersion “0” --scmProvider github
+          ./slcli scan --bsid buildSessionId.txt  --path-to-scanner ./slgoagent --workspacepath ./ --scm git --scmBaseUrl https://github.com/conforma/cli.git --scmVersion "0" --scmProvider github
           echo bsid=$(< buildSessionId.txt) | tee -a "$GITHUB_OUTPUT"
       - name: clean all SeaLights secret stuff
         run: |
@@ -134,7 +134,7 @@ jobs:
   Test:
     runs-on: ubuntu-latest
     needs: Initialize
-    steps:          
+    steps:
       - name: Restore workspace
         uses: actions/cache@v4
         with:
