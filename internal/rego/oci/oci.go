@@ -24,9 +24,9 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
-	"strings"
 
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
@@ -38,7 +38,6 @@ import (
 	"k8s.io/client-go/util/retry"
 
 	"github.com/conforma/cli/internal/fetchers/oci/files"
-	"github.com/conforma/cli/internal/image"
 	"github.com/conforma/cli/internal/utils/oci"
 )
 
@@ -388,21 +387,12 @@ func ociDescriptor(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) {
 
 	client := oci.NewClient(bctx.Context)
 
-	uri, err := resolveIfNeeded(client, string(uriValue))
+	uri, ref, err := resolveIfNeeded(client, string(uriValue))
 	if err != nil {
 		logger.WithField("action", "resolveIfNeeded").Error(err)
 		return nil, nil
 	}
 	logger = logger.WithField("ref", uri)
-
-	ref, err := name.NewDigest(uri)
-	if err != nil {
-		logger.WithFields(log.Fields{
-			"action": "new digest",
-			"error":  err,
-		}).Error("failed to create new digest")
-		return nil, nil
-	}
 
 	descriptor, err := client.Head(ref)
 	if err != nil {
@@ -430,21 +420,12 @@ func ociImageManifest(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) 
 
 	client := oci.NewClient(bctx.Context)
 
-	uri, err := resolveIfNeeded(client, string(uriValue))
+	uri, ref, err := resolveIfNeeded(client, string(uriValue))
 	if err != nil {
 		logger.WithField("action", "resolveIfNeeded").Error(err)
 		return nil, nil
 	}
 	logger = logger.WithField("ref", uri)
-
-	ref, err := name.NewDigest(uri)
-	if err != nil {
-		logger.WithFields(log.Fields{
-			"action": "new digest",
-			"error":  err,
-		}).Error("failed to create new digest")
-		return nil, nil
-	}
 
 	var image v1.Image
 	err = retry.OnError(retry.DefaultRetry, func(_ error) bool { return true }, func() error {
@@ -575,21 +556,12 @@ func ociImageIndex(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) {
 
 	client := oci.NewClient(bctx.Context)
 
-	uri, err := resolveIfNeeded(client, string(uriValue))
+	uri, ref, err := resolveIfNeeded(client, string(uriValue))
 	if err != nil {
 		logger.WithField("action", "resolveIfNeeded").Error(err)
 		return nil, nil
 	}
 	logger = logger.WithField("ref", uri)
-
-	ref, err := name.NewDigest(uri)
-	if err != nil {
-		logger.WithFields(log.Fields{
-			"action": "new digest",
-			"error":  err,
-		}).Error("failed to create new digest")
-		return nil, nil
-	}
 
 	imageIndex, err := client.Index(ref)
 	if err != nil {
@@ -686,23 +658,43 @@ func newAnnotationsTerm(annotations map[string]string) *ast.Term {
 	return ast.ObjectTerm(annotationTerms...)
 }
 
-func resolveIfNeeded(client oci.Client, uri string) (string, error) {
-	if !strings.Contains(uri, "@") {
-		original := uri
-		ref, err := image.NewImageReference(uri)
-		if err != nil {
-			return "", fmt.Errorf("unable to parse reference: %w", err)
-		}
-
-		digest, err := client.ResolveDigest(ref.Ref())
-		if err != nil {
-			return "", fmt.Errorf("unable to resolve digest: %w", err)
-		}
-		uri = fmt.Sprintf("%s@%s", uri, digest)
-
-		log.Debugf("resolved image reference %q to %q", original, uri)
+func resolveIfNeeded(client oci.Client, uri string) (string, name.Reference, error) {
+	ref, err := parseReference(uri)
+	if err != nil {
+		return "", nil, fmt.Errorf("unable to parse reference: %w", err)
 	}
-	return uri, nil
+
+	// If it's already a digest reference, return as is
+	if _, ok := ref.(name.Digest); ok {
+		return uri, ref, nil
+	}
+
+	// For tag references, resolve to digest
+	digest, err := client.ResolveDigest(ref)
+	if err != nil {
+		return "", nil, fmt.Errorf("unable to resolve digest: %w", err)
+	}
+
+	resolved := fmt.Sprintf("%s@%s", uri, digest)
+	log.Debugf("resolved image reference %q to %q", uri, resolved)
+	return resolved, ref, nil
+}
+
+func parseReference(uri string) (name.Reference, error) {
+	// Try to parse as digest first, if that fails with ErrBadName, try as tag
+	ref, err := name.NewDigest(uri)
+	if err != nil {
+		if errors.Is(err, &name.ErrBadName{}) {
+			tag, err := name.NewTag(uri)
+			if err != nil {
+				return nil, fmt.Errorf("invalid reference format: %w", err)
+			}
+			return tag, nil
+		} else {
+			return nil, fmt.Errorf("invalid digest format: %w", err)
+		}
+	}
+	return ref, nil
 }
 
 func init() {

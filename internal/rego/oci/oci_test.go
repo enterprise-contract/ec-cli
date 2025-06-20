@@ -185,10 +185,40 @@ func TestOCIDescriptorManifest(t *testing.T) {
 			},
 		},
 		{
+			name:           "tag-based URI with error",
+			ref:            ast.StringTerm("registry.local/spam:latest"),
+			resolvedDigest: "sha256:01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+			headErr:        errors.New("tag error"),
+			wantErr:        true,
+		},
+		{
 			name:       "resolve error",
 			ref:        ast.StringTerm("registry.local/spam:latest"),
 			resolveErr: errors.New("kaboom!"),
 			wantErr:    true,
+		},
+		{
+			name:           "unsupported digest algorithm",
+			ref:            ast.StringTerm("registry.local/spam@sha512:01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"),
+			resolvedDigest: "sha256:01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+			wantErr:        true,
+		},
+		{
+			name:           "malformed digest with extra @",
+			ref:            ast.StringTerm("registry.local/spam@@sha256:01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"),
+			resolvedDigest: "sha256:01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+			wantErr:        true,
+		},
+		{
+			name:           "invalid tag after digest fallback",
+			ref:            ast.StringTerm("registry.local/spam:!nv@lid"),
+			resolvedDigest: "sha256:01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+			wantErr:        true,
+		},
+		{
+			name:    "invalid digest format",
+			ref:     ast.StringTerm("registry.local/spam@sha256:invalid-digest-format"),
+			wantErr: true,
 		},
 	}
 
@@ -464,6 +494,7 @@ func TestOCIImageManifest(t *testing.T) {
 		})
 	}
 }
+
 func TestOCIImageFiles(t *testing.T) {
 
 	image, err := crane.Image(map[string][]byte{
@@ -744,6 +775,118 @@ func TestFunctionsRegistered(t *testing.T) {
 				}
 			}
 			t.Fatalf("%s builtin not registered", name)
+		})
+	}
+}
+
+func TestParseReference(t *testing.T) {
+	cases := []struct {
+		name    string
+		uri     string
+		wantErr bool
+	}{
+		{
+			name: "valid digest",
+			uri:  "registry.local/spam@sha256:4bbf56a3a9231f752d3b9c174637975f0f83ed2b15e65799837c571e4ef3374b",
+		},
+		{
+			name: "valid tag",
+			uri:  "registry.local/spam:latest",
+		},
+		{
+			name:    "invalid digest format",
+			uri:     "registry.local/spam@sha256:invalid",
+			wantErr: true,
+		},
+		{
+			name:    "invalid tag format",
+			uri:     "registry.local/spam:!nv@lid",
+			wantErr: true,
+		},
+		{
+			name:    "trailing @",
+			uri:     "registry.local/spam@",
+			wantErr: true,
+		},
+		{
+			name:    "multiple @",
+			uri:     "registry.local/spam@@sha256:abc123",
+			wantErr: true,
+		},
+		{
+			name:    "empty string",
+			uri:     "",
+			wantErr: true,
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			ref, err := parseReference(c.uri)
+			if c.wantErr {
+				require.Error(t, err)
+				require.Nil(t, ref)
+			} else {
+				require.NoError(t, err)
+				require.NotNil(t, ref)
+			}
+		})
+	}
+}
+
+func TestResolveIfNeeded(t *testing.T) {
+	cases := []struct {
+		name           string
+		uri            string
+		resolvedDigest string
+		resolveErr     error
+		wantErr        bool
+	}{
+		{
+			name: "digest reference unchanged",
+			uri:  "registry.local/spam@sha256:4bbf56a3a9231f752d3b9c174637975f0f83ed2b15e65799837c571e4ef3374b",
+		},
+		{
+			name:           "tag reference resolved",
+			uri:            "registry.local/spam:latest",
+			resolvedDigest: "sha256:4bbf56a3a9231f752d3b9c174637975f0f83ed2b15e65799837c571e4ef3374b",
+		},
+		{
+			name:       "resolve error",
+			uri:        "registry.local/spam:latest",
+			resolveErr: errors.New("resolve error"),
+			wantErr:    true,
+		},
+		{
+			name:    "invalid reference",
+			uri:     "registry.local/spam@",
+			wantErr: true,
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			client := fake.FakeClient{}
+			if c.resolveErr != nil {
+				client.On("ResolveDigest", mock.Anything).Return("", c.resolveErr)
+			} else if c.resolvedDigest != "" {
+				client.On("ResolveDigest", mock.Anything).Return(c.resolvedDigest, nil)
+			}
+
+			uri, ref, err := resolveIfNeeded(&client, c.uri)
+			if c.wantErr {
+				require.Error(t, err)
+				require.Empty(t, uri)
+				require.Nil(t, ref)
+			} else {
+				require.NoError(t, err)
+				require.NotNil(t, ref)
+				if c.resolvedDigest != "" {
+					require.Contains(t, uri, c.resolvedDigest)
+				} else {
+					require.Equal(t, c.uri, uri)
+				}
+			}
 		})
 	}
 }
